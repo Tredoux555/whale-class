@@ -70,15 +70,21 @@ export default function AdminDashboard() {
         body: formData,
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         setShowUpload(false);
         fetchVideos();
         e.currentTarget.reset();
+        // Show success message
+        alert("Video uploaded successfully! 🎉");
       } else {
-        alert("Upload failed. Please try again.");
+        const errorMessage = data.error || "Upload failed. Please try again.";
+        alert(errorMessage);
       }
     } catch (error) {
-      alert("Upload failed. Please try again.");
+      console.error("Upload error:", error);
+      alert("Upload failed. Please check the console for details.");
     } finally {
       setUploading(false);
     }
