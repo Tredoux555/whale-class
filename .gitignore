@@ -37,6 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 # data and videos
-/data/
-/public/videos/
+# Temporarily allowing for Vercel sync - will restore after push
+# /data/
+# /public/videos/
 !.gitkeep
