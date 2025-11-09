@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <canvas id="canvas192" width="192" height="192"></canvas>
+  <canvas id="canvas512" width="512" height="512"></canvas>
+  <script>
+    function createIcon(size, canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#4A90E2';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Whale emoji (simplified)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `${size * 0.4}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐋', size / 2, size / 2);
+    }
+    
+    createIcon(192, 'canvas192');
+    createIcon(512, 'canvas512');
+    
+    // Download functions
+    document.getElementById('canvas192').toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'icon-192.png';
+      a.click();
+    });
+    
+    document.getElementById('canvas512').toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'icon-512.png';
+      setTimeout(() => a.click(), 500);
+    });
+  </script>
+</body>
+</html>
