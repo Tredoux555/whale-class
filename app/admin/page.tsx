@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createSupabaseClient } from "@/lib/supabase";
+import { upload } from '@vercel/blob/client';
 import { getProxyVideoUrl } from "@/lib/video-utils";
 
 interface Video {
@@ -95,45 +95,27 @@ export default function AdminDashboard() {
       let videoId: string;
 
       if (isVercel) {
-        // Use Supabase Storage for uploads
+        // Use client-side blob upload - bypasses serverless function limit
         videoId = crypto.randomUUID();
         const cleanFilename = videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filePath = `videos/${videoId}-${cleanFilename}`;
+        const blobPath = `videos/${videoId}-${cleanFilename}`;
 
-        console.log("Starting Supabase upload:", filePath);
+        console.log("Starting client-side blob upload:", blobPath);
 
-        // Upload directly from browser to Supabase Storage
-        const supabase = createSupabaseClient();
-        
-        // Show initial progress
-        setUploadProgress(10);
-        
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('videos')
-          .upload(filePath, videoFile, {
-            contentType: videoFile.type || 'video/mp4',
-            upsert: false, // Don't overwrite existing files
-          });
-        
-        // Update progress
-        setUploadProgress(90);
+        // Upload directly from browser to Blob Storage
+        const blob = await upload(blobPath, videoFile, {
+          access: 'public',
+          contentType: videoFile.type || 'video/mp4',
+          handleUploadUrl: '/api/videos/upload-handler',
+          onUploadProgress: (progressEvent) => {
+            const percentage = Math.round(progressEvent.percentage || 0);
+            setUploadProgress(percentage);
+            console.log(`Upload progress: ${percentage}%`);
+          },
+        });
 
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`);
-        }
-
-        // Get public URL for the uploaded file
-        const { data: urlData } = supabase.storage
-          .from('videos')
-          .getPublicUrl(filePath);
-
-        if (!urlData?.publicUrl) {
-          throw new Error("Failed to get public URL for uploaded video");
-        }
-
-        console.log("Video uploaded successfully:", urlData.publicUrl);
-        videoUrl = urlData.publicUrl;
+        console.log("Blob uploaded successfully:", blob.url);
+        videoUrl = blob.url;
 
         // Save video metadata
         const metadataResponse = await fetch("/api/videos/save-metadata", {
@@ -143,7 +125,7 @@ export default function AdminDashboard() {
             id: videoId,
             title,
             category,
-            videoUrl: urlData.publicUrl,
+            videoUrl: blob.url,
             week: week || undefined,
           }),
         });
@@ -203,30 +185,26 @@ export default function AdminDashboard() {
           "⚠️ Upload Timeout\n\n" +
           "The upload is taking too long. Please try again with a smaller file or check your connection."
         );
-          } else if (errorMessage.includes("Supabase") || errorMessage.includes("SUPABASE") || errorMessage.includes("Bucket not found")) {
+          } else if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
             alert(
-              "⚠️ Supabase Storage Not Configured\n\n" +
-              "Supabase Storage needs to be set up:\n\n" +
-              "1. Go to Supabase dashboard → Your project → Storage\n" +
-              "2. Create a bucket named 'videos' (make it public)\n" +
-              "3. Go to Settings → API\n" +
-              "4. Copy your Project URL and anon key\n" +
-              "5. Add to Vercel environment variables:\n" +
-              "   - NEXT_PUBLIC_SUPABASE_URL\n" +
-              "   - NEXT_PUBLIC_SUPABASE_ANON_KEY\n" +
-              "   - SUPABASE_SERVICE_ROLE_KEY\n" +
-              "6. Redeploy your project\n\n" +
-              "See SUPABASE-SETUP.md for detailed instructions."
+              "⚠️ Blob Storage Not Configured\n\n" +
+              "Vercel Blob Storage needs to be set up:\n\n" +
+              "1. Go to Vercel dashboard → Your project → Settings → Storage\n" +
+              "2. Create a Blob database (if not already created)\n" +
+              "3. Go to Settings → Environment Variables\n" +
+              "4. Add BLOB_READ_WRITE_TOKEN (auto-generated when you create Blob)\n" +
+              "5. Redeploy your project\n\n" +
+              "See BLOB-STORAGE-SETUP.md for detailed instructions.\n\n" +
+              "For now, you can upload on localhost and push to git."
             );
       } else if (errorMessage.includes("413") || errorMessage.includes("Payload")) {
         alert(
           "⚠️ File Too Large\n\n" +
           "The file exceeds Vercel's payload limit. This should be fixed with Blob Storage.\n\n" +
           "If this persists:\n" +
-          "1. Check Supabase environment variables are set in Vercel\n" +
-          "2. Make sure the 'videos' bucket exists and is public\n" +
-          "3. Try uploading on localhost instead\n" +
-          "4. Compress the video"
+          "1. Check BLOB_READ_WRITE_TOKEN is set in Vercel\n" +
+          "2. Try uploading on localhost instead\n" +
+          "3. Compress the video"
         );
       } else {
         alert(`Upload failed: ${errorMessage}\n\nPlease check the console for details.`);
@@ -303,7 +281,7 @@ export default function AdminDashboard() {
                 {isVercel && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <p className="text-sm text-blue-800">
-                      <strong>📦 Using Supabase Storage</strong><br />
+                      <strong>📦 Using Vercel Blob Storage</strong><br />
                       Videos are uploaded directly to cloud storage, bypassing size limits.
                     </p>
                   </div>
