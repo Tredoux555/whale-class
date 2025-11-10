@@ -68,19 +68,20 @@ export default function AdminDashboard() {
       const response = await fetch("/api/videos", {
         method: "POST",
         body: formData,
+        // Don't set Content-Type header - browser will set it with boundary for FormData
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setShowUpload(false);
-        fetchVideos();
-        e.currentTarget.reset();
-        // Show success message
-        alert("Video uploaded successfully! 🎉");
-      } else {
-        const errorMessage = data.error || "Upload failed. Please try again.";
-        if (data.requiresCloudStorage) {
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || `Upload failed with status ${response.status}` };
+        }
+        
+        if (errorData.requiresCloudStorage) {
           alert(
             "⚠️ Vercel Upload Limitation\n\n" +
             "Video uploads on Vercel require cloud storage (AWS S3, Cloudinary, etc.).\n\n" +
@@ -91,12 +92,38 @@ export default function AdminDashboard() {
             "Or set up cloud storage for direct uploads."
           );
         } else {
-          alert(errorMessage);
+          alert(errorData.error || "Upload failed. Please try again.");
         }
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setShowUpload(false);
+        e.currentTarget.reset();
+        // Show success message
+        alert("Video uploaded successfully! 🎉");
+        // Refresh videos list
+        await fetchVideos();
+      } else {
+        alert(data.error || "Upload failed. Please try again.");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Upload failed. Please check the console for details.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes("SSL") || errorMessage.includes("secure connection")) {
+        alert(
+          "⚠️ SSL Error\n\n" +
+          "There's an SSL connection issue. Please:\n" +
+          "1. Check your internet connection\n" +
+          "2. Try uploading again\n" +
+          "3. If on Vercel, upload videos locally and push to git"
+        );
+      } else {
+        alert(`Upload failed: ${errorMessage}\n\nPlease check the console for details.`);
+      }
     } finally {
       setUploading(false);
     }

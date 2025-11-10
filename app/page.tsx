@@ -34,30 +34,25 @@ export default function Home() {
     }
   };
 
-  const handleDownload = async (video: Video) => {
+  const handleDownload = (video: Video) => {
     try {
-      // Try to get the filename from the URL, or use the title
+      // Get filename from URL or use title
       const urlParts = video.videoUrl.split('/');
       const urlFilename = urlParts[urlParts.length - 1];
       const cleanTitle = video.title.replace(/[^a-z0-9\s-]/gi, '_').replace(/\s+/g, '_');
       const filename = urlFilename.includes('.') ? urlFilename : `${cleanTitle}.mp4`;
       
-      // Fetch the video file
-      const response = await fetch(video.videoUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      // Create download link
+      // Create download link directly (no fetch needed - avoids SSL issues)
       const link = document.createElement('a');
-      link.href = blobUrl;
+      link.href = video.videoUrl;
       link.download = filename;
+      link.target = '_blank'; // Open in new tab as fallback
       document.body.appendChild(link);
       link.click();
       
       // Cleanup
       setTimeout(() => {
         document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
       }, 100);
     } catch (error) {
       console.error('Download error:', error);
