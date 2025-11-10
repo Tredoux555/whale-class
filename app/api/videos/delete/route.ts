@@ -23,11 +23,11 @@ export async function DELETE(request: NextRequest) {
 
     // Get video to find file path
     const { getVideos } = await import("@/lib/data");
-    const videos = getVideos();
+    const videos = await getVideos();
     const video = videos.find((v) => v.id === id);
 
-    if (video) {
-      // Delete video file
+    if (video && !video.videoUrl.startsWith("http")) {
+      // Only delete local files (not blob storage URLs)
       const videoPath = join(process.cwd(), "public", video.videoUrl);
       try {
         await unlink(videoPath);
@@ -36,7 +36,7 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    const success = deleteVideo(id);
+    const success = await deleteVideo(id);
 
     if (!success) {
       return NextResponse.json(
