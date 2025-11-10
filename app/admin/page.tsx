@@ -397,9 +397,13 @@ export default function AdminDashboard() {
                     <video
                       src={video.videoUrl}
                       controls
+                      playsInline
                       className="w-full h-full object-cover"
                       preload="metadata"
-                    />
+                      crossOrigin="anonymous"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-[#2C5F7C] text-lg mb-2">
