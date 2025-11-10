@@ -67,63 +67,123 @@ export default function AdminDashboard() {
     setUploading(true);
 
     const formData = new FormData(e.currentTarget);
-    
+    const title = formData.get("title") as string;
+    const category = formData.get("category") as "song-of-week" | "phonics";
+    const week = formData.get("week") as string | null;
+    const videoFile = formData.get("video") as File | null;
+
+    if (!title || !category || !videoFile) {
+      alert("Please fill in all required fields");
+      setUploading(false);
+      return;
+    }
+
     try {
-      const response = await fetch("/api/videos", {
-        method: "POST",
-        body: formData,
-        // Don't set Content-Type header - browser will set it with boundary for FormData
-      });
+      let videoUrl: string;
+      let videoId: string;
 
-      // Check if response is ok before trying to parse JSON
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText || `Upload failed with status ${response.status}` };
+      if (isVercel) {
+        // Use Vercel Blob Storage - upload via server endpoint
+        // The server-side put() handles streaming, avoiding the 4.5MB limit
+        const uploadFormData = new FormData();
+        uploadFormData.append("title", title);
+        uploadFormData.append("category", category);
+        if (week) uploadFormData.append("week", week);
+        uploadFormData.append("video", videoFile);
+
+        const response = await fetch("/api/videos/upload-blob", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || `Upload failed with status ${response.status}` };
+          }
+          
+          if (errorData.needsBlobToken) {
+            throw new Error("BLOB_TOKEN_MISSING");
+          }
+          
+          throw new Error(errorData.error || "Upload failed");
         }
-        
-        if (errorData.requiresCloudStorage) {
-          alert(
-            "⚠️ Vercel Upload Limitation\n\n" +
-            "Video uploads on Vercel require cloud storage (AWS S3, Cloudinary, etc.).\n\n" +
-            "Workaround:\n" +
-            "1. Upload videos on your local server (localhost:3000)\n" +
-            "2. Push videos to GitHub\n" +
-            "3. Vercel will auto-deploy with the videos\n\n" +
-            "Or set up cloud storage for direct uploads."
-          );
-        } else {
-          alert(errorData.error || "Upload failed. Please try again.");
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || "Upload failed");
         }
-        return;
-      }
 
-      const data = await response.json();
-
-      if (data.success) {
-        setShowUpload(false);
-        e.currentTarget.reset();
-        // Show success message
-        alert("Video uploaded successfully! 🎉");
-        // Refresh videos list
-        await fetchVideos();
+        videoUrl = data.video.videoUrl;
+        videoId = data.video.id;
       } else {
-        alert(data.error || "Upload failed. Please try again.");
+        // Use local filesystem on localhost
+        const uploadFormData = new FormData();
+        uploadFormData.append("title", title);
+        uploadFormData.append("category", category);
+        if (week) uploadFormData.append("week", week);
+        uploadFormData.append("video", videoFile);
+
+        const response = await fetch("/api/videos", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || `Upload failed with status ${response.status}` };
+          }
+          alert(errorData.error || "Upload failed. Please try again.");
+          return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.error || "Upload failed. Please try again.");
+          return;
+        }
+
+        videoUrl = data.video.videoUrl;
+        videoId = data.video.id;
       }
+
+      // Metadata is already saved by the upload endpoint, so we're done!
+
+      setShowUpload(false);
+      e.currentTarget.reset();
+      alert("Video uploaded successfully! 🎉");
+      await fetchVideos();
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      if (errorMessage.includes("SSL") || errorMessage.includes("secure connection")) {
+      if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
         alert(
-          "⚠️ SSL Error\n\n" +
-          "There's an SSL connection issue. Please:\n" +
-          "1. Check your internet connection\n" +
-          "2. Try uploading again\n" +
-          "3. If on Vercel, upload videos locally and push to git"
+          "⚠️ Blob Storage Not Configured\n\n" +
+          "Vercel Blob Storage needs to be set up:\n\n" +
+          "1. Go to Vercel dashboard → Your project → Settings → Storage\n" +
+          "2. Create a Blob database (if not already created)\n" +
+          "3. Go to Settings → Environment Variables\n" +
+          "4. Add BLOB_READ_WRITE_TOKEN (auto-generated when you create Blob)\n" +
+          "5. Redeploy your project\n\n" +
+          "See BLOB-STORAGE-SETUP.md for detailed instructions.\n\n" +
+          "For now, you can upload on localhost and push to git."
+        );
+      } else if (errorMessage.includes("413") || errorMessage.includes("Payload")) {
+        alert(
+          "⚠️ File Too Large\n\n" +
+          "The file exceeds Vercel's payload limit. This should be fixed with Blob Storage.\n\n" +
+          "If this persists:\n" +
+          "1. Check BLOB_READ_WRITE_TOKEN is set in Vercel\n" +
+          "2. Try uploading on localhost instead\n" +
+          "3. Compress the video"
         );
       } else {
         alert(`Upload failed: ${errorMessage}\n\nPlease check the console for details.`);
@@ -193,57 +253,18 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Upload Form or Instructions */}
-        {showUpload && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            {isVercel ? (
-              // Instructions for Vercel
-              <div className="text-center py-4">
-                <div className="text-5xl mb-4">📤</div>
-                <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">Upload Videos</h2>
-                <p className="text-[#2C5F7C]/70 mb-6 text-lg">
-                  To add videos to your Whale Class platform:
-                </p>
-                <div className="bg-gradient-to-br from-[#B8E0F0] to-[#E8F4F8] rounded-lg p-6 text-left max-w-2xl mx-auto mb-6">
-                  <p className="font-semibold text-[#2C5F7C] mb-4 text-lg">📝 Step-by-Step Instructions:</p>
-                  <ol className="list-decimal list-inside space-y-3 text-[#2C5F7C] mb-4">
-                    <li className="pb-2">
-                      <strong>Run your local server:</strong>
-                      <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">npm run dev</code>
-                    </li>
-                    <li className="pb-2">
-                      <strong>Open admin panel locally:</strong>
-                      <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">http://localhost:3000/admin</code>
-                    </li>
-                    <li className="pb-2">
-                      <strong>Upload videos there</strong> (works perfectly on localhost)
-                    </li>
-                    <li className="pb-2">
-                      <strong>Push to GitHub:</strong>
-                      <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">git push origin main</code>
-                    </li>
-                    <li className="pb-2">
-                      <strong>Vercel auto-deploys</strong> with your videos! 🎉
-                    </li>
-                  </ol>
-                  <div className="bg-white rounded-lg p-4 mt-4">
-                    <p className="text-sm text-[#2C5F7C]/80">
-                      <span className="font-semibold">💡 Why this workflow?</span><br />
-                      Vercel's serverless functions have a read-only filesystem, so direct uploads aren't possible. This workflow ensures your videos are safely stored in git and deployed automatically.
+            {/* Upload Form */}
+            {showUpload && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">Upload Video</h2>
+                {isVercel && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>📦 Using Vercel Blob Storage</strong><br />
+                      Videos are uploaded directly to cloud storage, bypassing size limits.
                     </p>
                   </div>
-                </div>
-                <button
-                  onClick={() => setShowUpload(false)}
-                  className="bg-[#4A90E2] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors shadow-md"
-                >
-                  Got it! 👍
-                </button>
-              </div>
-            ) : (
-              // Upload form for localhost
-              <>
-                <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">Upload Video</h2>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
@@ -295,7 +316,10 @@ export default function AdminDashboard() {
                       required
                       className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
                     />
-                    <p className="text-xs text-[#2C5F7C]/70 mt-1">Maximum file size: 100MB</p>
+                    <p className="text-xs text-[#2C5F7C]/70 mt-1">
+                      Maximum file size: 100MB
+                      {isVercel && " (uploaded to cloud storage)"}
+                    </p>
                   </div>
 
                   <button
@@ -306,10 +330,8 @@ export default function AdminDashboard() {
                     {uploading ? "Uploading..." : "Upload Video"}
                   </button>
                 </form>
-              </>
+              </div>
             )}
-          </div>
-        )}
 
         {/* Videos List */}
         <div>

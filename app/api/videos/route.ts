@@ -22,13 +22,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check if we're on Vercel (read-only filesystem)
+  // On Vercel, use Blob Storage (handled by /api/videos/upload-blob)
+  // This endpoint is for localhost only
   const isVercel = process.env.VERCEL === "1";
   
   if (isVercel) {
     return NextResponse.json(
       { 
-        error: "Video uploads on Vercel require cloud storage. Please use AWS S3, Cloudinary, or Vercel Blob Storage. For now, upload videos via your local server and push them to git.",
+        error: "Please use the upload-blob endpoint on Vercel. This should be handled automatically.",
         requiresCloudStorage: true
       },
       { status: 400 }
