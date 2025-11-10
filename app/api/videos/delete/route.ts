@@ -35,42 +35,24 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete video file (if it exists)
-    if (video.videoUrl.startsWith("http")) {
-      // Blob Storage URL - delete from blob storage
-      try {
-        // Extract blob path from URL
-        // URL format: https://[account].public.blob.vercel-storage.com/videos/[filename]
-        const urlObj = new URL(video.videoUrl);
-        const pathParts = urlObj.pathname.split('/');
-        const videosIndex = pathParts.indexOf('videos');
-        if (videosIndex !== -1) {
-          const blobPath = pathParts.slice(videosIndex).join('/');
-          await del(blobPath);
-          console.log("Deleted video from blob storage:", blobPath);
-        } else {
-          console.warn("Could not extract blob path from URL:", video.videoUrl);
-        }
-      } catch (error) {
-        console.error("Error deleting video from blob storage:", error);
-        // Continue even if blob delete fails - we'll still delete metadata
-      }
-    } else if (!process.env.VERCEL) {
-      // Local file path - only delete on localhost
-      const videoPath = join(process.cwd(), "public", video.videoUrl);
-      try {
-        await unlink(videoPath);
-        console.log("Deleted local video file:", videoPath);
-      } catch (error) {
-        console.error("Error deleting local video file:", error);
-        // Continue even if file delete fails - we'll still delete metadata
-      }
-    } else {
-      // On Vercel, local file paths don't exist - skip file deletion
-      console.log("Skipping file deletion on Vercel (file doesn't exist):", video.videoUrl);
+    // Note: We delete metadata first, then try to delete the file
+    // This way the video disappears from the list even if file deletion fails
+    
+    // Delete video metadata first
+    let success: boolean;
+    try {
+      success = await deleteVideo(id);
+    } catch (metadataError) {
+      console.error("Error deleting video metadata:", metadataError);
+      const errorMessage = metadataError instanceof Error ? metadataError.message : "Unknown error";
+      return NextResponse.json(
+        { 
+          error: `Failed to delete video metadata: ${errorMessage}`,
+          details: process.env.NODE_ENV === "development" ? (metadataError instanceof Error ? metadataError.stack : undefined) : undefined
+        },
+        { status: 500 }
+      );
     }
-
-    // Delete video metadata
-    const success = await deleteVideo(id);
 
     if (!success) {
       return NextResponse.json(
@@ -79,6 +61,45 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Now try to delete the actual file (non-blocking)
+    if (video.videoUrl.startsWith("http")) {
+      // Blob Storage URL - delete from blob storage
+      // del() can accept the full URL directly, or we can extract the pathname
+      try {
+        // Try with full URL first
+        await del(video.videoUrl);
+        console.log("Deleted video from blob storage:", video.videoUrl);
+      } catch (error) {
+        // If full URL fails, try extracting pathname
+        try {
+          const urlObj = new URL(video.videoUrl);
+          const pathname = urlObj.pathname;
+          // Remove leading slash if present
+          const blobPath = pathname.startsWith('/') ? pathname.slice(1) : pathname;
+          await del(blobPath);
+          console.log("Deleted video from blob storage (using pathname):", blobPath);
+        } catch (pathError) {
+          console.error("Error deleting video from blob storage (non-critical):", error);
+          console.error("Pathname delete also failed:", pathError);
+          // Non-critical - metadata already deleted
+        }
+      }
+    } else if (!process.env.VERCEL) {
+      // Local file path - only delete on localhost
+      const videoPath = join(process.cwd(), "public", video.videoUrl);
+      try {
+        await unlink(videoPath);
+        console.log("Deleted local video file:", videoPath);
+      } catch (error) {
+        console.error("Error deleting local video file (non-critical):", error);
+        // Non-critical - metadata already deleted
+      }
+    } else {
+      // On Vercel, local file paths don't exist - skip file deletion
+      console.log("Skipping file deletion on Vercel (file doesn't exist):", video.videoUrl);
+    }
+
+    // Metadata already deleted above, return success
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Delete error:", error);
