@@ -400,7 +400,6 @@ export default function AdminDashboard() {
                       playsInline
                       className="w-full h-full object-cover"
                       preload="metadata"
-                      crossOrigin="anonymous"
                     >
                       Your browser does not support the video tag.
                     </video>
