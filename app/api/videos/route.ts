@@ -40,48 +40,95 @@ export async function POST(request: NextRequest) {
     const title = formData.get("title") as string;
     const category = formData.get("category") as "song-of-week" | "phonics";
     const week = formData.get("week") as string | null;
-    const videoFile = formData.get("video") as File;
+    const videoFile = formData.get("video") as File | null;
 
     if (!title || !category || !videoFile) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: `Missing required fields. Title: ${!!title}, Category: ${!!category}, File: ${!!videoFile}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate file
+    if (!(videoFile instanceof File)) {
+      return NextResponse.json(
+        { error: "Invalid file provided" },
+        { status: 400 }
+      );
+    }
+
+    // Check file size (100MB limit)
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if (videoFile.size > maxSize) {
+      return NextResponse.json(
+        { error: `File too large. Maximum size is 100MB. Your file is ${(videoFile.size / 1024 / 1024).toFixed(2)}MB` },
         { status: 400 }
       );
     }
 
     // Save video file
-    const bytes = await videoFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const videoId = uuidv4();
-    const videoFileName = `${videoId}-${videoFile.name}`;
-    const videosDir = join(process.cwd(), "public", "videos");
+    let videoId: string;
+    let videoFileName: string;
+    let videoUrl: string;
     
-    // Ensure videos directory exists
-    if (!existsSync(videosDir)) {
-      await mkdir(videosDir, { recursive: true });
+    try {
+      const bytes = await videoFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      videoId = uuidv4();
+      videoFileName = `${videoId}-${videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const videosDir = join(process.cwd(), "public", "videos");
+      
+      // Ensure videos directory exists
+      if (!existsSync(videosDir)) {
+        await mkdir(videosDir, { recursive: true });
+      }
+      
+      const videoPath = join(videosDir, videoFileName);
+      await writeFile(videoPath, buffer);
+      videoUrl = `/videos/${videoFileName}`;
+    } catch (fileError) {
+      console.error("File write error:", fileError);
+      return NextResponse.json(
+        { 
+          error: `Failed to save video file: ${fileError instanceof Error ? fileError.message : "Unknown error"}`,
+          details: process.env.VERCEL ? "Vercel has read-only filesystem. Upload videos locally and push to git." : "Check file permissions and disk space."
+        },
+        { status: 500 }
+      );
     }
-    
-    const videoPath = join(videosDir, videoFileName);
-    await writeFile(videoPath, buffer);
 
-    const videoUrl = `/videos/${videoFileName}`;
+    // Save video metadata
+    try {
+      const video = {
+        id: videoId,
+        title,
+        category,
+        videoUrl,
+        uploadedAt: new Date().toISOString(),
+        week: week || undefined,
+      };
 
-    const video = {
-      id: videoId,
-      title,
-      category,
-      videoUrl,
-      uploadedAt: new Date().toISOString(),
-      week: week || undefined,
-    };
-
-    addVideo(video);
-
-    return NextResponse.json({ success: true, video });
+      addVideo(video);
+      return NextResponse.json({ success: true, video });
+    } catch (metadataError) {
+      console.error("Metadata save error:", metadataError);
+      return NextResponse.json(
+        { 
+          error: `Failed to save video metadata: ${metadataError instanceof Error ? metadataError.message : "Unknown error"}` 
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Upload error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
-      { error: `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}` },
+      { 
+        error: `Upload failed: ${errorMessage}`,
+        ...(process.env.NODE_ENV === "development" && errorStack ? { stack: errorStack } : {})
+      },
       { status: 500 }
     );
   }
