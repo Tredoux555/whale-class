@@ -31,53 +31,35 @@ if (!isVercel && !fs.existsSync(videosFile)) {
 export async function getVideos(): Promise<Video[]> {
   try {
     if (isVercel) {
-      // On Vercel: Try Blob Storage first, then fallback to git filesystem
+      // On Vercel: Read from Blob Storage only (no filesystem fallback to prevent stale data)
       try {
         // Check if blob exists using head
-        try {
-          const blobInfo = await head(METADATA_BLOB_PATH);
-          if (blobInfo && blobInfo.url) {
-            // Fetch the blob content via its URL
-            const response = await fetch(blobInfo.url);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch blob: ${response.status}`);
-            }
-            const text = await response.text();
-            const videos = JSON.parse(text);
-            // Return videos even if empty array
-            return Array.isArray(videos) ? videos : [];
+        const blobInfo = await head(METADATA_BLOB_PATH);
+        if (blobInfo && blobInfo.url) {
+          // Fetch the blob content via its URL
+          const response = await fetch(blobInfo.url);
+          if (!response.ok) {
+            console.error(`Failed to fetch blob: ${response.status}`);
+            return []; // Return empty instead of falling back to old data
           }
-        } catch (headError) {
-          // Check if it's a "not found" error (blob doesn't exist yet)
-          const errorMessage = headError instanceof Error ? headError.message : String(headError);
-          if (errorMessage.includes("not found") || errorMessage.includes("404") || errorMessage.includes("BLOB_NOT_FOUND")) {
-            console.log("Blob doesn't exist yet (first video), returning empty array");
-            return [];
-          }
-          // Re-throw other errors to be caught by outer catch
-          throw headError;
-        }
-        // Blob doesn't exist yet (first video), return empty array
-        return [];
-      } catch (error) {
-        // Other error, try filesystem fallback
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.log("Blob storage read failed, trying filesystem fallback:", errorMessage);
-      }
-      
-      // Fallback: Try reading from filesystem (if videos.json is in git)
-      try {
-        if (fs.existsSync(videosFile)) {
-          const data = fs.readFileSync(videosFile, "utf-8");
-          const videos = JSON.parse(data);
+          const text = await response.text();
+          const videos = JSON.parse(text);
+          // Return videos even if empty array
           return Array.isArray(videos) ? videos : [];
         }
-      } catch (error) {
-        // File doesn't exist or can't be read
-        console.log("Filesystem fallback failed:", error instanceof Error ? error.message : error);
+        // Blob exists but no URL (shouldn't happen)
+        return [];
+      } catch (headError) {
+        // Check if it's a "not found" error (blob doesn't exist yet)
+        const errorMessage = headError instanceof Error ? headError.message : String(headError);
+        if (errorMessage.includes("not found") || errorMessage.includes("404") || errorMessage.includes("BLOB_NOT_FOUND")) {
+          console.log("Blob doesn't exist yet (first video), returning empty array");
+          return [];
+        }
+        // For other errors, log and return empty (don't fallback to stale filesystem data)
+        console.error("Error reading from blob storage:", errorMessage);
+        return [];
       }
-      
-      return [];
     } else {
       // On localhost: Read from filesystem
       const data = fs.readFileSync(videosFile, "utf-8");
