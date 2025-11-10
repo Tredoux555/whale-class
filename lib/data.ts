@@ -46,9 +46,17 @@ export async function getVideos(): Promise<Video[]> {
           // Return videos even if empty array
           return Array.isArray(videos) ? videos : [];
         }
+        // Blob doesn't exist yet (first video), return empty array
+        return [];
       } catch (error) {
-        // Blob doesn't exist or is empty, try filesystem fallback
-        console.log("Blob storage read failed, trying filesystem fallback:", error instanceof Error ? error.message : error);
+        // Check if it's a "not found" error (blob doesn't exist yet)
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("not found") || errorMessage.includes("404")) {
+          console.log("Blob doesn't exist yet (first video), returning empty array");
+          return [];
+        }
+        // Other error, try filesystem fallback
+        console.log("Blob storage read failed, trying filesystem fallback:", errorMessage);
       }
       
       // Fallback: Try reading from filesystem (if videos.json is in git)
