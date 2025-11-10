@@ -9,8 +9,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let id: string | undefined;
+  let videoUrl: string | undefined;
+  
   try {
-    const { id, title, category, videoUrl, week } = await request.json();
+    const body = await request.json();
+    id = body.id;
+    const title = body.title;
+    const category = body.category;
+    videoUrl = body.videoUrl;
+    const week = body.week;
 
     if (!id || !title || !category || !videoUrl) {
       return NextResponse.json(
@@ -33,9 +41,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, video });
   } catch (error) {
     console.error("Metadata save error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    // Log full error details for debugging
+    console.error("Full error details:", {
+      message: errorMessage,
+      stack: errorStack,
+      videoId: id,
+      videoUrl: videoUrl
+    });
+    
     return NextResponse.json(
       { 
-        error: `Failed to save metadata: ${error instanceof Error ? error.message : "Unknown error"}` 
+        error: `Failed to save metadata: ${errorMessage}`,
+        details: process.env.NODE_ENV === "development" ? errorStack : undefined
       },
       { status: 500 }
     );
