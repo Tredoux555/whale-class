@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { head, put } from "@vercel/blob";
+import { head, put, del } from "@vercel/blob";
 
 export interface Video {
   id: string;
@@ -170,12 +170,40 @@ export async function addVideo(video: Video): Promise<void> {
 }
 
 export async function deleteVideo(id: string): Promise<boolean> {
-  const videos = await getVideos();
-  const filtered = videos.filter((v) => v.id !== id);
-  if (filtered.length === videos.length) {
-    return false; // Video not found
+  // Retry logic to handle race conditions
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      console.log(`Delete video attempt ${attempt + 1} for video:`, id);
+      const videos = await getVideos();
+      const filtered = videos.filter((v) => v.id !== id);
+      
+      if (filtered.length === videos.length) {
+        console.log("Video not found in metadata:", id);
+        return false; // Video not found
+      }
+      
+      console.log(`Deleting video, ${filtered.length} videos remaining`);
+      await saveVideos(filtered);
+      console.log("Successfully deleted video:", id);
+      return true;
+    } catch (error) {
+      lastError = error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Delete video attempt ${attempt + 1} failed:`, errorMessage);
+      if (error instanceof Error && error.stack) {
+        console.error("Error stack:", error.stack);
+      }
+      if (attempt < 2) {
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+      }
+    }
   }
-  await saveVideos(filtered);
-  return true;
+  
+  // All retries failed
+  const finalError = `Failed to delete video after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
+  console.error(finalError);
+  throw new Error(finalError);
 }
 
