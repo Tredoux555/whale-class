@@ -148,9 +148,13 @@ export default function Home() {
                   <video
                     src={video.videoUrl}
                     controls
+                    playsInline
                     className="w-full h-full object-cover"
                     preload="metadata"
-                  />
+                    crossOrigin="anonymous"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
