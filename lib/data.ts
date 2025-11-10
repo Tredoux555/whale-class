@@ -34,28 +34,34 @@ export async function getVideos(): Promise<Video[]> {
       // On Vercel: Try Blob Storage first, then fallback to git filesystem
       try {
         // Check if blob exists using head
-        const blobInfo = await head(METADATA_BLOB_PATH);
-        if (blobInfo) {
-          // Fetch the blob content via its URL
-          const response = await fetch(blobInfo.url);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch blob: ${response.status}`);
+        try {
+          const blobInfo = await head(METADATA_BLOB_PATH);
+          if (blobInfo && blobInfo.url) {
+            // Fetch the blob content via its URL
+            const response = await fetch(blobInfo.url);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch blob: ${response.status}`);
+            }
+            const text = await response.text();
+            const videos = JSON.parse(text);
+            // Return videos even if empty array
+            return Array.isArray(videos) ? videos : [];
           }
-          const text = await response.text();
-          const videos = JSON.parse(text);
-          // Return videos even if empty array
-          return Array.isArray(videos) ? videos : [];
+        } catch (headError) {
+          // Check if it's a "not found" error (blob doesn't exist yet)
+          const errorMessage = headError instanceof Error ? headError.message : String(headError);
+          if (errorMessage.includes("not found") || errorMessage.includes("404") || errorMessage.includes("BLOB_NOT_FOUND")) {
+            console.log("Blob doesn't exist yet (first video), returning empty array");
+            return [];
+          }
+          // Re-throw other errors to be caught by outer catch
+          throw headError;
         }
         // Blob doesn't exist yet (first video), return empty array
         return [];
       } catch (error) {
-        // Check if it's a "not found" error (blob doesn't exist yet)
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("not found") || errorMessage.includes("404")) {
-          console.log("Blob doesn't exist yet (first video), returning empty array");
-          return [];
-        }
         // Other error, try filesystem fallback
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.log("Blob storage read failed, trying filesystem fallback:", errorMessage);
       }
       
@@ -128,7 +134,9 @@ export async function addVideo(video: Video): Promise<void> {
   let lastError;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
+      console.log(`Add video attempt ${attempt + 1} for video:`, video.id);
       const videos = await getVideos();
+      console.log(`Retrieved ${videos.length} existing videos`);
       
       // Check if video already exists (prevent duplicates)
       if (videos.some(v => v.id === video.id)) {
@@ -137,12 +145,17 @@ export async function addVideo(video: Video): Promise<void> {
       }
       
       videos.push(video);
+      console.log(`Saving ${videos.length} videos to storage...`);
       await saveVideos(videos);
       console.log("Successfully added video:", video.id);
       return; // Success
     } catch (error) {
       lastError = error;
-      console.error(`Add video attempt ${attempt + 1} failed:`, error instanceof Error ? error.message : error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Add video attempt ${attempt + 1} failed:`, errorMessage);
+      if (error instanceof Error && error.stack) {
+        console.error("Error stack:", error.stack);
+      }
       if (attempt < 2) {
         // Wait before retry
         await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
@@ -151,7 +164,9 @@ export async function addVideo(video: Video): Promise<void> {
   }
   
   // All retries failed
-  throw new Error(`Failed to add video after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`);
+  const finalError = `Failed to add video after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
+  console.error(finalError);
+  throw new Error(finalError);
 }
 
 export async function deleteVideo(id: string): Promise<boolean> {
