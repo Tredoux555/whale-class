@@ -97,6 +97,7 @@ export default function AdminDashboard() {
         const response = await fetch("/api/videos/upload-blob", {
           method: "POST",
           body: uploadFormData,
+          signal: AbortSignal.timeout(120000), // 2 minute timeout
         });
 
         if (!response.ok) {
@@ -167,7 +168,17 @@ export default function AdminDashboard() {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
+      // Handle timeout
+      if (errorMessage.includes("timeout") || errorMessage.includes("aborted")) {
+        alert(
+          "⚠️ Upload Timeout\n\n" +
+          "The upload is taking too long. This usually means:\n\n" +
+          "1. File is too large (>4.5MB going through serverless function)\n" +
+          "2. BLOB_READ_WRITE_TOKEN is not set in Vercel\n" +
+          "3. Network connection issue\n\n" +
+          "Solution: Upload on localhost and push to git, or set up Blob Storage properly."
+        );
+      } else if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
         alert(
           "⚠️ Blob Storage Not Configured\n\n" +
           "Vercel Blob Storage needs to be set up:\n\n" +
