@@ -189,71 +189,51 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Upload Form */}
+        {/* Upload Instructions */}
         {showUpload && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">Upload Video</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
-                  Title
-                </label>
-                <input
-                  name="title"
-                  type="text"
-                  required
-                  className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
-                  placeholder="Video title"
-                />
+            <div className="text-center py-4">
+              <div className="text-5xl mb-4">📤</div>
+              <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">Upload Videos</h2>
+              <p className="text-[#2C5F7C]/70 mb-6 text-lg">
+                To add videos to your Whale Class platform:
+              </p>
+              <div className="bg-gradient-to-br from-[#B8E0F0] to-[#E8F4F8] rounded-lg p-6 text-left max-w-2xl mx-auto mb-6">
+                <p className="font-semibold text-[#2C5F7C] mb-4 text-lg">📝 Step-by-Step Instructions:</p>
+                <ol className="list-decimal list-inside space-y-3 text-[#2C5F7C] mb-4">
+                  <li className="pb-2">
+                    <strong>Run your local server:</strong>
+                    <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">npm run dev</code>
+                  </li>
+                  <li className="pb-2">
+                    <strong>Open admin panel locally:</strong>
+                    <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">http://localhost:3000/admin</code>
+                  </li>
+                  <li className="pb-2">
+                    <strong>Upload videos there</strong> (works perfectly on localhost)
+                  </li>
+                  <li className="pb-2">
+                    <strong>Push to GitHub:</strong>
+                    <code className="block bg-white px-3 py-1.5 rounded mt-1 text-sm font-mono">git push origin main</code>
+                  </li>
+                  <li className="pb-2">
+                    <strong>Vercel auto-deploys</strong> with your videos! 🎉
+                  </li>
+                </ol>
+                <div className="bg-white rounded-lg p-4 mt-4">
+                  <p className="text-sm text-[#2C5F7C]/80">
+                    <span className="font-semibold">💡 Why this workflow?</span><br />
+                    Vercel's serverless functions have a read-only filesystem, so direct uploads aren't possible. This workflow ensures your videos are safely stored in git and deployed automatically.
+                  </p>
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
-                  Category
-                </label>
-                <select
-                  name="category"
-                  required
-                  className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
-                >
-                  <option value="song-of-week">Song of the Week</option>
-                  <option value="phonics">Phonics Song</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
-                  Week (optional, for Song of the Week)
-                </label>
-                <input
-                  name="week"
-                  type="text"
-                  className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
-                  placeholder="e.g., Week 1, Week 2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
-                  Video File
-                </label>
-                <input
-                  name="video"
-                  type="file"
-                  accept="video/*"
-                  required
-                  className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
-                />
-              </div>
-
               <button
-                type="submit"
-                disabled={uploading}
-                className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors disabled:opacity-50"
+                onClick={() => setShowUpload(false)}
+                className="bg-[#4A90E2] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors shadow-md"
               >
-                {uploading ? "Uploading..." : "Upload Video"}
+                Got it! 👍
               </button>
-            </form>
+            </div>
           </div>
         )}
 
