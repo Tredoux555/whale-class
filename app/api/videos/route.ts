@@ -22,6 +22,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Check if we're on Vercel (read-only filesystem)
+  const isVercel = process.env.VERCEL === "1";
+  
+  if (isVercel) {
+    return NextResponse.json(
+      { 
+        error: "Video uploads on Vercel require cloud storage. Please use AWS S3, Cloudinary, or Vercel Blob Storage. For now, upload videos via your local server and push them to git.",
+        requiresCloudStorage: true
+      },
+      { status: 400 }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const title = formData.get("title") as string;
@@ -68,7 +81,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Upload failed" },
+      { error: `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}` },
       { status: 500 }
     );
   }
