@@ -12,5 +12,29 @@
     "category": "phonics",
     "videoUrl": "/videos/d7c5383c-d7c8-4635-9e16-815200fe49b3-ABC Songs | Phonics Songs | Lowercase | ​​🌈 Super Simple ABCs.mp4",
     "uploadedAt": "2025-11-09T14:26:32.685Z"
+  },
+  {
+    "id": "bb539a23-8b68-425f-838c-0176d2d55ce1",
+    "title": "5 Little Ducks",
+    "category": "song-of-week",
+    "videoUrl": "/videos/bb539a23-8b68-425f-838c-0176d2d55ce1-Five_Little_Ducks___Kids_Songs___Super_Simple_Songs.mp4",
+    "uploadedAt": "2025-11-10T08:04:20.470Z",
+    "week": "Week 12"
+  },
+  {
+    "id": "cee6a111-20c5-4df4-ab72-762277db40da",
+    "title": "5 Little Ducks",
+    "category": "song-of-week",
+    "videoUrl": "/videos/cee6a111-20c5-4df4-ab72-762277db40da-Five_Little_Ducks___Kids_Songs___Super_Simple_Songs.mp4",
+    "uploadedAt": "2025-11-10T08:04:44.435Z",
+    "week": "Week 12"
+  },
+  {
+    "id": "156fcc0c-1036-4b26-8002-d6094593707f",
+    "title": "Things That Grow",
+    "category": "song-of-week",
+    "videoUrl": "/videos/156fcc0c-1036-4b26-8002-d6094593707f-___Grow____Learn_and_Sing_about_Growing___Mooseclumps___Kids_Educational_Learning_Videos_and_Songs.mp4",
+    "uploadedAt": "2025-11-10T08:05:15.478Z",
+    "week": "Week 12"
   }
 ]
