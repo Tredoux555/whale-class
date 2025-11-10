@@ -113,6 +113,7 @@ export async function saveVideos(videos: Video[]): Promise<void> {
           await put(METADATA_BLOB_PATH, jsonData, {
             access: 'public',
             contentType: 'application/json',
+            allowOverwrite: true,
           });
           console.log(`Successfully saved ${videos.length} videos to blob storage`);
           return; // Success
