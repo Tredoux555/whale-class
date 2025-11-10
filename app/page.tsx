@@ -34,6 +34,38 @@ export default function Home() {
     }
   };
 
+  const handleDownload = async (video: Video) => {
+    try {
+      // Try to get the filename from the URL, or use the title
+      const urlParts = video.videoUrl.split('/');
+      const urlFilename = urlParts[urlParts.length - 1];
+      const cleanTitle = video.title.replace(/[^a-z0-9\s-]/gi, '_').replace(/\s+/g, '_');
+      const filename = urlFilename.includes('.') ? urlFilename : `${cleanTitle}.mp4`;
+      
+      // Fetch the video file
+      const response = await fetch(video.videoUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback: open in new tab
+      window.open(video.videoUrl, '_blank');
+    }
+  };
+
   const filteredVideos = selectedCategory === "all" 
     ? videos 
     : videos.filter(v => v.category === selectedCategory);
@@ -142,6 +174,15 @@ export default function Home() {
                         )}
                       </div>
                     </div>
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => handleDownload(video)}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-[#4A90E2] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors text-sm"
+                    >
+                      <span>⬇️</span>
+                      <span>Download Video</span>
+                    </button>
                   </div>
                 </div>
               </div>
