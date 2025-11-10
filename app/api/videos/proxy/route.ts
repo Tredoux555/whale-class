@@ -28,12 +28,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 });
     }
 
-    // Get the range header for partial content support (video seeking)
+    const videoSize = blobInfo.size || 0;
     const range = request.headers.get('range');
     
     if (range) {
       // Handle range requests for video seeking
-      const videoSize = blobInfo.size || 0;
       const parts = range.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : videoSize - 1;
@@ -62,15 +61,44 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // For full video requests, stream the entire video
+    // For initial requests without range header (iOS Safari initial request)
+    // Return the first chunk (first 2MB) so iOS can read video metadata
+    // This prevents loading entire large videos into memory and fixes playback issues
+    const initialChunkSize = Math.min(2 * 1024 * 1024, videoSize); // 2MB or full video if smaller
+    const end = initialChunkSize - 1;
+
+    try {
+      const initialResponse = await fetch(blobInfo.url, {
+        headers: { Range: `bytes=0-${end}` },
+      });
+
+      if (initialResponse.ok) {
+        const chunkBuffer = await initialResponse.arrayBuffer();
+
+        return new NextResponse(chunkBuffer, {
+          status: 206, // Partial Content
+          headers: {
+            'Content-Type': blobInfo.contentType || 'video/mp4',
+            'Content-Length': initialChunkSize.toString(),
+            'Content-Range': `bytes 0-${end}/${videoSize}`,
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+          },
+        });
+      }
+    } catch (rangeError) {
+      console.error('Initial range request failed, falling back to full video:', rangeError);
+    }
+
+    // Fallback: If range request fails, fetch full video (for small videos or compatibility)
     const videoBuffer = await videoResponse.arrayBuffer();
     
     return new NextResponse(videoBuffer, {
       headers: {
         'Content-Type': blobInfo.contentType || 'video/mp4',
-        'Content-Length': blobInfo.size?.toString() || '',
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Content-Length': videoSize.toString(),
         'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch (error) {
