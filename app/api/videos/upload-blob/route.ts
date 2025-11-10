@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
     const week = formData.get("week") as string | null;
     const videoFile = formData.get("video") as File | null;
 
+    console.log("Upload request received:", { 
+      title, 
+      category, 
+      hasFile: !!videoFile, 
+      fileSize: videoFile?.size,
+      blobTokenSet: !!process.env.BLOB_READ_WRITE_TOKEN 
+    });
+
     if (!title || !category || !videoFile) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -48,18 +56,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if Blob Storage is configured
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error("BLOB_READ_WRITE_TOKEN not set");
+      return NextResponse.json(
+        { 
+          error: "Vercel Blob Storage not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.",
+          needsBlobToken: true
+        },
+        { status: 500 }
+      );
+    }
+
     // Upload to Vercel Blob Storage
     // put() streams the file directly to blob storage, avoiding the 4.5MB function limit
     const videoId = uuidv4();
     const cleanFilename = videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const blobPath = `videos/${videoId}-${cleanFilename}`;
 
+    console.log("Uploading to blob storage:", blobPath);
+
     // Use put() which handles the upload directly to blob storage
-    const blob = await put(blobPath, videoFile, {
-      access: 'public',
-      contentType: videoFile.type || 'video/mp4',
-      // This uploads directly to blob storage, not through function body
-    });
+    let blob;
+    try {
+      blob = await put(blobPath, videoFile, {
+        access: 'public',
+        contentType: videoFile.type || 'video/mp4',
+        // This uploads directly to blob storage, not through function body
+      });
+      console.log("Blob uploaded successfully:", blob.url);
+    } catch (blobError) {
+      console.error("Blob upload error:", blobError);
+      const blobErrorMessage = blobError instanceof Error ? blobError.message : "Unknown blob error";
+      
+      if (blobErrorMessage.includes("BLOB_STORE_NOT_FOUND") || blobErrorMessage.includes("BLOB_")) {
+        return NextResponse.json(
+          { 
+            error: "Vercel Blob Storage not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.",
+            needsBlobToken: true
+          },
+          { status: 500 }
+        );
+      }
+      
+      throw blobError;
+    }
 
     // Save video metadata
     const video = {
