@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { upload } from '@vercel/blob/client';
 
 interface Video {
   id: string;
@@ -19,15 +20,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isVercel, setIsVercel] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
     fetchVideos();
-    // Detect if we're on Vercel
+    // Detect if we're on Vercel (including custom domains)
+    // If not localhost, assume it's deployed on Vercel
     const hostname = window.location.hostname;
-    setIsVercel(hostname.includes('vercel.app') || hostname.includes('vercel.com'));
+    setIsVercel(
+      hostname !== 'localhost' && 
+      hostname !== '127.0.0.1' &&
+      !hostname.startsWith('192.168.') &&
+      !hostname.startsWith('10.')
+    );
   }, []);
 
   const checkAuth = async () => {
@@ -86,43 +94,44 @@ export default function AdminDashboard() {
       let videoId: string;
 
       if (isVercel) {
-        // Use Vercel Blob Storage - upload via server endpoint
-        // The server-side put() handles streaming, avoiding the 4.5MB limit
-        const uploadFormData = new FormData();
-        uploadFormData.append("title", title);
-        uploadFormData.append("category", category);
-        if (week) uploadFormData.append("week", week);
-        uploadFormData.append("video", videoFile);
+        // Use client-side blob upload - bypasses serverless function limit
+        videoId = crypto.randomUUID();
+        const cleanFilename = videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const blobPath = `videos/${videoId}-${cleanFilename}`;
 
-        const response = await fetch("/api/videos/upload-blob", {
-          method: "POST",
-          body: uploadFormData,
-          signal: AbortSignal.timeout(120000), // 2 minute timeout
+        console.log("Starting client-side blob upload:", blobPath);
+
+        // Upload directly from browser to Blob Storage
+        const blob = await upload(blobPath, videoFile, {
+          access: 'public',
+          contentType: videoFile.type || 'video/mp4',
+          handleUploadUrl: '/api/videos/upload-handler',
+          onUploadProgress: (progressEvent) => {
+            const percentage = Math.round(progressEvent.percentage || 0);
+            setUploadProgress(percentage);
+            console.log(`Upload progress: ${percentage}%`);
+          },
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { error: errorText || `Upload failed with status ${response.status}` };
-          }
-          
-          if (errorData.needsBlobToken) {
-            throw new Error("BLOB_TOKEN_MISSING");
-          }
-          
-          throw new Error(errorData.error || "Upload failed");
-        }
+        console.log("Blob uploaded successfully:", blob.url);
+        videoUrl = blob.url;
 
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || "Upload failed");
-        }
+        // Save video metadata
+        const metadataResponse = await fetch("/api/videos/save-metadata", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: videoId,
+            title,
+            category,
+            videoUrl: blob.url,
+            week: week || undefined,
+          }),
+        });
 
-        videoUrl = data.video.videoUrl;
-        videoId = data.video.id;
+        if (!metadataResponse.ok) {
+          throw new Error("Failed to save video metadata");
+        }
       } else {
         // Use local filesystem on localhost
         const uploadFormData = new FormData();
@@ -158,25 +167,22 @@ export default function AdminDashboard() {
         videoId = data.video.id;
       }
 
-      // Metadata is already saved by the upload endpoint, so we're done!
-
+      // Metadata is already saved for Vercel, or saved here for localhost
       setShowUpload(false);
       form.reset();
+      setUploadProgress(0);
       alert("Video uploaded successfully! 🎉");
       await fetchVideos();
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      setUploadProgress(0);
       
       // Handle timeout
       if (errorMessage.includes("timeout") || errorMessage.includes("aborted")) {
         alert(
           "⚠️ Upload Timeout\n\n" +
-          "The upload is taking too long. This usually means:\n\n" +
-          "1. File is too large (>4.5MB going through serverless function)\n" +
-          "2. BLOB_READ_WRITE_TOKEN is not set in Vercel\n" +
-          "3. Network connection issue\n\n" +
-          "Solution: Upload on localhost and push to git, or set up Blob Storage properly."
+          "The upload is taking too long. Please try again with a smaller file or check your connection."
         );
       } else if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
         alert(
@@ -341,8 +347,24 @@ export default function AdminDashboard() {
                     disabled={uploading}
                     className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors disabled:opacity-50"
                   >
-                    {uploading ? "Uploading..." : "Upload Video"}
+                    {uploading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span>Uploading{uploadProgress > 0 ? ` ${uploadProgress}%` : '...'}</span>
+                      </span>
+                    ) : (
+                      "Upload Video"
+                    )}
                   </button>
+                  {uploading && uploadProgress > 0 && (
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-[#4A90E2] h-2.5 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
                 </form>
               </div>
             )}
