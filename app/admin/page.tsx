@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { upload } from '@vercel/blob/client';
+import { getProxyVideoUrl } from "@/lib/video-utils";
 
 interface Video {
   id: string;
@@ -395,7 +396,7 @@ export default function AdminDashboard() {
                 >
                   <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C]">
                     <video
-                      src={video.videoUrl}
+                      src={getProxyVideoUrl(video.videoUrl)}
                       controls
                       playsInline
                       className="w-full h-full object-cover"

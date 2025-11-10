@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getProxyVideoUrl } from "@/lib/video-utils";
 
 interface Video {
   id: string;
@@ -42,14 +43,17 @@ export default function Home() {
       const cleanTitle = video.title.replace(/[^a-z0-9\s-]/gi, '_').replace(/\s+/g, '_');
       const filename = urlFilename.includes('.') ? urlFilename : `${cleanTitle}.mp4`;
       
+      // Use proxy URL for downloads (works better in China)
+      const downloadUrl = getProxyVideoUrl(video.videoUrl);
+      
       // Create download link directly (no fetch needed - avoids SSL issues)
       const link = document.createElement('a');
-      link.href = video.videoUrl;
+      link.href = downloadUrl;
       link.download = filename;
       link.target = '_blank'; // Open in new tab as fallback
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       setTimeout(() => {
         document.body.removeChild(link);
@@ -57,7 +61,7 @@ export default function Home() {
     } catch (error) {
       console.error('Download error:', error);
       // Fallback: open in new tab
-      window.open(video.videoUrl, '_blank');
+      window.open(getProxyVideoUrl(video.videoUrl), '_blank');
     }
   };
 
@@ -146,7 +150,7 @@ export default function Home() {
               >
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
                   <video
-                    src={video.videoUrl}
+                    src={getProxyVideoUrl(video.videoUrl)}
                     controls
                     playsInline
                     className="w-full h-full object-cover"
