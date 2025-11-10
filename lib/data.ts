@@ -94,37 +94,74 @@ export async function getVideos(): Promise<Video[]> {
 export async function saveVideos(videos: Video[]): Promise<void> {
   try {
     if (isVercel) {
+      // Check if blob storage is configured
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        const errorMsg = "BLOB_READ_WRITE_TOKEN is not set. Please configure Vercel Blob Storage in your Vercel project settings.";
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+
       // On Vercel: Save to Blob Storage with retry
       const jsonData = JSON.stringify(videos, null, 2);
+      console.log(`Attempting to save ${videos.length} videos to blob storage at path: ${METADATA_BLOB_PATH}`);
       
       // Retry logic for blob storage
-      let lastError;
+      let lastError: any;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
+          console.log(`Blob save attempt ${attempt + 1}/3`);
           await put(METADATA_BLOB_PATH, jsonData, {
             access: 'public',
             contentType: 'application/json',
           });
-          console.log("Successfully saved videos to blob storage");
+          console.log(`Successfully saved ${videos.length} videos to blob storage`);
           return; // Success
         } catch (error) {
           lastError = error;
-          console.error(`Blob save attempt ${attempt + 1} failed:`, error instanceof Error ? error.message : error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          console.error(`Blob save attempt ${attempt + 1}/3 failed:`, errorMessage);
+          if (errorStack) {
+            console.error("Error stack:", errorStack);
+          }
+          
+          // Check for specific blob storage errors
+          if (errorMessage.includes("BLOB_STORE_NOT_FOUND") || 
+              errorMessage.includes("BLOB_STORE") || 
+              errorMessage.includes("BLOB_") ||
+              errorMessage.includes("Store not found")) {
+            const specificError = "Vercel Blob Storage is not configured or the store doesn't exist. Please create a Blob database in Vercel project settings and ensure BLOB_READ_WRITE_TOKEN is set.";
+            console.error(specificError);
+            throw new Error(specificError);
+          }
+          
           if (attempt < 2) {
             // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+            const waitTime = 1000 * (attempt + 1);
+            console.log(`Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
           }
         }
       }
       
       // All retries failed
-      throw new Error(`Failed to save to blob storage after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`);
+      const finalError = lastError instanceof Error ? lastError.message : String(lastError);
+      const errorDetails = `Failed to save to blob storage after 3 attempts. Last error: ${finalError}`;
+      console.error(errorDetails);
+      if (lastError instanceof Error && lastError.stack) {
+        console.error("Final error stack:", lastError.stack);
+      }
+      throw new Error(errorDetails);
     } else {
       // On localhost: Save to filesystem
       fs.writeFileSync(videosFile, JSON.stringify(videos, null, 2));
+      console.log(`Successfully saved ${videos.length} videos to filesystem`);
     }
   } catch (error) {
     console.error("Error saving videos:", error);
+    if (error instanceof Error && error.stack) {
+      console.error("Full error stack:", error.stack);
+    }
     throw error;
   }
 }
@@ -171,11 +208,13 @@ export async function addVideo(video: Video): Promise<void> {
 
 export async function deleteVideo(id: string): Promise<boolean> {
   // Retry logic to handle race conditions
-  let lastError;
+  let lastError: any;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      console.log(`Delete video attempt ${attempt + 1} for video:`, id);
+      console.log(`Delete video attempt ${attempt + 1}/3 for video ID:`, id);
       const videos = await getVideos();
+      console.log(`Retrieved ${videos.length} videos from storage`);
+      
       const filtered = videos.filter((v) => v.id !== id);
       
       if (filtered.length === videos.length) {
@@ -183,27 +222,43 @@ export async function deleteVideo(id: string): Promise<boolean> {
         return false; // Video not found
       }
       
-      console.log(`Deleting video, ${filtered.length} videos remaining`);
+      console.log(`Deleting video, ${filtered.length} videos will remain (removed 1)`);
       await saveVideos(filtered);
-      console.log("Successfully deleted video:", id);
+      console.log(`Successfully deleted video: ${id}`);
       return true;
     } catch (error) {
       lastError = error;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Delete video attempt ${attempt + 1} failed:`, errorMessage);
-      if (error instanceof Error && error.stack) {
-        console.error("Error stack:", error.stack);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error(`Delete video attempt ${attempt + 1}/3 failed:`, errorMessage);
+      if (errorStack) {
+        console.error("Error stack:", errorStack);
       }
+      
+      // If it's a blob storage configuration error, don't retry
+      if (errorMessage.includes("BLOB_STORE") || 
+          errorMessage.includes("BLOB_READ_WRITE_TOKEN") ||
+          errorMessage.includes("not configured")) {
+        console.error("Blob storage configuration error detected, not retrying");
+        throw error; // Re-throw immediately
+      }
+      
       if (attempt < 2) {
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        const waitTime = 500 * (attempt + 1);
+        console.log(`Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
   }
   
   // All retries failed
-  const finalError = `Failed to delete video after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
-  console.error(finalError);
-  throw new Error(finalError);
+  const finalError = lastError instanceof Error ? lastError.message : String(lastError);
+  const errorDetails = `Failed to delete video after 3 attempts. Last error: ${finalError}`;
+  console.error(errorDetails);
+  if (lastError instanceof Error && lastError.stack) {
+    console.error("Final error stack:", lastError.stack);
+  }
+  throw new Error(errorDetails);
 }
 
