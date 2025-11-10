@@ -66,7 +66,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     setUploading(true);
 
-    const formData = new FormData(e.currentTarget);
+    // Store form reference for reset
+    const form = e.currentTarget;
+
+    const formData = new FormData(form);
     const title = formData.get("title") as string;
     const category = formData.get("category") as "song-of-week" | "phonics";
     const week = formData.get("week") as string | null;
@@ -157,7 +160,7 @@ export default function AdminDashboard() {
       // Metadata is already saved by the upload endpoint, so we're done!
 
       setShowUpload(false);
-      e.currentTarget.reset();
+      form.reset();
       alert("Video uploaded successfully! 🎉");
       await fetchVideos();
     } catch (error) {

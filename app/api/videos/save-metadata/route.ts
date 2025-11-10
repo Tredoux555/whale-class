@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       week: week || undefined,
     };
 
-    addVideo(video);
+    await addVideo(video);
 
     return NextResponse.json({ success: true, video });
   } catch (error) {

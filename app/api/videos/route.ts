@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const videos = getVideos();
+  const videos = await getVideos();
   return NextResponse.json({ videos });
 }
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         week: week || undefined,
       };
 
-      addVideo(video);
+      await addVideo(video);
       return NextResponse.json({ success: true, video });
     } catch (metadataError) {
       console.error("Metadata save error:", metadataError);
