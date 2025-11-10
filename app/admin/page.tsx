@@ -80,7 +80,19 @@ export default function AdminDashboard() {
         alert("Video uploaded successfully! 🎉");
       } else {
         const errorMessage = data.error || "Upload failed. Please try again.";
-        alert(errorMessage);
+        if (data.requiresCloudStorage) {
+          alert(
+            "⚠️ Vercel Upload Limitation\n\n" +
+            "Video uploads on Vercel require cloud storage (AWS S3, Cloudinary, etc.).\n\n" +
+            "Workaround:\n" +
+            "1. Upload videos on your local server (localhost:3000)\n" +
+            "2. Push videos to GitHub\n" +
+            "3. Vercel will auto-deploy with the videos\n\n" +
+            "Or set up cloud storage for direct uploads."
+          );
+        } else {
+          alert(errorMessage);
+        }
       }
     } catch (error) {
       console.error("Upload error:", error);
