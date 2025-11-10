@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { get, put } from "@vercel/blob";
+import { head, put } from "@vercel/blob";
 
 export interface Video {
   id: string;
@@ -33,12 +33,17 @@ export async function getVideos(): Promise<Video[]> {
     if (isVercel) {
       // On Vercel: Try Blob Storage first, then fallback to git filesystem
       try {
-        const blob = await get(METADATA_BLOB_PATH);
-        const text = await blob.text();
-        const videos = JSON.parse(text);
-        // If blob has videos, return them
-        if (videos && videos.length > 0) {
-          return videos;
+        // Check if blob exists using head
+        const blobInfo = await head(METADATA_BLOB_PATH);
+        if (blobInfo) {
+          // Fetch the blob content via its URL
+          const response = await fetch(blobInfo.url);
+          const text = await response.text();
+          const videos = JSON.parse(text);
+          // If blob has videos, return them
+          if (videos && videos.length > 0) {
+            return videos;
+          }
         }
       } catch (error) {
         // Blob doesn't exist or is empty, try filesystem fallback
