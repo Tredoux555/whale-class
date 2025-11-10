@@ -3,7 +3,7 @@ import { getAdminSession } from "@/lib/auth";
 import { deleteVideo } from "@/lib/data";
 import { unlink } from "fs/promises";
 import { join } from "path";
-import { createSupabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
+import { del } from "@vercel/blob";
 
 export async function DELETE(request: NextRequest) {
   const session = await getAdminSession();
@@ -63,32 +63,26 @@ export async function DELETE(request: NextRequest) {
 
     // Now try to delete the actual file (non-blocking)
     if (video.videoUrl.startsWith("http")) {
-      // Supabase Storage URL - delete from Supabase Storage
+      // Blob Storage URL - delete from blob storage
+      // del() can accept the full URL directly, or we can extract the pathname
       try {
-        const supabase = createSupabaseAdmin();
-        
-        // Extract file path from Supabase URL
-        // Supabase URLs look like: https://xxx.supabase.co/storage/v1/object/public/videos/path/to/file.mp4
-        const urlObj = new URL(video.videoUrl);
-        const pathMatch = urlObj.pathname.match(/\/storage\/v1\/object\/public\/videos\/(.+)/);
-        
-        if (pathMatch && pathMatch[1]) {
-          const filePath = decodeURIComponent(pathMatch[1]);
-          const { error } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .remove([filePath]);
-          
-          if (error) {
-            console.error("Error deleting video from Supabase Storage (non-critical):", error);
-          } else {
-            console.log("Deleted video from Supabase Storage:", filePath);
-          }
-        } else {
-          console.error("Could not extract file path from Supabase URL:", video.videoUrl);
-        }
+        // Try with full URL first
+        await del(video.videoUrl);
+        console.log("Deleted video from blob storage:", video.videoUrl);
       } catch (error) {
-        console.error("Error deleting video from Supabase Storage (non-critical):", error);
-        // Non-critical - metadata already deleted
+        // If full URL fails, try extracting pathname
+        try {
+          const urlObj = new URL(video.videoUrl);
+          const pathname = urlObj.pathname;
+          // Remove leading slash if present
+          const blobPath = pathname.startsWith('/') ? pathname.slice(1) : pathname;
+          await del(blobPath);
+          console.log("Deleted video from blob storage (using pathname):", blobPath);
+        } catch (pathError) {
+          console.error("Error deleting video from blob storage (non-critical):", error);
+          console.error("Pathname delete also failed:", pathError);
+          // Non-critical - metadata already deleted
+        }
       }
     } else if (!process.env.VERCEL) {
       // Local file path - only delete on localhost

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { createSupabaseAdmin, METADATA_FILE, STORAGE_BUCKET } from "./supabase";
+import { head, put } from "@vercel/blob";
 
 export interface Video {
   id: string;
@@ -15,6 +15,7 @@ export interface Video {
 const dataDir = path.join(process.cwd(), "data");
 const videosFile = path.join(dataDir, "videos.json");
 const isVercel = process.env.VERCEL === "1";
+const METADATA_BLOB_PATH = "data/videos.json";
 
 // Ensure data directory exists (for localhost)
 if (!isVercel && !fs.existsSync(dataDir)) {
@@ -26,41 +27,37 @@ if (!isVercel && !fs.existsSync(videosFile)) {
   fs.writeFileSync(videosFile, JSON.stringify([], null, 2));
 }
 
-// Get videos from local filesystem (localhost) or Supabase Storage (Vercel)
+// Get videos from local filesystem (localhost) or Vercel Blob Storage (Vercel)
 export async function getVideos(): Promise<Video[]> {
   try {
     if (isVercel) {
-      // On Vercel: Read from Supabase Storage
+      // On Vercel: Read from Blob Storage only (no filesystem fallback to prevent stale data)
       try {
-        const supabase = createSupabaseAdmin();
-        
-        // Download metadata file from Supabase Storage
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .download(METADATA_FILE);
-
-        if (error) {
-          // Check if it's a "not found" error (file doesn't exist yet)
-          const errorMessage = error.message || String(error);
-          if (errorMessage.includes("not found") || errorMessage.includes("404")) {
-            console.log("Metadata file doesn't exist yet (first video), returning empty array");
-            return [];
+        // Check if blob exists using head
+        const blobInfo = await head(METADATA_BLOB_PATH);
+        if (blobInfo && blobInfo.url) {
+          // Fetch the blob content via its URL
+          const response = await fetch(blobInfo.url);
+          if (!response.ok) {
+            console.error(`Failed to fetch blob: ${response.status}`);
+            return []; // Return empty instead of falling back to old data
           }
-          console.error("Error reading from Supabase Storage:", errorMessage);
+          const text = await response.text();
+          const videos = JSON.parse(text);
+          // Return videos even if empty array
+          return Array.isArray(videos) ? videos : [];
+        }
+        // Blob exists but no URL (shouldn't happen)
+        return [];
+      } catch (headError) {
+        // Check if it's a "not found" error (blob doesn't exist yet)
+        const errorMessage = headError instanceof Error ? headError.message : String(headError);
+        if (errorMessage.includes("not found") || errorMessage.includes("404") || errorMessage.includes("BLOB_NOT_FOUND")) {
+          console.log("Blob doesn't exist yet (first video), returning empty array");
           return [];
         }
-
-        if (!data) {
-          return [];
-        }
-
-        // Convert blob to text
-        const text = await data.text();
-        const videos = JSON.parse(text);
-        return Array.isArray(videos) ? videos : [];
-      } catch (storageError) {
-        const errorMessage = storageError instanceof Error ? storageError.message : String(storageError);
-        console.error("Error reading from Supabase Storage:", errorMessage);
+        // For other errors, log and return empty (don't fallback to stale filesystem data)
+        console.error("Error reading from blob storage:", errorMessage);
         return [];
       }
     } else {
@@ -75,56 +72,48 @@ export async function getVideos(): Promise<Video[]> {
   }
 }
 
-// Save videos to local filesystem (localhost) or Supabase Storage (Vercel)
+// Save videos to local filesystem (localhost) or Vercel Blob Storage (Vercel)
 export async function saveVideos(videos: Video[]): Promise<void> {
   try {
     if (isVercel) {
-      // Check if Supabase is configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const errorMsg = "Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your environment variables.";
+      // Check if blob storage is configured
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        const errorMsg = "BLOB_READ_WRITE_TOKEN is not set. Please configure Vercel Blob Storage in your Vercel project settings.";
         console.error(errorMsg);
         throw new Error(errorMsg);
       }
 
-      // On Vercel: Save to Supabase Storage with retry
+      // On Vercel: Save to Blob Storage with retry
       const jsonData = JSON.stringify(videos, null, 2);
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      console.log(`Attempting to save ${videos.length} videos to Supabase Storage at path: ${METADATA_FILE}`);
+      console.log(`Attempting to save ${videos.length} videos to blob storage at path: ${METADATA_BLOB_PATH}`);
       
-      const supabase = createSupabaseAdmin();
-      
-      // Retry logic for Supabase Storage
+      // Retry logic for blob storage
       let lastError: any;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          console.log(`Supabase save attempt ${attempt + 1}/3`);
-          
-          // Upload to Supabase Storage (overwrite if exists)
-          const { error } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(METADATA_FILE, blob, {
-              contentType: 'application/json',
-              upsert: true, // Overwrite if exists
-            });
-
-          if (error) {
-            throw error;
-          }
-
-          console.log(`Successfully saved ${videos.length} videos to Supabase Storage`);
+          console.log(`Blob save attempt ${attempt + 1}/3`);
+          await put(METADATA_BLOB_PATH, jsonData, {
+            access: 'public',
+            contentType: 'application/json',
+            allowOverwrite: true,
+          });
+          console.log(`Successfully saved ${videos.length} videos to blob storage`);
           return; // Success
         } catch (error) {
           lastError = error;
           const errorMessage = error instanceof Error ? error.message : String(error);
           const errorStack = error instanceof Error ? error.stack : undefined;
-          console.error(`Supabase save attempt ${attempt + 1}/3 failed:`, errorMessage);
+          console.error(`Blob save attempt ${attempt + 1}/3 failed:`, errorMessage);
           if (errorStack) {
             console.error("Error stack:", errorStack);
           }
           
-          // Check for specific Supabase errors
-          if (errorMessage.includes("Bucket not found") || errorMessage.includes("storage")) {
-            const specificError = "Supabase Storage bucket is not configured. Please create a 'videos' bucket in your Supabase project.";
+          // Check for specific blob storage errors
+          if (errorMessage.includes("BLOB_STORE_NOT_FOUND") || 
+              errorMessage.includes("BLOB_STORE") || 
+              errorMessage.includes("BLOB_") ||
+              errorMessage.includes("Store not found")) {
+            const specificError = "Vercel Blob Storage is not configured or the store doesn't exist. Please create a Blob database in Vercel project settings and ensure BLOB_READ_WRITE_TOKEN is set.";
             console.error(specificError);
             throw new Error(specificError);
           }
@@ -140,7 +129,7 @@ export async function saveVideos(videos: Video[]): Promise<void> {
       
       // All retries failed
       const finalError = lastError instanceof Error ? lastError.message : String(lastError);
-      const errorDetails = `Failed to save to Supabase Storage after 3 attempts. Last error: ${finalError}`;
+      const errorDetails = `Failed to save to blob storage after 3 attempts. Last error: ${finalError}`;
       console.error(errorDetails);
       if (lastError instanceof Error && lastError.stack) {
         console.error("Final error stack:", lastError.stack);
@@ -229,12 +218,11 @@ export async function deleteVideo(id: string): Promise<boolean> {
         console.error("Error stack:", errorStack);
       }
       
-      // If it's a Supabase configuration error, don't retry
-      if (errorMessage.includes("Supabase") || 
-          errorMessage.includes("SUPABASE") ||
-          errorMessage.includes("not configured") ||
-          errorMessage.includes("Bucket not found")) {
-        console.error("Supabase configuration error detected, not retrying");
+      // If it's a blob storage configuration error, don't retry
+      if (errorMessage.includes("BLOB_STORE") || 
+          errorMessage.includes("BLOB_READ_WRITE_TOKEN") ||
+          errorMessage.includes("not configured")) {
+        console.error("Blob storage configuration error detected, not retrying");
         throw error; // Re-throw immediately
       }
       
