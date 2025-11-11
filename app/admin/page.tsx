@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { upload } from '@vercel/blob/client';
+import { createSupabaseClient, STORAGE_BUCKET } from '@/lib/supabase';
 import { getProxyVideoUrl } from "@/lib/video-utils";
 
 interface Video {
@@ -95,27 +95,44 @@ export default function AdminDashboard() {
       let videoId: string;
 
       if (isVercel) {
-        // Use client-side blob upload - bypasses serverless function limit
+        // Use Supabase Storage upload
         videoId = crypto.randomUUID();
         const cleanFilename = videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const blobPath = `videos/${videoId}-${cleanFilename}`;
+        const filePath = `videos/${videoId}-${cleanFilename}`;
 
-        console.log("Starting client-side blob upload:", blobPath);
+        console.log("Starting Supabase Storage upload:", filePath);
 
-        // Upload directly from browser to Blob Storage
-        const blob = await upload(blobPath, videoFile, {
-          access: 'public',
-          contentType: videoFile.type || 'video/mp4',
-          handleUploadUrl: '/api/videos/upload-handler',
-          onUploadProgress: (progressEvent) => {
-            const percentage = Math.round(progressEvent.percentage || 0);
-            setUploadProgress(percentage);
-            console.log(`Upload progress: ${percentage}%`);
-          },
-        });
+        const supabase = createSupabaseClient();
+        
+        // Upload to Supabase Storage with progress tracking
+        // Note: Supabase doesn't have built-in progress, so we'll simulate it
+        setUploadProgress(10);
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(filePath, videoFile, {
+            contentType: videoFile.type || 'video/mp4',
+            upsert: false,
+          });
 
-        console.log("Blob uploaded successfully:", blob.url);
-        videoUrl = blob.url;
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        setUploadProgress(90);
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(filePath);
+
+        if (!urlData?.publicUrl) {
+          throw new Error("Failed to get public URL for uploaded video");
+        }
+
+        videoUrl = urlData.publicUrl;
+        console.log("Video uploaded successfully:", videoUrl);
+        setUploadProgress(100);
 
         // Save video metadata
         const metadataResponse = await fetch("/api/videos/save-metadata", {
@@ -125,7 +142,7 @@ export default function AdminDashboard() {
             id: videoId,
             title,
             category,
-            videoUrl: blob.url,
+            videoUrl: videoUrl,
             week: week || undefined,
           }),
         });
@@ -185,25 +202,27 @@ export default function AdminDashboard() {
           "⚠️ Upload Timeout\n\n" +
           "The upload is taking too long. Please try again with a smaller file or check your connection."
         );
-          } else if (errorMessage.includes("BLOB_TOKEN_MISSING") || errorMessage.includes("BLOB_") || errorMessage.includes("blob")) {
-            alert(
-              "⚠️ Blob Storage Not Configured\n\n" +
-              "Vercel Blob Storage needs to be set up:\n\n" +
-              "1. Go to Vercel dashboard → Your project → Settings → Storage\n" +
-              "2. Create a Blob database (if not already created)\n" +
-              "3. Go to Settings → Environment Variables\n" +
-              "4. Add BLOB_READ_WRITE_TOKEN (auto-generated when you create Blob)\n" +
-              "5. Redeploy your project\n\n" +
-              "See BLOB-STORAGE-SETUP.md for detailed instructions.\n\n" +
-              "For now, you can upload on localhost and push to git."
-            );
-      } else if (errorMessage.includes("413") || errorMessage.includes("Payload")) {
+      } else if (errorMessage.includes("Supabase") || errorMessage.includes("bucket") || errorMessage.includes("storage")) {
+        alert(
+          "⚠️ Supabase Storage Not Configured\n\n" +
+          "Supabase Storage needs to be set up:\n\n" +
+          "1. Go to Supabase dashboard → Your project → Storage\n" +
+          "2. Create a bucket named 'videos' (if not already created)\n" +
+          "3. Make sure the bucket is PUBLIC\n" +
+          "4. Go to Settings → API and get your keys\n" +
+          "5. Add environment variables to Vercel:\n" +
+          "   - NEXT_PUBLIC_SUPABASE_URL\n" +
+          "   - NEXT_PUBLIC_SUPABASE_ANON_KEY\n" +
+          "   - SUPABASE_SERVICE_ROLE_KEY\n" +
+          "6. Redeploy your project\n\n" +
+          "See SUPABASE-SETUP.md for detailed instructions."
+        );
+      } else if (errorMessage.includes("413") || errorMessage.includes("Payload") || errorMessage.includes("too large")) {
         alert(
           "⚠️ File Too Large\n\n" +
-          "The file exceeds Vercel's payload limit. This should be fixed with Blob Storage.\n\n" +
-          "If this persists:\n" +
-          "1. Check BLOB_READ_WRITE_TOKEN is set in Vercel\n" +
-          "2. Try uploading on localhost instead\n" +
+          "The file exceeds the size limit. Please:\n" +
+          "1. Check your Supabase bucket file size limit\n" +
+          "2. Try a smaller video file\n" +
           "3. Compress the video"
         );
       } else {
@@ -281,7 +300,7 @@ export default function AdminDashboard() {
                 {isVercel && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <p className="text-sm text-blue-800">
-                      <strong>📦 Using Vercel Blob Storage</strong><br />
+                      <strong>📦 Using Supabase Storage</strong><br />
                       Videos are uploaded directly to cloud storage, bypassing size limits.
                     </p>
                   </div>
