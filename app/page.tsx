@@ -23,6 +23,25 @@ export default function Home() {
     fetchVideos();
   }, []);
 
+  // Preload first video immediately for faster initial load
+  useEffect(() => {
+    if (videos.length > 0) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const firstVideo = document.querySelector('video[data-src]') as HTMLVideoElement;
+        if (firstVideo) {
+          const src = firstVideo.getAttribute('data-src');
+          if (src) {
+            firstVideo.src = src;
+            firstVideo.removeAttribute('data-src');
+            firstVideo.preload = 'auto';
+            firstVideo.load();
+          }
+        }
+      }, 100);
+    }
+  }, [videos]);
+
   // Lazy load videos when they become visible
   useEffect(() => {
     if (videos.length === 0) return;
@@ -34,23 +53,28 @@ export default function Home() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const video = entry.target as HTMLVideoElement;
-            const src = video.getAttribute('data-src');
-            if (src) {
-              // Set src immediately for faster loading
-              video.src = src;
-              video.removeAttribute('data-src');
-              // Load metadata immediately for faster playback start
-              video.load();
-              observer.unobserve(video);
-            }
+          const video = entry.target as HTMLVideoElement;
+          const src = video.getAttribute('data-src');
+          
+          if (entry.isIntersecting && src) {
+            // Set src immediately for faster loading
+            video.src = src;
+            video.removeAttribute('data-src');
+            // Load metadata immediately for faster playback start
+            video.load();
+            observer.unobserve(video);
+          } else if (entry.intersectionRatio > 0.1 && src) {
+            // Start loading when video is 10% visible (more aggressive)
+            video.src = src;
+            video.removeAttribute('data-src');
+            video.load();
+            observer.unobserve(video);
           }
         });
       },
       {
-        rootMargin: '300px', // Start loading 300px before video enters viewport (faster)
-        threshold: 0.01,
+        rootMargin: '500px', // Increased from 300px - start loading even earlier
+        threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better detection
       }
     );
 
@@ -192,7 +216,8 @@ export default function Home() {
                     controls
                     playsInline
                     className="w-full h-full object-cover"
-                    preload="metadata"
+                    preload="auto"
+                    muted
                   >
                     Your browser does not support the video tag.
                   </video>
