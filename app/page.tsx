@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getProxyVideoUrl } from "@/lib/video-utils";
-import MaintenanceScreen from "@/components/MaintenanceScreen";
 
 interface Video {
   id: string;
@@ -16,22 +15,17 @@ interface Video {
 }
 
 export default function Home() {
-  // Set to true to show maintenance screen, false to show normal site
-  const MAINTENANCE_MODE = true;
-  
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics">("all");
 
   useEffect(() => {
-    if (!MAINTENANCE_MODE) {
-      fetchVideos();
-    }
+    fetchVideos();
   }, []);
 
   // Lazy load videos when they become visible
   useEffect(() => {
-    if (MAINTENANCE_MODE || videos.length === 0) return;
+    if (videos.length === 0) return;
 
     const videoElements = document.querySelectorAll('video[data-src]');
     
@@ -62,12 +56,7 @@ export default function Home() {
     return () => {
       observer.disconnect();
     };
-  }, [videos, MAINTENANCE_MODE]);
-
-  // Show maintenance screen if enabled
-  if (MAINTENANCE_MODE) {
-    return <MaintenanceScreen />;
-  }
+  }, [videos]);
 
   const fetchVideos = async () => {
     try {
