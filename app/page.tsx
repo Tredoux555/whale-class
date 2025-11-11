@@ -38,15 +38,18 @@ export default function Home() {
             const video = entry.target as HTMLVideoElement;
             const src = video.getAttribute('data-src');
             if (src) {
+              // Set src immediately for faster loading
               video.src = src;
               video.removeAttribute('data-src');
+              // Load metadata immediately for faster playback start
+              video.load();
               observer.unobserve(video);
             }
           }
         });
       },
       {
-        rootMargin: '100px', // Start loading 100px before video enters viewport
+        rootMargin: '300px', // Start loading 300px before video enters viewport (faster)
         threshold: 0.01,
       }
     );
@@ -189,7 +192,7 @@ export default function Home() {
                     controls
                     playsInline
                     className="w-full h-full object-cover"
-                    preload="none"
+                    preload="metadata"
                   >
                     Your browser does not support the video tag.
                   </video>
