@@ -29,6 +29,41 @@ export default function Home() {
     }
   }, []);
 
+  // Lazy load videos when they become visible
+  useEffect(() => {
+    if (MAINTENANCE_MODE || videos.length === 0) return;
+
+    const videoElements = document.querySelectorAll('video[data-src]');
+    
+    if (videoElements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const video = entry.target as HTMLVideoElement;
+            const src = video.getAttribute('data-src');
+            if (src) {
+              video.src = src;
+              video.removeAttribute('data-src');
+              observer.unobserve(video);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '100px', // Start loading 100px before video enters viewport
+        threshold: 0.01,
+      }
+    );
+
+    videoElements.forEach((video) => observer.observe(video));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [videos, MAINTENANCE_MODE]);
+
   // Show maintenance screen if enabled
   if (MAINTENANCE_MODE) {
     return <MaintenanceScreen />;
@@ -161,11 +196,12 @@ export default function Home() {
               >
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
                   <video
-                    src={getProxyVideoUrl(video.videoUrl)}
+                    data-src={getProxyVideoUrl(video.videoUrl)}
                     controls
                     playsInline
                     className="w-full h-full object-cover"
-                    preload="metadata"
+                    preload="none"
+                    loading="lazy"
                   >
                     Your browser does not support the video tag.
                   </video>
