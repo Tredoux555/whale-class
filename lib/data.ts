@@ -157,9 +157,17 @@ export async function saveVideos(videos: Video[]): Promise<void> {
 export async function addVideo(video: Video): Promise<void> {
   // Retry logic to handle race conditions
   let lastError;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      console.log(`Add video attempt ${attempt + 1} for video:`, video.id);
+      console.log(`Add video attempt ${attempt + 1}/5 for video:`, video.id);
+      
+      // Wait a bit longer between retries to avoid race conditions
+      if (attempt > 0) {
+        const waitTime = 1000 * attempt; // 1s, 2s, 3s, 4s
+        console.log(`Waiting ${waitTime}ms before retry to avoid race conditions...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+      
       const videos = await getVideos();
       console.log(`Retrieved ${videos.length} existing videos`);
       
@@ -170,26 +178,32 @@ export async function addVideo(video: Video): Promise<void> {
       }
       
       videos.push(video);
-      console.log(`Saving ${videos.length} videos to storage...`);
+      console.log(`Saving ${videos.length} videos to storage (including new video: ${video.id})...`);
       await saveVideos(videos);
-      console.log("Successfully added video:", video.id);
+      
+      // Verify the save was successful by reading back
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for eventual consistency
+      const verifyVideos = await getVideos();
+      const videoExists = verifyVideos.some(v => v.id === video.id);
+      
+      if (!videoExists) {
+        throw new Error("Video was not found after save - possible race condition");
+      }
+      
+      console.log(`Successfully added video: ${video.id} (verified ${verifyVideos.length} total videos)`);
       return; // Success
     } catch (error) {
       lastError = error;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Add video attempt ${attempt + 1} failed:`, errorMessage);
+      console.error(`Add video attempt ${attempt + 1}/5 failed:`, errorMessage);
       if (error instanceof Error && error.stack) {
         console.error("Error stack:", error.stack);
-      }
-      if (attempt < 2) {
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
       }
     }
   }
   
   // All retries failed
-  const finalError = `Failed to add video after 3 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
+  const finalError = `Failed to add video after 5 attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
   console.error(finalError);
   throw new Error(finalError);
 }
