@@ -17,7 +17,7 @@ interface Video {
 
 export default function Home() {
   // Set to true to show maintenance screen, false to show normal site
-  const MAINTENANCE_MODE = false;
+  const MAINTENANCE_MODE = true;
   
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
