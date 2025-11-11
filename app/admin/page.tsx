@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createSupabaseClient, STORAGE_BUCKET } from '@/lib/supabase';
 import { getProxyVideoUrl } from "@/lib/video-utils";
 
 interface Video {
@@ -94,41 +95,83 @@ export default function AdminDashboard() {
       let videoId: string;
 
       if (isVercel) {
-        // Use server-side Supabase Storage upload (bypasses RLS)
-        console.log("Starting server-side Supabase Storage upload");
+        // Use client-side Supabase Storage upload with server-generated path
+        // This bypasses Vercel's 4.5MB payload limit
+        console.log("Starting client-side Supabase Storage upload");
 
-        // Upload via API route (uses service role key to bypass RLS)
-        setUploadProgress(10);
-        
-        const uploadFormData = new FormData();
-        uploadFormData.append("video", videoFile);
-
-        const uploadResponse = await fetch("/api/videos/upload", {
+        // First, get upload path from server (small request, no payload limit)
+        setUploadProgress(5);
+        const pathResponse = await fetch("/api/videos/upload-url", {
           method: "POST",
-          body: uploadFormData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: videoFile.name,
+            contentType: videoFile.type || 'video/mp4',
+          }),
         });
 
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { error: errorText || `Upload failed with status ${uploadResponse.status}` };
+        if (!pathResponse.ok) {
+          const errorText = await pathResponse.text();
+          throw new Error(errorText || "Failed to get upload path");
+        }
+
+        const pathData = await pathResponse.json();
+        if (!pathData.success || !pathData.path || !pathData.videoId) {
+          throw new Error("Failed to get upload path from server");
+        }
+
+        videoId = pathData.videoId;
+        const filePath = pathData.path;
+        setUploadProgress(10);
+
+        // Now upload directly from client to Supabase using service role key
+        // We'll use a server endpoint that proxies the upload but streams it
+        // Actually, better: use client upload with anon key but configure RLS policies
+        // OR: Create a streaming upload endpoint
+        
+        // For now, let's try using the anon key with proper error handling
+        // The user will need to configure storage policies in Supabase
+        const supabase = createSupabaseClient();
+        
+        setUploadProgress(20);
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(filePath, videoFile, {
+            contentType: videoFile.type || 'video/mp4',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          // If RLS error, provide helpful message
+          if (uploadError.message.includes("row-level security") || uploadError.message.includes("policy")) {
+            throw new Error(
+              "Storage policy error. Please configure Supabase Storage policies:\n\n" +
+              "1. Go to Supabase Dashboard → Storage → Policies\n" +
+              "2. Create a policy for the 'videos' bucket:\n" +
+              "   - Policy name: 'Allow public uploads'\n" +
+              "   - Allowed operation: INSERT\n" +
+              "   - Target roles: anon, authenticated\n" +
+              "   - USING expression: true\n" +
+              "   - WITH CHECK expression: true\n\n" +
+              "Or contact support for help setting up storage policies."
+            );
           }
-          throw new Error(errorData.error || "Upload failed");
+          throw uploadError;
         }
 
         setUploadProgress(90);
 
-        const uploadData = await uploadResponse.json();
-        
-        if (!uploadData.success || !uploadData.video?.videoUrl || !uploadData.video?.id) {
-          throw new Error("Failed to get video URL or ID from upload response");
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(filePath);
+
+        if (!urlData?.publicUrl) {
+          throw new Error("Failed to get public URL for uploaded video");
         }
 
-        videoId = uploadData.video.id;
-        videoUrl = uploadData.video.videoUrl;
+        videoUrl = urlData.publicUrl;
         console.log("Video uploaded successfully:", videoUrl);
         setUploadProgress(100);
 
