@@ -201,7 +201,6 @@ export default function Home() {
                     playsInline
                     className="w-full h-full object-cover"
                     preload="none"
-                    loading="lazy"
                   >
                     Your browser does not support the video tag.
                   </video>
