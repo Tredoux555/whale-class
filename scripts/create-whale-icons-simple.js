@@ -1,0 +1,110 @@
+// Simple script to create whale icons using base64 encoded PNG data
+// This creates simple colored squares with whale emoji
+// For better quality, use the HTML generator or an online converter
+
+const fs = require('fs');
+const path = require('path');
+
+// For now, let's create a simple HTML file that can generate the icons
+// The user can open it in a browser to download the PNG files
+
+const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Whale Icon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🐋 Whale Icon Generator</h1>
+    <p>Click the buttons below to generate and download whale icons for your home screen.</p>
+    
+    <div>
+        <button onclick="generateIcon(32, 'favicon')">Generate Favicon (32x32)</button>
+        <button onclick="generateIcon(180, 'apple-touch-icon')">Generate Apple Icon (180x180)</button>
+        <button onclick="generateIcon(192, 'icon-192')">Generate PWA Icon (192x192)</button>
+        <button onclick="generateIcon(512, 'icon-512')">Generate PWA Icon (512x512)</button>
+    </div>
+    
+    <div id="preview"></div>
+    
+    <script>
+        function generateIcon(size, name) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background - whale blue (#4A90E2)
+            ctx.fillStyle = '#4A90E2';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Add rounded corners effect (optional)
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            const radius = size * 0.2;
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Draw whale emoji
+            ctx.font = \`\${size * 0.7}px Arial\`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐋', size / 2, size / 2);
+            
+            // Show preview
+            const preview = document.getElementById('preview');
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.margin = '10px';
+            preview.appendChild(img);
+            
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = \`\${name}.png\`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log(\`Generated \${name}.png (\${size}x\${size})\`);
+            }, 'image/png');
+        }
+        
+        // Polyfill for roundRect if needed
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>`;
+
+const htmlPath = path.join(__dirname, '..', 'public', 'generate-whale-icons.html');
+fs.writeFileSync(htmlPath, htmlContent);
+console.log(`Created icon generator at: ${htmlPath}`);
+console.log('\nTo generate icons:');
+console.log('1. Open public/generate-whale-icons.html in your browser');
+console.log('2. Click the buttons to generate and download each icon');
+console.log('3. Save the downloaded PNG files to the public/ folder');
+
