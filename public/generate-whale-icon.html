@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Whale Icons</title>
+</head>
+<body>
+    <h1>Whale Icon Generator</h1>
+    <p>Open this file in a browser and click the buttons to generate whale icons.</p>
+    
+    <canvas id="canvas" style="border: 1px solid #ccc; display: none;"></canvas>
+    
+    <div>
+        <button onclick="generateIcon(192)">Generate 192x192</button>
+        <button onclick="generateIcon(512)">Generate 512x512</button>
+        <button onclick="generateIcon(180)">Generate 180x180 (Apple)</button>
+        <button onclick="generateIcon(32)">Generate 32x32 (Favicon)</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        function generateIcon(size) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background - whale blue
+            ctx.fillStyle = '#4A90E2';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw whale emoji or simple whale shape
+            ctx.font = `${size * 0.7}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐋', size / 2, size / 2);
+            
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                document.getElementById('output').innerHTML += 
+                    `<p>Generated icon-${size}.png</p>`;
+            });
+        }
+    </script>
+</body>
+</html>
+
