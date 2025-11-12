@@ -5,6 +5,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseClient, STORAGE_BUCKET } from '@/lib/supabase';
 import { getProxyVideoUrl } from "@/lib/video-utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Video {
   id: string;
@@ -293,6 +310,69 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const filteredVideos = selectedCategory === "all"
+      ? videos
+      : videos.filter(v => v.category === selectedCategory);
+
+    const oldIndex = filteredVideos.findIndex((v) => v.id === active.id);
+    const newIndex = filteredVideos.findIndex((v) => v.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Reorder the filtered videos
+    const reorderedFiltered = arrayMove(filteredVideos, oldIndex, newIndex);
+
+    // If filtering by category, we need to update the full videos array
+    let reorderedAll: Video[];
+    if (selectedCategory === "all") {
+      reorderedAll = reorderedFiltered;
+    } else {
+      // Keep videos from other categories in their original positions
+      const otherCategoryVideos = videos.filter(v => v.category !== selectedCategory);
+      reorderedAll = [...reorderedFiltered, ...otherCategoryVideos];
+    }
+
+    // Optimistically update UI
+    setVideos(reorderedAll);
+
+    // Save to server
+    try {
+      const response = await fetch("/api/videos/reorder", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoIds: reorderedAll.map(v => v.id),
+        }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        fetchVideos();
+        alert("Failed to save new order. Please try again.");
+      }
+    } catch (error) {
+      // Revert on error
+      fetchVideos();
+      alert("Failed to save new order. Please try again.");
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#B8E0F0]">
       {/* Header */}
@@ -506,55 +586,116 @@ export default function AdminDashboard() {
                 <p className="text-[#2C5F7C]/70 mt-2">Upload a video to get started.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredVideos.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={filteredVideos.map(v => v.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C]">
-                    <video
-                      src={getProxyVideoUrl(video.videoUrl)}
-                      controls
-                      playsInline
-                      className="w-full h-full object-cover"
-                      preload="metadata"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filteredVideos.map((video) => (
+                      <SortableVideoItem
+                        key={video.id}
+                        video={video}
+                        onDelete={handleDelete}
+                      />
+                    ))}
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-[#2C5F7C] text-lg mb-2">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="px-2 py-1 bg-[#B8E0F0] rounded-full text-sm">
-                        {video.category === "song-of-week" 
-                          ? "🎵 Song of Week" 
-                          : video.category === "phonics"
-                          ? "📚 Phonics"
-                          : "🧩 Montessori"}
-                      </span>
-                      {video.week && (
-                        <span className="px-2 py-1 bg-[#FFB84D] rounded-full text-white text-sm">
-                          Week {video.week}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDelete(video.id)}
-                      className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             );
           })()}
         </div>
       </main>
+    </div>
+  );
+}
+
+// Sortable Video Item Component
+function SortableVideoItem({ video, onDelete }: { video: Video; onDelete: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: video.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-2xl shadow-md overflow-hidden relative"
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute top-2 right-2 z-10 bg-[#4A90E2] text-white p-2 rounded-lg cursor-grab active:cursor-grabbing hover:bg-[#2C5F7C] transition-colors shadow-md"
+        title="Drag to reorder"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="9" y1="5" x2="9" y2="19"></line>
+          <line x1="15" y1="5" x2="15" y2="19"></line>
+        </svg>
+      </div>
+
+      <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C]">
+        <video
+          src={getProxyVideoUrl(video.videoUrl)}
+          controls
+          playsInline
+          className="w-full h-full object-cover"
+          preload="metadata"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div className="p-4">
+        <h3 className="font-bold text-[#2C5F7C] text-lg mb-2">
+          {video.title}
+        </h3>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-1 bg-[#B8E0F0] rounded-full text-sm">
+            {video.category === "song-of-week" 
+              ? "🎵 Song of Week" 
+              : video.category === "phonics"
+              ? "📚 Phonics"
+              : "🧩 Montessori"}
+          </span>
+          {video.week && (
+            <span className="px-2 py-1 bg-[#FFB84D] rounded-full text-white text-sm">
+              Week {video.week}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => onDelete(video.id)}
+          className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
