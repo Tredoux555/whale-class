@@ -432,10 +432,61 @@ export default function AdminDashboard() {
               </div>
             )}
 
+        {/* Category Tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "all"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            All Videos ({videos.length})
+          </button>
+          <button
+            onClick={() => setSelectedCategory("song-of-week")}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "song-of-week"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            🎵 Song of Week ({videos.filter(v => v.category === "song-of-week").length})
+          </button>
+          <button
+            onClick={() => setSelectedCategory("phonics")}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "phonics"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            📚 Phonics ({videos.filter(v => v.category === "phonics").length})
+          </button>
+          <button
+            onClick={() => setSelectedCategory("montessori")}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "montessori"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            🧩 Montessori ({videos.filter(v => v.category === "montessori").length})
+          </button>
+        </div>
+
         {/* Videos List */}
         <div>
           <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">
-            Videos ({videos.length})
+            {selectedCategory === "all" 
+              ? `All Videos (${videos.length})`
+              : selectedCategory === "song-of-week"
+              ? `Song of Week Videos (${videos.filter(v => v.category === "song-of-week").length})`
+              : selectedCategory === "phonics"
+              ? `Phonics Videos (${videos.filter(v => v.category === "phonics").length})`
+              : `Montessori Videos (${videos.filter(v => v.category === "montessori").length})`
+            }
           </h2>
 
           {loading ? (
