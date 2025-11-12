@@ -9,7 +9,7 @@ import { getProxyVideoUrl } from "@/lib/video-utils";
 interface Video {
   id: string;
   title: string;
-  category: "song-of-week" | "phonics";
+  category: "song-of-week" | "phonics" | "montessori";
   videoUrl: string;
   thumbnailUrl?: string;
   uploadedAt: string;
@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isVercel, setIsVercel] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "montessori">("all");
   const router = useRouter();
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
 
     const formData = new FormData(form);
     const title = formData.get("title") as string;
-    const category = formData.get("category") as "song-of-week" | "phonics";
+    const category = formData.get("category") as "song-of-week" | "phonics" | "montessori";
     const week = formData.get("week") as string | null;
     const videoFile = formData.get("video") as File | null;
 
@@ -371,6 +372,7 @@ export default function AdminDashboard() {
                     >
                       <option value="song-of-week">Song of the Week</option>
                       <option value="phonics">Phonics Song</option>
+                      <option value="montessori">Montessori (Admin Only)</option>
                     </select>
                   </div>
 
@@ -441,15 +443,20 @@ export default function AdminDashboard() {
               <div className="text-6xl mb-4 animate-bounce">🐋</div>
               <p className="text-[#2C5F7C] text-lg">Loading...</p>
             </div>
-          ) : videos.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-md p-8 text-center">
-              <div className="text-6xl mb-4">🌊</div>
-              <p className="text-[#2C5F7C] text-lg font-semibold">No videos yet!</p>
-              <p className="text-[#2C5F7C]/70 mt-2">Upload your first video to get started.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {videos.map((video) => (
+          ) : (() => {
+            const filteredVideos = selectedCategory === "all"
+              ? videos
+              : videos.filter(v => v.category === selectedCategory);
+            
+            return filteredVideos.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-md p-8 text-center">
+                <div className="text-6xl mb-4">🌊</div>
+                <p className="text-[#2C5F7C] text-lg font-semibold">No videos in this category!</p>
+                <p className="text-[#2C5F7C]/70 mt-2">Upload a video to get started.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredVideos.map((video) => (
                 <div
                   key={video.id}
                   className="bg-white rounded-2xl shadow-md overflow-hidden"
@@ -471,7 +478,11 @@ export default function AdminDashboard() {
                     </h3>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="px-2 py-1 bg-[#B8E0F0] rounded-full text-sm">
-                        {video.category === "song-of-week" ? "🎵 Song of Week" : "📚 Phonics"}
+                        {video.category === "song-of-week" 
+                          ? "🎵 Song of Week" 
+                          : video.category === "phonics"
+                          ? "📚 Phonics"
+                          : "🧩 Montessori"}
                       </span>
                       {video.week && (
                         <span className="px-2 py-1 bg-[#FFB84D] rounded-full text-white text-sm">
@@ -487,9 +498,10 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </main>
     </div>
