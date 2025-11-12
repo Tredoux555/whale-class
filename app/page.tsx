@@ -23,68 +23,6 @@ export default function Home() {
     fetchVideos();
   }, []);
 
-  // Preload first video immediately for faster initial load
-  useEffect(() => {
-    if (videos.length > 0) {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        const firstVideo = document.querySelector('video[data-src]') as HTMLVideoElement;
-        if (firstVideo) {
-          const src = firstVideo.getAttribute('data-src');
-          if (src) {
-            firstVideo.src = src;
-            firstVideo.removeAttribute('data-src');
-            firstVideo.preload = 'auto';
-            firstVideo.load();
-          }
-        }
-      }, 100);
-    }
-  }, [videos]);
-
-  // Lazy load videos when they become visible
-  useEffect(() => {
-    if (videos.length === 0) return;
-
-    const videoElements = document.querySelectorAll('video[data-src]');
-    
-    if (videoElements.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
-          const src = video.getAttribute('data-src');
-          
-          if (entry.isIntersecting && src) {
-            // Set src immediately for faster loading
-            video.src = src;
-            video.removeAttribute('data-src');
-            // Load metadata immediately for faster playback start
-            video.load();
-            observer.unobserve(video);
-          } else if (entry.intersectionRatio > 0.1 && src) {
-            // Start loading when video is 10% visible (more aggressive)
-            video.src = src;
-            video.removeAttribute('data-src');
-            video.load();
-            observer.unobserve(video);
-          }
-        });
-      },
-      {
-        rootMargin: '500px', // Increased from 300px - start loading even earlier
-        threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better detection
-      }
-    );
-
-    videoElements.forEach((video) => observer.observe(video));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [videos]);
-
   const fetchVideos = async () => {
     try {
       const response = await fetch("/api/public/videos");
@@ -96,6 +34,91 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const filteredVideos = selectedCategory === "all" 
+    ? videos 
+    : videos.filter(v => v.category === selectedCategory);
+
+  const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");
+  const phonicsVideos = videos.filter(v => v.category === "phonics");
+
+  // Preload first video immediately for faster initial load
+  useEffect(() => {
+    if (filteredVideos.length > 0) {
+      // Small delay to ensure DOM is ready after category change
+      const timeoutId = setTimeout(() => {
+        const firstVideo = document.querySelector('video[data-src]') as HTMLVideoElement;
+        if (firstVideo) {
+          const src = firstVideo.getAttribute('data-src');
+          if (src) {
+            firstVideo.src = src;
+            firstVideo.removeAttribute('data-src');
+            firstVideo.preload = 'auto';
+            firstVideo.load();
+          }
+        }
+      }, 150);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [filteredVideos, selectedCategory]);
+
+  // Lazy load videos when they become visible - re-initialize on category change
+  useEffect(() => {
+    if (videos.length === 0 || filteredVideos.length === 0) return;
+
+    // Small delay to ensure DOM has updated after category change
+    const timeoutId = setTimeout(() => {
+      const videoElements = document.querySelectorAll('video[data-src]');
+      
+      if (videoElements.length === 0) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target as HTMLVideoElement;
+            const src = video.getAttribute('data-src');
+            
+            if (!src) return; // Already loaded
+            
+            if (entry.isIntersecting) {
+              // Set src immediately for faster loading
+              video.src = src;
+              video.removeAttribute('data-src');
+              // Load metadata immediately for faster playback start
+              video.load();
+              observer.unobserve(video);
+            } else if (entry.intersectionRatio > 0.1) {
+              // Start loading when video is 10% visible (more aggressive)
+              video.src = src;
+              video.removeAttribute('data-src');
+              video.load();
+              observer.unobserve(video);
+            }
+          });
+        },
+        {
+          rootMargin: '500px', // Start loading 500px before video enters viewport
+          threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better detection
+        }
+      );
+
+      videoElements.forEach((video) => {
+        // Only observe videos that haven't been loaded yet
+        if (video.hasAttribute('data-src')) {
+          observer.observe(video);
+        }
+      });
+
+      return () => {
+        observer.disconnect();
+      };
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [videos, filteredVideos, selectedCategory]);
 
   const handleDownload = (video: Video) => {
     try {
@@ -126,13 +149,6 @@ export default function Home() {
       window.open(getProxyVideoUrl(video.videoUrl), '_blank');
     }
   };
-
-  const filteredVideos = selectedCategory === "all" 
-    ? videos 
-    : videos.filter(v => v.category === selectedCategory);
-
-  const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");
-  const phonicsVideos = videos.filter(v => v.category === "phonics");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#B8E0F0]">
