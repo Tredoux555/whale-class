@@ -52,145 +52,49 @@ export default function Home() {
   const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");
   const phonicsVideos = videos.filter(v => v.category === "phonics");
 
-  // Aggressive preloading: Load all videos immediately, starting with newest
-  const preloadAbortRef = useRef<boolean>(false);
-  
+  // Lazy load videos when they come into view - simpler and more reliable
   useEffect(() => {
     if (filteredVideos.length === 0) return;
-    
-    // Reset abort flag
-    preloadAbortRef.current = false;
 
     // Small delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
-      if (preloadAbortRef.current) return;
-      
       const videoElements = document.querySelectorAll('video[data-src]');
-      
       if (videoElements.length === 0) return;
 
-      // Create a map of video IDs to elements for quick lookup
-      const videoMap = new Map<string, HTMLVideoElement>();
-      videoElements.forEach((video) => {
-        const videoElement = video as HTMLVideoElement;
-        const parent = videoElement.closest('[data-video-id]');
-        const videoId = parent?.getAttribute('data-video-id');
-        if (videoId) {
-          videoMap.set(videoId, videoElement);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const video = entry.target as HTMLVideoElement;
+              const src = video.getAttribute('data-src');
+              if (src) {
+                video.src = src;
+                video.removeAttribute('data-src');
+                video.preload = 'metadata';
+                observer.unobserve(video);
+              }
+            }
+          });
+        },
+        {
+          rootMargin: '200px', // Start loading 200px before video comes into view
+          threshold: 0.1,
         }
+      );
+
+      videoElements.forEach((video) => {
+        observer.observe(video);
       });
 
-      // Preload videos sequentially, starting with newest
-      let currentIndex = 0;
-      const timeouts: NodeJS.Timeout[] = [];
-      const eventListeners: Array<{ element: HTMLVideoElement; event: string; handler: () => void }> = [];
-      
-      const cleanup = () => {
-        timeouts.forEach(t => clearTimeout(t));
-        eventListeners.forEach(({ element, event, handler }) => {
-          element.removeEventListener(event, handler);
-        });
-      };
-
-      const preloadNext = () => {
-        if (preloadAbortRef.current || currentIndex >= filteredVideos.length) {
-          if (currentIndex >= filteredVideos.length) {
-            console.log('✅ All videos preloaded');
-          }
-          return;
-        }
-
-        const video = filteredVideos[currentIndex];
-        const videoElement = videoMap.get(video.id);
-        
-        if (videoElement) {
-          const src = videoElement.getAttribute('data-src');
-          if (src) {
-            console.log(`📹 Preloading video ${currentIndex + 1}/${filteredVideos.length}: ${video.title}`);
-            
-            videoElement.src = src;
-            videoElement.removeAttribute('data-src');
-            videoElement.preload = 'auto';
-            
-            let movedToNext = false;
-            const moveToNext = () => {
-              if (movedToNext) return;
-              movedToNext = true;
-              currentIndex++;
-              const nextTimeout = setTimeout(preloadNext, 300);
-              timeouts.push(nextTimeout);
-            };
-            
-            // Timeout fallback - move to next video after 5 seconds max
-            const timeoutFallback = setTimeout(() => {
-              console.warn(`⏱️ Timeout loading video: ${video.title}, moving to next`);
-              moveToNext();
-            }, 5000);
-            timeouts.push(timeoutFallback);
-            
-            // iOS-specific: Better buffering strategy
-            const handleLoadedMetadata = () => {
-              if (videoElement.readyState >= 2) {
-                videoElement.load();
-              }
-            };
-            
-            const handleCanPlay = () => {
-              clearTimeout(timeoutFallback);
-              moveToNext();
-            };
-            
-            const handleError = () => {
-              console.warn(`⚠️ Error loading video: ${video.title}, moving to next`);
-              clearTimeout(timeoutFallback);
-              // Don't retry, just move to next
-              moveToNext();
-            };
-            
-            videoElement.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
-            videoElement.addEventListener('canplay', handleCanPlay, { once: true });
-            videoElement.addEventListener('error', handleError, { once: true });
-            
-            eventListeners.push(
-              { element: videoElement, event: 'loadedmetadata', handler: handleLoadedMetadata },
-              { element: videoElement, event: 'canplay', handler: handleCanPlay },
-              { element: videoElement, event: 'error', handler: handleError }
-            );
-            
-            videoElement.load();
-          } else {
-            // Already loaded, move to next
-            currentIndex++;
-            const nextTimeout = setTimeout(preloadNext, 100);
-            timeouts.push(nextTimeout);
-          }
-        } else {
-          // Element not found, move to next
-          currentIndex++;
-          const nextTimeout = setTimeout(preloadNext, 100);
-          timeouts.push(nextTimeout);
-        }
-      };
-
-      // Start preloading
-      preloadNext();
-      
-      // Return cleanup function for this timeout's scope
       return () => {
-        timeouts.forEach(t => clearTimeout(t));
-        eventListeners.forEach(({ element, event, handler }) => {
-          try {
-            element.removeEventListener(event, handler);
-          } catch (e) {
-            // Ignore errors if element is already removed
-          }
+        videoElements.forEach((video) => {
+          observer.unobserve(video);
         });
       };
-    }, 300);
+    }, 100);
 
     return () => {
       clearTimeout(timeoutId);
-      preloadAbortRef.current = true;
     };
   }, [filteredVideos]);
 
