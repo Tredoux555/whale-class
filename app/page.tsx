@@ -27,11 +27,8 @@ export default function Home() {
     try {
       const response = await fetch("/api/public/videos");
       const data = await response.json();
-      // Sort videos by upload date (newest first)
-      const sortedVideos = (data.videos || []).sort((a: Video, b: Video) => {
-        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-      });
-      setVideos(sortedVideos);
+      // Use videos in the order they're stored (matches admin section order)
+      setVideos(data.videos || []);
     } catch (error) {
       console.error("Error fetching videos:", error);
     } finally {
@@ -40,13 +37,11 @@ export default function Home() {
   };
 
   const filteredVideos = useMemo(() => {
+    // Filter by category but maintain the stored order (matches admin section)
     const filtered = selectedCategory === "all" 
       ? videos 
       : videos.filter(v => v.category === selectedCategory);
-    // Sort by upload date (newest first) - this is the display order
-    return [...filtered].sort((a, b) => {
-      return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-    });
+    return filtered;
   }, [videos, selectedCategory]);
 
   const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");

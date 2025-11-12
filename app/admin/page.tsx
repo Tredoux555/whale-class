@@ -575,6 +575,7 @@ export default function AdminDashboard() {
               <p className="text-[#2C5F7C] text-lg">Loading...</p>
             </div>
           ) : (() => {
+            // Filter by category but maintain the stored order (matches main site)
             const filteredVideos = selectedCategory === "all"
               ? videos
               : videos.filter(v => v.category === selectedCategory);
