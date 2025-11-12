@@ -27,7 +27,11 @@ export default function Home() {
     try {
       const response = await fetch("/api/public/videos");
       const data = await response.json();
-      setVideos(data.videos || []);
+      // Sort videos by upload date (newest first)
+      const sortedVideos = (data.videos || []).sort((a: Video, b: Video) => {
+        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+      });
+      setVideos(sortedVideos);
     } catch (error) {
       console.error("Error fetching videos:", error);
     } finally {
@@ -39,115 +43,107 @@ export default function Home() {
     ? videos 
     : videos.filter(v => v.category === selectedCategory);
 
+  // Sort filtered videos by upload date (newest first) for preloading
+  const sortedFilteredVideos = [...filteredVideos].sort((a, b) => {
+    return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+  });
+
   const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");
   const phonicsVideos = videos.filter(v => v.category === "phonics");
 
-  // Preload first video immediately for faster initial load
+  // Aggressive preloading: Load all videos immediately, starting with newest
   useEffect(() => {
-    if (filteredVideos.length > 0) {
-      // Small delay to ensure DOM is ready after category change
-      const timeoutId = setTimeout(() => {
-        const firstVideo = document.querySelector('video[data-src]') as HTMLVideoElement;
-        if (firstVideo) {
-          const src = firstVideo.getAttribute('data-src');
-          if (src) {
-            firstVideo.src = src;
-            firstVideo.removeAttribute('data-src');
-            firstVideo.preload = 'auto';
-            firstVideo.load();
-          }
-        }
-      }, 150);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [filteredVideos, selectedCategory]);
+    if (sortedFilteredVideos.length === 0) return;
 
-  // Lazy load videos when they become visible - re-initialize on category change
-  useEffect(() => {
-    if (videos.length === 0 || filteredVideos.length === 0) return;
-
-    // Small delay to ensure DOM has updated after category change
+    // Small delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
       const videoElements = document.querySelectorAll('video[data-src]');
       
       if (videoElements.length === 0) return;
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const video = entry.target as HTMLVideoElement;
-            const src = video.getAttribute('data-src');
-            
-            if (!src) return; // Already loaded
-            
-            if (entry.isIntersecting) {
-              // Set src immediately for faster loading
-              video.src = src;
-              video.removeAttribute('data-src');
-              
-              // iOS-specific: Better buffering strategy
-              const handleLoadedMetadata = () => {
-                // Metadata loaded - ensure video is ready for iOS
-                if (video.readyState >= 2) {
-                  // Video has enough data to play - trigger additional buffering
-                  video.load();
-                }
-                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-              };
-              
-              const handleCanPlay = () => {
-                // Video is ready to play - iOS sometimes needs this confirmation
-                video.removeEventListener('canplay', handleCanPlay);
-              };
-              
-              video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
-              video.addEventListener('canplay', handleCanPlay, { once: true });
-              
-              // Load metadata immediately for faster playback start
-              video.load();
-              observer.unobserve(video);
-            } else if (entry.intersectionRatio > 0.1) {
-              // Start loading when video is 10% visible (more aggressive)
-              video.src = src;
-              video.removeAttribute('data-src');
-              
-              // iOS: Add event listeners for better buffering
-              const handleLoadedMetadata = () => {
-                if (video.readyState >= 2) {
-                  video.load();
-                }
-                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-              };
-              video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
-              
-              video.load();
-              observer.unobserve(video);
-            }
-          });
-        },
-        {
-          rootMargin: '500px', // Start loading 500px before video enters viewport
-          threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better detection
-        }
-      );
-
+      // Create a map of video IDs to elements for quick lookup
+      const videoMap = new Map<string, HTMLVideoElement>();
       videoElements.forEach((video) => {
-        // Only observe videos that haven't been loaded yet
-        if (video.hasAttribute('data-src')) {
-          observer.observe(video);
+        const videoElement = video as HTMLVideoElement;
+        const parent = videoElement.closest('[data-video-id]');
+        const videoId = parent?.getAttribute('data-video-id');
+        if (videoId) {
+          videoMap.set(videoId, videoElement);
         }
       });
 
-      return () => {
-        observer.disconnect();
-      };
-    }, 100);
+      // Preload videos sequentially, starting with newest
+      let currentIndex = 0;
+      const preloadNext = () => {
+        if (currentIndex >= sortedFilteredVideos.length) {
+          console.log('✅ All videos preloaded');
+          return;
+        }
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [videos, filteredVideos, selectedCategory]);
+        const video = sortedFilteredVideos[currentIndex];
+        const videoElement = videoMap.get(video.id);
+        
+        if (videoElement) {
+          const src = videoElement.getAttribute('data-src');
+          if (src) {
+            console.log(`📹 Preloading video ${currentIndex + 1}/${sortedFilteredVideos.length}: ${video.title}`);
+            
+            videoElement.src = src;
+            videoElement.removeAttribute('data-src');
+            videoElement.preload = 'auto';
+            
+            // iOS-specific: Better buffering strategy
+            const handleLoadedMetadata = () => {
+              if (videoElement.readyState >= 2) {
+                videoElement.load();
+              }
+              videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+            };
+            
+            const handleCanPlay = () => {
+              videoElement.removeEventListener('canplay', handleCanPlay);
+              // Move to next video after this one is ready
+              currentIndex++;
+              // Small delay between videos to avoid overwhelming network
+              setTimeout(preloadNext, 300);
+            };
+            
+            const handleError = () => {
+              console.warn(`⚠️ Error loading video: ${video.title}, retrying...`);
+              videoElement.removeEventListener('error', handleError);
+              // Retry after delay
+              setTimeout(() => {
+                if (videoElement.src) {
+                  videoElement.load();
+                }
+                currentIndex++;
+                setTimeout(preloadNext, 300);
+              }, 2000);
+            };
+            
+            videoElement.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+            videoElement.addEventListener('canplay', handleCanPlay, { once: true });
+            videoElement.addEventListener('error', handleError, { once: true });
+            
+            videoElement.load();
+          } else {
+            // Already loaded, move to next
+            currentIndex++;
+            setTimeout(preloadNext, 100);
+          }
+        } else {
+          // Element not found, move to next
+          currentIndex++;
+          setTimeout(preloadNext, 100);
+        }
+      };
+
+      // Start preloading
+      preloadNext();
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [sortedFilteredVideos, selectedCategory]);
 
   const handleDownload = (video: Video) => {
     try {
@@ -253,6 +249,7 @@ export default function Home() {
             {filteredVideos.map((video) => (
               <div
                 key={video.id}
+                data-video-id={video.id}
                 className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
@@ -265,6 +262,16 @@ export default function Home() {
                     className="w-full h-full object-cover"
                     preload="auto"
                     muted
+                    onError={(e) => {
+                      console.error('Video load error:', video.title, e);
+                      // Retry loading after a delay
+                      const videoEl = e.currentTarget;
+                      setTimeout(() => {
+                        if (videoEl.src) {
+                          videoEl.load();
+                        }
+                      }, 2000);
+                    }}
                     onLoadedMetadata={(e) => {
                       // iOS: Ensure video is ready for playback
                       const video = e.currentTarget;
