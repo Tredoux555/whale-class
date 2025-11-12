@@ -302,42 +302,15 @@ export default function Home() {
                 className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
-                  <video
-                    data-src={getProxyVideoUrl(video.videoUrl)}
-                    controls
-                    playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    className="w-full h-full object-cover"
-                    preload="auto"
-                    muted
-                    onError={(e) => {
-                      console.error('Video load error:', video.title, e);
-                      // Retry loading after a delay
-                      const videoEl = e.currentTarget;
-                      setTimeout(() => {
-                        if (videoEl.src) {
-                          videoEl.load();
-                        }
-                      }, 2000);
-                    }}
-                    onLoadedMetadata={(e) => {
-                      // iOS: Ensure video is ready for playback
-                      const video = e.currentTarget;
-                      if (video.readyState < 2) {
-                        // If not enough data buffered, reload to trigger more buffering
-                        setTimeout(() => video.load(), 50);
-                      }
-                    }}
-                    onCanPlay={(e) => {
-                      // iOS: Video is ready - ensure it stays ready
-                      const video = e.currentTarget;
-                      if (video.readyState < 3) {
-                        // Trigger additional buffering if needed
-                        video.load();
-                      }
-                    }}
-                  >
+                      <video
+                        data-src={getProxyVideoUrl(video.videoUrl)}
+                        controls
+                        playsInline
+                        webkit-playsinline="true"
+                        x5-playsinline="true"
+                        className="w-full h-full object-cover"
+                        preload="none"
+                      >
                     Your browser does not support the video tag.
                   </video>
                 </div>
