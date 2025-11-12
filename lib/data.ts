@@ -5,7 +5,7 @@ import { createSupabaseAdmin, STORAGE_BUCKET, METADATA_FILE } from "./supabase";
 export interface Video {
   id: string;
   title: string;
-  category: "song-of-week" | "phonics";
+  category: "song-of-week" | "phonics" | "montessori";
   videoUrl: string;
   thumbnailUrl?: string;
   uploadedAt: string;
