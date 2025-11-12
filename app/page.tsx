@@ -85,6 +85,25 @@ export default function Home() {
               // Set src immediately for faster loading
               video.src = src;
               video.removeAttribute('data-src');
+              
+              // iOS-specific: Better buffering strategy
+              const handleLoadedMetadata = () => {
+                // Metadata loaded - ensure video is ready for iOS
+                if (video.readyState >= 2) {
+                  // Video has enough data to play - trigger additional buffering
+                  video.load();
+                }
+                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+              };
+              
+              const handleCanPlay = () => {
+                // Video is ready to play - iOS sometimes needs this confirmation
+                video.removeEventListener('canplay', handleCanPlay);
+              };
+              
+              video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+              video.addEventListener('canplay', handleCanPlay, { once: true });
+              
               // Load metadata immediately for faster playback start
               video.load();
               observer.unobserve(video);
@@ -92,6 +111,16 @@ export default function Home() {
               // Start loading when video is 10% visible (more aggressive)
               video.src = src;
               video.removeAttribute('data-src');
+              
+              // iOS: Add event listeners for better buffering
+              const handleLoadedMetadata = () => {
+                if (video.readyState >= 2) {
+                  video.load();
+                }
+                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+              };
+              video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+              
               video.load();
               observer.unobserve(video);
             }
@@ -231,9 +260,27 @@ export default function Home() {
                     data-src={getProxyVideoUrl(video.videoUrl)}
                     controls
                     playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
                     className="w-full h-full object-cover"
                     preload="auto"
                     muted
+                    onLoadedMetadata={(e) => {
+                      // iOS: Ensure video is ready for playback
+                      const video = e.currentTarget;
+                      if (video.readyState < 2) {
+                        // If not enough data buffered, reload to trigger more buffering
+                        setTimeout(() => video.load(), 50);
+                      }
+                    }}
+                    onCanPlay={(e) => {
+                      // iOS: Video is ready - ensure it stays ready
+                      const video = e.currentTarget;
+                      if (video.readyState < 3) {
+                        // Trigger additional buffering if needed
+                        video.load();
+                      }
+                    }}
                   >
                     Your browser does not support the video tag.
                   </video>
