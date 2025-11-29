@@ -27,6 +27,7 @@ interface Video {
   id: string;
   title: string;
   category: "song-of-week" | "phonics" | "montessori";
+  subcategory?: "practical-life" | "maths" | "sensorial" | "english"; // Only for montessori
   videoUrl: string;
   thumbnailUrl?: string;
   uploadedAt: string;
@@ -41,6 +42,8 @@ export default function AdminDashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isVercel, setIsVercel] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "montessori">("all");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<"practical-life" | "maths" | "sensorial" | "english" | "all">("all");
+  const [formCategory, setFormCategory] = useState<"song-of-week" | "phonics" | "montessori">("song-of-week");
   const router = useRouter();
 
   useEffect(() => {
@@ -99,6 +102,9 @@ export default function AdminDashboard() {
     const formData = new FormData(form);
     const title = formData.get("title") as string;
     const category = formData.get("category") as "song-of-week" | "phonics" | "montessori";
+    const subcategory = category === "montessori" 
+      ? (formData.get("subcategory") as "practical-life" | "maths" | "sensorial" | "english" | undefined)
+      : undefined;
     const week = formData.get("week") as string | null;
     const videoFile = formData.get("video") as File | null;
 
@@ -201,6 +207,7 @@ export default function AdminDashboard() {
             id: videoId,
             title,
             category,
+            subcategory,
             videoUrl: videoUrl,
             week: week || undefined,
           }),
@@ -214,6 +221,7 @@ export default function AdminDashboard() {
         const uploadFormData = new FormData();
         uploadFormData.append("title", title);
         uploadFormData.append("category", category);
+        if (subcategory) uploadFormData.append("subcategory", subcategory);
         if (week) uploadFormData.append("week", week);
         uploadFormData.append("video", videoFile);
 
@@ -448,6 +456,8 @@ export default function AdminDashboard() {
                     <select
                       name="category"
                       required
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value as "song-of-week" | "phonics" | "montessori")}
                       className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
                     >
                       <option value="song-of-week">Song of the Week</option>
@@ -455,6 +465,24 @@ export default function AdminDashboard() {
                       <option value="montessori">Montessori (Admin Only)</option>
                     </select>
                   </div>
+
+                  {formCategory === "montessori" && (
+                    <div>
+                      <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
+                        Montessori Subcategory
+                      </label>
+                      <select
+                        name="subcategory"
+                        required
+                        className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
+                      >
+                        <option value="practical-life">Practical Life</option>
+                        <option value="maths">Maths</option>
+                        <option value="sensorial">Sensorial</option>
+                        <option value="english">English</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold text-[#2C5F7C] mb-2">
@@ -515,7 +543,10 @@ export default function AdminDashboard() {
         {/* Category Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
-            onClick={() => setSelectedCategory("all")}
+            onClick={() => {
+              setSelectedCategory("all");
+              setSelectedSubcategory("all");
+            }}
             className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
               selectedCategory === "all"
                 ? "bg-[#4A90E2] text-white shadow-md"
@@ -525,7 +556,10 @@ export default function AdminDashboard() {
             All Videos ({videos.length})
           </button>
           <button
-            onClick={() => setSelectedCategory("song-of-week")}
+            onClick={() => {
+              setSelectedCategory("song-of-week");
+              setSelectedSubcategory("all");
+            }}
             className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
               selectedCategory === "song-of-week"
                 ? "bg-[#4A90E2] text-white shadow-md"
@@ -535,7 +569,10 @@ export default function AdminDashboard() {
             🎵 Song of Week ({videos.filter(v => v.category === "song-of-week").length})
           </button>
           <button
-            onClick={() => setSelectedCategory("phonics")}
+            onClick={() => {
+              setSelectedCategory("phonics");
+              setSelectedSubcategory("all");
+            }}
             className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
               selectedCategory === "phonics"
                 ? "bg-[#4A90E2] text-white shadow-md"
@@ -545,7 +582,10 @@ export default function AdminDashboard() {
             📚 Phonics ({videos.filter(v => v.category === "phonics").length})
           </button>
           <button
-            onClick={() => setSelectedCategory("montessori")}
+            onClick={() => {
+              setSelectedCategory("montessori");
+              setSelectedSubcategory("all");
+            }}
             className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
               selectedCategory === "montessori"
                 ? "bg-[#4A90E2] text-white shadow-md"
@@ -556,6 +596,62 @@ export default function AdminDashboard() {
           </button>
         </div>
 
+        {/* Subcategory Tabs for Montessori */}
+        {selectedCategory === "montessori" && (
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <button
+              onClick={() => setSelectedSubcategory("all")}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+                selectedSubcategory === "all"
+                  ? "bg-[#4A90E2] text-white shadow-md"
+                  : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+              }`}
+            >
+              All Montessori ({videos.filter(v => v.category === "montessori").length})
+            </button>
+            <button
+              onClick={() => setSelectedSubcategory("practical-life")}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+                selectedSubcategory === "practical-life"
+                  ? "bg-[#4A90E2] text-white shadow-md"
+                  : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+              }`}
+            >
+              Practical Life ({videos.filter(v => v.category === "montessori" && v.subcategory === "practical-life").length})
+            </button>
+            <button
+              onClick={() => setSelectedSubcategory("maths")}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+                selectedSubcategory === "maths"
+                  ? "bg-[#4A90E2] text-white shadow-md"
+                  : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+              }`}
+            >
+              Maths ({videos.filter(v => v.category === "montessori" && v.subcategory === "maths").length})
+            </button>
+            <button
+              onClick={() => setSelectedSubcategory("sensorial")}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+                selectedSubcategory === "sensorial"
+                  ? "bg-[#4A90E2] text-white shadow-md"
+                  : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+              }`}
+            >
+              Sensorial ({videos.filter(v => v.category === "montessori" && v.subcategory === "sensorial").length})
+            </button>
+            <button
+              onClick={() => setSelectedSubcategory("english")}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+                selectedSubcategory === "english"
+                  ? "bg-[#4A90E2] text-white shadow-md"
+                  : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+              }`}
+            >
+              English ({videos.filter(v => v.category === "montessori" && v.subcategory === "english").length})
+            </button>
+          </div>
+        )}
+
         {/* Videos List */}
         <div>
           <h2 className="text-2xl font-bold text-[#2C5F7C] mb-4">
@@ -565,7 +661,11 @@ export default function AdminDashboard() {
               ? `Song of Week Videos (${videos.filter(v => v.category === "song-of-week").length})`
               : selectedCategory === "phonics"
               ? `Phonics Videos (${videos.filter(v => v.category === "phonics").length})`
-              : `Montessori Videos (${videos.filter(v => v.category === "montessori").length})`
+              : selectedCategory === "montessori"
+              ? selectedSubcategory === "all"
+                ? `Montessori Videos (${videos.filter(v => v.category === "montessori").length})`
+                : `Montessori - ${selectedSubcategory === "practical-life" ? "Practical Life" : selectedSubcategory === "maths" ? "Maths" : selectedSubcategory === "sensorial" ? "Sensorial" : "English"} (${videos.filter(v => v.category === "montessori" && v.subcategory === selectedSubcategory).length})`
+              : ""
             }
           </h2>
 
@@ -575,10 +675,19 @@ export default function AdminDashboard() {
               <p className="text-[#2C5F7C] text-lg">Loading...</p>
             </div>
           ) : (() => {
-            // Filter by category but maintain the stored order (matches main site)
-            const filteredVideos = selectedCategory === "all"
-              ? videos
-              : videos.filter(v => v.category === selectedCategory);
+            // Filter by category and subcategory, maintain the stored order (matches main site)
+            let filteredVideos: Video[];
+            if (selectedCategory === "all") {
+              filteredVideos = videos;
+            } else if (selectedCategory === "montessori") {
+              if (selectedSubcategory === "all") {
+                filteredVideos = videos.filter(v => v.category === "montessori");
+              } else {
+                filteredVideos = videos.filter(v => v.category === "montessori" && v.subcategory === selectedSubcategory);
+              }
+            } else {
+              filteredVideos = videos.filter(v => v.category === selectedCategory);
+            }
             
             return filteredVideos.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-md p-8 text-center">

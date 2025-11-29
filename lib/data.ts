@@ -6,6 +6,7 @@ export interface Video {
   id: string;
   title: string;
   category: "song-of-week" | "phonics" | "montessori";
+  subcategory?: "practical-life" | "maths" | "sensorial" | "english"; // Only for montessori
   videoUrl: string;
   thumbnailUrl?: string;
   uploadedAt: string;
