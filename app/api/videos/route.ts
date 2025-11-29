@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const title = formData.get("title") as string;
-    const category = formData.get("category") as "song-of-week" | "phonics";
+    const category = formData.get("category") as "song-of-week" | "phonics" | "montessori";
+    const subcategory = formData.get("subcategory") as string | null;
     const week = formData.get("week") as string | null;
     const videoFile = formData.get("video") as File | null;
 
@@ -104,6 +105,7 @@ export async function POST(request: NextRequest) {
         id: videoId,
         title,
         category,
+        subcategory: subcategory ? (subcategory as "practical-life" | "maths" | "sensorial" | "english") : undefined,
         videoUrl,
         uploadedAt: new Date().toISOString(),
         week: week || undefined,

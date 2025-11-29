@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     id = body.id;
     const title = body.title;
     const category = body.category;
+    const subcategory = body.subcategory;
     videoUrl = body.videoUrl;
     const week = body.week;
 
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
       id,
       title,
       category,
+      subcategory,
       videoUrl,
       uploadedAt: new Date().toISOString(),
       week: week || undefined,
