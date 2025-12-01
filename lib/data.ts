@@ -5,7 +5,7 @@ import { createSupabaseAdmin, STORAGE_BUCKET, METADATA_FILE } from "./supabase";
 export interface Video {
   id: string;
   title: string;
-  category: "song-of-week" | "phonics" | "montessori";
+  category: "song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori";
   subcategory?: "practical-life" | "maths" | "sensorial" | "english"; // Only for montessori
   videoUrl: string;
   thumbnailUrl?: string;
