@@ -7,7 +7,7 @@ import { getProxyVideoUrl } from "@/lib/video-utils";
 interface Video {
   id: string;
   title: string;
-  category: "song-of-week" | "phonics" | "weekly-phonics-sound";
+  category: "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories";
   videoUrl: string;
   thumbnailUrl?: string;
   uploadedAt: string;
@@ -17,7 +17,7 @@ interface Video {
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound">("all");
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories">("all");
 
   useEffect(() => {
     fetchVideos();
@@ -47,6 +47,7 @@ export default function Home() {
   const songOfWeekVideos = videos.filter(v => v.category === "song-of-week");
   const phonicsVideos = videos.filter(v => v.category === "phonics");
   const weeklyPhonicsSoundVideos = videos.filter(v => v.category === "weekly-phonics-sound");
+  const storiesVideos = videos.filter(v => v.category === "stories");
 
   // Lazy load videos when they come into view - simpler and more reliable
   useEffect(() => {
@@ -190,6 +191,16 @@ export default function Home() {
           >
             🔤 Weekly Phonics Sound ({weeklyPhonicsSoundVideos.length})
           </button>
+          <button
+            onClick={() => setSelectedCategory("stories")}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "stories"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            📖 Stories ({storiesVideos.length})
+          </button>
         </div>
 
         {loading ? (
@@ -232,7 +243,7 @@ export default function Home() {
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-[#2C5F7C]/70">
                         <span className="px-2 py-1 bg-[#B8E0F0] rounded-full">
-                          {video.category === "song-of-week" ? "🎵 Song of Week" : video.category === "phonics" ? "📚 Phonics" : "🔤 Weekly Phonics Sound"}
+                          {video.category === "song-of-week" ? "🎵 Song of Week" : video.category === "phonics" ? "📚 Phonics" : video.category === "weekly-phonics-sound" ? "🔤 Weekly Phonics Sound" : "📖 Stories"}
                         </span>
                         {video.week && (
                           <span className="px-2 py-1 bg-[#FFB84D] rounded-full text-white">
