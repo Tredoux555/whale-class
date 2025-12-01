@@ -26,7 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 interface Video {
   id: string;
   title: string;
-  category: "song-of-week" | "phonics" | "montessori";
+  category: "song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori";
   subcategory?: "practical-life" | "maths" | "sensorial" | "english"; // Only for montessori
   videoUrl: string;
   thumbnailUrl?: string;
@@ -41,9 +41,9 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isVercel, setIsVercel] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "montessori">("all");
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori">("all");
   const [selectedSubcategory, setSelectedSubcategory] = useState<"practical-life" | "maths" | "sensorial" | "english" | "all">("all");
-  const [formCategory, setFormCategory] = useState<"song-of-week" | "phonics" | "montessori">("song-of-week");
+  const [formCategory, setFormCategory] = useState<"song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori">("song-of-week");
   const router = useRouter();
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
 
     const formData = new FormData(form);
     const title = formData.get("title") as string;
-    const category = formData.get("category") as "song-of-week" | "phonics" | "montessori";
+    const category = formData.get("category") as "song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori";
     const subcategory = category === "montessori" 
       ? (formData.get("subcategory") as "practical-life" | "maths" | "sensorial" | "english" | undefined)
       : undefined;
@@ -457,11 +457,12 @@ export default function AdminDashboard() {
                       name="category"
                       required
                       value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value as "song-of-week" | "phonics" | "montessori")}
+                      onChange={(e) => setFormCategory(e.target.value as "song-of-week" | "phonics" | "weekly-phonics-sound" | "montessori")}
                       className="w-full px-4 py-2 border-2 border-[#B8E0F0] rounded-lg focus:outline-none focus:border-[#4A90E2]"
                     >
                       <option value="song-of-week">Song of the Week</option>
                       <option value="phonics">Phonics Song</option>
+                      <option value="weekly-phonics-sound">Weekly Phonics Sound</option>
                       <option value="montessori">Montessori (Admin Only)</option>
                     </select>
                   </div>
@@ -583,6 +584,19 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => {
+              setSelectedCategory("weekly-phonics-sound");
+              setSelectedSubcategory("all");
+            }}
+            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
+              selectedCategory === "weekly-phonics-sound"
+                ? "bg-[#4A90E2] text-white shadow-md"
+                : "bg-white text-[#2C5F7C] hover:bg-[#B8E0F0]"
+            }`}
+          >
+            🔤 Weekly Phonics Sound ({videos.filter(v => v.category === "weekly-phonics-sound").length})
+          </button>
+          <button
+            onClick={() => {
               setSelectedCategory("montessori");
               setSelectedSubcategory("all");
             }}
@@ -661,6 +675,8 @@ export default function AdminDashboard() {
               ? `Song of Week Videos (${videos.filter(v => v.category === "song-of-week").length})`
               : selectedCategory === "phonics"
               ? `Phonics Videos (${videos.filter(v => v.category === "phonics").length})`
+              : selectedCategory === "weekly-phonics-sound"
+              ? `Weekly Phonics Sound Videos (${videos.filter(v => v.category === "weekly-phonics-sound").length})`
               : selectedCategory === "montessori"
               ? selectedSubcategory === "all"
                 ? `Montessori Videos (${videos.filter(v => v.category === "montessori").length})`
@@ -791,6 +807,8 @@ function SortableVideoItem({ video, onDelete }: { video: Video; onDelete: (id: s
               ? "🎵 Song of Week" 
               : video.category === "phonics"
               ? "📚 Phonics"
+              : video.category === "weekly-phonics-sound"
+              ? "🔤 Weekly Phonics Sound"
               : "🧩 Montessori"}
           </span>
           {video.week && (
