@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const title = formData.get("title") as string;
-    const category = formData.get("category") as "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories" | "montessori";
+    const category = formData.get("category") as "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories" | "montessori" | "recipes";
     const subcategory = formData.get("subcategory") as string | null;
     const week = formData.get("week") as string | null;
     const videoFile = formData.get("video") as File | null;
