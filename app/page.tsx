@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { getProxyVideoUrl } from "@/lib/video-utils";
 
@@ -18,6 +18,9 @@ export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories">("all");
+  const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+  const [repeatModes, setRepeatModes] = useState<Record<string, boolean>>({});
+  const videoRefs = useRef<Record<string, HTMLVideoElement>>({});
 
   useEffect(() => {
     fetchVideos();
@@ -48,6 +51,46 @@ export default function Home() {
   const phonicsVideos = videos.filter(v => v.category === "phonics");
   const weeklyPhonicsSoundVideos = videos.filter(v => v.category === "weekly-phonics-sound");
   const storiesVideos = videos.filter(v => v.category === "stories");
+
+  // Handle video end - play next in playlist
+  useEffect(() => {
+    if (!currentlyPlayingId || filteredVideos.length === 0) return;
+
+    const currentIndex = filteredVideos.findIndex(v => v.id === currentlyPlayingId);
+    if (currentIndex === -1) return;
+
+    const currentVideo = videoRefs.current[currentlyPlayingId];
+    if (!currentVideo) return;
+
+    const handleEnded = () => {
+      // If repeat is enabled for this video, just replay it
+      if (repeatModes[currentlyPlayingId]) {
+        currentVideo.currentTime = 0;
+        currentVideo.play().catch(console.error);
+        return;
+      }
+
+      // Otherwise, play next video in playlist
+      const nextIndex = (currentIndex + 1) % filteredVideos.length;
+      const nextVideo = filteredVideos[nextIndex];
+      const nextVideoElement = videoRefs.current[nextVideo.id];
+
+      if (nextVideoElement) {
+        // Pause current video
+        currentVideo.pause();
+        setCurrentlyPlayingId(nextVideo.id);
+        
+        // Play next video
+        nextVideoElement.currentTime = 0;
+        nextVideoElement.play().catch(console.error);
+      }
+    };
+
+    currentVideo.addEventListener('ended', handleEnded);
+    return () => {
+      currentVideo.removeEventListener('ended', handleEnded);
+    };
+  }, [currentlyPlayingId, filteredVideos, repeatModes]);
 
   // Lazy load videos when they come into view - simpler and more reliable
   useEffect(() => {
@@ -94,6 +137,24 @@ export default function Home() {
       clearTimeout(timeoutId);
     };
   }, [filteredVideos]);
+
+  const handleVideoPlay = (videoId: string) => {
+    setCurrentlyPlayingId(videoId);
+    
+    // Pause all other videos
+    Object.entries(videoRefs.current).forEach(([id, video]) => {
+      if (id !== videoId && video) {
+        video.pause();
+      }
+    });
+  };
+
+  const toggleRepeat = (videoId: string) => {
+    setRepeatModes(prev => ({
+      ...prev,
+      [videoId]: !prev[videoId]
+    }));
+  };
 
   const handleDownload = (video: Video) => {
     try {
@@ -223,17 +284,52 @@ export default function Home() {
                 className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
-                      <video
-                        data-src={getProxyVideoUrl(video.videoUrl)}
-                        controls
-                        playsInline
-                        webkit-playsinline="true"
-                        x5-playsinline="true"
-                        className="w-full h-full object-cover"
-                        preload="none"
-                      >
+                  <video
+                    ref={(el) => {
+                      if (el) videoRefs.current[video.id] = el;
+                    }}
+                    data-src={getProxyVideoUrl(video.videoUrl)}
+                    controls
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
+                    className="w-full h-full object-cover"
+                    preload="none"
+                    loop={repeatModes[video.id] || false}
+                    onPlay={() => handleVideoPlay(video.id)}
+                  >
                     Your browser does not support the video tag.
                   </video>
+                  {/* Repeat Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleRepeat(video.id);
+                    }}
+                    className={`absolute top-2 right-2 z-10 p-2 rounded-lg transition-colors shadow-md ${
+                      repeatModes[video.id]
+                        ? "bg-[#4A90E2] text-white"
+                        : "bg-white/80 text-[#2C5F7C] hover:bg-white"
+                    }`}
+                    title={repeatModes[video.id] ? "Disable repeat" : "Enable repeat"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17 1l4 4-4 4" />
+                      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                      <path d="M7 23l-4-4 4-4" />
+                      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
@@ -248,6 +344,11 @@ export default function Home() {
                         {video.week && (
                           <span className="px-2 py-1 bg-[#FFB84D] rounded-full text-white">
                             Week {video.week}
+                          </span>
+                        )}
+                        {repeatModes[video.id] && (
+                          <span className="px-2 py-1 bg-[#4A90E2] rounded-full text-white text-xs">
+                            🔁 Repeat
                           </span>
                         )}
                       </div>
