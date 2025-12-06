@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import circlePlansData from "@/data/circle-plans.json";
 
 // Configure route for Vercel
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Get plans data - using direct JSON import (bundled at build time, no filesystem I/O)
-function readPlansData() {
-  return circlePlansData as typeof circlePlansData & { themes: any[]; settings: any };
+// Get plans data - using dynamic import to reduce initial bundle size
+// This prevents the JSON from being bundled into other serverless functions
+async function readPlansData() {
+  // Dynamic import - only loads when this function is called
+  const circlePlansData = await import("@/data/circle-plans.json");
+  return circlePlansData.default as { themes: any[]; settings: any };
 }
 
 // GET - Fetch all lesson plans
@@ -19,7 +21,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = readPlansData();
+    const data = await readPlansData();
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching circle plans:", error);
@@ -59,7 +61,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updatedTheme = await request.json();
-    const data = readPlansData();
+    const data = await readPlansData();
     
     const index = data.themes.findIndex((t: any) => t.id === updatedTheme.id);
     if (index === -1) {
@@ -96,7 +98,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Theme ID required" }, { status: 400 });
     }
 
-    const data = readPlansData();
+    const data = await readPlansData();
     const index = data.themes.findIndex((t: any) => t.id === id);
     
     if (index === -1) {
