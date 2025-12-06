@@ -149,14 +149,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Theme not found" }, { status: 404 });
     }
     
-    // Data is read-only - all deletions require git commits
-    return NextResponse.json(
-      { 
-        error: "Cannot delete themes. Data is read-only. Please remove from lib/circle-plans-data.ts and commit to git.",
-        requiresGitCommit: true
-      },
-      { status: 400 }
-    );
+    // Remove the theme from the array
+    const deletedTheme = data.themes[index];
+    data.themes.splice(index, 1);
+    
+    // Save updated data
+    await savePlansData(data);
+    
+    console.log(`Successfully deleted theme: ${id}`);
+    
+    return NextResponse.json({
+      success: true,
+      message: `Theme "${deletedTheme.name}" deleted successfully`,
+    });
   } catch (error) {
     console.error("Error deleting theme:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
