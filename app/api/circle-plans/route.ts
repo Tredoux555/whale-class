@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
+// Import JSON as module - gets bundled with code, always available in serverless functions
+import circlePlansDataModule from "@/data/circle-plans.json";
 
 const dataFilePath = path.join(process.cwd(), "data", "circle-plans.json");
 const isVercel = process.env.VERCEL === "1";
@@ -16,13 +18,26 @@ function readPlansData() {
   }
 
   try {
-    // Read from filesystem - works on both Vercel and localhost since file is committed to git
-    const data = fs.readFileSync(dataFilePath, "utf-8");
-    circlePlansDataCache = JSON.parse(data);
-    return circlePlansDataCache;
+    if (isVercel) {
+      // On Vercel: Use imported module (bundled with code, always available)
+      circlePlansDataCache = circlePlansDataModule;
+      return circlePlansDataCache;
+    } else {
+      // On localhost: Try filesystem read first (allows runtime updates during development)
+      try {
+        const data = fs.readFileSync(dataFilePath, "utf-8");
+        circlePlansDataCache = JSON.parse(data);
+        return circlePlansDataCache;
+      } catch (fsError) {
+        // Fallback to imported module if filesystem read fails
+        console.warn("Filesystem read failed, using imported module:", fsError);
+        circlePlansDataCache = circlePlansDataModule;
+        return circlePlansDataCache;
+      }
+    }
   } catch (error) {
     console.error("Error reading circle plans data:", error);
-    // Return default structure if read fails
+    // Return default structure if all else fails
     const defaultData = { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
     circlePlansDataCache = defaultData;
     return defaultData;
