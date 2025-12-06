@@ -1,16 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { createSupabaseAdmin, STORAGE_BUCKET, CIRCLE_PLANS_FILE } from "@/lib/supabase";
 
 // Configure route for Vercel
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Get plans data - using dynamic import to reduce initial bundle size
-// This prevents the JSON from being bundled into other serverless functions
+// Get plans data - fetch from Supabase Storage (Vercel) or filesystem (localhost)
+// This prevents the JSON from being bundled into the serverless function
 async function readPlansData() {
-  // Dynamic import - only loads when this function is called
-  const circlePlansData = await import("@/data/circle-plans.json");
-  return circlePlansData.default as { themes: any[]; settings: any };
+  const isVercel = process.env.VERCEL === "1";
+  
+  if (isVercel) {
+    // On Vercel: Read from Supabase Storage
+    try {
+      const supabase = createSupabaseAdmin();
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .download(CIRCLE_PLANS_FILE);
+
+      if (error) {
+        // Check if it's a "not found" error (file doesn't exist yet)
+        if (error.message.includes("not found") || error.message.includes("404")) {
+          console.log("Circle plans file doesn't exist in Supabase Storage yet, returning empty data");
+          return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+        }
+        console.error("Error reading circle plans from Supabase Storage:", error.message);
+        return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+      }
+
+      if (!data) {
+        return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+      }
+
+      const text = await data.text();
+      const plansData = JSON.parse(text);
+      return plansData;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error getting circle plans from Supabase:", errorMessage);
+      return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+    }
+  } else {
+    // On localhost: Read from filesystem (lazy import)
+    const fs = require("fs");
+    const path = require("path");
+    const circlePlansPath = path.join(process.cwd(), "data", "circle-plans.json");
+    
+    try {
+      const data = fs.readFileSync(circlePlansPath, "utf-8");
+      return JSON.parse(data);
+    } catch (error) {
+      console.error("Error reading circle plans from filesystem:", error);
+      return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+    }
+  }
 }
 
 // GET - Fetch all lesson plans
