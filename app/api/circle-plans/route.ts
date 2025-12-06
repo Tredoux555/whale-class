@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import circlePlansData from "@/data/circle-plans.json";
 
 // Configure route for Vercel
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Simple function to get plans data - temporarily returns empty to test deployment
+// Get plans data - using direct JSON import (bundled at build time, no filesystem I/O)
 function readPlansData() {
-  // Return empty structure to test if this route is causing deployment hang
-  // Once deployment works, we'll restore file reading with async pattern
-  return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+  return circlePlansData as typeof circlePlansData & { themes: any[]; settings: any };
 }
 
 // GET - Fetch all lesson plans
