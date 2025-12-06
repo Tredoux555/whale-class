@@ -258,90 +258,116 @@ Requirements:
 
 Return ONLY the JSON object, no other text.`;
 
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-3-opus-20240229",
-        max_tokens: 8000,
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
-    });
+  // Try models in order of preference (best to good)
+  const modelsToTry = [
+    "claude-3-sonnet-20240229",  // Standard Claude 3 Sonnet
+    "claude-3-haiku-20240307",   // Claude 3 Haiku (faster, cheaper)
+    "claude-3-5-sonnet-20240620", // Claude 3.5 Sonnet (if available)
+  ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
-    }
+  let lastError: Error | null = null;
 
-    const data = await response.json();
-    const content = data.content[0].text;
+  for (const model of modelsToTry) {
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 8000,
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        }),
+      });
 
-    // Extract JSON from response (handle cases where Claude adds markdown)
-    let jsonText = content.trim();
-    
-    // Remove markdown code blocks if present
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
-    } else if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
-    }
-
-    // Parse the JSON
-    const theme = JSON.parse(jsonText);
-
-    // Validate and set proper emoji based on theme
-    const emojiMap: Record<string, string> = {
-      "ocean": "🌊",
-      "animals": "🐾",
-      "space": "🚀",
-      "farm": "🚜",
-      "jungle": "🦁",
-      "dinosaurs": "🦕",
-      "transportation": "🚗",
-      "weather": "☁️",
-      "seasons": "🍂",
-      "food": "🍎",
-      "family": "👨‍👩‍👧",
-      "friends": "👫",
-      "colors": "🌈",
-      "shapes": "🔷",
-      "numbers": "🔢",
-      "letters": "🔤",
-      "christmas": "🎄",
-      "halloween": "🎃",
-      "easter": "🐰",
-      "valentine": "💝",
-    };
-
-    // Try to find matching emoji
-    const themeLower = themeName.toLowerCase();
-    for (const [key, emoji] of Object.entries(emojiMap)) {
-      if (themeLower.includes(key)) {
-        theme.emoji = emoji;
-        break;
+      if (!response.ok) {
+        const errorText = await response.text();
+        // If it's a 404 (model not found), try next model
+        if (response.status === 404) {
+          console.log(`Model ${model} not available, trying next...`);
+          lastError = new Error(`Model ${model} not found: ${errorText}`);
+          continue; // Try next model
+        }
+        // For other errors, throw immediately
+        throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
       }
-    }
 
-    // If no match, use a default
-    if (!theme.emoji || theme.emoji === "🎨") {
-      theme.emoji = "📚";
-    }
+      // Success! Process the response
+      const data = await response.json();
+      const content = data.content[0].text;
 
-    return theme;
-  } catch (error) {
-    console.error("Error generating theme with AI:", error);
-    throw error;
+      // Extract JSON from response (handle cases where Claude adds markdown)
+      let jsonText = content.trim();
+      
+      // Remove markdown code blocks if present
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
+      }
+
+      // Parse the JSON
+      const theme = JSON.parse(jsonText);
+
+      // Validate and set proper emoji based on theme
+      const emojiMap: Record<string, string> = {
+        "ocean": "🌊",
+        "animals": "🐾",
+        "space": "🚀",
+        "farm": "🚜",
+        "jungle": "🦁",
+        "dinosaurs": "🦕",
+        "transportation": "🚗",
+        "weather": "☁️",
+        "seasons": "🍂",
+        "food": "🍎",
+        "family": "👨‍👩‍👧",
+        "friends": "👫",
+        "colors": "🌈",
+        "shapes": "🔷",
+        "numbers": "🔢",
+        "letters": "🔤",
+        "christmas": "🎄",
+        "halloween": "🎃",
+        "easter": "🐰",
+        "valentine": "💝",
+      };
+
+      // Try to find matching emoji
+      const themeLower = themeName.toLowerCase();
+      for (const [key, emoji] of Object.entries(emojiMap)) {
+        if (themeLower.includes(key)) {
+          theme.emoji = emoji;
+          break;
+        }
+      }
+
+      // If no match, use a default
+      if (!theme.emoji || theme.emoji === "🎨") {
+        theme.emoji = "📚";
+      }
+
+      return theme; // Success! Return the theme
+    } catch (error) {
+      // If it's not a 404, or if we're on the last model, throw the error
+      if (model === modelsToTry[modelsToTry.length - 1]) {
+        throw error;
+      }
+      lastError = error instanceof Error ? error : new Error(String(error));
+      continue; // Try next model
+    }
   }
+
+  // If we get here, all models failed
+  throw lastError || new Error("All models failed. Please check your API key and account access.");
 }
 
 // POST - Generate new theme using AI
