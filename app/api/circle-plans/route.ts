@@ -1,51 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { readFileSync } from "fs";
-import { join } from "path";
 
 // Configure route for Vercel
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Cache for the data
-let circlePlansDataCache: any = null;
-
-// Simple function to get plans data - reads from file system
+// Simple function to get plans data - temporarily returns empty to test deployment
 function readPlansData() {
-  if (circlePlansDataCache) {
-    return circlePlansDataCache;
-  }
-  
-  try {
-    // Read from the data file - this works because the file is committed to git
-    // Try multiple possible paths for Vercel compatibility
-    const possiblePaths = [
-      join(process.cwd(), 'data', 'circle-plans.json'),
-      join(process.cwd(), '..', 'data', 'circle-plans.json'),
-    ];
-    
-    let fileContents: string | null = null;
-    for (const filePath of possiblePaths) {
-      try {
-        fileContents = readFileSync(filePath, 'utf-8');
-        break;
-      } catch (e) {
-        // Try next path
-        continue;
-      }
-    }
-    
-    if (!fileContents) {
-      throw new Error('Could not find circle-plans.json in any expected location');
-    }
-    
-    circlePlansDataCache = JSON.parse(fileContents);
-    return circlePlansDataCache;
-  } catch (error) {
-    console.error('Error reading circle plans data:', error);
-    // Return empty structure if read fails
-    return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
-  }
+  // Return empty structure to test if this route is causing deployment hang
+  // Once deployment works, we'll restore file reading with async pattern
+  return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
 }
 
 // GET - Fetch all lesson plans
