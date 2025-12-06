@@ -32,5 +32,4 @@ export function createSupabaseAdmin() {
 // Storage bucket name
 export const STORAGE_BUCKET = 'videos';
 export const METADATA_FILE = 'data/videos.json';
-export const CIRCLE_PLANS_FILE = 'data/circle-plans.json';
 
