@@ -3,6 +3,10 @@ import { getAdminSession } from "@/lib/auth";
 // Import JSON directly - Next.js will bundle it efficiently
 import circlePlansData from "@/data/circle-plans.json";
 
+// Configure route for Vercel
+export const runtime = 'nodejs';
+export const maxDuration = 10;
+
 // Simple function to get plans data
 function readPlansData() {
   return circlePlansData;
