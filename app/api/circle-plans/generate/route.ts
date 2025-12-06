@@ -260,87 +260,132 @@ Requirements:
 Return ONLY the JSON object, no other text.`;
 
   // Use the best available Claude model (Claude Sonnet 4)
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 8000,
-      system: "You are an expert early childhood educator creating educational lesson plans for kindergarten teachers. Generate age-appropriate, educational, and safe content for young children. Do not generate any URLs - leave URL fields as empty strings.",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    }),
-  });
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
-  }
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 6000, // Reduced from 8000 to speed up generation
+        system: "You are an expert early childhood educator creating educational lesson plans for kindergarten teachers. Generate age-appropriate, educational, and safe content for young children. Do not generate any URLs - leave URL fields as empty strings.",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
+    });
 
-  // Process the response
-  const data = await response.json();
-  const content = data.content[0].text;
+    clearTimeout(timeoutId);
 
-  // Extract JSON from response (handle cases where Claude adds markdown)
-  let jsonText = content.trim();
-  
-  // Remove markdown code blocks if present
-  if (jsonText.startsWith("```json")) {
-    jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
-  } else if (jsonText.startsWith("```")) {
-    jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
-  }
-
-  // Parse the JSON
-  const theme = JSON.parse(jsonText);
-
-  // Validate and set proper emoji based on theme
-  const emojiMap: Record<string, string> = {
-    "ocean": "🌊",
-    "animals": "🐾",
-    "space": "🚀",
-    "farm": "🚜",
-    "jungle": "🦁",
-    "dinosaurs": "🦕",
-    "transportation": "🚗",
-    "weather": "☁️",
-    "seasons": "🍂",
-    "food": "🍎",
-    "family": "👨‍👩‍👧",
-    "friends": "👫",
-    "colors": "🌈",
-    "shapes": "🔷",
-    "numbers": "🔢",
-    "letters": "🔤",
-    "christmas": "🎄",
-    "halloween": "🎃",
-    "easter": "🐰",
-    "valentine": "💝",
-  };
-
-  // Try to find matching emoji
-  const themeLower = themeName.toLowerCase();
-  for (const [key, emoji] of Object.entries(emojiMap)) {
-    if (themeLower.includes(key)) {
-      theme.emoji = emoji;
-      break;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Anthropic API error: ${response.status}`, errorText);
+      throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
     }
-  }
 
-  // If no match, use a default
-  if (!theme.emoji || theme.emoji === "🎨") {
-    theme.emoji = "📚";
-  }
+    // Process the response - read as text first so we can log it if parsing fails
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      console.error("Failed to parse Anthropic response as JSON:", error);
+      console.error("Response text:", responseText.substring(0, 1000));
+      throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
-  return theme;
+    // Check if response has content
+    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+      console.error("Invalid response structure:", JSON.stringify(data, null, 2));
+      throw new Error("Invalid response from Anthropic API: missing content");
+    }
+
+    const content = data.content[0];
+    if (!content || content.type !== "text" || !content.text) {
+      console.error("Invalid content structure:", JSON.stringify(content, null, 2));
+      throw new Error("Invalid response from Anthropic API: missing text content");
+    }
+
+    // Extract JSON from response (handle cases where Claude adds markdown)
+    let jsonText = content.text.trim();
+    
+    if (!jsonText) {
+      throw new Error("Empty response from Anthropic API");
+    }
+    
+    // Remove markdown code blocks if present
+    if (jsonText.startsWith("```json")) {
+      jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+    } else if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
+    }
+
+    // Parse the JSON with better error handling
+    let theme;
+    try {
+      theme = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.error("JSON parse error. Content was:", jsonText.substring(0, 500));
+      throw new Error(`Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : String(parseError)}. Response preview: ${jsonText.substring(0, 200)}`);
+    }
+
+    // Validate and set proper emoji based on theme
+    const emojiMap: Record<string, string> = {
+      "ocean": "🌊",
+      "animals": "🐾",
+      "space": "🚀",
+      "farm": "🚜",
+      "jungle": "🦁",
+      "dinosaurs": "🦕",
+      "transportation": "🚗",
+      "weather": "☁️",
+      "seasons": "🍂",
+      "food": "🍎",
+      "family": "👨‍👩‍👧",
+      "friends": "👫",
+      "colors": "🌈",
+      "shapes": "🔷",
+      "numbers": "🔢",
+      "letters": "🔤",
+      "christmas": "🎄",
+      "halloween": "🎃",
+      "easter": "🐰",
+      "valentine": "💝",
+    };
+
+    // Try to find matching emoji
+    const themeLower = themeName.toLowerCase();
+    for (const [key, emoji] of Object.entries(emojiMap)) {
+      if (themeLower.includes(key)) {
+        theme.emoji = emoji;
+        break;
+      }
+    }
+
+    // If no match, use a default
+    if (!theme.emoji || theme.emoji === "🎨") {
+      theme.emoji = "📚";
+    }
+
+    return theme;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timeout: The AI generation took too long. Please try again with a simpler theme.");
+    }
+    throw error;
+  }
 }
 
 // POST - Generate new theme using AI
