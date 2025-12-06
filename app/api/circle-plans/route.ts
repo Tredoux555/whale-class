@@ -18,8 +18,27 @@ function readPlansData() {
   
   try {
     // Read from the data file - this works because the file is committed to git
-    const filePath = join(process.cwd(), 'data', 'circle-plans.json');
-    const fileContents = readFileSync(filePath, 'utf-8');
+    // Try multiple possible paths for Vercel compatibility
+    const possiblePaths = [
+      join(process.cwd(), 'data', 'circle-plans.json'),
+      join(process.cwd(), '..', 'data', 'circle-plans.json'),
+    ];
+    
+    let fileContents: string | null = null;
+    for (const filePath of possiblePaths) {
+      try {
+        fileContents = readFileSync(filePath, 'utf-8');
+        break;
+      } catch (e) {
+        // Try next path
+        continue;
+      }
+    }
+    
+    if (!fileContents) {
+      throw new Error('Could not find circle-plans.json in any expected location');
+    }
+    
     circlePlansDataCache = JSON.parse(fileContents);
     return circlePlansDataCache;
   } catch (error) {
