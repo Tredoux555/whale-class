@@ -154,7 +154,7 @@ Generate a complete theme with the following structure (return ONLY valid JSON, 
       "title": "Song title",
       "type": "song",
       "lyrics": "First verse and chorus lyrics",
-      "youtubeUrl": "https://www.youtube.com/watch?v=...",
+      "youtubeUrl": "",
       "notes": "Teaching notes or activity suggestions"
     }
   ],
@@ -165,7 +165,7 @@ Generate a complete theme with the following structure (return ONLY valid JSON, 
       "author": "Author name",
       "type": "book",
       "description": "Brief description of the story",
-      "amazonUrl": "https://www.amazon.com/...",
+      "amazonUrl": "",
       "notes": "Why this book fits the theme"
     }
   ],
@@ -245,8 +245,8 @@ Generate a complete theme with the following structure (return ONLY valid JSON, 
 }
 
 Requirements:
-- Include 3-5 songs with real YouTube URLs (search for popular children's songs related to the theme)
-- Include 3-4 age-appropriate books with real authors
+- Include 3-5 songs (popular children's songs related to the theme - leave youtubeUrl as empty string)
+- Include 3-4 age-appropriate books with real author names (leave amazonUrl as empty string)
 - Include 4-5 games that are hands-on and educational
 - Include 3-5 crafts with simple materials (paper, glue, crayons, etc.)
 - Include 2-3 printables (coloring pages, worksheets, etc.)
@@ -255,6 +255,7 @@ Requirements:
 - Create a logical 5-day progression that builds on the theme
 - All content must be age-appropriate for ${ageGroup}
 - Make it engaging, educational, and fun!
+- IMPORTANT: Leave all URL fields (youtubeUrl, amazonUrl) as empty strings
 
 Return ONLY the JSON object, no other text.`;
 
@@ -269,6 +270,7 @@ Return ONLY the JSON object, no other text.`;
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 8000,
+      system: "You are an expert early childhood educator creating educational lesson plans for kindergarten teachers. Generate age-appropriate, educational, and safe content for young children. Do not generate any URLs - leave URL fields as empty strings.",
       messages: [
         {
           role: "user",
