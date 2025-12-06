@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "rm -rf .next && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "npm cache clean --force && npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
   "cleanUrls": true
