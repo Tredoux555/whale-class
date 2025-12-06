@@ -498,5 +498,5 @@ export const circlePlansData = {
     "ageGroup": "kindergarten",
     "classSize": 15
   }
-} as const;
+};
 
