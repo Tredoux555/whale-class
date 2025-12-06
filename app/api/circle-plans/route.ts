@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
-// Import JSON as module - gets bundled with code, always available in serverless functions
-import circlePlansDataModule from "@/data/circle-plans.json";
+// Import data from TypeScript constant - always available, no filesystem issues
+import { circlePlansData as circlePlansDataModule } from "@/lib/circle-plans-data";
 
 const dataFilePath = path.join(process.cwd(), "data", "circle-plans.json");
 const isVercel = process.env.VERCEL === "1";
