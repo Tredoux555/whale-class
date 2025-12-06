@@ -119,6 +119,7 @@ export default function CirclePlannerPage() {
   const [generateError, setGenerateError] = useState("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [deletingThemeId, setDeletingThemeId] = useState<string | null>(null);
+  const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
   const [classProfile, setClassProfile] = useState({
     classSize: 15,
     englishLevel: "beginner",
@@ -244,6 +245,145 @@ export default function CirclePlannerPage() {
     const date = new Date(start);
     date.setDate(start.getDate() + dayIndex);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Get activity details and find related resources
+  const getActivityDetails = (activity: string) => {
+    if (!selectedTheme) return null;
+    
+    const activityLower = activity.toLowerCase();
+    const details: {
+      type: string;
+      icon: string;
+      color: string;
+      duration: string;
+      tips: string[];
+      relatedSong?: Song;
+      relatedStory?: Story;
+      relatedGame?: Game;
+      relatedMovement?: MovementActivity;
+    } = {
+      type: "activity",
+      icon: "📌",
+      color: "amber",
+      duration: "",
+      tips: [],
+    };
+
+    // Extract duration from parentheses
+    const durationMatch = activity.match(/\((\d+)\s*min\)/i);
+    if (durationMatch) {
+      details.duration = `${durationMatch[1]} minutes`;
+    }
+
+    // Determine activity type and find related resources
+    if (activityLower.includes("song") || activityLower.includes("music") || activityLower.includes("sing")) {
+      details.type = "song";
+      details.icon = "🎵";
+      details.color = "rose";
+      details.tips = [
+        "Have children stand in a circle for action songs",
+        "Use hand motions to reinforce vocabulary",
+        "Repeat songs 2-3 times for familiarity"
+      ];
+      // Find a matching song
+      details.relatedSong = selectedTheme.songs[0];
+    } else if (activityLower.includes("story") || activityLower.includes("book") || activityLower.includes("read")) {
+      details.type = "story";
+      details.icon = "📖";
+      details.color = "indigo";
+      details.tips = [
+        "Show pictures to all children",
+        "Ask prediction questions before turning pages",
+        "Use different voices for characters"
+      ];
+      details.relatedStory = selectedTheme.stories[0];
+    } else if (activityLower.includes("game") || activityLower.includes("play")) {
+      details.type = "game";
+      details.icon = "🎮";
+      details.color = "emerald";
+      details.tips = [
+        "Demonstrate the game before playing",
+        "Start with simple rules, add complexity",
+        "Praise participation, not just winning"
+      ];
+      details.relatedGame = selectedTheme.games[0];
+    } else if (activityLower.includes("movement") || activityLower.includes("dance") || activityLower.includes("exercise")) {
+      details.type = "movement";
+      details.icon = "🏃";
+      details.color = "orange";
+      details.tips = [
+        "Clear space for safe movement",
+        "Model movements first",
+        "Encourage creativity in movements"
+      ];
+      details.relatedMovement = selectedTheme.movementActivities[0];
+    } else if (activityLower.includes("discussion") || activityLower.includes("question") || activityLower.includes("talk")) {
+      details.type = "discussion";
+      details.icon = "💬";
+      details.color = "purple";
+      details.tips = [
+        "Give children time to think before answering",
+        "Accept all answers positively",
+        "Use the theme's discussion questions"
+      ];
+    } else if (activityLower.includes("craft") || activityLower.includes("art") || activityLower.includes("create")) {
+      details.type = "craft";
+      details.icon = "✂️";
+      details.color = "violet";
+      details.tips = [
+        "Prepare all materials before circle time",
+        "Show a finished example",
+        "Focus on process, not perfection"
+      ];
+    } else if (activityLower.includes("flashcard") || activityLower.includes("picture") || activityLower.includes("visual")) {
+      details.type = "flashcard";
+      details.icon = "🖼️";
+      details.color = "cyan";
+      details.tips = [
+        "Hold cards high for all to see",
+        "Ask children to name/describe pictures",
+        "Use repetition for vocabulary building"
+      ];
+    } else if (activityLower.includes("welcome") || activityLower.includes("hello") || activityLower.includes("opening")) {
+      details.type = "welcome";
+      details.icon = "👋";
+      details.color = "amber";
+      details.tips = [
+        "Greet each child by name",
+        "Use a consistent opening routine",
+        "Set expectations for circle time behavior"
+      ];
+    } else if (activityLower.includes("goodbye") || activityLower.includes("closing") || activityLower.includes("wrap")) {
+      details.type = "closing";
+      details.icon = "🌟";
+      details.color = "amber";
+      details.tips = [
+        "Summarize what was learned",
+        "Preview tomorrow's activities",
+        "End with a familiar goodbye song/chant"
+      ];
+    } else if (activityLower.includes("role") || activityLower.includes("pretend") || activityLower.includes("drama")) {
+      details.type = "drama";
+      details.icon = "🎭";
+      details.color = "fuchsia";
+      details.tips = [
+        "Set up props before starting",
+        "Assign roles or let children choose",
+        "Join in the play to model language"
+      ];
+    } else if (activityLower.includes("review") || activityLower.includes("share")) {
+      details.type = "review";
+      details.icon = "📝";
+      details.color = "teal";
+      details.tips = [
+        "Ask open-ended questions about the week",
+        "Let children share their favorite activities",
+        "Celebrate their learning achievements"
+      ];
+    }
+
+    return details;
   };
 
   if (loading) {
@@ -514,7 +654,10 @@ export default function CirclePlannerPage() {
                     {["monday", "tuesday", "wednesday", "thursday", "friday"].map((day) => (
                       <button
                         key={day}
-                        onClick={() => setSelectedDay(day as typeof selectedDay)}
+                        onClick={() => {
+                          setSelectedDay(day as typeof selectedDay);
+                          setExpandedActivity(null);
+                        }}
                         className={`px-6 py-3 rounded-xl font-semibold transition-all capitalize flex-shrink-0 ${
                           selectedDay === day
                             ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg"
@@ -536,19 +679,139 @@ export default function CirclePlannerPage() {
                       </div>
                       
                       <div>
-                        <h4 className="text-lg font-bold text-amber-900 mb-4">Daily Schedule</h4>
+                        <h4 className="text-lg font-bold text-amber-900 mb-4">30-Minute Circle Time Schedule</h4>
+                        <p className="text-sm text-amber-600 mb-4">👆 Click on any activity to see detailed instructions and tips</p>
                         <div className="space-y-3">
-                          {selectedTheme.dailyPlan[selectedDay].activities.map((activity, i) => (
-                            <div 
-                              key={i} 
-                              className="flex items-center gap-4 p-4 bg-white rounded-xl border-2 border-amber-100 hover:border-amber-300 transition-colors"
-                            >
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
-                                {i + 1}
+                          {selectedTheme.dailyPlan[selectedDay].activities.map((activity, i) => {
+                            const activityKey = `${selectedDay}-${i}`;
+                            const isExpanded = expandedActivity === activityKey;
+                            const details = getActivityDetails(activity);
+                            
+                            return (
+                              <div key={i} className="transition-all">
+                                <button
+                                  onClick={() => setExpandedActivity(isExpanded ? null : activityKey)}
+                                  className={`w-full text-left flex items-center gap-4 p-4 bg-white rounded-xl border-2 transition-all ${
+                                    isExpanded 
+                                      ? "border-amber-400 shadow-lg" 
+                                      : "border-amber-100 hover:border-amber-300"
+                                  }`}
+                                >
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md flex-shrink-0">
+                                    {i + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xl">{details?.icon}</span>
+                                      <p className="text-amber-900 font-medium">{activity}</p>
+                                    </div>
+                                  </div>
+                                  <div className={`text-amber-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+                                    ▼
+                                  </div>
+                                </button>
+                                
+                                {isExpanded && details && (
+                                  <div className="mt-2 ml-14 p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 space-y-4">
+                                    {/* Duration */}
+                                    {details.duration && (
+                                      <div className="flex items-center gap-2 text-amber-700">
+                                        <span>⏱️</span>
+                                        <span className="font-semibold">Duration:</span>
+                                        <span>{details.duration}</span>
+                                      </div>
+                                    )}
+
+                                    {/* Tips */}
+                                    <div>
+                                      <h5 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
+                                        <span>💡</span> Tips for this activity:
+                                      </h5>
+                                      <ul className="space-y-2">
+                                        {details.tips.map((tip, tipIndex) => (
+                                          <li key={tipIndex} className="flex items-start gap-2 text-amber-800">
+                                            <span className="text-amber-500">•</span>
+                                            <span>{tip}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+
+                                    {/* Related Song */}
+                                    {details.relatedSong && (
+                                      <div className="bg-white rounded-lg p-4 border border-rose-200">
+                                        <h5 className="font-bold text-rose-900 mb-2 flex items-center gap-2">
+                                          <span>🎵</span> Suggested Song: {details.relatedSong.title}
+                                        </h5>
+                                        {details.relatedSong.lyrics && (
+                                          <p className="text-rose-700 text-sm italic mb-2">&ldquo;{details.relatedSong.lyrics.substring(0, 150)}...&rdquo;</p>
+                                        )}
+                                        {details.relatedSong.notes && (
+                                          <p className="text-rose-600 text-sm">📝 {details.relatedSong.notes}</p>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Related Story */}
+                                    {details.relatedStory && (
+                                      <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                                        <h5 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                          <span>📖</span> Suggested Book: {details.relatedStory.title}
+                                          {details.relatedStory.author && <span className="font-normal text-sm">by {details.relatedStory.author}</span>}
+                                        </h5>
+                                        {details.relatedStory.description && (
+                                          <p className="text-indigo-700 text-sm mb-2">{details.relatedStory.description}</p>
+                                        )}
+                                        {details.relatedStory.notes && (
+                                          <p className="text-indigo-600 text-sm">📝 {details.relatedStory.notes}</p>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Related Game */}
+                                    {details.relatedGame && (
+                                      <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                                        <h5 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                                          <span>🎮</span> Suggested Game: {details.relatedGame.title}
+                                        </h5>
+                                        {details.relatedGame.description && (
+                                          <p className="text-emerald-700 text-sm mb-2">{details.relatedGame.description}</p>
+                                        )}
+                                        {details.relatedGame.materials && (
+                                          <p className="text-emerald-600 text-sm mb-1"><strong>Materials:</strong> {details.relatedGame.materials}</p>
+                                        )}
+                                        {details.relatedGame.instructions && (
+                                          <p className="text-emerald-600 text-sm"><strong>How to play:</strong> {details.relatedGame.instructions}</p>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Related Movement */}
+                                    {details.relatedMovement && (
+                                      <div className="bg-white rounded-lg p-4 border border-orange-200">
+                                        <h5 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                                          <span>🏃</span> Suggested Movement: {details.relatedMovement.title}
+                                        </h5>
+                                        {details.relatedMovement.description && (
+                                          <p className="text-orange-700 text-sm mb-2">{details.relatedMovement.description}</p>
+                                        )}
+                                        {details.relatedMovement.examples && (
+                                          <p className="text-orange-600 text-sm">🎯 {details.relatedMovement.examples}</p>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* View more in tab */}
+                                    <div className="pt-2 border-t border-amber-200">
+                                      <p className="text-sm text-amber-600">
+                                        💡 See the <strong>{details.type === "song" ? "Songs" : details.type === "story" ? "Stories" : details.type === "game" ? "Games" : "other"}</strong> tab for all related resources!
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <p className="text-amber-900 font-medium">{activity}</p>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
