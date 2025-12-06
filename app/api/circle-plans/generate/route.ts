@@ -82,11 +82,40 @@ async function savePlansData(plansData: any) {
 }
 
 // Generate theme using Anthropic Claude API
-async function generateThemeWithAI(themeName: string, weekStart: string, weekEnd: string, ageGroup: string = "kindergarten") {
+async function generateThemeWithAI(
+  themeName: string, 
+  weekStart: string, 
+  weekEnd: string, 
+  ageGroup: string = "kindergarten",
+  classProfile?: {
+    classSize?: number;
+    englishLevel?: string;
+    phonicsGoals?: string;
+    learningGoals?: string;
+    availableMaterials?: string;
+    previousThemes?: string[];
+    specialNeeds?: string;
+  }
+) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
     throw new Error("ANTHROPIC_API_KEY environment variable is not set. Please add it to your Vercel project settings.");
+  }
+
+  // Build context string from class profile
+  let contextInfo = "";
+  if (classProfile) {
+    contextInfo = "\n\nCLASS PROFILE:\n";
+    if (classProfile.classSize) contextInfo += `- Class Size: ${classProfile.classSize} children\n`;
+    if (classProfile.englishLevel) contextInfo += `- English Level: ${classProfile.englishLevel}\n`;
+    if (classProfile.phonicsGoals) contextInfo += `- Phonics Goals: ${classProfile.phonicsGoals}\n`;
+    if (classProfile.learningGoals) contextInfo += `- Learning Goals: ${classProfile.learningGoals}\n`;
+    if (classProfile.availableMaterials) contextInfo += `- Available Materials: ${classProfile.availableMaterials}\n`;
+    if (classProfile.previousThemes && classProfile.previousThemes.length > 0) {
+      contextInfo += `- Previous Themes: ${classProfile.previousThemes.join(", ")}\n`;
+    }
+    if (classProfile.specialNeeds) contextInfo += `- Special Considerations: ${classProfile.specialNeeds}\n`;
   }
 
   // Create a comprehensive prompt for Claude
@@ -94,7 +123,16 @@ async function generateThemeWithAI(themeName: string, weekStart: string, weekEnd
 
 Theme: ${themeName}
 Week: ${weekStart} to ${weekEnd}
-Age Group: ${ageGroup}
+Age Group: ${ageGroup}${contextInfo}
+
+IMPORTANT: When generating activities, songs, and games, consider:
+${classProfile?.classSize ? `- Activities must work well with ${classProfile.classSize} children (group size, materials needed, etc.)` : ""}
+${classProfile?.englishLevel ? `- Adjust vocabulary and language complexity for ${classProfile.englishLevel} English level` : ""}
+${classProfile?.phonicsGoals ? `- Integrate phonics goals: ${classProfile.phonicsGoals} into songs, games, and activities` : ""}
+${classProfile?.learningGoals ? `- Focus on learning goals: ${classProfile.learningGoals}` : ""}
+${classProfile?.availableMaterials ? `- Only suggest activities using: ${classProfile.availableMaterials}` : ""}
+${classProfile?.previousThemes && classProfile.previousThemes.length > 0 ? `- Build on previous themes (${classProfile.previousThemes.join(", ")}) but introduce new concepts` : ""}
+${classProfile?.specialNeeds ? `- Accommodate: ${classProfile.specialNeeds}` : ""}
 
 Generate a complete theme with the following structure (return ONLY valid JSON, no markdown, no code blocks):
 
@@ -229,7 +267,7 @@ Return ONLY the JSON object, no other text.`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-3-5-sonnet-20240620",
         max_tokens: 8000,
         messages: [
           {
@@ -315,7 +353,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { themeName, weekStart, weekEnd, ageGroup } = body;
+    const { themeName, weekStart, weekEnd, ageGroup, classProfile } = body;
 
     if (!themeName || !weekStart || !weekEnd) {
       return NextResponse.json(
@@ -323,6 +361,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Get existing settings/class profile from plans data
+    const plansData = await readPlansData();
+    const settings = plansData.settings || {};
+    const existingThemes = plansData.themes || [];
+    
+    // Merge provided classProfile with existing settings
+    const mergedClassProfile = {
+      classSize: classProfile?.classSize || settings.classSize,
+      englishLevel: classProfile?.englishLevel || settings.englishLevel,
+      phonicsGoals: classProfile?.phonicsGoals || settings.phonicsGoals,
+      learningGoals: classProfile?.learningGoals || settings.learningGoals,
+      availableMaterials: classProfile?.availableMaterials || settings.availableMaterials,
+      previousThemes: classProfile?.previousThemes || existingThemes.map((t: any) => t.name).slice(0, 5),
+      specialNeeds: classProfile?.specialNeeds || settings.specialNeeds,
+    };
 
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -336,11 +390,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate theme with AI
-    console.log(`Generating theme: ${themeName} for ${weekStart} to ${weekEnd}`);
-    const newTheme = await generateThemeWithAI(themeName, weekStart, weekEnd, ageGroup || "kindergarten");
+    console.log(`Generating theme: ${themeName} for ${weekStart} to ${weekEnd} with class profile:`, mergedClassProfile);
+    const newTheme = await generateThemeWithAI(
+      themeName, 
+      weekStart, 
+      weekEnd, 
+      ageGroup || "kindergarten",
+      mergedClassProfile
+    );
 
-    // Read existing plans
-    const plansData = await readPlansData();
+    // Read existing plans (already loaded above)
 
     // Add new theme to the beginning of the array
     plansData.themes.unshift(newTheme);

@@ -163,3 +163,30 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: `Failed to delete theme: ${errorMessage}` }, { status: 500 });
   }
 }
+
+// Helper function to save plans data (same as in generate route)
+async function savePlansData(plansData: any) {
+  const isVercel = process.env.VERCEL === "1";
+  const jsonData = JSON.stringify(plansData, null, 2);
+  
+  if (isVercel) {
+    const supabase = createSupabaseAdmin();
+    const blob = new Blob([jsonData], { type: "application/json" });
+    
+    const { error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(CIRCLE_PLANS_FILE, blob, {
+        upsert: true,
+        contentType: "application/json",
+      });
+
+    if (error) {
+      throw new Error(`Failed to save to Supabase: ${error.message}`);
+    }
+  } else {
+    const fs = require("fs");
+    const path = require("path");
+    const circlePlansPath = path.join(process.cwd(), "data", "circle-plans.json");
+    fs.writeFileSync(circlePlansPath, jsonData, "utf-8");
+  }
+}

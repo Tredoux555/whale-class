@@ -117,6 +117,15 @@ export default function CirclePlannerPage() {
   const [teacherNotes, setTeacherNotes] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [classProfile, setClassProfile] = useState({
+    classSize: 15,
+    englishLevel: "beginner",
+    phonicsGoals: "",
+    learningGoals: "",
+    availableMaterials: "Basic art supplies (paper, crayons, glue, scissors), simple props for dramatic play",
+    specialNeeds: "",
+  });
   const [generateForm, setGenerateForm] = useState({
     themeName: "",
     weekStart: "",
@@ -138,6 +147,18 @@ export default function CirclePlannerPage() {
       }
       const data = await response.json();
       setThemes(data.themes || []);
+      
+      // Load class profile/settings
+      if (data.settings) {
+        setClassProfile({
+          classSize: data.settings.classSize || 15,
+          englishLevel: data.settings.englishLevel || "beginner",
+          phonicsGoals: data.settings.phonicsGoals || "",
+          learningGoals: data.settings.learningGoals || "",
+          availableMaterials: data.settings.availableMaterials || "Basic art supplies (paper, crayons, glue, scissors), simple props for dramatic play",
+          specialNeeds: data.settings.specialNeeds || "",
+        });
+      }
       
       // Auto-select current theme or first theme
       const currentTheme = data.themes?.find((t: Theme) => t.status === "current");
@@ -218,6 +239,14 @@ export default function CirclePlannerPage() {
               </div>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl transition-all text-sm font-medium backdrop-blur-sm border border-white/20 flex items-center gap-2"
+                title="Edit Class Profile"
+              >
+                <span>👥</span>
+                <span>Class Profile</span>
+              </button>
               <Link
                 href="/admin"
                 className="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl transition-all text-sm font-medium backdrop-blur-sm border border-white/20"
@@ -801,8 +830,11 @@ export default function CirclePlannerPage() {
             </div>
 
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 mb-6 border border-purple-200">
-              <p className="text-sm text-purple-800">
+              <p className="text-sm text-purple-800 mb-2">
                 <strong>🤖 AI-Powered Generation:</strong> Claude will create a complete theme package including songs, stories, games, crafts, dramatic play ideas, movement activities, and a full 5-day plan!
+              </p>
+              <p className="text-xs text-purple-700">
+                💡 The AI considers your class profile below to generate personalized, age-appropriate activities.
               </p>
             </div>
 
@@ -826,6 +858,7 @@ export default function CirclePlannerPage() {
                       weekStart: generateForm.weekStart,
                       weekEnd: generateForm.weekEnd,
                       ageGroup: generateForm.ageGroup,
+                      classProfile: classProfile,
                     }),
                   });
 
@@ -915,6 +948,52 @@ export default function CirclePlannerPage() {
                 </select>
               </div>
 
+              {/* Class Profile Section */}
+              <div className="border-t-2 border-amber-200 pt-6 mt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-bold text-amber-900 flex items-center gap-2">
+                    <span>👥</span> Class Profile (Helps AI Generate Better Plans)
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowSettingsModal(true)}
+                    className="text-xs text-amber-600 hover:text-amber-800 underline"
+                    disabled={generating}
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+                
+                <div className="bg-amber-50 rounded-xl p-4 space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-amber-900">Class Size:</span>
+                    <span className="text-amber-700">{classProfile.classSize} children</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-amber-900">English Level:</span>
+                    <span className="text-amber-700 capitalize">{classProfile.englishLevel}</span>
+                  </div>
+                  {classProfile.phonicsGoals && (
+                    <div>
+                      <span className="font-semibold text-amber-900">Phonics Goals:</span>
+                      <span className="text-amber-700 ml-2">{classProfile.phonicsGoals}</span>
+                    </div>
+                  )}
+                  {classProfile.learningGoals && (
+                    <div>
+                      <span className="font-semibold text-amber-900">Learning Goals:</span>
+                      <span className="text-amber-700 ml-2">{classProfile.learningGoals}</span>
+                    </div>
+                  )}
+                  {themes.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-amber-900">Previous Themes:</span>
+                      <span className="text-amber-700 ml-2">{themes.slice(0, 3).map(t => t.name).join(", ")}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {generateError && (
                 <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
                   <p className="text-red-800 text-sm">
@@ -967,6 +1046,159 @@ export default function CirclePlannerPage() {
                   </p>
                 </div>
               )}
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Class Profile Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                <span className="text-3xl">👥</span> Class Profile Settings
+              </h3>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="text-amber-600 hover:text-amber-800 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="bg-blue-50 rounded-2xl p-4 mb-6 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Why this matters:</strong> The AI uses this information to generate personalized themes that match your class's needs, English level, phonics goals, and available resources.
+              </p>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                // Save settings to API (we'll create this endpoint)
+                try {
+                  const response = await fetch("/api/circle-plans/settings", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ settings: classProfile }),
+                  });
+
+                  if (response.ok) {
+                    setShowSettingsModal(false);
+                    // Refresh to get updated settings
+                    await fetchPlans();
+                  }
+                } catch (error) {
+                  console.error("Error saving settings:", error);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-amber-900 mb-2">
+                    Class Size *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={classProfile.classSize}
+                    onChange={(e) => setClassProfile({ ...classProfile, classSize: parseInt(e.target.value) || 15 })}
+                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-amber-900 mb-2">
+                    English Level *
+                  </label>
+                  <select
+                    value={classProfile.englishLevel}
+                    onChange={(e) => setClassProfile({ ...classProfile, englishLevel: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                    required
+                  >
+                    <option value="beginner">Beginner (ESL/New to English)</option>
+                    <option value="intermediate">Intermediate (Some English)</option>
+                    <option value="advanced">Advanced (Fluent English)</option>
+                    <option value="mixed">Mixed Levels</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Phonics Goals
+                </label>
+                <textarea
+                  value={classProfile.phonicsGoals}
+                  onChange={(e) => setClassProfile({ ...classProfile, phonicsGoals: e.target.value })}
+                  placeholder="e.g., Learning letter sounds A-F, blending CVC words, recognizing sight words"
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  rows={3}
+                />
+                <p className="text-xs text-amber-600 mt-1">What phonics skills are you focusing on this term?</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Learning Goals
+                </label>
+                <textarea
+                  value={classProfile.learningGoals}
+                  onChange={(e) => setClassProfile({ ...classProfile, learningGoals: e.target.value })}
+                  placeholder="e.g., Social skills, fine motor development, counting to 20, following directions"
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  rows={3}
+                />
+                <p className="text-xs text-amber-600 mt-1">What are your main learning objectives for the class?</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Available Materials
+                </label>
+                <textarea
+                  value={classProfile.availableMaterials}
+                  onChange={(e) => setClassProfile({ ...classProfile, availableMaterials: e.target.value })}
+                  placeholder="List materials you have available for activities"
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  rows={3}
+                />
+                <p className="text-xs text-amber-600 mt-1">The AI will only suggest activities using these materials.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Special Considerations
+                </label>
+                <textarea
+                  value={classProfile.specialNeeds}
+                  onChange={(e) => setClassProfile({ ...classProfile, specialNeeds: e.target.value })}
+                  placeholder="e.g., Children with sensory needs, limited space, outdoor activities preferred"
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  rows={2}
+                />
+                <p className="text-xs text-amber-600 mt-1">Any special needs or considerations for your class?</p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition-all shadow-lg"
+                >
+                  Save Profile
+                </button>
+              </div>
             </form>
           </div>
         </div>
