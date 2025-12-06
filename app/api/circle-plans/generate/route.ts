@@ -118,14 +118,15 @@ async function generateThemeWithAI(
     if (classProfile.specialNeeds) contextInfo += `- Special Considerations: ${classProfile.specialNeeds}\n`;
   }
 
-  // Create a simplified prompt for faster generation
-  const prompt = `Generate a kindergarten circle time theme plan as JSON.
+  // Create prompt for 30-minute circle time theme
+  const prompt = `Create a weekly 30-MINUTE CIRCLE TIME theme plan for kindergarten. This is NOT a full school day - just a focused 30-min circle time session each day.
 
 Theme: ${themeName}
 Week: ${weekStart} to ${weekEnd}
-Age: ${ageGroup}${contextInfo ? contextInfo : ""}
+Age: ${ageGroup}${contextInfo}
 
-Return ONLY this JSON (no markdown):
+Return ONLY valid JSON (no markdown, no code blocks):
+
 {
   "id": "${themeName.toLowerCase().replace(/\s+/g, '-')}-${weekStart}",
   "name": "${themeName}",
@@ -134,30 +135,45 @@ Return ONLY this JSON (no markdown):
   "status": "upcoming",
   "color": "#4A90E2",
   "emoji": "🎄",
-  "description": "Brief theme description",
-  "discussionQuestions": ["4 questions for circle time discussion"],
-  "songs": [{"id": "song-1", "title": "Song name", "type": "song", "lyrics": "Lyrics excerpt", "youtubeUrl": "", "notes": "How to use"}],
-  "stories": [{"id": "story-1", "title": "Book title", "author": "Author", "type": "book", "description": "About the book", "amazonUrl": "", "notes": "Why it fits"}],
-  "games": [{"id": "game-1", "title": "Game name", "type": "game", "description": "What it teaches", "materials": "Materials needed", "instructions": "How to play", "notes": "Tips"}],
-  "crafts": [{"id": "craft-1", "title": "Craft name", "materials": "Materials", "instructions": "Steps", "notes": "Tips"}],
-  "printables": [{"id": "print-1", "title": "Printable name", "type": "coloring", "description": "Description", "notes": "How to use"}],
-  "dramaticPlay": [{"id": "dp-1", "title": "Setup name", "setup": "Setup instructions", "roles": "Roles", "props": "Props", "notes": "Learning goals"}],
-  "movementActivities": [{"id": "move-1", "title": "Activity", "description": "What to do", "examples": "Examples", "notes": "Benefits"}],
+  "description": "Brief engaging description",
+  "discussionQuestions": ["4 simple questions for circle time"],
+  "songs": [
+    {"id": "song-1", "title": "Song name", "type": "song", "lyrics": "Full lyrics or verse", "youtubeUrl": "", "notes": "Actions/movements to do"}
+  ],
+  "stories": [
+    {"id": "story-1", "title": "Book title", "author": "Author name", "type": "book", "description": "What happens in story", "amazonUrl": "", "notes": "Discussion points"}
+  ],
+  "games": [
+    {"id": "game-1", "title": "Game name", "type": "circle-game", "description": "Learning objective", "materials": "What you need", "instructions": "Step-by-step how to play", "notes": "Variations"}
+  ],
+  "crafts": [
+    {"id": "craft-1", "title": "Craft name", "materials": "Materials list", "instructions": "Numbered steps", "notes": "Tips"}
+  ],
+  "printables": [
+    {"id": "print-1", "title": "Printable name", "type": "flashcards", "description": "What it shows", "notes": "How to use in circle"}
+  ],
+  "dramaticPlay": [
+    {"id": "dp-1", "title": "Role play idea", "setup": "Quick setup", "roles": "Who children pretend to be", "props": "Simple props", "notes": "Learning focus"}
+  ],
+  "movementActivities": [
+    {"id": "move-1", "title": "Movement name", "description": "What children do", "examples": "Specific actions", "notes": "When to use"}
+  ],
   "dailyPlan": {
-    "monday": {"focus": "Focus", "activities": ["4 activities"]},
-    "tuesday": {"focus": "Focus", "activities": ["4 activities"]},
-    "wednesday": {"focus": "Focus", "activities": ["4 activities"]},
-    "thursday": {"focus": "Focus", "activities": ["4 activities"]},
-    "friday": {"focus": "Focus", "activities": ["4 activities"]}
+    "monday": {"focus": "Day's theme focus", "activities": ["Welcome song (2 min)", "Discussion question (5 min)", "Story time (10 min)", "Movement activity (5 min)", "Closing song (3 min)"]},
+    "tuesday": {"focus": "Day's theme focus", "activities": ["Opening song (2 min)", "Flashcard activity (5 min)", "Circle game (10 min)", "Story (8 min)", "Goodbye song (3 min)"]},
+    "wednesday": {"focus": "Day's theme focus", "activities": ["Theme song (3 min)", "Discussion (5 min)", "Movement game (8 min)", "Craft intro (10 min)", "Closing (2 min)"]},
+    "thursday": {"focus": "Day's theme focus", "activities": ["Welcome (2 min)", "Story retell (8 min)", "Role play (10 min)", "Song with actions (5 min)", "Wrap up (3 min)"]},
+    "friday": {"focus": "Celebration/review", "activities": ["Favorite song (3 min)", "Week review game (10 min)", "Share craft/work (8 min)", "Movement celebration (5 min)", "Goodbye song (2 min)"]}
   },
   "teacherNotes": "",
   "createdAt": "${new Date().toISOString()}",
   "updatedAt": "${new Date().toISOString()}"
 }
 
-Include: 3 songs, 2 stories, 3 games, 2 crafts, 2 printables, 1 dramatic play, 2 movement activities. Leave URLs empty. Return ONLY valid JSON.`;
+Include: 3 songs with lyrics, 2 stories, 3 games with detailed instructions, 2 crafts, 2 printables (flashcards/visual aids), 1 dramatic play, 2 movement activities.
+Each daily plan = 30 minutes total. Leave URLs as empty strings "".`;
 
-  // Use Claude 3.5 Haiku for faster generation
+  // Use Claude Sonnet 4 for best quality
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -166,8 +182,8 @@ Include: 3 songs, 2 stories, 3 games, 2 crafts, 2 printables, 1 dramatic play, 2
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-3-5-haiku-20241022",
-      max_tokens: 4000,
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 5000,
       messages: [
         {
           role: "user",
