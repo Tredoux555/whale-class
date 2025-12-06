@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { createSupabaseAdmin, STORAGE_BUCKET, CIRCLE_PLANS_FILE } from "@/lib/supabase";
-import fs from "fs";
-import path from "path";
+// Lazy filesystem imports to avoid module-level execution
 
 // One-time route to upload circle-plans.json to Supabase Storage
 // Call this once after deployment to initialize the data
@@ -13,7 +12,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Read the JSON file
+    // Only works on localhost - Vercel has read-only filesystem
+    if (process.env.VERCEL === "1") {
+      return NextResponse.json(
+        { error: "This endpoint only works on localhost. Use Supabase dashboard to upload the file manually." },
+        { status: 400 }
+      );
+    }
+
+    // Read the JSON file (lazy import)
+    const fs = require("fs");
+    const path = require("path");
     const filePath = path.join(process.cwd(), "data", "circle-plans.json");
     
     if (!fs.existsSync(filePath)) {
