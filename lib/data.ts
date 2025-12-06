@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+// Lazy filesystem imports - only load when needed (not at module level)
+// This prevents filesystem operations from executing during Vercel build
 import { createSupabaseAdmin, STORAGE_BUCKET, METADATA_FILE } from "./supabase";
 
 export interface Video {
@@ -13,22 +13,18 @@ export interface Video {
   week?: string; // For song of the week
 }
 
-const dataDir = path.join(process.cwd(), "data");
-const videosFile = path.join(dataDir, "videos.json");
-const isVercel = process.env.VERCEL === "1";
-
-// Ensure data directory exists (for localhost)
-if (!isVercel && !fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Initialize videos.json if it doesn't exist (for localhost)
-if (!isVercel && !fs.existsSync(videosFile)) {
-  fs.writeFileSync(videosFile, JSON.stringify([], null, 2));
+// Helper function to get filesystem paths (only called when needed)
+function getLocalPaths() {
+  const path = require("path");
+  const dataDir = path.join(process.cwd(), "data");
+  const videosFile = path.join(dataDir, "videos.json");
+  return { dataDir, videosFile };
 }
 
 // Get videos from local filesystem (localhost) or Supabase Storage (Vercel)
 export async function getVideos(): Promise<Video[]> {
+  const isVercel = process.env.VERCEL === "1";
+  
   try {
     if (isVercel) {
       // On Vercel: Read from Supabase Storage
@@ -61,7 +57,21 @@ export async function getVideos(): Promise<Video[]> {
         return [];
       }
     } else {
-      // On localhost: Read from filesystem
+      // On localhost: Read from filesystem (lazy import)
+      const fs = require("fs");
+      const { videosFile } = getLocalPaths();
+      
+      // Ensure data directory exists
+      const { dataDir } = getLocalPaths();
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
+      // Initialize videos.json if it doesn't exist
+      if (!fs.existsSync(videosFile)) {
+        fs.writeFileSync(videosFile, JSON.stringify([], null, 2));
+      }
+      
       const data = fs.readFileSync(videosFile, "utf-8");
       const videos = JSON.parse(data);
       return Array.isArray(videos) ? videos : [];
@@ -74,6 +84,8 @@ export async function getVideos(): Promise<Video[]> {
 
 // Save videos to local filesystem (localhost) or Supabase Storage (Vercel)
 export async function saveVideos(videos: Video[]): Promise<void> {
+  const isVercel = process.env.VERCEL === "1";
+  
   try {
     if (isVercel) {
       // Check if Supabase is configured
@@ -142,7 +154,10 @@ export async function saveVideos(videos: Video[]): Promise<void> {
       }
       throw new Error(errorDetails);
     } else {
-      // On localhost: Save to filesystem
+      // On localhost: Save to filesystem (lazy import)
+      const fs = require("fs");
+      const { videosFile } = getLocalPaths();
+      
       fs.writeFileSync(videosFile, JSON.stringify(videos, null, 2));
       console.log(`Successfully saved ${videos.length} videos to filesystem`);
     }
