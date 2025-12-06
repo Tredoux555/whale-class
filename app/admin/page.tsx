@@ -427,6 +427,7 @@ export default function AdminDashboard() {
           >
             <span className="text-xl">🌈</span> Circle Time Planner
           </Link>
+          {/* Circle Time Planner - Plan engaging kindergarten circle time lessons */}
         </div>
 
             {/* Upload Form */}
