@@ -3,7 +3,13 @@ import { getAdminSession } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 // Import JSON as module for Vercel (more reliable than filesystem read)
-import circlePlansData from "@/data/circle-plans.json";
+import circlePlansDataRaw from "@/data/circle-plans.json";
+
+// Type assertion to ensure proper typing
+const circlePlansData = circlePlansDataRaw as {
+  themes: any[];
+  settings: { circleDuration: number; ageGroup: string; classSize: number };
+};
 
 const dataFilePath = path.join(process.cwd(), "data", "circle-plans.json");
 const isVercel = process.env.VERCEL === "1";
