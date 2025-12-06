@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-// Import JSON directly - Next.js will bundle it efficiently
-import circlePlansData from "@/data/circle-plans.json";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // Configure route for Vercel
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Simple function to get plans data
+// Cache for the data
+let circlePlansDataCache: any = null;
+
+// Simple function to get plans data - reads from file system
 function readPlansData() {
-  return circlePlansData;
+  if (circlePlansDataCache) {
+    return circlePlansDataCache;
+  }
+  
+  try {
+    // Read from the data file - this works because the file is committed to git
+    const filePath = join(process.cwd(), 'data', 'circle-plans.json');
+    const fileContents = readFileSync(filePath, 'utf-8');
+    circlePlansDataCache = JSON.parse(fileContents);
+    return circlePlansDataCache;
+  } catch (error) {
+    console.error('Error reading circle plans data:', error);
+    // Return empty structure if read fails
+    return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+  }
 }
 
 // GET - Fetch all lesson plans
