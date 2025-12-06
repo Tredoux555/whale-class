@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getVideos, addVideo } from "@/lib/data";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
+// Filesystem imports moved inside function to avoid module-level execution
 
 export async function GET() {
   const session = await getAdminSession();
@@ -78,6 +76,12 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(bytes);
       videoId = uuidv4();
       videoFileName = `${videoId}-${videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      
+      // Lazy import filesystem modules only when needed (not on Vercel)
+      const { writeFile, mkdir } = await import("fs/promises");
+      const { join } = await import("path");
+      const { existsSync } = await import("fs");
+      
       const videosDir = join(process.cwd(), "public", "videos");
       
       // Ensure videos directory exists

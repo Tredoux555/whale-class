@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { deleteVideo } from "@/lib/data";
-import { unlink } from "fs/promises";
-import { join } from "path";
 import { createSupabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
+// Filesystem imports moved inside function to avoid module-level execution
 
 export async function DELETE(request: NextRequest) {
   const session = await getAdminSession();
@@ -90,7 +89,10 @@ export async function DELETE(request: NextRequest) {
         // Non-critical - metadata already deleted
       }
     } else if (!process.env.VERCEL) {
-      // Local file path - only delete on localhost
+      // Local file path - only delete on localhost (lazy import)
+      const { unlink } = await import("fs/promises");
+      const { join } = await import("path");
+      
       const videoPath = join(process.cwd(), "public", video.videoUrl);
       try {
         await unlink(videoPath);
