@@ -115,6 +115,14 @@ export default function CirclePlannerPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
   const [teacherNotes, setTeacherNotes] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState("");
+  const [generateForm, setGenerateForm] = useState({
+    themeName: "",
+    weekStart: "",
+    weekEnd: "",
+    ageGroup: "kindergarten",
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -264,9 +272,9 @@ export default function CirclePlannerPage() {
             ))}
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-shrink-0 p-5 rounded-2xl border-2 border-dashed border-amber-300 bg-white/50 hover:bg-white hover:border-amber-400 transition-all min-w-[180px] flex flex-col items-center justify-center gap-2"
+              className="flex-shrink-0 p-5 rounded-2xl border-2 border-dashed border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 hover:border-purple-400 transition-all min-w-[180px] flex flex-col items-center justify-center gap-2"
             >
-              <span className="text-4xl">➕</span>
+              <span className="text-4xl">✨</span>
               <span className="text-amber-700 font-semibold">Add New Theme</span>
             </button>
           </div>
@@ -755,9 +763,10 @@ export default function CirclePlannerPage() {
             </p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center gap-2"
             >
-              ➕ Create First Theme
+              <span>✨</span>
+              <span>Generate First Theme with AI</span>
             </button>
           </div>
         )}
@@ -770,20 +779,195 @@ export default function CirclePlannerPage() {
         </div>
       </footer>
 
-      {/* Add Theme Modal - Simple for now */}
+      {/* Generate Theme Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
-            <h3 className="text-2xl font-bold text-amber-900 mb-6">Add New Theme</h3>
-            <p className="text-amber-600 mb-6">
-              Feature coming soon! For now, themes can be added by editing the data file or contacting support.
-            </p>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-semibold transition-colors"
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                <span className="text-3xl">✨</span> Generate New Theme with AI
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setGenerateError("");
+                  setGenerateForm({ themeName: "", weekStart: "", weekEnd: "", ageGroup: "kindergarten" });
+                }}
+                className="text-amber-600 hover:text-amber-800 text-2xl"
+                disabled={generating}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 mb-6 border border-purple-200">
+              <p className="text-sm text-purple-800">
+                <strong>🤖 AI-Powered Generation:</strong> Claude will create a complete theme package including songs, stories, games, crafts, dramatic play ideas, movement activities, and a full 5-day plan!
+              </p>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!generateForm.themeName || !generateForm.weekStart || !generateForm.weekEnd) {
+                  setGenerateError("Please fill in all required fields");
+                  return;
+                }
+
+                setGenerating(true);
+                setGenerateError("");
+
+                try {
+                  const response = await fetch("/api/circle-plans/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      themeName: generateForm.themeName,
+                      weekStart: generateForm.weekStart,
+                      weekEnd: generateForm.weekEnd,
+                      ageGroup: generateForm.ageGroup,
+                    }),
+                  });
+
+                  const data = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(data.error || "Failed to generate theme");
+                  }
+
+                  // Success! Refresh themes and close modal
+                  await fetchPlans();
+                  setShowAddModal(false);
+                  setGenerateForm({ themeName: "", weekStart: "", weekEnd: "", ageGroup: "kindergarten" });
+                  
+                  // Select the newly generated theme
+                  if (data.theme) {
+                    setSelectedTheme(data.theme);
+                    setTeacherNotes(data.theme.teacherNotes || "");
+                  }
+                } catch (error) {
+                  console.error("Error generating theme:", error);
+                  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+                  setGenerateError(errorMessage);
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+              className="space-y-4"
             >
-              Close
-            </button>
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Theme Name *
+                </label>
+                <input
+                  type="text"
+                  value={generateForm.themeName}
+                  onChange={(e) => setGenerateForm({ ...generateForm, themeName: e.target.value })}
+                  placeholder="e.g., Ocean Animals, Space Exploration, Farm Life"
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  required
+                  disabled={generating}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-amber-900 mb-2">
+                    Week Start *
+                  </label>
+                  <input
+                    type="date"
+                    value={generateForm.weekStart}
+                    onChange={(e) => setGenerateForm({ ...generateForm, weekStart: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                    required
+                    disabled={generating}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-amber-900 mb-2">
+                    Week End *
+                  </label>
+                  <input
+                    type="date"
+                    value={generateForm.weekEnd}
+                    onChange={(e) => setGenerateForm({ ...generateForm, weekEnd: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                    required
+                    disabled={generating}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Age Group
+                </label>
+                <select
+                  value={generateForm.ageGroup}
+                  onChange={(e) => setGenerateForm({ ...generateForm, ageGroup: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400 text-amber-900"
+                  disabled={generating}
+                >
+                  <option value="preschool">Preschool (3-4 years)</option>
+                  <option value="kindergarten">Kindergarten (5-6 years)</option>
+                  <option value="early-elementary">Early Elementary (6-7 years)</option>
+                </select>
+              </div>
+
+              {generateError && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                  <p className="text-red-800 text-sm">
+                    <strong>Error:</strong> {generateError}
+                    {generateError.includes("ANTHROPIC_API_KEY") && (
+                      <span className="block mt-2 text-xs">
+                        Please add your Anthropic API key to Vercel environment variables.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setGenerateError("");
+                    setGenerateForm({ themeName: "", weekStart: "", weekEnd: "", ageGroup: "kindergarten" });
+                  }}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold transition-colors"
+                  disabled={generating}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={generating || !generateForm.themeName || !generateForm.weekStart || !generateForm.weekEnd}
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {generating ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>Generate Theme</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {generating && (
+                <div className="text-center pt-4">
+                  <p className="text-sm text-amber-600">
+                    This may take 30-60 seconds. Please don't close this window...
+                  </p>
+                </div>
+              )}
+            </form>
           </div>
         </div>
       )}
