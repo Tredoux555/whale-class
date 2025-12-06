@@ -413,14 +413,20 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Upload Button */}
-        <div className="mb-6">
+        {/* Action Buttons */}
+        <div className="mb-6 flex flex-wrap gap-4">
           <button
             onClick={() => setShowUpload(!showUpload)}
             className="bg-[#4A90E2] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors shadow-md"
           >
             {showUpload ? "Cancel Upload" : "+ Upload New Video"}
           </button>
+          <Link
+            href="/admin/circle-planner"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">🌈</span> Circle Time Planner
+          </Link>
         </div>
 
             {/* Upload Form */}
