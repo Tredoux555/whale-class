@@ -421,7 +421,12 @@ export default function AdminDashboard() {
           >
             {showUpload ? "Cancel Upload" : "+ Upload New Video"}
           </button>
-{/* Circle Time Planner - temporarily disabled, will be re-added later */}
+<Link
+            href="/admin/circle-planner"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">🌈</span> Circle Time Planner
+          </Link>
         </div>
 
             {/* Upload Form */}
