@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-// Import data from TypeScript constant - always available, no filesystem issues
-import { circlePlansData } from "@/lib/circle-plans-data";
+// Import JSON directly - Next.js will bundle it efficiently
+import circlePlansData from "@/data/circle-plans.json";
 
-// Simple function to get plans data - always uses the TypeScript constant
+// Simple function to get plans data
 function readPlansData() {
   return circlePlansData;
 }
