@@ -118,6 +118,7 @@ export default function CirclePlannerPage() {
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [deletingThemeId, setDeletingThemeId] = useState<string | null>(null);
   const [classProfile, setClassProfile] = useState({
     classSize: 15,
     englishLevel: "beginner",
@@ -198,6 +199,37 @@ export default function CirclePlannerPage() {
     }
   };
 
+  const deleteTheme = async (themeId: string, themeName: string) => {
+    if (!confirm(`Are you sure you want to delete "${themeName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingThemeId(themeId);
+    try {
+      const response = await fetch(`/api/circle-plans?id=${themeId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // If we deleted the selected theme, clear selection
+        if (selectedTheme?.id === themeId) {
+          setSelectedTheme(null);
+          setTeacherNotes("");
+        }
+        // Refresh themes list
+        await fetchPlans();
+      } else {
+        const data = await response.json();
+        alert(`Failed to delete theme: ${data.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error deleting theme:", error);
+      alert("Failed to delete theme. Please try again.");
+    } finally {
+      setDeletingThemeId(null);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -266,38 +298,57 @@ export default function CirclePlannerPage() {
           </h2>
           <div className="flex gap-4 overflow-x-auto pb-3">
             {themes.map((theme) => (
-              <button
+              <div
                 key={theme.id}
-                onClick={() => {
-                  setSelectedTheme(theme);
-                  setTeacherNotes(theme.teacherNotes || "");
-                  setActiveTab("overview");
-                }}
-                className={`flex-shrink-0 p-5 rounded-2xl border-2 transition-all min-w-[220px] text-left ${
-                  selectedTheme?.id === theme.id
-                    ? "border-amber-400 bg-white shadow-xl scale-105"
-                    : "border-transparent bg-white/70 hover:bg-white hover:shadow-lg"
-                }`}
+                className="flex-shrink-0 relative group"
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-4xl">{theme.emoji}</span>
-                  <div>
-                    <div className="font-bold text-amber-900 text-lg">{theme.name}</div>
-                    <div className="text-xs text-amber-600">
-                      {formatDate(theme.weekStart)} - {formatDate(theme.weekEnd)}
+                <button
+                  onClick={() => {
+                    setSelectedTheme(theme);
+                    setTeacherNotes(theme.teacherNotes || "");
+                    setActiveTab("overview");
+                  }}
+                  className={`w-full p-5 rounded-2xl border-2 transition-all min-w-[220px] text-left ${
+                    selectedTheme?.id === theme.id
+                      ? "border-amber-400 bg-white shadow-xl scale-105"
+                      : "border-transparent bg-white/70 hover:bg-white hover:shadow-lg"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-4xl">{theme.emoji}</span>
+                    <div>
+                      <div className="font-bold text-amber-900 text-lg">{theme.name}</div>
+                      <div className="text-xs text-amber-600">
+                        {formatDate(theme.weekStart)} - {formatDate(theme.weekEnd)}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className={`text-xs px-3 py-1 rounded-full inline-block font-semibold ${
-                  theme.status === "current" 
-                    ? "bg-green-100 text-green-700" 
-                    : theme.status === "upcoming"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-600"
-                }`}>
-                  {theme.status === "current" ? "📍 This Week" : theme.status === "upcoming" ? "⏭️ Next Week" : "✓ Completed"}
-                </div>
-              </button>
+                  <div className={`text-xs px-3 py-1 rounded-full inline-block font-semibold ${
+                    theme.status === "current" 
+                      ? "bg-green-100 text-green-700" 
+                      : theme.status === "upcoming"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}>
+                    {theme.status === "current" ? "📍 This Week" : theme.status === "upcoming" ? "⏭️ Next Week" : "✓ Completed"}
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteTheme(theme.id, theme.name);
+                  }}
+                  disabled={deletingThemeId === theme.id}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                  title="Delete theme"
+                >
+                  {deletingThemeId === theme.id ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <span>🗑️</span>
+                  )}
+                </button>
+              </div>
             ))}
             <button
               onClick={() => setShowAddModal(true)}
