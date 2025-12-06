@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "Whale Class - Learning Videos",
   description: "Weekly songs and phonics videos for the Whale Class kindergarten",
   manifest: "/manifest.json",
-  themeColor: "#4A90E2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -29,13 +28,15 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#4A90E2",
 };
 
 export default function RootLayout({
