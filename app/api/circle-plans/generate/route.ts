@@ -118,24 +118,14 @@ async function generateThemeWithAI(
     if (classProfile.specialNeeds) contextInfo += `- Special Considerations: ${classProfile.specialNeeds}\n`;
   }
 
-  // Create a comprehensive prompt for Claude
-  const prompt = `You are an expert kindergarten teacher creating a comprehensive weekly circle time theme plan. Generate a complete theme package in JSON format.
+  // Create a simplified prompt for faster generation
+  const prompt = `Generate a kindergarten circle time theme plan as JSON.
 
 Theme: ${themeName}
 Week: ${weekStart} to ${weekEnd}
-Age Group: ${ageGroup}${contextInfo}
+Age: ${ageGroup}${contextInfo ? contextInfo : ""}
 
-IMPORTANT: When generating activities, songs, and games, consider:
-${classProfile?.classSize ? `- Activities must work well with ${classProfile.classSize} children (group size, materials needed, etc.)` : ""}
-${classProfile?.englishLevel ? `- Adjust vocabulary and language complexity for ${classProfile.englishLevel} English level` : ""}
-${classProfile?.phonicsGoals ? `- Integrate phonics goals: ${classProfile.phonicsGoals} into songs, games, and activities` : ""}
-${classProfile?.learningGoals ? `- Focus on learning goals: ${classProfile.learningGoals}` : ""}
-${classProfile?.availableMaterials ? `- Only suggest activities using: ${classProfile.availableMaterials}` : ""}
-${classProfile?.previousThemes && classProfile.previousThemes.length > 0 ? `- Build on previous themes (${classProfile.previousThemes.join(", ")}) but introduce new concepts` : ""}
-${classProfile?.specialNeeds ? `- Accommodate: ${classProfile.specialNeeds}` : ""}
-
-Generate a complete theme with the following structure (return ONLY valid JSON, no markdown, no code blocks):
-
+Return ONLY this JSON (no markdown):
 {
   "id": "${themeName.toLowerCase().replace(/\s+/g, '-')}-${weekStart}",
   "name": "${themeName}",
@@ -143,249 +133,141 @@ Generate a complete theme with the following structure (return ONLY valid JSON, 
   "weekEnd": "${weekEnd}",
   "status": "upcoming",
   "color": "#4A90E2",
-  "emoji": "🎨",
-  "description": "A brief, engaging description of the theme (1-2 sentences)",
-  "discussionQuestions": [
-    "6 age-appropriate discussion questions related to the theme"
-  ],
-  "songs": [
-    {
-      "id": "song-1",
-      "title": "Song title",
-      "type": "song",
-      "lyrics": "First verse and chorus lyrics",
-      "youtubeUrl": "",
-      "notes": "Teaching notes or activity suggestions"
-    }
-  ],
-  "stories": [
-    {
-      "id": "story-1",
-      "title": "Book title",
-      "author": "Author name",
-      "type": "book",
-      "description": "Brief description of the story",
-      "amazonUrl": "",
-      "notes": "Why this book fits the theme"
-    }
-  ],
-  "games": [
-    {
-      "id": "game-1",
-      "title": "Game name",
-      "type": "matching-game",
-      "description": "What the game teaches",
-      "materials": "List of materials needed",
-      "instructions": "How to play",
-      "notes": "Age-appropriate notes"
-    }
-  ],
-  "crafts": [
-    {
-      "id": "craft-1",
-      "title": "Craft name",
-      "materials": "Detailed materials list",
-      "instructions": "Step-by-step instructions (numbered)",
-      "notes": "Tips for success"
-    }
-  ],
-  "printables": [
-    {
-      "id": "print-1",
-      "title": "Printable name",
-      "type": "coloring",
-      "description": "What it's for",
-      "notes": "How to use it"
-    }
-  ],
-  "dramaticPlay": [
-    {
-      "id": "dp-1",
-      "title": "Dramatic play setup name",
-      "setup": "How to set up the area",
-      "roles": "Roles children can play",
-      "props": "Props needed",
-      "notes": "Learning objectives"
-    }
-  ],
-  "movementActivities": [
-    {
-      "id": "move-1",
-      "title": "Activity name",
-      "description": "What children do",
-      "examples": "Specific examples",
-      "notes": "Benefits"
-    }
-  ],
+  "emoji": "🎄",
+  "description": "Brief theme description",
+  "discussionQuestions": ["4 questions for circle time discussion"],
+  "songs": [{"id": "song-1", "title": "Song name", "type": "song", "lyrics": "Lyrics excerpt", "youtubeUrl": "", "notes": "How to use"}],
+  "stories": [{"id": "story-1", "title": "Book title", "author": "Author", "type": "book", "description": "About the book", "amazonUrl": "", "notes": "Why it fits"}],
+  "games": [{"id": "game-1", "title": "Game name", "type": "game", "description": "What it teaches", "materials": "Materials needed", "instructions": "How to play", "notes": "Tips"}],
+  "crafts": [{"id": "craft-1", "title": "Craft name", "materials": "Materials", "instructions": "Steps", "notes": "Tips"}],
+  "printables": [{"id": "print-1", "title": "Printable name", "type": "coloring", "description": "Description", "notes": "How to use"}],
+  "dramaticPlay": [{"id": "dp-1", "title": "Setup name", "setup": "Setup instructions", "roles": "Roles", "props": "Props", "notes": "Learning goals"}],
+  "movementActivities": [{"id": "move-1", "title": "Activity", "description": "What to do", "examples": "Examples", "notes": "Benefits"}],
   "dailyPlan": {
-    "monday": {
-      "focus": "Day's learning focus",
-      "activities": ["5-6 specific activities for the day"]
-    },
-    "tuesday": {
-      "focus": "Day's learning focus",
-      "activities": ["5-6 specific activities"]
-    },
-    "wednesday": {
-      "focus": "Day's learning focus",
-      "activities": ["5-6 specific activities"]
-    },
-    "thursday": {
-      "focus": "Day's learning focus",
-      "activities": ["5-6 specific activities"]
-    },
-    "friday": {
-      "focus": "Day's learning focus",
-      "activities": ["5-6 specific activities"]
-    }
+    "monday": {"focus": "Focus", "activities": ["4 activities"]},
+    "tuesday": {"focus": "Focus", "activities": ["4 activities"]},
+    "wednesday": {"focus": "Focus", "activities": ["4 activities"]},
+    "thursday": {"focus": "Focus", "activities": ["4 activities"]},
+    "friday": {"focus": "Focus", "activities": ["4 activities"]}
   },
   "teacherNotes": "",
   "createdAt": "${new Date().toISOString()}",
   "updatedAt": "${new Date().toISOString()}"
 }
 
-Requirements:
-- Include 3-5 songs (popular children's songs related to the theme - leave youtubeUrl as empty string)
-- Include 3-4 age-appropriate books with real author names (leave amazonUrl as empty string)
-- Include 4-5 games that are hands-on and educational
-- Include 3-5 crafts with simple materials (paper, glue, crayons, etc.)
-- Include 2-3 printables (coloring pages, worksheets, etc.)
-- Include 2-3 dramatic play setups
-- Include 3-4 movement activities
-- Create a logical 5-day progression that builds on the theme
-- All content must be age-appropriate for ${ageGroup}
-- Make it engaging, educational, and fun!
-- IMPORTANT: Leave all URL fields (youtubeUrl, amazonUrl) as empty strings
+Include: 3 songs, 2 stories, 3 games, 2 crafts, 2 printables, 1 dramatic play, 2 movement activities. Leave URLs empty. Return ONLY valid JSON.`;
 
-Return ONLY the JSON object, no other text.`;
+  // Use Claude 3.5 Haiku for faster generation
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-3-5-haiku-20241022",
+      max_tokens: 4000,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    }),
+  });
 
-  // Use the best available Claude model (Claude Sonnet 4)
-  // Create AbortController for timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 second timeout
-
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 6000, // Reduced from 8000 to speed up generation
-        system: "You are an expert early childhood educator creating educational lesson plans for kindergarten teachers. Generate age-appropriate, educational, and safe content for young children. Do not generate any URLs - leave URL fields as empty strings.",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Anthropic API error: ${response.status}`, errorText);
-      throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
-    }
-
-    // Process the response - read as text first so we can log it if parsing fails
-    const responseText = await response.text();
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (error) {
-      console.error("Failed to parse Anthropic response as JSON:", error);
-      console.error("Response text:", responseText.substring(0, 1000));
-      throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
-    }
-
-    // Check if response has content
-    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
-      console.error("Invalid response structure:", JSON.stringify(data, null, 2));
-      throw new Error("Invalid response from Anthropic API: missing content");
-    }
-
-    const content = data.content[0];
-    if (!content || content.type !== "text" || !content.text) {
-      console.error("Invalid content structure:", JSON.stringify(content, null, 2));
-      throw new Error("Invalid response from Anthropic API: missing text content");
-    }
-
-    // Extract JSON from response (handle cases where Claude adds markdown)
-    let jsonText = content.text.trim();
-    
-    if (!jsonText) {
-      throw new Error("Empty response from Anthropic API");
-    }
-    
-    // Remove markdown code blocks if present
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
-    } else if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
-    }
-
-    // Parse the JSON with better error handling
-    let theme;
-    try {
-      theme = JSON.parse(jsonText);
-    } catch (parseError) {
-      console.error("JSON parse error. Content was:", jsonText.substring(0, 500));
-      throw new Error(`Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : String(parseError)}. Response preview: ${jsonText.substring(0, 200)}`);
-    }
-
-    // Validate and set proper emoji based on theme
-    const emojiMap: Record<string, string> = {
-      "ocean": "🌊",
-      "animals": "🐾",
-      "space": "🚀",
-      "farm": "🚜",
-      "jungle": "🦁",
-      "dinosaurs": "🦕",
-      "transportation": "🚗",
-      "weather": "☁️",
-      "seasons": "🍂",
-      "food": "🍎",
-      "family": "👨‍👩‍👧",
-      "friends": "👫",
-      "colors": "🌈",
-      "shapes": "🔷",
-      "numbers": "🔢",
-      "letters": "🔤",
-      "christmas": "🎄",
-      "halloween": "🎃",
-      "easter": "🐰",
-      "valentine": "💝",
-    };
-
-    // Try to find matching emoji
-    const themeLower = themeName.toLowerCase();
-    for (const [key, emoji] of Object.entries(emojiMap)) {
-      if (themeLower.includes(key)) {
-        theme.emoji = emoji;
-        break;
-      }
-    }
-
-    // If no match, use a default
-    if (!theme.emoji || theme.emoji === "🎨") {
-      theme.emoji = "📚";
-    }
-
-    return theme;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Request timeout: The AI generation took too long. Please try again with a simpler theme.");
-    }
-    throw error;
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Anthropic API error: ${response.status}`, errorText);
+    throw new Error(`Anthropic API error: ${response.status} ${errorText}`);
   }
+
+  // Process the response
+  const responseText = await response.text();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (error) {
+    console.error("Failed to parse Anthropic response as JSON:", error);
+    console.error("Response text:", responseText.substring(0, 1000));
+    throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // Check if response has content
+  if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+    console.error("Invalid response structure:", JSON.stringify(data, null, 2));
+    throw new Error("Invalid response from Anthropic API: missing content");
+  }
+
+  const content = data.content[0];
+  if (!content || content.type !== "text" || !content.text) {
+    console.error("Invalid content structure:", JSON.stringify(content, null, 2));
+    throw new Error("Invalid response from Anthropic API: missing text content");
+  }
+
+  // Extract JSON from response
+  let jsonText = content.text.trim();
+  
+  if (!jsonText) {
+    throw new Error("Empty response from Anthropic API");
+  }
+  
+  // Remove markdown code blocks if present
+  if (jsonText.startsWith("```json")) {
+    jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+  } else if (jsonText.startsWith("```")) {
+    jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
+  }
+
+  // Parse the JSON
+  let theme;
+  try {
+    theme = JSON.parse(jsonText);
+  } catch (parseError) {
+    console.error("JSON parse error. Content was:", jsonText.substring(0, 500));
+    throw new Error(`Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+  }
+
+  // Set proper emoji based on theme
+  const emojiMap: Record<string, string> = {
+    "ocean": "🌊",
+    "animals": "🐾",
+    "space": "🚀",
+    "farm": "🚜",
+    "jungle": "🦁",
+    "dinosaurs": "🦕",
+    "transportation": "🚗",
+    "weather": "☁️",
+    "seasons": "🍂",
+    "food": "🍎",
+    "family": "👨‍👩‍👧",
+    "friends": "👫",
+    "colors": "🌈",
+    "shapes": "🔷",
+    "numbers": "🔢",
+    "letters": "🔤",
+    "christmas": "🎄",
+    "halloween": "🎃",
+    "easter": "🐰",
+    "valentine": "💝",
+  };
+
+  // Try to find matching emoji
+  const themeLower = themeName.toLowerCase();
+  for (const [key, emoji] of Object.entries(emojiMap)) {
+    if (themeLower.includes(key)) {
+      theme.emoji = emoji;
+      break;
+    }
+  }
+
+  // If no match, use a default
+  if (!theme.emoji || theme.emoji === "🎨") {
+    theme.emoji = "📚";
+  }
+
+  return theme;
 }
 
 // POST - Generate new theme using AI
