@@ -4,18 +4,31 @@ import fs from "fs";
 import path from "path";
 
 const dataFilePath = path.join(process.cwd(), "data", "circle-plans.json");
+const isVercel = process.env.VERCEL === "1";
 
 function readPlansData() {
   try {
     const data = fs.readFileSync(dataFilePath, "utf-8");
     return JSON.parse(data);
   } catch (error) {
+    console.error("Error reading circle plans data:", error);
     return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
   }
 }
 
 function writePlansData(data: any) {
-  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+  if (isVercel) {
+    // On Vercel, filesystem is read-only
+    // Data changes need to be committed to git and redeployed
+    console.warn("Cannot write to filesystem on Vercel. Changes must be made via git commits.");
+    throw new Error("Filesystem is read-only on Vercel. Please make changes locally and commit to git.");
+  }
+  try {
+    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error("Error writing circle plans data:", error);
+    throw error;
+  }
 }
 
 // GET - Fetch all lesson plans
@@ -42,6 +55,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (isVercel) {
+      return NextResponse.json(
+        { 
+          error: "Cannot create themes on Vercel. Filesystem is read-only. Please add themes locally and commit to git.",
+          requiresGitCommit: true
+        },
+        { status: 400 }
+      );
+    }
+
     const newTheme = await request.json();
     const data = readPlansData();
     
@@ -59,7 +82,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, theme: newTheme });
   } catch (error) {
     console.error("Error creating theme:", error);
-    return NextResponse.json({ error: "Failed to create theme" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to create theme: ${errorMessage}` }, { status: 500 });
   }
 }
 
@@ -79,14 +103,41 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Theme not found" }, { status: 404 });
     }
     
+    // On Vercel, allow teacher notes updates (stored in memory/session) but warn about other changes
+    if (isVercel && Object.keys(updatedTheme).some(key => key !== 'teacherNotes' && key !== 'id')) {
+      return NextResponse.json(
+        { 
+          error: "Cannot update theme data on Vercel. Filesystem is read-only. Please make changes locally and commit to git.",
+          requiresGitCommit: true,
+          note: "Teacher notes can be updated (stored separately)"
+        },
+        { status: 400 }
+      );
+    }
+    
     updatedTheme.updatedAt = new Date().toISOString();
     data.themes[index] = { ...data.themes[index], ...updatedTheme };
-    writePlansData(data);
+    
+    try {
+      writePlansData(data);
+    } catch (writeError) {
+      // On Vercel, teacher notes updates are allowed but won't persist
+      if (isVercel && Object.keys(updatedTheme).every(key => key === 'teacherNotes' || key === 'id')) {
+        // Return success but note that it won't persist
+        return NextResponse.json({ 
+          success: true, 
+          theme: data.themes[index],
+          warning: "Note: Changes won't persist on Vercel. Please update locally and commit to git."
+        });
+      }
+      throw writeError;
+    }
 
     return NextResponse.json({ success: true, theme: data.themes[index] });
   } catch (error) {
     console.error("Error updating theme:", error);
-    return NextResponse.json({ error: "Failed to update theme" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to update theme: ${errorMessage}` }, { status: 500 });
   }
 }
 
@@ -96,6 +147,16 @@ export async function DELETE(request: NextRequest) {
     const session = await getAdminSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (isVercel) {
+      return NextResponse.json(
+        { 
+          error: "Cannot delete themes on Vercel. Filesystem is read-only. Please remove themes locally and commit to git.",
+          requiresGitCommit: true
+        },
+        { status: 400 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -118,6 +179,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting theme:", error);
-    return NextResponse.json({ error: "Failed to delete theme" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to delete theme: ${errorMessage}` }, { status: 500 });
   }
 }
