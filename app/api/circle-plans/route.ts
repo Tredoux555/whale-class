@@ -2,17 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
+// Import JSON as module for Vercel (more reliable than filesystem read)
+import circlePlansData from "@/data/circle-plans.json";
 
 const dataFilePath = path.join(process.cwd(), "data", "circle-plans.json");
 const isVercel = process.env.VERCEL === "1";
 
 function readPlansData() {
   try {
-    const data = fs.readFileSync(dataFilePath, "utf-8");
-    return JSON.parse(data);
+    if (isVercel) {
+      // On Vercel, use imported module (more reliable)
+      return circlePlansData;
+    } else {
+      // On localhost, read from filesystem (allows runtime updates during development)
+      const data = fs.readFileSync(dataFilePath, "utf-8");
+      return JSON.parse(data);
+    }
   } catch (error) {
     console.error("Error reading circle plans data:", error);
-    return { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
+    // Fallback to imported data if filesystem read fails
+    return circlePlansData || { themes: [], settings: { circleDuration: 20, ageGroup: "kindergarten", classSize: 15 } };
   }
 }
 
