@@ -73,7 +73,10 @@ export default function AdminDashboard() {
 
   const fetchVideos = async () => {
     try {
-      const response = await fetch("/api/videos");
+      // Cache-busting to ensure fresh data
+      const response = await fetch(`/api/videos?t=${Date.now()}`, {
+        cache: 'no-store',
+      });
       if (response.status === 401) {
         router.push("/admin/login");
         return;
@@ -216,6 +219,18 @@ export default function AdminDashboard() {
         if (!metadataResponse.ok) {
           throw new Error("Failed to save video metadata");
         }
+
+        // Optimistically add video to UI immediately
+        const newVideo: Video = {
+          id: videoId,
+          title,
+          category,
+          subcategory,
+          videoUrl,
+          uploadedAt: new Date().toISOString(),
+          week: week || undefined,
+        };
+        setVideos(prev => [newVideo, ...prev]);
       } else {
         // Use local filesystem on localhost
         const uploadFormData = new FormData();
@@ -250,14 +265,17 @@ export default function AdminDashboard() {
 
         videoUrl = data.video.videoUrl;
         videoId = data.video.id;
+
+        // Optimistically add video to UI immediately
+        setVideos(prev => [data.video, ...prev]);
       }
 
       // Metadata is already saved for Vercel, or saved here for localhost
       setShowUpload(false);
       form.reset();
       setUploadProgress(0);
-      alert("Video uploaded successfully! 🎉");
-      await fetchVideos();
+      // Silently refresh in background to ensure sync (UI already updated)
+      fetchVideos();
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -303,17 +321,29 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this video?")) return;
 
+    // Optimistically remove from UI immediately
+    const videoToDelete = videos.find(v => v.id === id);
+    setVideos(prev => prev.filter(v => v.id !== id));
+
     try {
       const response = await fetch(`/api/videos/delete?id=${id}`, {
         method: "DELETE",
       });
 
-      if (response.ok) {
-        fetchVideos();
-      } else {
+      if (!response.ok) {
+        // Revert on error - add video back
+        if (videoToDelete) {
+          setVideos(prev => [...prev, videoToDelete]);
+        }
         alert("Delete failed. Please try again.");
       }
+      // Success - UI already updated, silently refresh to ensure sync
+      fetchVideos();
     } catch (error) {
+      // Revert on error - add video back
+      if (videoToDelete) {
+        setVideos(prev => [...prev, videoToDelete]);
+      }
       alert("Delete failed. Please try again.");
     }
   };

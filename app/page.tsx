@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { getProxyVideoUrl } from "@/lib/video-utils";
 
@@ -14,6 +14,43 @@ interface Video {
   week?: string;
 }
 
+// Video loading queue to prevent overwhelming the network
+const MAX_CONCURRENT_LOADS = 2;
+let loadingQueue: HTMLVideoElement[] = [];
+let currentlyLoading = 0;
+
+const processQueue = () => {
+  while (currentlyLoading < MAX_CONCURRENT_LOADS && loadingQueue.length > 0) {
+    const video = loadingQueue.shift();
+    if (video) {
+      const src = video.getAttribute('data-src');
+      if (src) {
+        currentlyLoading++;
+        video.src = src;
+        video.removeAttribute('data-src');
+        video.preload = 'metadata';
+        
+        // When video metadata is loaded or errors, process next in queue
+        const onLoadOrError = () => {
+          currentlyLoading--;
+          video.removeEventListener('loadedmetadata', onLoadOrError);
+          video.removeEventListener('error', onLoadOrError);
+          processQueue();
+        };
+        video.addEventListener('loadedmetadata', onLoadOrError);
+        video.addEventListener('error', onLoadOrError);
+      }
+    }
+  }
+};
+
+const queueVideoLoad = (video: HTMLVideoElement) => {
+  if (!loadingQueue.includes(video) && video.getAttribute('data-src')) {
+    loadingQueue.push(video);
+    processQueue();
+  }
+};
+
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,23 +58,46 @@ export default function Home() {
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
   const [repeatModes, setRepeatModes] = useState<Record<string, boolean>>({});
   const videoRefs = useRef<Record<string, HTMLVideoElement>>({});
+  const lastFetchTime = useRef<number>(0);
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
-
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
     try {
-      const response = await fetch("/api/public/videos");
+      // Cache-busting to ensure fresh data
+      const response = await fetch(`/api/public/videos?t=${Date.now()}`, {
+        cache: 'no-store',
+      });
       const data = await response.json();
       // Use videos in the order they're stored (matches admin section order)
       setVideos(data.videos || []);
+      lastFetchTime.current = Date.now();
     } catch (error) {
       console.error("Error fetching videos:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchVideos();
+  }, [fetchVideos]);
+
+  // Auto-refresh when page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Only refresh if more than 10 seconds since last fetch
+        const timeSinceLastFetch = Date.now() - lastFetchTime.current;
+        if (timeSinceLastFetch > 10000) {
+          fetchVideos();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchVideos]);
 
   const filteredVideos = useMemo(() => {
     // Filter by category but maintain the stored order (matches admin section)
@@ -92,9 +152,13 @@ export default function Home() {
     };
   }, [currentlyPlayingId, filteredVideos, repeatModes]);
 
-  // Lazy load videos when they come into view - simpler and more reliable
+  // Lazy load videos when they come into view - with queue to limit concurrent loads
   useEffect(() => {
     if (filteredVideos.length === 0) return;
+
+    // Reset queue when videos change
+    loadingQueue = [];
+    currentlyLoading = 0;
 
     // Small delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
@@ -106,18 +170,14 @@ export default function Home() {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               const video = entry.target as HTMLVideoElement;
-              const src = video.getAttribute('data-src');
-              if (src) {
-                video.src = src;
-                video.removeAttribute('data-src');
-                video.preload = 'metadata';
-                observer.unobserve(video);
-              }
+              // Queue the video for loading instead of loading immediately
+              queueVideoLoad(video);
+              observer.unobserve(video);
             }
           });
         },
         {
-          rootMargin: '200px', // Start loading 200px before video comes into view
+          rootMargin: '100px', // Reduced from 200px to be more conservative
           threshold: 0.1,
         }
       );
@@ -297,6 +357,21 @@ export default function Home() {
                     preload="none"
                     loop={repeatModes[video.id] || false}
                     onPlay={() => handleVideoPlay(video.id)}
+                    onError={(e) => {
+                      // Retry loading on error (up to 3 times)
+                      const videoEl = e.currentTarget;
+                      const retryCount = parseInt(videoEl.getAttribute('data-retry') || '0');
+                      if (retryCount < 3 && videoEl.src) {
+                        videoEl.setAttribute('data-retry', String(retryCount + 1));
+                        // Wait before retrying (exponential backoff)
+                        setTimeout(() => {
+                          const currentSrc = videoEl.src;
+                          videoEl.src = '';
+                          videoEl.src = currentSrc;
+                          videoEl.load();
+                        }, 1000 * (retryCount + 1));
+                      }
+                    }}
                   >
                     Your browser does not support the video tag.
                   </video>
