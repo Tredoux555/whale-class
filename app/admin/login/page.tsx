@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
@@ -8,7 +8,55 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [proxyEnabled, setProxyEnabled] = useState(false);
+  const [proxyLoading, setProxyLoading] = useState(false);
   const router = useRouter();
+
+  // Check proxy mode on mount
+  useEffect(() => {
+    checkProxyMode();
+  }, []);
+
+  const checkProxyMode = async () => {
+    try {
+      const response = await fetch("/api/admin/proxy-mode");
+      const data = await response.json();
+      setProxyEnabled(data.proxyEnabled || false);
+    } catch (error) {
+      console.error("Error checking proxy mode:", error);
+    }
+  };
+
+  const toggleProxyMode = async (enabled: boolean) => {
+    setProxyLoading(true);
+    try {
+      // Try to toggle - will fail if not logged in, but that's OK
+      // We'll set the cookie client-side as fallback
+      const response = await fetch("/api/admin/proxy-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+
+      if (response.ok) {
+        setProxyEnabled(enabled);
+        // Also set cookie client-side as backup
+        document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
+      } else {
+        // If not logged in yet, set cookie client-side anyway
+        // This allows proxy to work immediately after login
+        document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
+        setProxyEnabled(enabled);
+      }
+    } catch (error) {
+      console.error("Error toggling proxy mode:", error);
+      // Set cookie client-side as fallback
+      document.cookie = `video-proxy-enabled=${enabled}; path=/; max-age=${60 * 60 * 24 * 30}`;
+      setProxyEnabled(enabled);
+    } finally {
+      setProxyLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +73,14 @@ export default function AdminLogin() {
       const data = await response.json();
 
       if (response.ok) {
+        // After successful login, sync proxy mode with server
+        if (proxyEnabled) {
+          await fetch("/api/admin/proxy-mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: true }),
+          });
+        }
         router.push("/admin");
         router.refresh();
       } else {
@@ -44,6 +100,39 @@ export default function AdminLogin() {
           <div className="text-6xl mb-4">🐋</div>
           <h1 className="text-3xl font-bold text-[#2C5F7C] mb-2">Admin Login</h1>
           <p className="text-[#2C5F7C]/70">Whale Class Admin Portal</p>
+        </div>
+
+        {/* Proxy Mode Toggle */}
+        <div className="mb-6 p-4 bg-[#E8F4F8] rounded-lg border-2 border-[#B8E0F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-semibold text-[#2C5F7C] mb-1">
+                Video Proxy Mode
+              </label>
+              <p className="text-xs text-[#2C5F7C]/70">
+                Enable to bypass firewall restrictions (China)
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleProxyMode(!proxyEnabled)}
+              disabled={proxyLoading}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#4A90E2] focus:ring-offset-2 ${
+                proxyEnabled ? "bg-[#4A90E2]" : "bg-gray-300"
+              } ${proxyLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  proxyEnabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+          {proxyEnabled && (
+            <p className="mt-2 text-xs text-green-600 font-medium">
+              ✓ Proxy enabled - Videos will use proxy when you login
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
