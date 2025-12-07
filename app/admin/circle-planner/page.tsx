@@ -114,7 +114,7 @@ interface Theme {
   updatedAt: string;
 }
 
-type TabType = "overview" | "daily" | "songs" | "stories" | "games" | "crafts" | "printables" | "drama" | "movement";
+type TabType = "overview" | "materials" | "daily" | "songs" | "stories" | "games" | "crafts" | "printables" | "drama" | "movement";
 
 export default function CirclePlannerPage() {
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -624,6 +624,7 @@ export default function CirclePlannerPage() {
               <div className="flex gap-1 min-w-max">
                 {[
                   { id: "overview", label: "Overview", icon: "📋" },
+                  { id: "materials", label: "Materials", icon: "📚" },
                   { id: "daily", label: "Daily Plans", icon: "📆" },
                   { id: "songs", label: "Songs", icon: "🎵" },
                   { id: "stories", label: "Stories", icon: "📖" },
@@ -793,6 +794,77 @@ export default function CirclePlannerPage() {
                     ) : (
                       <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 text-center">
                         <p className="text-indigo-400 italic">No files uploaded yet. Click &quot;Upload File&quot; to add documents, PDFs, or images!</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Materials Tab */}
+              {activeTab === "materials" && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-indigo-900 mb-2">📚 Class Materials for {selectedTheme.name}</h3>
+                    <p className="text-indigo-600">Upload worksheets, PDFs, audio files, and other materials specific to this theme</p>
+                  </div>
+
+                  {/* Files Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xl font-bold text-indigo-900 flex items-center gap-2">
+                        <span className="text-2xl">📎</span> Files & Documents
+                      </h4>
+                      <button
+                        onClick={() => setShowFileUpload(true)}
+                        className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md flex items-center gap-2"
+                      >
+                        <span>📤</span>
+                        <span>Upload File</span>
+                      </button>
+                    </div>
+                    {selectedTheme.files && selectedTheme.files.length > 0 ? (
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {selectedTheme.files.map((file) => (
+                          <div key={file.id} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200 hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                {getFileIcon(file.type)}
+                                <div className="flex-1 min-w-0">
+                                  <a
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-indigo-900 font-semibold hover:text-indigo-700 truncate block text-sm"
+                                  >
+                                    {file.name}
+                                  </a>
+                                  <p className="text-indigo-600 text-xs">{formatFileSize(file.size)}</p>
+                                  <p className="text-indigo-500 text-xs">{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleFileDelete(file)}
+                                className="text-red-500 hover:text-red-700 p-1 ml-2"
+                                title="Delete file"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-8 rounded-xl border border-indigo-200 text-center">
+                        <div className="text-4xl mb-4">📚</div>
+                        <p className="text-indigo-700 font-medium mb-2">No materials uploaded yet</p>
+                        <p className="text-indigo-400 text-sm mb-4">Upload worksheets, PDFs, audio files, or other teaching materials for this theme</p>
+                        <button
+                          onClick={() => setShowFileUpload(true)}
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md inline-flex items-center gap-2"
+                        >
+                          <span>📤</span>
+                          <span>Upload Your First File</span>
+                        </button>
                       </div>
                     )}
                   </div>
