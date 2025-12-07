@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
         path: filePath,
         size: file.size,
         type: file.type,
+        uploadedAt: new Date().toISOString(),
       },
     });
   } catch (error) {

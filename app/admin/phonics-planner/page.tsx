@@ -23,6 +23,7 @@ interface UploadedFile {
   path: string;
   size: number;
   type: string;
+  uploadedAt?: string;
 }
 
 interface PhonicssPlan {
@@ -766,7 +767,9 @@ export default function PhonicssPlannerPage() {
                                     {file.name}
                                   </a>
                                   <p className="text-indigo-600 text-xs">{formatFileSize(file.size)}</p>
-                                  <p className="text-indigo-500 text-xs">{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                  {file.uploadedAt && (
+                                    <p className="text-indigo-500 text-xs">{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                  )}
                                 </div>
                               </div>
                               <button
