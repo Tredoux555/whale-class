@@ -1307,9 +1307,9 @@ export default function PhonicssPlannerPage() {
               onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const fileInput = formData.get("file") as HTMLInputElement;
-                if (fileInput?.files?.[0]) {
-                  await handleFileUpload(fileInput.files[0]);
+                const file = formData.get("file") as File | null;
+                if (file) {
+                  await handleFileUpload(file);
                 }
               }}
               className="space-y-4"
