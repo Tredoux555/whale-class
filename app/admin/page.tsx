@@ -453,18 +453,21 @@ export default function AdminDashboard() {
           </button>
 <Link
             href="/admin/circle-planner"
+            prefetch={false}
             className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md flex items-center gap-2"
           >
             <span className="text-xl">🌈</span> Circle Time Planner
           </Link>
           <Link
             href="/admin/phonics-planner"
+            prefetch={false}
             className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md flex items-center gap-2"
           >
             <span className="text-xl">🔤</span> Phonics Planner
           </Link>
           <Link
             href="/admin/materials"
+            prefetch={false}
             className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all shadow-md flex items-center gap-2"
           >
             <span className="text-xl">📚</span> Class Materials

@@ -193,23 +193,41 @@ Return ONLY valid JSON (no markdown):
 
 CRITICAL: Each day MUST have a DIFFERENT game. Make games exciting - children should BEG to play again!`;
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  // Add timeout to prevent hanging when API is unreachable
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+  let response;
+  try {
+    response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    clearTimeout(timeoutId);
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error("AI generation timed out after 30 seconds. The Anthropic API may be unreachable. Please try again or check your connection.");
+    }
+    if (error instanceof Error && error.message.includes('fetch')) {
+      throw new Error("Unable to reach AI service. Please check your internet connection or try again later.");
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API error: ${response.status} ${errorText}`);
+    throw new Error(`AI generation failed: ${response.status}. Please try again.`);
   }
 
   const responseText = await response.text();
@@ -270,7 +288,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error generating phonics plan:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: `Failed to generate: ${errorMessage}` }, { status: 500 });
+    
+    // Provide user-friendly error messages
+    let userMessage = "Failed to generate phonics plan";
+    if (errorMessage.includes("timed out") || errorMessage.includes("timeout")) {
+      userMessage = "AI generation timed out. The service may be unreachable. Please try again or use a VPN if needed.";
+    } else if (errorMessage.includes("Unable to reach") || errorMessage.includes("connection")) {
+      userMessage = "Unable to reach AI service. Please check your internet connection or try again later.";
+    } else if (errorMessage.includes("ANTHROPIC_API_KEY")) {
+      userMessage = errorMessage; // Keep API key errors as-is
+    } else {
+      userMessage = `Failed to generate: ${errorMessage}`;
+    }
+    
+    return NextResponse.json({ error: userMessage }, { status: 500 });
   }
 }
 

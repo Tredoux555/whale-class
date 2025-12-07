@@ -506,12 +506,14 @@ export default function PhonicssPlannerPage() {
             <div className="flex gap-3">
               <Link
                 href="/admin/circle-planner"
+                prefetch={false}
                 className="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl transition-all text-sm font-medium backdrop-blur-sm border border-white/20"
               >
                 🌈 Circle Planner
               </Link>
               <Link
                 href="/admin"
+                prefetch={false}
                 className="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl transition-all text-sm font-medium backdrop-blur-sm border border-white/20"
               >
                 ← Back to Admin

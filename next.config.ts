@@ -20,6 +20,15 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  // Exclude admin routes and API generate routes from precaching
+  // This prevents the service worker from trying to fetch admin-related resources
+  // which could trigger Great Firewall issues in China
+  buildExcludes: [
+    /chunks\/app\/admin/,
+    /chunks\/app\/api\/circle-plans\/generate/,
+    /chunks\/app\/api\/phonics-plans\/generate/,
+    /chunks\/app\/api\/circle-plans\/settings/,
+  ],
 });
 
 export default pwaConfig(nextConfig);
