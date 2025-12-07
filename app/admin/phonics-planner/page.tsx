@@ -4,11 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-interface QuickActivity {
+interface DailyGame {
   name: string;
   duration: string;
-  description: string;
-  type: string;
+  objective: string;
+  materials: string;
+  setup: string;
+  howToPlay: string[];
+  teacherScript: string;
+  inclusionTip: string;
+  excitement: string;
 }
 
 interface PhonicssPlan {
@@ -24,12 +29,31 @@ interface PhonicssPlan {
     lyrics: string;
     actions: string;
   };
-  warmUp: {
+  letterChant: {
+    chant: string;
+    rhythm: string;
+  };
+  dailyGames?: {
+    monday: DailyGame;
+    tuesday: DailyGame;
+    wednesday: DailyGame;
+    thursday: DailyGame;
+    friday: DailyGame;
+  };
+  dailyPlan: {
+    monday: { focus: string; game?: string; activities?: string[] };
+    tuesday: { focus: string; game?: string; activities?: string[] };
+    wednesday: { focus: string; game?: string; activities?: string[] };
+    thursday: { focus: string; game?: string; activities?: string[] };
+    friday: { focus: string; game?: string; activities?: string[] };
+  };
+  // Legacy fields for backward compatibility
+  warmUp?: {
     name: string;
     duration: string;
     instructions: string;
   };
-  mainGame: {
+  mainGame?: {
     name: string;
     duration: string;
     description: string;
@@ -37,18 +61,12 @@ interface PhonicssPlan {
     howToPlay: string;
     variations: string;
   };
-  quickActivities: QuickActivity[];
-  letterChant: {
-    chant: string;
-    rhythm: string;
-  };
-  dailyPlan: {
-    monday: { focus: string; activities: string[] };
-    tuesday: { focus: string; activities: string[] };
-    wednesday: { focus: string; activities: string[] };
-    thursday: { focus: string; activities: string[] };
-    friday: { focus: string; activities: string[] };
-  };
+  quickActivities?: Array<{
+    name: string;
+    duration: string;
+    description: string;
+    type: string;
+  }>;
   tips: string[];
   createdAt: string;
 }
@@ -586,134 +604,130 @@ export default function PhonicssPlannerPage() {
                           <span className="text-2xl">🎯</span> Focus: {selectedPlan.dailyPlan[selectedDay].focus}
                         </h4>
                       </div>
-                      
-                      <div>
-                        <h4 className="text-lg font-bold text-indigo-900 mb-4">10-Minute Schedule</h4>
-                        <p className="text-sm text-indigo-600 mb-4">👆 Click on any activity to see step-by-step instructions</p>
-                        <div className="space-y-3">
-                          {selectedPlan.dailyPlan[selectedDay].activities.map((activity, i) => {
-                            const activityKey = `${selectedDay}-${i}`;
-                            const isExpanded = expandedActivity === activityKey;
-                            const details = getPhonicsActivityDetails(activity);
 
-                            return (
-                              <div key={i} className="transition-all">
-                                <button
-                                  onClick={() => setExpandedActivity(isExpanded ? null : activityKey)}
-                                  className={`w-full text-left flex items-center gap-4 p-4 bg-white rounded-xl border-2 transition-all ${
-                                    isExpanded
-                                      ? "border-indigo-400 shadow-lg"
-                                      : "border-indigo-100 hover:border-indigo-300"
-                                  }`}
-                                >
-                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center font-bold shadow-md flex-shrink-0">
-                                    {i + 1}
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <span className="text-xl">{details?.icon}</span>
-                                    <p className="text-indigo-900 font-medium">{activity}</p>
-                                  </div>
-                                  <span className={`text-indigo-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}>▼</span>
-                                </button>
+                      {/* Today's Game - New Format */}
+                      {selectedPlan.dailyGames?.[selectedDay] ? (
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
+                            <span className="text-2xl">🎮</span> Today&apos;s Game
+                          </h4>
+                          
+                          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border-2 border-emerald-200">
+                            {/* Game Header */}
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-2xl font-bold text-emerald-900">
+                                {selectedPlan.dailyGames[selectedDay].name}
+                              </h3>
+                              <span className="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                ⏱️ {selectedPlan.dailyGames[selectedDay].duration}
+                              </span>
+                            </div>
 
-                                {isExpanded && details && (
-                                  <div className="mt-2 ml-14 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 space-y-4">
-                                    {/* Duration */}
-                                    {details.duration && (
-                                      <div className="flex items-center gap-2 text-indigo-700">
-                                        <span>⏱️</span>
-                                        <span className="font-semibold">Duration:</span>
-                                        <span>{details.duration}</span>
-                                      </div>
-                                    )}
+                            {/* What Makes It Fun */}
+                            <div className="bg-yellow-100 rounded-xl p-4 mb-4 border border-yellow-300">
+                              <p className="text-yellow-800 font-medium flex items-center gap-2">
+                                <span className="text-xl">🌟</span>
+                                <span>{selectedPlan.dailyGames[selectedDay].excitement}</span>
+                              </p>
+                            </div>
 
-                                    {/* Step-by-Step Instructions */}
-                                    <div>
-                                      <h5 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                                        <span>📋</span> Step-by-Step Instructions:
-                                      </h5>
-                                      <ol className="space-y-2">
-                                        {details.detailedSteps.map((step, stepIndex) => (
-                                          <li key={stepIndex} className="flex items-start gap-3 text-indigo-800">
-                                            <span className="w-6 h-6 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                                              {stepIndex + 1}
-                                            </span>
-                                            <span>{step}</span>
-                                          </li>
-                                        ))}
-                                      </ol>
-                                    </div>
+                            {/* Objective */}
+                            <div className="mb-4">
+                              <h5 className="font-bold text-emerald-900 mb-1 flex items-center gap-2">
+                                <span>🎯</span> Learning Objective:
+                              </h5>
+                              <p className="text-emerald-700">{selectedPlan.dailyGames[selectedDay].objective}</p>
+                            </div>
 
-                                    {/* Tips */}
-                                    <div>
-                                      <h5 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
-                                        <span>💡</span> Tips:
-                                      </h5>
-                                      <ul className="space-y-1">
-                                        {details.tips.map((tip, tipIndex) => (
-                                          <li key={tipIndex} className="flex items-start gap-2 text-indigo-700">
-                                            <span className="text-amber-500">•</span>
-                                            <span>{tip}</span>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
+                            {/* Materials */}
+                            <div className="bg-white rounded-xl p-4 mb-4 border border-emerald-200">
+                              <h5 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                                <span>📦</span> Materials Needed:
+                              </h5>
+                              <p className="text-emerald-700">{selectedPlan.dailyGames[selectedDay].materials}</p>
+                            </div>
 
-                                    {/* Related Content */}
-                                    {details.relatedContent && (
-                                      <div className="bg-white rounded-lg p-4 border border-indigo-200">
-                                        {details.relatedContent.type === "song" && (
-                                          <>
-                                            <h5 className="font-bold text-rose-900 mb-2 flex items-center gap-2">
-                                              <span>🎵</span> Song: {details.relatedContent.content.title}
-                                            </h5>
-                                            <p className="text-rose-700 text-sm italic mb-2">&ldquo;{details.relatedContent.content.lyrics}&rdquo;</p>
-                                            <p className="text-rose-600 text-sm">👐 Actions: {details.relatedContent.content.actions}</p>
-                                          </>
-                                        )}
-                                        {details.relatedContent.type === "chant" && (
-                                          <>
-                                            <h5 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
-                                              <span>🥁</span> Chant
-                                            </h5>
-                                            <p className="text-purple-700 text-lg font-medium italic mb-2">&ldquo;{details.relatedContent.content.chant}&rdquo;</p>
-                                            <p className="text-purple-600 text-sm">👏 Rhythm: {details.relatedContent.content.rhythm}</p>
-                                          </>
-                                        )}
-                                        {details.relatedContent.type === "game" && (
-                                          <>
-                                            <h5 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
-                                              <span>🎮</span> Game: {details.relatedContent.content.name}
-                                            </h5>
-                                            <p className="text-emerald-700 text-sm mb-2">{details.relatedContent.content.description}</p>
-                                            <p className="text-emerald-600 text-sm"><strong>Materials:</strong> {details.relatedContent.content.materials}</p>
-                                            <p className="text-emerald-600 text-sm mt-1"><strong>How to play:</strong> {details.relatedContent.content.howToPlay}</p>
-                                          </>
-                                        )}
-                                        {details.relatedContent.type === "warmup" && (
-                                          <>
-                                            <h5 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
-                                              <span>🌅</span> Warm-Up: {details.relatedContent.content.name}
-                                            </h5>
-                                            <p className="text-amber-700 text-sm">{details.relatedContent.content.instructions}</p>
-                                          </>
-                                        )}
-                                      </div>
-                                    )}
+                            {/* Setup */}
+                            <div className="bg-indigo-100 rounded-xl p-4 mb-4 border border-indigo-200">
+                              <h5 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                <span>🔧</span> Quick Setup:
+                              </h5>
+                              <p className="text-indigo-700">{selectedPlan.dailyGames[selectedDay].setup}</p>
+                            </div>
 
-                                    {/* Link to other tabs */}
-                                    <div className="pt-2 border-t border-indigo-200">
-                                      <p className="text-sm text-indigo-600">
-                                        💡 See the <strong>Games & Activities</strong> or <strong>Songs & Chants</strong> tabs for full details!
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
+                            {/* Teacher Script */}
+                            <div className="bg-purple-100 rounded-xl p-4 mb-4 border border-purple-200">
+                              <h5 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                                <span>💬</span> What to Say (Teacher Script):
+                              </h5>
+                              <p className="text-purple-700 italic">&ldquo;{selectedPlan.dailyGames[selectedDay].teacherScript}&rdquo;</p>
+                            </div>
+
+                            {/* Step-by-Step Instructions */}
+                            <div className="bg-white rounded-xl p-4 mb-4 border-2 border-emerald-300">
+                              <h5 className="font-bold text-emerald-900 mb-3 flex items-center gap-2">
+                                <span>📋</span> Step-by-Step Instructions:
+                              </h5>
+                              <ol className="space-y-3">
+                                {selectedPlan.dailyGames[selectedDay].howToPlay.map((step, stepIndex) => (
+                                  <li key={stepIndex} className="flex items-start gap-3">
+                                    <span className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-md">
+                                      {stepIndex + 1}
+                                    </span>
+                                    <span className="text-emerald-800 pt-1">{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+
+                            {/* Inclusion Tip */}
+                            <div className="bg-rose-100 rounded-xl p-4 border border-rose-200">
+                              <h5 className="font-bold text-rose-900 mb-2 flex items-center gap-2">
+                                <span>💝</span> Helping ALL Children Participate:
+                              </h5>
+                              <p className="text-rose-700">{selectedPlan.dailyGames[selectedDay].inclusionTip}</p>
+                            </div>
+                          </div>
+
+                          {/* Quick 10-min Schedule */}
+                          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+                            <h5 className="font-bold text-indigo-900 mb-2">⏱️ Quick 10-Minute Schedule:</h5>
+                            <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                              <div className="bg-white rounded-lg p-2">
+                                <div className="font-bold text-indigo-700">1-2 min</div>
+                                <div className="text-indigo-600">🎵 Song</div>
                               </div>
-                            );
-                          })}
+                              <div className="bg-emerald-100 rounded-lg p-2 border-2 border-emerald-400">
+                                <div className="font-bold text-emerald-700">5-6 min</div>
+                                <div className="text-emerald-600">🎮 Game</div>
+                              </div>
+                              <div className="bg-white rounded-lg p-2">
+                                <div className="font-bold text-indigo-700">1-2 min</div>
+                                <div className="text-indigo-600">🥁 Chant</div>
+                              </div>
+                              <div className="bg-white rounded-lg p-2">
+                                <div className="font-bold text-indigo-700">1 min</div>
+                                <div className="text-indigo-600">👏 End</div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ) : selectedPlan.dailyPlan[selectedDay].activities ? (
+                        /* Legacy Format - Old plans */
+                        <div>
+                          <h4 className="text-lg font-bold text-indigo-900 mb-4">10-Minute Schedule</h4>
+                          <div className="space-y-3">
+                            {selectedPlan.dailyPlan[selectedDay].activities?.map((activity, i) => (
+                              <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border-2 border-indigo-100">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center font-bold shadow-md">
+                                  {i + 1}
+                                </div>
+                                <p className="text-indigo-900 font-medium">{activity}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -722,67 +736,96 @@ export default function PhonicssPlannerPage() {
               {/* Games Tab */}
               {activeTab === "games" && (
                 <div className="space-y-6">
-                  {/* Warm Up */}
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
-                    <h3 className="text-2xl font-bold text-amber-900 mb-4 flex items-center gap-2">
-                      <span className="text-3xl">🌅</span> Warm-Up: {selectedPlan.warmUp?.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-amber-700 mb-3">
-                      <span>⏱️</span>
-                      <span>{selectedPlan.warmUp?.duration}</span>
-                    </div>
-                    <p className="text-amber-800">{selectedPlan.warmUp?.instructions}</p>
-                  </div>
+                  <h3 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                    <span className="text-3xl">🎮</span> All Week&apos;s Games
+                  </h3>
+                  <p className="text-indigo-600 -mt-4">One unique game each day - click any card to see full instructions</p>
 
-                  {/* Main Game */}
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200">
-                    <h3 className="text-2xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                      <span className="text-3xl">🎮</span> Main Game: {selectedPlan.mainGame?.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-indigo-700 mb-4">
-                      <span>⏱️</span>
-                      <span className="font-semibold">{selectedPlan.mainGame?.duration}</span>
-                    </div>
-                    <p className="text-indigo-800 mb-4">{selectedPlan.mainGame?.description}</p>
-                    
-                    <div className="bg-white rounded-xl p-4 mb-4">
-                      <h5 className="font-bold text-indigo-900 mb-2">📦 Materials Needed:</h5>
-                      <p className="text-indigo-700">{selectedPlan.mainGame?.materials}</p>
-                    </div>
-                    
-                    <div className="bg-white rounded-xl p-4 mb-4">
-                      <h5 className="font-bold text-indigo-900 mb-2">📝 How to Play:</h5>
-                      <p className="text-indigo-700 whitespace-pre-line">{selectedPlan.mainGame?.howToPlay}</p>
-                    </div>
-                    
-                    <div className="bg-purple-100 rounded-xl p-4">
-                      <h5 className="font-bold text-purple-900 mb-2">🔄 Variations:</h5>
-                      <p className="text-purple-700">{selectedPlan.mainGame?.variations}</p>
-                    </div>
-                  </div>
+                  {selectedPlan.dailyGames ? (
+                    <div className="space-y-4">
+                      {(["monday", "tuesday", "wednesday", "thursday", "friday"] as const).map((day) => {
+                        const game = selectedPlan.dailyGames?.[day];
+                        if (!game) return null;
+                        const dayColors: Record<string, { bg: string; border: string; text: string }> = {
+                          monday: { bg: "from-blue-50 to-indigo-50", border: "border-blue-200", text: "text-blue-900" },
+                          tuesday: { bg: "from-green-50 to-emerald-50", border: "border-green-200", text: "text-green-900" },
+                          wednesday: { bg: "from-purple-50 to-violet-50", border: "border-purple-200", text: "text-purple-900" },
+                          thursday: { bg: "from-orange-50 to-amber-50", border: "border-orange-200", text: "text-orange-900" },
+                          friday: { bg: "from-pink-50 to-rose-50", border: "border-pink-200", text: "text-pink-900" },
+                        };
+                        const colors = dayColors[day];
 
-                  {/* Quick Activities */}
-                  <div>
-                    <h3 className="text-2xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                      <span className="text-3xl">⚡</span> Quick Activities
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                        return (
+                          <div key={day} className={`bg-gradient-to-r ${colors.bg} rounded-2xl p-6 border ${colors.border}`}>
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl capitalize font-bold {colors.text}">{day}</span>
+                                <span className={`text-xl font-bold ${colors.text}`}>{game.name}</span>
+                              </div>
+                              <span className="bg-white px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+                                ⏱️ {game.duration}
+                              </span>
+                            </div>
+                            
+                            <p className={`${colors.text} opacity-80 mb-3`}>{game.objective}</p>
+                            
+                            <div className="bg-yellow-100 rounded-lg p-3 mb-3">
+                              <p className="text-yellow-800 text-sm flex items-center gap-2">
+                                <span>🌟</span> <strong>Fun factor:</strong> {game.excitement}
+                              </p>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 gap-3 mb-3">
+                              <div className="bg-white rounded-lg p-3">
+                                <p className="text-sm"><strong>📦 Materials:</strong> {game.materials}</p>
+                              </div>
+                              <div className="bg-white rounded-lg p-3">
+                                <p className="text-sm"><strong>🔧 Setup:</strong> {game.setup}</p>
+                              </div>
+                            </div>
+                            
+                            <details className="bg-white rounded-lg p-4">
+                              <summary className="font-bold cursor-pointer text-indigo-900 hover:text-indigo-700">
+                                📋 Click to see step-by-step instructions
+                              </summary>
+                              <ol className="mt-3 space-y-2">
+                                {game.howToPlay.map((step, stepIndex) => (
+                                  <li key={stepIndex} className="flex items-start gap-2 text-sm">
+                                    <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                      {stepIndex + 1}
+                                    </span>
+                                    <span>{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                              <div className="mt-3 p-3 bg-purple-50 rounded-lg">
+                                <p className="text-sm text-purple-800"><strong>💬 Say:</strong> &ldquo;{game.teacherScript}&rdquo;</p>
+                              </div>
+                              <div className="mt-2 p-3 bg-rose-50 rounded-lg">
+                                <p className="text-sm text-rose-800"><strong>💝 Inclusion tip:</strong> {game.inclusionTip}</p>
+                              </div>
+                            </details>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Legacy format for old plans */
+                    <div className="space-y-6">
+                      {selectedPlan.mainGame && (
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200">
+                          <h3 className="text-2xl font-bold text-indigo-900 mb-4">🎮 {selectedPlan.mainGame.name}</h3>
+                          <p className="text-indigo-700">{selectedPlan.mainGame.description}</p>
+                        </div>
+                      )}
                       {selectedPlan.quickActivities?.map((activity, i) => (
                         <div key={i} className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-bold text-emerald-900">{activity.name}</h4>
-                            <span className="text-xs bg-emerald-200 text-emerald-700 px-2 py-1 rounded-full">
-                              {activity.duration}
-                            </span>
-                          </div>
-                          <p className="text-emerald-700 text-sm mb-2">{activity.description}</p>
-                          <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-1 rounded capitalize">
-                            {activity.type}
-                          </span>
+                          <h4 className="font-bold text-emerald-900">{activity.name}</h4>
+                          <p className="text-emerald-700 text-sm">{activity.description}</p>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
