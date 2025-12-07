@@ -104,22 +104,43 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const updatedTheme = await request.json();
+    const body = await request.json();
     const data = await readPlansData();
     
+    // Handle file updates (adding/removing files)
+    if (body.id && (body.files !== undefined || body.teacherNotes !== undefined)) {
+      const index = data.themes.findIndex((t: any) => t.id === body.id);
+      if (index === -1) {
+        return NextResponse.json({ error: "Theme not found" }, { status: 404 });
+      }
+      
+      // Update only files or teacherNotes
+      if (body.files !== undefined) {
+        data.themes[index].files = body.files;
+      }
+      if (body.teacherNotes !== undefined) {
+        data.themes[index].teacherNotes = body.teacherNotes;
+      }
+      
+      await savePlansData(data);
+      return NextResponse.json({ success: true, theme: data.themes[index] });
+    }
+    
+    // Legacy: full theme update (for backward compatibility)
+    const updatedTheme = body;
     const index = data.themes.findIndex((t: any) => t.id === updatedTheme.id);
     if (index === -1) {
       return NextResponse.json({ error: "Theme not found" }, { status: 404 });
     }
     
-    // Data is read-only - all updates require git commits
-    return NextResponse.json(
-      { 
-        error: "Cannot update theme data. Data is read-only. Please update lib/circle-plans-data.ts and commit to git.",
-        requiresGitCommit: true
-      },
-      { status: 400 }
-    );
+    // Only allow updating teacherNotes and files
+    data.themes[index].teacherNotes = updatedTheme.teacherNotes || data.themes[index].teacherNotes;
+    if (updatedTheme.files !== undefined) {
+      data.themes[index].files = updatedTheme.files;
+    }
+    
+    await savePlansData(data);
+    return NextResponse.json({ success: true, theme: data.themes[index] });
   } catch (error) {
     console.error("Error updating theme:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
