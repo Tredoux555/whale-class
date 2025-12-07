@@ -277,6 +277,7 @@ export default function Home() {
             </div>
             <Link 
               href="/admin/login"
+              prefetch={false}
               className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
             >
               Admin
