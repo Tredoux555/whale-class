@@ -11,7 +11,13 @@ export async function GET() {
   }
 
   const videos = await getVideos();
-  return NextResponse.json({ videos });
+  return NextResponse.json({ videos }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
