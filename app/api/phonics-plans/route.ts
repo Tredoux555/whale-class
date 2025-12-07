@@ -94,6 +94,39 @@ export async function GET() {
   }
 }
 
+// PUT - Update phonics plan (for files)
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const data = await readPhonicsData();
+    
+    if (!body.id) {
+      return NextResponse.json({ error: "Plan ID required" }, { status: 400 });
+    }
+
+    const index = data.plans.findIndex((p: any) => p.id === body.id);
+    if (index === -1) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    }
+    
+    // Update files if provided
+    if (body.files !== undefined) {
+      data.plans[index].files = body.files;
+    }
+    
+    await savePhonicsData(data);
+    return NextResponse.json({ success: true, plan: data.plans[index] });
+  } catch (error) {
+    console.error("Error updating phonics plan:", error);
+    return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
+  }
+}
+
 // DELETE - Delete phonics plan
 export async function DELETE(request: NextRequest) {
   try {

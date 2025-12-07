@@ -75,6 +75,15 @@ interface DailyPlan {
   activities: string[];
 }
 
+interface UploadedFile {
+  id: string;
+  name: string;
+  url: string;
+  path: string;
+  size: number;
+  type: string;
+}
+
 interface Theme {
   id: string;
   name: string;
@@ -100,6 +109,7 @@ interface Theme {
     friday: DailyPlan;
   };
   teacherNotes: string;
+  files?: UploadedFile[];
   createdAt: string;
   updatedAt: string;
 }
@@ -120,6 +130,8 @@ export default function CirclePlannerPage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [deletingThemeId, setDeletingThemeId] = useState<string | null>(null);
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
   const [classProfile, setClassProfile] = useState({
     classSize: 15,
     englishLevel: "beginner",
@@ -229,6 +241,97 @@ export default function CirclePlannerPage() {
     } finally {
       setDeletingThemeId(null);
     }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!selectedTheme) return;
+
+    setUploadingFile(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("themeId", selectedTheme.id);
+
+      const response = await fetch("/api/circle-plans/files/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      const newFile = data.file;
+
+      // Update theme with new file
+      const updatedFiles = [...(selectedTheme.files || []), newFile];
+      
+      const updateResponse = await fetch("/api/circle-plans", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedTheme.id,
+          files: updatedFiles,
+        }),
+      });
+
+      if (updateResponse.ok) {
+        await fetchPlans();
+        setShowFileUpload(false);
+      } else {
+        throw new Error("Failed to save file metadata");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleFileDelete = async (file: UploadedFile) => {
+    if (!selectedTheme) return;
+    if (!confirm(`Delete "${file.name}"?`)) return;
+
+    try {
+      // Delete from storage
+      const deleteResponse = await fetch(`/api/circle-plans/files/delete?path=${encodeURIComponent(file.path)}`, {
+        method: "DELETE",
+      });
+
+      if (!deleteResponse.ok) {
+        throw new Error("Failed to delete file");
+      }
+
+      // Update theme to remove file
+      const updatedFiles = (selectedTheme.files || []).filter(f => f.id !== file.id);
+      
+      const updateResponse = await fetch("/api/circle-plans", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedTheme.id,
+          files: updatedFiles,
+        }),
+      });
+
+      if (updateResponse.ok) {
+        await fetchPlans();
+      } else {
+        throw new Error("Failed to update theme");
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      alert("Failed to delete file");
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   const formatDate = (dateStr: string) => {
@@ -641,6 +744,55 @@ export default function CirclePlannerPage() {
                         ) : (
                           <p className="text-amber-400 italic">No notes yet. Click &quot;Edit Notes&quot; to add your own!</p>
                         )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Files Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                        <span className="text-3xl">📎</span> Files & Documents
+                      </h3>
+                      <button
+                        onClick={() => setShowFileUpload(true)}
+                        className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <span>📤</span>
+                        <span>Upload File</span>
+                      </button>
+                    </div>
+                    {selectedTheme.files && selectedTheme.files.length > 0 ? (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {selectedTheme.files.map((file) => (
+                          <div key={file.id} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200 flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <span className="text-3xl">📄</span>
+                              <div className="flex-1 min-w-0">
+                                <a
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-indigo-900 font-medium hover:text-indigo-700 truncate block"
+                                >
+                                  {file.name}
+                                </a>
+                                <p className="text-indigo-600 text-sm">{formatFileSize(file.size)}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleFileDelete(file)}
+                              className="text-red-500 hover:text-red-700 p-2"
+                              title="Delete file"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 text-center">
+                        <p className="text-indigo-400 italic">No files uploaded yet. Click &quot;Upload File&quot; to add documents, PDFs, or images!</p>
                       </div>
                     )}
                   </div>
@@ -1511,6 +1663,77 @@ export default function CirclePlannerPage() {
                   className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition-all shadow-lg"
                 >
                   Save Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* File Upload Modal */}
+      {showFileUpload && selectedTheme && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                <span className="text-3xl">📤</span> Upload File
+              </h3>
+              <button
+                onClick={() => setShowFileUpload(false)}
+                className="text-amber-600 hover:text-amber-800 text-2xl"
+                disabled={uploadingFile}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="bg-blue-50 rounded-2xl p-4 mb-6 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>📎 Supported files:</strong> PDFs, images (JPG, PNG), Word documents, and other files up to 10MB.
+              </p>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const fileInput = formData.get("file") as HTMLInputElement;
+                if (fileInput?.files?.[0]) {
+                  await handleFileUpload(fileInput.files[0]);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-semibold text-amber-900 mb-2">
+                  Select File
+                </label>
+                <input
+                  name="file"
+                  type="file"
+                  required
+                  disabled={uploadingFile}
+                  className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-400"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.xls,.xlsx"
+                />
+                <p className="text-xs text-amber-600 mt-1">Max file size: 10MB</p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowFileUpload(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold transition-colors"
+                  disabled={uploadingFile}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploadingFile}
+                  className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50"
+                >
+                  {uploadingFile ? "⏳ Uploading..." : "📤 Upload File"}
                 </button>
               </div>
             </form>
