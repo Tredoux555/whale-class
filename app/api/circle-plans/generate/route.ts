@@ -203,7 +203,7 @@ Each daily plan = 30 minutes total. Leave URLs as empty strings "".`;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error("AI generation timed out after 30 seconds. The Anthropic API may be unreachable. Please try again or check your connection.");
+      throw new Error("AI generation timed out after 30 seconds. Please try again or check your connection.");
     }
     if (error instanceof Error && error.message.includes('fetch')) {
       throw new Error("Unable to reach AI service. Please check your internet connection or try again later.");
