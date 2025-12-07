@@ -21,7 +21,8 @@ export default function Home() {
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
   const [repeatModes, setRepeatModes] = useState<Record<string, boolean>>({});
   const videoRefs = useRef<Record<string, HTMLVideoElement>>({});
-  const lastFetchTime = useRef<number>(0);
+  const visibilityStartTime = useRef<number | null>(null);
+  const periodicRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -32,7 +33,6 @@ export default function Home() {
       const data = await response.json();
       // Use videos in the order they're stored (matches admin section order)
       setVideos(data.videos || []);
-      lastFetchTime.current = Date.now();
     } catch (error) {
       console.error("Error fetching videos:", error);
     } finally {
@@ -44,21 +44,74 @@ export default function Home() {
     fetchVideos();
   }, [fetchVideos]);
 
-  // Auto-refresh when page becomes visible (user switches back to tab)
+  // Auto-refresh when page becomes visible and periodic refresh
   useEffect(() => {
+    let refreshTimeout: NodeJS.Timeout | null = null;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Only refresh if more than 30 seconds since last fetch
-        const timeSinceLastFetch = Date.now() - lastFetchTime.current;
-        if (timeSinceLastFetch > 30000) {
-          fetchVideos();
+        // Track when page becomes visible
+        visibilityStartTime.current = Date.now();
+        
+        // Clear any existing timeout
+        if (refreshTimeout) {
+          clearTimeout(refreshTimeout);
+        }
+        
+        // Refresh after 5 seconds if page is still visible (prevents excessive refreshes)
+        refreshTimeout = setTimeout(() => {
+          if (document.visibilityState === 'visible') {
+            fetchVideos();
+          }
+        }, 5000);
+
+        // Start periodic refresh every 30 seconds when page is visible
+        if (periodicRefreshInterval.current) {
+          clearInterval(periodicRefreshInterval.current);
+        }
+        periodicRefreshInterval.current = setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            fetchVideos();
+          }
+        }, 30000);
+      } else {
+        // Page is hidden - clear visibility time and stop periodic refresh
+        visibilityStartTime.current = null;
+        if (refreshTimeout) {
+          clearTimeout(refreshTimeout);
+          refreshTimeout = null;
+        }
+        if (periodicRefreshInterval.current) {
+          clearInterval(periodicRefreshInterval.current);
+          periodicRefreshInterval.current = null;
         }
       }
     };
 
+    // Set initial state if page is already visible
+    if (document.visibilityState === 'visible') {
+      visibilityStartTime.current = Date.now();
+      refreshTimeout = setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          fetchVideos();
+        }
+      }, 5000);
+      periodicRefreshInterval.current = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchVideos();
+        }
+      }, 30000);
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+      if (periodicRefreshInterval.current) {
+        clearInterval(periodicRefreshInterval.current);
+      }
     };
   }, [fetchVideos]);
 
