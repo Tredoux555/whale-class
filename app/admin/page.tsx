@@ -433,6 +433,12 @@ export default function AdminDashboard() {
           >
             <span className="text-xl">🔤</span> Phonics Planner
           </Link>
+          <Link
+            href="/admin/materials"
+            className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">📚</span> Class Materials
+          </Link>
         </div>
 
             {/* Upload Form */}
