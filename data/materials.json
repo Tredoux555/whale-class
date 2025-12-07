@@ -1,0 +1,41 @@
+{
+  "materials": [],
+  "categories": [
+    {
+      "id": "general",
+      "name": "General",
+      "description": "General class materials",
+      "color": "#6b7280"
+    },
+    {
+      "id": "math",
+      "name": "Math",
+      "description": "Mathematics worksheets and activities",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "reading",
+      "name": "Reading",
+      "description": "Reading comprehension and literacy materials",
+      "color": "#10b981"
+    },
+    {
+      "id": "science",
+      "name": "Science",
+      "description": "Science experiments and activities",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "art",
+      "name": "Art",
+      "description": "Art and craft activities",
+      "color": "#ef4444"
+    },
+    {
+      "id": "music",
+      "name": "Music",
+      "description": "Music and songs",
+      "color": "#8b5cf6"
+    }
+  ]
+}
