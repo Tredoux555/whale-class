@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Music, Image, Video, FileText } from "lucide-react";
 
 interface DailyGame {
   name: string;
@@ -281,6 +282,14 @@ export default function PhonicssPlannerPage() {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.startsWith('audio/')) return <Music className="w-4 h-4" />;
+    if (type.startsWith('image/')) return <Image className="w-4 h-4" />;
+    if (type.startsWith('video/')) return <Video className="w-4 h-4" />;
+    if (type.includes('pdf')) return <FileText className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
   };
 
   // Get detailed instructions for each phonics activity
