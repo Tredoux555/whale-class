@@ -348,8 +348,8 @@ const MontessoriCardGenerator = () => {
       
       // Check if card fits on current page
       if (currentY + cardHeight > A4_HEIGHT - MARGIN) {
-        if (currentSheet) {
-          sheets.push(currentSheet.canvas);
+        if (currentSheet !== null) {
+          sheets.push((currentSheet as SheetType).canvas);
         }
         currentSheet = createNewSheet();
         currentX = MARGIN;
@@ -357,8 +357,8 @@ const MontessoriCardGenerator = () => {
         rowHeight = 0;
       }
       
-      if (currentSheet) {
-        currentSheet.ctx.drawImage(cardCanvas, currentX, currentY);
+      if (currentSheet !== null) {
+        (currentSheet as SheetType).ctx.drawImage(cardCanvas, currentX, currentY);
       }
       currentX += cardWidth + SPACING;
       rowHeight = Math.max(rowHeight, cardHeight);
@@ -375,8 +375,8 @@ const MontessoriCardGenerator = () => {
       await addCardToSheet(labelCanvas);
     }
     
-    if (currentSheet) {
-      sheets.push(currentSheet.canvas);
+    if (currentSheet !== null) {
+      sheets.push((currentSheet as SheetType).canvas);
     }
     
     // Download all sheets
