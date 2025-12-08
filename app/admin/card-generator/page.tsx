@@ -311,12 +311,13 @@ const MontessoriCardGenerator = () => {
     const SPACING = 10;
     
     const sheets: HTMLCanvasElement[] = [];
-    let currentSheet: { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null = null;
+    type SheetType = { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D };
+    let currentSheet: SheetType | null = null;
     let currentX = MARGIN;
     let currentY = MARGIN;
     let rowHeight = 0;
     
-    const createNewSheet = () => {
+    const createNewSheet = (): SheetType => {
       const canvas = document.createElement('canvas');
       canvas.width = A4_WIDTH;
       canvas.height = A4_HEIGHT;
@@ -347,14 +348,18 @@ const MontessoriCardGenerator = () => {
       
       // Check if card fits on current page
       if (currentY + cardHeight > A4_HEIGHT - MARGIN) {
-        sheets.push(currentSheet.canvas);
+        if (currentSheet) {
+          sheets.push(currentSheet.canvas);
+        }
         currentSheet = createNewSheet();
         currentX = MARGIN;
         currentY = MARGIN;
         rowHeight = 0;
       }
       
-      currentSheet.ctx.drawImage(cardCanvas, currentX, currentY);
+      if (currentSheet) {
+        currentSheet.ctx.drawImage(cardCanvas, currentX, currentY);
+      }
       currentX += cardWidth + SPACING;
       rowHeight = Math.max(rowHeight, cardHeight);
     };
