@@ -201,10 +201,19 @@ const MontessoriCardGenerator = () => {
 
   // Generate card image
   const generateCardCanvas = (card: Card, type: string): Promise<HTMLCanvasElement> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      // Capture current state values to avoid closure issues
+      const currentBorderColor = borderColor;
+      const currentFontFamily = fontFamily;
+      const cardLabel = card.label;
+      const cardImage = card.croppedImage;
+      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) {
+        reject(new Error('Could not get 2d context'));
+        return;
+      }
       
       if (type === 'control') {
         // Control card: Image + Label
@@ -212,7 +221,7 @@ const MontessoriCardGenerator = () => {
         canvas.height = CARD_SIZE + LABEL_HEIGHT;
         
         // Border/background
-        ctx.fillStyle = borderColor;
+        ctx.fillStyle = currentBorderColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // White area for image
@@ -225,32 +234,37 @@ const MontessoriCardGenerator = () => {
         // Draw image
         const img = new Image();
         img.onload = () => {
-          // Calculate aspect ratio fit
-          const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-          const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-          const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-          
-          ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-          
-          // Draw label
-          ctx.fillStyle = '#000000';
-          ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${fontFamily}", cursive`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(card.label, canvas.width / 2, CARD_SIZE + LABEL_HEIGHT / 2);
-          
-          resolve(canvas);
+          try {
+            // Calculate aspect ratio fit
+            const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+            const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
+            const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
+            
+            ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            
+            // Draw label
+            ctx.fillStyle = '#000000';
+            ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(cardLabel, canvas.width / 2, CARD_SIZE + LABEL_HEIGHT / 2);
+            
+            resolve(canvas);
+          } catch (error) {
+            reject(error);
+          }
         };
-        img.src = card.croppedImage;
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = cardImage;
         
       } else if (type === 'picture') {
         // Picture card: Image only
         canvas.width = CARD_SIZE;
         canvas.height = CARD_SIZE;
         
-        ctx.fillStyle = borderColor;
+        ctx.fillStyle = currentBorderColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#FFFFFF';
@@ -258,33 +272,38 @@ const MontessoriCardGenerator = () => {
         
         const img = new Image();
         img.onload = () => {
-          const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-          const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-          const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-          
-          ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-          resolve(canvas);
+          try {
+            const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+            const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
+            const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
+            
+            ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            resolve(canvas);
+          } catch (error) {
+            reject(error);
+          }
         };
-        img.src = card.croppedImage;
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = cardImage;
         
       } else if (type === 'label') {
         // Label card: Text only
         canvas.width = CARD_SIZE;
         canvas.height = LABEL_HEIGHT;
         
-        ctx.fillStyle = borderColor;
+        ctx.fillStyle = currentBorderColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2);
         
         ctx.fillStyle = '#000000';
-        ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${fontFamily}", cursive`;
+        ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(card.label, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(cardLabel, canvas.width / 2, canvas.height / 2);
         
         resolve(canvas);
       }
@@ -366,13 +385,21 @@ const MontessoriCardGenerator = () => {
     
     // Generate all cards
     for (const card of cards) {
-      const controlCanvas = await generateCardCanvas(card, 'control');
-      const pictureCanvas = await generateCardCanvas(card, 'picture');
-      const labelCanvas = await generateCardCanvas(card, 'label');
-      
-      await addCardToSheet(controlCanvas);
-      await addCardToSheet(pictureCanvas);
-      await addCardToSheet(labelCanvas);
+      try {
+        const controlCanvas = await generateCardCanvas(card, 'control');
+        await addCardToSheet(controlCanvas);
+        
+        const pictureCanvas = await generateCardCanvas(card, 'picture');
+        await addCardToSheet(pictureCanvas);
+        
+        const labelCanvas = await generateCardCanvas(card, 'label');
+        await addCardToSheet(labelCanvas);
+        
+        // Small delay to ensure canvas operations complete
+        await new Promise(r => setTimeout(r, 50));
+      } catch (error) {
+        console.error('Error generating card:', card.label, error);
+      }
     }
     
     if (currentSheet !== null) {
