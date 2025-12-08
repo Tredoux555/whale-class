@@ -472,6 +472,13 @@ export default function AdminDashboard() {
           >
             <span className="text-xl">📚</span> Class Materials
           </Link>
+          <Link
+            href="/admin/card-generator"
+            prefetch={false}
+            className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-green-700 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">🍎</span> Card Generator
+          </Link>
         </div>
 
             {/* Upload Form */}
