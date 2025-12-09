@@ -13,26 +13,71 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerClient();
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: existing } = await supabase
+    // Check for existing activity for today (use maybeSingle to handle no results gracefully)
+    const { data: existing, error: existingError } = await supabase
       .from('daily_activity_assignments')
       .select(`*, activity:activities (*), child:children (*)`)
       .eq('child_id', childId)
       .eq('assigned_date', today)
-      .single();
+      .maybeSingle();
 
+    // If there's an existing incomplete activity, return it
     if (existing && !existing.completed) {
       return NextResponse.json({ data: existing, message: 'Activity already assigned for today', existing: true });
     }
 
+    // Generate the new activity
     const activity = await selectDailyActivity(childId, { preferredAreas, excludeAreas, forceNewArea });
 
-    const { data: assignment, error } = await supabase
-      .from('daily_activity_assignments')
-      .insert({ child_id: childId, activity_id: activity.id, assigned_date: today, completed: false })
-      .select(`*, activity:activities (*), child:children (*)`)
-      .single();
+    let assignment;
+    let error;
 
-    if (error) throw new Error(`Failed to create assignment: ${error.message}`);
+    // If there's an existing completed activity, UPDATE it with the new activity
+    if (existing && existing.completed) {
+      const { data: updated, error: updateError } = await supabase
+        .from('daily_activity_assignments')
+        .update({ 
+          activity_id: activity.id, 
+          completed: false, 
+          completed_date: null,
+          notes: null
+        })
+        .eq('id', existing.id)
+        .select(`*, activity:activities (*), child:children (*)`)
+        .single();
+      
+      assignment = updated;
+      error = updateError;
+    } else {
+      // No existing activity, INSERT a new one
+      const { data: inserted, error: insertError } = await supabase
+        .from('daily_activity_assignments')
+        .insert({ child_id: childId, activity_id: activity.id, assigned_date: today, completed: false })
+        .select(`*, activity:activities (*), child:children (*)`)
+        .single();
+      
+      assignment = inserted;
+      error = insertError;
+    }
+
+    if (error) {
+      // Handle unique constraint violation more gracefully
+      if (error.code === '23505' || error.message.includes('duplicate key')) {
+        // Race condition - try to get the existing record
+        const { data: existingRecord } = await supabase
+          .from('daily_activity_assignments')
+          .select(`*, activity:activities (*), child:children (*)`)
+          .eq('child_id', childId)
+          .eq('assigned_date', today)
+          .single();
+        
+        if (existingRecord) {
+          return NextResponse.json({ data: existingRecord, message: 'Activity assigned', existing: true });
+        }
+      }
+      throw new Error(`Failed to ${existing && existing.completed ? 'update' : 'create'} assignment: ${error.message}`);
+    }
+    
     return NextResponse.json({ data: assignment, message: 'Daily activity generated successfully', existing: false });
   } catch (error: any) {
     console.error('Daily activity generation error:', error);
@@ -71,7 +116,7 @@ export async function GET(request: NextRequest) {
       .select(`*, activity:activities (*), child:children (*)`)
       .eq('child_id', childId)
       .eq('assigned_date', date)
-      .single();
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') throw new Error(`Failed to get assignment: ${error.message}`);
     if (!data) return NextResponse.json({ data: null, message: 'No activity assigned for this date' });
