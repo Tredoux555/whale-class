@@ -219,23 +219,33 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
               </div>
             )}
 
-            {!todayActivity.completed && (
-              <div className="flex gap-2 pt-4 border-t">
-                <button
-                  onClick={() => markActivityComplete(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Mark Complete
-                </button>
+            <div className="flex gap-2 pt-4 border-t">
+              {!todayActivity.completed ? (
+                <>
+                  <button
+                    onClick={() => markActivityComplete(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Mark Complete
+                  </button>
+                  <button
+                    onClick={generateTodayActivity}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  >
+                    Get Different Activity
+                  </button>
+                </>
+              ) : (
                 <button
                   onClick={generateTodayActivity}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Get Different Activity
+                  <Clock className="w-4 h-4" />
+                  Next Activity
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>

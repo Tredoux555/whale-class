@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "8f6ddb4a-3180-4f34-b227-f08746fdbecf",
+    "title": "Hurry Hurry Drive the Firetruck",
+    "category": "song-of-week",
+    "videoUrl": "/videos/8f6ddb4a-3180-4f34-b227-f08746fdbecf-Hurry_Hurry_Drive_the_Firetruck_-_THE_KIBOOMERS_Kids_Songs_-_Truck_Song_-_The_Kiboomers_-_Kids_Music_Channel__720p__h264_-2.mp4",
+    "uploadedAt": "2025-12-09T14:57:17.531Z",
+    "week": "16"
+  },
+  {
+    "id": "174fd36c-71ec-4f3f-a92a-37ac1ce8c09c",
+    "title": "Hurry Hurry Drive the Police Car",
+    "category": "song-of-week",
+    "videoUrl": "/videos/174fd36c-71ec-4f3f-a92a-37ac1ce8c09c-Hurry_Hurry_Drive_the_Police_Car_-_The_Kiboomers_Preschool_Songs_for_Circle_Time_-_The_Kiboomers_-_Kids_Music_Channel__720p__h264_.mp4",
+    "uploadedAt": "2025-12-09T15:01:02.753Z",
+    "week": "16"
+  }
+]
