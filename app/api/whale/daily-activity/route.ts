@@ -35,7 +35,25 @@ export async function POST(request: NextRequest) {
     if (error) throw new Error(`Failed to create assignment: ${error.message}`);
     return NextResponse.json({ data: assignment, message: 'Daily activity generated successfully', existing: false });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to generate daily activity' }, { status: 500 });
+    console.error('Daily activity generation error:', error);
+    const errorMessage = error.message || 'Failed to generate daily activity';
+    
+    // Provide helpful error messages
+    if (errorMessage.includes('No suitable activities found') || errorMessage.includes('No activities')) {
+      return NextResponse.json({ 
+        error: 'No activities found in database. Please add activities first. The system needs activities to generate daily assignments.',
+        code: 'NO_ACTIVITIES'
+      }, { status: 404 });
+    }
+    
+    if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
+      return NextResponse.json({ 
+        error: 'Database tables not set up. Please run the MONTESSORI-DATABASE-SCHEMA.sql in Supabase.',
+        code: 'DB_NOT_SETUP'
+      }, { status: 500 });
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
