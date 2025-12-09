@@ -589,6 +589,181 @@ const MontessoriCardGenerator = () => {
     setGenerating(false);
   };
 
+  // Generate images-only print layout
+  const generateImagesOnlySheet = async () => {
+    if (cards.length === 0) {
+      alert('Please upload some images first!');
+      return;
+    }
+    
+    setGenerating(true);
+    
+    try {
+      // Create print window
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow pop-ups to use the print feature');
+        setGenerating(false);
+        return;
+      }
+
+      // A4 dimensions at 96 DPI for print
+      const A4_WIDTH_CM = 21;
+      const A4_HEIGHT_CM = 29.7;
+      
+      // Calculate image size for 2x2 grid on A4
+      const MARGIN_CM = 1.5;
+      const GAP_CM = 0.2; // White cutting guide
+      
+      const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
+      const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
+      
+      // For 2x2 grid
+      const imageSize = Math.min(
+        (usableWidth - GAP_CM) / 2,
+        (usableHeight - GAP_CM) / 2
+      );
+      
+      // Build HTML for print
+      let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Montessori Images - Print</title>
+  <style>
+    @page {
+      size: A4;
+      margin: ${MARGIN_CM}cm;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, sans-serif;
+      background: white;
+    }
+    
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      padding: ${MARGIN_CM}cm;
+      position: relative;
+    }
+    
+    .page:last-child {
+      page-break-after: auto;
+    }
+    
+    .page-title {
+      font-size: 10pt;
+      color: #999;
+      margin-bottom: 0.5cm;
+      text-align: center;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: ${imageSize}cm ${imageSize}cm;
+      grid-template-rows: ${imageSize}cm ${imageSize}cm;
+      gap: ${GAP_CM}cm;
+      width: 100%;
+    }
+    
+    .image-box {
+      background: white;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      
+      .page-title {
+        display: none;
+      }
+      
+      .image-box {
+        border: none;
+      }
+    }
+    
+    @media screen {
+      body {
+        padding: 20px;
+        background: #f0f0f0;
+      }
+      
+      .page {
+        background: white;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    }
+  </style>
+</head>
+<body>
+`;
+
+      // Generate pages with 4 images each
+      for (let i = 0; i < cards.length; i += 4) {
+        const pageCards = cards.slice(i, i + 4);
+        const pageNum = Math.floor(i / 4) + 1;
+        html += `
+          <div class="page">
+            <div class="page-title">Images - Page ${pageNum}</div>
+            <div class="grid">
+              ${pageCards.map(card => `
+                <div class="image-box">
+                  <img src="${card.croppedImage}" alt="${card.label}">
+                </div>
+              `).join('')}
+              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      html += `
+  <script>
+    window.onload = function() {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
+`;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+      
+    } catch (error) {
+      console.error('Error generating images print:', error);
+      alert('Error generating images print. Please try again.');
+    }
+    
+    setGenerating(false);
+  };
+
   // Download all cards individually
   const downloadAllCards = async () => {
     setGenerating(true);
@@ -1271,6 +1446,22 @@ const MontessoriCardGenerator = () => {
                 }}
               >
                 {generating ? '⏳ Preparing...' : '🖨️ Print All Cards'}
+              </button>
+              <button
+                onClick={generateImagesOnlySheet}
+                disabled={generating}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: '#00BCD4',
+                  color: '#fff',
+                  cursor: generating ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  opacity: generating ? 0.7 : 1
+                }}
+              >
+                {generating ? '⏳ Preparing...' : '🖼️ Print Images Only'}
               </button>
               <button
                 onClick={() => setCards([])}
