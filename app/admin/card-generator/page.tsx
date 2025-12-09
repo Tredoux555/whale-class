@@ -434,7 +434,12 @@ const MontessoriCardGenerator = () => {
     }
     
     .card-label-only {
-      height: ${labelHeightCm}cm;
+      height: ${labelHeightCm + 1}cm;
+    }
+    
+    .card-label-only .label-area {
+      height: auto;
+      flex: 1;
     }
     
     .image-area {
