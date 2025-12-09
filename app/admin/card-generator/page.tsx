@@ -319,86 +319,7 @@ const MontessoriCardGenerator = () => {
     link.click();
   };
 
-  // Helper function to load image and draw on canvas
-  const loadImageToCanvas = (
-    imageSrc: string,
-    label: string,
-    type: 'control' | 'picture' | 'label',
-    currentBorderColor: string,
-    currentFontFamily: string
-  ): Promise<HTMLCanvasElement> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Could not get 2d context'));
-        return;
-      }
-
-      if (type === 'label') {
-        // Label card doesn't need image loading
-        canvas.width = CARD_SIZE;
-        canvas.height = LABEL_HEIGHT;
-        ctx.fillStyle = currentBorderColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2);
-        ctx.fillStyle = '#000000';
-        ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, canvas.width / 2, canvas.height / 2);
-        resolve(canvas);
-        return;
-      }
-
-      const img = new Image();
-      img.onload = () => {
-        if (type === 'control') {
-          canvas.width = CARD_SIZE;
-          canvas.height = CARD_SIZE + LABEL_HEIGHT;
-          ctx.fillStyle = currentBorderColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
-          ctx.fillRect(BORDER_SIZE, CARD_SIZE, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE);
-          
-          const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-          const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-          const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-          ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-          
-          ctx.fillStyle = '#000000';
-          ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, canvas.width / 2, CARD_SIZE + LABEL_HEIGHT / 2);
-        } else {
-          // Picture card
-          canvas.width = CARD_SIZE;
-          canvas.height = CARD_SIZE;
-          ctx.fillStyle = currentBorderColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
-          
-          const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-          const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-          const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-          ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-        }
-        resolve(canvas);
-      };
-      img.onerror = () => reject(new Error(`Failed to load image for ${label}`));
-      img.src = imageSrc;
-    });
-  };
-
-  // Generate printable sheet (A4) - Groups cards by type for easy cutting
+  // Generate optimized print layout - 4 cards per page with white cutting guides
   const generatePrintableSheet = async () => {
     if (cards.length === 0) {
       alert('Please upload some images first!');
@@ -408,112 +329,257 @@ const MontessoriCardGenerator = () => {
     setGenerating(true);
     
     try {
-      // A4 at 96 DPI
-      const A4_WIDTH = 794;
-      const A4_HEIGHT = 1123;
-      const MARGIN = 15;
-      const SPACING = 5;
-      
+      // Create print window
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow pop-ups to use the print feature');
+        setGenerating(false);
+        return;
+      }
+
       // Capture current settings
       const currentBorderColor = borderColor;
       const currentFontFamily = fontFamily;
       
-      // Step 1: Generate ALL card canvases first, grouped by type
-      const controlCanvases: HTMLCanvasElement[] = [];
-      const pictureCanvases: HTMLCanvasElement[] = [];
-      const labelCanvases: HTMLCanvasElement[] = [];
+      // A4 dimensions at 96 DPI for print
+      const A4_WIDTH_CM = 21;
+      const A4_HEIGHT_CM = 29.7;
       
-      for (const card of cards) {
-        const control = await loadImageToCanvas(card.croppedImage, card.label, 'control', currentBorderColor, currentFontFamily);
-        controlCanvases.push(control);
-        
-        const picture = await loadImageToCanvas(card.croppedImage, card.label, 'picture', currentBorderColor, currentFontFamily);
-        pictureCanvases.push(picture);
-        
-        const label = await loadImageToCanvas(card.croppedImage, card.label, 'label', currentBorderColor, currentFontFamily);
-        labelCanvases.push(label);
+      // Calculate card size for 2x2 grid on A4
+      // With 1.5cm margins and 0.2cm white gaps between cards
+      const MARGIN_CM = 1.5;
+      const GAP_CM = 0.2; // White cutting guide
+      
+      const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
+      const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
+      
+      // For 2x2 grid
+      const cardWidth = (usableWidth - GAP_CM) / 2;  // ~8.85cm
+      const cardHeight = (usableHeight - GAP_CM) / 2; // ~13.25cm
+      
+      // Image area is card minus border
+      const imageCm = cardWidth - 0.5; // ~8.35cm
+      const labelHeightCm = 2; // Keep label height at 2cm
+      
+      // Build HTML for print
+      let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Montessori Cards - Print</title>
+  <style>
+    @page {
+      size: A4;
+      margin: ${MARGIN_CM}cm;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, sans-serif;
+      background: white;
+    }
+    
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      padding: ${MARGIN_CM}cm;
+      position: relative;
+    }
+    
+    .page:last-child {
+      page-break-after: auto;
+    }
+    
+    .page-title {
+      font-size: 10pt;
+      color: #999;
+      margin-bottom: 0.5cm;
+      text-align: center;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: ${cardWidth}cm ${cardWidth}cm;
+      grid-template-rows: ${cardHeight}cm ${cardHeight}cm;
+      gap: ${GAP_CM}cm;
+      width: 100%;
+      height: calc(100% - 1cm);
+    }
+    
+    .card {
+      background: ${currentBorderColor};
+      padding: 0.25cm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card-control {
+      height: ${cardHeight}cm;
+    }
+    
+    .card-picture {
+      height: ${cardWidth}cm;
+    }
+    
+    .card-label-only {
+      height: ${labelHeightCm}cm;
+    }
+    
+    .image-area {
+      background: white;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .image-area img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    .label-area {
+      background: white;
+      height: ${labelHeightCm}cm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "${currentFontFamily}", cursive;
+      font-size: 14pt;
+      font-weight: bold;
+      text-align: center;
+      padding: 0.2cm;
+    }
+    
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
       }
       
-      // Step 2: Layout cards on A4 sheets
-      const allSheets: HTMLCanvasElement[] = [];
+      .page-title {
+        display: none; /* Hide labels when printing */
+      }
+    }
+    
+    @media screen {
+      body {
+        padding: 20px;
+        background: #f0f0f0;
+      }
       
-      const layoutCardsOnSheets = (canvases: HTMLCanvasElement[], sheetLabel: string) => {
-        if (canvases.length === 0) return;
-        
-        let sheetIndex = 1;
-        let x = MARGIN;
-        let y = MARGIN;
-        let rowHeight = 0;
-        
-        let currentCanvas = document.createElement('canvas');
-        currentCanvas.width = A4_WIDTH;
-        currentCanvas.height = A4_HEIGHT;
-        let ctx = currentCanvas.getContext('2d')!;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
-        
-        // Add sheet label at top
-        ctx.fillStyle = '#999999';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(`${sheetLabel} - Page ${sheetIndex}`, MARGIN, 12);
-        y = MARGIN + 5;
-        
-        for (const cardCanvas of canvases) {
-          const cardW = cardCanvas.width;
-          const cardH = cardCanvas.height;
-          
-          // Check if card fits in current row
-          if (x + cardW > A4_WIDTH - MARGIN) {
-            x = MARGIN;
-            y += rowHeight + SPACING;
-            rowHeight = 0;
-          }
-          
-          // Check if card fits on current page
-          if (y + cardH > A4_HEIGHT - MARGIN) {
-            allSheets.push(currentCanvas);
-            sheetIndex++;
-            
-            currentCanvas = document.createElement('canvas');
-            currentCanvas.width = A4_WIDTH;
-            currentCanvas.height = A4_HEIGHT;
-            ctx = currentCanvas.getContext('2d')!;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
-            
-            // Add sheet label at top
-            ctx.fillStyle = '#999999';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'left';
-            ctx.fillText(`${sheetLabel} - Page ${sheetIndex}`, MARGIN, 12);
-            
-            x = MARGIN;
-            y = MARGIN + 5;
-            rowHeight = 0;
-          }
-          
-          ctx.drawImage(cardCanvas, x, y);
-          x += cardW + SPACING;
-          rowHeight = Math.max(rowHeight, cardH);
+      .page {
+        background: white;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    }
+  </style>
+</head>
+<body>
+`;
+
+      // Helper to create card HTML
+      const createCardHTML = (card: Card, type: 'control' | 'picture' | 'label') => {
+        if (type === 'control') {
+          return `
+            <div class="card card-control">
+              <div class="image-area">
+                <img src="${card.croppedImage}" alt="${card.label}">
+              </div>
+              <div class="label-area">${card.label}</div>
+            </div>
+          `;
+        } else if (type === 'picture') {
+          return `
+            <div class="card card-picture">
+              <div class="image-area">
+                <img src="${card.croppedImage}" alt="${card.label}">
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="card card-label-only">
+              <div class="label-area" style="flex: 1;">${card.label}</div>
+            </div>
+          `;
         }
-        
-        allSheets.push(currentCanvas);
       };
-      
-      // Layout each card type on separate sheet groups
-      layoutCardsOnSheets(controlCanvases, 'Control Cards');
-      layoutCardsOnSheets(pictureCanvases, 'Picture Cards');
-      layoutCardsOnSheets(labelCanvases, 'Label Cards');
-      
-      // Step 3: Download all sheets with small delays
-      for (let i = 0; i < allSheets.length; i++) {
-        const link = document.createElement('a');
-        link.download = `montessori_cards_sheet_${i + 1}.png`;
-        link.href = allSheets[i].toDataURL('image/png');
-        link.click();
-        await new Promise(r => setTimeout(r, 300));
+
+      // Generate Control Cards pages (4 per page in 2x2 grid)
+      const controlCards = cards.map(card => createCardHTML(card, 'control'));
+      for (let i = 0; i < controlCards.length; i += 4) {
+        const pageCards = controlCards.slice(i, i + 4);
+        const pageNum = Math.floor(i / 4) + 1;
+        html += `
+          <div class="page">
+            <div class="page-title">Control Cards - Page ${pageNum}</div>
+            <div class="grid">
+              ${pageCards.join('')}
+              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+            </div>
+          </div>
+        `;
       }
+
+      // Generate Picture Cards pages (4 per page in 2x2 grid)
+      const pictureCards = cards.map(card => createCardHTML(card, 'picture'));
+      for (let i = 0; i < pictureCards.length; i += 4) {
+        const pageCards = pictureCards.slice(i, i + 4);
+        const pageNum = Math.floor(i / 4) + 1;
+        html += `
+          <div class="page">
+            <div class="page-title">Picture Cards - Page ${pageNum}</div>
+            <div class="grid">
+              ${pageCards.join('')}
+              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // Generate Label Cards pages (8 per page in 2x4 grid)
+      const labelCards = cards.map(card => createCardHTML(card, 'label'));
+      for (let i = 0; i < labelCards.length; i += 8) {
+        const pageCards = labelCards.slice(i, i + 8);
+        const pageNum = Math.floor(i / 8) + 1;
+        html += `
+          <div class="page">
+            <div class="page-title">Label Cards - Page ${pageNum}</div>
+            <div class="grid" style="grid-template-rows: repeat(4, ${labelHeightCm}cm); grid-auto-rows: ${labelHeightCm}cm;">
+              ${pageCards.join('')}
+              ${pageCards.length < 8 ? '<div></div>'.repeat(8 - pageCards.length) : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      html += `
+  <script>
+    window.onload = function() {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
+`;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
       
     } catch (error) {
       console.error('Error generating print sheets:', error);
@@ -1204,7 +1270,7 @@ const MontessoriCardGenerator = () => {
                   opacity: generating ? 0.7 : 1
                 }}
               >
-                {generating ? '⏳ Generating...' : '🖨️ Generate Print Sheets'}
+                {generating ? '⏳ Preparing...' : '🖨️ Print All Cards'}
               </button>
               <button
                 onClick={() => setCards([])}
