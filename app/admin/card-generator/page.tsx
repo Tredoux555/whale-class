@@ -607,6 +607,9 @@ const MontessoriCardGenerator = () => {
         return;
       }
 
+      // Capture current settings
+      const currentBorderColor = borderColor;
+
       // A4 dimensions at 96 DPI for print
       const A4_WIDTH_CM = 21;
       const A4_HEIGHT_CM = 29.7;
