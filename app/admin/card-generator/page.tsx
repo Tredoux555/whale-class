@@ -199,6 +199,31 @@ const MontessoriCardGenerator = () => {
     setCropMode(null);
   };
 
+  // Helper function to calculate optimal font size that fits within bounds
+  const calculateOptimalFontSize = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxHeight: number, fontFamily: string): number => {
+    // Start with a larger base size (80% of label height instead of 50%)
+    let fontSize = Math.round(LABEL_HEIGHT * 0.8);
+    const minFontSize = 20; // Minimum readable size
+    
+    // Binary search for optimal size
+    while (fontSize >= minFontSize) {
+      ctx.font = `bold ${fontSize}px "${fontFamily}", cursive`;
+      const metrics = ctx.measureText(text);
+      const textWidth = metrics.width;
+      const textHeight = fontSize * 1.2; // Approximate height including line height
+      
+      // Check if text fits within bounds
+      if (textWidth <= maxWidth * 0.95 && textHeight <= maxHeight * 0.95) {
+        return fontSize;
+      }
+      
+      // Reduce font size by 2px and try again
+      fontSize -= 2;
+    }
+    
+    return minFontSize;
+  };
+
   // Generate card image
   const generateCardCanvas = (card: Card, type: string): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
@@ -244,9 +269,10 @@ const MontessoriCardGenerator = () => {
             
             ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
             
-            // Draw label
+            // Draw label with optimal font size
             ctx.fillStyle = '#000000';
-            ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
+            const labelFontSize = calculateOptimalFontSize(ctx, cardLabel, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2, currentFontFamily);
+            ctx.font = `bold ${labelFontSize}px "${currentFontFamily}", cursive`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(cardLabel, canvas.width / 2, CARD_SIZE + LABEL_HEIGHT / 2);
@@ -299,8 +325,10 @@ const MontessoriCardGenerator = () => {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2);
         
+        // Draw label with optimal font size
         ctx.fillStyle = '#000000';
-        ctx.font = `bold ${Math.round(LABEL_HEIGHT * 0.5)}px "${currentFontFamily}", cursive`;
+        const labelFontSize = calculateOptimalFontSize(ctx, cardLabel, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2, currentFontFamily);
+        ctx.font = `bold ${labelFontSize}px "${currentFontFamily}", cursive`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(cardLabel, canvas.width / 2, canvas.height / 2);
@@ -468,11 +496,14 @@ const MontessoriCardGenerator = () => {
       align-items: center;
       justify-content: center;
       font-family: "${currentFontFamily}", cursive;
-      font-size: 14pt;
+      font-size: 24pt;
       font-weight: bold;
       text-align: center;
-      padding: 0.4cm 0.3cm;
-      line-height: 1.3;
+      padding: 0.2cm 0.3cm;
+      line-height: 1.2;
+      overflow: hidden;
+      word-wrap: break-word;
+      max-width: 100%;
     }
     
     @media print {

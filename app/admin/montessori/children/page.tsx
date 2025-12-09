@@ -66,8 +66,8 @@ export default function ChildrenPage() {
       });
 
       if (response.ok) {
-        setShowAddForm(false);
         e.currentTarget.reset();
+        setShowAddForm(false);
         fetchChildren();
       } else {
         const error = await response.json();
