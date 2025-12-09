@@ -415,7 +415,7 @@ const MontessoriCardGenerator = () => {
     
     .card {
       background: ${currentBorderColor};
-      padding: 0.25cm;
+      padding: 0.5cm;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -676,17 +676,27 @@ const MontessoriCardGenerator = () => {
     }
     
     .image-box {
-      background: white;
-      border: 1px solid #ddd;
+      background: ${currentBorderColor};
+      padding: 0.5cm;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
     
-    .image-box img {
+    .image-inner {
+      background: white;
       width: 100%;
       height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .image-inner img {
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
     }
     
@@ -698,10 +708,6 @@ const MontessoriCardGenerator = () => {
       
       .page-title {
         display: none;
-      }
-      
-      .image-box {
-        border: none;
       }
     }
     
@@ -732,7 +738,9 @@ const MontessoriCardGenerator = () => {
             <div class="grid">
               ${pageCards.map(card => `
                 <div class="image-box">
-                  <img src="${card.croppedImage}" alt="${card.label}">
+                  <div class="image-inner">
+                    <img src="${card.croppedImage}" alt="${card.label}">
+                  </div>
                 </div>
               `).join('')}
               ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
