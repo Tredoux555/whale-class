@@ -74,11 +74,15 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
         body: JSON.stringify({ childId }),
       });
 
-      if (!res.ok) throw new Error('Failed to generate activity');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Failed to generate activity' }));
+        throw new Error(errorData.error || 'Failed to generate activity');
+      }
       const data = await res.json();
       setTodayActivity(data.data);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      const errorMessage = err.message || 'Failed to generate activity';
+      alert(`Error: ${errorMessage}\n\nIf you see "No activities found", you need to add activities to the database first.`);
     }
   }
 
@@ -94,7 +98,39 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
 
       if (!res.ok) throw new Error('Failed to update activity');
       const data = await res.json();
-      setTodayActivity(data.data);
+      
+      // If marking as complete, automatically generate next activity
+      if (completed) {
+        // Wait a moment for the completion to be saved
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Generate next activity
+        try {
+          const nextRes = await fetch('/api/whale/daily-activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ childId }),
+          });
+
+          if (nextRes.ok) {
+            const nextData = await nextRes.json();
+            setTodayActivity(nextData.data);
+          } else {
+            // If no next activity can be generated, keep showing completed one
+            const errorData = await nextRes.json().catch(() => ({ error: 'No more activities' }));
+            setTodayActivity(data.data);
+            // Optionally show a message that no more activities are available
+            if (errorData.code === 'NO_ACTIVITIES') {
+              alert('Activity completed! No more activities available for today.');
+            }
+          }
+        } catch (nextErr: any) {
+          // If error generating next, keep showing completed activity
+          setTodayActivity(data.data);
+        }
+      } else {
+        setTodayActivity(data.data);
+      }
     } catch (err: any) {
       alert(`Error: ${err.message}`);
     }

@@ -60,8 +60,19 @@ async function getCandidateActivities(criteria: ActivitySelectionCriteria): Prom
   }
 
   const { data, error } = await query;
-  if (error) throw new Error(`Failed to get candidate activities: ${error.message}`);
-  return data || [];
+  if (error) {
+    // Check if table doesn't exist
+    if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      throw new Error('Activities table does not exist. Please run the database schema.');
+    }
+    throw new Error(`Failed to get candidate activities: ${error.message}`);
+  }
+  
+  if (!data || data.length === 0) {
+    throw new Error('No suitable activities found in database. Please add activities that match the child\'s age range.');
+  }
+  
+  return data;
 }
 
 async function scoreActivities(activities: Activity[], criteria: ActivitySelectionCriteria, recentActivities: any[]): Promise<ScoredActivity[]> {
