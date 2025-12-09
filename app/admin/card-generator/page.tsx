@@ -422,6 +422,7 @@ const MontessoriCardGenerator = () => {
       flex-direction: column;
       position: relative;
       overflow: hidden;
+      gap: 0.5cm;
     }
     
     .card-control {
@@ -465,7 +466,8 @@ const MontessoriCardGenerator = () => {
       font-size: 14pt;
       font-weight: bold;
       text-align: center;
-      padding: 0.2cm;
+      padding: 0.4cm 0.3cm;
+      line-height: 1.3;
     }
     
     @media print {
