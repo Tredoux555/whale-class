@@ -416,6 +416,8 @@ const MontessoriCardGenerator = () => {
     .card {
       background: ${currentBorderColor};
       padding: 0.5cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -436,6 +438,8 @@ const MontessoriCardGenerator = () => {
     
     .image-area {
       background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       flex: 1;
       display: flex;
       align-items: center;
@@ -451,6 +455,8 @@ const MontessoriCardGenerator = () => {
     
     .label-area {
       background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       height: ${labelHeightCm}cm;
       display: flex;
       align-items: center;
@@ -681,6 +687,8 @@ const MontessoriCardGenerator = () => {
     .image-box {
       background: ${currentBorderColor};
       padding: 0.5cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -689,6 +697,8 @@ const MontessoriCardGenerator = () => {
     
     .image-inner {
       background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       width: 100%;
       height: 100%;
       display: flex;
