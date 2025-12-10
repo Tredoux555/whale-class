@@ -39,7 +39,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+
+    console.log(`Activities API: Found ${data?.length || 0} activities`);
 
     // Apply search filter if provided (client-side filtering for simplicity)
     let filteredData = data || [];
