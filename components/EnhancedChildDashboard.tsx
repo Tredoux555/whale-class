@@ -139,21 +139,42 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-gray-600">Loading child data...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Error: {error}</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h3 className="text-red-800 font-semibold mb-2">Error Loading Child Data</h3>
+        <p className="text-red-700">{error}</p>
+        <button
+          onClick={loadChildData}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
-  if (!child) return <div>Child not found</div>;
+  if (!child) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <p className="text-yellow-800 font-semibold">Child not found</p>
+        <p className="text-yellow-700 mt-2">Child ID: {childId}</p>
+        <button
+          onClick={loadChildData}
+          className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

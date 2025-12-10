@@ -209,6 +209,7 @@ export default function ActivitiesLibraryPage() {
     }
   };
 
+  // Calculate areas and skill levels from activities (inside component so it updates)
   const areas = [...new Set(activities.map(a => a.area))];
   const skillLevels = [...new Set(activities.map(a => a.skill_level))].sort();
 
