@@ -84,6 +84,7 @@ export default function ActivitiesLibraryPage() {
 
   const fetchActivities = async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/whale/activities');
       if (!response.ok) {
         throw new Error('Failed to fetch activities');
@@ -92,7 +93,12 @@ export default function ActivitiesLibraryPage() {
       console.log('Activities API response:', result);
       const activitiesData = result.data || [];
       console.log('Activities count:', activitiesData.length);
+      console.log('Setting activities state with', activitiesData.length, 'activities');
       setActivities(activitiesData);
+      // Force filter update after setting activities
+      setTimeout(() => {
+        filterActivities();
+      }, 100);
     } catch (error) {
       console.error("Error fetching activities:", error);
       alert("Failed to load activities. Please check your Supabase connection.");
@@ -114,6 +120,7 @@ export default function ActivitiesLibraryPage() {
   };
 
   const filterActivities = () => {
+    console.log('filterActivities called with', activities.length, 'activities');
     let filtered = [...activities];
 
     // Search filter
@@ -123,7 +130,7 @@ export default function ActivitiesLibraryPage() {
         (activity) =>
           activity.name.toLowerCase().includes(query) ||
           activity.instructions.toLowerCase().includes(query) ||
-          activity.learning_goals.some((goal) => goal.toLowerCase().includes(query))
+          (activity.learning_goals && activity.learning_goals.some((goal: string) => goal.toLowerCase().includes(query)))
       );
     }
 
@@ -147,6 +154,7 @@ export default function ActivitiesLibraryPage() {
       );
     }
 
+    console.log('Setting filtered activities:', filtered.length);
     setFilteredActivities(filtered);
   };
 
