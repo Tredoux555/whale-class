@@ -51,10 +51,15 @@ export async function GET(request: NextRequest) {
 
     if (activitiesError) throw activitiesError;
 
-    // Get progress data
+    // Get progress data with area from skills -> skill_categories
     const { data: progress, error: progressError } = await supabase
       .from('child_progress')
-      .select('*')
+      .select(`
+        *,
+        skill:skills(
+          category:skill_categories(area)
+        )
+      `)
       .eq('child_id', childId);
 
     if (progressError) throw progressError;
@@ -87,7 +92,10 @@ export async function GET(request: NextRequest) {
     // Progress by area
     const progressByArea: Record<string, any> = {};
     progress?.forEach(p => {
-      const area = p.curriculum_area;
+      // Get area from skill -> category relationship
+      const area = p.skill?.category?.area;
+      if (!area) return; // Skip if no area found
+      
       if (!progressByArea[area]) {
         progressByArea[area] = {
           skills: [],
@@ -103,12 +111,13 @@ export async function GET(request: NextRequest) {
 
       progressByArea[area].skills.push(p);
       progressByArea[area].totalSkills++;
-      progressByArea[area].totalStatus += p.status;
+      const status = p.status_level || p.status || 0;
+      progressByArea[area].totalStatus += status;
 
-      if (p.status === 1) progressByArea[area].introduced++;
-      else if (p.status === 2) progressByArea[area].practicing++;
-      else if (p.status === 3) progressByArea[area].independent++;
-      else if (p.status >= 4) progressByArea[area].mastery++;
+      if (status === 1) progressByArea[area].introduced++;
+      else if (status === 2) progressByArea[area].practicing++;
+      else if (status === 3) progressByArea[area].independent++;
+      else if (status >= 4) progressByArea[area].mastery++;
     });
 
     // Calculate averages
@@ -136,7 +145,7 @@ export async function GET(request: NextRequest) {
         completedActivities,
         completionRate,
         totalSkills: progress?.length || 0,
-        masteredSkills: progress?.filter(p => p.status >= 4).length || 0
+        masteredSkills: progress?.filter(p => (p.status_level || p.status || 0) >= 4).length || 0
       },
       activitiesByArea: byArea,
       progressByArea,
