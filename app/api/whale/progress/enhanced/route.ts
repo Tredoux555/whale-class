@@ -57,9 +57,12 @@ export async function GET(request: NextRequest) {
       cultural: 'Cultural Studies'
     };
 
-    progressData?.forEach(progress => {
-      // Get area from skill -> category relationship
-      const area = progress.skill?.category?.area;
+    progressData?.forEach((progress: any) => {
+      // Handle Supabase join structure - skill might be object or array
+      const skill = Array.isArray(progress.skill) ? progress.skill[0] : progress.skill;
+      const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;
+      const area = category?.area;
+      
       if (!area) return; // Skip if no area found
       
       if (!areaProgress[area]) {
