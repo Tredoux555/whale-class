@@ -89,7 +89,10 @@ export default function ActivitiesLibraryPage() {
         throw new Error('Failed to fetch activities');
       }
       const result = await response.json();
-      setActivities(result.data || []);
+      console.log('Activities API response:', result);
+      const activitiesData = result.data || [];
+      console.log('Activities count:', activitiesData.length);
+      setActivities(activitiesData);
     } catch (error) {
       console.error("Error fetching activities:", error);
       alert("Failed to load activities. Please check your Supabase connection.");
