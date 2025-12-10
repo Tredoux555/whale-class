@@ -48,10 +48,15 @@ export default function ReportsPage() {
 
   const fetchChildren = async () => {
     try {
+      console.log('Reports: Fetching children...');
       const response = await fetch("/api/whale/children?active=true");
+      console.log('Reports: Children response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        setChildren(data.data || []);
+        console.log('Reports: Children data:', data);
+        const childrenData = data.data || [];
+        console.log('Reports: Setting', childrenData.length, 'children');
+        setChildren(childrenData);
       }
     } catch (error) {
       console.error("Error fetching children:", error);
