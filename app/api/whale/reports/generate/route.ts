@@ -91,9 +91,12 @@ export async function GET(request: NextRequest) {
 
     // Progress by area
     const progressByArea: Record<string, any> = {};
-    progress?.forEach(p => {
-      // Get area from skill -> category relationship
-      const area = p.skill?.category?.area;
+    progress?.forEach((p: any) => {
+      // Handle Supabase join structure - skill might be object or array
+      const skill = Array.isArray(p.skill) ? p.skill[0] : p.skill;
+      const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;
+      const area = category?.area;
+      
       if (!area) return; // Skip if no area found
       
       if (!progressByArea[area]) {

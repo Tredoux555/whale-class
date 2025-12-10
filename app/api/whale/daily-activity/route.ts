@@ -129,8 +129,12 @@ export async function POST(request: NextRequest) {
     const areaSkills: Record<string, any[]> = {};
 
     if (!progressError && progressData) {
-      progressData.forEach(progress => {
-        const area = progress.skill?.category?.area;
+      progressData.forEach((progress: any) => {
+        // Handle Supabase join structure - skill might be object or array
+        const skill = Array.isArray(progress.skill) ? progress.skill[0] : progress.skill;
+        const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;
+        const area = category?.area;
+        
         if (!area) return;
         
         if (!areaSkills[area]) {
