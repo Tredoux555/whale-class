@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get age in years (for filtering activities)
-    const ageInYears = parseFloat(child.age_group);
+    // age_group is stored as '2-3', '3-4', etc. - use the lower bound + 0.5
+    const ageGroupParts = child.age_group.split('-');
+    const ageInYears = parseFloat(ageGroupParts[0]) + 0.5; // '2-3' → 2.5, '3-4' → 3.5
 
     // Get recently completed activities (last 10 days)
     const tenDaysAgo = new Date();
@@ -99,6 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Exclude recently done activities
     if (recentActivityIds.length > 0) {
+      // Supabase .not() with 'in' requires array format
       query = query.not('id', 'in', `(${recentActivityIds.join(',')})`);
     }
 
@@ -245,11 +248,11 @@ export async function PUT(request: NextRequest) {
 
     const updateData: any = {
       completed,
-      completion_notes: notes || null,
+      notes: notes || null,
     };
 
     if (completed) {
-      updateData.completed_at = new Date().toISOString();
+      updateData.completed_date = new Date().toISOString().split('T')[0]; // Use DATE format, not TIMESTAMP
     }
 
     const { data, error } = await supabase
