@@ -48,17 +48,26 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
       setError(null);
 
       const childRes = await fetch(`/api/whale/children/${childId}`);
-      if (!childRes.ok) throw new Error('Failed to load child data');
+      if (!childRes.ok) {
+        const errorData = await childRes.json().catch(() => ({ error: 'Failed to load child data' }));
+        throw new Error(errorData.error || 'Failed to load child data');
+      }
       const childData = await childRes.json();
+      console.log('Child data response:', childData);
+      if (!childData.data) {
+        throw new Error('Child data not found in response');
+      }
       setChild(childData.data);
 
       const activityRes = await fetch(`/api/whale/daily-activity?childId=${childId}`);
       if (activityRes.ok) {
         const activityData = await activityRes.json();
+        console.log('Activity data response:', activityData);
         setTodayActivity(activityData.data);
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error loading child data:', err);
+      setError(err.message || 'Failed to load child data');
     } finally {
       setLoading(false);
     }
