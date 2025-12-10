@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createSupabaseClient } from '@/lib/supabase';
+// Removed createSupabaseClient - using API route instead
 import { Search, Filter, ChevronDown, ChevronUp, BookOpen, User } from 'lucide-react';
 
 interface Activity {
@@ -84,16 +84,12 @@ export default function ActivitiesLibraryPage() {
 
   const fetchActivities = async () => {
     try {
-      const supabase = createSupabaseClient();
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*')
-        .order('area', { ascending: true })
-        .order('skill_level', { ascending: true })
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-      setActivities(data || []);
+      const response = await fetch('/api/whale/activities');
+      if (!response.ok) {
+        throw new Error('Failed to fetch activities');
+      }
+      const result = await response.json();
+      setActivities(result.data || []);
     } catch (error) {
       console.error("Error fetching activities:", error);
       alert("Failed to load activities. Please check your Supabase connection.");
@@ -187,27 +183,20 @@ export default function ActivitiesLibraryPage() {
         }
       }
 
-      // Assign the activity
-      const supabase = createSupabaseClient();
-      
-      // Delete existing assignment for today
-      await supabase
-        .from('daily_activity_assignments')
-        .delete()
-        .eq('child_id', selectedChild)
-        .eq('assigned_date', today);
+      // Assign the activity using API route
+      const assignResponse = await fetch('/api/whale/daily-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          childId: selectedChild,
+          activityId: selectedActivity.id // Pass specific activity ID
+        }),
+      });
 
-      // Create new assignment
-      const { error } = await supabase
-        .from('daily_activity_assignments')
-        .insert({
-          child_id: selectedChild,
-          activity_id: selectedActivity.id,
-          assigned_date: today,
-          completed: false,
-        });
-
-      if (error) throw error;
+      if (!assignResponse.ok) {
+        const errorData = await assignResponse.json().catch(() => ({ error: 'Failed to assign activity' }));
+        throw new Error(errorData.error || 'Failed to assign activity');
+      }
 
       alert("Activity assigned successfully!");
       closeAssignModal();

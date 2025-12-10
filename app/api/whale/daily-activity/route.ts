@@ -43,11 +43,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Generate a new activity for today
+// POST - Generate a new activity for today (or assign specific activity if activityId provided)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { childId } = body;
+    const { childId, activityId } = body;
 
     if (!childId) {
       return NextResponse.json(
@@ -73,6 +73,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // If specific activityId provided, assign that activity directly
+    if (activityId) {
+      // Verify activity exists
+      const { data: activity, error: activityError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('id', activityId)
+        .single();
+
+      if (activityError || !activity) {
+        return NextResponse.json(
+          { error: 'Activity not found' },
+          { status: 404 }
+        );
+      }
+
+      // Delete any existing assignment for today
+      const today = new Date().toISOString().split('T')[0];
+      await supabase
+        .from('daily_activity_assignments')
+        .delete()
+        .eq('child_id', childId)
+        .eq('assigned_date', today);
+
+      // Create new assignment with specific activity
+      const { data: assignment, error: assignError } = await supabase
+        .from('daily_activity_assignments')
+        .insert({
+          child_id: childId,
+          activity_id: activityId,
+          assigned_date: today,
+          completed: false,
+        })
+        .select(`
+          *,
+          activity:activities(*)
+        `)
+        .single();
+
+      if (assignError) throw assignError;
+
+      return NextResponse.json({ success: true, data: assignment });
+    }
+
+    // Otherwise, generate activity automatically
     // Get age in years (for filtering activities)
     // age_group is stored as '2-3', '3-4', etc. - use the lower bound + 0.5
     const ageGroupParts = child.age_group.split('-');
