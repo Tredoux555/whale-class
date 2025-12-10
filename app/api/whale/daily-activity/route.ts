@@ -113,30 +113,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get child's progress to determine skill gaps
+    // Get child's progress to determine skill gaps (optional - if no progress, skip prioritization)
     const { data: progressData, error: progressError } = await supabase
       .from('child_progress')
-      .select('curriculum_area, skill_name, status')
+      .select(`
+        status_level,
+        skill:skills(
+          category:skill_categories(area)
+        )
+      `)
       .eq('child_id', childId);
-
-    if (progressError) throw progressError;
 
     // Calculate area priorities (areas with lower average progress)
     const areaPriorities: Record<string, number> = {};
     const areaSkills: Record<string, any[]> = {};
 
-    progressData?.forEach(progress => {
-      if (!areaSkills[progress.curriculum_area]) {
-        areaSkills[progress.curriculum_area] = [];
-      }
-      areaSkills[progress.curriculum_area].push(progress);
-    });
+    if (!progressError && progressData) {
+      progressData.forEach(progress => {
+        const area = progress.skill?.category?.area;
+        if (!area) return;
+        
+        if (!areaSkills[area]) {
+          areaSkills[area] = [];
+        }
+        areaSkills[area].push({
+          status: progress.status_level || 0
+        });
+      });
 
-    Object.keys(areaSkills).forEach(area => {
-      const skills = areaSkills[area];
-      const avgStatus = skills.reduce((sum, s) => sum + s.status, 0) / skills.length;
-      areaPriorities[area] = avgStatus;
-    });
+      Object.keys(areaSkills).forEach(area => {
+        const skills = areaSkills[area];
+        const avgStatus = skills.reduce((sum, s) => sum + (s.status || 0), 0) / skills.length;
+        areaPriorities[area] = avgStatus;
+      });
+    }
 
     // Intelligent selection algorithm
     // Priority: areas with lower progress > variety > skill level appropriateness

@@ -17,10 +17,15 @@ export async function GET(request: NextRequest) {
 
     const supabase = createSupabaseAdmin();
 
-    // Get all progress records
+    // Get all progress records with area from skills -> skill_categories
     const { data: progressData, error: progressError } = await supabase
       .from('child_progress')
-      .select('*')
+      .select(`
+        *,
+        skill:skills(
+          category:skill_categories(area)
+        )
+      `)
       .eq('child_id', childId);
 
     if (progressError) throw progressError;
@@ -53,7 +58,10 @@ export async function GET(request: NextRequest) {
     };
 
     progressData?.forEach(progress => {
-      const area = progress.curriculum_area;
+      // Get area from skill -> category relationship
+      const area = progress.skill?.category?.area;
+      if (!area) return; // Skip if no area found
+      
       if (!areaProgress[area]) {
         areaProgress[area] = {
           area,
@@ -71,13 +79,14 @@ export async function GET(request: NextRequest) {
 
       areaProgress[area].skills.push(progress);
       areaProgress[area].totalSkills++;
-      areaProgress[area].totalStatus += progress.status;
+      areaProgress[area].totalStatus += progress.status_level || progress.status || 0;
 
       // Count by status level
-      if (progress.status === 1) areaProgress[area].introduced++;
-      else if (progress.status === 2) areaProgress[area].practicing++;
-      else if (progress.status === 3) areaProgress[area].independent++;
-      else if (progress.status >= 4) areaProgress[area].mastery++;
+      const status = progress.status_level || progress.status || 0;
+      if (status === 1) areaProgress[area].introduced++;
+      else if (status === 2) areaProgress[area].practicing++;
+      else if (status === 3) areaProgress[area].independent++;
+      else if (status >= 4) areaProgress[area].mastery++;
     });
 
     // Calculate averages
@@ -123,8 +132,8 @@ export async function GET(request: NextRequest) {
       : 0;
 
     const totalSkills = progressData?.length || 0;
-    const masteredSkills = progressData?.filter(p => p.status >= 4).length || 0;
-    const independentSkills = progressData?.filter(p => p.status === 3).length || 0;
+    const masteredSkills = progressData?.filter(p => (p.status_level || p.status || 0) >= 4).length || 0;
+    const independentSkills = progressData?.filter(p => (p.status_level || p.status || 0) === 3).length || 0;
     const skillMasteryRate = totalSkills > 0
       ? ((masteredSkills + independentSkills) / totalSkills) * 100
       : 0;
