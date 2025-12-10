@@ -1,160 +1,261 @@
 // app/api/whale/daily-activity/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { selectDailyActivity, markActivityComplete } from '@/lib/algorithms/activity-selection';
-import { createServerClient } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { childId, preferredAreas, excludeAreas, forceNewArea } = body;
-
-    if (!childId) return NextResponse.json({ error: 'childId is required' }, { status: 400 });
-
-    const supabase = await createServerClient();
-    const today = new Date().toISOString().split('T')[0];
-
-    // Check for existing activity for today (use maybeSingle to handle no results gracefully)
-    const { data: existing, error: existingError } = await supabase
-      .from('daily_activity_assignments')
-      .select(`*, activity:activities (*), child:children (*)`)
-      .eq('child_id', childId)
-      .eq('assigned_date', today)
-      .maybeSingle();
-
-    // If there's an existing incomplete activity, return it
-    if (existing && !existing.completed) {
-      return NextResponse.json({ data: existing, message: 'Activity already assigned for today', existing: true });
-    }
-
-    // Generate the new activity
-    const activity = await selectDailyActivity(childId, { preferredAreas, excludeAreas, forceNewArea });
-
-    let assignment;
-    let error;
-
-    // If there's an existing completed activity, UPDATE it with the new activity
-    if (existing && existing.completed) {
-      const { data: updated, error: updateError } = await supabase
-        .from('daily_activity_assignments')
-        .update({ 
-          activity_id: activity.id, 
-          completed: false, 
-          completed_date: null,
-          notes: null
-        })
-        .eq('id', existing.id)
-        .select(`*, activity:activities (*), child:children (*)`)
-        .single();
-      
-      assignment = updated;
-      error = updateError;
-    } else {
-      // No existing activity, INSERT a new one
-      const { data: inserted, error: insertError } = await supabase
-        .from('daily_activity_assignments')
-        .insert({ child_id: childId, activity_id: activity.id, assigned_date: today, completed: false })
-        .select(`*, activity:activities (*), child:children (*)`)
-        .single();
-      
-      assignment = inserted;
-      error = insertError;
-    }
-
-    if (error) {
-      // Handle unique constraint violation more gracefully
-      if (error.code === '23505' || error.message.includes('duplicate key')) {
-        // Race condition - try to get the existing record
-        const { data: existingRecord } = await supabase
-          .from('daily_activity_assignments')
-          .select(`*, activity:activities (*), child:children (*)`)
-          .eq('child_id', childId)
-          .eq('assigned_date', today)
-          .single();
-        
-        if (existingRecord) {
-          return NextResponse.json({ data: existingRecord, message: 'Activity assigned', existing: true });
-        }
-      }
-      throw new Error(`Failed to ${existing && existing.completed ? 'update' : 'create'} assignment: ${error.message}`);
-    }
-    
-    return NextResponse.json({ data: assignment, message: 'Daily activity generated successfully', existing: false });
-  } catch (error: any) {
-    console.error('Daily activity generation error:', error);
-    const errorMessage = error.message || 'Failed to generate daily activity';
-    
-    // Provide helpful error messages
-    if (errorMessage.includes('No suitable activities found') || errorMessage.includes('No activities')) {
-      return NextResponse.json({ 
-        error: 'No activities found in database. Please add activities first. The system needs activities to generate daily assignments.',
-        code: 'NO_ACTIVITIES'
-      }, { status: 404 });
-    }
-    
-    if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
-      return NextResponse.json({ 
-        error: 'Database tables not set up. Please run the MONTESSORI-DATABASE-SCHEMA.sql in Supabase.',
-        code: 'DB_NOT_SETUP'
-      }, { status: 500 });
-    }
-    
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-}
-
+// GET - Get today's activity for a child
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('childId');
-    const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-    if (!childId) return NextResponse.json({ error: 'childId is required' }, { status: 400 });
+    if (!childId) {
+      return NextResponse.json(
+        { error: 'childId is required' },
+        { status: 400 }
+      );
+    }
 
-    const supabase = await createServerClient();
+    const supabase = createSupabaseAdmin();
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get today's activity assignment with activity details
     const { data, error } = await supabase
       .from('daily_activity_assignments')
-      .select(`*, activity:activities (*), child:children (*)`)
+      .select(`
+        *,
+        activity:activities(*)
+      `)
       .eq('child_id', childId)
-      .eq('assigned_date', date)
-      .maybeSingle();
+      .eq('assigned_date', today)
+      .single();
 
-    if (error && error.code !== 'PGRST116') throw new Error(`Failed to get assignment: ${error.message}`);
-    if (!data) return NextResponse.json({ data: null, message: 'No activity assigned for this date' });
-    return NextResponse.json({ data });
+    if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
+
+    return NextResponse.json({ success: true, data: data || null });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to fetch daily activity' }, { status: 500 });
+    console.error('Error fetching daily activity:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch daily activity' },
+      { status: 500 }
+    );
   }
 }
 
+// POST - Generate a new activity for today
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { childId } = body;
+
+    if (!childId) {
+      return NextResponse.json(
+        { error: 'childId is required' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createSupabaseAdmin();
+
+    // Get child details
+    const { data: child, error: childError } = await supabase
+      .from('children')
+      .select('*')
+      .eq('id', childId)
+      .single();
+
+    if (childError) throw childError;
+    if (!child) {
+      return NextResponse.json(
+        { error: 'Child not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get age in years (for filtering activities)
+    const ageInYears = parseFloat(child.age_group);
+
+    // Get recently completed activities (last 10 days)
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    
+    const { data: recentActivities, error: recentError } = await supabase
+      .from('daily_activity_assignments')
+      .select('activity_id')
+      .eq('child_id', childId)
+      .gte('assigned_date', tenDaysAgo.toISOString().split('T')[0]);
+
+    if (recentError) throw recentError;
+
+    const recentActivityIds = recentActivities?.map(a => a.activity_id) || [];
+
+    // Get all eligible activities (age-appropriate, not recently done)
+    let query = supabase
+      .from('activities')
+      .select('*')
+      .lte('age_min', ageInYears)
+      .gte('age_max', ageInYears);
+
+    // Exclude recently done activities
+    if (recentActivityIds.length > 0) {
+      query = query.not('id', 'in', `(${recentActivityIds.join(',')})`);
+    }
+
+    const { data: eligibleActivities, error: activitiesError } = await query;
+
+    if (activitiesError) throw activitiesError;
+
+    if (!eligibleActivities || eligibleActivities.length === 0) {
+      return NextResponse.json(
+        { error: 'No activities found for this child. Please add activities to the database.', code: 'NO_ACTIVITIES' },
+        { status: 404 }
+      );
+    }
+
+    // Get child's progress to determine skill gaps
+    const { data: progressData, error: progressError } = await supabase
+      .from('child_progress')
+      .select('curriculum_area, skill_name, status')
+      .eq('child_id', childId);
+
+    if (progressError) throw progressError;
+
+    // Calculate area priorities (areas with lower average progress)
+    const areaPriorities: Record<string, number> = {};
+    const areaSkills: Record<string, any[]> = {};
+
+    progressData?.forEach(progress => {
+      if (!areaSkills[progress.curriculum_area]) {
+        areaSkills[progress.curriculum_area] = [];
+      }
+      areaSkills[progress.curriculum_area].push(progress);
+    });
+
+    Object.keys(areaSkills).forEach(area => {
+      const skills = areaSkills[area];
+      const avgStatus = skills.reduce((sum, s) => sum + s.status, 0) / skills.length;
+      areaPriorities[area] = avgStatus;
+    });
+
+    // Intelligent selection algorithm
+    // Priority: areas with lower progress > variety > skill level appropriateness
+    
+    // Group activities by area
+    const activitiesByArea: Record<string, any[]> = {};
+    eligibleActivities.forEach(activity => {
+      if (!activitiesByArea[activity.area]) {
+        activitiesByArea[activity.area] = [];
+      }
+      activitiesByArea[activity.area].push(activity);
+    });
+
+    let selectedActivity = null;
+
+    // Try to select from underperforming areas first
+    const sortedAreas = Object.keys(areaPriorities).sort(
+      (a, b) => areaPriorities[a] - areaPriorities[b]
+    );
+
+    for (const area of sortedAreas) {
+      if (activitiesByArea[area] && activitiesByArea[area].length > 0) {
+        // Pick appropriate skill level (slightly above current average)
+        const areaAvg = areaPriorities[area];
+        const targetSkillLevel = Math.min(Math.ceil(areaAvg) + 1, 4);
+        
+        const suitable = activitiesByArea[area].filter(
+          a => a.skill_level <= targetSkillLevel
+        );
+
+        if (suitable.length > 0) {
+          selectedActivity = suitable[Math.floor(Math.random() * suitable.length)];
+          break;
+        }
+      }
+    }
+
+    // If no activity from priority areas, pick randomly from eligible
+    if (!selectedActivity) {
+      selectedActivity = eligibleActivities[Math.floor(Math.random() * eligibleActivities.length)];
+    }
+
+    // Delete any existing assignment for today
+    const today = new Date().toISOString().split('T')[0];
+    await supabase
+      .from('daily_activity_assignments')
+      .delete()
+      .eq('child_id', childId)
+      .eq('assigned_date', today);
+
+    // Create new assignment
+    const { data: assignment, error: assignError } = await supabase
+      .from('daily_activity_assignments')
+      .insert({
+        child_id: childId,
+        activity_id: selectedActivity.id,
+        assigned_date: today,
+        completed: false,
+      })
+      .select(`
+        *,
+        activity:activities(*)
+      `)
+      .single();
+
+    if (assignError) throw assignError;
+
+    return NextResponse.json({ success: true, data: assignment });
+  } catch (error: any) {
+    console.error('Error generating daily activity:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to generate daily activity' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Update activity completion status
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { assignmentId, completed, notes, engagementLevel } = body;
+    const { assignmentId, completed, notes } = body;
 
-    if (!assignmentId) return NextResponse.json({ error: 'assignmentId is required' }, { status: 400 });
-
-    const supabase = await createServerClient();
-    const updateData: any = { notes };
-    if (completed !== undefined) {
-      updateData.completed = completed;
-      if (completed) updateData.completed_date = new Date().toISOString().split('T')[0];
+    if (!assignmentId) {
+      return NextResponse.json(
+        { error: 'assignmentId is required' },
+        { status: 400 }
+      );
     }
 
-    const { data: assignment, error: updateError } = await supabase
+    const supabase = createSupabaseAdmin();
+
+    const updateData: any = {
+      completed,
+      completion_notes: notes || null,
+    };
+
+    if (completed) {
+      updateData.completed_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
       .from('daily_activity_assignments')
       .update(updateData)
       .eq('id', assignmentId)
-      .select(`*, activity:activities (*), child:children (*)`)
+      .select(`
+        *,
+        activity:activities(*)
+      `)
       .single();
 
-    if (updateError) throw new Error(`Failed to update assignment: ${updateError.message}`);
+    if (error) throw error;
 
-    if (completed && assignment) {
-      await markActivityComplete(assignment.child_id, assignment.activity_id, true, notes, engagementLevel);
-    }
-
-    return NextResponse.json({ data: assignment, message: completed ? 'Activity marked as complete' : 'Activity updated' });
+    return NextResponse.json({ success: true, data });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to update activity' }, { status: 500 });
+    console.error('Error updating activity:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to update activity' },
+      { status: 500 }
+    );
   }
 }

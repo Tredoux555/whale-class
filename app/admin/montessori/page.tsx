@@ -75,18 +75,18 @@ export default function MontessoriDashboard() {
           >
             <span className="text-xl">👶</span> Manage Children
           </Link>
-          <button
-            className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all shadow-md flex items-center gap-2 opacity-50 cursor-not-allowed"
-            disabled
+          <Link
+            href="/admin/montessori/activities"
+            className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all shadow-md flex items-center gap-2"
           >
-            <span className="text-xl">📚</span> Activities Library (Coming Soon)
-          </button>
-          <button
-            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-md flex items-center gap-2 opacity-50 cursor-not-allowed"
-            disabled
+            <span className="text-xl">📚</span> Activities Library
+          </Link>
+          <Link
+            href="/admin/montessori/reports"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-md flex items-center gap-2"
           >
-            <span className="text-xl">📈</span> Reports (Coming Soon)
-          </button>
+            <span className="text-xl">📈</span> Reports
+          </Link>
         </div>
 
         {/* Children Overview */}

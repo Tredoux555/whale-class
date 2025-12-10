@@ -4,7 +4,7 @@
 import { useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ChildDashboard from "@/components/ChildDashboard";
+import EnhancedChildDashboard from "@/components/EnhancedChildDashboard";
 
 export default function ChildDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function ChildDetailPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <ChildDashboard childId={resolvedParams.id} />
+        <EnhancedChildDashboard childId={resolvedParams.id} />
       </main>
     </div>
   );
