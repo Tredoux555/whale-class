@@ -87,9 +87,13 @@ export default function DaughterActivityPage() {
         const children = data.data || [];
         
         // Find child closest to DAUGHTER_AGE (2.5)
-        const daughter = children.find((c: any) => 
-          parseFloat(c.age_group) >= 2.0 && parseFloat(c.age_group) <= 3.0
-        );
+        // age_group is stored as '2-3', '3-4', etc.
+        const daughter = children.find((c: any) => {
+          const parts = c.age_group.split('-');
+          const minAge = parseFloat(parts[0]);
+          const maxAge = parseFloat(parts[1] || parts[0]);
+          return minAge >= 2.0 && maxAge <= 3.0;
+        });
 
         if (daughter) {
           setDaughterChildId(daughter.id);
