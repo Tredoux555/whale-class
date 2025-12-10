@@ -39,7 +39,10 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
   const [activeTab, setActiveTab] = useState<TabType>('today');
 
   useEffect(() => {
-    loadChildData();
+    if (childId) {
+      console.log('EnhancedChildDashboard: Loading data for childId:', childId);
+      loadChildData();
+    }
   }, [childId]);
 
   async function loadChildData() {
@@ -50,13 +53,16 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
       const childRes = await fetch(`/api/whale/children/${childId}`);
       if (!childRes.ok) {
         const errorData = await childRes.json().catch(() => ({ error: 'Failed to load child data' }));
-        throw new Error(errorData.error || 'Failed to load child data');
+        throw new Error(errorData.error || `Failed to load child data: ${childRes.status}`);
       }
       const childData = await childRes.json();
       console.log('Child data response:', childData);
+      console.log('Child data.data:', childData.data);
       if (!childData.data) {
+        console.error('No child data in response:', childData);
         throw new Error('Child data not found in response');
       }
+      console.log('Setting child:', childData.data);
       setChild(childData.data);
 
       const activityRes = await fetch(`/api/whale/daily-activity?childId=${childId}`);

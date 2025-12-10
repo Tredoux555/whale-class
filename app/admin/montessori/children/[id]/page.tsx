@@ -49,7 +49,13 @@ export default function ChildDetailPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <EnhancedChildDashboard childId={resolvedParams.id} />
+        {resolvedParams.id ? (
+          <EnhancedChildDashboard key={resolvedParams.id} childId={resolvedParams.id} />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Loading child ID...</p>
+          </div>
+        )}
       </main>
     </div>
   );
