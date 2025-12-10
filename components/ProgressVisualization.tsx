@@ -191,14 +191,15 @@ export default function ProgressVisualization({ childId }: ProgressVisualization
           <div className="space-y-3">
             {Object.entries(activitiesByArea).map(([area, count]) => {
               const total = Object.values(activitiesByArea).reduce((sum: number, c) => sum + (c as number), 0);
-              const percentage = ((count as number) / total) * 100;
+              const countNum = count as number;
+              const percentage = (countNum / total) * 100;
               const color = AREA_COLORS[area as CurriculumArea] || '#6B7280';
 
               return (
                 <div key={area}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="font-medium">{AREA_LABELS[area as CurriculumArea] || area}</span>
-                    <span className="text-gray-600">{count} activities</span>
+                    <span className="text-gray-600">{countNum} activities</span>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
