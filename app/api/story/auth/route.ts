@@ -43,8 +43,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ session: token });
   } catch (error) {
     console.error('Auth error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error details:', errorMessage);
+    
+    // Return more specific error for debugging (remove in production)
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { 
+        error: 'Authentication failed',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
