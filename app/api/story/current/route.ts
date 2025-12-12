@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.STORY_JWT_SECRET || 'change-this-secret-in-production'
-);
+import { JWT_SECRET } from '@/lib/story-auth';
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
