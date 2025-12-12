@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { compare } from 'bcrypt';
+import { compare } from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 
