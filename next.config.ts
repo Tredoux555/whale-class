@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       config.externals = config.externals || [];
       // Don't bundle large JSON files into serverless functions unnecessarily
       // They'll be loaded dynamically at runtime
+      // Externalize native modules for serverless compatibility
+      config.externals.push('pg', 'bcrypt');
     }
     return config;
   },
