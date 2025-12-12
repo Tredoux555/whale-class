@@ -3,15 +3,13 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Transpile server-only modules
+  transpilePackages: ['jose'],
   // Use webpack instead of Turbopack for PWA compatibility
   webpack: (config, { isServer }) => {
-    // Optimize bundle size by externalizing large JSON files when possible
     if (isServer) {
-      // Externalize native modules for serverless compatibility
-      // Note: jose and bcryptjs are pure JS, so they should be bundled
-      if (!config.externals) {
-        config.externals = [];
-      }
+      // Only externalize optional native dependencies
+      config.externals = config.externals || [];
       if (Array.isArray(config.externals)) {
         config.externals.push('pg-native');
       }
