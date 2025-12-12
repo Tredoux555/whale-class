@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { compare } from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT } from 'jose';
 import { db } from '@/lib/db';
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.STORY_JWT_SECRET || 'change-this-secret-in-production'
-);
+import { JWT_SECRET } from '@/lib/story-auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,16 +53,6 @@ export async function POST(req: NextRequest) {
 // Logout endpoint (for cleanup)
 export async function DELETE() {
   return NextResponse.json({ success: true });
-}
-
-// Helper function to verify tokens (used by other routes)
-export async function verifyToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
-  } catch (error) {
-    return null;
-  }
 }
 
 
