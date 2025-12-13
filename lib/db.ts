@@ -29,12 +29,20 @@ if (pool) {
 // Export a query function that matches the expected API
 export const db = {
   query: async (text: string, params?: any[]) => {
-    if (!process.env.DATABASE_URL) {
-      throw new Error('DATABASE_URL environment variable is not set');
+    // Check environment variable at runtime (not module load time)
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      console.error('DATABASE_URL check in db.query:', {
+        hasDATABASE_URL: false,
+        allEnvKeys: Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('STORY')),
+        NODE_ENV: process.env.NODE_ENV
+      });
+      throw new Error('DATABASE_URL environment variable is not set in db.query()');
     }
     
     if (!pool) {
-      throw new Error('Database connection pool not initialized. DATABASE_URL is missing.');
+      console.error('Pool is null, DATABASE_URL was:', !!process.env.DATABASE_URL);
+      throw new Error('Database connection pool not initialized. DATABASE_URL was missing at module load time.');
     }
     
     const start = Date.now();
