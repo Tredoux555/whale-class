@@ -6,23 +6,17 @@ if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL environment variable is not set!');
 }
 
-// Check if we're using Supabase transaction pooler (port 6543)
-const isUsingTransactionPooler = process.env.DATABASE_URL?.includes('pooler.supabase.com') || 
-                                  process.env.DATABASE_URL?.includes(':6543');
-
-// For transaction pooler, we use a Pool with specific settings
-// For direct connections, we also use a Pool but with different settings
+// Create a simple Pool that works with both direct connections and Supabase transaction pooler
+// The transaction pooler (port 6543) works fine with a standard Pool configuration
 const pool = process.env.DATABASE_URL ? new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL.includes('supabase') 
     ? { rejectUnauthorized: false } 
     : undefined,
-  // For transaction pooler, use these settings:
-  max: isUsingTransactionPooler ? 1 : 10, // Transaction pooler works best with max 1
-  idleTimeoutMillis: isUsingTransactionPooler ? 0 : 30000,
+  // Standard pool settings that work with Supabase transaction pooler
+  max: 10,
+  idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 30000,
-  // Important: For transaction pooler, we need to avoid prepared statements
-  // The pooler handles connection management, so we keep connections simple
 }) : null;
 
 // Handle pool errors
