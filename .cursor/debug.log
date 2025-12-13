@@ -1,0 +1,3 @@
+{"location":"route.ts:9","message":"Login POST handler entered","data":{"hasRequest":true},"timestamp":1765583727219,"sessionId":"debug-session","hypothesisId":"A,B,C"}
+{"location":"route.ts:14","message":"Request parsed successfully","data":{"hasUsername":true,"hasPassword":true,"usernameLength":5},"timestamp":1765583727233,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"route.ts:19","message":"Credentials validation","data":{"isValid":false,"hasAdminUsername":true,"hasAdminPassword":true},"timestamp":1765583727234,"sessionId":"debug-session","hypothesisId":"B"}
