@@ -28,7 +28,10 @@ export default function StoryLogin() {
         sessionStorage.setItem('story_session', session);
         router.push(`/story/${session}`);
       } else {
-        setError('Invalid credentials');
+        // Get error details from response
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.details || errorData.error || 'Invalid credentials');
+        console.error('Login error:', errorData);
       }
     } catch (err) {
       setError('Connection error');
