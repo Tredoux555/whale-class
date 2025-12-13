@@ -100,11 +100,12 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Auth error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Error details:', errorMessage);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
     
     // Check for specific error types
     let errorType = 'Unknown error';
-    if (errorMessage.includes('DATABASE_URL')) {
+    if (errorMessage.includes('DATABASE_URL') && errorMessage.includes('not set')) {
       errorType = 'Database configuration error: DATABASE_URL not set';
     } else if (errorMessage.includes('connection') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('timeout')) {
       errorType = 'Database connection failed';
@@ -112,14 +113,18 @@ export async function POST(req: NextRequest) {
       errorType = 'Database table missing: story_users table may not exist';
     } else if (errorMessage.includes('JWT_SECRET') || errorMessage.includes('STORY_JWT_SECRET')) {
       errorType = 'JWT secret configuration error';
+    } else if (errorMessage.includes('DATABASE_URL')) {
+      // DATABASE_URL mentioned but not "not set" - might be a different error
+      errorType = `Database error: ${errorMessage}`;
     }
     
-    // Return more specific error for debugging
+    // Return more specific error - show actual error in production for debugging
     return NextResponse.json(
       { 
         error: 'Authentication failed',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : errorType,
-        type: errorType
+        details: errorMessage, // Show actual error message
+        type: errorType,
+        debug: process.env.NODE_ENV === 'development' ? { stack: errorStack } : undefined
       },
       { status: 500 }
     );
