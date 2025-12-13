@@ -6,24 +6,43 @@ import { JWT_SECRET } from '@/lib/story-auth';
 
 export async function POST(req: NextRequest) {
   try {
-    // Validate environment variables
-    if (!process.env.DATABASE_URL) {
+    // Validate environment variables with detailed logging
+    const hasDatabaseUrl = !!process.env.DATABASE_URL;
+    const hasJwtSecret = !!process.env.STORY_JWT_SECRET;
+    
+    console.log('Environment check:', {
+      hasDATABASE_URL: hasDatabaseUrl,
+      hasSTORY_JWT_SECRET: hasJwtSecret,
+      DATABASE_URL_length: process.env.DATABASE_URL?.length || 0,
+      STORY_JWT_SECRET_length: process.env.STORY_JWT_SECRET?.length || 0,
+      NODE_ENV: process.env.NODE_ENV
+    });
+
+    if (!hasDatabaseUrl) {
       console.error('DATABASE_URL environment variable is not set');
       return NextResponse.json(
         { 
           error: 'Server configuration error',
-          details: 'DATABASE_URL environment variable is missing'
+          details: 'DATABASE_URL environment variable is missing',
+          debug: {
+            hasDATABASE_URL: false,
+            NODE_ENV: process.env.NODE_ENV
+          }
         },
         { status: 500 }
       );
     }
 
-    if (!process.env.STORY_JWT_SECRET) {
+    if (!hasJwtSecret) {
       console.error('STORY_JWT_SECRET environment variable is not set');
       return NextResponse.json(
         { 
           error: 'Server configuration error',
-          details: 'STORY_JWT_SECRET environment variable is missing'
+          details: 'STORY_JWT_SECRET environment variable is missing',
+          debug: {
+            hasSTORY_JWT_SECRET: false,
+            NODE_ENV: process.env.NODE_ENV
+          }
         },
         { status: 500 }
       );
@@ -34,12 +53,20 @@ export async function POST(req: NextRequest) {
     // Query database for user
     let result;
     try {
+      console.log('Attempting database query for username:', username);
       result = await db.query(
         'SELECT * FROM story_users WHERE username = $1',
         [username]
       );
+      console.log('Database query successful, rows found:', result.rows.length);
     } catch (dbError) {
       console.error('Database query failed:', dbError);
+      const dbErrorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      console.error('Database error details:', {
+        message: dbErrorMessage,
+        name: dbError instanceof Error ? dbError.name : 'Unknown',
+        hasDATABASE_URL: !!process.env.DATABASE_URL
+      });
       throw dbError;
     }
 
