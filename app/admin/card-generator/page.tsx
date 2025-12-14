@@ -373,23 +373,30 @@ const MontessoriCardGenerator = () => {
       const A4_WIDTH_CM = 21;
       const A4_HEIGHT_CM = 29.7;
       
-      // Calculate card size for 2x2 grid on A4
+      // Card dimensions - fixed sizes for Montessori three-part cards
+      const PICTURE_CARD_SIZE_CM = 7.5; // 7.5cm × 7.5cm for picture cards
+      const LABEL_HEIGHT_CM = 2; // 2cm for label area (standard Montessori proportion)
+      const CONTROL_CARD_HEIGHT_CM = PICTURE_CARD_SIZE_CM + LABEL_HEIGHT_CM; // ~9.5cm total
+      const LABEL_CARD_HEIGHT_CM = 3.5; // Smaller height for label-only cards (maintains proportion)
+      
       // Zero margins to allow cutting lines to reach page edges
       const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
-      const CUTTING_LINE_WIDTH = 0.01; // 1px cutting line (0.01cm ≈ 0.38pt)
+      const CUTTING_LINE_WIDTH = 0.02; // Slightly thicker for better visibility (0.02cm ≈ 0.76pt)
       const WHITE_BORDER_CM = 0.5; // White border around card content (~5mm for comfortable cutting)
       const CARD_BORDER_RADIUS = 0.4; // Rounded corners (~4mm or ~15px - aesthetically pleasing)
       
-      const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
-      const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
+      // Calculate grid positioning (center cards on page)
+      // For 2 columns of 7.5cm cards: 2 × 7.5 = 15cm, leaving 6cm total margin (3cm each side)
+      const gridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
       
-      // For 2x2 grid - cards touch each other, no gap
-      const cardWidth = usableWidth / 2;
-      const cardHeight = usableHeight / 2;
+      // For 3 rows of 7.5cm picture cards: 3 × 7.5 = 22.5cm, leaving 7.2cm total margin
+      const pictureGridMarginTop = (A4_HEIGHT_CM - (PICTURE_CARD_SIZE_CM * 3)) / 2;
       
-      // Image area is card minus green border and white border
-      const imageCm = cardWidth - (0.5 + WHITE_BORDER_CM * 2); // ~8.35cm
-      const labelHeightCm = 2; // Keep label height at 2cm
+      // For 3 rows of control cards (~9.5cm each): 3 × 9.5 = 28.5cm, leaving 1.2cm total margin
+      const controlGridMarginTop = (A4_HEIGHT_CM - (CONTROL_CARD_HEIGHT_CM * 3)) / 2;
+      
+      // For label cards: 2 columns × 4 rows layout
+      const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 4)) / 2;
       
       // Build HTML for print
       let html = `
@@ -465,8 +472,7 @@ const MontessoriCardGenerator = () => {
     
     .grid {
       display: grid;
-      grid-template-columns: ${cardWidth}cm ${cardWidth}cm;
-      grid-template-rows: ${cardHeight}cm ${cardHeight}cm;
+      grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
       gap: 0;
       width: ${A4_WIDTH_CM}cm;
       height: ${A4_HEIGHT_CM}cm;
@@ -475,30 +481,77 @@ const MontessoriCardGenerator = () => {
       padding: 0;
     }
     
+    /* Grid for picture cards - 2 columns × 3 rows */
+    .grid-picture {
+      grid-template-rows: repeat(3, ${PICTURE_CARD_SIZE_CM}cm);
+      margin-left: ${gridMarginLeft}cm;
+      margin-top: ${pictureGridMarginTop}cm;
+    }
+    
+    /* Grid for control cards - 2 columns × 3 rows */
+    .grid-control {
+      grid-template-rows: repeat(3, ${CONTROL_CARD_HEIGHT_CM}cm);
+      margin-left: ${gridMarginLeft}cm;
+      margin-top: ${controlGridMarginTop}cm;
+    }
+    
     /* Vertical cutting line between columns - extends fully to page edges */
     .grid::before {
       content: '';
       position: absolute;
       top: 0;
-      left: 50%;
+      left: ${gridMarginLeft + PICTURE_CARD_SIZE_CM}cm;
       width: ${CUTTING_LINE_WIDTH}cm;
       height: ${A4_HEIGHT_CM}cm;
-      background: black;
-      transform: translateX(-50%);
+      background: black !important;
       z-index: 10;
       pointer-events: none;
     }
     
-    /* Horizontal cutting line between rows - extends fully to page edges */
-    .grid::after {
+    /* Horizontal cutting lines for 3-row grids - extend fully to page edges */
+    .grid-picture::after,
+    .grid-control::after {
       content: '';
       position: absolute;
-      top: 50%;
       left: 0;
       width: ${A4_WIDTH_CM}cm;
       height: ${CUTTING_LINE_WIDTH}cm;
-      background: black;
-      transform: translateY(-50%);
+      background: black !important;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    /* First horizontal cutting line (between row 1 and 2) */
+    .grid-picture::after {
+      top: ${pictureGridMarginTop + PICTURE_CARD_SIZE_CM}cm;
+    }
+    
+    .grid-control::after {
+      top: ${controlGridMarginTop + CONTROL_CARD_HEIGHT_CM}cm;
+    }
+    
+    /* Additional horizontal cutting line (between row 2 and 3) for picture cards */
+    .page-has-3rows-picture::after {
+      content: '';
+      position: absolute;
+      top: ${pictureGridMarginTop + (PICTURE_CARD_SIZE_CM * 2)}cm;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black !important;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    /* Additional horizontal cutting line (between row 2 and 3) for control cards */
+    .page-has-3rows-control::after {
+      content: '';
+      position: absolute;
+      top: ${controlGridMarginTop + (CONTROL_CARD_HEIGHT_CM * 2)}cm;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black !important;
       z-index: 10;
       pointer-events: none;
     }
@@ -519,15 +572,18 @@ const MontessoriCardGenerator = () => {
     }
     
     .card-control {
-      height: ${cardHeight}cm;
+      height: ${CONTROL_CARD_HEIGHT_CM}cm;
+      width: ${PICTURE_CARD_SIZE_CM}cm;
     }
     
     .card-picture {
-      height: ${cardWidth}cm;
+      height: ${PICTURE_CARD_SIZE_CM}cm;
+      width: ${PICTURE_CARD_SIZE_CM}cm;
     }
     
     .card-label-only {
-      height: ${labelHeightCm + 1}cm;
+      height: ${LABEL_CARD_HEIGHT_CM}cm;
+      width: ${PICTURE_CARD_SIZE_CM}cm;
     }
     
     .card-label-only .label-area {
@@ -557,7 +613,7 @@ const MontessoriCardGenerator = () => {
       background: white;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      height: ${labelHeightCm}cm;
+      height: ${LABEL_HEIGHT_CM}cm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -577,11 +633,10 @@ const MontessoriCardGenerator = () => {
     .cutting-line-vertical {
       position: absolute;
       top: 0;
-      left: 50%;
+      left: ${gridMarginLeft + PICTURE_CARD_SIZE_CM}cm;
       width: ${CUTTING_LINE_WIDTH}cm;
       height: ${A4_HEIGHT_CM}cm;
-      background: black;
-      transform: translateX(-50%);
+      background: black !important;
       z-index: 10;
       pointer-events: none;
     }
@@ -591,29 +646,23 @@ const MontessoriCardGenerator = () => {
       left: 0;
       width: ${A4_WIDTH_CM}cm;
       height: ${CUTTING_LINE_WIDTH}cm;
-      background: black;
+      background: black !important;
       z-index: 10;
       pointer-events: none;
     }
     
     .cutting-line-horizontal-25 {
-      top: 25%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
+      top: ${labelGridMarginTop + LABEL_CARD_HEIGHT_CM}cm;
       transform: translateY(-50%);
     }
     
     .cutting-line-horizontal-50 {
-      top: 50%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
+      top: ${labelGridMarginTop + (LABEL_CARD_HEIGHT_CM * 2)}cm;
       transform: translateY(-50%);
     }
     
     .cutting-line-horizontal-75 {
-      top: 75%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
+      top: ${labelGridMarginTop + (LABEL_CARD_HEIGHT_CM * 3)}cm;
       transform: translateY(-50%);
     }
     
@@ -700,33 +749,37 @@ const MontessoriCardGenerator = () => {
         }
       };
 
-      // Generate Control Cards pages (4 per page in 2x2 grid)
+      // Generate Control Cards pages (6 per page in 2x3 grid)
       const controlCards = cards.map(card => createCardHTML(card, 'control'));
-      for (let i = 0; i < controlCards.length; i += 4) {
-        const pageCards = controlCards.slice(i, i + 4);
-        const pageNum = Math.floor(i / 4) + 1;
+      for (let i = 0; i < controlCards.length; i += 6) {
+        const pageCards = controlCards.slice(i, i + 6);
+        const pageNum = Math.floor(i / 6) + 1;
         html += `
-          <div class="page">
+          <div class="page page-has-3rows-control">
             <div class="page-title">Control Cards - Page ${pageNum}</div>
-            <div class="grid">
+            <div class="grid grid-control">
+              <div class="cutting-line-horizontal" style="top: ${controlGridMarginTop + CONTROL_CARD_HEIGHT_CM}cm;"></div>
+              <div class="cutting-line-horizontal" style="top: ${controlGridMarginTop + (CONTROL_CARD_HEIGHT_CM * 2)}cm;"></div>
               ${pageCards.join('')}
-              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+              ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
             </div>
           </div>
         `;
       }
 
-      // Generate Picture Cards pages (4 per page in 2x2 grid)
+      // Generate Picture Cards pages (6 per page in 2x3 grid)
       const pictureCards = cards.map(card => createCardHTML(card, 'picture'));
-      for (let i = 0; i < pictureCards.length; i += 4) {
-        const pageCards = pictureCards.slice(i, i + 4);
-        const pageNum = Math.floor(i / 4) + 1;
+      for (let i = 0; i < pictureCards.length; i += 6) {
+        const pageCards = pictureCards.slice(i, i + 6);
+        const pageNum = Math.floor(i / 6) + 1;
         html += `
-          <div class="page">
+          <div class="page page-has-3rows-picture">
             <div class="page-title">Picture Cards - Page ${pageNum}</div>
-            <div class="grid">
+            <div class="grid grid-picture">
+              <div class="cutting-line-horizontal" style="top: ${pictureGridMarginTop + PICTURE_CARD_SIZE_CM}cm;"></div>
+              <div class="cutting-line-horizontal" style="top: ${pictureGridMarginTop + (PICTURE_CARD_SIZE_CM * 2)}cm;"></div>
               ${pageCards.join('')}
-              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+              ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
             </div>
           </div>
         `;
@@ -734,14 +787,14 @@ const MontessoriCardGenerator = () => {
 
       // Generate Label Cards pages (8 per page in 2x4 grid)
       const labelCards = cards.map(card => createCardHTML(card, 'label'));
-      const labelCardHeight = A4_HEIGHT_CM / 4; // 4 equal rows - full page height
+      const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
       for (let i = 0; i < labelCards.length; i += 8) {
         const pageCards = labelCards.slice(i, i + 8);
         const pageNum = Math.floor(i / 8) + 1;
         html += `
           <div class="page">
             <div class="page-title">Label Cards - Page ${pageNum}</div>
-            <div class="grid" style="grid-template-rows: repeat(4, ${labelCardHeight}cm); grid-auto-rows: ${labelCardHeight}cm;">
+            <div class="grid" style="grid-template-rows: repeat(4, ${LABEL_CARD_HEIGHT_CM}cm); grid-auto-rows: ${LABEL_CARD_HEIGHT_CM}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
               <div class="cutting-line-vertical"></div>
               <div class="cutting-line-horizontal cutting-line-horizontal-25"></div>
               <div class="cutting-line-horizontal cutting-line-horizontal-50"></div>
