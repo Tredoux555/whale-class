@@ -21,6 +21,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file type
+    if (!file.type.startsWith('video/')) {
+      return NextResponse.json(
+        { success: false, error: 'File must be a video' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      return NextResponse.json(
+        { success: false, error: 'File must be less than 100MB' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createClient();
 
     // Create unique filename
@@ -28,19 +44,37 @@ export async function POST(request: NextRequest) {
     const fileName = `${workId}-${Date.now()}.${fileExt}`;
     const filePath = `montessori-works/${fileName}`;
 
+    // Convert File to Buffer for server-side upload
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('videos')
-      .upload(filePath, file, {
+      .upload(filePath, buffer, {
         contentType: file.type,
         upsert: true
       });
 
     if (uploadError) {
       console.error('Error uploading video:', uploadError);
+      
+      // Provide more specific error messages
+      let errorMessage = uploadError.message;
+      if (uploadError.statusCode === 403 || uploadError.message.includes('403')) {
+        errorMessage = 'Storage bucket permissions error. Please check Supabase Storage bucket settings and policies.';
+      } else if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
+        errorMessage = 'Storage bucket "videos" not found or not accessible. Please create the bucket in Supabase dashboard.';
+      }
+      
       return NextResponse.json(
-        { success: false, error: uploadError.message },
-        { status: 500 }
+        { 
+          success: false, 
+          error: errorMessage,
+          details: uploadError.message,
+          statusCode: uploadError.statusCode
+        },
+        { status: uploadError.statusCode || 500 }
       );
     }
 
@@ -76,8 +110,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Unexpected error in POST /api/whale/montessori-works/upload-video:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { 
+        success: false, 
+        error: 'Internal server error',
+        details: errorMessage
+      },
       { status: 500 }
     );
   }
