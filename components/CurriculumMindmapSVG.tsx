@@ -132,7 +132,7 @@ export const CurriculumMindmapSVG: React.FC<CurriculumMindmapSVGProps> = ({
           const rad = (area.angle * Math.PI) / 180;
           const x = CENTER_X + RADIUS * Math.cos(rad);
           const y = CENTER_Y + RADIUS * Math.sin(rad);
-          const progress = progressMap.get(area.key) || 0;
+          const progress = progressMap.get(area.key as any) || 0;
           const bgColor = getProgressColor(progress);
           const textColor = getTextColor(progress);
           const isHovered = hoveredArea === area.key;
