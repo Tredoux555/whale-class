@@ -2,56 +2,46 @@ import { Pool, Client } from 'pg';
 
 // Create a PostgreSQL connection pool for Supabase
 // Using connection pooling for better compatibility
-// Use lazy initialization to ensure DATABASE_URL is available at runtime
-let pool: Pool | null = null;
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL environment variable is not set!');
+}
 
-function getPool(): Pool {
-  if (!pool) {
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL environment variable is not set at pool initialization');
-    }
-    pool = new Pool({
-      connectionString: databaseUrl,
-      ssl: databaseUrl.includes('supabase') 
-        ? { rejectUnauthorized: false } 
-        : undefined,
-      // Standard pool settings that work with Supabase transaction pooler
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 30000,
-    });
-    
-    // Handle pool errors
-    pool.on('error', (err) => {
-      console.error('Unexpected error on idle client', err);
-    });
-  }
-  return pool;
+// Create a simple Pool that works with both direct connections and Supabase transaction pooler
+// The transaction pooler (port 6543) works fine with a standard Pool configuration
+const pool = process.env.DATABASE_URL ? new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes('supabase') 
+    ? { rejectUnauthorized: false } 
+    : undefined,
+  // Standard pool settings that work with Supabase transaction pooler
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 30000,
+}) : null;
+
+// Handle pool errors
+if (pool) {
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+  });
 }
 
 // Export a query function that matches the expected API
 export const db = {
   query: async (text: string, params?: any[]) => {
-    // Check environment variable at runtime
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      console.error('DATABASE_URL check in db.query:', {
-        hasDATABASE_URL: false,
-        allEnvKeys: Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('STORY')),
-        NODE_ENV: process.env.NODE_ENV
-      });
-      throw new Error('DATABASE_URL environment variable is not set in db.query()');
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is not set');
     }
     
-    // Get or create pool at runtime
-    const activePool = getPool();
+    if (!pool) {
+      throw new Error('Database connection pool not initialized. DATABASE_URL is missing.');
+    }
     
     const start = Date.now();
     try {
       // For transaction pooler, we need to ensure queries are executed properly
       // Using pool.query() directly works better than pool.connect() for transaction pooler
-      const res = await activePool.query(text, params);
+      const res = await pool.query(text, params);
       const duration = Date.now() - start;
       console.log('Executed query', { text: text.substring(0, 100), duration, rows: res.rowCount });
       return res;
@@ -71,6 +61,6 @@ export const db = {
   },
 };
 
-export default getPool;
+export default pool;
 
 

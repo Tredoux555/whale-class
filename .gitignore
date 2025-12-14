@@ -36,11 +36,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# debug and temporary files
-.cursor/debug.log
-*.log
-.cursor/
-
 # data and videos
 # Temporarily allowing for Vercel sync - will restore after push
 # /data/

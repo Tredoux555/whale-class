@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClientJS } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -10,7 +10,7 @@ export function createSupabaseClient() {
     throw new Error('Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey);
+  return createSupabaseClientJS(supabaseUrl, supabaseAnonKey);
 }
 
 // Server-side Supabase client (uses service role key for admin operations)
@@ -19,7 +19,7 @@ export function createSupabaseAdmin() {
     throw new Error('Missing Supabase admin environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   }
 
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+  return createSupabaseClientJS(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -38,7 +38,7 @@ export async function createServerClient() {
     throw new Error('Missing Supabase admin environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   }
 
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+  return createSupabaseClientJS(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -48,6 +48,11 @@ export async function createServerClient() {
 
 // Admin client with service role key (alias)
 export function createAdminClient() {
+  return createSupabaseAdmin();
+}
+
+// createClient() - alias for createSupabaseAdmin() for API routes
+export function createClient() {
   return createSupabaseAdmin();
 }
 
@@ -64,7 +69,7 @@ export const STORAGE_BUCKETS = {
 } as const;
 
 export function getPublicUrl(bucket: string, path: string) {
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = createSupabaseClientJS(supabaseUrl, supabaseAnonKey);
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
