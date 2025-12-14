@@ -152,12 +152,34 @@ export default function MontessoriWorksPage() {
         body: formData
       });
 
-      const result = await response.json();
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      let result;
+      
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        // If not JSON, get text response
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        alert(`Error uploading video: Server returned ${response.status} ${response.statusText}`);
+        return;
+      }
+
+      if (!response.ok) {
+        // Handle HTTP errors
+        const errorMsg = result.error || result.details || `Upload failed with status ${response.status}`;
+        console.error('Upload error:', result);
+        alert(`Error uploading video: ${errorMsg}`);
+        return;
+      }
 
       if (result.success) {
         await fetchWorks();
       } else {
-        alert('Error uploading video: ' + result.error);
+        const errorMsg = result.error || result.details || 'Unknown error';
+        console.error('Upload error:', result);
+        alert('Error uploading video: ' + errorMsg);
       }
     } catch (error) {
       console.error('Error uploading video:', error);
