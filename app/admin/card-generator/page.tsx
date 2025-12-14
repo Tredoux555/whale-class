@@ -443,32 +443,6 @@ const MontessoriCardGenerator = () => {
       text-align: center;
     }
     
-    /* Cutting lines that extend fully to page edges */
-    .page::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: ${CUTTING_LINE_WIDTH}cm;
-      height: ${A4_HEIGHT_CM}cm;
-      background: black;
-      transform: translateX(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
-    
-    .page::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${CUTTING_LINE_WIDTH}cm;
-      background: black;
-      transform: translateY(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
     
     .grid {
       display: grid;
@@ -802,32 +776,6 @@ const MontessoriCardGenerator = () => {
       text-align: center;
     }
     
-    /* Cutting lines that extend fully to page edges */
-    .page::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: ${CUTTING_LINE_WIDTH}cm;
-      height: ${A4_HEIGHT_CM}cm;
-      background: black;
-      transform: translateX(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
-    
-    .page::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${CUTTING_LINE_WIDTH}cm;
-      background: black;
-      transform: translateY(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
     
     .grid {
       display: grid;
@@ -841,33 +789,6 @@ const MontessoriCardGenerator = () => {
       padding: 0;
     }
     
-    /* Vertical cutting line between columns - extends fully to page edges */
-    .grid::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: ${CUTTING_LINE_WIDTH}cm;
-      height: ${A4_HEIGHT_CM}cm;
-      background: black;
-      transform: translateX(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
-    
-    /* Horizontal cutting line between rows - extends fully to page edges */
-    .grid::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${CUTTING_LINE_WIDTH}cm;
-      background: black;
-      transform: translateY(-50%);
-      z-index: 10;
-      pointer-events: none;
-    }
     
     .image-box {
       background: ${currentBorderColor};
