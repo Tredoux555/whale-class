@@ -664,9 +664,6 @@ const MontessoriCardGenerator = () => {
       }
 
       html += `
-  <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #fff3cd; border: 2px solid #ffc107; padding: 10px 20px; border-radius: 5px; z-index: 1000; font-size: 12pt; text-align: center; max-width: 90%; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-    <strong>⚠️ IMPORTANT:</strong> In Safari's print dialog, make sure <strong>"Print backgrounds"</strong> is CHECKED to see cutting lines and borders!
-  </div>
   <script>
     window.onload = function() {
       setTimeout(() => {
