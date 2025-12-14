@@ -569,28 +569,6 @@ const MontessoriCardGenerator = () => {
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
     
-    /* Cutting lines - positioned at card boundaries */
-    .cutting-line {
-      position: fixed;
-      background: black !important;
-      z-index: 10;
-      pointer-events: none;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    .cutting-line-vertical {
-      width: ${CUTTING_LINE_WIDTH}cm;
-      height: 100vh;
-      top: 0;
-    }
-    
-    .cutting-line-horizontal {
-      height: ${CUTTING_LINE_WIDTH}cm;
-      width: 100vw;
-      left: 0;
-    }
-    
     @media print {
       * {
         -webkit-print-color-adjust: exact !important;
@@ -607,13 +585,6 @@ const MontessoriCardGenerator = () => {
       
       .page-title {
         display: none; /* Hide labels when printing */
-      }
-      
-      /* Force cutting lines to print */
-      .cutting-line {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        background: black !important;
       }
       
       /* Force card borders to print */
@@ -681,11 +652,6 @@ const MontessoriCardGenerator = () => {
               ${pageCards.join('')}
               ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
             </div>
-            <!-- Vertical cutting line between columns -->
-            <div class="cutting-line cutting-line-vertical" style="left: ${gridMarginLeft + PICTURE_CARD_SIZE_CM}cm;"></div>
-            <!-- Horizontal cutting lines between rows -->
-            <div class="cutting-line cutting-line-horizontal" style="top: ${controlGridMarginTop + CONTROL_CARD_HEIGHT_CM}cm;"></div>
-            <div class="cutting-line cutting-line-horizontal" style="top: ${controlGridMarginTop + (CONTROL_CARD_HEIGHT_CM * 2)}cm;"></div>
           </div>
         `;
       }
@@ -702,11 +668,6 @@ const MontessoriCardGenerator = () => {
               ${pageCards.join('')}
               ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
             </div>
-            <!-- Vertical cutting line between columns -->
-            <div class="cutting-line cutting-line-vertical" style="left: ${gridMarginLeft + PICTURE_CARD_SIZE_CM}cm;"></div>
-            <!-- Horizontal cutting lines between rows -->
-            <div class="cutting-line cutting-line-horizontal" style="top: ${pictureGridMarginTop + PICTURE_CARD_SIZE_CM}cm;"></div>
-            <div class="cutting-line cutting-line-horizontal" style="top: ${pictureGridMarginTop + (PICTURE_CARD_SIZE_CM * 2)}cm;"></div>
           </div>
         `;
       }
@@ -724,12 +685,6 @@ const MontessoriCardGenerator = () => {
               ${pageCards.join('')}
               ${pageCards.length < 8 ? '<div></div>'.repeat(8 - pageCards.length) : ''}
             </div>
-            <!-- Vertical cutting line between columns -->
-            <div class="cutting-line cutting-line-vertical" style="left: ${labelGridMarginLeft + PICTURE_CARD_SIZE_CM}cm;"></div>
-            <!-- Horizontal cutting lines between rows -->
-            <div class="cutting-line cutting-line-horizontal" style="top: ${labelGridMarginTop + LABEL_CARD_HEIGHT_CM}cm;"></div>
-            <div class="cutting-line cutting-line-horizontal" style="top: ${labelGridMarginTop + (LABEL_CARD_HEIGHT_CM * 2)}cm;"></div>
-            <div class="cutting-line cutting-line-horizontal" style="top: ${labelGridMarginTop + (LABEL_CARD_HEIGHT_CM * 3)}cm;"></div>
           </div>
         `;
       }
