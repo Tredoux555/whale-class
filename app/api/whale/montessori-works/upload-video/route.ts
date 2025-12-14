@@ -60,21 +60,29 @@ export async function POST(request: NextRequest) {
       console.error('Error uploading video:', uploadError);
       
       // Provide more specific error messages
-      let errorMessage = uploadError.message;
-      if (uploadError.statusCode === 403 || uploadError.message.includes('403')) {
+      let errorMessage = uploadError.message || 'Upload failed';
+      let statusCode = 500;
+      
+      // Check error message for common issues
+      const errorMsg = uploadError.message?.toLowerCase() || '';
+      if (errorMsg.includes('403') || errorMsg.includes('forbidden') || errorMsg.includes('permission')) {
         errorMessage = 'Storage bucket permissions error. Please check Supabase Storage bucket settings and policies.';
-      } else if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
+        statusCode = 403;
+      } else if (errorMsg.includes('bucket') || errorMsg.includes('not found')) {
         errorMessage = 'Storage bucket "videos" not found or not accessible. Please create the bucket in Supabase dashboard.';
+        statusCode = 404;
+      } else if (errorMsg.includes('413') || errorMsg.includes('too large')) {
+        errorMessage = 'File is too large. Maximum size is 100MB.';
+        statusCode = 413;
       }
       
       return NextResponse.json(
         { 
           success: false, 
           error: errorMessage,
-          details: uploadError.message,
-          statusCode: uploadError.statusCode
+          details: uploadError.message
         },
-        { status: uploadError.statusCode || 500 }
+        { status: statusCode }
       );
     }
 
