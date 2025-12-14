@@ -49,8 +49,9 @@ export const CurriculumMindmapSVG: React.FC<CurriculumMindmapSVGProps> = ({
   onAreaClick,
 }) => {
   // Create a map of area progress for quick lookup
+  // Convert average_status (0-5) to percentage (0-100)
   const progressMap = new Map(
-    progressData.map(p => [p.area, p.progress_percentage || 0])
+    progressData.map(p => [p.area, (p.average_status / 5) * 100])
   );
 
   return (
