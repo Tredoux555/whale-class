@@ -1,18 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { ActivityDetailView } from '@/components/ActivityDetailView';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     childId?: string;
-  };
+  }>;
 }
 
 export default function ActivityDetailPage({
@@ -20,8 +20,10 @@ export default function ActivityDetailPage({
   searchParams,
 }: PageProps) {
   const router = useRouter();
-  const activityId = params.id;
-  const childId = searchParams.childId;
+  const resolvedParams = use(params);
+  const resolvedSearchParams = use(searchParams);
+  const activityId = resolvedParams.id;
+  const childId = resolvedSearchParams.childId;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
