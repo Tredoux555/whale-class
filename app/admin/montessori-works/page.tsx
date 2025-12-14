@@ -16,10 +16,15 @@ export default function MontessoriWorksPage() {
   const [uploadingVideo, setUploadingVideo] = useState<string | null>(null);
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    curriculum_area: 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'culture';
+    status: 'completed' | 'in_progress';
+    video_url: string;
+  }>({
     name: '',
-    curriculum_area: 'practical_life' as const,
-    status: 'in_progress' as const,
+    curriculum_area: 'practical_life',
+    status: 'in_progress',
     video_url: ''
   });
 
@@ -185,8 +190,8 @@ export default function MontessoriWorksPage() {
   const resetForm = () => {
     setFormData({
       name: '',
-      curriculum_area: 'practical_life',
-      status: 'in_progress',
+      curriculum_area: 'practical_life' as 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'culture',
+      status: 'in_progress' as 'completed' | 'in_progress',
       video_url: ''
     });
     setEditingWork(null);
