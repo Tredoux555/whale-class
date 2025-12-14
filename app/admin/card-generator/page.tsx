@@ -374,19 +374,21 @@ const MontessoriCardGenerator = () => {
       const A4_HEIGHT_CM = 29.7;
       
       // Calculate card size for 2x2 grid on A4
-      // With 1.5cm margins and 0.2cm white gaps between cards
-      const MARGIN_CM = 1.5;
-      const GAP_CM = 0.2; // White cutting guide
+      // Zero margins to allow cutting lines to reach page edges
+      const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
+      const CUTTING_LINE_WIDTH = 0.01; // 1px cutting line (0.01cm ≈ 0.38pt)
+      const WHITE_BORDER_CM = 0.5; // White border around card content (~5mm for comfortable cutting)
+      const CARD_BORDER_RADIUS = 0.4; // Rounded corners (~4mm or ~15px - aesthetically pleasing)
       
       const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
       const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
       
-      // For 2x2 grid
-      const cardWidth = (usableWidth - GAP_CM) / 2;  // ~8.85cm
-      const cardHeight = (usableHeight - GAP_CM) / 2; // ~13.25cm
+      // For 2x2 grid - cards touch each other, no gap
+      const cardWidth = usableWidth / 2;
+      const cardHeight = usableHeight / 2;
       
-      // Image area is card minus border
-      const imageCm = cardWidth - 0.5; // ~8.35cm
+      // Image area is card minus green border and white border
+      const imageCm = cardWidth - (0.5 + WHITE_BORDER_CM * 2); // ~8.35cm
       const labelHeightCm = 2; // Keep label height at 2cm
       
       // Build HTML for print
@@ -411,6 +413,7 @@ const MontessoriCardGenerator = () => {
     body {
       font-family: system-ui, sans-serif;
       background: white;
+      position: relative;
     }
     
     .page {
@@ -419,6 +422,7 @@ const MontessoriCardGenerator = () => {
       height: ${A4_HEIGHT_CM}cm;
       padding: ${MARGIN_CM}cm;
       position: relative;
+      overflow: hidden;
     }
     
     .page:last-child {
@@ -432,18 +436,76 @@ const MontessoriCardGenerator = () => {
       text-align: center;
     }
     
+    /* Cutting lines that extend fully to page edges */
+    .page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: ${CUTTING_LINE_WIDTH}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      background: black;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .page::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black;
+      transform: translateY(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
     .grid {
       display: grid;
       grid-template-columns: ${cardWidth}cm ${cardWidth}cm;
       grid-template-rows: ${cardHeight}cm ${cardHeight}cm;
-      gap: ${GAP_CM}cm;
-      width: 100%;
-      height: calc(100% - 1cm);
+      gap: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Vertical cutting line between columns - extends fully to page edges */
+    .grid::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: ${CUTTING_LINE_WIDTH}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      background: black;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    /* Horizontal cutting line between rows - extends fully to page edges */
+    .grid::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black;
+      transform: translateY(-50%);
+      z-index: 10;
+      pointer-events: none;
     }
     
     .card {
       background: ${currentBorderColor};
-      padding: 0.5cm;
+      padding: ${WHITE_BORDER_CM}cm;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       display: flex;
@@ -451,6 +513,9 @@ const MontessoriCardGenerator = () => {
       position: relative;
       overflow: hidden;
       gap: 0.5cm;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      margin: 0;
+      border: none;
     }
     
     .card-control {
@@ -479,6 +544,7 @@ const MontessoriCardGenerator = () => {
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
     }
     
     .image-area img {
@@ -504,16 +570,88 @@ const MontessoriCardGenerator = () => {
       overflow: hidden;
       word-wrap: break-word;
       max-width: 100%;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+    }
+    
+    /* Additional cutting lines for 4-row grids (label cards) - extend fully to page edges */
+    .cutting-line-vertical {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: ${CUTTING_LINE_WIDTH}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      background: black;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .cutting-line-horizontal {
+      position: absolute;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .cutting-line-horizontal-25 {
+      top: 25%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      transform: translateY(-50%);
+    }
+    
+    .cutting-line-horizontal-50 {
+      top: 50%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      transform: translateY(-50%);
+    }
+    
+    .cutting-line-horizontal-75 {
+      top: 75%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      transform: translateY(-50%);
     }
     
     @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
       body {
         margin: 0;
         padding: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       .page-title {
         display: none; /* Hide labels when printing */
+      }
+      
+      /* Force cutting lines to print */
+      .page::before,
+      .page::after,
+      .grid::before,
+      .grid::after,
+      .cutting-line-vertical,
+      .cutting-line-horizontal {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background: black !important;
+      }
+      
+      /* Force card borders to print */
+      .card {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background: ${currentBorderColor} !important;
       }
     }
     
@@ -596,13 +734,18 @@ const MontessoriCardGenerator = () => {
 
       // Generate Label Cards pages (8 per page in 2x4 grid)
       const labelCards = cards.map(card => createCardHTML(card, 'label'));
+      const labelCardHeight = A4_HEIGHT_CM / 4; // 4 equal rows - full page height
       for (let i = 0; i < labelCards.length; i += 8) {
         const pageCards = labelCards.slice(i, i + 8);
         const pageNum = Math.floor(i / 8) + 1;
         html += `
           <div class="page">
             <div class="page-title">Label Cards - Page ${pageNum}</div>
-            <div class="grid" style="grid-template-rows: repeat(4, ${labelHeightCm}cm); grid-auto-rows: ${labelHeightCm}cm;">
+            <div class="grid" style="grid-template-rows: repeat(4, ${labelCardHeight}cm); grid-auto-rows: ${labelCardHeight}cm;">
+              <div class="cutting-line-vertical"></div>
+              <div class="cutting-line-horizontal cutting-line-horizontal-25"></div>
+              <div class="cutting-line-horizontal cutting-line-horizontal-50"></div>
+              <div class="cutting-line-horizontal cutting-line-horizontal-75"></div>
               ${pageCards.join('')}
               ${pageCards.length < 8 ? '<div></div>'.repeat(8 - pageCards.length) : ''}
             </div>
@@ -611,6 +754,9 @@ const MontessoriCardGenerator = () => {
       }
 
       html += `
+  <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #fff3cd; border: 2px solid #ffc107; padding: 10px 20px; border-radius: 5px; z-index: 1000; font-size: 12pt; text-align: center; max-width: 90%; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+    <strong>⚠️ IMPORTANT:</strong> In Safari's print dialog, make sure <strong>"Print backgrounds"</strong> is CHECKED to see cutting lines and borders!
+  </div>
   <script>
     window.onload = function() {
       setTimeout(() => {
@@ -659,16 +805,19 @@ const MontessoriCardGenerator = () => {
       const A4_HEIGHT_CM = 29.7;
       
       // Calculate image size for 2x2 grid on A4
-      const MARGIN_CM = 1.5;
-      const GAP_CM = 0.2; // White cutting guide
+      // Zero margins to allow cutting lines to reach page edges
+      const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
+      const CUTTING_LINE_WIDTH = 0.01; // 1px cutting line (0.01cm ≈ 0.38pt)
+      const WHITE_BORDER_CM = 0.5; // White border around card content (~5mm for comfortable cutting)
+      const CARD_BORDER_RADIUS = 0.4; // Rounded corners (~4mm or ~15px - aesthetically pleasing)
       
       const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
       const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
       
-      // For 2x2 grid
+      // For 2x2 grid - cards touch each other, no gap
       const imageSize = Math.min(
-        (usableWidth - GAP_CM) / 2,
-        (usableHeight - GAP_CM) / 2
+        usableWidth / 2,
+        usableHeight / 2
       );
       
       // Build HTML for print
@@ -681,7 +830,7 @@ const MontessoriCardGenerator = () => {
   <style>
     @page {
       size: A4;
-      margin: ${MARGIN_CM}cm;
+      margin: 0;
     }
     
     * {
@@ -693,14 +842,17 @@ const MontessoriCardGenerator = () => {
     body {
       font-family: system-ui, sans-serif;
       background: white;
+      position: relative;
     }
     
     .page {
       page-break-after: always;
       width: ${A4_WIDTH_CM}cm;
       height: ${A4_HEIGHT_CM}cm;
-      padding: ${MARGIN_CM}cm;
+      padding: 0;
+      margin: 0;
       position: relative;
+      overflow: hidden;
     }
     
     .page:last-child {
@@ -714,23 +866,85 @@ const MontessoriCardGenerator = () => {
       text-align: center;
     }
     
+    /* Cutting lines that extend fully to page edges */
+    .page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: ${CUTTING_LINE_WIDTH}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      background: black;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .page::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black;
+      transform: translateY(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
     .grid {
       display: grid;
       grid-template-columns: ${imageSize}cm ${imageSize}cm;
       grid-template-rows: ${imageSize}cm ${imageSize}cm;
-      gap: ${GAP_CM}cm;
-      width: 100%;
+      gap: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Vertical cutting line between columns - extends fully to page edges */
+    .grid::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: ${CUTTING_LINE_WIDTH}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      background: black;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    /* Horizontal cutting line between rows - extends fully to page edges */
+    .grid::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${CUTTING_LINE_WIDTH}cm;
+      background: black;
+      transform: translateY(-50%);
+      z-index: 10;
+      pointer-events: none;
     }
     
     .image-box {
       background: ${currentBorderColor};
-      padding: 0.5cm;
+      padding: ${WHITE_BORDER_CM}cm;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      margin: 0;
+      border: none;
     }
     
     .image-inner {
@@ -743,6 +957,7 @@ const MontessoriCardGenerator = () => {
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
     }
     
     .image-inner img {
