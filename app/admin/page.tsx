@@ -487,6 +487,13 @@ export default function AdminDashboard() {
             <span className="text-xl">📊</span> Montessori Tracking
           </Link>
           <Link
+            href="/admin/montessori-works"
+            prefetch={false}
+            className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-700 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">🎓</span> Montessori Works
+          </Link>
+          <Link
             href="/admin/english-curriculum"
             prefetch={false}
             className="bg-gradient-to-r from-pink-500 to-rose-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-rose-700 transition-all shadow-md flex items-center gap-2"
