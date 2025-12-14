@@ -6,6 +6,7 @@ import { CheckCircle, Clock, TrendingUp, Calendar, User } from 'lucide-react';
 import type { Child, DailyActivityAssignmentWithDetails, CurriculumArea } from '@/types/database';
 import ActivityHistory from './ActivityHistory';
 import ProgressVisualization from './ProgressVisualization';
+import { CurriculumVisualization } from './CurriculumVisualization';
 
 interface EnhancedChildDashboardProps {
   childId: string;
@@ -29,7 +30,7 @@ const AREA_COLORS: Record<CurriculumArea, string> = {
   cultural: 'bg-yellow-100 text-yellow-800',
 };
 
-type TabType = 'today' | 'progress' | 'history';
+type TabType = 'today' | 'progress' | 'history' | 'curriculum';
 
 export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboardProps) {
   const [child, setChild] = useState<Child | null>(null);
@@ -258,6 +259,17 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
               <Calendar className="w-5 h-5" />
               History
             </button>
+            <button
+              onClick={() => setActiveTab('curriculum')}
+              className={`py-4 px-4 font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'curriculum'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <User className="w-5 h-5" />
+              Curriculum
+            </button>
           </div>
         </div>
 
@@ -366,6 +378,13 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
           {/* History Tab */}
           {activeTab === 'history' && (
             <ActivityHistory childId={childId} />
+          )}
+
+          {/* Curriculum Tab */}
+          {activeTab === 'curriculum' && (
+            <div className="animate-in fade-in duration-200">
+              <CurriculumVisualization childId={childId} />
+            </div>
           )}
         </div>
       </div>
