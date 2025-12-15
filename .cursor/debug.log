@@ -1,0 +1,8 @@
+{"location":"route.ts:9","message":"Login POST handler entered","data":{"hasRequest":true},"timestamp":1765687678191,"sessionId":"debug-session","hypothesisId":"A,B,C"}
+{"location":"route.ts:14","message":"Request parsed successfully","data":{"hasUsername":true,"hasPassword":true,"usernameLength":7},"timestamp":1765687678209,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"route.ts:19","message":"Credentials validation","data":{"isValid":true,"hasAdminUsername":true,"hasAdminPassword":true},"timestamp":1765687678209,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"route.ts:30","message":"About to create admin token","data":{},"timestamp":1765687678210,"sessionId":"debug-session","hypothesisId":"A,B"}
+{"location":"auth.ts:10","message":"createAdminToken called","data":{"hasJwt":true,"hasSign":true,"hasSecret":true,"secretLength":39},"timestamp":1765687678211,"sessionId":"debug-session","hypothesisId":"A,B"}
+{"location":"auth.ts:16","message":"Token signed successfully","data":{"tokenCreated":true,"tokenType":"string"},"timestamp":1765687678212,"sessionId":"debug-session","hypothesisId":"A,B"}
+{"location":"route.ts:35","message":"Token created successfully","data":{"hasToken":true,"tokenLength":148},"timestamp":1765687678213,"sessionId":"debug-session","hypothesisId":"A,B"}
+{"location":"route.ts:46","message":"Response prepared with cookie","data":{"nodeEnv":"development"},"timestamp":1765687678215,"sessionId":"debug-session","hypothesisId":"E"}
