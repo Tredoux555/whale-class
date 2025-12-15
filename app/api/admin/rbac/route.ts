@@ -79,17 +79,41 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid permission level' }, { status: 400 });
     }
 
-    // Use a dummy admin ID since we're using session-based auth
-    // The permission functions need a userId but we don't have one with JWT auth
-    // We'll need to pass 'admin' as the userId
-    const adminUserId = 'admin-session';
+    // Grant/revoke permission directly (admin session authenticated)
+    const { createClient } = await import('@/lib/supabase');
+    const supabase = createClient();
 
     if (is_active) {
       // Grant permission
-      await grantPermission(adminUserId, role_name, feature_key, permission_level, can_share_with_others || false);
+      const { error } = await supabase
+        .from('role_permissions')
+        .upsert({
+          role_name,
+          feature_key,
+          permission_level,
+          can_share_with_others: can_share_with_others || false,
+          is_active: true,
+        }, {
+          onConflict: 'role_name,feature_key,permission_level'
+        });
+
+      if (error) {
+        console.error('Error granting permission:', error);
+        throw new Error('Failed to grant permission');
+      }
     } else {
       // Revoke permission
-      await revokePermission(adminUserId, role_name, feature_key, permission_level);
+      const { error } = await supabase
+        .from('role_permissions')
+        .update({ is_active: false })
+        .eq('role_name', role_name)
+        .eq('feature_key', feature_key)
+        .eq('permission_level', permission_level);
+
+      if (error) {
+        console.error('Error revoking permission:', error);
+        throw new Error('Failed to revoke permission');
+      }
     }
 
     return NextResponse.json({ 

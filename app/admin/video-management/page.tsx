@@ -95,12 +95,23 @@ export default function VideoManagementPage() {
 
       const data = await response.json();
       
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert('Admin access required. Please log in as admin.');
+          return;
+        }
+        throw new Error(data.error || `Server error: ${response.status}`);
+      }
+      
       if (data.success) {
         alert(`Discovery complete! Found ${data.videosFound} videos out of ${data.totalWorks} works.`);
         loadVideos();
+      } else {
+        alert(`Discovery failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
-      alert('Discovery failed. See console for details.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Discovery failed: ${errorMessage}`);
       console.error('Discovery error:', error);
     } finally {
       setSearching(false);
