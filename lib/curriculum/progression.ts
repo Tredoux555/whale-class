@@ -405,7 +405,7 @@ export async function getChildProgress(childId: string): Promise<ChildProgress> 
     const totalWorksInStage = stageWorks?.length || 0;
 
     // Count completed works in this stage
-    const completedWorksInStage = position.completed_work_ids.filter((workId) => {
+    const completedWorksInStage = position.completed_work_ids.filter((workId: string) => {
       // Check if this work is in the current stage
       return stageWorks?.some((w) => w.id === workId);
     }).length;
