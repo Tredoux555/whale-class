@@ -56,17 +56,25 @@ export default function TeacherLoginPage() {
       }
 
       // Verify user has teacher role
+      // Use .maybeSingle() instead of .single() to avoid errors when no row exists
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role_name')
         .eq('user_id', data.user.id)
         .eq('role_name', 'teacher')
-        .single();
+        .maybeSingle();
 
-      if (roleError || !roleData) {
+      if (roleError) {
+        console.error('Error checking teacher role:', roleError);
+        await supabase.auth.signOut();
+        setError(`Access denied. Error checking role: ${roleError.message}`);
+        return;
+      }
+
+      if (!roleData) {
         // User is not a teacher
         await supabase.auth.signOut();
-        setError('Access denied. This login is for teachers only.');
+        setError('Access denied. This login is for teachers only. Please contact an administrator to assign you the teacher role.');
         return;
       }
 
