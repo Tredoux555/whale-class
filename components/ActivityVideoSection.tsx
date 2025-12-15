@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Play, Trash2, Loader } from 'lucide-react';
+import { setupMediaSessionForVideo } from '@/lib/video-playback-utils';
 
 interface ActivityVideoSectionProps {
   activityId: string;
@@ -108,6 +109,20 @@ export const ActivityVideoSection: React.FC<ActivityVideoSectionProps> = ({
     }
   };
 
+  // Setup video for background playback and media session
+  useEffect(() => {
+    if (videoRef.current && uploadedUrl) {
+      // Ensure proper attributes for background playback
+      const video = videoRef.current;
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+      video.setAttribute('x-webkit-airplay', 'allow');
+
+      // Setup media session for lock screen controls
+      setupMediaSessionForVideo(video, 'Activity Instruction Video', 'Whale Class');
+    }
+  }, [uploadedUrl]);
+
   return (
     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
       <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -123,6 +138,10 @@ export const ActivityVideoSection: React.FC<ActivityVideoSectionProps> = ({
               ref={videoRef}
               src={uploadedUrl}
               controls
+              playsInline
+              webkit-playsinline="true"
+              playsinline
+              x-webkit-airplay="allow"
               className="w-full h-full"
             />
           </div>
