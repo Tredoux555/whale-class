@@ -57,7 +57,15 @@ export default function RBACManagementPage() {
   const [newTeacherPassword, setNewTeacherPassword] = useState('');
 
   const router = useRouter();
-  const supabase = createSupabaseClient();
+  
+  // Create Supabase client only when needed (not during build/prerender)
+  const getSupabase = () => {
+    try {
+      return createSupabaseClient();
+    } catch (error) {
+      return null;
+    }
+  };
 
   useEffect(() => {
     checkAdminAccess();
@@ -72,6 +80,9 @@ export default function RBACManagementPage() {
   }, [activeTab, selectedRole]);
 
   async function checkAdminAccess() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {

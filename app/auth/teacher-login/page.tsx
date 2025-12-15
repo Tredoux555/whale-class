@@ -17,12 +17,27 @@ export default function TeacherLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createSupabaseClient();
+  // Create Supabase client only when needed (not during build/prerender)
+  const getSupabase = () => {
+    try {
+      return createSupabaseClient();
+    } catch (error) {
+      // During build/prerender, env vars may not be available
+      return null;
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError('System not configured. Please contact support.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -69,6 +84,12 @@ export default function TeacherLoginPage() {
   const handleForgotPassword = async () => {
     if (!email) {
       setError('Please enter your email address');
+      return;
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError('System not configured. Please contact support.');
       return;
     }
 
