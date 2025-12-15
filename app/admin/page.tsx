@@ -44,6 +44,7 @@ export default function AdminDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "song-of-week" | "phonics" | "weekly-phonics-sound" | "stories" | "montessori" | "recipes">("all");
   const [selectedSubcategory, setSelectedSubcategory] = useState<"practical-life" | "maths" | "sensorial" | "english" | "all">("all");
   const [formCategory, setFormCategory] = useState<"song-of-week" | "phonics" | "weekly-phonics-sound" | "stories" | "montessori" | "recipes">("song-of-week");
+  const [seedingCurriculum, setSeedingCurriculum] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -93,6 +94,42 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/admin/login");
+  };
+
+  const handleSeedCurriculum = async () => {
+    if (!confirm('Seed curriculum roadmap? This will add all 74 Montessori works to the database.')) {
+      return;
+    }
+
+    setSeedingCurriculum(true);
+    try {
+      const response = await fetch('/api/admin/seed-curriculum', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert('Admin access required. Please log in as admin.');
+          return;
+        }
+        throw new Error(data.error || `Server error: ${response.status}`);
+      }
+
+      if (data.success) {
+        alert(`✅ Successfully seeded ${data.count} curriculum works!\n\nBreakdown:\n${Object.entries(data.breakdown.byStage).map(([stage, count]) => `  ${stage}: ${count} works`).join('\n')}\n\n${Object.entries(data.breakdown.byArea).map(([area, count]) => `  ${area}: ${count} works`).join('\n')}`);
+      } else {
+        alert(`Seed failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Seed failed: ${errorMessage}`);
+      console.error('Seed error:', error);
+    } finally {
+      setSeedingCurriculum(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -521,6 +558,13 @@ export default function AdminDashboard() {
           >
             <span className="text-xl">👥</span> Teacher Login Management
           </Link>
+          <button
+            onClick={handleSeedCurriculum}
+            disabled={seedingCurriculum}
+            className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-700 transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+          >
+            <span className="text-xl">🌱</span> {seedingCurriculum ? 'Seeding...' : 'Seed Curriculum'}
+          </button>
         </div>
 
             {/* Upload Form */}
