@@ -137,20 +137,38 @@ export async function POST(request: NextRequest) {
 
     // Assign teacher role directly (admin session authenticated)
     // supabase is already declared above
-    const { error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabase
       .from('user_roles')
       .insert({
         user_id: authData.user.id,
         role_name: 'teacher',
-      });
+      })
+      .select();
 
     if (roleError) {
       if (roleError.code === '23505') {
-        // Role already exists, that's okay
+        // Role already exists, that's okay - verify it exists
+        console.log('Teacher role already exists for user:', authData.user.id);
       } else {
-        console.error('Error assigning role:', roleError);
-        throw new Error('Failed to assign teacher role');
+        console.error('Error assigning teacher role:', roleError);
+        console.error('Role error details:', {
+          code: roleError.code,
+          message: roleError.message,
+          details: roleError.details,
+          hint: roleError.hint,
+        });
+        // Don't throw - return error response so admin can see what went wrong
+        return NextResponse.json(
+          { 
+            success: false,
+            error: `Failed to assign teacher role: ${roleError.message}`,
+            user_id: authData.user.id,
+          },
+          { status: 500 }
+        );
       }
+    } else if (roleData && roleData.length > 0) {
+      console.log('Successfully assigned teacher role:', roleData[0]);
     }
 
     // Send password reset email if no password was provided
