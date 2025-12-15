@@ -5,17 +5,41 @@
 // Purpose: Protect routes based on user roles and permissions
 // =====================================================
 
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  
+  // Skip auth check if Supabase not configured (build time)
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return res;
+  }
+  
+  // Create Supabase client for middleware
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+  
+  // Get session from cookies
+  const authHeader = req.headers.get('authorization');
+  const accessToken = authHeader?.replace('Bearer ', '') || 
+    req.cookies.get('sb-access-token')?.value ||
+    req.cookies.get('supabase-auth-token')?.value;
+  
+  if (accessToken) {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: '' });
+  }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Get session
+  const { data: { session } } = await supabase.auth.getSession();
 
   // Public routes that don't require authentication
   const publicPaths = [

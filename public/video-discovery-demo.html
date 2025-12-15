@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Discovery Demo - Whale Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .demo-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 5px;
+            font-weight: 600;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .result-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .result-item strong {
+            color: #667eea;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Video Discovery Demo</h1>
+        <p class="subtitle">Whale Platform - YouTube Video Automation System</p>
+
+        <div class="demo-section">
+            <h2>🚀 Quick Start</h2>
+            <p>Click the button below to trigger video discovery for your Montessori curriculum works.</p>
+            <button class="button" onclick="startDiscovery()" id="discoverBtn">
+                🔍 Discover Videos
+            </button>
+            <button class="button" onclick="checkStats()" id="statsBtn">
+                📊 Check Statistics
+            </button>
+            <div id="status"></div>
+            <div id="results"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📖 How It Works</h2>
+            <ol style="line-height: 2; padding-left: 20px;">
+                <li><strong>Search:</strong> System searches YouTube for each curriculum work</li>
+                <li><strong>Score:</strong> Each video is scored 0-100 based on relevance</li>
+                <li><strong>Save:</strong> Best videos (score ≥ 60) are saved to database</li>
+                <li><strong>Approve:</strong> You review and approve videos in admin dashboard</li>
+                <li><strong>Display:</strong> Approved videos appear automatically on curriculum pages</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎯 Expected Results</h2>
+            <ul style="line-height: 2; padding-left: 20px;">
+                <li><strong>52-59 videos found</strong> (70-80% coverage)</li>
+                <li><strong>Average score:</strong> 75-85/100</li>
+                <li><strong>Duration:</strong> 2-3 minutes</li>
+                <li><strong>Cost:</strong> $0 (within free tier)</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔗 Links</h2>
+            <p>
+                <a href="/admin/video-management" class="link">📱 Video Management Dashboard</a><br>
+                <a href="/admin" class="link">🏠 Admin Dashboard</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResults(data) {
+            const resultsDiv = document.getElementById('results');
+            if (!data) return;
+            
+            let html = '<div class="results"><h3>📊 Discovery Results</h3>';
+            
+            if (data.totalWorks !== undefined) {
+                html += `
+                    <div class="result-item">
+                        <strong>Total Works:</strong> ${data.totalWorks}
+                    </div>
+                    <div class="result-item">
+                        <strong>Videos Found:</strong> ${data.videosFound || 0}
+                    </div>
+                    <div class="result-item">
+                        <strong>Coverage:</strong> ${data.coveragePercent || 0}%
+                    </div>
+                `;
+                
+                if (data.videosFound > 0) {
+                    html += `
+                        <div style="margin-top: 20px;">
+                            <p><strong>✅ Next Steps:</strong></p>
+                            <ol style="line-height: 2; padding-left: 20px;">
+                                <li>Go to <a href="/admin/video-management" class="link">Video Management</a></li>
+                                <li>Review videos in "Pending" tab</li>
+                                <li>Click "Approve" for good videos</li>
+                                <li>Videos will appear on curriculum pages automatically!</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+            } else if (data.stats) {
+                html += `
+                    <div class="result-item">
+                        <strong>Total Works:</strong> ${data.stats.total_works || 0}
+                    </div>
+                    <div class="result-item">
+                        <strong>Works with Videos:</strong> ${data.stats.works_with_videos || 0}
+                    </div>
+                    <div class="result-item">
+                        <strong>Pending Approval:</strong> ${data.stats.works_pending_approval || 0}
+                    </div>
+                    <div class="result-item">
+                        <strong>Missing Videos:</strong> ${data.stats.works_missing_videos || 0}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        async function startDiscovery() {
+            const btn = document.getElementById('discoverBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Discovering...';
+            
+            showStatus('🔄 Starting video discovery... This may take 2-3 minutes.', 'loading');
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/youtube/discover-all`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        forceAll: false,
+                        minScore: 60,
+                        autoApprove: false
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(`✅ Discovery complete! Found ${data.videosFound} videos out of ${data.totalWorks} works (${data.coveragePercent}% coverage).`, 'success');
+                    showResults(data);
+                } else {
+                    showStatus(`❌ Discovery failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}. Make sure the server is running and you're logged in.`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 Discover Videos';
+            }
+        }
+
+        async function checkStats() {
+            const btn = document.getElementById('statsBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Loading...';
+            
+            showStatus('📊 Fetching statistics...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/youtube/discover-all`);
+                const data = await response.json();
+
+                if (data.success && data.stats) {
+                    showStatus('✅ Statistics loaded!', 'success');
+                    showResults(data);
+                } else {
+                    showStatus('ℹ️ No statistics available yet. Run discovery first!', 'info');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📊 Check Statistics';
+            }
+        }
+
+        // Check stats on load
+        window.addEventListener('load', () => {
+            checkStats();
+        });
+    </script>
+</body>
+</html>
+

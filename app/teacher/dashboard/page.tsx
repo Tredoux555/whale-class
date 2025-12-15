@@ -26,10 +26,23 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState<TeacherStudent[]>([]);
   const { permissions, isLoading: permissionsLoading } = useUserPermissions();
   const router = useRouter();
-  const supabase = createSupabaseClient();
+  // Create Supabase client only when needed (not during build/prerender)
+  const getSupabase = () => {
+    try {
+      return createSupabaseClient();
+    } catch (error) {
+      return null;
+    }
+  };
 
   useEffect(() => {
     async function loadUser() {
+      const supabase = getSupabase();
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -63,7 +76,10 @@ export default function TeacherDashboard() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const supabase = getSupabase();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     router.push('/auth/teacher-login');
   };
 

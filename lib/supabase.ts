@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClientJS } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Client-side Supabase client (uses anon key)
@@ -69,6 +69,9 @@ export const STORAGE_BUCKETS = {
 } as const;
 
 export function getPublicUrl(bucket: string, path: string) {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
   const supabase = createSupabaseClientJS(supabaseUrl, supabaseAnonKey);
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
