@@ -80,35 +80,21 @@ export default function RBACManagementPage() {
   }, [activeTab, selectedRole]);
 
   async function checkAdminAccess() {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      router.push('/auth/teacher-login');
-      return;
-    }
-
-    // Check if user has admin role
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role_name')
-      .eq('user_id', user.id)
-      .in('role_name', ['admin', 'super_admin'])
-      .single();
-
-    if (!roleData) {
-      router.push('/teacher/dashboard');
-      return;
-    }
-
+    // Check if admin is logged in via cookie (JWT)
+    // Admin session is checked on the server side via API calls
+    // If API calls return 403, we'll handle redirects there
     setLoading(false);
   }
 
   async function loadPermissions() {
     try {
       const response = await fetch(`/api/admin/rbac?role=${selectedRole}`);
+      
+      if (response.status === 403) {
+        // Not authenticated as admin
+        router.push('/admin/login');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error('Failed to load permissions');
@@ -124,6 +110,12 @@ export default function RBACManagementPage() {
   async function loadTeachers() {
     try {
       const response = await fetch('/api/admin/rbac/teachers');
+      
+      if (response.status === 403) {
+        // Not authenticated as admin
+        router.push('/admin/login');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error('Failed to load teachers');
