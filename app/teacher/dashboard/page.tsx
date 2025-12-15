@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createSupabaseClient } from '@/lib/supabase';
 import { useUserPermissions } from '@/components/PermissionGate';
 import type { FeatureKey } from '@/lib/permissions/roles';
 
@@ -26,7 +26,7 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState<TeacherStudent[]>([]);
   const { permissions, isLoading: permissionsLoading } = useUserPermissions();
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     async function loadUser() {
