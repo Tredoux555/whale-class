@@ -373,19 +373,12 @@ export default function Home() {
                     ref={(el) => {
                       if (el) {
                         videoRefs.current[video.id] = el;
-                        // Ensure proper attributes for background playback
-                        el.setAttribute('playsinline', 'true');
-                        el.setAttribute('webkit-playsinline', 'true');
-                        el.setAttribute('x-webkit-airplay', 'allow');
+                        // GlobalVideoSetup will handle setting attributes for background playback
                       }
                     }}
                     data-src={getProxyVideoUrl(video.videoUrl)}
                     controls
                     playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    playsinline
-                    x-webkit-airplay="allow"
                     className="w-full h-full object-cover"
                     preload="none"
                     loop={repeatModes[video.id] || false}
