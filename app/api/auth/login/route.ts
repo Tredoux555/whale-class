@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createAdminToken } from "@/lib/auth";
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "whale123";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "Tredoux";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "870602";
 
 export async function POST(request: NextRequest) {
   try {
