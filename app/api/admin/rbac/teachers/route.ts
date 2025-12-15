@@ -136,9 +136,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Assign teacher role - use dummy admin ID
-    const adminUserId = 'admin-session';
-    await assignRole(adminUserId, authData.user.id, 'teacher');
+    // Assign teacher role directly (admin session authenticated)
+    const supabase = getSupabaseClient();
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: authData.user.id,
+        role_name: 'teacher',
+      });
+
+    if (roleError) {
+      if (roleError.code === '23505') {
+        // Role already exists, that's okay
+      } else {
+        console.error('Error assigning role:', roleError);
+        throw new Error('Failed to assign teacher role');
+      }
+    }
 
     // Send password reset email if no password was provided
     if (!password) {
