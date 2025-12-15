@@ -6,10 +6,10 @@ import { createClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { workId: string } }
+  { params }: { params: Promise<{ workId: string }> }
 ) {
   try {
-    const { workId } = params;
+    const { workId } = await params;
 
     const supabase = createClient();
 
