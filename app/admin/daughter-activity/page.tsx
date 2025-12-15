@@ -168,12 +168,16 @@ export default function DaughterActivityPage() {
     if (!todayActivity) return;
 
     try {
+      // Get curriculum work ID if available
+      const curriculumWorkId = (todayActivity as any).curriculum_work?.id;
+      
       const response = await fetch('/api/whale/daily-activity', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           assignmentId: todayActivity.id, 
-          completed: true 
+          completed: true,
+          curriculumWorkId: curriculumWorkId || null
         }),
       });
 

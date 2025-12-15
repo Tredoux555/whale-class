@@ -1,6 +1,7 @@
 // app/api/whale/daily-activity/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdmin } from '@/lib/supabase';
+import { getNextCurriculumWork, markWorkComplete } from '@/lib/curriculum/progression';
 
 // GET - Get today's activity for a child
 export async function GET(request: NextRequest) {
@@ -117,156 +118,168 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, data: assignment });
     }
 
-    // Otherwise, generate activity automatically
-    // Get age in years (for filtering activities)
-    // age_group is stored as '2-3', '3-4', etc. - use the lower bound + 0.5
-    const ageGroupParts = child.age_group.split('-');
-    const ageInYears = parseFloat(ageGroupParts[0]) + 0.5; // '2-3' → 2.5, '3-4' → 3.5
+    // Otherwise, generate activity using curriculum progression
+    try {
+      // Get next curriculum work
+      const curriculumWork = await getNextCurriculumWork(childId);
 
-    // Get recently completed activities (last 10 days)
-    const tenDaysAgo = new Date();
-    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-    
-    const { data: recentActivities, error: recentError } = await supabase
-      .from('daily_activity_assignments')
-      .select('activity_id')
-      .eq('child_id', childId)
-      .gte('assigned_date', tenDaysAgo.toISOString().split('T')[0]);
+      // Find activity mapped to this curriculum work
+      const { data: mappings, error: mappingError } = await supabase
+        .from('activity_to_curriculum_mapping')
+        .select('activity_id, is_primary')
+        .eq('curriculum_work_id', curriculumWork.id)
+        .order('is_primary', { ascending: false }); // Primary activities first
 
-    if (recentError) throw recentError;
+      let selectedActivityId: string | null = null;
 
-    const recentActivityIds = recentActivities?.map(a => a.activity_id) || [];
-
-    // Get all eligible activities (age-appropriate, not recently done)
-    let query = supabase
-      .from('activities')
-      .select('*')
-      .lte('age_min', ageInYears)
-      .gte('age_max', ageInYears);
-
-    // Exclude recently done activities
-    if (recentActivityIds.length > 0) {
-      // Supabase .not() with 'in' requires array format
-      query = query.not('id', 'in', `(${recentActivityIds.join(',')})`);
-    }
-
-    const { data: eligibleActivities, error: activitiesError } = await query;
-
-    if (activitiesError) throw activitiesError;
-
-    if (!eligibleActivities || eligibleActivities.length === 0) {
-      return NextResponse.json(
-        { error: 'No activities found for this child. Please add activities to the database.', code: 'NO_ACTIVITIES' },
-        { status: 404 }
-      );
-    }
-
-    // Get child's progress to determine skill gaps (optional - if no progress, skip prioritization)
-    const { data: progressData, error: progressError } = await supabase
-      .from('child_progress')
-      .select(`
-        status_level,
-        skill:skills(
-          category:skill_categories(area)
-        )
-      `)
-      .eq('child_id', childId);
-
-    // Calculate area priorities (areas with lower average progress)
-    const areaPriorities: Record<string, number> = {};
-    const areaSkills: Record<string, any[]> = {};
-
-    if (!progressError && progressData) {
-      progressData.forEach((progress: any) => {
-        // Handle Supabase join structure - skill might be object or array
-        const skill = Array.isArray(progress.skill) ? progress.skill[0] : progress.skill;
-        const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;
-        const area = category?.area;
-        
-        if (!area) return;
-        
-        if (!areaSkills[area]) {
-          areaSkills[area] = [];
+      if (!mappingError && mappings && mappings.length > 0) {
+        // Use primary activity if available, otherwise pick randomly
+        const primaryMapping = mappings.find(m => m.is_primary);
+        if (primaryMapping) {
+          selectedActivityId = primaryMapping.activity_id;
+        } else {
+          // Pick random variant
+          const randomMapping = mappings[Math.floor(Math.random() * mappings.length)];
+          selectedActivityId = randomMapping.activity_id;
         }
-        areaSkills[area].push({
-          status: progress.status_level || 0
-        });
-      });
-
-      Object.keys(areaSkills).forEach(area => {
-        const skills = areaSkills[area];
-        const avgStatus = skills.reduce((sum, s) => sum + (s.status || 0), 0) / skills.length;
-        areaPriorities[area] = avgStatus;
-      });
-    }
-
-    // Intelligent selection algorithm
-    // Priority: areas with lower progress > variety > skill level appropriateness
-    
-    // Group activities by area
-    const activitiesByArea: Record<string, any[]> = {};
-    eligibleActivities.forEach(activity => {
-      if (!activitiesByArea[activity.area]) {
-        activitiesByArea[activity.area] = [];
       }
-      activitiesByArea[activity.area].push(activity);
-    });
 
-    let selectedActivity = null;
+      // If no mapping exists, fall back to finding activity by name match
+      if (!selectedActivityId) {
+        const { data: matchedActivity } = await supabase
+          .from('activities')
+          .select('id')
+          .ilike('name', `%${curriculumWork.work_name}%`)
+          .limit(1)
+          .single();
 
-    // Try to select from underperforming areas first
-    const sortedAreas = Object.keys(areaPriorities).sort(
-      (a, b) => areaPriorities[a] - areaPriorities[b]
-    );
+        if (matchedActivity) {
+          selectedActivityId = matchedActivity.id;
+        }
+      }
 
-    for (const area of sortedAreas) {
-      if (activitiesByArea[area] && activitiesByArea[area].length > 0) {
-        // Pick appropriate skill level (slightly above current average)
-        const areaAvg = areaPriorities[area];
-        const targetSkillLevel = Math.min(Math.ceil(areaAvg) + 1, 4);
+      // If still no activity found, fall back to old random selection logic
+      if (!selectedActivityId) {
+        const ageGroupParts = child.age_group.split('-');
+        const ageInYears = parseFloat(ageGroupParts[0]) + 0.5;
         
-        const suitable = activitiesByArea[area].filter(
-          a => a.skill_level <= targetSkillLevel
+        const { data: fallbackActivities } = await supabase
+          .from('activities')
+          .select('*')
+          .lte('age_min', ageInYears)
+          .gte('age_max', ageInYears)
+          .eq('area', curriculumWork.area)
+          .limit(10);
+
+        if (fallbackActivities && fallbackActivities.length > 0) {
+          selectedActivityId = fallbackActivities[Math.floor(Math.random() * fallbackActivities.length)].id;
+        }
+      }
+
+      if (!selectedActivityId) {
+        return NextResponse.json(
+          { error: 'No activities found for this curriculum work. Please map activities to curriculum works.', code: 'NO_ACTIVITIES' },
+          { status: 404 }
         );
-
-        if (suitable.length > 0) {
-          selectedActivity = suitable[Math.floor(Math.random() * suitable.length)];
-          break;
-        }
       }
+
+      // Get the selected activity
+      const { data: selectedActivity, error: activityError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('id', selectedActivityId)
+        .single();
+
+      if (activityError || !selectedActivity) {
+        throw new Error('Failed to get selected activity');
+      }
+
+      // Delete any existing assignment for today
+      const today = new Date().toISOString().split('T')[0];
+      await supabase
+        .from('daily_activity_assignments')
+        .delete()
+        .eq('child_id', childId)
+        .eq('assigned_date', today);
+
+      // Create new assignment
+      const { data: assignment, error: assignError } = await supabase
+        .from('daily_activity_assignments')
+        .insert({
+          child_id: childId,
+          activity_id: selectedActivity.id,
+          assigned_date: today,
+          completed: false,
+        })
+        .select(`
+          *,
+          activity:activities(*)
+        `)
+        .single();
+
+      if (assignError) throw assignError;
+
+      // Return assignment with curriculum work info
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...assignment,
+          curriculum_work: {
+            id: curriculumWork.id,
+            sequence_order: curriculumWork.sequence_order,
+            work_name: curriculumWork.work_name,
+            area: curriculumWork.area,
+            stage: curriculumWork.stage,
+            description: curriculumWork.description,
+          },
+        },
+      });
+    } catch (curriculumError: any) {
+      console.error('Curriculum progression error:', curriculumError);
+      // Fall back to old random selection if curriculum fails
+      // (This ensures backward compatibility)
+      const ageGroupParts = child.age_group.split('-');
+      const ageInYears = parseFloat(ageGroupParts[0]) + 0.5;
+      
+      const { data: fallbackActivities } = await supabase
+        .from('activities')
+        .select('*')
+        .lte('age_min', ageInYears)
+        .gte('age_max', ageInYears)
+        .limit(10);
+
+      if (!fallbackActivities || fallbackActivities.length === 0) {
+        return NextResponse.json(
+          { error: 'No activities found. Please add activities to the database.', code: 'NO_ACTIVITIES' },
+          { status: 404 }
+        );
+      }
+
+      const selectedActivity = fallbackActivities[Math.floor(Math.random() * fallbackActivities.length)];
+      
+      const today = new Date().toISOString().split('T')[0];
+      await supabase
+        .from('daily_activity_assignments')
+        .delete()
+        .eq('child_id', childId)
+        .eq('assigned_date', today);
+
+      const { data: assignment } = await supabase
+        .from('daily_activity_assignments')
+        .insert({
+          child_id: childId,
+          activity_id: selectedActivity.id,
+          assigned_date: today,
+          completed: false,
+        })
+        .select(`
+          *,
+          activity:activities(*)
+        `)
+        .single();
+
+      return NextResponse.json({ success: true, data: assignment });
     }
-
-    // If no activity from priority areas, pick randomly from eligible
-    if (!selectedActivity) {
-      selectedActivity = eligibleActivities[Math.floor(Math.random() * eligibleActivities.length)];
-    }
-
-    // Delete any existing assignment for today
-    const today = new Date().toISOString().split('T')[0];
-    await supabase
-      .from('daily_activity_assignments')
-      .delete()
-      .eq('child_id', childId)
-      .eq('assigned_date', today);
-
-    // Create new assignment
-    const { data: assignment, error: assignError } = await supabase
-      .from('daily_activity_assignments')
-      .insert({
-        child_id: childId,
-        activity_id: selectedActivity.id,
-        assigned_date: today,
-        completed: false,
-      })
-      .select(`
-        *,
-        activity:activities(*)
-      `)
-      .single();
-
-    if (assignError) throw assignError;
-
-    return NextResponse.json({ success: true, data: assignment });
   } catch (error: any) {
     console.error('Error generating daily activity:', error);
     return NextResponse.json(
@@ -280,7 +293,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { assignmentId, completed, notes } = body;
+    const { assignmentId, completed, notes, curriculumWorkId } = body;
 
     if (!assignmentId) {
       return NextResponse.json(
@@ -311,6 +324,16 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // If completed and curriculumWorkId provided, mark curriculum work as complete
+    if (completed && curriculumWorkId) {
+      try {
+        await markWorkComplete(data.child_id, curriculumWorkId);
+      } catch (curriculumError) {
+        console.error('Error marking curriculum work complete:', curriculumError);
+        // Don't fail the request if curriculum update fails
+      }
+    }
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
