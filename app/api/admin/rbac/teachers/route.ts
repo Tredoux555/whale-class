@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Assign teacher role directly (admin session authenticated)
-    const supabase = getSupabaseClient();
+    // supabase is already declared above
     const { error: roleError } = await supabase
       .from('user_roles')
       .insert({
