@@ -3,13 +3,18 @@
 // =====================================================
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
-import { getCurrentUserId, requireAdmin } from '@/lib/permissions/middleware';
+import { getAdminSession } from '@/lib/auth';
 
 // GET: List all videos
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    await requireAdmin(userId);
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // all, approved, pending, missing
@@ -24,7 +29,7 @@ export async function GET(request: NextRequest) {
         curriculum_roadmap (
           work_name,
           area,
-          sub_category
+          stage
         )
       `)
       .order('relevance_score', { ascending: false });
@@ -55,8 +60,13 @@ export async function GET(request: NextRequest) {
 // PUT: Update video (approve/reject)
 export async function PUT(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    await requireAdmin(userId);
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const { videoId, isApproved, isActive } = await request.json();
 
@@ -76,7 +86,6 @@ export async function PUT(request: NextRequest) {
     if (typeof isApproved === 'boolean') {
       updateData.is_approved = isApproved;
       if (isApproved) {
-        updateData.approved_by = userId;
         updateData.approved_at = new Date().toISOString();
       }
     }
@@ -111,8 +120,13 @@ export async function PUT(request: NextRequest) {
 // DELETE: Remove video
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    await requireAdmin(userId);
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const videoId = searchParams.get('videoId');
