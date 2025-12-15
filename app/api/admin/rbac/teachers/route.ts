@@ -6,9 +6,8 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminSession } from '@/lib/auth';
 import {
-  getCurrentUserId,
-  requireAdmin,
   assignRole,
   getSupabaseClient,
 } from '@/lib/permissions/middleware';
@@ -18,8 +17,13 @@ import {
 // =====================================================
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    await requireAdmin(userId);
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const supabase = getSupabaseClient();
 
@@ -80,7 +84,7 @@ export async function GET(request: NextRequest) {
     console.error('Get teachers error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: error instanceof Error && error.message === 'Admin access required' ? 403 : 500 }
+      { status: 500 }
     );
   }
 }
@@ -90,8 +94,13 @@ export async function GET(request: NextRequest) {
 // =====================================================
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    await requireAdmin(userId);
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
     const { email, name, password } = body;
@@ -127,8 +136,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Assign teacher role
-    await assignRole(userId!, authData.user.id, 'teacher');
+    // Assign teacher role - use dummy admin ID
+    const adminUserId = 'admin-session';
+    await assignRole(adminUserId, authData.user.id, 'teacher');
 
     // Send password reset email if no password was provided
     if (!password) {
@@ -151,7 +161,7 @@ export async function POST(request: NextRequest) {
     console.error('Create teacher error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: error instanceof Error && error.message === 'Admin access required' ? 403 : 500 }
+      { status: 500 }
     );
   }
 }
@@ -165,4 +175,3 @@ export async function OPTIONS() {
     },
   });
 }
-
