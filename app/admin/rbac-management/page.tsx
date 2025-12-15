@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createSupabaseClient } from '@/lib/supabase';
 import type { UserRole, FeatureKey, PermissionLevel } from '@/lib/permissions/roles';
 import {
   ALL_PERMISSION_LEVELS,
@@ -57,7 +57,7 @@ export default function RBACManagementPage() {
   const [newTeacherPassword, setNewTeacherPassword] = useState('');
 
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     checkAdminAccess();
