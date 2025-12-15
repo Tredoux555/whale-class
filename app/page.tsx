@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { getProxyVideoUrl } from "@/lib/video-utils";
+import { setupMediaSessionForVideo } from "@/lib/video-playback-utils";
 
 interface Video {
   id: string;
@@ -223,6 +224,13 @@ export default function Home() {
         video.pause();
       }
     });
+
+    // Setup media session for lock screen controls
+    const currentVideo = videoRefs.current[videoId];
+    const videoData = videos.find(v => v.id === videoId);
+    if (currentVideo && videoData) {
+      setupMediaSessionForVideo(currentVideo, videoData.title, 'Whale Class');
+    }
   };
 
   const toggleRepeat = (videoId: string) => {
@@ -363,13 +371,21 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-[#4A90E2] to-[#2C5F7C] relative">
                   <video
                     ref={(el) => {
-                      if (el) videoRefs.current[video.id] = el;
+                      if (el) {
+                        videoRefs.current[video.id] = el;
+                        // Ensure proper attributes for background playback
+                        el.setAttribute('playsinline', 'true');
+                        el.setAttribute('webkit-playsinline', 'true');
+                        el.setAttribute('x-webkit-airplay', 'allow');
+                      }
                     }}
                     data-src={getProxyVideoUrl(video.videoUrl)}
                     controls
                     playsInline
                     webkit-playsinline="true"
                     x5-playsinline="true"
+                    playsinline
+                    x-webkit-airplay="allow"
                     className="w-full h-full object-cover"
                     preload="none"
                     loop={repeatModes[video.id] || false}

@@ -909,6 +909,9 @@ function SortableVideoItem({ video, onDelete }: { video: Video; onDelete: (id: s
           src={getProxyVideoUrl(video.videoUrl)}
           controls
           playsInline
+          webkit-playsinline="true"
+          playsinline
+          x-webkit-airplay="allow"
           className="w-full h-full object-cover"
           preload="metadata"
         >
