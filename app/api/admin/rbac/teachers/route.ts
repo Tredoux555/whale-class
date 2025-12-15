@@ -8,7 +8,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSession } from '@/lib/auth';
 import {
-  assignRole,
   getSupabaseClient,
 } from '@/lib/permissions/middleware';
 
