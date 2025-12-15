@@ -139,9 +139,6 @@ export const ActivityVideoSection: React.FC<ActivityVideoSectionProps> = ({
               src={uploadedUrl}
               controls
               playsInline
-              webkit-playsinline="true"
-              playsinline
-              x-webkit-airplay="allow"
               className="w-full h-full"
             />
           </div>
