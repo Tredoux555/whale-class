@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     let currentWorkDetails = null;
     if (progress.current_work) {
       currentWorkDetails = {
+        id: progress.current_work.id,
         sequence_order: progress.current_work.sequence_order,
         work_name: progress.current_work.work_name,
         area: progress.current_work.area,

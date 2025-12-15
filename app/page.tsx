@@ -283,13 +283,22 @@ export default function Home() {
                 <p className="text-sm opacity-90">Learning Videos</p>
               </div>
             </div>
-            <Link 
-              href="/admin/login"
-              prefetch={false}
-              className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Admin
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link 
+                href="/auth/teacher-login"
+                prefetch={false}
+                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Teacher Login
+              </Link>
+              <Link 
+                href="/admin/login"
+                prefetch={false}
+                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
       </header>

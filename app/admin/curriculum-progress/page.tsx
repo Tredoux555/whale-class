@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, Clock, TrendingUp, Award } from 'lucide-react';
+import { WorkVideoDisplay } from '@/components/WorkVideoDisplay';
+import type { CurriculumWork } from '@/lib/youtube/types';
 
 interface ProgressData {
   child_name: string;
@@ -11,6 +13,7 @@ interface ProgressData {
   stage_name: string;
   works_completed: number;
   current_work: {
+    id: string;
     sequence_order: number;
     work_name: string;
     area: string;
@@ -198,7 +201,16 @@ export default function CurriculumProgressPage() {
               </div>
             </div>
             <div className="p-6">
-              <p className="text-gray-700 text-lg">{progress.current_work.description}</p>
+              <p className="text-gray-700 text-lg mb-6">{progress.current_work.description}</p>
+              {/* Video Display */}
+              <WorkVideoDisplay 
+                work={{
+                  id: progress.current_work.id,
+                  work_name: progress.current_work.work_name,
+                  description: progress.current_work.description,
+                  area: progress.current_work.area,
+                } as CurriculumWork}
+              />
             </div>
           </div>
         )}
