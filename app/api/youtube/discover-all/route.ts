@@ -3,10 +3,20 @@
 // =====================================================
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
+import { getAdminSession } from '@/lib/auth';
 import { discoverVideosForAllWorks, getWorksNeedingDiscovery } from '@/lib/youtube/discovery';
 
 export async function POST(request: NextRequest) {
   try {
+    // Require admin authentication
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const { forceAll, minScore, autoApprove } = await request.json();
 
     const supabase = createClient();
@@ -69,6 +79,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    // Require admin authentication
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
     const supabase = createClient();
 
     const { data: stats, error } = await supabase
@@ -103,4 +122,3 @@ export async function GET() {
     );
   }
 }
-
