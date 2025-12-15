@@ -165,7 +165,7 @@ export async function getNextCurriculumWork(childId: string): Promise<Curriculum
 
     // 7. Check prerequisites (prerequisite_work_ids are sequence_order numbers)
     const completedSequenceOrders = await Promise.all(
-      position.completed_work_ids.map(async (workId) => {
+      position.completed_work_ids.map(async (workId: string) => {
         const { data: work } = await supabase
           .from('curriculum_roadmap')
           .select('sequence_order')
