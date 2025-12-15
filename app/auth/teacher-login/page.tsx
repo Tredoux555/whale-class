@@ -50,28 +50,30 @@ export default function TeacherLoginPage() {
         return;
       }
 
-      if (!data.user) {
+      if (!data.user || !data.session) {
         setError('Login failed');
         return;
       }
 
-      // Verify user has teacher role
-      // Use .maybeSingle() instead of .single() to avoid errors when no row exists
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role_name')
-        .eq('user_id', data.user.id)
-        .eq('role_name', 'teacher')
-        .maybeSingle();
+      // Verify user has teacher role via API endpoint (bypasses RLS issues)
+      const roleCheckResponse = await fetch('/api/auth/check-teacher-role', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${data.session.access_token}`,
+        },
+      });
 
-      if (roleError) {
-        console.error('Error checking teacher role:', roleError);
+      if (!roleCheckResponse.ok) {
+        const errorData = await roleCheckResponse.json().catch(() => ({}));
+        console.error('Error checking teacher role:', errorData);
         await supabase.auth.signOut();
-        setError(`Access denied. Error checking role: ${roleError.message}`);
+        setError(`Access denied. Error checking role: ${errorData.error || 'Unknown error'}`);
         return;
       }
 
-      if (!roleData) {
+      const roleCheckData = await roleCheckResponse.json();
+      
+      if (!roleCheckData.isTeacher) {
         // User is not a teacher
         await supabase.auth.signOut();
         setError('Access denied. This login is for teachers only. Please contact an administrator to assign you the teacher role.');
