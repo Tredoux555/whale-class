@@ -259,7 +259,7 @@ export async function checkPrerequisites(
 
     // Get completed sequence orders
     const completedWorks = await Promise.all(
-      position.completed_work_ids.map(async (completedId) => {
+      position.completed_work_ids.map(async (completedId: string) => {
         const { data: completedWork } = await supabase
           .from('curriculum_roadmap')
           .select('sequence_order, work_name')
