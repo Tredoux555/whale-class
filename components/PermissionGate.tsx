@@ -144,10 +144,24 @@ export function useUserPermissions() {
       setError(null);
       
       try {
-        const response = await fetch('/api/permissions/get-user-permissions');
+        // Get the current session from Supabase client
+        const supabase = createSupabaseClient();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+          throw new Error('Not authenticated');
+        }
+
+        // Pass the access token in the Authorization header
+        const response = await fetch('/api/permissions/get-user-permissions', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch permissions');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch permissions');
         }
 
         const data = await response.json();
