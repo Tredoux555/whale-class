@@ -7,18 +7,70 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPermissions } from '@/lib/permissions/middleware';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function GET(request: NextRequest) {
   try {
-    // Use Supabase auth helpers to get the user session from cookies
-    const cookieStore = await cookies();
-    
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      );
+    }
 
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Get cookies
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    
+    // Find Supabase auth cookie (format: sb-<project-ref>-auth-token)
+    let accessToken: string | undefined;
+    
+    // Check Authorization header first
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      accessToken = authHeader.replace('Bearer ', '');
+    } else {
+      // Look for Supabase session cookie
+      for (const cookie of allCookies) {
+        if (cookie.name.includes('sb-') && cookie.name.includes('auth-token')) {
+          try {
+            const sessionData = JSON.parse(cookie.value);
+            if (sessionData?.access_token) {
+              accessToken = sessionData.access_token;
+              break;
+            }
+          } catch {
+            // If not JSON, might be the token directly
+            if (cookie.value.length > 50) {
+              accessToken = cookie.value;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: 'Not authenticated', details: 'No valid session found' },
+        { status: 401 }
+      );
+    }
+
+    // Create Supabase client and verify user
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    // Get user from access token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
 
     if (authError || !user) {
       console.error('Auth error:', authError);
