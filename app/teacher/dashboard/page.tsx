@@ -85,14 +85,14 @@ export default function TeacherDashboard() {
 
   const getFeatureRoute = (featureKey: FeatureKey): string => {
     const routes: Record<FeatureKey, string> = {
-      three_part_card_generator: '/tools/three-part-cards',
-      curriculum_viewer: '/curriculum',
-      progress_dashboard: '/teacher/progress',
-      activity_management: '/teacher/activities',
-      report_generation: '/teacher/reports',
-      resource_library: '/resources',
-      lesson_planner: '/teacher/lessons',
-      student_management: '/teacher/students',
+      three_part_card_generator: '/admin/card-generator',
+      curriculum_viewer: '/admin/curriculum-progress',
+      progress_dashboard: '/admin/montessori/children',
+      activity_management: '/admin/montessori/activities',
+      report_generation: '/admin/montessori/reports',
+      resource_library: '/admin/materials',
+      lesson_planner: '/admin/circle-planner',
+      student_management: '/admin/montessori/children',
     };
     return routes[featureKey] || '/';
   };
