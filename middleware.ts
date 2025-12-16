@@ -72,12 +72,16 @@ export async function middleware(req: NextRequest) {
 
     const roles = userRoles?.map(r => r.role_name) || [];
 
-    // Admin routes - require admin or super_admin role
+    // Admin routes - require admin, super_admin, or teacher role
+    // Teachers can access admin pages if they have the appropriate permissions
+    // Individual pages will check permissions at the component level
     if (req.nextUrl.pathname.startsWith('/admin')) {
-      const hasAdminAccess = roles.some(role => role === 'admin' || role === 'super_admin');
+      const hasAdminAccess = roles.some(role => 
+        role === 'admin' || role === 'super_admin' || role === 'teacher'
+      );
       
       if (!hasAdminAccess) {
-        // Redirect non-admins to teacher dashboard
+        // Redirect non-admins/non-teachers to teacher dashboard
         return NextResponse.redirect(new URL('/teacher/dashboard', req.url));
       }
     }
