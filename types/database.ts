@@ -183,3 +183,106 @@ export interface ScoredActivity extends Activity {
   score: number;
   reasons: string[];
 }
+
+// =====================================================
+// VIDEO WATCH TRACKING TYPES
+// =====================================================
+
+export interface ChildVideoWatch {
+  id: string;
+  child_id: string;
+  curriculum_video_id: string;
+  curriculum_work_id: string;
+  watch_started_at: string; // ISO datetime string
+  watch_completed_at: string | null; // ISO datetime string
+  watch_duration_seconds: number;
+  video_duration_seconds: number | null;
+  watch_percentage: number | null; // 0-100
+  is_complete: boolean;
+  device_type: 'desktop' | 'mobile' | 'tablet' | 'unknown' | null;
+  created_at: string; // ISO datetime string
+  updated_at: string; // ISO datetime string
+}
+
+export interface CreateVideoWatchRequest {
+  childId: string;
+  curriculumVideoId: string;
+  curriculumWorkId: string;
+  watchStartedAt?: string;
+  watchCompletedAt?: string;
+  watchDurationSeconds: number;
+  videoDurationSeconds: number;
+  deviceType?: 'desktop' | 'mobile' | 'tablet' | 'unknown';
+}
+
+export interface UpdateVideoWatchRequest {
+  watchId: string;
+  watchDurationSeconds?: number;
+  watchCompletedAt?: string;
+  isComplete?: boolean;
+}
+
+export interface VideoWatchResponse {
+  success: true;
+  watchRecord: ChildVideoWatch;
+  workCompleted: boolean;
+  message: string;
+}
+
+export interface VideoWatchError {
+  success: false;
+  error: string;
+  details?: string;
+}
+
+export interface VideoWatchStats {
+  totalWatches: number;
+  completionRate: number;
+  averageWatchPercentage: number;
+  watchesByDevice: {
+    desktop: number;
+    mobile: number;
+    tablet: number;
+    unknown: number;
+  };
+  mostWatchedVideos: Array<{
+    video_id: string;
+    video_title: string;
+    watch_count: number;
+  }>;
+  childrenWithMostWatches: Array<{
+    child_id: string;
+    child_name: string;
+    watch_count: number;
+  }>;
+  recentWatches: Array<ChildVideoWatch & {
+    child_name: string;
+    video_title: string;
+    work_name: string;
+  }>;
+}
+
+export interface DashboardIssues {
+  videosWithoutWork: number;
+  childrenWithNoWatches: number;
+  watchesWithoutCompletion: number;
+  orphanedWatches: number;
+}
+
+export interface SchemaCheckResult {
+  tableExists: boolean;
+  columns: Array<{
+    name: string;
+    type: string;
+    exists: boolean;
+  }>;
+  indexes: Array<{
+    name: string;
+    exists: boolean;
+  }>;
+  rlsPolicies: Array<{
+    name: string;
+    exists: boolean;
+  }>;
+  allGood: boolean;
+}
