@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPermissions } from '@/lib/permissions/middleware';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
@@ -15,35 +15,28 @@ export async function GET(request: NextRequest) {
     // Use Supabase auth helpers to get the user session from cookies
     const cookieStore = await cookies();
     
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          },
-        },
-      }
-    );
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return NextResponse.json(
         { error: 'Not authenticated', details: authError?.message },
         { status: 401 }
       );
     }
 
+    console.log('User authenticated:', user.id);
+
     // Get user permissions using the user ID
     const permissions = await getUserPermissions(user.id);
+
+    console.log('Permissions fetched:', {
+      roles: permissions.roles,
+      featuresCount: permissions.features?.length || 0,
+    });
 
     return NextResponse.json(permissions);
   } catch (error) {
