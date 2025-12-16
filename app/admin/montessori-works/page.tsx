@@ -461,16 +461,13 @@ export default function MontessoriWorksPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <button
-                                onClick={() => toggleStatus(work)}
-                                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  work.status === 'completed'
-                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                    : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                                }`}
-                              >
-                                {work.status === 'completed' ? 'Completed' : 'In Progress'}
-                              </button>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                work.status === 'completed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {work.status === 'completed' ? '✅ Has Video' : '⏳ No Video'}
+                              </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
@@ -487,23 +484,7 @@ export default function MontessoriWorksPage() {
                                 ) : (
                                   <span className="text-gray-400 text-xs">No video</span>
                                 )}
-                                <label className="cursor-pointer">
-                                  <input
-                                    type="file"
-                                    accept="video/*"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) handleVideoUpload(work.id, file);
-                                    }}
-                                    disabled={uploadingVideo === work.id}
-                                  />
-                                  <Upload className={`w-4 h-4 ${
-                                    uploadingVideo === work.id
-                                      ? 'text-gray-400'
-                                      : 'text-blue-600 hover:text-blue-800'
-                                  }`} />
-                                </label>
+                                {/* Videos managed via Video Management page */}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -518,11 +499,17 @@ export default function MontessoriWorksPage() {
                               </a>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex justify-end gap-2">
-                                <span className="text-xs text-gray-500">
-                                  #{work.sequence_order || 'N/A'}
-                                </span>
-                                {/* Edit/Delete disabled - works come from curriculum roadmap */}
+                              <div className="flex flex-col items-end gap-1">
+                                {(work as any).stage && (
+                                  <span className="text-xs text-gray-500">
+                                    {(work as any).stage}
+                                  </span>
+                                )}
+                                {(work as any).age_min && (work as any).age_max && (
+                                  <span className="text-xs text-gray-400">
+                                    Age {(work as any).age_min}-{(work as any).age_max}
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>
