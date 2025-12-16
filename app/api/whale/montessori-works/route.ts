@@ -10,39 +10,82 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient();
     
+    // Fetch from curriculum_roadmap instead of montessori_works
     let query = supabase
-      .from('montessori_works')
-      .select('*')
-      .order('curriculum_area', { ascending: true })
-      .order('name', { ascending: true });
+      .from('curriculum_roadmap')
+      .select(`
+        id,
+        work_name,
+        area,
+        stage,
+        sequence_order,
+        description,
+        age_min,
+        age_max,
+        curriculum_videos!left (
+          id,
+          youtube_url,
+          title,
+          is_approved,
+          is_active
+        )
+      `)
+      .order('sequence_order', { ascending: true });
 
     // Apply filters
     if (search) {
-      query = query.ilike('name', `%${search}%`);
+      query = query.ilike('work_name', `%${search}%`);
     }
 
     if (area) {
-      query = query.eq('curriculum_area', area);
+      query = query.eq('area', area);
     }
 
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data, error } = await query;
+    const { data: roadmapData, error } = await query;
 
     if (error) {
-      console.error('Error fetching montessori works:', error);
+      console.error('Error fetching curriculum roadmap:', error);
       return NextResponse.json(
         { success: false, error: error.message },
         { status: 500 }
       );
     }
 
+    // Transform curriculum_roadmap data to match MontessoriWork interface
+    let works = (roadmapData || []).map((work: any) => {
+      // Get approved video URL if available
+      const approvedVideo = Array.isArray(work.curriculum_videos) 
+        ? work.curriculum_videos.find((v: any) => v.is_approved && v.is_active)
+        : null;
+      
+      // Determine status based on whether work has an approved video
+      const workStatus = approvedVideo ? 'completed' : 'in_progress';
+
+      return {
+        id: work.id,
+        name: work.work_name,
+        curriculum_area: work.area,
+        status: workStatus,
+        video_url: approvedVideo?.youtube_url || null,
+        sequence_order: work.sequence_order,
+        stage: work.stage,
+        description: work.description,
+        age_min: work.age_min,
+        age_max: work.age_max,
+        created_at: new Date().toISOString(), // Placeholder
+        updated_at: new Date().toISOString(), // Placeholder
+      };
+    });
+
+    // Filter by status if specified
+    if (status && status !== '' && status !== 'all') {
+      works = works.filter((work: any) => work.status === status);
+    }
+
     return NextResponse.json({
       success: true,
-      data: data || [],
-      count: data?.length || 0
+      data: works,
+      count: works.length
     });
 
   } catch (error) {

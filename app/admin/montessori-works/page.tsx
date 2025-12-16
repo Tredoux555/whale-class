@@ -246,7 +246,7 @@ export default function MontessoriWorksPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-blue-900 mb-2">Montessori Works Curriculum</h1>
-          <p className="text-blue-700">Manage instructional videos and curriculum materials</p>
+          <p className="text-blue-700">Complete curriculum roadmap with all 74 works - Videos managed via Video Management page</p>
         </div>
 
         {/* Search and Filters */}
@@ -288,22 +288,17 @@ export default function MontessoriWorksPage() {
               ))}
             </select>
 
-            {/* Add Button */}
-            <button
-              onClick={() => {
-                resetForm();
-                setShowForm(true);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              Add Work
-            </button>
+            {/* Info Button - Curriculum is read-only from roadmap */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center justify-center">
+              <p className="text-sm text-blue-800">
+                📚 Showing all 74 curriculum works from roadmap
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Form Modal */}
-        {showForm && (
+        {/* Form Modal - Disabled since works come from curriculum roadmap */}
+        {false && showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
@@ -453,7 +448,17 @@ export default function MontessoriWorksPage() {
                         {areaWorks.map(work => (
                           <tr key={work.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-500">
+                                #{(work as any).sequence_order || 'N/A'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm font-medium text-gray-900">{work.name}</div>
+                              {(work as any).description && (
+                                <div className="text-xs text-gray-500 mt-1 max-w-md">
+                                  {(work as any).description}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <button
@@ -514,18 +519,10 @@ export default function MontessoriWorksPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => handleEdit(work)}
-                                  className="text-blue-600 hover:text-blue-900"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(work.id)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <span className="text-xs text-gray-500">
+                                  #{work.sequence_order || 'N/A'}
+                                </span>
+                                {/* Edit/Delete disabled - works come from curriculum roadmap */}
                               </div>
                             </td>
                           </tr>
