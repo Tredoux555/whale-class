@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { getPool } from '@/lib/db';
+import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,13 +45,11 @@ export async function POST(request: NextRequest) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const pool = getPool();
-
     // If link code provided, verify it exists
     let existingChildId = null;
     if (linkCode) {
-      const childResult = await pool.query(
-        'SELECT id, first_name, last_name FROM children WHERE link_code = $1 AND active = true',
+      const childResult = await db.query(
+        'SELECT id, name FROM children WHERE link_code = $1 AND active_status = true',
         [linkCode.toUpperCase()]
       );
 
@@ -66,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate signup
-    const duplicateCheck = await pool.query(
+    const duplicateCheck = await db.query(
       `SELECT id FROM parent_signups 
        WHERE parent_email = $1 
        AND child_first_name = $2 
@@ -83,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert signup request
-    const result = await pool.query(
+    const result = await db.query(
       `INSERT INTO parent_signups (
         child_first_name,
         child_last_name,
