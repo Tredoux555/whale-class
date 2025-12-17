@@ -546,5 +546,5 @@ const SentenceBuilderGame: React.FC = () => {
     </div>
   );
 };
-  const [availableWords, setAvailableWords] = useState<string[]>([]);
-  const [builtWords, setBuiltWords] = useState<string[]>([]);
+
+export default SentenceBuilderGame;
