@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS parent_signups (
   -- Status tracking
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   admin_notes TEXT,
-  reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_by UUID, -- Admin reviewer ID (no foreign key since we use simple auth)
   reviewed_at TIMESTAMPTZ,
   
   -- Metadata
