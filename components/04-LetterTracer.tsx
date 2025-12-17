@@ -3,23 +3,14 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, RotateCcw, Save, Loader } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import {
-  initializeLetterProgress,
-  updateLetterProgress,
-  getLetterProgress,
-  getChildDetails
-} from '@/lib/db/letter-tracing';
-import { LetterTracingProgress } from '@/lib/types/letter-tracing';
+import { ChevronLeft, ChevronRight, Volume2, RotateCcw } from 'lucide-react';
 
 interface LetterTracerProps {
-  childId: string;
+  childId?: string;
   onComplete?: () => void;
 }
 
 const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
-  const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [currentLetter, setCurrentLetter] = useState('A');
@@ -28,11 +19,10 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
   const [tracePoints, setTracePoints] = useState<Array<{ x: number; y: number }>>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [childName, setChildName] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [currentProgress, setCurrentProgress] = useState<LetterTracingProgress | null>(null);
   const [accuracyScore, setAccuracyScore] = useState(0);
-  const [error, setError] = useState('');
+  
+  // Get childId from session if not provided as prop
+  const [effectiveChildId, setEffectiveChildId] = useState<string | undefined>(childId);
 
   const letterStrokes = {
     A: [
@@ -262,25 +252,20 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
 
   const canvas = canvasRef.current;
 
-  // Load child details and current progress
+  // Get childId from session if not provided
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const child = await getChildDetails(childId);
-        setChildName(child?.name || 'Student');
-
-        const progress = await getLetterProgress(childId, currentLetter);
-        setCurrentProgress(progress);
-      } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Failed to load student data');
+    if (!effectiveChildId) {
+      const session = localStorage.getItem('student_session');
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          setEffectiveChildId(parsed.childId);
+        } catch (err) {
+          console.error('Error parsing session:', err);
+        }
       }
-    };
-
-    if (childId && user) {
-      loadData();
     }
-  }, [childId, currentLetter, user]);
+  }, [effectiveChildId]);
 
   // Draw letter outline
   const drawOutline = (ctx: CanvasRenderingContext2D) => {
@@ -377,18 +362,6 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
     }
 
     await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Initialize letter progress if needed
-    if (user && !currentProgress) {
-      try {
-        await initializeLetterProgress(childId, user.id, currentLetter);
-        const updated = await getLetterProgress(childId, currentLetter);
-        setCurrentProgress(updated);
-      } catch (err) {
-        console.error('Error initializing progress:', err);
-      }
-    }
-
     setIsAnimating(false);
     setIsTracing(true);
   };
@@ -492,24 +465,32 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
     setTracePoints([]);
   };
 
-  // Save progress to database
+  // Save progress (simplified - can be extended later)
   const saveProgress = async () => {
-    if (!user || !isComplete) return;
-
-    setIsSaving(true);
+    if (!isComplete || !effectiveChildId) return;
+    
+    // Save progress via API if childId is available
     try {
-      await updateLetterProgress(childId, currentLetter, accuracyScore);
-      const updated = await getLetterProgress(childId, currentLetter);
-      setCurrentProgress(updated);
+      await fetch('/api/student/game-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameType: 'letter_tracer',
+          childId: effectiveChildId,
+          itemId: currentLetter,
+          completed: true,
+        }),
+      });
       
       setTimeout(() => {
         goToNextLetter();
       }, 1000);
     } catch (err) {
       console.error('Error saving progress:', err);
-      setError('Failed to save progress');
-    } finally {
-      setIsSaving(false);
+      // Still allow navigation even if save fails
+      setTimeout(() => {
+        goToNextLetter();
+      }, 1000);
     }
   };
 
@@ -550,46 +531,22 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
     speechSynthesis.speak(utterance);
   };
 
-  const getStatusColor = () => {
-    if (!currentProgress) return 'text-gray-500';
-    switch (currentProgress.status) {
-      case 5: return 'text-purple-600';
-      case 4: return 'text-emerald-600';
-      case 3: return 'text-green-600';
-      case 2: return 'text-yellow-600';
-      case 1: return 'text-blue-600';
-      default: return 'text-gray-500';
-    }
-  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
         
-        {/* Header with child name */}
+        {/* Header */}
         <div className="mb-4 pb-4 border-b-2 border-indigo-200">
-          <p className="text-sm text-gray-600">Learning with</p>
-          <h2 className="text-2xl font-bold text-indigo-600">{childName}</h2>
+          <h2 className="text-2xl font-bold text-indigo-600">Letter Tracer</h2>
         </div>
-
-        {/* Error display */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
 
         {/* Letter Display */}
         <div className="text-center mb-8">
           <h1 className="text-6xl font-bold text-indigo-600 mb-2">{currentLetter}</h1>
           <p className="text-gray-600 text-lg mb-2">
-            {isAnimating ? 'Watch the letter' : isComplete ? `Accuracy: ${accuracyScore}%` : 'Now your turn!'}
+            {isAnimating ? 'Watch the letter' : isComplete ? `Great job!` : 'Now your turn!'}
           </p>
-          {currentProgress && (
-            <p className={`text-sm font-semibold ${getStatusColor()}`}>
-              Best: {Math.round(currentProgress.best_attempt)}% • Attempts: {currentProgress.attempt_count}
-            </p>
-          )}
         </div>
 
         {/* Canvas */}
@@ -621,15 +578,9 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
           {isComplete && (
             <button
               onClick={saveProgress}
-              disabled={isSaving}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
             >
-              {isSaving ? (
-                <Loader size={20} className="animate-spin" />
-              ) : (
-                <Save size={20} />
-              )}
-              {isSaving ? 'Saving...' : 'Save & Continue'}
+              Continue to Next Letter
             </button>
           )}
 
