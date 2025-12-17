@@ -522,7 +522,6 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
     setIsComplete(false);
     setShowCelebration(false);
     setAccuracyScore(0);
-    setError('');
   };
 
   const playAudio = () => {
