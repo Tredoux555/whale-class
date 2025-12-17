@@ -7,6 +7,7 @@ import type { Child, DailyActivityAssignmentWithDetails, CurriculumArea } from '
 import ActivityHistory from './ActivityHistory';
 import ProgressVisualization from './ProgressVisualization';
 import { CurriculumVisualization } from './CurriculumVisualization';
+import StudentPasswordManager from './StudentPasswordManager';
 
 interface EnhancedChildDashboardProps {
   childId: string;
@@ -221,6 +222,14 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
           </div>
         </div>
       </div>
+
+      {/* Student Portal Password Manager */}
+      <StudentPasswordManager
+        childId={child.id}
+        childName={child.name}
+        hasPassword={!!child.login_password}
+        onPasswordSet={loadChildData}
+      />
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow">

@@ -23,6 +23,13 @@ export interface Child {
   parent_email?: string;
   parent_name?: string;
   notes?: string;
+  login_password?: string;
+  avatar_emoji?: string;
+  total_stars?: number;
+  total_badges?: number;
+  last_login_at?: string;
+  login_streak?: number;
+  last_streak_date?: string;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +43,8 @@ export interface CreateChildInput {
   parent_email?: string;
   parent_name?: string;
   notes?: string;
+  login_password?: string;
+  avatar_emoji?: string;
 }
 
 export interface UpdateChildInput {
@@ -47,6 +56,8 @@ export interface UpdateChildInput {
   parent_email?: string;
   parent_name?: string;
   notes?: string;
+  login_password?: string;
+  avatar_emoji?: string;
 }
 
 export interface SkillCategory {

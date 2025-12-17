@@ -44,11 +44,13 @@ export async function middleware(req: NextRequest) {
   // Public routes that don't require authentication
   const publicPaths = [
     '/auth/teacher-login',
+    '/auth/student-login',
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
     '/api/auth',
     '/api/story/auth',
+    '/api/student',
     '/story',
     '/', // Public homepage
   ];
