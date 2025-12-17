@@ -22,6 +22,7 @@ export interface Child {
   photo_url?: string;
   parent_email?: string;
   parent_name?: string;
+  parent_phone?: string;
   notes?: string;
   login_password?: string;
   avatar_emoji?: string;
@@ -30,6 +31,8 @@ export interface Child {
   last_login_at?: string;
   login_streak?: number;
   last_streak_date?: string;
+  signup_method?: 'admin' | 'parent_signup';
+  link_code?: string;
   created_at: string;
   updated_at: string;
 }
