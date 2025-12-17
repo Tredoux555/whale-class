@@ -45,6 +45,7 @@ export async function middleware(req: NextRequest) {
   const publicPaths = [
     '/auth/teacher-login',
     '/auth/student-login',
+    '/auth/student-signup',
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',

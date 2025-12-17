@@ -163,6 +163,19 @@ export default function StudentLoginPage() {
               </div>
             </form>
 
+            {/* Signup Link */}
+            <div className="text-center border-t pt-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Don't have an account yet?
+              </p>
+              <Link
+                href="/auth/student-signup"
+                className="inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-500 bg-indigo-50 px-4 py-2 rounded-lg transition"
+              >
+                📝 Register Your Child
+              </Link>
+            </div>
+
             {/* Reset Password Link */}
             <div className="text-center">
               <button
