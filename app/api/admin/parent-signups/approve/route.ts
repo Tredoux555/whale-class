@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
-import { verifyAuth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
-    const auth = await verifyAuth(request);
-    if (!auth || auth.role !== 'admin') {
+    const session = await getAdminSession();
+    if (!session || !session.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -20,18 +20,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pool = getPool();
-
     // Call the database function to approve signup
-    const result = await pool.query(
+    // Pass NULL for reviewer_id since we don't have user tracking in this simple auth
+    const result = await db.query(
       'SELECT approve_parent_signup($1, $2) as child_id',
-      [signupId, auth.userId]
+      [signupId, null]
     );
 
     const childId = result.rows[0].child_id;
 
     // Get the signup details for response
-    const signupResult = await pool.query(
+    const signupResult = await db.query(
       'SELECT * FROM parent_signups WHERE id = $1',
       [signupId]
     );
