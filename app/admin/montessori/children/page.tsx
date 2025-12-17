@@ -262,9 +262,18 @@ export default function ChildrenPage() {
                     <div>
                       <h3 className="font-bold text-[#2C5F7C] text-lg">{child.name}</h3>
                       <p className="text-sm text-[#2C5F7C]/70">Age Group: {child.age_group}</p>
-                      {!child.active_status && (
-                        <span className="text-xs text-red-600 font-semibold">Inactive</span>
-                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {!child.active_status && (
+                          <span className="text-xs text-red-600 font-semibold">Inactive</span>
+                        )}
+                        {child.login_password ? (
+                          <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
+                            <span>🔐</span> Portal Access
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-500">No portal access</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="text-sm text-[#2C5F7C]/70">
