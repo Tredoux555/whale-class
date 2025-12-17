@@ -285,6 +285,13 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Link 
+                href="/games"
+                prefetch={false}
+                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+              >
+                🎮 Games
+              </Link>
+              <Link 
                 href="/auth/student-login"
                 prefetch={false}
                 className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"

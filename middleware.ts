@@ -53,6 +53,7 @@ export async function middleware(req: NextRequest) {
     '/api/story/auth',
     '/api/student',
     '/story',
+    '/games', // Public games access
     '/', // Public homepage
   ];
 
