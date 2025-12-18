@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       pythonCommand = `python3 -c "
 import sys
 import json
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -105,10 +105,10 @@ def create_pdf(data_path, output_path):
     border_color = hex_to_rgb(data['borderColor'])
     show_timestamps = data['showTimestamps']
     
-    width, height = A4
+    width, height = landscape(A4)
     margin = 15 * mm
     
-    c = canvas.Canvas(output_path, pagesize=A4)
+    c = canvas.Canvas(output_path, pagesize=landscape(A4))
     
     if cards_per_page == 1:
         cols, rows = 1, 1
