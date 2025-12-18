@@ -4,13 +4,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
 
-// Custom exec with increased maxBuffer to handle large output
-const execAsync = (command: string, options?: { timeout?: number; maxBuffer?: number }) => {
-  return promisify(exec)(command, {
-    maxBuffer: options?.maxBuffer || 50 * 1024 * 1024, // 50MB buffer (default)
-    timeout: options?.timeout || 300000,
-  });
-};
+const execAsync = promisify(exec);
 
 const TEMP_DIR = '/tmp/flashcard-maker';
 
@@ -78,20 +72,37 @@ function parseVTT(vttContent: string): VTTCue[] {
 
 // Find lyric for a given timestamp
 function findLyricForTimestamp(cues: VTTCue[], timestamp: number): string | undefined {
-  // Find the cue that contains or is closest to this timestamp
+  // Find the cue that contains this timestamp
   const activeCue = cues.find(cue => timestamp >= cue.start && timestamp <= cue.end);
   if (activeCue) return activeCue.text;
   
-  // Find the nearest cue within 2 seconds
-  const nearestCue = cues.find(cue => 
-    Math.abs(cue.start - timestamp) < 2 || Math.abs(cue.end - timestamp) < 2
-  );
+  // Find the nearest cue within 3 seconds
+  let nearestCue: VTTCue | undefined;
+  let minDistance = Infinity;
+  
+  for (const cue of cues) {
+    const distanceToStart = Math.abs(cue.start - timestamp);
+    const distanceToEnd = Math.abs(cue.end - timestamp);
+    const distance = Math.min(distanceToStart, distanceToEnd);
+    
+    if (distance < minDistance && distance < 3) {
+      minDistance = distance;
+      nearestCue = cue;
+    }
+  }
+  
   return nearestCue?.text;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { filePath, sensitivity = 0.3, minInterval = 2, subtitles } = await request.json();
+    const { 
+      filePath, 
+      sensitivity = 0.3, 
+      minInterval = 2, 
+      subtitles,
+      targetFrames = 15 // Target number of frames (10-20 range)
+    } = await request.json();
 
     if (!filePath) {
       return NextResponse.json(
@@ -119,120 +130,202 @@ export async function POST(request: NextRequest) {
     await fs.mkdir(framesDir, { recursive: true });
 
     // Clean previous frames
-    const existingFiles = await fs.readdir(framesDir);
-    await Promise.all(
-      existingFiles.map(file => fs.unlink(path.join(framesDir, file)))
-    );
+    try {
+      const existingFiles = await fs.readdir(framesDir);
+      await Promise.all(
+        existingFiles.map(file => fs.unlink(path.join(framesDir, file)))
+      );
+    } catch {
+      // Directory might not exist yet
+    }
 
-    // Get video duration (redirect stderr to avoid buffer issues)
+    // Get video duration
     const { stdout: durationOutput } = await execAsync(
-      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}" 2>/dev/null`
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
     const duration = parseFloat(durationOutput.trim());
-
-    // Use FFmpeg scene detection filter
-    // The 'select' filter with scene detection outputs frames where scene changes
-    // threshold: 0 = most sensitive, 1 = least sensitive
-    // We invert the user's sensitivity so higher = fewer frames
-    const threshold = sensitivity;
     
-    // Extract scene change frames
-    // We use the select filter to detect scene changes and output those frames
-    // Write timestamps to a file to avoid buffer issues
-    const timestampFile = path.join(framesDir, 'timestamps.txt');
-    const ffmpegCommand = `ffmpeg -i "${filePath}" \
-      -vf "select='gt(scene,${threshold})',showinfo" \
-      -vsync vfr \
-      -frame_pts 1 \
-      -loglevel error \
-      "${framesDir}/frame_%04d.jpg" 2>&1 | grep -E "pts_time:" > "${timestampFile}" 2>/dev/null || touch "${timestampFile}"`;
+    console.log(`Video duration: ${duration}s, Target frames: ${targetFrames}, Sensitivity: ${sensitivity}`);
 
-    // Execute ffmpeg (output goes to file)
-    await execAsync(ffmpegCommand, { maxBuffer: 1024 * 1024 });
+    // STRATEGY: Use multiple methods to ensure we get enough frames
+    const allTimestamps: Set<number> = new Set();
 
-    // Read timestamps from file
-    let ffmpegOutput = '';
+    // Method 1: Scene detection with FFmpeg
+    // Lower threshold = more sensitive = more scene changes detected
+    const sceneThreshold = Math.max(0.05, sensitivity * 0.5); // Scale down for more detection
+    
     try {
-      ffmpegOutput = await fs.readFile(timestampFile, 'utf-8');
-      await fs.unlink(timestampFile).catch(() => {});
-    } catch {
-      // No timestamps file, will use fallback
+      const sceneCommand = `ffmpeg -i "${filePath}" -vf "select='gt(scene,${sceneThreshold})',showinfo" -vsync vfr -f null - 2>&1 | grep "pts_time"`;
+      const { stdout: sceneOutput } = await execAsync(sceneCommand, { timeout: 120000 });
+      
+      const ptsRegex = /pts_time:(\d+\.?\d*)/g;
+      let match;
+      while ((match = ptsRegex.exec(sceneOutput)) !== null) {
+        const ts = parseFloat(match[1]);
+        if (ts > 0.5 && ts < duration - 0.5) {
+          allTimestamps.add(Math.round(ts * 10) / 10); // Round to 0.1s precision
+        }
+      }
+      console.log(`Scene detection found ${allTimestamps.size} timestamps`);
+    } catch (e) {
+      console.log('Scene detection produced no results, using fallback methods');
     }
 
-    // Parse FFmpeg output to get timestamps
-    // showinfo filter outputs: pts_time:X.XXXXX
-    const timestampRegex = /pts_time:(\d+\.?\d*)/g;
-    const timestamps: number[] = [];
-    let match;
-    while ((match = timestampRegex.exec(ffmpegOutput)) !== null) {
-      timestamps.push(parseFloat(match[1]));
+    // Method 2: If scene detection didn't find enough, try with even lower threshold
+    if (allTimestamps.size < 10) {
+      try {
+        const lowerThreshold = 0.02;
+        const sceneCommand2 = `ffmpeg -i "${filePath}" -vf "select='gt(scene,${lowerThreshold})',showinfo" -vsync vfr -f null - 2>&1 | grep "pts_time"`;
+        const { stdout: sceneOutput2 } = await execAsync(sceneCommand2, { timeout: 120000 });
+        
+        const ptsRegex = /pts_time:(\d+\.?\d*)/g;
+        let match;
+        while ((match = ptsRegex.exec(sceneOutput2)) !== null) {
+          const ts = parseFloat(match[1]);
+          if (ts > 0.5 && ts < duration - 0.5) {
+            allTimestamps.add(Math.round(ts * 10) / 10);
+          }
+        }
+        console.log(`Lower threshold scene detection: now have ${allTimestamps.size} timestamps`);
+      } catch (e) {
+        console.log('Lower threshold scene detection failed');
+      }
     }
 
-    // Also capture first frame if not already included
-    if (timestamps.length === 0 || timestamps[0] > 1) {
-      await execAsync(
-        `ffmpeg -i "${filePath}" -ss 0 -vframes 1 -loglevel error "${framesDir}/frame_0000.jpg" -y 2>/dev/null`
-      );
-      timestamps.unshift(0);
+    // Method 3: Add evenly distributed timestamps to ensure minimum count
+    const minFrames = 10;
+    const maxFrames = 20;
+    
+    if (allTimestamps.size < minFrames) {
+      // Calculate interval to get target frames
+      const interval = duration / (targetFrames + 1);
+      for (let t = interval; t < duration - 0.5; t += interval) {
+        allTimestamps.add(Math.round(t * 10) / 10);
+      }
+      console.log(`Added evenly spaced frames: now have ${allTimestamps.size} timestamps`);
     }
+
+    // Always include first frame (after a brief moment)
+    allTimestamps.add(0.5);
+
+    // Convert to sorted array
+    let timestamps = Array.from(allTimestamps).sort((a, b) => a - b);
+    console.log(`Total timestamps before filtering: ${timestamps.length}`);
 
     // Filter by minimum interval
     const filteredTimestamps: number[] = [];
     let lastTimestamp = -minInterval;
-    for (const ts of timestamps.sort((a, b) => a - b)) {
+    
+    for (const ts of timestamps) {
       if (ts - lastTimestamp >= minInterval) {
         filteredTimestamps.push(ts);
         lastTimestamp = ts;
       }
     }
+    
+    console.log(`After min interval filter (${minInterval}s): ${filteredTimestamps.length} timestamps`);
 
-    // If we have too few frames, add evenly spaced ones
-    if (filteredTimestamps.length < 3) {
-      const interval = duration / 6;
-      for (let t = interval; t < duration - 1; t += interval) {
-        if (!filteredTimestamps.some(ts => Math.abs(ts - t) < minInterval)) {
-          filteredTimestamps.push(t);
+    // If still not enough after filtering, reduce the minimum interval and retry
+    let finalTimestamps = filteredTimestamps;
+    
+    if (finalTimestamps.length < minFrames) {
+      const reducedInterval = Math.max(1, minInterval / 2);
+      const refiltered: number[] = [];
+      let last = -reducedInterval;
+      
+      for (const ts of timestamps) {
+        if (ts - last >= reducedInterval) {
+          refiltered.push(ts);
+          last = ts;
         }
       }
-      filteredTimestamps.sort((a, b) => a - b);
+      finalTimestamps = refiltered;
+      console.log(`Re-filtered with ${reducedInterval}s interval: ${finalTimestamps.length} timestamps`);
     }
 
-    // If we have too many frames (>20), reduce
-    let finalTimestamps = filteredTimestamps;
-    if (filteredTimestamps.length > 20) {
-      const step = Math.ceil(filteredTimestamps.length / 20);
-      finalTimestamps = filteredTimestamps.filter((_, i) => i % step === 0);
+    // If STILL not enough, generate evenly spaced frames
+    if (finalTimestamps.length < minFrames) {
+      finalTimestamps = [];
+      const interval = duration / (targetFrames + 1);
+      for (let t = 0.5; t < duration - 0.5; t += interval) {
+        finalTimestamps.push(Math.round(t * 10) / 10);
+      }
+      console.log(`Generated ${finalTimestamps.length} evenly spaced frames as fallback`);
     }
+
+    // If too many, reduce by sampling
+    if (finalTimestamps.length > maxFrames) {
+      const step = Math.ceil(finalTimestamps.length / maxFrames);
+      finalTimestamps = finalTimestamps.filter((_, i) => i % step === 0);
+      console.log(`Reduced to ${finalTimestamps.length} frames`);
+    }
+
+    // Ensure we're in the 10-20 range
+    finalTimestamps = finalTimestamps.slice(0, maxFrames);
+    
+    console.log(`Final frame count: ${finalTimestamps.length}`);
+    console.log(`Timestamps: ${finalTimestamps.join(', ')}`);
 
     // Extract frames at final timestamps and convert to base64
     const frames = await Promise.all(
       finalTimestamps.map(async (timestamp, index) => {
-        const framePath = path.join(framesDir, `final_${index}.jpg`);
+        const framePath = path.join(framesDir, `frame_${index.toString().padStart(3, '0')}.jpg`);
         
-        // Extract frame at timestamp with high quality (suppress verbose output)
-        await execAsync(
-          `ffmpeg -ss ${timestamp} -i "${filePath}" -vframes 1 -q:v 2 -loglevel error "${framePath}" -y 2>/dev/null`
-        );
+        try {
+          // Extract frame at timestamp with high quality
+          // Using -q:v 2 for high quality JPEG (range 2-31, lower is better)
+          await execAsync(
+            `ffmpeg -ss ${timestamp} -i "${filePath}" -vframes 1 -q:v 2 -y "${framePath}"`,
+            { timeout: 30000 }
+          );
 
-        // Read and convert to base64
-        const imageBuffer = await fs.readFile(framePath);
-        const base64 = imageBuffer.toString('base64');
+          // Read and convert to base64
+          const imageBuffer = await fs.readFile(framePath);
+          const base64 = imageBuffer.toString('base64');
 
-        // Find matching lyric
-        const lyric = findLyricForTimestamp(subtitleCues, timestamp);
+          // Find matching lyric
+          const lyric = findLyricForTimestamp(subtitleCues, timestamp);
 
-        return {
-          timestamp,
-          imageData: `data:image/jpeg;base64,${base64}`,
-          lyric
-        };
+          return {
+            timestamp,
+            imageData: `data:image/jpeg;base64,${base64}`,
+            lyric
+          };
+        } catch (frameError) {
+          console.error(`Failed to extract frame at ${timestamp}:`, frameError);
+          return null;
+        }
       })
     );
 
-    // Cleanup frame files (keep video for re-processing)
-    await fs.rm(framesDir, { recursive: true, force: true });
+    // Filter out any failed extractions
+    const validFrames = frames.filter((f): f is NonNullable<typeof f> => f !== null);
+    
+    console.log(`Successfully extracted ${validFrames.length} frames`);
 
-    return NextResponse.json({ frames });
+    // Cleanup frame files
+    try {
+      await fs.rm(framesDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    if (validFrames.length === 0) {
+      return NextResponse.json(
+        { message: 'Failed to extract any frames from video' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ 
+      frames: validFrames,
+      debug: {
+        duration,
+        requestedTargetFrames: targetFrames,
+        actualFrameCount: validFrames.length,
+        timestamps: validFrames.map(f => f.timestamp)
+      }
+    });
 
   } catch (error) {
     console.error('Extraction error:', error);
@@ -242,4 +335,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

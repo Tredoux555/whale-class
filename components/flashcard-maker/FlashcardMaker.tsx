@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { FlashcardPreview } from './FlashcardPreview';
 import { FlashcardPDF } from './FlashcardPDF';
 
@@ -17,15 +17,16 @@ interface ProcessingStatus {
 }
 
 export function FlashcardMaker() {
-  const urlInputRef = useRef<HTMLInputElement>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [frames, setFrames] = useState<ExtractedFrame[]>([]);
   const [status, setStatus] = useState<ProcessingStatus>({
     stage: 'idle',
     progress: 0,
     message: ''
   });
-  const [sensitivity, setSensitivity] = useState(30); // Scene change threshold (0-100)
+  const [sensitivity, setSensitivity] = useState(20); // Scene change threshold (0-100), lower = more frames
   const [minInterval, setMinInterval] = useState(2); // Minimum seconds between captures
+  const [targetFrames, setTargetFrames] = useState(15); // Target number of frames
   const [includeLyrics, setIncludeLyrics] = useState(true);
   const [songTitle, setSongTitle] = useState('');
 
@@ -42,13 +43,6 @@ export function FlashcardMaker() {
   };
 
   const processVideo = async () => {
-    const youtubeUrl = urlInputRef.current?.value || '';
-    console.log('processVideo called, youtubeUrl:', youtubeUrl);
-    if (!youtubeUrl || youtubeUrl.trim() === '') {
-      setStatus({ stage: 'error', progress: 0, message: 'Please enter a YouTube URL' });
-      return;
-    }
-    
     const videoId = extractVideoId(youtubeUrl);
     if (!videoId) {
       setStatus({ stage: 'error', progress: 0, message: 'Invalid YouTube URL' });
@@ -74,7 +68,7 @@ export function FlashcardMaker() {
       setSongTitle(title || 'Untitled Song');
 
       // Stage 2: Extract frames with scene detection
-      setStatus({ stage: 'detecting', progress: 40, message: 'Detecting scene changes...' });
+      setStatus({ stage: 'detecting', progress: 40, message: 'Detecting scene changes and extracting frames...' });
       
       const extractRes = await fetch('/api/admin/flashcard-maker/extract', {
         method: 'POST',
@@ -83,6 +77,7 @@ export function FlashcardMaker() {
           filePath, 
           sensitivity: sensitivity / 100,
           minInterval,
+          targetFrames,
           subtitles: includeLyrics ? subtitles : null
         })
       });
@@ -92,7 +87,8 @@ export function FlashcardMaker() {
         throw new Error(error.message || 'Failed to extract frames');
       }
       
-      const { frames: extractedFrames } = await extractRes.json();
+      const { frames: extractedFrames, debug } = await extractRes.json();
+      console.log('Extraction debug info:', debug);
       setFrames(extractedFrames);
 
       // Stage 3: Complete
@@ -144,33 +140,51 @@ export function FlashcardMaker() {
               YouTube URL
             </label>
             <input
-              ref={urlInputRef}
               type="text"
-              defaultValue=""
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
               placeholder="https://www.youtube.com/watch?v=..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               disabled={isProcessing}
-              autoComplete="off"
             />
           </div>
 
           {/* Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
+            {/* Target Frames - NEW PRIMARY CONTROL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Frames: <span className="text-blue-600 font-bold">{targetFrames}</span>
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="20"
+                value={targetFrames}
+                onChange={(e) => setTargetFrames(Number(e.target.value))}
+                className="w-full accent-blue-500"
+                disabled={isProcessing}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                How many flashcards to generate
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Scene Sensitivity: {sensitivity}%
               </label>
               <input
                 type="range"
-                min="10"
-                max="70"
+                min="5"
+                max="50"
                 value={sensitivity}
                 onChange={(e) => setSensitivity(Number(e.target.value))}
                 className="w-full accent-blue-500"
                 disabled={isProcessing}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Lower = more frames, Higher = fewer frames
+                Lower = detect more changes
               </p>
             </div>
 
@@ -181,14 +195,15 @@ export function FlashcardMaker() {
               <input
                 type="range"
                 min="1"
-                max="10"
+                max="5"
+                step="0.5"
                 value={minInterval}
                 onChange={(e) => setMinInterval(Number(e.target.value))}
                 className="w-full accent-blue-500"
                 disabled={isProcessing}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Minimum seconds between captures
+                Seconds between captures
               </p>
             </div>
 
@@ -202,7 +217,7 @@ export function FlashcardMaker() {
                   disabled={isProcessing}
                 />
                 <span className="text-sm font-medium text-gray-700">
-                  Include lyrics (if available)
+                  Include lyrics
                 </span>
               </label>
             </div>
@@ -210,10 +225,10 @@ export function FlashcardMaker() {
 
           <button
             onClick={processVideo}
-            disabled={isProcessing}
+            disabled={!youtubeUrl || isProcessing}
             className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
           >
-            {isProcessing ? '⏳ Processing...' : '🎬 Generate Flashcards'}
+            {isProcessing ? '⏳ Processing...' : `🎬 Generate ~${targetFrames} Flashcards`}
           </button>
         </div>
       </div>
@@ -271,4 +286,3 @@ export function FlashcardMaker() {
     </div>
   );
 }
-
