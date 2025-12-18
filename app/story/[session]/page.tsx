@@ -104,11 +104,23 @@ export default function StoryViewer() {
     setUploadError('');
 
     try {
+      // Validate file before upload
+      const fileSizeMB = file.size / 1024 / 1024;
+      if (fileSizeMB > 50) {
+        setUploadError(`File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 50MB.`);
+        setIsUploadingMedia(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('author', username);
       
-      const messageType = file.type.startsWith('image/') ? 'image' : 'video';
+      // Auto-detect type (let server handle it if type is unclear)
+      const messageType = file.type.startsWith('image/') ? 'image' : 
+                         file.type.startsWith('video/') ? 'video' : 
+                         file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i) ? 'image' :
+                         file.name.match(/\.(mp4|webm|mov)$/i) ? 'video' : 'image';
       formData.append('type', messageType);
 
       const res = await fetch('/api/story/upload-media', {
@@ -117,6 +129,8 @@ export default function StoryViewer() {
         body: formData
       });
 
+      const responseData = await res.json();
+
       if (res.ok) {
         // Reload media
         await loadMedia();
@@ -124,12 +138,19 @@ export default function StoryViewer() {
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
+        // Clear any previous errors
+        setUploadError('');
       } else {
-        const error = await res.json();
-        setUploadError(error.error || 'Failed to upload file');
+        // Show detailed error message
+        const errorMsg = responseData.error || 'Failed to upload file';
+        const details = responseData.details ? ` (${responseData.details})` : '';
+        const hint = responseData.hint ? `\n\n${responseData.hint}` : '';
+        setUploadError(`${errorMsg}${details}${hint}`);
+        console.error('Upload error response:', responseData);
       }
     } catch (err) {
-      setUploadError('Upload failed');
+      const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+      setUploadError(`Network error: ${errorMsg}. Please check your connection and try again.`);
       console.error('Upload error:', err);
     } finally {
       setIsUploadingMedia(false);
@@ -308,9 +329,10 @@ export default function StoryViewer() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,.heic,.heif"
               onChange={handleFileUpload}
               disabled={isUploadingMedia}
+              capture="environment"
               className="block w-full text-sm text-gray-600
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-lg file:border-0
@@ -319,11 +341,22 @@ export default function StoryViewer() {
                 hover:file:bg-orange-100
                 disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            <p className="text-xs text-gray-500 mt-2">
+              Supported: JPEG, PNG, GIF, WebP, HEIC (iOS), MP4, WebM, MOV. Max size: 50MB
+            </p>
             {isUploadingMedia && (
-              <p className="text-sm text-blue-600 mt-2">Uploading...</p>
+              <div className="mt-2">
+                <p className="text-sm text-blue-600">Uploading... Please wait</p>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                  <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '50%' }}></div>
+                </div>
+              </div>
             )}
             {uploadError && (
-              <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700 font-semibold">Upload Failed</p>
+                <p className="text-xs text-red-600 mt-1 whitespace-pre-line">{uploadError}</p>
+              </div>
             )}
           </div>
 
