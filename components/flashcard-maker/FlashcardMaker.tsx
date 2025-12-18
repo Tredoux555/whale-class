@@ -148,20 +148,17 @@ export function FlashcardMaker() {
             </label>
             <input
               type="text"
+              key="youtube-url-input"
               value={youtubeUrl}
               onChange={(e) => {
                 const newValue = e.target.value;
                 console.log('Input onChange:', newValue);
                 setYoutubeUrl(newValue);
               }}
-              onInput={(e) => {
-                const newValue = (e.target as HTMLInputElement).value;
-                console.log('Input onInput:', newValue);
-                setYoutubeUrl(newValue);
-              }}
               placeholder="https://www.youtube.com/watch?v=..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               disabled={isProcessing}
+              autoComplete="off"
             />
           </div>
 
