@@ -31,7 +31,6 @@ export default function StoryViewer() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const [showMediaUpload, setShowMediaUpload] = useState(false);
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,42 +158,22 @@ export default function StoryViewer() {
   };
 
   const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number) => {
-    // First paragraph - make first 't' and 'c' clickable
-    if (paragraphIndex === 0) {
-      const firstParagraph = story?.paragraphs[0] || '';
-      const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
-      const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
-
-      if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
-        setIsDecoded(!isDecoded);
-        setIsEditing(false); // Close editor if open
-        return;
-      } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
-        setIsEditing(true);
-        setIsDecoded(false); // Close decoder if open
-        setMessageInput('');
-        setTimeout(() => {
-          paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
-        return;
-      }
-    }
+    if (paragraphIndex !== 0) return; // Only first paragraph interactive
     
-    // Last paragraph - make last letter clickable to reveal media upload
-    if (story && paragraphIndex === story.paragraphs.length - 1) {
-      const lastParagraph = story.paragraphs[story.paragraphs.length - 1];
-      const lastLetterIndex = lastParagraph.trim().length - 1;
-      
-      if (charIndex === lastLetterIndex) {
-        setShowMediaUpload(true);
-        // Scroll to media upload section
-        setTimeout(() => {
-          document.getElementById('media-upload-section')?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-          });
-        }, 100);
-      }
+    const firstParagraph = story?.paragraphs[0] || '';
+    const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
+    const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
+
+    if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
+      setIsDecoded(!isDecoded);
+      setIsEditing(false); // Close editor if open
+    } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
+      setIsEditing(true);
+      setIsDecoded(false); // Close decoder if open
+      setMessageInput('');
+      setTimeout(() => {
+        paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     }
   };
 
@@ -312,30 +291,6 @@ export default function StoryViewer() {
       );
     }
 
-    // Last paragraph - make last letter clickable
-    if (story && index === story.paragraphs.length - 1) {
-      const trimmedText = text.trim();
-      const lastLetterIndex = trimmedText.length - 1;
-      
-      return (
-        <p key={index} className="mb-6 leading-relaxed text-lg">
-          {trimmedText.split('').map((char, i) => {
-            const isLastLetter = i === lastLetterIndex;
-            return (
-              <span
-                key={i}
-                onClick={() => isLastLetter && handleLetterClick(char, i, index)}
-                className={isLastLetter ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
-                style={isLastLetter ? { textDecoration: 'none' } : {}}
-              >
-                {char}
-              </span>
-            );
-          })}
-        </p>
-      );
-    }
-
     // All other paragraphs - regular text
     return (
       <p key={index} className="mb-6 leading-relaxed text-lg">
@@ -361,12 +316,11 @@ export default function StoryViewer() {
           </div>
         </div>
 
-        {/* Media Upload Section - Hidden until last letter is clicked */}
-        {showMediaUpload && (
-          <div id="media-upload-section" className="bg-white rounded-lg shadow-xl p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              📷 Share Photos & Videos
-            </h2>
+        {/* Media Upload Section */}
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">
+            📷 Share Photos & Videos
+          </h2>
           <p className="text-sm text-gray-600 mb-4">
             Share a picture or video! It will automatically disappear after 7 days.
           </p>
@@ -435,8 +389,7 @@ export default function StoryViewer() {
               </div>
             </div>
           )}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
