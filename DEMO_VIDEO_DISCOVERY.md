@@ -290,3 +290,5 @@ After running discovery, you should see:
 3. Click "🔍 Discover Videos"
 4. Watch the magic happen! ✨
 
+
+

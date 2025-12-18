@@ -105,6 +105,23 @@ export async function POST(req: NextRequest) {
     fetch('http://127.0.0.1:7243/ingest/91fbd1cb-8360-4c57-81d6-ae1b9061d0d9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:58',message:'JWT created successfully',data:{hasToken:!!token},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
     // #endregion
 
+    // Log the login for admin tracking
+    try {
+      await db.query(
+        `INSERT INTO story_login_logs (username, session_id, ip_address, user_agent)
+         VALUES ($1, $2, $3, $4)`,
+        [
+          user.username,
+          token,
+          req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+          req.headers.get('user-agent') || 'unknown'
+        ]
+      );
+    } catch (logError) {
+      console.error('Failed to log login:', logError);
+      // Don't fail the login if logging fails
+    }
+
     return NextResponse.json({ session: token });
   } catch (error) {
     // #region agent log

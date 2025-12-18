@@ -51,8 +51,9 @@ export async function middleware(req: NextRequest) {
     '/auth/reset-password',
     '/api/auth',
     '/api/story/auth',
+    '/api/story/admin', // Admin authentication
     '/api/student',
-    '/story',
+    '/story', // Story system (has its own auth)
     '/games', // Public games access
     '/', // Public homepage
   ];

@@ -10,6 +10,15 @@ interface Story {
   messageAuthor: string | null;
 }
 
+interface MediaItem {
+  id: number;
+  message_type: 'image' | 'video';
+  media_url: string;
+  media_filename: string;
+  author: string;
+  created_at: string;
+}
+
 export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
@@ -19,7 +28,11 @@ export default function StoryViewer() {
   const [messageInput, setMessageInput] = useState('');
   const [username, setUsername] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check if session exists
@@ -59,9 +72,67 @@ export default function StoryViewer() {
       const data = await res.json();
       setStory(data.story);
       setUsername(data.username);
+      
+      // Load media
+      loadMedia();
     } catch (err) {
       console.error('Error loading story:', err);
       router.push('/story');
+    }
+  };
+
+  const loadMedia = async () => {
+    try {
+      const res = await fetch('/api/story/current-media', {
+        headers: { 'Authorization': `Bearer ${params.session}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setMediaItems(data.media);
+      }
+    } catch (err) {
+      console.error('Error loading media:', err);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingMedia(true);
+    setUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('author', username);
+      
+      const messageType = file.type.startsWith('image/') ? 'image' : 'video';
+      formData.append('type', messageType);
+
+      const res = await fetch('/api/story/upload-media', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${params.session}` },
+        body: formData
+      });
+
+      if (res.ok) {
+        // Reload media
+        await loadMedia();
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } else {
+        const error = await res.json();
+        setUploadError(error.error || 'Failed to upload file');
+      }
+    } catch (err) {
+      setUploadError('Upload failed');
+      console.error('Upload error:', err);
+    } finally {
+      setIsUploadingMedia(false);
     }
   };
 
@@ -209,16 +280,82 @@ export default function StoryViewer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
-          {story.title}
-        </h1>
-        <div className="prose prose-lg max-w-none">
-          {story.paragraphs.map((paragraph, index) => (
-            <div key={index}>
-              {renderParagraph(paragraph, index)}
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Story Content */}
+        <div className="bg-white rounded-lg shadow-xl p-12">
+          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
+            {story.title}
+          </h1>
+          <div className="prose prose-lg max-w-none">
+            {story.paragraphs.map((paragraph, index) => (
+              <div key={index}>
+                {renderParagraph(paragraph, index)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Media Upload Section */}
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">
+            📷 Share Photos & Videos
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Share a picture or video! It will automatically disappear after 7 days.
+          </p>
+          
+          <div className="mb-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileUpload}
+              disabled={isUploadingMedia}
+              className="block w-full text-sm text-gray-600
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-lg file:border-0
+                file:text-sm file:font-semibold
+                file:bg-orange-50 file:text-orange-700
+                hover:file:bg-orange-100
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {isUploadingMedia && (
+              <p className="text-sm text-blue-600 mt-2">Uploading...</p>
+            )}
+            {uploadError && (
+              <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+            )}
+          </div>
+
+          {/* Display Current Media */}
+          {mediaItems.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-700">Current Photos & Videos:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mediaItems.map((item) => (
+                  <div key={item.id} className="border rounded-lg p-4 bg-gray-50">
+                    {item.message_type === 'image' ? (
+                      <img 
+                        src={item.media_url} 
+                        alt={item.media_filename}
+                        className="w-full h-48 object-cover rounded-lg mb-2"
+                      />
+                    ) : (
+                      <video 
+                        src={item.media_url} 
+                        controls
+                        className="w-full h-48 rounded-lg mb-2"
+                      />
+                    )}
+                    <div className="text-xs text-gray-600">
+                      <div className="font-semibold">{item.author}</div>
+                      <div>{new Date(item.created_at).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
