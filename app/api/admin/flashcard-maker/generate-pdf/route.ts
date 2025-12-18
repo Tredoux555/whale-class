@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import PDFDocument from 'pdfkit';
+import { jsPDF } from 'jspdf';
 
 interface ExtractedFrame {
   timestamp: number;
@@ -15,23 +15,10 @@ interface PDFRequest {
   showTimestamps: boolean;
 }
 
-// A4 dimensions in points (72 points per inch)
-const A4_WIDTH = 595.28;
-const A4_HEIGHT = 841.89;
-const MARGIN = 40;
-
-// Convert hex color to RGB
-function hexToRGB(hex: string): [number, number, number] {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (result) {
-    return [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16)
-    ];
-  }
-  return [6, 182, 212]; // Default cyan
-}
+// A4 dimensions in mm
+const A4_WIDTH = 210;
+const A4_HEIGHT = 297;
+const MARGIN = 10;
 
 // Format timestamp for display
 function formatTimestamp(seconds: number): string {
@@ -52,10 +39,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rgb = hexToRGB(borderColor);
-    const borderWidth = cardsPerPage === 1 ? 12 : cardsPerPage === 2 ? 8 : 6;
-    const cornerRadius = cardsPerPage === 1 ? 20 : cardsPerPage === 2 ? 15 : 10;
-    const fontSize = cardsPerPage === 1 ? 28 : cardsPerPage === 2 ? 20 : 14;
+    // Create PDF
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const borderWidth = cardsPerPage === 1 ? 3 : cardsPerPage === 2 ? 2 : 1.5;
+    const cornerRadius = cardsPerPage === 1 ? 5 : cardsPerPage === 2 ? 4 : 3;
+    const fontSize = cardsPerPage === 1 ? 16 : cardsPerPage === 2 ? 12 : 8;
 
     // Calculate card dimensions based on cards per page
     const availableWidth = A4_WIDTH - (MARGIN * 2);
@@ -78,42 +71,29 @@ export async function POST(request: NextRequest) {
       case 2:
         cols = 1;
         rows = 2;
-        gap = 20;
+        gap = 5;
         cardWidth = availableWidth;
         cardHeight = (availableHeight - gap) / 2;
         break;
       case 4:
         cols = 2;
         rows = 2;
-        gap = 15;
+        gap = 4;
         cardWidth = (availableWidth - gap) / 2;
         cardHeight = (availableHeight - gap) / 2;
         break;
     }
 
-    // Create PDF
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: MARGIN,
-      info: {
-        Title: `${songTitle} Flashcards`,
-        Author: 'Whale Montessori - Flashcard Maker',
-        Subject: 'Song Flashcards for Kindergarten'
-      }
-    });
-
-    // Collect PDF chunks
-    const chunks: Buffer[] = [];
-    doc.on('data', (chunk) => chunks.push(chunk));
-
     // Process frames
     let frameIndex = 0;
     const cardsOnPage = cardsPerPage;
+    let pageNum = 0;
 
     while (frameIndex < frames.length) {
-      if (frameIndex > 0) {
+      if (pageNum > 0) {
         doc.addPage();
       }
+      pageNum++;
 
       // Draw cards on this page
       for (let cardNum = 0; cardNum < cardsOnPage && frameIndex < frames.length; cardNum++) {
@@ -126,107 +106,91 @@ export async function POST(request: NextRequest) {
         const y = MARGIN + (row * (cardHeight + gap));
 
         // Draw rounded rectangle border
-        doc.save();
+        // Parse border color
+        const hex = borderColor.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
         
-        // Border background (colored)
-        doc.roundedRect(x, y, cardWidth, cardHeight, cornerRadius)
-           .fillColor(rgb)
-           .fill();
+        doc.setDrawColor(r, g, b);
+        doc.setLineWidth(borderWidth);
+        doc.roundedRect(x, y, cardWidth, cardHeight, cornerRadius, cornerRadius);
 
-        // Inner white area (smaller by border width)
-        const innerX = x + borderWidth;
-        const innerY = y + borderWidth;
-        const innerWidth = cardWidth - (borderWidth * 2);
-        const innerHeight = cardHeight - (borderWidth * 2);
+        // Calculate image dimensions (maintain aspect ratio, fit within card)
+        const imagePadding = borderWidth + 5;
+        const imageMaxWidth = cardWidth - (imagePadding * 2);
+        const imageMaxHeight = frame.lyric 
+          ? cardHeight - (imagePadding * 2) - 20 // Leave space for text
+          : cardHeight - (imagePadding * 2);
         
-        doc.roundedRect(innerX, innerY, innerWidth, innerHeight, cornerRadius - 4)
-           .fillColor('white')
-           .fill();
-
-        // Calculate image area (16:9 aspect ratio)
-        const imagePadding = borderWidth + 8;
         const imageX = x + imagePadding;
         const imageY = y + imagePadding;
-        const imageWidth = cardWidth - (imagePadding * 2);
-        
-        // Calculate text area
-        const textAreaHeight = frame.lyric ? (cardsPerPage === 1 ? 80 : cardsPerPage === 2 ? 60 : 40) : 0;
-        const imageHeight = (cardHeight - (imagePadding * 2) - textAreaHeight) * 0.95;
 
-        // Embed image (convert base64 to buffer)
-        if (frame.imageData) {
-          const base64Data = frame.imageData.replace(/^data:image\/\w+;base64,/, '');
-          const imageBuffer = Buffer.from(base64Data, 'base64');
-          
-          doc.image(imageBuffer, imageX, imageY, {
-            width: imageWidth,
-            height: imageHeight,
-            fit: [imageWidth, imageHeight],
-            align: 'center',
-            valign: 'center'
-          });
+        // Add image
+        try {
+          doc.addImage(
+            frame.imageData,
+            'JPEG',
+            imageX,
+            imageY,
+            imageMaxWidth,
+            imageMaxHeight,
+            undefined,
+            'FAST'
+          );
+        } catch (error) {
+          console.error('Error adding image:', error);
         }
 
         // Draw lyric text
         if (frame.lyric) {
-          const textY = imageY + imageHeight + 10;
-          const textHeight = cardHeight - imagePadding - imageHeight - 20;
+          const textY = imageY + imageMaxHeight + 5;
           
-          doc.fillColor('#1f2937')
-             .fontSize(fontSize)
-             .font('Helvetica-Bold')
-             .text(frame.lyric, imageX, textY, {
-               width: imageWidth,
-               height: textHeight,
-               align: 'center',
-               lineGap: 4
-             });
+          doc.setFontSize(fontSize);
+          doc.setTextColor(31, 41, 55); // #1f2937
+          
+          // Center text
+          const textWidth = cardWidth - (imagePadding * 2);
+          const lines = doc.splitTextToSize(frame.lyric, textWidth);
+          const textX = x + imagePadding + (textWidth / 2);
+          
+          doc.text(lines, textX, textY, { align: 'center', maxWidth: textWidth });
         }
 
         // Draw timestamp if enabled
         if (showTimestamps) {
-          const timestampSize = cardsPerPage === 1 ? 12 : 10;
-          doc.fillColor('#9ca3af')
-             .fontSize(timestampSize)
-             .font('Helvetica')
-             .text(
-               formatTimestamp(frame.timestamp),
-               x + cardWidth - 50 - borderWidth,
-               y + cardHeight - 20 - borderWidth,
-               { width: 50, align: 'right' }
-             );
+          const timestampSize = cardsPerPage === 1 ? 8 : 6;
+          doc.setFontSize(timestampSize);
+          doc.setTextColor(156, 163, 175); // #9ca3af
+          
+          const timestamp = formatTimestamp(frame.timestamp);
+          doc.text(
+            timestamp,
+            x + cardWidth - imagePadding,
+            y + cardHeight - imagePadding,
+            { align: 'right' }
+          );
         }
 
-        doc.restore();
         frameIndex++;
       }
 
-      // Add page number
-      doc.fillColor('#9ca3af')
-         .fontSize(10)
-         .text(
-           `${songTitle} - Page ${Math.ceil(frameIndex / cardsPerPage)}`,
-           MARGIN,
-           A4_HEIGHT - 30,
-           { width: A4_WIDTH - (MARGIN * 2), align: 'center' }
-         );
+      // Add page footer
+      doc.setFontSize(8);
+      doc.setTextColor(156, 163, 175);
+      doc.text(
+        `${songTitle} - Page ${pageNum}`,
+        A4_WIDTH / 2,
+        A4_HEIGHT - 5,
+        { align: 'center' }
+      );
     }
 
-    // Finalize PDF
-    doc.end();
-
-    // Wait for PDF generation to complete
-    const pdfBuffer = await new Promise<Buffer>((resolve) => {
-      doc.on('end', () => {
-        resolve(Buffer.concat(chunks));
-      });
-    });
-
-    // Convert Buffer to Uint8Array for Response compatibility
-    const uint8Array = new Uint8Array(pdfBuffer);
+    // Generate PDF as buffer
+    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
 
     // Return PDF as download
-    return new Response(uint8Array, {
+    return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${songTitle.replace(/[^a-z0-9]/gi, '_')}_flashcards.pdf"`,
@@ -242,4 +206,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
