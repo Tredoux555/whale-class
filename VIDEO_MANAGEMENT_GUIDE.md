@@ -202,3 +202,5 @@ Once approved, videos automatically appear on curriculum work pages:
 
 The video management dashboard is now set up and ready to use. Start by clicking "🔍 Discover Videos" to find videos for all your curriculum works!
 
+
+

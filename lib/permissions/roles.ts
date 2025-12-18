@@ -552,3 +552,5 @@ export function getCategoryBadgeColor(category: FeatureCategory): string {
   return colors[category];
 }
 
+
+

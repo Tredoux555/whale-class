@@ -33,6 +33,18 @@ export async function POST(req: NextRequest) {
 
     const weekStartDate = monday.toISOString().split('T')[0];
 
+    // Save to message history (permanent record for admin)
+    // Messages expire after 7 days from public view but stay in history
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await db.query(
+      `INSERT INTO story_message_history 
+       (week_start_date, message_type, message_content, author, expires_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [weekStartDate, 'text', message, author, expiresAt]
+    );
+
     // Update the story with the new hidden message
     // This OVERWRITES any previous message (no history)
     const result = await db.query(
