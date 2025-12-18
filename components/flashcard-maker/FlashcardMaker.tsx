@@ -17,7 +17,7 @@ interface ProcessingStatus {
 }
 
 export function FlashcardMaker() {
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const [frames, setFrames] = useState<ExtractedFrame[]>([]);
   const [status, setStatus] = useState<ProcessingStatus>({
     stage: 'idle',
@@ -28,14 +28,6 @@ export function FlashcardMaker() {
   const [minInterval, setMinInterval] = useState(2); // Minimum seconds between captures
   const [includeLyrics, setIncludeLyrics] = useState(true);
   const [songTitle, setSongTitle] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Sync input value with state (for React 19 compatibility)
-  useEffect(() => {
-    if (inputRef.current && inputRef.current.value !== youtubeUrl) {
-      inputRef.current.value = youtubeUrl;
-    }
-  }, [youtubeUrl]);
 
   const extractVideoId = (url: string): string | null => {
     const patterns = [
@@ -50,20 +42,14 @@ export function FlashcardMaker() {
   };
 
   const processVideo = async () => {
-    // Get current value from input ref if state is empty (React 19 fallback)
-    const currentUrl = inputRef.current?.value || youtubeUrl;
-    
-    if (!currentUrl || currentUrl.trim() === '') {
+    const youtubeUrl = urlInputRef.current?.value || '';
+    console.log('processVideo called, youtubeUrl:', youtubeUrl);
+    if (!youtubeUrl || youtubeUrl.trim() === '') {
       setStatus({ stage: 'error', progress: 0, message: 'Please enter a YouTube URL' });
       return;
     }
     
-    // Update state from input if needed
-    if (currentUrl !== youtubeUrl) {
-      setYoutubeUrl(currentUrl);
-    }
-    
-    const videoId = extractVideoId(currentUrl);
+    const videoId = extractVideoId(youtubeUrl);
     if (!videoId) {
       setStatus({ stage: 'error', progress: 0, message: 'Invalid YouTube URL' });
       return;
@@ -158,18 +144,9 @@ export function FlashcardMaker() {
               YouTube URL
             </label>
             <input
-              ref={inputRef}
+              ref={urlInputRef}
               type="text"
-              defaultValue={youtubeUrl}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                console.log('Input onChange:', newValue);
-                setYoutubeUrl(newValue);
-              }}
-              onBlur={(e) => {
-                // Ensure state is synced on blur
-                setYoutubeUrl(e.target.value);
-              }}
+              defaultValue=""
               placeholder="https://www.youtube.com/watch?v=..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               disabled={isProcessing}
@@ -233,7 +210,7 @@ export function FlashcardMaker() {
 
           <button
             onClick={processVideo}
-            disabled={(!youtubeUrl && !inputRef.current?.value) || isProcessing}
+            disabled={isProcessing}
             className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
           >
             {isProcessing ? '⏳ Processing...' : '🎬 Generate Flashcards'}

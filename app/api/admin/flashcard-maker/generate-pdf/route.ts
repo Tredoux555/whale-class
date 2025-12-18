@@ -126,15 +126,29 @@ export async function POST(request: NextRequest) {
         const imageX = x + imagePadding;
         const imageY = y + imagePadding;
 
-        // Add image
+        // Add image - assume 16:9 aspect ratio for YouTube videos
         try {
+          const aspectRatio = 16 / 9;
+          let imgWidth = imageMaxWidth;
+          let imgHeight = imgWidth / aspectRatio;
+          
+          // If height exceeds max, scale down by height
+          if (imgHeight > imageMaxHeight) {
+            imgHeight = imageMaxHeight;
+            imgWidth = imgHeight * aspectRatio;
+          }
+          
+          // Center the image
+          const imgX = imageX + (imageMaxWidth - imgWidth) / 2;
+          const imgY = imageY + (imageMaxHeight - imgHeight) / 2;
+          
           doc.addImage(
             frame.imageData,
             'JPEG',
-            imageX,
-            imageY,
-            imageMaxWidth,
-            imageMaxHeight,
+            imgX,
+            imgY,
+            imgWidth,
+            imgHeight,
             undefined,
             'FAST'
           );
