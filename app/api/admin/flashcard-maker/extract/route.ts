@@ -5,9 +5,9 @@ import path from 'path';
 import fs from 'fs/promises';
 
 // Custom exec with increased maxBuffer to handle large output
-const execAsync = (command: string, options?: { timeout?: number }) => {
+const execAsync = (command: string, options?: { timeout?: number; maxBuffer?: number }) => {
   return promisify(exec)(command, {
-    maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+    maxBuffer: options?.maxBuffer || 50 * 1024 * 1024, // 50MB buffer (default)
     timeout: options?.timeout || 300000,
   });
 };
@@ -138,15 +138,26 @@ export async function POST(request: NextRequest) {
     
     // Extract scene change frames
     // We use the select filter to detect scene changes and output those frames
-    // Redirect stderr to stdout but limit output to avoid buffer issues
+    // Write timestamps to a file to avoid buffer issues
+    const timestampFile = path.join(framesDir, 'timestamps.txt');
     const ffmpegCommand = `ffmpeg -i "${filePath}" \
       -vf "select='gt(scene,${threshold})',showinfo" \
       -vsync vfr \
       -frame_pts 1 \
       -loglevel error \
-      "${framesDir}/frame_%04d.jpg" 2>&1 | grep -E "pts_time:" || true`;
+      "${framesDir}/frame_%04d.jpg" 2>&1 | grep -E "pts_time:" > "${timestampFile}" 2>/dev/null || touch "${timestampFile}"`;
 
-    const { stdout: ffmpegOutput } = await execAsync(ffmpegCommand);
+    // Execute ffmpeg (output goes to file)
+    await execAsync(ffmpegCommand, { maxBuffer: 1024 * 1024 });
+
+    // Read timestamps from file
+    let ffmpegOutput = '';
+    try {
+      ffmpegOutput = await fs.readFile(timestampFile, 'utf-8');
+      await fs.unlink(timestampFile).catch(() => {});
+    } catch {
+      // No timestamps file, will use fallback
+    }
 
     // Parse FFmpeg output to get timestamps
     // showinfo filter outputs: pts_time:X.XXXXX

@@ -5,9 +5,9 @@ import path from 'path';
 import fs from 'fs/promises';
 
 // Custom exec with increased maxBuffer to handle large output
-const execAsync = (command: string, options?: { timeout?: number }) => {
+const execAsync = (command: string, options?: { timeout?: number; maxBuffer?: number }) => {
   return promisify(exec)(command, {
-    maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+    maxBuffer: options?.maxBuffer || 50 * 1024 * 1024, // 50MB buffer (default)
     timeout: options?.timeout || 300000,
   });
 };
@@ -63,7 +63,9 @@ export async function POST(request: NextRequest) {
     // -f: format selection (best quality under 720p for reasonable file size)
     // --write-auto-sub: download auto-generated subtitles
     // --sub-lang: prefer English subtitles
-    // Redirect verbose output to /dev/null to avoid maxBuffer issues
+    // Use --no-progress and --quiet to minimize output
+    // Write JSON to temp file instead of stdout to avoid buffer issues
+    const jsonPath = path.join(TEMP_DIR, `${videoId}_info.json`);
     const ytdlpCommand = `yt-dlp \
       -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
       --merge-output-format mp4 \
@@ -71,17 +73,36 @@ export async function POST(request: NextRequest) {
       --sub-lang en \
       --convert-subs vtt \
       --quiet \
+      --no-progress \
       --no-warnings \
+      --dump-json \
       -o "${outputPath}" \
-      --print-json \
-      "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`;
+      "https://www.youtube.com/watch?v=${videoId}" > "${jsonPath}" 2>/dev/null || true`;
 
-    const { stdout } = await execAsync(ytdlpCommand);
+    // Execute download (output goes to file, not stdout)
+    await execAsync(ytdlpCommand, { maxBuffer: 1024 * 1024 }); // Small buffer since output is minimal
 
-    // Parse yt-dlp JSON output for video info
-    const lines = stdout.trim().split('\n');
-    const jsonLine = lines.find(line => line.startsWith('{'));
-    const info = jsonLine ? JSON.parse(jsonLine) : {};
+    // Read JSON from file
+    let info = {};
+    try {
+      const jsonContent = await fs.readFile(jsonPath, 'utf-8');
+      info = JSON.parse(jsonContent.trim());
+      // Clean up JSON file
+      await fs.unlink(jsonPath).catch(() => {});
+    } catch {
+      // If JSON read fails, try to get info separately
+      try {
+        const { stdout: infoJson } = await execAsync(
+          `yt-dlp --dump-json --quiet --no-warnings "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`,
+          { maxBuffer: 5 * 1024 * 1024 }
+        );
+        info = JSON.parse(infoJson.trim());
+      } catch {
+        info = { title: 'Downloaded Video' };
+      }
+    }
+
+    // Info already parsed above
 
     // Check for subtitles
     let subtitles = null;
