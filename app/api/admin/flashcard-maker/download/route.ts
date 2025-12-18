@@ -70,8 +70,6 @@ export async function POST(request: NextRequest) {
     // --write-auto-sub: download auto-generated subtitles
     // --sub-lang: prefer English subtitles
     // Use --no-progress and --quiet to minimize output
-    // Write JSON to temp file instead of stdout to avoid buffer issues
-    const jsonPath = path.join(TEMP_DIR, `${videoId}_info.json`);
     const ytdlpCommand = `yt-dlp \
       -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
       --merge-output-format mp4 \
@@ -81,31 +79,22 @@ export async function POST(request: NextRequest) {
       --quiet \
       --no-progress \
       --no-warnings \
-      --dump-json \
       -o "${outputPath}" \
-      "https://www.youtube.com/watch?v=${videoId}" > "${jsonPath}" 2>/dev/null || true`;
+      "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null || true`;
 
-    // Execute download (output goes to file, not stdout)
-    await execAsync(ytdlpCommand, { maxBuffer: 1024 * 1024 }); // Small buffer since output is minimal
+    // Execute download
+    await execAsync(ytdlpCommand, { maxBuffer: 1024 * 1024, timeout: 120000 }); // 2 minute timeout
 
-    // Read JSON from file
+    // Get video info separately
     let info: VideoInfo = {};
     try {
-      const jsonContent = await fs.readFile(jsonPath, 'utf-8');
-      info = JSON.parse(jsonContent.trim()) as VideoInfo;
-      // Clean up JSON file
-      await fs.unlink(jsonPath).catch(() => {});
+      const { stdout: infoJson } = await execAsync(
+        `yt-dlp --dump-json --quiet --no-warnings "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`,
+        { maxBuffer: 5 * 1024 * 1024 }
+      );
+      info = JSON.parse(infoJson.trim()) as VideoInfo;
     } catch {
-      // If JSON read fails, try to get info separately
-      try {
-        const { stdout: infoJson } = await execAsync(
-          `yt-dlp --dump-json --quiet --no-warnings "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`,
-          { maxBuffer: 5 * 1024 * 1024 }
-        );
-        info = JSON.parse(infoJson.trim()) as VideoInfo;
-      } catch {
-        info = { title: 'Downloaded Video' };
-      }
+      info = { title: 'Downloaded Video' };
     }
 
     // Info already parsed above
