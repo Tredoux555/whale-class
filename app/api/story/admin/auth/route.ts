@@ -9,13 +9,58 @@ const ADMIN_JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(req: NextRequest) {
   try {
+    // Validate environment variables
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL environment variable is not set');
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          details: 'DATABASE_URL environment variable is missing'
+        },
+        { status: 500 }
+      );
+    }
+
     const { username, password } = await req.json();
 
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: 'Username and password are required' },
+        { status: 400 }
+      );
+    }
+
     // Query database for admin user
-    const result = await db.query(
-      'SELECT * FROM story_admin_users WHERE username = $1',
-      [username]
-    );
+    let result;
+    try {
+      result = await db.query(
+        'SELECT * FROM story_admin_users WHERE username = $1',
+        [username]
+      );
+    } catch (dbError) {
+      console.error('Database query failed:', dbError);
+      const dbErrorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      
+      // Check if table doesn't exist
+      if (dbErrorMessage.includes('does not exist') || dbErrorMessage.includes('relation') || dbErrorMessage.includes('story_admin_users')) {
+        return NextResponse.json(
+          { 
+            error: 'Database table not found',
+            details: 'The story_admin_users table does not exist. Please run the migration: migrations/009_story_admin_system.sql',
+            hint: 'Run this SQL in Supabase SQL Editor'
+          },
+          { status: 500 }
+        );
+      }
+      
+      return NextResponse.json(
+        { 
+          error: 'Database error',
+          details: process.env.NODE_ENV === 'development' ? dbErrorMessage : 'Database connection failed'
+        },
+        { status: 500 }
+      );
+    }
 
     if (result.rows.length === 0) {
       return NextResponse.json(
@@ -37,10 +82,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Update last login
-    await db.query(
-      'UPDATE story_admin_users SET last_login = NOW() WHERE username = $1',
-      [username]
-    );
+    try {
+      await db.query(
+        'UPDATE story_admin_users SET last_login = NOW() WHERE username = $1',
+        [username]
+      );
+    } catch (updateError) {
+      console.error('Failed to update last login:', updateError);
+      // Don't fail the login if update fails
+    }
 
     // Create JWT token for admin
     const token = await new SignJWT({ username: admin.username, role: 'admin' })
@@ -52,8 +102,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ session: token });
   } catch (error) {
     console.error('Admin auth error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { 
+        error: 'Authentication failed',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An unexpected error occurred'
+      },
       { status: 500 }
     );
   }
