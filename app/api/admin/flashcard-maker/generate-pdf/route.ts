@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import PDFDocument from 'pdfkit';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import path from 'path';
+
+const execAsync = promisify(exec);
+const TEMP_DIR = '/tmp/flashcard-maker';
 
 interface ExtractedFrame {
   timestamp: number;
@@ -15,38 +21,6 @@ interface PDFRequest {
   showTimestamps: boolean;
 }
 
-// A4 dimensions in points (72 points per inch)
-const A4_WIDTH = 595.28;
-const A4_HEIGHT = 841.89;
-const MARGIN = 40;
-
-// Convert hex color to RGB array
-function hexToRGB(hex: string): [number, number, number] {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (result) {
-    return [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16)
-    ];
-  }
-  return [6, 182, 212]; // Default cyan
-}
-
-// Format timestamp for display
-function formatTimestamp(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Convert base64 data URL to Buffer
-function base64ToBuffer(dataUrl: string): Buffer {
-  // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
-  const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
-  return Buffer.from(base64Data, 'base64');
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body: PDFRequest = await request.json();
@@ -59,194 +33,225 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rgb = hexToRGB(borderColor);
-    const borderWidth = cardsPerPage === 1 ? 12 : cardsPerPage === 2 ? 8 : 6;
-    const cornerRadius = cardsPerPage === 1 ? 20 : cardsPerPage === 2 ? 15 : 10;
-    const fontSize = cardsPerPage === 1 ? 28 : cardsPerPage === 2 ? 20 : 14;
+    // Create temp directory
+    await fs.mkdir(TEMP_DIR, { recursive: true });
+    
+    const timestamp = Date.now();
+    const imagesDir = path.join(TEMP_DIR, `images_${timestamp}`);
+    await fs.mkdir(imagesDir, { recursive: true });
 
-    // Calculate card dimensions based on cards per page
-    const availableWidth = A4_WIDTH - (MARGIN * 2);
-    const availableHeight = A4_HEIGHT - (MARGIN * 2);
-
-    let cardWidth: number;
-    let cardHeight: number;
-    let cols: number;
-    let rows: number;
-    let gap: number;
-
-    switch (cardsPerPage) {
-      case 1:
-        cols = 1;
-        rows = 1;
-        gap = 0;
-        cardWidth = availableWidth;
-        cardHeight = availableHeight;
-        break;
-      case 2:
-        cols = 1;
-        rows = 2;
-        gap = 20;
-        cardWidth = availableWidth;
-        cardHeight = (availableHeight - gap) / 2;
-        break;
-      case 4:
-        cols = 2;
-        rows = 2;
-        gap = 15;
-        cardWidth = (availableWidth - gap) / 2;
-        cardHeight = (availableHeight - gap) / 2;
-        break;
-    }
-
-    // Create PDF document
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: MARGIN,
-      info: {
-        Title: `${songTitle} Flashcards`,
-        Author: 'Whale Montessori - Flashcard Maker',
-        Subject: 'Song Flashcards for Kindergarten'
-      }
-    });
-
-    // Collect PDF chunks
-    const chunks: Buffer[] = [];
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-
-    // Pre-convert all images to buffers before PDF generation
-    const imageBuffers: Buffer[] = frames.map(frame => {
+    // Save all images to disk (Python will read them)
+    const imageFiles: string[] = [];
+    for (let i = 0; i < frames.length; i++) {
+      const frame = frames[i];
       if (frame.imageData && frame.imageData.startsWith('data:')) {
-        return base64ToBuffer(frame.imageData);
+        const base64Data = frame.imageData.replace(/^data:image\/\w+;base64,/, '');
+        const imagePath = path.join(imagesDir, `frame_${i.toString().padStart(3, '0')}.jpg`);
+        await fs.writeFile(imagePath, Buffer.from(base64Data, 'base64'));
+        imageFiles.push(imagePath);
       }
-      return Buffer.alloc(0);
-    });
-
-    // Process frames
-    let frameIndex = 0;
-    const cardsOnPage = cardsPerPage;
-    let pageNumber = 1;
-
-    while (frameIndex < frames.length) {
-      if (frameIndex > 0) {
-        doc.addPage();
-      }
-
-      // Draw cards on this page
-      for (let cardNum = 0; cardNum < cardsOnPage && frameIndex < frames.length; cardNum++) {
-        const frame = frames[frameIndex];
-        const imageBuffer = imageBuffers[frameIndex];
-        
-        // Calculate position
-        const col = cardNum % cols;
-        const row = Math.floor(cardNum / cols);
-        const x = MARGIN + (col * (cardWidth + gap));
-        const y = MARGIN + (row * (cardHeight + gap));
-
-        // Draw colored border rectangle
-        doc.save();
-        doc.roundedRect(x, y, cardWidth, cardHeight, cornerRadius)
-           .fill(rgb);
-
-        // Draw inner white rectangle
-        const innerX = x + borderWidth;
-        const innerY = y + borderWidth;
-        const innerWidth = cardWidth - (borderWidth * 2);
-        const innerHeight = cardHeight - (borderWidth * 2);
-        
-        doc.roundedRect(innerX, innerY, innerWidth, innerHeight, Math.max(cornerRadius - 4, 4))
-           .fill('#ffffff');
-
-        // Calculate image dimensions
-        const imagePadding = 10;
-        const imageX = innerX + imagePadding;
-        const imageY = innerY + imagePadding;
-        const maxImageWidth = innerWidth - (imagePadding * 2);
-        
-        // Reserve space for lyrics text
-        const textAreaHeight = frame.lyric ? (cardsPerPage === 1 ? 100 : cardsPerPage === 2 ? 70 : 50) : 20;
-        const maxImageHeight = innerHeight - (imagePadding * 2) - textAreaHeight;
-
-        // Draw image if buffer is valid
-        if (imageBuffer && imageBuffer.length > 0) {
-          try {
-            doc.image(imageBuffer, imageX, imageY, {
-              fit: [maxImageWidth, maxImageHeight],
-              align: 'center',
-              valign: 'center'
-            });
-          } catch (imgError) {
-            console.error(`Failed to embed image ${frameIndex}:`, imgError);
-            // Draw placeholder rectangle if image fails
-            doc.rect(imageX, imageY, maxImageWidth, maxImageHeight)
-               .fill('#f3f4f6');
-            doc.fillColor('#9ca3af')
-               .fontSize(12)
-               .text('Image failed to load', imageX, imageY + maxImageHeight / 2, {
-                 width: maxImageWidth,
-                 align: 'center'
-               });
-          }
-        }
-
-        // Draw lyric text below image
-        if (frame.lyric) {
-          const textY = innerY + imagePadding + maxImageHeight + 10;
-          
-          doc.fillColor('#1f2937')
-             .fontSize(fontSize)
-             .font('Helvetica-Bold')
-             .text(frame.lyric, innerX + imagePadding, textY, {
-               width: innerWidth - (imagePadding * 2),
-               height: textAreaHeight - 10,
-               align: 'center',
-               lineGap: 4
-             });
-        }
-
-        // Draw timestamp if enabled
-        if (showTimestamps) {
-          const timestampSize = cardsPerPage === 1 ? 11 : 9;
-          doc.fillColor('#9ca3af')
-             .fontSize(timestampSize)
-             .font('Helvetica')
-             .text(
-               formatTimestamp(frame.timestamp),
-               innerX + innerWidth - 45,
-               innerY + innerHeight - 18,
-               { width: 40, align: 'right' }
-             );
-        }
-
-        doc.restore();
-        frameIndex++;
-      }
-
-      // Add page footer with song title and page number
-      doc.fillColor('#9ca3af')
-         .fontSize(10)
-         .font('Helvetica')
-         .text(
-           `${songTitle} - Page ${pageNumber}`,
-           MARGIN,
-           A4_HEIGHT - 30,
-           { width: A4_WIDTH - (MARGIN * 2), align: 'center' }
-         );
-      
-      pageNumber++;
     }
 
-    // Finalize PDF
-    doc.end();
+    // Prepare frame data for Python (without base64, just paths and metadata)
+    const frameData = frames.map((frame, i) => ({
+      imagePath: imageFiles[i] || '',
+      timestamp: frame.timestamp,
+      lyric: frame.lyric || ''
+    }));
 
-    // Wait for PDF generation to complete
-    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-      doc.on('end', () => {
-        resolve(Buffer.concat(chunks));
-      });
-      doc.on('error', reject);
-    });
+    // Write frame data as JSON for Python to read
+    const dataPath = path.join(TEMP_DIR, `data_${timestamp}.json`);
+    await fs.writeFile(dataPath, JSON.stringify({
+      frames: frameData,
+      songTitle,
+      cardsPerPage,
+      borderColor,
+      showTimestamps
+    }));
 
-    // Return PDF as downloadable file
+    // Output PDF path
+    const outputPath = path.join(TEMP_DIR, `flashcards_${timestamp}.pdf`);
+
+    // Get the Python script path (should be in lib/pdf-generator.py)
+    const scriptPath = path.join(process.cwd(), 'lib', 'pdf-generator.py');
+    
+    // Check if script exists, if not use inline Python
+    let pythonCommand: string;
+    
+    try {
+      await fs.access(scriptPath);
+      pythonCommand = `python3 "${scriptPath}" "${dataPath}" "${outputPath}"`;
+    } catch {
+      // Script doesn't exist, use inline Python command
+      pythonCommand = `python3 -c "
+import sys
+import json
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16)/255 for i in (0, 2, 4))
+
+def create_pdf(data_path, output_path):
+    with open(data_path, 'r') as f:
+        data = json.load(f)
+    
+    frames = data['frames']
+    song_title = data['songTitle']
+    cards_per_page = data['cardsPerPage']
+    border_color = hex_to_rgb(data['borderColor'])
+    show_timestamps = data['showTimestamps']
+    
+    width, height = A4
+    margin = 15 * mm
+    
+    c = canvas.Canvas(output_path, pagesize=A4)
+    
+    if cards_per_page == 1:
+        cols, rows = 1, 1
+        gap = 0
+    elif cards_per_page == 2:
+        cols, rows = 1, 2
+        gap = 8 * mm
+    else:
+        cols, rows = 2, 2
+        gap = 6 * mm
+    
+    card_width = (width - 2 * margin - (cols - 1) * gap) / cols
+    card_height = (height - 2 * margin - (rows - 1) * gap) / rows
+    border_width = 4 * mm if cards_per_page == 1 else 3 * mm
+    
+    frame_idx = 0
+    page_num = 1
+    
+    while frame_idx < len(frames):
+        for row in range(rows):
+            for col in range(cols):
+                if frame_idx >= len(frames):
+                    break
+                
+                frame = frames[frame_idx]
+                x = margin + col * (card_width + gap)
+                y = height - margin - (row + 1) * card_height - row * gap
+                
+                # Draw border
+                c.setFillColorRGB(*border_color)
+                c.roundRect(x, y, card_width, card_height, 8*mm, fill=1, stroke=0)
+                
+                # Draw inner white area
+                inner_x = x + border_width
+                inner_y = y + border_width
+                inner_w = card_width - 2 * border_width
+                inner_h = card_height - 2 * border_width
+                c.setFillColorRGB(1, 1, 1)
+                c.roundRect(inner_x, inner_y, inner_w, inner_h, 5*mm, fill=1, stroke=0)
+                
+                # Calculate image area
+                padding = 3 * mm
+                img_x = inner_x + padding
+                text_height = 20 * mm if frame.get('lyric') else 5 * mm
+                img_h = inner_h - 2 * padding - text_height
+                img_w = inner_w - 2 * padding
+                img_y = inner_y + padding + text_height
+                
+                # Draw image
+                if frame.get('imagePath'):
+                    try:
+                        img = ImageReader(frame['imagePath'])
+                        iw, ih = img.getSize()
+                        aspect = iw / ih
+                        
+                        if img_w / img_h > aspect:
+                            draw_h = img_h
+                            draw_w = draw_h * aspect
+                        else:
+                            draw_w = img_w
+                            draw_h = draw_w / aspect
+                        
+                        draw_x = img_x + (img_w - draw_w) / 2
+                        draw_y = img_y + (img_h - draw_h) / 2
+                        c.drawImage(img, draw_x, draw_y, draw_w, draw_h)
+                    except Exception as e:
+                        print(f'Image error: {e}')
+                
+                # Draw lyric
+                if frame.get('lyric'):
+                    c.setFillColorRGB(0.1, 0.1, 0.1)
+                    font_size = 14 if cards_per_page == 1 else 10 if cards_per_page == 2 else 8
+                    c.setFont('Helvetica-Bold', font_size)
+                    text_y = inner_y + padding + text_height / 2
+                    c.drawCentredString(inner_x + inner_w / 2, text_y, frame['lyric'][:60])
+                
+                # Draw timestamp
+                if show_timestamps:
+                    c.setFillColorRGB(0.6, 0.6, 0.6)
+                    c.setFont('Helvetica', 8)
+                    ts = frame.get('timestamp', 0)
+                    ts_str = f'{int(ts//60)}:{int(ts%60):02d}'
+                    c.drawRightString(inner_x + inner_w - padding, inner_y + padding, ts_str)
+                
+                frame_idx += 1
+        
+        # Page footer
+        c.setFillColorRGB(0.6, 0.6, 0.6)
+        c.setFont('Helvetica', 9)
+        c.drawCentredString(width / 2, 10 * mm, f'{song_title} - Page {page_num}')
+        
+        if frame_idx < len(frames):
+            c.showPage()
+            page_num += 1
+    
+    c.save()
+    print(f'PDF created: {output_path}')
+
+create_pdf('${dataPath}', '${outputPath}')
+"`;
+    }
+
+    // Execute Python script
+    try {
+      const { stdout, stderr } = await execAsync(pythonCommand, { timeout: 60000 });
+      if (stderr && !stderr.includes('PDF created')) {
+        console.error('Python stderr:', stderr);
+      }
+      console.log('Python stdout:', stdout);
+    } catch (execError: unknown) {
+      console.error('Python execution error:', execError);
+      // Try to give more specific error
+      const errorObj = execError as { stderr?: string; message?: string };
+      if (errorObj.stderr?.includes('No module named')) {
+        return NextResponse.json(
+          { message: 'Missing Python dependency. Run: pip3 install reportlab --break-system-packages' },
+          { status: 500 }
+        );
+      }
+      throw new Error(`PDF generation failed: ${errorObj.message || 'Unknown error'}`);
+    }
+
+    // Read the generated PDF
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await fs.readFile(outputPath);
+    } catch {
+      return NextResponse.json(
+        { message: 'PDF file was not created. Check Python installation.' },
+        { status: 500 }
+      );
+    }
+
+    // Cleanup
+    try {
+      await fs.rm(imagesDir, { recursive: true, force: true });
+      await fs.unlink(dataPath);
+      await fs.unlink(outputPath);
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    // Return PDF
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',

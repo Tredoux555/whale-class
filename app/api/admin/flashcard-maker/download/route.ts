@@ -4,22 +4,9 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
 
-// Custom exec with increased maxBuffer to handle large output
-const execAsync = (command: string, options?: { timeout?: number; maxBuffer?: number }) => {
-  return promisify(exec)(command, {
-    maxBuffer: options?.maxBuffer || 50 * 1024 * 1024, // 50MB buffer (default)
-    timeout: options?.timeout || 300000,
-  });
-};
+const execAsync = promisify(exec);
 
-// Temp directory for video processing
 const TEMP_DIR = '/tmp/flashcard-maker';
-
-// Type for video info from yt-dlp
-interface VideoInfo {
-  title?: string;
-  [key: string]: any;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,72 +19,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure temp directory exists
     await fs.mkdir(TEMP_DIR, { recursive: true });
 
     const outputPath = path.join(TEMP_DIR, `${videoId}.mp4`);
     const subtitlePath = path.join(TEMP_DIR, `${videoId}.en.vtt`);
     
     // Check if already downloaded
+    let needsDownload = true;
     try {
       await fs.access(outputPath);
-      // File exists, get title from info
-      const { stdout: infoJson } = await execAsync(
-        `yt-dlp --dump-json "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null || echo "{}"`
-      );
-      const info: VideoInfo = JSON.parse(infoJson || '{}');
-      
-      // Check for subtitles
-      let subtitles = null;
-      try {
-        await fs.access(subtitlePath);
-        subtitles = await fs.readFile(subtitlePath, 'utf-8');
-      } catch {
-        // No subtitles
-      }
-      
-      return NextResponse.json({
-        filePath: outputPath,
-        title: info.title || 'Downloaded Video',
-        subtitles
-      });
+      needsDownload = false;
     } catch {
-      // File doesn't exist, download it
+      // File doesn't exist
     }
 
-    // Download video with yt-dlp
-    // -f: format selection (best quality under 720p for reasonable file size)
-    // --write-auto-sub: download auto-generated subtitles
-    // --sub-lang: prefer English subtitles
-    // Use --no-progress and --quiet to minimize output
-    const ytdlpCommand = `yt-dlp \
-      -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
-      --merge-output-format mp4 \
-      --write-auto-sub \
-      --sub-lang en \
-      --convert-subs vtt \
-      --quiet \
-      --no-progress \
-      --no-warnings \
-      -o "${outputPath}" \
-      "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null || true`;
+    if (needsDownload) {
+      // Download video with yt-dlp
+      const ytdlpCommand = `yt-dlp \
+        -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
+        --merge-output-format mp4 \
+        --write-auto-sub \
+        --sub-lang en \
+        --convert-subs vtt \
+        -o "${outputPath}" \
+        "https://www.youtube.com/watch?v=${videoId}"`;
 
-    // Execute download
-    await execAsync(ytdlpCommand, { maxBuffer: 1024 * 1024, timeout: 120000 }); // 2 minute timeout
+      await execAsync(ytdlpCommand, { timeout: 300000 });
+    }
 
-    // Get video info separately
-    let info: VideoInfo = {};
+    // Get video info
+    let title = 'Downloaded Video';
     try {
-      const { stdout: infoJson } = await execAsync(
-        `yt-dlp --dump-json --quiet --no-warnings "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`,
-        { maxBuffer: 5 * 1024 * 1024 }
+      const { stdout } = await execAsync(
+        `yt-dlp --dump-json "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`
       );
-      info = JSON.parse(infoJson.trim()) as VideoInfo;
+      const info = JSON.parse(stdout);
+      title = info.title || title;
     } catch {
-      info = { title: 'Downloaded Video' };
+      // Ignore title fetch errors
     }
 
-    // Info already parsed above
+    // Get duration
+    let duration = 180;
+    try {
+      const { stdout: durationOut } = await execAsync(
+        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${outputPath}"`
+      );
+      duration = parseFloat(durationOut.trim()) || 180;
+    } catch {
+      // Ignore duration fetch errors
+    }
 
     // Check for subtitles
     let subtitles = null;
@@ -110,8 +81,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       filePath: outputPath,
-      title: info.title || 'Downloaded Video',
-      subtitles
+      title,
+      subtitles,
+      duration
     });
 
   } catch (error) {
@@ -122,4 +94,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

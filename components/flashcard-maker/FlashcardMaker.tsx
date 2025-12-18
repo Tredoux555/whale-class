@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FlashcardPreview } from './FlashcardPreview';
 import { FlashcardPDF } from './FlashcardPDF';
 
 interface ExtractedFrame {
   timestamp: number;
-  imageData: string; // base64
+  imageData: string;
   lyric?: string;
 }
 
@@ -24,11 +24,20 @@ export function FlashcardMaker() {
     progress: 0,
     message: ''
   });
-  const [sensitivity, setSensitivity] = useState(20); // Scene change threshold (0-100), lower = more frames
-  const [minInterval, setMinInterval] = useState(2); // Minimum seconds between captures
-  const [targetFrames, setTargetFrames] = useState(15); // Target number of frames
+  const [sensitivity, setSensitivity] = useState(15);
+  const [minInterval, setMinInterval] = useState(1.5);
+  const [targetFrames, setTargetFrames] = useState(20);
   const [includeLyrics, setIncludeLyrics] = useState(true);
   const [songTitle, setSongTitle] = useState('');
+  
+  // Video scrubber state
+  const [showScrubber, setShowScrubber] = useState(false);
+  const [videoPath, setVideoPath] = useState('');
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [scrubberTime, setScrubberTime] = useState(0);
+  const [scrubberPreview, setScrubberPreview] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const extractVideoId = (url: string): string | null => {
     const patterns = [
@@ -42,6 +51,59 @@ export function FlashcardMaker() {
     return null;
   };
 
+  // Fetch frame preview at specific timestamp
+  const fetchPreviewFrame = async (timestamp: number) => {
+    if (!videoPath) return;
+    
+    setIsLoadingPreview(true);
+    try {
+      const res = await fetch('/api/admin/flashcard-maker/preview-frame', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath: videoPath, timestamp })
+      });
+      
+      if (res.ok) {
+        const { imageData } = await res.json();
+        setScrubberPreview(imageData);
+      }
+    } catch (e) {
+      console.error('Preview fetch error:', e);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
+  // Debounced preview fetch
+  const handleScrubberChange = (time: number) => {
+    setScrubberTime(time);
+    
+    if (previewTimeoutRef.current) {
+      clearTimeout(previewTimeoutRef.current);
+    }
+    
+    previewTimeoutRef.current = setTimeout(() => {
+      fetchPreviewFrame(time);
+    }, 300);
+  };
+
+  // Add frame from scrubber
+  const addFrameFromScrubber = async () => {
+    if (!scrubberPreview) return;
+    
+    const newFrame: ExtractedFrame = {
+      timestamp: scrubberTime,
+      imageData: scrubberPreview,
+      lyric: ''
+    };
+    
+    // Insert in correct position based on timestamp
+    setFrames(prev => {
+      const newFrames = [...prev, newFrame];
+      return newFrames.sort((a, b) => a.timestamp - b.timestamp);
+    });
+  };
+
   const processVideo = async () => {
     const videoId = extractVideoId(youtubeUrl);
     if (!videoId) {
@@ -50,7 +112,6 @@ export function FlashcardMaker() {
     }
 
     try {
-      // Stage 1: Download video
       setStatus({ stage: 'downloading', progress: 10, message: 'Downloading video from YouTube...' });
       
       const downloadRes = await fetch('/api/admin/flashcard-maker/download', {
@@ -64,11 +125,12 @@ export function FlashcardMaker() {
         throw new Error(error.message || 'Failed to download video');
       }
       
-      const { filePath, title, subtitles } = await downloadRes.json();
+      const { filePath, title, subtitles, duration } = await downloadRes.json();
       setSongTitle(title || 'Untitled Song');
+      setVideoPath(filePath);
+      setVideoDuration(duration || 180);
 
-      // Stage 2: Extract frames with scene detection
-      setStatus({ stage: 'detecting', progress: 40, message: 'Detecting scene changes and extracting frames...' });
+      setStatus({ stage: 'detecting', progress: 40, message: 'Extracting frames...' });
       
       const extractRes = await fetch('/api/admin/flashcard-maker/extract', {
         method: 'POST',
@@ -88,14 +150,13 @@ export function FlashcardMaker() {
       }
       
       const { frames: extractedFrames, debug } = await extractRes.json();
-      console.log('Extraction debug info:', debug);
+      console.log('Extraction debug:', debug);
       setFrames(extractedFrames);
 
-      // Stage 3: Complete
       setStatus({ 
         stage: 'complete', 
         progress: 100, 
-        message: `Extracted ${extractedFrames.length} flashcard frames!` 
+        message: `Extracted ${extractedFrames.length} frames! Use the scrubber below to add more.` 
       });
 
     } catch (error) {
@@ -126,6 +187,12 @@ export function FlashcardMaker() {
     });
   };
 
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const isProcessing = ['downloading', 'extracting', 'detecting', 'generating'].includes(status.stage);
 
   return (
@@ -151,7 +218,6 @@ export function FlashcardMaker() {
 
           {/* Settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
-            {/* Target Frames - NEW PRIMARY CONTROL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Target Frames: <span className="text-blue-600 font-bold">{targetFrames}</span>
@@ -159,33 +225,29 @@ export function FlashcardMaker() {
               <input
                 type="range"
                 min="10"
-                max="20"
+                max="40"
                 value={targetFrames}
                 onChange={(e) => setTargetFrames(Number(e.target.value))}
                 className="w-full accent-blue-500"
                 disabled={isProcessing}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                How many flashcards to generate
-              </p>
+              <p className="text-xs text-gray-500 mt-1">10-40 flashcards</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Scene Sensitivity: {sensitivity}%
+                Sensitivity: {sensitivity}%
               </label>
               <input
                 type="range"
                 min="5"
-                max="50"
+                max="40"
                 value={sensitivity}
                 onChange={(e) => setSensitivity(Number(e.target.value))}
                 className="w-full accent-blue-500"
                 disabled={isProcessing}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Lower = detect more changes
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Lower = more scene detection</p>
             </div>
 
             <div>
@@ -194,7 +256,7 @@ export function FlashcardMaker() {
               </label>
               <input
                 type="range"
-                min="1"
+                min="0.5"
                 max="5"
                 step="0.5"
                 value={minInterval}
@@ -202,9 +264,6 @@ export function FlashcardMaker() {
                 className="w-full accent-blue-500"
                 disabled={isProcessing}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Seconds between captures
-              </p>
             </div>
 
             <div className="flex items-center">
@@ -216,9 +275,7 @@ export function FlashcardMaker() {
                   className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-blue-400"
                   disabled={isProcessing}
                 />
-                <span className="text-sm font-medium text-gray-700">
-                  Include lyrics
-                </span>
+                <span className="text-sm font-medium text-gray-700">Include lyrics</span>
               </label>
             </div>
           </div>
@@ -244,8 +301,7 @@ export function FlashcardMaker() {
         }`}>
           <div className="flex items-center gap-3 mb-3">
             <span className="text-2xl">
-              {status.stage === 'error' ? '❌' : 
-               status.stage === 'complete' ? '✅' : '⏳'}
+              {status.stage === 'error' ? '❌' : status.stage === 'complete' ? '✅' : '⏳'}
             </span>
             <span className={`font-medium ${
               status.stage === 'error' ? 'text-red-700' : 
@@ -261,6 +317,106 @@ export function FlashcardMaker() {
                 className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500"
                 style={{ width: `${status.progress}%` }}
               />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Video Scrubber - Manual Frame Selection */}
+      {videoPath && status.stage === 'complete' && (
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">🎞️ Add More Frames Manually</h2>
+            <button
+              onClick={() => setShowScrubber(!showScrubber)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {showScrubber ? 'Hide Scrubber' : 'Show Scrubber'}
+            </button>
+          </div>
+          
+          {showScrubber && (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                {/* Preview */}
+                <div className="w-64 h-36 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+                  {isLoadingPreview && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                      <span className="text-gray-400">Loading...</span>
+                    </div>
+                  )}
+                  {scrubberPreview && !isLoadingPreview && (
+                    <img 
+                      src={scrubberPreview} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  {!scrubberPreview && !isLoadingPreview && (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      Drag slider to preview
+                    </div>
+                  )}
+                </div>
+                
+                {/* Controls */}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Time: <span className="text-blue-600 font-bold">{formatTime(scrubberTime)}</span>
+                      <span className="text-gray-400 ml-2">/ {formatTime(videoDuration)}</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max={videoDuration}
+                      step="0.1"
+                      value={scrubberTime}
+                      onChange={(e) => handleScrubberChange(Number(e.target.value))}
+                      className="w-full accent-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleScrubberChange(Math.max(0, scrubberTime - 1))}
+                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                    >
+                      ← 1s
+                    </button>
+                    <button
+                      onClick={() => handleScrubberChange(Math.max(0, scrubberTime - 0.1))}
+                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                    >
+                      ← 0.1s
+                    </button>
+                    <button
+                      onClick={() => handleScrubberChange(Math.min(videoDuration, scrubberTime + 0.1))}
+                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                    >
+                      0.1s →
+                    </button>
+                    <button
+                      onClick={() => handleScrubberChange(Math.min(videoDuration, scrubberTime + 1))}
+                      className="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                    >
+                      1s →
+                    </button>
+                  </div>
+                  
+                  <button
+                    onClick={addFrameFromScrubber}
+                    disabled={!scrubberPreview}
+                    className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    ➕ Add This Frame
+                  </button>
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                Tip: Use the slider or buttons to navigate through the video and add specific frames you want.
+              </p>
             </div>
           )}
         </div>
