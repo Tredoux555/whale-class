@@ -251,8 +251,9 @@ create_pdf('${dataPath}', '${outputPath}')
       // Ignore cleanup errors
     }
 
-    // Return PDF
-    return new NextResponse(pdfBuffer, {
+    // Return PDF - Convert Buffer to Uint8Array for Next.js 16 compatibility
+    const uint8Array = new Uint8Array(pdfBuffer);
+    return new NextResponse(uint8Array, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${songTitle.replace(/[^a-z0-9]/gi, '_')}_flashcards.pdf"`,
