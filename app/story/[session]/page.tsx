@@ -142,7 +142,8 @@ export default function StoryViewer() {
         }
         // Clear any previous errors
         setUploadError('');
-        // Keep upload section visible after upload (don't auto-hide)
+        // Hide upload section after successful upload
+        setShowUploadSection(false);
       } else {
         // Show detailed error message
         const errorMsg = responseData.error || 'Failed to upload file';
@@ -181,9 +182,10 @@ export default function StoryViewer() {
   };
 
   const handleLastLetterClick = () => {
-    // Toggle the upload section on/off (like the message system)
-    setShowUploadSection(!showUploadSection);
-    setLastLetterTapped(true);
+    if (!lastLetterTapped) {
+      setLastLetterTapped(true);
+      setShowUploadSection(true);
+    }
   };
 
   const saveMessage = async () => {
@@ -396,8 +398,8 @@ export default function StoryViewer() {
           </div>
         )}
 
-        {/* Display Current Media - Only show when upload section is visible */}
-        {showUploadSection && mediaItems.length > 0 && (
+        {/* Display Current Media - Only show when decoded */}
+        {isDecoded && mediaItems.length > 0 && (
           <div className="bg-white rounded-lg shadow-xl p-8">
             <h3 className="text-xl font-bold mb-4 text-gray-800">📸 Shared Photos & Videos:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
