@@ -4,7 +4,13 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
 
-const execAsync = promisify(exec);
+// Custom exec with increased maxBuffer to handle large output
+const execAsync = (command: string, options?: { timeout?: number }) => {
+  return promisify(exec)(command, {
+    maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+    timeout: options?.timeout || 300000,
+  });
+};
 
 // Temp directory for video processing
 const TEMP_DIR = '/tmp/flashcard-maker';
@@ -57,19 +63,20 @@ export async function POST(request: NextRequest) {
     // -f: format selection (best quality under 720p for reasonable file size)
     // --write-auto-sub: download auto-generated subtitles
     // --sub-lang: prefer English subtitles
+    // Redirect verbose output to /dev/null to avoid maxBuffer issues
     const ytdlpCommand = `yt-dlp \
       -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
       --merge-output-format mp4 \
       --write-auto-sub \
       --sub-lang en \
       --convert-subs vtt \
+      --quiet \
+      --no-warnings \
       -o "${outputPath}" \
       --print-json \
-      "https://www.youtube.com/watch?v=${videoId}"`;
+      "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`;
 
-    const { stdout } = await execAsync(ytdlpCommand, {
-      timeout: 300000 // 5 minute timeout
-    });
+    const { stdout } = await execAsync(ytdlpCommand);
 
     // Parse yt-dlp JSON output for video info
     const lines = stdout.trim().split('\n');

@@ -4,7 +4,13 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
 
-const execAsync = promisify(exec);
+// Custom exec with increased maxBuffer to handle large output
+const execAsync = (command: string, options?: { timeout?: number }) => {
+  return promisify(exec)(command, {
+    maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+    timeout: options?.timeout || 300000,
+  });
+};
 
 const TEMP_DIR = '/tmp/flashcard-maker';
 
@@ -118,9 +124,9 @@ export async function POST(request: NextRequest) {
       existingFiles.map(file => fs.unlink(path.join(framesDir, file)))
     );
 
-    // Get video duration
+    // Get video duration (redirect stderr to avoid buffer issues)
     const { stdout: durationOutput } = await execAsync(
-      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}" 2>/dev/null`
     );
     const duration = parseFloat(durationOutput.trim());
 
@@ -132,15 +138,15 @@ export async function POST(request: NextRequest) {
     
     // Extract scene change frames
     // We use the select filter to detect scene changes and output those frames
+    // Redirect stderr to stdout but limit output to avoid buffer issues
     const ffmpegCommand = `ffmpeg -i "${filePath}" \
       -vf "select='gt(scene,${threshold})',showinfo" \
       -vsync vfr \
       -frame_pts 1 \
-      "${framesDir}/frame_%04d.jpg" 2>&1`;
+      -loglevel error \
+      "${framesDir}/frame_%04d.jpg" 2>&1 | grep -E "pts_time:" || true`;
 
-    const { stdout: ffmpegOutput } = await execAsync(ffmpegCommand, {
-      timeout: 300000
-    });
+    const { stdout: ffmpegOutput } = await execAsync(ffmpegCommand);
 
     // Parse FFmpeg output to get timestamps
     // showinfo filter outputs: pts_time:X.XXXXX
@@ -154,7 +160,7 @@ export async function POST(request: NextRequest) {
     // Also capture first frame if not already included
     if (timestamps.length === 0 || timestamps[0] > 1) {
       await execAsync(
-        `ffmpeg -i "${filePath}" -ss 0 -vframes 1 "${framesDir}/frame_0000.jpg" -y`
+        `ffmpeg -i "${filePath}" -ss 0 -vframes 1 -loglevel error "${framesDir}/frame_0000.jpg" -y 2>/dev/null`
       );
       timestamps.unshift(0);
     }
@@ -192,9 +198,9 @@ export async function POST(request: NextRequest) {
       finalTimestamps.map(async (timestamp, index) => {
         const framePath = path.join(framesDir, `final_${index}.jpg`);
         
-        // Extract frame at timestamp with high quality
+        // Extract frame at timestamp with high quality (suppress verbose output)
         await execAsync(
-          `ffmpeg -ss ${timestamp} -i "${filePath}" -vframes 1 -q:v 2 "${framePath}" -y`
+          `ffmpeg -ss ${timestamp} -i "${filePath}" -vframes 1 -q:v 2 -loglevel error "${framePath}" -y 2>/dev/null`
         );
 
         // Read and convert to base64
