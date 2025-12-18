@@ -144,12 +144,13 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
+      const errorMessage = uploadError.message || 'Unknown error';
       return NextResponse.json(
         { 
           error: 'Failed to upload file',
-          details: uploadError.message || 'Unknown error',
-          code: uploadError.statusCode || 'UNKNOWN',
-          hint: uploadError.message?.includes('bucket') 
+          details: errorMessage,
+          code: (uploadError as any).statusCode || (uploadError as any).status || 'UNKNOWN',
+          hint: errorMessage.includes('bucket') || errorMessage.includes('not found')
             ? 'Storage bucket "story-uploads" may not exist. Create it in Supabase Storage settings.'
             : undefined
         },
