@@ -42,6 +42,11 @@ export function FlashcardMaker() {
   };
 
   const processVideo = async () => {
+    if (!youtubeUrl || youtubeUrl.trim() === '') {
+      setStatus({ stage: 'error', progress: 0, message: 'Please enter a YouTube URL' });
+      return;
+    }
+    
     const videoId = extractVideoId(youtubeUrl);
     if (!videoId) {
       setStatus({ stage: 'error', progress: 0, message: 'Invalid YouTube URL' });
@@ -202,7 +207,7 @@ export function FlashcardMaker() {
 
           <button
             onClick={processVideo}
-            disabled={!youtubeUrl || isProcessing}
+            disabled={!youtubeUrl || youtubeUrl.trim() === '' || isProcessing}
             className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
           >
             {isProcessing ? '⏳ Processing...' : '🎬 Generate Flashcards'}
