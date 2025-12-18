@@ -4,10 +4,34 @@ import { db } from '@/lib/db';
 import { JWT_SECRET } from '@/lib/story-auth';
 import { createClient } from '@supabase/supabase-js';
 
+// Increase timeout for large file uploads
+export const maxDuration = 60;
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Helper function to detect file type from extension (for mobile compatibility)
+function detectFileType(file: File): 'image' | 'video' {
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
+  const videoExtensions = ['mp4', 'webm', 'mov', 'quicktime'];
+  
+  if (extension && imageExtensions.includes(extension)) {
+    return 'image';
+  }
+  if (extension && videoExtensions.includes(extension)) {
+    return 'video';
+  }
+  
+  // Fallback to MIME type
+  if (file.type.startsWith('image/')) return 'image';
+  if (file.type.startsWith('video/')) return 'video';
+  
+  // Default to image if uncertain
+  return 'image';
+}
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -23,7 +47,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const author = formData.get('author') as string;
-    const messageType = formData.get('type') as 'image' | 'video';
+    const providedType = formData.get('type') as string | null;
 
     if (!file || !author) {
       return NextResponse.json(
@@ -32,20 +56,56 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate file type
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+    // Detect file type (use provided type or auto-detect)
+    const messageType = providedType === 'image' || providedType === 'video' 
+      ? providedType 
+      : detectFileType(file);
+
+    // Validate file type - expanded list for mobile compatibility
+    const validImageTypes = [
+      'image/jpeg', 
+      'image/jpg', 
+      'image/png', 
+      'image/gif', 
+      'image/webp',
+      'image/heic',      // iOS HEIC format
+      'image/heif',      // iOS HEIF format
+      'image/x-heic',    // Alternative HEIC MIME
+      'image/x-heif'     // Alternative HEIF MIME
+    ];
+    const validVideoTypes = [
+      'video/mp4', 
+      'video/webm', 
+      'video/quicktime',
+      'video/x-msvideo', // AVI
+      'video/x-matroska' // MKV
+    ];
     
-    if (messageType === 'image' && !validImageTypes.includes(file.type)) {
+    // Check by MIME type or file extension
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const isValidImage = validImageTypes.includes(file.type) || 
+                         (messageType === 'image' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'].includes(fileExtension || ''));
+    const isValidVideo = validVideoTypes.includes(file.type) || 
+                         (messageType === 'video' && ['mp4', 'webm', 'mov', 'quicktime'].includes(fileExtension || ''));
+    
+    if (messageType === 'image' && !isValidImage) {
       return NextResponse.json(
-        { error: 'Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed.' },
+        { 
+          error: `Invalid image type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: JPEG, PNG, GIF, WebP, HEIC.`,
+          fileType: file.type,
+          fileName: file.name
+        },
         { status: 400 }
       );
     }
 
-    if (messageType === 'video' && !validVideoTypes.includes(file.type)) {
+    if (messageType === 'video' && !isValidVideo) {
       return NextResponse.json(
-        { error: 'Invalid video type. Only MP4, WebM, and MOV are allowed.' },
+        { 
+          error: `Invalid video type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: MP4, WebM, MOV.`,
+          fileType: file.type,
+          fileName: file.name
+        },
         { status: 400 }
       );
     }
@@ -54,7 +114,7 @@ export async function POST(req: NextRequest) {
     const maxSize = messageType === 'image' ? 50 * 1024 * 1024 : 100 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `File too large. Max size: ${maxSize / 1024 / 1024}MB` },
+        { error: `File too large. Size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Max: ${maxSize / 1024 / 1024}MB` },
         { status: 400 }
       );
     }
@@ -85,7 +145,14 @@ export async function POST(req: NextRequest) {
     if (uploadError) {
       console.error('Upload error:', uploadError);
       return NextResponse.json(
-        { error: 'Failed to upload file' },
+        { 
+          error: 'Failed to upload file',
+          details: uploadError.message || 'Unknown error',
+          code: uploadError.statusCode || 'UNKNOWN',
+          hint: uploadError.message?.includes('bucket') 
+            ? 'Storage bucket "story-uploads" may not exist. Create it in Supabase Storage settings.'
+            : undefined
+        },
         { status: 500 }
       );
     }
@@ -114,8 +181,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Media upload error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Failed to upload media' },
+      { 
+        error: 'Failed to upload media',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An unexpected error occurred',
+        type: error instanceof Error ? error.name : 'UnknownError'
+      },
       { status: 500 }
     );
   }
