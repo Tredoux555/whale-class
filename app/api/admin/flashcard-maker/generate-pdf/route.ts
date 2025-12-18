@@ -222,8 +222,11 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    // Convert Buffer to Uint8Array for Response compatibility
+    const uint8Array = new Uint8Array(pdfBuffer);
+
     // Return PDF as download
-    return new Response(pdfBuffer, {
+    return new Response(uint8Array, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${songTitle.replace(/[^a-z0-9]/gi, '_')}_flashcards.pdf"`,
