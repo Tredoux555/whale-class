@@ -565,6 +565,13 @@ export default function AdminDashboard() {
           >
             <span className="text-xl">👥</span> Teacher Login Management
           </Link>
+          <Link
+            href="/admin/flashcard-maker"
+            prefetch={false}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2"
+          >
+            <span className="text-xl">🎵</span> Song Flashcard Maker
+          </Link>
           <button
             onClick={handleSeedCurriculum}
             disabled={seedingCurriculum}
