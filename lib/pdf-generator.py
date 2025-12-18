@@ -7,7 +7,7 @@ Usage: python3 pdf-generator.py <input_json> <output_pdf>
 
 import sys
 import json
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -32,12 +32,12 @@ def create_flashcard_pdf(data_path: str, output_path: str):
     border_color = hex_to_rgb(data['borderColor'])
     show_timestamps = data['showTimestamps']
     
-    # A4 dimensions
-    width, height = A4
+    # A4 landscape dimensions (swapped width/height for landscape)
+    width, height = landscape(A4)
     margin = 15 * mm
     
-    # Create canvas
-    c = canvas.Canvas(output_path, pagesize=A4)
+    # Create canvas with landscape orientation
+    c = canvas.Canvas(output_path, pagesize=landscape(A4))
     
     # Layout settings based on cards per page
     if cards_per_page == 1:
