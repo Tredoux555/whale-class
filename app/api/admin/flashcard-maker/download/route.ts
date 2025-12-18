@@ -15,6 +15,12 @@ const execAsync = (command: string, options?: { timeout?: number; maxBuffer?: nu
 // Temp directory for video processing
 const TEMP_DIR = '/tmp/flashcard-maker';
 
+// Type for video info from yt-dlp
+interface VideoInfo {
+  title?: string;
+  [key: string]: any;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { videoId } = await request.json();
@@ -39,7 +45,7 @@ export async function POST(request: NextRequest) {
       const { stdout: infoJson } = await execAsync(
         `yt-dlp --dump-json "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null || echo "{}"`
       );
-      const info = JSON.parse(infoJson || '{}');
+      const info: VideoInfo = JSON.parse(infoJson || '{}');
       
       // Check for subtitles
       let subtitles = null;
@@ -83,10 +89,10 @@ export async function POST(request: NextRequest) {
     await execAsync(ytdlpCommand, { maxBuffer: 1024 * 1024 }); // Small buffer since output is minimal
 
     // Read JSON from file
-    let info = {};
+    let info: VideoInfo = {};
     try {
       const jsonContent = await fs.readFile(jsonPath, 'utf-8');
-      info = JSON.parse(jsonContent.trim());
+      info = JSON.parse(jsonContent.trim()) as VideoInfo;
       // Clean up JSON file
       await fs.unlink(jsonPath).catch(() => {});
     } catch {
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
           `yt-dlp --dump-json --quiet --no-warnings "https://www.youtube.com/watch?v=${videoId}" 2>/dev/null`,
           { maxBuffer: 5 * 1024 * 1024 }
         );
-        info = JSON.parse(infoJson.trim());
+        info = JSON.parse(infoJson.trim()) as VideoInfo;
       } catch {
         info = { title: 'Downloaded Video' };
       }
