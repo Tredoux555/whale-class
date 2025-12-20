@@ -13,10 +13,38 @@ import { verifyAdminToken } from '@/lib/auth';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Helper function to create timeout promise
+function createTimeout(ms: number) {
+  return new Promise((_, reject) => 
+    setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+  );
+}
+
+// Helper function to race with timeout
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([promise, createTimeout(ms)]) as Promise<T>;
+}
+
 export async function middleware(req: NextRequest) {
+  // CRITICAL FIX #1: FIRST LINE - Explicit /api/ bypass BEFORE any other code
+  // This prevents middleware from running on API routes even if matcher fails
+  if (req.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // CRITICAL FIX #2: SECOND - Bypass static files and assets explicitly
+  const pathname = req.nextUrl.pathname;
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon.ico') ||
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$/i.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
   const res = NextResponse.next();
   
-  // Public routes that don't require authentication - CHECK FIRST to avoid unnecessary Supabase calls
+  // Public routes that don't require authentication
   const publicPaths = [
     '/auth/teacher-login',
     '/auth/student-login',
@@ -24,35 +52,57 @@ export async function middleware(req: NextRequest) {
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
-    '/api/auth',
-    '/api/story/auth',
-    '/api/story/admin', // Admin authentication
-    '/api/student',
     '/story', // Story system (has its own auth)
     '/games', // Public games access
     '/admin/login', // Admin login page
     '/', // Public homepage
   ];
 
-  const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path));
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
   
   // If public path, skip all auth checks
   if (isPublicPath) {
     return res;
   }
   
+  // CRITICAL FIX #3: Check admin-token BEFORE Supabase (faster, no network)
+  // This allows admin routes to bypass Supabase entirely if admin-token is valid
+  const adminToken = req.cookies.get('admin-token')?.value;
+  let hasAdminAuth = false;
+  
+  if (adminToken) {
+    try {
+      hasAdminAuth = await verifyAdminToken(adminToken);
+    } catch (error) {
+      console.error('[MIDDLEWARE] Error verifying admin token:', error);
+      hasAdminAuth = false;
+    }
+  }
+
+  // If admin-token is valid, allow access to admin routes immediately
+  if (hasAdminAuth && pathname.startsWith('/admin')) {
+    return res;
+  }
+
   // Skip auth check if Supabase not configured (build time)
   if (!supabaseUrl || !supabaseAnonKey) {
     return res;
   }
   
   // Create Supabase client for middleware (only for protected routes)
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  let supabase;
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  } catch (error) {
+    console.error('[MIDDLEWARE] Error creating Supabase client:', error);
+    // If Supabase client creation fails, allow request through
+    return res;
+  }
   
   // Get session from cookies
   const authHeader = req.headers.get('authorization');
@@ -60,43 +110,69 @@ export async function middleware(req: NextRequest) {
     req.cookies.get('sb-access-token')?.value ||
     req.cookies.get('supabase-auth-token')?.value;
   
+  let session = null;
+  
+  // CRITICAL FIX #4: Add 3-second timeout to setSession
   if (accessToken) {
-    await supabase.auth.setSession({ access_token: accessToken, refresh_token: '' });
+    try {
+      await withTimeout(
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: '' }),
+        3000
+      );
+    } catch (error) {
+      console.error('[MIDDLEWARE] setSession timeout or error:', error);
+      // Continue without session if setSession fails
+    }
   }
 
-  // Get session
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // Check for admin-token cookie (separate from Supabase auth)
-  const adminToken = req.cookies.get('admin-token')?.value;
-  const hasAdminAuth = adminToken ? await verifyAdminToken(adminToken) : false;
+  // CRITICAL FIX #4: Add 3-second timeout to getSession
+  try {
+    const sessionResult = await withTimeout(
+      supabase.auth.getSession(),
+      3000
+    );
+    session = sessionResult?.data?.session || null;
+  } catch (error) {
+    console.error('[MIDDLEWARE] getSession timeout or error:', error);
+    session = null;
+  }
 
   // If not authenticated and trying to access protected route
   if (!session && !hasAdminAuth) {
     // If trying to access admin route, redirect to admin login
-    if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
     // Otherwise redirect to teacher login
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = '/auth/teacher-login';
-    redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
+    redirectUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
   // If authenticated, check role-based access
   if (session) {
-    const { data: userRoles } = await supabase
-      .from('user_roles')
-      .select('role_name')
-      .eq('user_id', session.user.id);
-
-    const roles = userRoles?.map(r => r.role_name) || [];
+    let roles: string[] = [];
+    
+    // CRITICAL FIX #4: Add 3-second timeout to database query
+    // CRITICAL FIX #5: Wrap in try/catch so errors don't break middleware
+    try {
+      const userRolesResult = await withTimeout(
+        supabase
+          .from('user_roles')
+          .select('role_name')
+          .eq('user_id', session.user.id),
+        3000
+      );
+      roles = userRolesResult?.data?.map(r => r.role_name) || [];
+    } catch (error) {
+      console.error('[MIDDLEWARE] Database query timeout or error:', error);
+      // If query fails, continue with empty roles array
+      roles = [];
+    }
 
     // Admin routes - require admin, super_admin, or teacher role OR admin-token cookie
-    // Teachers can access admin pages if they have the appropriate permissions
-    // Individual pages will check permissions at the component level
-    if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (pathname.startsWith('/admin')) {
       // Check if user has admin-token cookie (bypasses Supabase role check)
       if (hasAdminAuth) {
         // Allow access with admin-token
@@ -115,7 +191,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Parent routes - require parent role
-    if (req.nextUrl.pathname.startsWith('/parent')) {
+    if (pathname.startsWith('/parent')) {
       const hasParentAccess = roles.includes('parent');
       
       if (!hasParentAccess) {
@@ -131,7 +207,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Teacher routes - require teacher role (or admin)
-    if (req.nextUrl.pathname.startsWith('/teacher')) {
+    if (pathname.startsWith('/teacher')) {
       const hasTeacherAccess = roles.some(role => 
         role === 'teacher' || role === 'admin' || role === 'super_admin'
       );
@@ -146,7 +222,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // If user is logged in but accessing login page, redirect to appropriate dashboard
-    if (req.nextUrl.pathname === '/auth/teacher-login') {
+    if (pathname === '/auth/teacher-login') {
       if (roles.includes('admin') || roles.includes('super_admin')) {
         return NextResponse.redirect(new URL('/admin', req.url));
       }
@@ -163,6 +239,7 @@ export async function middleware(req: NextRequest) {
 }
 
 // Configure which routes use this middleware
+// CRITICAL FIX #6: Keep the matcher config as backup
 export const config = {
   matcher: [
     /*
@@ -176,4 +253,3 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-
