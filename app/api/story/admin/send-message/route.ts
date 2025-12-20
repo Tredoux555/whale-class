@@ -56,6 +56,41 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    // Ensure story_message_history table exists
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS story_message_history (
+          id SERIAL PRIMARY KEY,
+          week_start_date DATE NOT NULL,
+          message_type VARCHAR(20) NOT NULL,
+          message_content TEXT,
+          media_url TEXT,
+          media_filename TEXT,
+          author VARCHAR(10) NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW(),
+          expires_at TIMESTAMP,
+          is_expired BOOLEAN DEFAULT FALSE
+        )
+      `);
+      
+      // Create indexes if they don't exist
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_story_message_history_week 
+        ON story_message_history(week_start_date)
+      `);
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_story_message_history_created 
+        ON story_message_history(created_at DESC)
+      `);
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_story_message_history_expired 
+        ON story_message_history(is_expired, expires_at)
+      `);
+    } catch (createError) {
+      console.error('Error ensuring table exists:', createError);
+      // Continue anyway - table might already exist
+    }
+
     // Save to message history
     await db.query(
       `INSERT INTO story_message_history 
