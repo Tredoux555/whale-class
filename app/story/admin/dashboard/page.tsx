@@ -39,6 +39,12 @@ export default function StoryAdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [adminUsername, setAdminUsername] = useState('');
+  
+  // Admin message sending state
+  const [adminMessage, setAdminMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageSent, setMessageSent] = useState(false);
+  const [messageError, setMessageError] = useState('');
 
   useEffect(() => {
     verifySession();
@@ -137,6 +143,54 @@ export default function StoryAdminDashboard() {
     });
   };
 
+  const sendAdminMessage = async () => {
+    if (!adminMessage.trim()) return;
+    
+    setSendingMessage(true);
+    setMessageError('');
+    setMessageSent(false);
+
+    const session = sessionStorage.getItem('story_admin_session');
+    if (!session) {
+      setMessageError('Session expired. Please log in again.');
+      setSendingMessage(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/story/admin/send-message', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session}`
+        },
+        body: JSON.stringify({ 
+          message: adminMessage.trim(),
+          author: adminUsername || 'Admin'
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessageSent(true);
+        setAdminMessage('');
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => setMessageSent(false), 3000);
+        // Refresh message history if on messages tab
+        if (activeTab === 'messages') {
+          fetchMessageHistory();
+        }
+      } else {
+        setMessageError(data.error || 'Failed to send message');
+      }
+    } catch (err) {
+      setMessageError('Network error. Please try again.');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -198,6 +252,49 @@ export default function StoryAdminDashboard() {
             {error}
           </div>
         )}
+
+        {/* Admin Message Sender */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">
+            💬 Send Secret Message
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Send a message that will appear when users click the first 't' in the story.
+          </p>
+          
+          <div className="space-y-4">
+            <textarea
+              value={adminMessage}
+              onChange={(e) => setAdminMessage(e.target.value)}
+              placeholder="Type your secret message here..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+              rows={3}
+              disabled={sendingMessage}
+            />
+            
+            <div className="flex items-center gap-4">
+              <button
+                onClick={sendAdminMessage}
+                disabled={sendingMessage || !adminMessage.trim()}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {sendingMessage ? '⏳ Sending...' : '📤 Send Message'}
+              </button>
+              
+              {messageSent && (
+                <span className="text-green-600 font-medium">
+                  ✅ Message sent successfully!
+                </span>
+              )}
+              
+              {messageError && (
+                <span className="text-red-600 font-medium">
+                  ❌ {messageError}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Login Logs Tab */}
         {activeTab === 'logs' && (
