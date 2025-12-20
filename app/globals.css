@@ -90,3 +90,46 @@ body {
 .animate-glow {
   animation: glow 1s infinite;
 }
+
+/* Site Makeover Utility Classes */
+/* Base styles matching admin dashboard */
+body {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-xl shadow-md p-6 border border-slate-100;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors;
+}
+
+/* Form inputs */
+.input {
+  @apply w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+}
+
+/* Headings */
+.heading {
+  @apply text-2xl font-bold text-slate-800;
+}
+
+/* Smooth page transitions */
+.page-container {
+  @apply min-h-screen bg-slate-50 p-4 md:p-6;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply animate-pulse bg-slate-200 rounded;
+}

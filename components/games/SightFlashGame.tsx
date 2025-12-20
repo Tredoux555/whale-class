@@ -1,189 +1,244 @@
 // components/games/SightFlashGame.tsx
-// Fast sight word recognition
+// Flash sight words game with audio
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { SIGHT_WORDS } from '@/lib/games/game-data';
-import { speakWord, playCorrectSound, playWrongSound } from '@/lib/games/sound-utils';
-import GameWrapper, { CorrectFeedback, WrongFeedback, CompleteFeedback } from './GameWrapper';
+import { SIGHT_WORDS_WITH_AUDIO } from '@/lib/games/game-data';
+import { GameAudio } from '@/lib/games/audio-paths';
+import Confetti from './Confetti';
 
-interface Props {
-  level: string;
-}
+const LEVELS = [
+  { id: 'level-1', name: 'Level 1', color: '#22c55e' },
+  { id: 'level-2', name: 'Level 2', color: '#3b82f6' },
+  { id: 'level-3', name: 'Level 3', color: '#8b5cf6' },
+];
 
-export default function SightFlashGame({ level }: Props) {
+export default function SightFlashGame() {
   const router = useRouter();
-  const [words, setWords] = useState<string[]>([]);
+  
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [words, setWords] = useState<{ word: string; audioUrl: string }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [options, setOptions] = useState<string[]>([]);
+  const [showWord, setShowWord] = useState(true);
   const [score, setScore] = useState(0);
   const [showCorrect, setShowCorrect] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
-  const [wrongAnswer, setWrongAnswer] = useState('');
   const [gameComplete, setGameComplete] = useState(false);
-  const [showWord, setShowWord] = useState(true);
-  const [flashDuration, setFlashDuration] = useState(2000);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const totalQuestions = 10;
+  const flashDuration = 2000; // 2 seconds to see word
 
-  // Get words
-  useEffect(() => {
-    const levelKey = level as keyof typeof SIGHT_WORDS;
-    const wordList = SIGHT_WORDS[levelKey] || SIGHT_WORDS['level-1'];
-    const shuffled = [...wordList].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
+  const startGame = (level: string) => {
+    setSelectedLevel(level);
+    const levelWords = SIGHT_WORDS_WITH_AUDIO[level] || [];
+    const shuffled = [...levelWords].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
     setWords(shuffled);
-  }, [level]);
+    setCurrentIndex(0);
+    setScore(0);
+    setGameComplete(false);
+    setShowWord(true);
+  };
 
-  const generateOptions = useCallback(() => {
+  // Flash word then show options
+  useEffect(() => {
+    if (!selectedLevel || words.length === 0 || showCorrect || showWrong) return;
+    
+    setShowWord(true);
+    const timer = setTimeout(() => setShowWord(false), flashDuration);
+    return () => clearTimeout(timer);
+  }, [currentIndex, selectedLevel, words, showCorrect, showWrong]);
+
+  // Generate options
+  useEffect(() => {
     if (words.length === 0 || currentIndex >= words.length) return;
-
+    
     const current = words[currentIndex];
-    const allSightWords = Object.values(SIGHT_WORDS).flat();
-    const otherWords = allSightWords
-      .filter(w => w !== current)
+    const allWords = Object.values(SIGHT_WORDS_WITH_AUDIO).flat();
+    const others = allWords
+      .filter(w => w.word !== current.word)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
-
-    const allOptions = [current, ...otherWords].sort(() => Math.random() - 0.5);
-    setOptions(allOptions);
+    
+    setOptions([current.word, ...others.map(w => w.word)].sort(() => Math.random() - 0.5));
   }, [currentIndex, words]);
 
-  // Flash word then hide
-  useEffect(() => {
-    if (words.length === 0 || currentIndex >= words.length || showCorrect || showWrong) return;
+  // Play audio
+  const playAudio = () => {
+    if (words.length === 0 || currentIndex >= words.length) return;
+    GameAudio.play(words[currentIndex].audioUrl).catch(console.error);
+  };
 
-    setShowWord(true);
-    const timer = setTimeout(() => {
-      setShowWord(false);
-      generateOptions();
-    }, flashDuration);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, words, flashDuration, showCorrect, showWrong, generateOptions]);
-
-  const handleAnswer = (word: string) => {
+  const handleSelect = (selected: string) => {
     if (showCorrect || showWrong || showWord) return;
-
-    const correct = word === words[currentIndex];
-
-    if (correct) {
+    
+    if (selected === words[currentIndex].word) {
       setScore(prev => prev + 1);
       setShowCorrect(true);
-      speakWord(word);
-      // Speed up as player improves
-      if (score > 0 && score % 3 === 0 && flashDuration > 800) {
-        setFlashDuration(prev => prev - 200);
-      }
+      setShowConfetti(true);
+      GameAudio.playCorrect().catch(console.error);
+      setTimeout(() => setShowConfetti(false), 2000);
     } else {
-      setWrongAnswer(words[currentIndex]);
       setShowWrong(true);
+      GameAudio.playWrong().catch(console.error);
     }
   };
 
-  const handleNextQuestion = () => {
+  const handleNext = useCallback(() => {
     setShowCorrect(false);
     setShowWrong(false);
-    setWrongAnswer('');
-
+    
     if (currentIndex + 1 >= totalQuestions) {
       setGameComplete(true);
+      GameAudio.playUI('complete').catch(console.error);
     } else {
       setCurrentIndex(prev => prev + 1);
     }
-  };
+  }, [currentIndex]);
 
-  if (words.length === 0) {
+  useEffect(() => {
+    if (showCorrect || showWrong) {
+      const timer = setTimeout(handleNext, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showCorrect, showWrong, handleNext]);
+
+  // Level selection
+  if (!selectedLevel) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-4xl animate-spin">🎮</div>
+      <div className="min-h-screen bg-gradient-to-br from-violet-400 via-purple-400 to-fuchsia-400 p-4"
+        style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg mb-2">⚡ Sight Flash</h1>
+            <p className="text-white/90">See the word, then find it!</p>
+          </div>
+
+          <div className="space-y-4">
+            {LEVELS.map((level) => (
+              <button key={level.id}
+                onClick={() => startGame(level.id)}
+                className="w-full p-6 bg-white rounded-2xl shadow-xl hover:scale-[1.02] transition-transform">
+                <h3 className="text-xl font-bold" style={{ color: level.color }}>{level.name}</h3>
+                <p className="text-gray-500 text-sm">
+                  {SIGHT_WORDS_WITH_AUDIO[level.id]?.slice(0, 5).map(w => w.word).join(', ')}...
+                </p>
+              </button>
+            ))}
+          </div>
+
+          <button onClick={() => router.push('/games')}
+            className="mt-8 w-full py-3 bg-white/20 text-white rounded-xl font-bold">
+            ← Back to Games
+          </button>
+        </div>
       </div>
     );
   }
 
+  // Game complete
   if (gameComplete) {
     return (
-      <GameWrapper score={score} totalQuestions={totalQuestions} currentQuestion={totalQuestions}>
-        <CompleteFeedback
-          score={score}
-          total={totalQuestions}
-          onPlayAgain={() => {
-            setCurrentIndex(0);
-            setScore(0);
-            setGameComplete(false);
-            setFlashDuration(2000);
-            setWords(prev => [...prev].sort(() => Math.random() - 0.5));
-          }}
-          onExit={() => router.push('/games')}
-        />
-      </GameWrapper>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-violet-400 via-purple-400 to-fuchsia-400"
+        style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+        {score >= 7 && <Confetti />}
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="text-6xl mb-4">{score >= 7 ? '🏆' : '💪'}</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            {score >= 7 ? 'Super Star!' : 'Good Job!'}
+          </h2>
+          <p className="text-gray-600 text-xl mb-6">Score: {score}/{totalQuestions}</p>
+          <div className="space-y-3">
+            <button onClick={() => startGame(selectedLevel)}
+              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl">
+              🔄 Play Again
+            </button>
+            <button onClick={() => setSelectedLevel(null)}
+              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl">
+              ← Choose Level
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <GameWrapper 
-      score={score} 
-      totalQuestions={totalQuestions} 
-      currentQuestion={currentIndex + 1}
-      showCelebration={showCorrect}
-    >
-      <div className="relative">
-        {showCorrect && <CorrectFeedback onComplete={handleNextQuestion} />}
-        {showWrong && <WrongFeedback correctAnswer={wrongAnswer} onComplete={handleNextQuestion} />}
+  const currentWord = words[currentIndex];
 
-        {showWord ? (
-          /* Flash Word Display */
-          <div className="text-center py-16">
-            <p className="text-gray-500 mb-4">Remember this word!</p>
-            <div 
-              className="text-7xl font-bold text-indigo-600 animate-pulse"
-              style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-            >
-              {words[currentIndex]}
-            </div>
-            <div className="mt-6">
-              <div className="h-2 bg-gray-200 rounded-full max-w-xs mx-auto overflow-hidden">
-                <div 
-                  className="h-full bg-indigo-500 animate-shrink"
-                  style={{ animationDuration: `${flashDuration}ms` }}
-                />
+  return (
+    <div className="min-h-screen p-4 bg-gradient-to-br from-violet-400 via-purple-400 to-fuchsia-400"
+      style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+      {showConfetti && <Confetti />}
+
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={() => setSelectedLevel(null)} className="text-white font-bold">← Back</button>
+          <div className="text-white font-bold">{currentIndex + 1}/{totalQuestions}</div>
+          <div className="text-white font-bold">⭐ {score}</div>
+        </div>
+
+        <div className="h-3 bg-white/30 rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-white rounded-full transition-all"
+            style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl p-6 relative overflow-hidden min-h-[400px]">
+          {showCorrect && (
+            <div className="absolute inset-0 flex items-center justify-center bg-green-500/90 rounded-3xl z-10">
+              <div className="text-center">
+                <div className="text-8xl mb-4 animate-bounce">✅</div>
+                <p className="text-white text-3xl font-bold">Correct!</p>
               </div>
             </div>
-          </div>
-        ) : (
-          /* Answer Options */
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-700 mb-8">
-              Which word did you see?
-            </h2>
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-              {options.map((word, index) => (
-                <button
-                  key={`${word}-${index}`}
-                  onClick={() => handleAnswer(word)}
-                  disabled={showCorrect || showWrong}
-                  className="p-5 bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300 rounded-2xl text-2xl font-bold text-gray-800 shadow-lg hover:scale-105 hover:shadow-xl transition-all disabled:opacity-50"
-                  style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-                >
-                  {word}
-                </button>
-              ))}
+          )}
+          
+          {showWrong && (
+            <div className="absolute inset-0 flex items-center justify-center bg-orange-500/90 rounded-3xl z-10">
+              <div className="text-center">
+                <div className="text-6xl mb-4">❌</div>
+                <p className="text-white text-2xl font-bold">It was: {currentWord.word}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <style jsx>{`
-          @keyframes shrink {
-            from { width: 100%; }
-            to { width: 0%; }
-          }
-          .animate-shrink {
-            animation: shrink linear forwards;
-          }
-        `}</style>
+          {showWord ? (
+            <div className="flex flex-col items-center justify-center h-80">
+              <p className="text-gray-500 mb-4">Remember this word!</p>
+              <div className="text-6xl font-bold text-gray-800 animate-pulse">
+                {currentWord.word}
+              </div>
+              <button onClick={playAudio}
+                className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-full font-bold">
+                🔊 Hear It
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="text-center mb-6">
+                <p className="text-xl text-gray-600 mb-4">Which word did you see?</p>
+                <button onClick={playAudio}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-full font-bold">
+                  🔊 Hear It Again
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {options.map((option, index) => (
+                  <button key={`${option}-${index}`}
+                    onClick={() => handleSelect(option)}
+                    disabled={showCorrect || showWrong}
+                    className="p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl text-2xl font-bold text-gray-800 shadow-lg hover:scale-105 active:scale-95 transition-transform disabled:opacity-50">
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </GameWrapper>
+    </div>
   );
 }
-

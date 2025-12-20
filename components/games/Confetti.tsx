@@ -3,55 +3,42 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-interface ConfettiPiece {
-  id: number;
-  x: number;
-  color: string;
-  delay: number;
-  duration: number;
-}
+const COLORS = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6ff2', '#ff9f43'];
 
 export default function Confetti() {
-  const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
-
-  useEffect(() => {
-    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
-    const newPieces: ConfettiPiece[] = [];
-    
-    for (let i = 0; i < 50; i++) {
-      newPieces.push({
-        id: i,
-        x: Math.random() * 100,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        delay: Math.random() * 0.5,
-        duration: 2 + Math.random() * 2,
-      });
-    }
-    
-    setPieces(newPieces);
-  }, []);
+  const pieces = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    delay: `${Math.random() * 0.5}s`,
+    duration: `${1 + Math.random() * 1}s`,
+    size: 8 + Math.random() * 8,
+  }));
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {pieces.map((piece) => (
         <div
           key={piece.id}
-          className="absolute w-3 h-3 rounded-sm animate-confetti"
+          className="absolute animate-confetti"
           style={{
-            left: `${piece.x}%`,
+            left: piece.left,
+            top: '-20px',
+            width: piece.size,
+            height: piece.size,
             backgroundColor: piece.color,
-            animationDelay: `${piece.delay}s`,
-            animationDuration: `${piece.duration}s`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            animationDelay: piece.delay,
+            animationDuration: piece.duration,
           }}
         />
       ))}
-      
       <style jsx>{`
         @keyframes confetti {
           0% {
-            transform: translateY(-10px) rotate(0deg);
+            transform: translateY(0) rotate(0deg);
             opacity: 1;
           }
           100% {
@@ -66,4 +53,3 @@ export default function Confetti() {
     </div>
   );
 }
-

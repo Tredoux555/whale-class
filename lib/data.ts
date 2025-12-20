@@ -50,7 +50,15 @@ export async function getVideos(): Promise<Video[]> {
 
         const text = await data.text();
         const videos = JSON.parse(text);
-        return Array.isArray(videos) ? videos : [];
+        const videosArray = Array.isArray(videos) ? videos : [];
+        // Sort by newest first: uploadedAt DESC, or id DESC if uploadedAt doesn't exist
+        return videosArray.sort((a, b) => {
+          if (a.uploadedAt && b.uploadedAt) {
+            return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+          }
+          // Fallback to id DESC if uploadedAt doesn't exist
+          return (b.id || '').localeCompare(a.id || '');
+        });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Error getting videos from Supabase:", errorMessage);
@@ -74,7 +82,15 @@ export async function getVideos(): Promise<Video[]> {
       
       const data = fs.readFileSync(videosFile, "utf-8");
       const videos = JSON.parse(data);
-      return Array.isArray(videos) ? videos : [];
+      const videosArray = Array.isArray(videos) ? videos : [];
+      // Sort by newest first: uploadedAt DESC, or id DESC if uploadedAt doesn't exist
+      return videosArray.sort((a, b) => {
+        if (a.uploadedAt && b.uploadedAt) {
+          return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+        }
+        // Fallback to id DESC if uploadedAt doesn't exist
+        return (b.id || '').localeCompare(a.id || '');
+      });
     }
   } catch (error) {
     console.error("Error getting videos:", error);
