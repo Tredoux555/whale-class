@@ -16,12 +16,37 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   
+  // Public routes that don't require authentication - CHECK FIRST to avoid unnecessary Supabase calls
+  const publicPaths = [
+    '/auth/teacher-login',
+    '/auth/student-login',
+    '/auth/student-signup',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/reset-password',
+    '/api/auth',
+    '/api/story/auth',
+    '/api/story/admin', // Admin authentication
+    '/api/student',
+    '/story', // Story system (has its own auth)
+    '/games', // Public games access
+    '/admin/login', // Admin login page
+    '/', // Public homepage
+  ];
+
+  const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path));
+  
+  // If public path, skip all auth checks
+  if (isPublicPath) {
+    return res;
+  }
+  
   // Skip auth check if Supabase not configured (build time)
   if (!supabaseUrl || !supabaseAnonKey) {
     return res;
   }
   
-  // Create Supabase client for middleware
+  // Create Supabase client for middleware (only for protected routes)
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false,
@@ -42,32 +67,12 @@ export async function middleware(req: NextRequest) {
   // Get session
   const { data: { session } } = await supabase.auth.getSession();
 
-  // Public routes that don't require authentication
-  const publicPaths = [
-    '/auth/teacher-login',
-    '/auth/student-login',
-    '/auth/student-signup',
-    '/auth/login',
-    '/auth/signup',
-    '/auth/reset-password',
-    '/api/auth',
-    '/api/story/auth',
-    '/api/story/admin', // Admin authentication
-    '/api/student',
-    '/story', // Story system (has its own auth)
-    '/games', // Public games access
-    '/admin/login', // Admin login page
-    '/', // Public homepage
-  ];
-
-  const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path));
-
   // Check for admin-token cookie (separate from Supabase auth)
   const adminToken = req.cookies.get('admin-token')?.value;
   const hasAdminAuth = adminToken ? verifyAdminToken(adminToken) : false;
 
   // If not authenticated and trying to access protected route
-  if (!session && !hasAdminAuth && !isPublicPath) {
+  if (!session && !hasAdminAuth) {
     // If trying to access admin route, redirect to admin login
     if (req.nextUrl.pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
