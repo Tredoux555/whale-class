@@ -96,30 +96,47 @@ export default function MaterialsPage() {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm('Are you sure you want to delete this category? All materials in this category will be moved to General.')) return;
-
-    // Move materials to general category
-    const updatedMaterials = materials.map(material =>
-      material.categoryId === categoryId
-        ? { ...material, categoryId: 'general' }
-        : material
-    );
-
-    // Update materials
-    for (const material of updatedMaterials) {
-      if (material.categoryId === 'general') {
-        await fetch('/api/materials', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: material.id, material }),
-        });
-      }
+    if (!confirm('Are you sure you want to delete this category? All materials will be moved to "Uncategorized".')) {
+      return;
     }
 
-    // Remove category
-    const updatedCategories = categories.filter(cat => cat.id !== categoryId);
-    await updateCategories(updatedCategories);
-    fetchMaterials();
+    try {
+      setLoading(true);
+      
+      // First, get all materials in this category
+      const materialsInCategory = materials.filter(m => m.categoryId === categoryId);
+      
+      // Move materials to uncategorized SEQUENTIALLY (not in parallel)
+      for (const material of materialsInCategory) {
+        const res = await fetch(`/api/materials/${material.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category_id: null }),
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Failed to move material: ${material.title}`);
+        }
+      }
+
+      // Now delete the category
+      const deleteRes = await fetch(`/api/materials/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+
+      if (!deleteRes.ok) {
+        throw new Error('Failed to delete category');
+      }
+
+      // Refresh data
+      await fetchMaterials();
+      
+    } catch (err) {
+      console.error('Error:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete category');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateCategories = async (newCategories: Category[]) => {

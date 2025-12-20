@@ -3,30 +3,83 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+interface Child {
+  id: string;
+  name: string;
+}
+
+interface ProgressStats {
+  completed: number;
+  inProgress: number;
+  totalWorks: number;
+  percentComplete: number;
+  areaProgress: {
+    name: string;
+    color: string;
+    completed: number;
+    total: number;
+    percent: number;
+  }[];
+}
+
 export default function ProgressDashboard() {
-  const [children, setChildren] = useState<any[]>([]);
+  const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<string>('');
   const [view, setView] = useState<'overview' | 'montree' | 'curriculum'>('overview');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<ProgressStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/whale/children');
-        const data = await res.json();
-        const childrenList = data.data || data.children || [];
-        setChildren(childrenList);
-        if (childrenList[0]) {
-          setSelectedChild(childrenList[0].id);
-        }
-      } catch (err) {
-        console.error('Error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
+    fetchChildren();
   }, []);
+
+  useEffect(() => {
+    if (selectedChild) {
+      fetchStats(selectedChild);
+    }
+  }, [selectedChild]);
+
+  const fetchChildren = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/whale/children');
+      
+      if (!res.ok) throw new Error('Failed to fetch children');
+      
+      const data = await res.json();
+      const childrenList = data.children || data.data || [];
+      setChildren(childrenList);
+      
+      if (childrenList[0]) {
+        setSelectedChild(childrenList[0].id);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Failed to load children');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async (childId: string) => {
+    try {
+      setStatsLoading(true);
+      const res = await fetch(`/api/whale/children/${childId}/progress`);
+      
+      if (!res.ok) throw new Error('Failed to fetch progress');
+      
+      const data = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      setStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   return (
     <div 
@@ -83,60 +136,94 @@ export default function ProgressDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {view === 'overview' && selectedChild && (
-          <OverviewTab childId={selectedChild} />
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
+            {error}
+            <button onClick={fetchChildren} className="ml-4 underline">Retry</button>
+          </div>
         )}
-        {view === 'montree' && (
-          <div className="bg-white rounded-xl p-4">
-            <p className="text-gray-500 mb-4">
-              Embed the Montree progress component here from /admin/montree-progress
-            </p>
-            <Link 
-              href={`/admin/montree-progress?child=${selectedChild}`}
-              className="text-emerald-600 hover:underline"
-            >
-              Open full Montree view →
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+          </div>
+        ) : children.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">👶</div>
+            <h2 className="text-xl font-bold mb-2">No Children Found</h2>
+            <p className="text-gray-500 mb-4">Add children first to track progress</p>
+            <Link href="/admin/children" className="text-emerald-600 underline">
+              Go to Children Page
             </Link>
           </div>
-        )}
-        {view === 'curriculum' && (
-          <div className="bg-white rounded-xl p-4">
-            <p className="text-gray-500 mb-4">
-              Show curriculum progress from /admin/curriculum-progress
-            </p>
-            {selectedChild && (
-              <Link 
-                href={`/admin/curriculum-progress?childId=${selectedChild}`}
-                className="text-blue-600 hover:underline"
-              >
-                View detailed curriculum progress →
-              </Link>
+        ) : (
+          <>
+            {view === 'overview' && (
+              <OverviewTab stats={stats} loading={statsLoading} />
             )}
-          </div>
+            {view === 'montree' && selectedChild && (
+              <div className="bg-white rounded-xl p-6">
+                <h2 className="text-xl font-bold mb-4">🌳 Montree Progress View</h2>
+                <Link 
+                  href={`/admin/montree-progress?child=${selectedChild}`}
+                  className="inline-block px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                >
+                  Open Full Montree View →
+                </Link>
+              </div>
+            )}
+            {view === 'curriculum' && selectedChild && (
+              <div className="bg-white rounded-xl p-6">
+                <h2 className="text-xl font-bold mb-4">📚 Curriculum Progress</h2>
+                <Link 
+                  href={`/admin/child-progress/${selectedChild}`}
+                  className="inline-block px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                >
+                  Open Detailed Progress View →
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
   );
 }
 
-function OverviewTab({ childId }: { childId: string }) {
-  // Fetch and display child progress overview
+function OverviewTab({ stats, loading }: { stats: ProgressStats | null; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        No progress data available
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl p-6 text-center">
           <div className="text-4xl mb-2">✅</div>
-          <div className="text-3xl font-bold text-green-600">24</div>
+          <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
           <div className="text-gray-500">Completed Works</div>
         </div>
         <div className="bg-white rounded-xl p-6 text-center">
           <div className="text-4xl mb-2">🔄</div>
-          <div className="text-3xl font-bold text-yellow-600">5</div>
+          <div className="text-3xl font-bold text-yellow-600">{stats.inProgress}</div>
           <div className="text-gray-500">In Progress</div>
         </div>
         <div className="bg-white rounded-xl p-6 text-center">
           <div className="text-4xl mb-2">📈</div>
-          <div className="text-3xl font-bold text-blue-600">12%</div>
+          <div className="text-3xl font-bold text-blue-600">{stats.percentComplete}%</div>
           <div className="text-gray-500">Overall Progress</div>
         </div>
       </div>
@@ -145,22 +232,19 @@ function OverviewTab({ childId }: { childId: string }) {
       <div className="bg-white rounded-xl p-6">
         <h3 className="font-bold text-gray-900 mb-4">Progress by Area</h3>
         <div className="space-y-3">
-          {[
-            { name: 'Practical Life', color: 'bg-green-500', progress: 25 },
-            { name: 'Sensorial', color: 'bg-orange-500', progress: 18 },
-            { name: 'Mathematics', color: 'bg-blue-500', progress: 8 },
-            { name: 'Language', color: 'bg-pink-500', progress: 12 },
-            { name: 'Cultural', color: 'bg-purple-500', progress: 5 },
-          ].map((area) => (
+          {stats.areaProgress.map((area) => (
             <div key={area.name}>
               <div className="flex justify-between text-sm mb-1">
                 <span>{area.name}</span>
-                <span>{area.progress}%</span>
+                <span>{area.completed}/{area.total} ({area.percent}%)</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full ${area.color} rounded-full`}
-                  style={{ width: `${area.progress}%` }}
+                  className="h-full rounded-full transition-all"
+                  style={{ 
+                    width: `${area.percent}%`,
+                    backgroundColor: area.color 
+                  }}
                 />
               </div>
             </div>
