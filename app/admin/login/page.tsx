@@ -62,10 +62,6 @@ export default function AdminLogin() {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('=== FORM SUBMITTED ===');
-    console.log('Username:', username);
-    console.log('Password length:', password.length);
-    
     if (!username || !password) {
       setError('Please enter both username and password');
       return;
@@ -75,68 +71,47 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      console.log('Making fetch request to /api/auth/login');
-      console.log('Request body:', { username, password: '***' });
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
-        signal: controller.signal,
+        credentials: 'include', // Important: include cookies
       });
-      
-      clearTimeout(timeoutId);
 
-      console.log('Response received', { status: response.status, ok: response.ok });
-
-      let data;
-      try {
-        data = await response.json();
-        console.log('Response data', data);
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response', jsonError);
-        setError("Invalid response from server");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
+        setError(errorData.error || "Login failed");
         setLoading(false);
         return;
       }
 
-      if (response.ok) {
-        console.log('Login successful, redirecting...');
-        // After successful login, sync proxy mode with server
+      const data = await response.json();
+      
+      if (data.success) {
+        // Small delay to ensure cookie is set before redirect
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // After successful login, sync proxy mode with server (non-blocking)
         if (proxyEnabled) {
-          try {
-            await fetch("/api/admin/proxy-mode", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ enabled: true }),
-            });
-          } catch (proxyError) {
-            console.error('Proxy mode sync failed', proxyError);
-            // Don't fail login if proxy sync fails
-          }
+          fetch("/api/admin/proxy-mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled: true }),
+          }).catch(() => {}); // Ignore errors
         }
-        router.push("/admin");
-        router.refresh();
+        
+        // Redirect to admin dashboard
+        window.location.href = "/admin";
       } else {
-        console.error('Login failed', data);
         setError(data.error || "Login failed");
         setLoading(false);
       }
     } catch (error) {
-      console.error('=== LOGIN EXCEPTION ===');
-      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : String(error));
-      console.error('Error name:', error instanceof Error ? error.name : 'N/A');
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        setError('Request timed out. Please check your connection and try again.');
-      } else if (error instanceof TypeError && error.message.includes('fetch')) {
-        setError('Network error: Unable to connect to server. Please check your internet connection.');
+      console.error('Login error:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError('Network error: Unable to connect to server. Please check your connection.');
       } else {
-        setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your connection.`);
+        setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
       }
       setLoading(false);
     }
