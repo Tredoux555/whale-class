@@ -61,18 +61,34 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    alert('Form handler called!'); // Debug alert
-    console.log('Form submitted', { username, password: '***' });
+    
+    console.log('=== FORM SUBMITTED ===');
+    console.log('Username:', username);
+    console.log('Password length:', password.length);
+    
+    if (!username || !password) {
+      setError('Please enter both username and password');
+      return;
+    }
+    
     setError("");
     setLoading(true);
 
     try {
       console.log('Making fetch request to /api/auth/login');
+      console.log('Request body:', { username, password: '***' });
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       console.log('Response received', { status: response.status, ok: response.ok });
 
@@ -110,8 +126,18 @@ export default function AdminLogin() {
         setLoading(false);
       }
     } catch (error) {
-      console.error('Login exception', error);
-      setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your connection.`);
+      console.error('=== LOGIN EXCEPTION ===');
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error name:', error instanceof Error ? error.name : 'N/A');
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timed out. Please check your connection and try again.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError('Network error: Unable to connect to server. Please check your internet connection.');
+      } else {
+        setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your connection.`);
+      }
       setLoading(false);
     }
   };
