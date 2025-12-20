@@ -11,10 +11,10 @@ const AREA_COLORS: Record<string, string> = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ childId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { childId } = await params;
+    const { id: childId } = await params;
 
     // Get total works count
     const totalResult = await db.query(

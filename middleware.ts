@@ -158,10 +158,12 @@ export async function middleware(req: NextRequest) {
     // CRITICAL FIX #5: Wrap in try/catch so errors don't break middleware
     try {
       const userRolesResult = await withTimeout(
-        supabase
-          .from('user_roles')
-          .select('role_name')
-          .eq('user_id', session.user.id),
+        Promise.resolve(
+          supabase
+            .from('user_roles')
+            .select('role_name')
+            .eq('user_id', session.user.id)
+        ),
         3000
       );
       roles = userRolesResult?.data?.map(r => r.role_name) || [];
