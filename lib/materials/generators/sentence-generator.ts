@@ -1,13 +1,31 @@
 // lib/materials/generators/sentence-generator.ts
-// Sentence strips with LARGE kindergarten-readable text
+// Sentence strips with LARGE kindergarten-readable text and educational font
 
 import jsPDF from 'jspdf';
 import { SENTENCES } from '../language-data';
+import { AndikaFont, isAndikaFontLoaded } from '../fonts/andika';
 
 export type SentenceLevel = 'pink-level' | 'blue-level' | 'green-level' | 'all';
 
 export interface SentenceOptions {
   level: SentenceLevel;
+}
+
+// Register educational font if available
+function registerEducationalFont(pdf: jsPDF): void {
+  if (isAndikaFontLoaded()) {
+    try {
+      pdf.addFileToVFS('Andika-Regular.ttf', AndikaFont.normal);
+      pdf.addFont('Andika-Regular.ttf', 'Andika', 'normal');
+    } catch (error) {
+      console.warn('Failed to register Andika font, using Helvetica fallback:', error);
+    }
+  }
+}
+
+// Get the appropriate font name (educational font if available, else Helvetica)
+function getEducationalFont(): string {
+  return isAndikaFontLoaded() ? 'Andika' : 'helvetica';
 }
 
 export function generateSentenceStripsPDF(options: SentenceOptions): jsPDF {
@@ -16,6 +34,9 @@ export function generateSentenceStripsPDF(options: SentenceOptions): jsPDF {
     unit: 'mm',
     format: 'a4',
   });
+
+  // Register educational font if available
+  registerEducationalFont(pdf);
 
   const levels = options.level === 'all' 
     ? Object.keys(SENTENCES) 
@@ -48,12 +69,13 @@ export function generateSentenceStripsPDF(options: SentenceOptions): jsPDF {
   pdf.setFillColor(250, 250, 250);
   pdf.rect(0, 0, pageWidth, pageHeight, 'F');
   
-  pdf.setFont('helvetica', 'bold');
+  const fontName = getEducationalFont();
+  pdf.setFont(fontName, isAndikaFontLoaded() ? 'normal' : 'bold');
   pdf.setFontSize(48);
   pdf.setTextColor(50, 50, 50);
   pdf.text('Sentence Strips', pageWidth / 2, 70, { align: 'center' });
   
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(fontName, 'normal');
   pdf.setFontSize(20);
   pdf.setTextColor(100, 100, 100);
   pdf.text(`${allSentences.length} sentences for reading practice`, pageWidth / 2, 95, { align: 'center' });
@@ -83,9 +105,10 @@ export function generateSentenceStripsPDF(options: SentenceOptions): jsPDF {
       pdf.setFillColor(colors.dot[0], colors.dot[1], colors.dot[2]);
       pdf.circle(margin + 18, y + stripHeight / 2, 6, 'F');
       
-      // SENTENCE TEXT - LARGE AND BOLD FOR KINDERGARTEN
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(36); // Large, readable text
+      // SENTENCE TEXT - Educational font, LARGE FOR KINDERGARTEN
+      const fontName = getEducationalFont();
+      pdf.setFont(fontName, isAndikaFontLoaded() ? 'normal' : 'bold');
+      pdf.setFontSize(44); // Large, readable text (increased from 36)
       pdf.setTextColor(30, 30, 30);
       
       // Center vertically in strip
@@ -105,7 +128,7 @@ export function generateSentenceStripsPDF(options: SentenceOptions): jsPDF {
     }
     
     // Page number
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('helvetica', 'normal'); // Use default font for page numbers
     pdf.setFontSize(10);
     pdf.setTextColor(150, 150, 150);
     pdf.text(

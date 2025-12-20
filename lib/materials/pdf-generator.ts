@@ -1,5 +1,5 @@
 // lib/materials/pdf-generator.ts
-// PDF generation with kindergarten-appropriate sizing
+// PDF generation with kindergarten-appropriate sizing and educational font
 
 import jsPDF from 'jspdf';
 import { 
@@ -9,21 +9,22 @@ import {
   MaterialCard,
   MaterialConfig,
 } from './types';
+import { AndikaFont, isAndikaFontLoaded } from './fonts/andika';
 
 const A4_WIDTH = 210;
 const A4_HEIGHT = 297;
 const MARGIN = 10;
 
-// Kindergarten-appropriate font sizes (MUCH LARGER)
+// Kindergarten-appropriate font sizes (LARGE for readability)
 const KINDERGARTEN_FONT_SIZES: Record<CardSize, number> = {
-  small: 32,      // Was ~24
-  medium: 48,     // Was ~36
-  large: 64,      // Was ~48
-  jumbo: 96,      // Was ~72
+  small: 40,      // Increased for better readability
+  medium: 56,     // Large enough for 3-6 year olds
+  large: 80,      // Very large for main cards
+  jumbo: 110,     // Jumbo size for emphasis
 };
 
 // Sentence strip font size
-const SENTENCE_FONT_SIZE = 36; // Large, clear text for reading
+const SENTENCE_FONT_SIZE = 44; // Large, clear text for reading
 
 export function generateMaterialPDF(
   title: string,
@@ -44,6 +45,9 @@ export function generateMaterialPDF(
     unit: 'mm',
     format: 'a4',
   });
+
+  // Register educational font if available
+  registerEducationalFont(pdf);
 
   // Title page
   addTitlePage(pdf, title, config, cards.length);
@@ -78,6 +82,23 @@ export function generateMaterialPDF(
   return pdf;
 }
 
+// Register educational font (Andika) if available
+function registerEducationalFont(pdf: jsPDF): void {
+  if (isAndikaFontLoaded()) {
+    try {
+      pdf.addFileToVFS('Andika-Regular.ttf', AndikaFont.normal);
+      pdf.addFont('Andika-Regular.ttf', 'Andika', 'normal');
+    } catch (error) {
+      console.warn('Failed to register Andika font, using Helvetica fallback:', error);
+    }
+  }
+}
+
+// Get the appropriate font name (educational font if available, else Helvetica)
+function getEducationalFont(): string {
+  return isAndikaFontLoaded() ? 'Andika' : 'helvetica';
+}
+
 function addTitlePage(
   pdf: jsPDF, 
   title: string, 
@@ -89,18 +110,19 @@ function addTitlePage(
   pdf.setFillColor(bgColor.r, bgColor.g, bgColor.b);
   pdf.rect(0, 0, A4_WIDTH, A4_HEIGHT, 'F');
   
-  // Title - Large and bold
-  pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(36);
+  // Title - Use educational font if available
+  const fontName = getEducationalFont();
+  pdf.setFont(fontName, isAndikaFontLoaded() ? 'normal' : 'bold');
+  pdf.setFontSize(40);
   const titleColor = hexToRgb(config.color);
   pdf.setTextColor(titleColor.r, titleColor.g, titleColor.b);
   pdf.text(title, A4_WIDTH / 2, 60, { align: 'center' });
   
   // Subtitle
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(16);
+  pdf.setFont(fontName, 'normal');
+  pdf.setFontSize(18);
   pdf.setTextColor(100, 100, 100);
-  pdf.text('Montessori Language Materials', A4_WIDTH / 2, 75, { align: 'center' });
+  pdf.text('Montessori Language Materials', A4_WIDTH / 2, 78, { align: 'center' });
   
   // Info box
   pdf.setFillColor(255, 255, 255);
@@ -141,8 +163,9 @@ function drawCard(
   pdf.setLineWidth(0.8);
   pdf.roundedRect(x, y, width, height, 4, 4, 'FD');
   
-  // MAIN TEXT - CENTERED, LARGE, BOLD
-  pdf.setFont('helvetica', 'bold');
+  // MAIN TEXT - Educational font, LARGE, CENTERED
+  const fontName = getEducationalFont();
+  pdf.setFont(fontName, isAndikaFontLoaded() ? 'normal' : 'bold');
   pdf.setFontSize(fontSize);
   
   const textColor = hexToRgb(config.color);
@@ -160,10 +183,10 @@ function drawCard(
   
   // Phonetic hint (smaller, at bottom) - only for letter cards
   if (card.phonetic) {
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(fontSize * 0.3);
+    pdf.setFont(fontName, 'normal');
+    pdf.setFontSize(fontSize * 0.25);
     pdf.setTextColor(120, 120, 120);
-    pdf.text(card.phonetic, centerX, y + height - 6, {
+    pdf.text(card.phonetic, centerX, y + height - 5, {
       align: 'center',
     });
   }
