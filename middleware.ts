@@ -8,6 +8,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyAdminToken } from '@/lib/auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -55,13 +56,23 @@ export async function middleware(req: NextRequest) {
     '/api/student',
     '/story', // Story system (has its own auth)
     '/games', // Public games access
+    '/admin/login', // Admin login page
     '/', // Public homepage
   ];
 
   const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path));
 
+  // Check for admin-token cookie (separate from Supabase auth)
+  const adminToken = req.cookies.get('admin-token')?.value;
+  const hasAdminAuth = adminToken ? verifyAdminToken(adminToken) : false;
+
   // If not authenticated and trying to access protected route
-  if (!session && !isPublicPath) {
+  if (!session && !hasAdminAuth && !isPublicPath) {
+    // If trying to access admin route, redirect to admin login
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/admin/login', req.url));
+    }
+    // Otherwise redirect to teacher login
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = '/auth/teacher-login';
     redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
@@ -77,10 +88,17 @@ export async function middleware(req: NextRequest) {
 
     const roles = userRoles?.map(r => r.role_name) || [];
 
-    // Admin routes - require admin, super_admin, or teacher role
+    // Admin routes - require admin, super_admin, or teacher role OR admin-token cookie
     // Teachers can access admin pages if they have the appropriate permissions
     // Individual pages will check permissions at the component level
     if (req.nextUrl.pathname.startsWith('/admin')) {
+      // Check if user has admin-token cookie (bypasses Supabase role check)
+      if (hasAdminAuth) {
+        // Allow access with admin-token
+        return res;
+      }
+      
+      // Otherwise check Supabase roles
       const hasAdminAccess = roles.some(role => 
         role === 'admin' || role === 'super_admin' || role === 'teacher'
       );
