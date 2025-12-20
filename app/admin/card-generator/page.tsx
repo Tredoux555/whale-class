@@ -55,6 +55,19 @@ const MontessoriCardGenerator = () => {
     const files = Array.from(e.target.files || []);
     
     files.forEach((file) => {
+      // File size validation (max 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('File is too large. Maximum size is 10MB.');
+        return;
+      }
+
+      // File type validation
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+      }
+
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -141,25 +154,47 @@ const MontessoriCardGenerator = () => {
     setCropData({ startX: 0, startY: 0, endX: 0, endY: 0 });
   };
 
-  // Crop canvas mouse handlers
-  const handleCropMouseDown = (e: React.MouseEvent) => {
+  // Crop canvas mouse handlers (with touch support)
+  const handleCropStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     if (!cropCanvasRef.current) return;
     const rect = cropCanvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    
+    let clientX, clientY;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     setCropData({ startX: x, startY: y, endX: x, endY: y });
     setIsDragging(true);
   };
 
-  const handleCropMouseMove = (e: React.MouseEvent) => {
+  const handleCropMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !cropCanvasRef.current) return;
+    e.preventDefault();
     const rect = cropCanvasRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+    
+    let clientX, clientY;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
     setCropData(prev => ({ ...prev, endX: x, endY: y }));
   };
 
-  const handleCropMouseUp = () => {
+  const handleCropEnd = () => {
     setIsDragging(false);
   };
 
@@ -971,10 +1006,13 @@ const MontessoriCardGenerator = () => {
           
           <div
             ref={cropCanvasRef}
-            onMouseDown={handleCropMouseDown}
-            onMouseMove={handleCropMouseMove}
-            onMouseUp={handleCropMouseUp}
-            onMouseLeave={handleCropMouseUp}
+            onMouseDown={handleCropStart}
+            onMouseMove={handleCropMove}
+            onMouseUp={handleCropEnd}
+            onMouseLeave={handleCropEnd}
+            onTouchStart={handleCropStart}
+            onTouchMove={handleCropMove}
+            onTouchEnd={handleCropEnd}
             style={{
               position: 'relative',
               cursor: 'crosshair',

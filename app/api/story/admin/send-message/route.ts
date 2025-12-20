@@ -93,11 +93,35 @@ export async function POST(req: NextRequest) {
     
     // Handle JWT verification errors
     if (error instanceof Error && error.message.includes('JWT')) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Invalid session',
+        details: error.message 
+      }, { status: 401 });
+    }
+    
+    // Handle database errors
+    if (error instanceof Error) {
+      const errorMessage = error.message;
+      
+      // Check for specific database errors
+      if (errorMessage.includes('does not exist') || errorMessage.includes('relation')) {
+        return NextResponse.json({
+          error: 'Database table missing',
+          details: errorMessage,
+          hint: 'Make sure story_message_history and secret_stories tables exist'
+        }, { status: 500 });
+      }
+      
+      // Return detailed error in development
+      return NextResponse.json({
+        error: 'Failed to send message',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+        stack: process.env.NODE_ENV === 'development' && error.stack ? error.stack : undefined
+      }, { status: 500 });
     }
     
     return NextResponse.json(
-      { error: 'Failed to send message' },
+      { error: 'Failed to send message', details: 'Unknown error' },
       { status: 500 }
     );
   }

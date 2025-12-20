@@ -49,6 +49,8 @@ export default function RBACManagementPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
   
   // New teacher form
   const [showAddTeacher, setShowAddTeacher] = useState(false);
@@ -76,6 +78,8 @@ export default function RBACManagementPage() {
       loadPermissions();
     } else if (activeTab === 'teachers') {
       loadTeachers();
+    } else if (activeTab === 'audit') {
+      fetchAuditLogs();
     }
   }, [activeTab, selectedRole]);
 
@@ -104,6 +108,21 @@ export default function RBACManagementPage() {
       setFeatures(data.permissions || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load permissions');
+    }
+  }
+
+  async function fetchAuditLogs() {
+    try {
+      setAuditLoading(true);
+      const res = await fetch('/api/admin/audit-logs');
+      if (res.ok) {
+        const data = await res.json();
+        setAuditLogs(data.logs || []);
+      }
+    } catch (err) {
+      console.error('Error fetching audit logs:', err);
+    } finally {
+      setAuditLoading(false);
     }
   }
 
@@ -531,9 +550,38 @@ export default function RBACManagementPage() {
         {/* Audit Log Tab */}
         {activeTab === 'audit' && (
           <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-500 text-center py-12">
-              Audit log feature coming soon
-            </p>
+            <h2 className="text-xl font-bold mb-4">📋 Audit Log</h2>
+            
+            {auditLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+              </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">📝</div>
+                <p>No audit logs yet</p>
+                <p className="text-sm">Permission changes will be logged here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {auditLogs.map((log, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{log.action}</span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(log.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {log.details}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      By: {log.performed_by}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

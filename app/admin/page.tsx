@@ -56,14 +56,6 @@ const NAV_SECTIONS: NavSection[] = [
       { name: 'Teachers', href: '/admin/rbac-management', icon: '👩‍🏫', description: 'Roles & permissions', color: 'bg-slate-600' },
     ],
   },
-  {
-    title: 'Settings',
-    icon: '⚙️',
-    items: [
-      { name: 'Seed Data', href: '/admin/seed', icon: '🌱', description: 'Initialize curriculum', color: 'bg-lime-600' },
-      { name: 'Testing', href: '/admin/testing-dashboard', icon: '🧪', description: 'Dev tools', color: 'bg-gray-500' },
-    ],
-  },
 ];
 
 export default function AdminDashboard() {
