@@ -16,26 +16,49 @@ export default function StoryLogin() {
     setIsLoading(true);
     
     try {
+      // Validate inputs
+      if (!username.trim() || !password.trim()) {
+        setError('Please enter both username and password');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Attempting login for user:', username); // Debug log
+      
       const res = await fetch('/api/story/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       });
 
+      console.log('Login response status:', res.status); // Debug log
+
       if (res.ok) {
-        const { session } = await res.json();
-        // Store session in sessionStorage (cleared on browser close)
-        sessionStorage.setItem('story_session', session);
-        router.push(`/story/${session}`);
+        const data = await res.json();
+        if (data.session) {
+          // Store session in sessionStorage (cleared on browser close)
+          sessionStorage.setItem('story_session', data.session);
+          router.push(`/story/${data.session}`);
+        } else {
+          setError('Invalid response from server');
+          setIsLoading(false);
+        }
       } else {
         // Get error details from response
-        const errorData = await res.json().catch(() => ({}));
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { error: `Server error (${res.status})` };
+        }
         setError(errorData.details || errorData.error || 'Invalid credentials');
         console.error('Login error:', errorData);
+        setIsLoading(false);
       }
     } catch (err) {
-      setError('Connection error');
-    } finally {
+      console.error('Login exception:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Connection error';
+      setError(`Connection error: ${errorMessage}. Please check your internet connection and try again.`);
       setIsLoading(false);
     }
   };
