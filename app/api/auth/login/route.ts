@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createAdminToken } from "@/lib/auth";
 
+// Force Node.js runtime for this route (not Edge)
+export const runtime = 'nodejs';
+
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "Tredoux";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "870602";
 
