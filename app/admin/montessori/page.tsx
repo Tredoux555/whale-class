@@ -42,7 +42,10 @@ export default function MontessoriDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#B8E0F0]">
+    <div 
+      className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#B8E0F0]"
+      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+    >
       {/* Header */}
       <header className="bg-[#4A90E2] text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">

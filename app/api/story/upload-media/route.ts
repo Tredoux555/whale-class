@@ -78,7 +78,10 @@ export async function POST(req: NextRequest) {
       'video/webm', 
       'video/quicktime',
       'video/x-msvideo', // AVI
-      'video/x-matroska' // MKV
+      'video/x-matroska', // MKV
+      'video/avi', // Alternative AVI MIME
+      'video/x-m4v', // M4V
+      'application/octet-stream' // Some mobile devices send videos as this
     ];
     
     // Check by MIME type or file extension
@@ -86,7 +89,9 @@ export async function POST(req: NextRequest) {
     const isValidImage = validImageTypes.includes(file.type) || 
                          (messageType === 'image' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'].includes(fileExtension || ''));
     const isValidVideo = validVideoTypes.includes(file.type) || 
-                         (messageType === 'video' && ['mp4', 'webm', 'mov', 'quicktime'].includes(fileExtension || ''));
+                         (messageType === 'video' && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'quicktime'].includes(fileExtension || '')) ||
+                         // Handle cases where MIME type is generic but extension indicates video
+                         (file.type === 'application/octet-stream' && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v'].includes(fileExtension || ''));
     
     if (messageType === 'image' && !isValidImage) {
       return NextResponse.json(

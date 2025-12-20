@@ -33,6 +33,7 @@ export default function StoryViewer() {
   const [uploadError, setUploadError] = useState('');
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [lastLetterTapped, setLastLetterTapped] = useState(false);
+  const [showMediaItems, setShowMediaItems] = useState(false);
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,10 +107,22 @@ export default function StoryViewer() {
     setUploadError('');
 
     try {
-      // Validate file before upload
+      // Detect file type first to determine size limit
+      const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+      const isImage = file.type.startsWith('image/') || file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i);
+      
+      // Validate file before upload - different limits for images vs videos
       const fileSizeMB = file.size / 1024 / 1024;
-      if (fileSizeMB > 50) {
-        setUploadError(`File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 50MB.`);
+      const maxSizeMB = isVideo ? 100 : 50; // Videos: 100MB, Images: 50MB
+      
+      if (fileSizeMB > maxSizeMB) {
+        setUploadError(`File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is ${maxSizeMB}MB for ${isVideo ? 'videos' : 'images'}.`);
+        setIsUploadingMedia(false);
+        return;
+      }
+
+      if (!isImage && !isVideo) {
+        setUploadError('Unsupported file type. Please select an image or video file.');
         setIsUploadingMedia(false);
         return;
       }
@@ -118,11 +131,8 @@ export default function StoryViewer() {
       formData.append('file', file);
       formData.append('author', username);
       
-      // Auto-detect type (let server handle it if type is unclear)
-      const messageType = file.type.startsWith('image/') ? 'image' : 
-                         file.type.startsWith('video/') ? 'video' : 
-                         file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i) ? 'image' :
-                         file.name.match(/\.(mp4|webm|mov)$/i) ? 'video' : 'image';
+      // Auto-detect type (prioritize video detection)
+      const messageType = isVideo ? 'video' : 'image';
       formData.append('type', messageType);
 
       const res = await fetch('/api/story/upload-media', {
@@ -169,8 +179,11 @@ export default function StoryViewer() {
     const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
 
     if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
+      // Clicking 't' ONLY toggles the decoded message
+      // It should NEVER show media items - media is controlled by last letter only
       setIsDecoded(!isDecoded);
       setIsEditing(false); // Close editor if open
+      // Do NOT modify showMediaItems here at all - keep it completely separate
     } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
       setIsEditing(true);
       setIsDecoded(false); // Close decoder if open
@@ -183,8 +196,13 @@ export default function StoryViewer() {
 
   const handleLastLetterClick = () => {
     if (!lastLetterTapped) {
+      // First tap: show upload section only, keep media hidden
       setLastLetterTapped(true);
       setShowUploadSection(true);
+      setShowMediaItems(false); // Explicitly keep media hidden on first tap
+    } else {
+      // Second tap onwards: toggle media items visibility only
+      setShowMediaItems(prev => !prev);
     }
   };
 
@@ -368,7 +386,6 @@ export default function StoryViewer() {
                 accept="image/*,video/*,.heic,.heif"
                 onChange={handleFileUpload}
                 disabled={isUploadingMedia}
-                capture="environment"
                 className="block w-full text-sm text-gray-600
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-lg file:border-0
@@ -378,7 +395,7 @@ export default function StoryViewer() {
                   disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-gray-500 mt-2">
-                Supported: JPEG, PNG, GIF, WebP, HEIC (iOS), MP4, WebM, MOV. Max size: 50MB
+                Supported: JPEG, PNG, GIF, WebP, HEIC (iOS), MP4, WebM, MOV, AVI, MKV. Max size: Images 50MB, Videos 100MB
               </p>
               {isUploadingMedia && (
                 <div className="mt-2">
@@ -398,8 +415,8 @@ export default function StoryViewer() {
           </div>
         )}
 
-        {/* Display Current Media - Only show when decoded */}
-        {isDecoded && mediaItems.length > 0 && (
+        {/* Display Current Media - Only show when showMediaItems is true */}
+        {showMediaItems && mediaItems.length > 0 && (
           <div className="bg-white rounded-lg shadow-xl p-8">
             <h3 className="text-xl font-bold mb-4 text-gray-800">📸 Shared Photos & Videos:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
