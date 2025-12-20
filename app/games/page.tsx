@@ -1,160 +1,125 @@
 // app/games/page.tsx
-// Main game hub - publicly accessible
+// Main games hub page
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { GAMES, PHASE_INFO, getGamesForPhase } from '@/lib/games/game-config';
-import { GamePhase } from '@/lib/games/types';
 
-export default function GamesHub() {
-  const [selectedPhase, setSelectedPhase] = useState<GamePhase>('letters');
-  
-  const phases = Object.entries(PHASE_INFO).sort((a, b) => a[1].order - b[1].order);
-  const availableGames = getGamesForPhase(selectedPhase);
+const GAMES = [
+  {
+    id: 'letter-sound',
+    name: 'Letter Sounds',
+    description: 'Hear a sound, find the letter!',
+    icon: '🔊',
+    color: '#ef4444',
+    minAge: 2,
+  },
+  {
+    id: 'letter-trace',
+    name: 'Letter Trace',
+    description: 'Practice writing letters!',
+    icon: '✏️',
+    color: '#f97316',
+    minAge: 2,
+  },
+  {
+    id: 'word-building',
+    name: 'Word Building',
+    description: 'Build words letter by letter!',
+    icon: '🔤',
+    color: '#eab308',
+    minAge: 3,
+  },
+  {
+    id: 'picture-match',
+    name: 'Picture Match',
+    description: 'Match pictures to words!',
+    icon: '🖼️',
+    color: '#22c55e',
+    minAge: 3,
+  },
+  {
+    id: 'missing-letter',
+    name: 'Missing Letter',
+    description: 'Find the missing letter!',
+    icon: '❓',
+    color: '#3b82f6',
+    minAge: 4,
+  },
+  {
+    id: 'sight-flash',
+    name: 'Sight Flash',
+    description: 'Remember sight words quickly!',
+    icon: '⚡',
+    color: '#8b5cf6',
+    minAge: 4,
+  },
+  {
+    id: 'sentence-build',
+    name: 'Sentence Build',
+    description: 'Put words in order!',
+    icon: '📝',
+    color: '#ec4899',
+    minAge: 5,
+  },
+];
 
+export default function GamesPage() {
   return (
     <div 
-      className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500"
+      className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-4"
       style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
     >
-      {/* Header */}
-      <header className="bg-white/10 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="text-white/80 hover:text-white text-2xl">
-                ←
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-white drop-shadow-lg">
-                  🎮 Learning Games
-                </h1>
-                <p className="text-white/80 text-sm">Fun English practice!</p>
-              </div>
-            </div>
-            <div className="text-5xl animate-bounce">
-              🌟
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Phase Selector */}
-        <div className="mb-8">
-          <h2 className="text-white text-xl font-bold mb-4 drop-shadow">
-            Choose Your Level:
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {phases.map(([phase, info]) => (
-              <button
-                key={phase}
-                onClick={() => setSelectedPhase(phase as GamePhase)}
-                className={`px-5 py-3 rounded-2xl font-bold text-lg transition-all transform hover:scale-105 ${
-                  selectedPhase === phase
-                    ? 'bg-white text-gray-800 shadow-xl scale-105'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                <span className="mr-2">{info.icon}</span>
-                {info.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Current Phase Info */}
-        <div className="bg-white/20 backdrop-blur rounded-3xl p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="text-6xl">
-              {PHASE_INFO[selectedPhase].icon}
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">
-                {PHASE_INFO[selectedPhase].name}
-              </h3>
-              <p className="text-white/80">
-                {getPhaseDescription(selectedPhase)}
-              </p>
-            </div>
-          </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-white drop-shadow-lg mb-2">
+            🎮 English Games
+          </h1>
+          <p className="text-white/90 text-lg">
+            Learn English while having fun!
+          </p>
         </div>
 
         {/* Games Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {availableGames.map((game) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {GAMES.map((game) => (
             <Link
               key={game.id}
-              href={`/games/${game.id}?phase=${selectedPhase}`}
-              className="group"
+              href={`/games/${game.id}`}
+              className="block p-6 bg-white rounded-2xl shadow-xl hover:scale-[1.02] hover:shadow-2xl transition-all active:scale-[0.98]"
             >
-              <div 
-                className="bg-white rounded-3xl p-6 shadow-xl transition-all transform hover:scale-105 hover:shadow-2xl"
-                style={{ borderBottom: `6px solid ${game.color}` }}
-              >
+              <div className="flex items-center gap-4">
                 <div 
-                  className="text-6xl mb-4 transition-transform group-hover:scale-110"
-                  style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.2))' }}
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                  style={{ backgroundColor: game.color + '20' }}
                 >
                   {game.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {game.name}
-                </h3>
-                <p className="text-gray-500 text-sm">
-                  {game.description}
-                </p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span 
-                    className="px-3 py-1 rounded-full text-white text-xs font-bold"
-                    style={{ backgroundColor: game.color }}
-                  >
-                    Age {game.minAge}+
-                  </span>
-                  <span className="text-2xl group-hover:translate-x-2 transition-transform">
-                    →
-                  </span>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800">{game.name}</h3>
+                  <p className="text-gray-500 text-sm">{game.description}</p>
+                  <p className="text-xs mt-1" style={{ color: game.color }}>
+                    Ages {game.minAge}+
+                  </p>
                 </div>
+                <div className="text-3xl text-gray-300">→</div>
               </div>
             </Link>
           ))}
         </div>
 
-        {/* Empty State */}
-        {availableGames.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎮</div>
-            <p className="text-white text-xl">
-              No games available for this level yet!
-            </p>
-            <p className="text-white/70">
-              Try another level or check back soon.
-            </p>
-          </div>
-        )}
-
-        {/* Fun decorations */}
-        <div className="fixed bottom-4 left-4 text-6xl opacity-20 animate-pulse">
-          ⭐
+        {/* Back Link */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/"
+            className="inline-block px-8 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 transition-colors"
+          >
+            ← Back to Home
+          </Link>
         </div>
-        <div className="fixed bottom-4 right-4 text-6xl opacity-20 animate-bounce">
-          🎈
-        </div>
-      </main>
+      </div>
     </div>
   );
-}
-
-function getPhaseDescription(phase: GamePhase): string {
-  const descriptions: Record<GamePhase, string> = {
-    'letters': 'Learn letter sounds and shapes - the building blocks of reading!',
-    'pink-series': 'Practice 3-letter words like cat, dog, and sun!',
-    'blue-series': 'Words with blends like stop, flag, and tree!',
-    'green-series': 'Long vowels and special sounds like rain and moon!',
-    'sight-words': 'Common words you need to know by sight!',
-    'sentences': 'Put it all together and read sentences!',
-  };
-  return descriptions[phase];
 }

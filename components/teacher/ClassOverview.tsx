@@ -26,8 +26,8 @@ export default function ClassOverview({ totalStudents, areaProgress }: Props) {
     : 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Class Overview</h2>
+    <div className="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+      <h2 className="text-lg font-semibold text-slate-800 mb-4">Class Overview</h2>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-indigo-50 rounded-lg p-4 text-center">

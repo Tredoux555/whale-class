@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
           stage
         )
       `)
+      .order('created_at', { ascending: false })
       .order('relevance_score', { ascending: false });
 
     if (status === 'approved') {

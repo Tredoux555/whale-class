@@ -1,209 +1,280 @@
 // components/games/SentenceBuildGame.tsx
-// Drag words to build sentences
+// Build sentences by arranging words with audio
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { SENTENCES } from '@/lib/games/game-data';
-import { speakSentence, playCorrectSound, playWrongSound } from '@/lib/games/sound-utils';
-import GameWrapper, { CorrectFeedback, WrongFeedback, CompleteFeedback } from './GameWrapper';
+import { SENTENCES, SentenceData } from '@/lib/games/game-data';
+import { GameAudio } from '@/lib/games/audio-paths';
+import Confetti from './Confetti';
 
-interface Props {
-  level: string;
-}
+const LEVELS = [
+  { id: 'level-1', name: 'Easy', color: '#22c55e', description: '3-4 words' },
+  { id: 'level-2', name: 'Medium', color: '#3b82f6', description: '4-5 words' },
+  { id: 'level-3', name: 'Hard', color: '#8b5cf6', description: '5-7 words' },
+];
 
-interface SentenceData {
-  words: string[];
-  image: string;
-}
-
-export default function SentenceBuildGame({ level }: Props) {
+export default function SentenceBuildGame() {
   const router = useRouter();
+  
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [sentences, setSentences] = useState<SentenceData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [availableWords, setAvailableWords] = useState<string[]>([]);
+  const [placedWords, setPlacedWords] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [showCorrect, setShowCorrect] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const totalQuestions = 5;
 
-  // Get sentences
-  useEffect(() => {
-    const levelKey = level as keyof typeof SENTENCES;
-    const sentenceList = SENTENCES[levelKey] || SENTENCES['level-1'];
-    const shuffled = [...sentenceList].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
+  const startGame = (level: string) => {
+    setSelectedLevel(level);
+    const levelSentences = SENTENCES[level] || [];
+    const shuffled = [...levelSentences].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
     setSentences(shuffled);
-  }, [level]);
+    setCurrentIndex(0);
+    setScore(0);
+    setGameComplete(false);
+    setPlacedWords([]);
+  };
 
   // Setup words for current sentence
   useEffect(() => {
     if (sentences.length === 0 || currentIndex >= sentences.length) return;
-
-    const words = [...sentences[currentIndex].words];
-    setAvailableWords(words.sort(() => Math.random() - 0.5));
-    setSelectedWords([]);
+    
+    const sentence = sentences[currentIndex];
+    setAvailableWords([...sentence.words].sort(() => Math.random() - 0.5));
+    setPlacedWords([]);
   }, [currentIndex, sentences]);
 
-  const handleWordClick = (word: string, index: number) => {
-    if (showCorrect || showWrong) return;
-
-    setSelectedWords(prev => [...prev, word]);
-    
-    const newAvailable = [...availableWords];
-    newAvailable.splice(index, 1);
-    setAvailableWords(newAvailable);
+  // Play sentence audio
+  const playAudio = () => {
+    if (sentences.length === 0 || currentIndex >= sentences.length) return;
+    GameAudio.play(sentences[currentIndex].audioUrl).catch(console.error);
   };
 
-  const handleRemoveWord = (index: number) => {
+  const handleWordTap = (word: string, index: number) => {
     if (showCorrect || showWrong) return;
+    
+    setPlacedWords(prev => [...prev, word]);
+    setAvailableWords(prev => {
+      const newWords = [...prev];
+      newWords.splice(index, 1);
+      return newWords;
+    });
+  };
 
-    const word = selectedWords[index];
+  const handlePlacedTap = (index: number) => {
+    if (showCorrect || showWrong) return;
     
-    const newSelected = [...selectedWords];
-    newSelected.splice(index, 1);
-    setSelectedWords(newSelected);
-    
+    const word = placedWords[index];
+    setPlacedWords(prev => {
+      const newPlaced = [...prev];
+      newPlaced.splice(index, 1);
+      return newPlaced;
+    });
     setAvailableWords(prev => [...prev, word]);
   };
 
-  const checkAnswer = () => {
+  // Check answer when all words placed
+  useEffect(() => {
+    // Don't check if showing feedback or no sentences
     if (showCorrect || showWrong) return;
+    if (sentences.length === 0 || currentIndex >= sentences.length) return;
+    
+    const sentence = sentences[currentIndex];
+    
+    // Only check when user has placed ALL words
+    if (placedWords.length !== sentence.words.length) return;
+    
+    // Small delay to ensure state is settled
+    const timer = setTimeout(() => {
+      const isCorrect = placedWords.every((word, i) => word === sentence.words[i]);
+      
+      if (isCorrect) {
+        setScore(prev => prev + 1);
+        setShowCorrect(true);
+        setShowConfetti(true);
+        GameAudio.playCorrect().catch(console.error);
+        setTimeout(() => setShowConfetti(false), 2000);
+      } else {
+        setShowWrong(true);
+        GameAudio.playWrong().catch(console.error);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [placedWords.length, currentIndex, sentences.length, showCorrect, showWrong]);
 
-    const correctSentence = sentences[currentIndex].words;
-    const isCorrect = selectedWords.length === correctSentence.length &&
-      selectedWords.every((word, index) => word === correctSentence[index]);
-
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      setShowCorrect(true);
-      speakSentence(correctSentence.join(' '));
-    } else {
-      setShowWrong(true);
-    }
-  };
-
-  const handleNextQuestion = () => {
+  const handleNext = useCallback(() => {
     setShowCorrect(false);
     setShowWrong(false);
-
+    setPlacedWords([]); // Clear placed words FIRST
+    
     if (currentIndex + 1 >= totalQuestions) {
       setGameComplete(true);
+      GameAudio.playUI('complete').catch(console.error);
     } else {
       setCurrentIndex(prev => prev + 1);
     }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (showCorrect) {
+      const timer = setTimeout(handleNext, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showCorrect, handleNext]);
+
+  const handleRetry = () => {
+    setShowWrong(false);
+    const sentence = sentences[currentIndex];
+    setAvailableWords([...sentence.words].sort(() => Math.random() - 0.5));
+    setPlacedWords([]);
   };
 
-  if (sentences.length === 0) {
+  // Level selection
+  if (!selectedLevel) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-4xl animate-spin">🎮</div>
+      <div className="min-h-screen bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-400 p-4"
+        style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg mb-2">📝 Sentence Build</h1>
+            <p className="text-white/90">Put the words in order!</p>
+          </div>
+
+          <div className="space-y-4">
+            {LEVELS.map((level) => (
+              <button key={level.id}
+                onClick={() => startGame(level.id)}
+                className="w-full p-6 bg-white rounded-2xl shadow-xl hover:scale-[1.02] transition-transform">
+                <h3 className="text-xl font-bold" style={{ color: level.color }}>{level.name}</h3>
+                <p className="text-gray-500 text-sm">{level.description}</p>
+              </button>
+            ))}
+          </div>
+
+          <button onClick={() => router.push('/games')}
+            className="mt-8 w-full py-3 bg-white/20 text-white rounded-xl font-bold">
+            ← Back to Games
+          </button>
+        </div>
       </div>
     );
   }
 
+  // Game complete
   if (gameComplete) {
     return (
-      <GameWrapper score={score} totalQuestions={totalQuestions} currentQuestion={totalQuestions}>
-        <CompleteFeedback
-          score={score}
-          total={totalQuestions}
-          onPlayAgain={() => {
-            setCurrentIndex(0);
-            setScore(0);
-            setGameComplete(false);
-            setSentences(prev => [...prev].sort(() => Math.random() - 0.5));
-          }}
-          onExit={() => router.push('/games')}
-        />
-      </GameWrapper>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-400"
+        style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+        {score >= 4 && <Confetti />}
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="text-6xl mb-4">{score >= 4 ? '🏆' : '💪'}</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            {score >= 4 ? 'Amazing!' : 'Good Try!'}
+          </h2>
+          <p className="text-gray-600 text-xl mb-6">Score: {score}/{totalQuestions}</p>
+          <div className="space-y-3">
+            <button onClick={() => startGame(selectedLevel)}
+              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl">
+              🔄 Play Again
+            </button>
+            <button onClick={() => setSelectedLevel(null)}
+              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl">
+              ← Choose Level
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   const currentSentence = sentences[currentIndex];
 
   return (
-    <GameWrapper 
-      score={score} 
-      totalQuestions={totalQuestions} 
-      currentQuestion={currentIndex + 1}
-      showCelebration={showCorrect}
-    >
-      <div className="relative">
-        {showCorrect && <CorrectFeedback onComplete={handleNextQuestion} />}
-        {showWrong && (
-          <WrongFeedback 
-            correctAnswer={currentSentence.words.join(' ')} 
-            onComplete={handleNextQuestion} 
-          />
-        )}
+    <div className="min-h-screen p-4 bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-400"
+      style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+      {showConfetti && <Confetti />}
 
-        {/* Picture hint */}
-        <div className="text-center mb-6">
-          <div className="text-7xl mb-2">{currentSentence.image}</div>
-          <h2 className="text-xl font-bold text-gray-700">
-            Build a sentence about this picture!
-          </h2>
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={() => setSelectedLevel(null)} className="text-white font-bold">← Back</button>
+          <div className="text-white font-bold">{currentIndex + 1}/{totalQuestions}</div>
+          <div className="text-white font-bold">⭐ {score}</div>
         </div>
 
-        {/* Sentence building area */}
-        <div className="bg-gray-100 rounded-2xl p-4 mb-6 min-h-[70px] flex flex-wrap items-center justify-center gap-2">
-          {selectedWords.length === 0 ? (
-            <p className="text-gray-400 text-lg">Tap words below to build the sentence</p>
-          ) : (
-            selectedWords.map((word, index) => (
-              <button
-                key={`selected-${index}`}
-                onClick={() => handleRemoveWord(index)}
-                className="px-4 py-2 bg-teal-500 text-white rounded-xl text-xl font-bold shadow-lg hover:scale-105 transition-transform"
-                style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-              >
+        <div className="h-3 bg-white/30 rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-white rounded-full transition-all"
+            style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl p-6 relative overflow-hidden">
+          {showCorrect && (
+            <div className="absolute inset-0 flex items-center justify-center bg-green-500/90 rounded-3xl z-10">
+              <div className="text-center">
+                <div className="text-8xl mb-4 animate-bounce">✅</div>
+                <p className="text-white text-3xl font-bold">Perfect!</p>
+              </div>
+            </div>
+          )}
+          
+          {showWrong && (
+            <div className="absolute inset-0 flex items-center justify-center bg-orange-500/90 rounded-3xl z-10">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🤔</div>
+                <p className="text-white text-xl font-bold mb-4">
+                  Correct order: {currentSentence.words.join(' ')}
+                </p>
+                <button onClick={handleRetry}
+                  className="px-8 py-3 bg-white text-orange-500 rounded-xl font-bold">
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Image and audio */}
+          <div className="text-center mb-6">
+            <div className="text-7xl mb-2">{currentSentence.image}</div>
+            <button onClick={playAudio}
+              className="px-6 py-2 bg-blue-500 text-white rounded-full font-bold">
+              🔊 Hear Sentence
+            </button>
+          </div>
+
+          {/* Sentence slots */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8 min-h-[60px] p-4 bg-gray-100 rounded-xl">
+            {placedWords.length === 0 ? (
+              <p className="text-gray-400">Tap words to build the sentence</p>
+            ) : (
+              placedWords.map((word, index) => (
+                <button key={`placed-${index}`}
+                  onClick={() => handlePlacedTap(index)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold text-xl">
+                  {word}
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Available words */}
+          <div className="flex flex-wrap justify-center gap-3">
+            {availableWords.map((word, index) => (
+              <button key={`avail-${index}`}
+                onClick={() => handleWordTap(word, index)}
+                className="px-5 py-3 bg-gradient-to-br from-purple-400 to-pink-400 text-white rounded-xl font-bold text-xl shadow-lg hover:scale-110 active:scale-95 transition-transform">
                 {word}
               </button>
-            ))
-          )}
-        </div>
-
-        {/* Available words */}
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
-          {availableWords.map((word, index) => (
-            <button
-              key={`available-${index}`}
-              onClick={() => handleWordClick(word, index)}
-              disabled={showCorrect || showWrong}
-              className="px-4 py-2 bg-white border-2 border-gray-300 rounded-xl text-xl font-bold text-gray-700 shadow hover:scale-105 hover:border-teal-400 transition-all disabled:opacity-50"
-              style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-            >
-              {word}
-            </button>
-          ))}
-        </div>
-
-        {/* Check button */}
-        <div className="text-center">
-          <button
-            onClick={checkAnswer}
-            disabled={selectedWords.length === 0 || showCorrect || showWrong}
-            className="px-10 py-4 bg-teal-500 text-white rounded-2xl text-xl font-bold hover:bg-teal-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-lg"
-          >
-            ✓ Check Sentence
-          </button>
-        </div>
-
-        {/* Hear sentence button */}
-        <div className="text-center mt-4">
-          <button
-            onClick={() => speakSentence(currentSentence.words.join(' '))}
-            className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg font-bold hover:bg-blue-200 transition-colors"
-          >
-            🔊 Hear the sentence
-          </button>
+            ))}
+          </div>
         </div>
       </div>
-    </GameWrapper>
+    </div>
   );
 }
-
