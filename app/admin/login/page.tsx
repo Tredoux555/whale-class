@@ -223,14 +223,6 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            onClick={(e) => {
-              console.log('Button clicked directly');
-              if (!username || !password) {
-                e.preventDefault();
-                setError('Please enter both username and password');
-                return;
-              }
-            }}
             disabled={loading}
             className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
