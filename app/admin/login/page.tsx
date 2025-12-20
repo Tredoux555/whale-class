@@ -60,35 +60,56 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted', { username, password: '***' });
     setError("");
     setLoading(true);
 
     try {
+      console.log('Making fetch request to /api/auth/login');
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      console.log('Response received', { status: response.status, ok: response.ok });
+
+      let data;
+      try {
+        data = await response.json();
+        console.log('Response data', data);
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response', jsonError);
+        setError("Invalid response from server");
+        setLoading(false);
+        return;
+      }
 
       if (response.ok) {
+        console.log('Login successful, redirecting...');
         // After successful login, sync proxy mode with server
         if (proxyEnabled) {
-          await fetch("/api/admin/proxy-mode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ enabled: true }),
-          });
+          try {
+            await fetch("/api/admin/proxy-mode", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ enabled: true }),
+            });
+          } catch (proxyError) {
+            console.error('Proxy mode sync failed', proxyError);
+            // Don't fail login if proxy sync fails
+          }
         }
         router.push("/admin");
         router.refresh();
       } else {
+        console.error('Login failed', data);
         setError(data.error || "Login failed");
+        setLoading(false);
       }
     } catch (error) {
-      setError("Something went wrong. Please try again.");
-    } finally {
+      console.error('Login exception', error);
+      setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your connection.`);
       setLoading(false);
     }
   };
