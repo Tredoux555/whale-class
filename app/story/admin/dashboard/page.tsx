@@ -30,12 +30,22 @@ interface Statistics {
   expired_count: string;
 }
 
+interface OnlineUser {
+  username: string;
+  lastSeen: string;
+  secondsAgo: number;
+  isOnline: boolean;
+}
+
 export default function StoryAdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'logs' | 'messages'>('logs');
+  const [activeTab, setActiveTab] = useState<'logs' | 'messages' | 'online'>('online');
   const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
   const [messages, setMessages] = useState<MessageHistory[]>([]);
   const [statistics, setStatistics] = useState<Statistics[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [adminUsername, setAdminUsername] = useState('');
@@ -54,9 +64,21 @@ export default function StoryAdminDashboard() {
     if (adminUsername) {
       if (activeTab === 'logs') {
         fetchLoginLogs();
-      } else {
+      } else if (activeTab === 'messages') {
         fetchMessageHistory();
+      } else if (activeTab === 'online') {
+        fetchOnlineUsers();
       }
+    }
+  }, [activeTab, adminUsername]);
+
+  // Auto-refresh online users every 5 seconds when on that tab
+  useEffect(() => {
+    if (activeTab === 'online' && adminUsername) {
+      const interval = setInterval(() => {
+        fetchOnlineUsers();
+      }, 5000);
+      return () => clearInterval(interval);
     }
   }, [activeTab, adminUsername]);
 
@@ -121,6 +143,27 @@ export default function StoryAdminDashboard() {
         setStatistics(data.statistics);
       } else {
         setError('Failed to fetch message history');
+      }
+    } catch (err) {
+      setError('Connection error');
+    }
+  };
+
+  const fetchOnlineUsers = async () => {
+    const session = sessionStorage.getItem('story_admin_session');
+    
+    try {
+      const res = await fetch('/api/story/admin/online-users', {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineUsers(data.onlineUsers || []);
+        setOnlineCount(data.onlineCount || 0);
+        setTotalUsers(data.totalUsers || 0);
+      } else {
+        setError('Failed to fetch online users');
       }
     } catch (err) {
       setError('Connection error');
@@ -223,6 +266,16 @@ export default function StoryAdminDashboard() {
       <div className="max-w-7xl mx-auto px-6 mt-6">
         <div className="flex space-x-4 border-b border-gray-300">
           <button
+            onClick={() => setActiveTab('online')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'online'
+                ? 'border-b-2 border-purple-600 text-purple-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            🟢 Who's Online ({onlineCount})
+          </button>
+          <button
             onClick={() => setActiveTab('logs')}
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'logs'
@@ -295,6 +348,105 @@ export default function StoryAdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Who's Online Tab */}
+        {activeTab === 'online' && (
+          <div className="space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
+                  🟢 Currently Online
+                </div>
+                <div className="text-4xl font-bold text-green-600">{onlineCount}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Active in last 10 minutes
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
+                  👥 Total Users
+                </div>
+                <div className="text-4xl font-bold text-gray-900">{totalUsers}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  All time logins
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
+                  🔄 Auto-Refresh
+                </div>
+                <div className="text-4xl font-bold text-blue-600">5s</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Updates every 5 seconds
+                </div>
+              </div>
+            </div>
+
+            {/* Online Users List */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 bg-gray-50 border-b">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  🟢 Currently Online Users
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Users who logged in within the last 10 minutes
+                </p>
+              </div>
+              
+              {onlineUsers.length === 0 ? (
+                <div className="px-6 py-12 text-center">
+                  <div className="text-gray-400 text-6xl mb-4">😴</div>
+                  <div className="text-xl text-gray-600 font-medium mb-2">
+                    No one is online right now
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Users will appear here when they log in to view the story
+                  </div>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {onlineUsers.map((user, idx) => (
+                    <div key={idx} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                              {user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
+                          </div>
+                          
+                          <div>
+                            <div className="text-lg font-semibold text-gray-900">
+                              {user.username}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.secondsAgo < 60 
+                                ? `Active ${user.secondsAgo}s ago` 
+                                : `Active ${Math.floor(user.secondsAgo / 60)}m ago`}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                            🟢 ONLINE
+                          </span>
+                          <div className="text-xs text-gray-400">
+                            {formatDate(user.lastSeen)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Login Logs Tab */}
         {activeTab === 'logs' && (
