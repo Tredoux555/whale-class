@@ -511,7 +511,10 @@ export default function CirclePlannerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50"
+      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+    >
       {/* Header */}
       <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 text-white shadow-xl">
         <div className="container mx-auto px-4 py-5">

@@ -91,6 +91,22 @@ export async function middleware(req: NextRequest) {
       }
     }
 
+    // Parent routes - require parent role
+    if (req.nextUrl.pathname.startsWith('/parent')) {
+      const hasParentAccess = roles.includes('parent');
+      
+      if (!hasParentAccess) {
+        // Redirect non-parents to appropriate dashboard based on role
+        if (roles.includes('admin') || roles.includes('super_admin')) {
+          return NextResponse.redirect(new URL('/admin', req.url));
+        }
+        if (roles.includes('teacher')) {
+          return NextResponse.redirect(new URL('/teacher/dashboard', req.url));
+        }
+        return NextResponse.redirect(new URL('/auth/teacher-login', req.url));
+      }
+    }
+
     // Teacher routes - require teacher role (or admin)
     if (req.nextUrl.pathname.startsWith('/teacher')) {
       const hasTeacherAccess = roles.some(role => 

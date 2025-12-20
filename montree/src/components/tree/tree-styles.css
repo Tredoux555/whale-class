@@ -1,0 +1,663 @@
+/* src/components/tree/tree-styles.css */
+/* Styles for Montessori Tree visualization */
+
+/* ================================
+   Container
+   ================================ */
+.montessori-tree-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+}
+
+/* ================================
+   Area Nodes (Root Level)
+   ================================ */
+.area-node {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 3px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.area-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.area-node.expanded {
+  border-color: #fff;
+}
+
+.area-node-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.area-icon {
+  font-size: 28px;
+}
+
+.area-info {
+  flex: 1;
+}
+
+.area-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.area-stats {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.expand-indicator {
+  font-size: 20px;
+  font-weight: bold;
+  opacity: 0.8;
+}
+
+/* ================================
+   Category Nodes
+   ================================ */
+.category-node {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-node:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-node.expanded {
+  color: #fff;
+}
+
+.category-node-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-name {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-stats {
+  font-size: 10px;
+  color: #666;
+}
+
+/* ================================
+   Work Nodes (Leaf Level)
+   ================================ */
+.work-node {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  max-width: 180px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.work-node:hover {
+  transform: scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.work-node.selected {
+  border-width: 3px;
+}
+
+.work-node-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.work-name {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+
+.work-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.work-age {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.work-levels {
+  font-size: 9px;
+  color: #888;
+}
+
+.work-prereqs {
+  font-size: 10px;
+}
+
+/* ================================
+   Control Panel (Top Left)
+   ================================ */
+.control-panel {
+  background: #fff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.panel-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.panel-stats .stat {
+  font-size: 12px;
+  color: #666;
+}
+
+.panel-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.control-btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.control-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+}
+
+.control-checkbox input {
+  cursor: pointer;
+}
+
+/* ================================
+   Legend Panel (Top Right)
+   ================================ */
+.legend-panel {
+  background: #fff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+}
+
+.legend-panel h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #333;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend-icon {
+  font-size: 14px;
+}
+
+.legend-name {
+  color: #555;
+}
+
+.legend-edge-types {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.legend-edge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.edge-line {
+  width: 20px;
+  height: 2px;
+}
+
+.edge-line.solid {
+  background: #999;
+}
+
+.edge-line.dashed {
+  background: repeating-linear-gradient(
+    90deg,
+    #FF5722,
+    #FF5722 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* ================================
+   Work Detail Panel (Slide-out)
+   ================================ */
+.work-detail-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.panel-header {
+  padding: 16px;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.panel-header-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panel-area {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.panel-category {
+  font-size: 11px;
+  opacity: 0.7;
+  flex: 1;
+}
+
+.panel-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.panel-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.panel-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.panel-chinese {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.panel-body {
+  padding: 16px;
+}
+
+.panel-section {
+  margin-bottom: 20px;
+}
+
+.panel-section h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.panel-section p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Stats Row */
+.stats-row {
+  display: flex;
+  gap: 20px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Materials List */
+.materials-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.materials-list li {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.source-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.source-link:hover {
+  text-decoration: underline;
+}
+
+/* Aims Section */
+.aims-section {
+  display: flex;
+  gap: 16px;
+}
+
+.aims-column {
+  flex: 1;
+}
+
+.aims-column h3 {
+  font-size: 12px;
+}
+
+.aims-column ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.aims-column li {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+/* Levels List */
+.levels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.level-item {
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.level-number {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.level-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.level-description {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.video-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #FF0000;
+  text-decoration: none;
+}
+
+.video-link:hover {
+  text-decoration: underline;
+}
+
+/* Related Works */
+.related-works {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-work-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 2px solid;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.related-work-btn:hover {
+  background: #f5f5f5;
+}
+
+.related-icon {
+  font-size: 14px;
+}
+
+.related-name {
+  font-size: 11px;
+  color: #333;
+}
+
+/* Image Placeholder */
+.image-placeholder .placeholder-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+.placeholder-box span {
+  font-size: 32px;
+  opacity: 0.4;
+}
+
+.placeholder-box p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.work-image {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* ================================
+   React Flow Overrides
+   ================================ */
+.react-flow__node {
+  font-family: inherit;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: none;
+}
+
+.react-flow__controls-button {
+  border: none;
+  border-bottom: 1px solid #eee;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__minimap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ================================
+   Responsive
+   ================================ */
+@media (max-width: 768px) {
+  .work-detail-panel {
+    width: 100%;
+  }
+  
+  .control-panel {
+    max-width: 200px;
+  }
+  
+  .panel-stats {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .panel-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .legend-panel {
+    display: none;
+  }
+}
+

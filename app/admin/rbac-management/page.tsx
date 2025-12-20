@@ -228,7 +228,10 @@ export default function RBACManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div 
+      className="min-h-screen bg-gray-50"
+      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+    >
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
