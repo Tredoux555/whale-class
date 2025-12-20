@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = createAdminToken();
+    const token = await createAdminToken();
 
     const response = NextResponse.json({ success: true });
     response.cookies.set("admin-token", token, {

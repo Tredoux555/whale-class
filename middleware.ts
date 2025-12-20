@@ -69,7 +69,7 @@ export async function middleware(req: NextRequest) {
 
   // Check for admin-token cookie (separate from Supabase auth)
   const adminToken = req.cookies.get('admin-token')?.value;
-  const hasAdminAuth = adminToken ? verifyAdminToken(adminToken) : false;
+  const hasAdminAuth = adminToken ? await verifyAdminToken(adminToken) : false;
 
   // If not authenticated and trying to access protected route
   if (!session && !hasAdminAuth) {
