@@ -99,6 +99,31 @@ export async function POST(req: NextRequest) {
       [weekStartDate, 'text', message.trim(), author, expiresAt]
     );
 
+    // Ensure secret_stories table exists
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS secret_stories (
+          id SERIAL PRIMARY KEY,
+          week_start_date DATE NOT NULL UNIQUE,
+          theme VARCHAR(255) NOT NULL,
+          story_title VARCHAR(255) NOT NULL,
+          story_content JSONB NOT NULL,
+          hidden_message TEXT,
+          message_author VARCHAR(10),
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+      
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_secret_stories_week 
+        ON secret_stories(week_start_date)
+      `);
+    } catch (createError) {
+      console.error('Error ensuring secret_stories table exists:', createError);
+      // Continue anyway - table might already exist
+    }
+
     // Update the story's hidden message (this is what users see when clicking 't')
     const result = await db.query(
       `UPDATE secret_stories 
