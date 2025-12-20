@@ -18,3 +18,4 @@ export function isAndikaFontLoaded(): boolean {
   return AndikaFont.normal !== 'PLACEHOLDER_BASE64_FONT_DATA' && AndikaFont.normal.length > 100;
 }
 
+
