@@ -1,15 +1,20 @@
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 
 const SECRET = process.env.ADMIN_SECRET || "whale-class-secret-change-in-production";
+const SECRET_KEY = new TextEncoder().encode(SECRET);
 
 export interface AdminSession {
   isAdmin: boolean;
 }
 
-export function createAdminToken(): string {
+export async function createAdminToken(): Promise<string> {
   try {
-    const token = jwt.sign({ isAdmin: true }, SECRET, { expiresIn: "30d" });
+    const token = await new SignJWT({ isAdmin: true })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("30d")
+      .sign(SECRET_KEY);
     return token;
   } catch (error) {
     console.error('Error creating admin token:', error);
@@ -17,10 +22,10 @@ export function createAdminToken(): string {
   }
 }
 
-export function verifyAdminToken(token: string): boolean {
+export async function verifyAdminToken(token: string): Promise<boolean> {
   try {
-    const decoded = jwt.verify(token, SECRET) as AdminSession;
-    return decoded.isAdmin === true;
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    return payload.isAdmin === true;
   } catch {
     return false;
   }
@@ -30,7 +35,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("admin-token")?.value;
   
-  if (!token || !verifyAdminToken(token)) {
+  if (!token || !(await verifyAdminToken(token))) {
     return null;
   }
   
