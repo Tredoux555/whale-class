@@ -179,14 +179,20 @@ export default function StoryViewer() {
     const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
 
     if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
-      // Clicking 't' ONLY toggles the decoded message
-      // It should NEVER show media items - media is controlled by last letter only
+      // Toggle text message display
       setIsDecoded(!isDecoded);
-      setIsEditing(false); // Close editor if open
-      // Do NOT modify showMediaItems here at all - keep it completely separate
+      setIsEditing(false);
+      // CRITICAL FIX: Hide media gallery when showing text message
+      setShowMediaItems(false);
+      setShowUploadSection(false);
+      setLastLetterTapped(false);
     } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
       setIsEditing(true);
-      setIsDecoded(false); // Close decoder if open
+      setIsDecoded(false);
+      // ALSO hide media when editing
+      setShowMediaItems(false);
+      setShowUploadSection(false);
+      setLastLetterTapped(false);
       setMessageInput('');
       setTimeout(() => {
         paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -195,14 +201,20 @@ export default function StoryViewer() {
   };
 
   const handleLastLetterClick = () => {
+    // Hide text message when accessing media section
+    setIsDecoded(false);
+    setIsEditing(false);
+    
     if (!lastLetterTapped) {
-      // First tap: show upload section only, keep media hidden
+      // First tap: show upload section AND existing media
       setLastLetterTapped(true);
       setShowUploadSection(true);
-      setShowMediaItems(false); // Explicitly keep media hidden on first tap
+      setShowMediaItems(true); // Show existing media immediately
     } else {
-      // Second tap onwards: toggle media items visibility only
-      setShowMediaItems(prev => !prev);
+      // Second tap: toggle everything off
+      setShowUploadSection(false);
+      setShowMediaItems(false);
+      setLastLetterTapped(false);
     }
   };
 
