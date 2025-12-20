@@ -60,6 +60,8 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    alert('Form handler called!'); // Debug alert
     console.log('Form submitted', { username, password: '***' });
     setError("");
     setLoading(true);
@@ -195,6 +197,14 @@ export default function AdminLogin() {
 
           <button
             type="submit"
+            onClick={(e) => {
+              console.log('Button clicked directly');
+              if (!username || !password) {
+                e.preventDefault();
+                setError('Please enter both username and password');
+                return;
+              }
+            }}
             disabled={loading}
             className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-semibold hover:bg-[#2C5F7C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
