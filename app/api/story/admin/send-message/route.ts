@@ -56,100 +56,132 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // Ensure story_message_history table exists
+    console.log('[SEND-MESSAGE] Week start date:', weekStartDate);
+    console.log('[SEND-MESSAGE] Message:', message.trim());
+    console.log('[SEND-MESSAGE] Author:', author);
+
+    // Step 1: Check if tables exist, if not return clear error
+    let tablesExist = false;
     try {
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS story_message_history (
-          id SERIAL PRIMARY KEY,
-          week_start_date DATE NOT NULL,
-          message_type VARCHAR(20) NOT NULL,
-          message_content TEXT,
-          media_url TEXT,
-          media_filename TEXT,
-          author VARCHAR(10) NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW(),
-          expires_at TIMESTAMP,
-          is_expired BOOLEAN DEFAULT FALSE
-        )
+      const checkResult = await db.query(`
+        SELECT 
+          EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'story_message_history') as history_exists,
+          EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'secret_stories') as stories_exists
       `);
       
-      // Create indexes if they don't exist
-      await db.query(`
-        CREATE INDEX IF NOT EXISTS idx_story_message_history_week 
-        ON story_message_history(week_start_date)
-      `);
-      await db.query(`
-        CREATE INDEX IF NOT EXISTS idx_story_message_history_created 
-        ON story_message_history(created_at DESC)
-      `);
-      await db.query(`
-        CREATE INDEX IF NOT EXISTS idx_story_message_history_expired 
-        ON story_message_history(is_expired, expires_at)
-      `);
-    } catch (createError) {
-      console.error('Error ensuring table exists:', createError);
-      // Continue anyway - table might already exist
-    }
-
-    // Save to message history
-    await db.query(
-      `INSERT INTO story_message_history 
-       (week_start_date, message_type, message_content, author, expires_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [weekStartDate, 'text', message.trim(), author, expiresAt]
-    );
-
-    // Ensure secret_stories table exists
-    try {
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS secret_stories (
-          id SERIAL PRIMARY KEY,
-          week_start_date DATE NOT NULL UNIQUE,
-          theme VARCHAR(255) NOT NULL,
-          story_title VARCHAR(255) NOT NULL,
-          story_content JSONB NOT NULL,
-          hidden_message TEXT,
-          message_author VARCHAR(10),
-          created_at TIMESTAMP DEFAULT NOW(),
-          updated_at TIMESTAMP DEFAULT NOW()
-        )
-      `);
+      const historyExists = checkResult.rows[0].history_exists;
+      const storiesExists = checkResult.rows[0].stories_exists;
       
-      await db.query(`
-        CREATE INDEX IF NOT EXISTS idx_secret_stories_week 
-        ON secret_stories(week_start_date)
-      `);
-    } catch (createError) {
-      console.error('Error ensuring secret_stories table exists:', createError);
-      // Continue anyway - table might already exist
+      console.log('[SEND-MESSAGE] Tables check:', { historyExists, storiesExists });
+      
+      if (!historyExists || !storiesExists) {
+        return NextResponse.json({
+          error: 'Database tables missing',
+          details: `Missing tables: ${!historyExists ? 'story_message_history ' : ''}${!storiesExists ? 'secret_stories' : ''}`,
+          fix: 'Run the SQL script: FIX_STORY_TABLES_NOW.sql in Supabase SQL Editor',
+          sqlLocation: '/FIX_STORY_TABLES_NOW.sql in your project root'
+        }, { status: 500 });
+      }
+      
+      tablesExist = true;
+    } catch (checkError) {
+      console.error('[SEND-MESSAGE] Error checking tables:', checkError);
+      return NextResponse.json({
+        error: 'Database connection error',
+        details: checkError instanceof Error ? checkError.message : String(checkError)
+      }, { status: 500 });
     }
 
-    // Update the story's hidden message (this is what users see when clicking 't')
-    const result = await db.query(
-      `UPDATE secret_stories 
-       SET hidden_message = $1, 
-           message_author = $2, 
-           updated_at = NOW()
-       WHERE week_start_date = $3
-       RETURNING *`,
-      [message.trim(), author, weekStartDate]
-    );
-
-    if (result.rows.length === 0) {
-      // Story doesn't exist yet, create it first
-      return NextResponse.json(
-        { error: 'No story exists for this week. Visit the story page first to generate one.' },
-        { status: 404 }
+    // Step 2: Try to insert into message history
+    try {
+      console.log('[SEND-MESSAGE] Inserting into message history...');
+      await db.query(
+        `INSERT INTO story_message_history 
+         (week_start_date, message_type, message_content, author, expires_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [weekStartDate, 'text', message.trim(), author, expiresAt]
       );
+      console.log('[SEND-MESSAGE] Message history inserted successfully');
+    } catch (insertError) {
+      console.error('[SEND-MESSAGE] Error inserting message history:', insertError);
+      return NextResponse.json({
+        error: 'Failed to save message history',
+        details: insertError instanceof Error ? insertError.message : String(insertError)
+      }, { status: 500 });
     }
 
+    // Step 3: Check if story exists for this week
+    let storyExists = false;
+    try {
+      console.log('[SEND-MESSAGE] Checking if story exists for week:', weekStartDate);
+      const checkStory = await db.query(
+        'SELECT id FROM secret_stories WHERE week_start_date = $1',
+        [weekStartDate]
+      );
+      storyExists = checkStory.rows.length > 0;
+      console.log('[SEND-MESSAGE] Story exists:', storyExists);
+    } catch (checkStoryError) {
+      console.error('[SEND-MESSAGE] Error checking story:', checkStoryError);
+    }
+
+    // Step 4: Create story if it doesn't exist
+    if (!storyExists) {
+      try {
+        console.log('[SEND-MESSAGE] Creating story for week:', weekStartDate);
+        await db.query(
+          `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            weekStartDate,
+            'Weekly Adventure',
+            'Our Weekly Story',
+            JSON.stringify({ paragraphs: ['Once upon a time...', 'The end.'] }),
+            message.trim(),
+            author
+          ]
+        );
+        console.log('[SEND-MESSAGE] Story created successfully');
+      } catch (createError) {
+        console.error('[SEND-MESSAGE] Error creating story:', createError);
+        return NextResponse.json({
+          error: 'Failed to create story',
+          details: createError instanceof Error ? createError.message : String(createError),
+          hint: 'Message was saved to history but story creation failed'
+        }, { status: 500 });
+      }
+    } else {
+      // Step 5: Update existing story
+      try {
+        console.log('[SEND-MESSAGE] Updating existing story...');
+        const result = await db.query(
+          `UPDATE secret_stories 
+           SET hidden_message = $1, 
+               message_author = $2, 
+               updated_at = NOW()
+           WHERE week_start_date = $3
+           RETURNING *`,
+          [message.trim(), author, weekStartDate]
+        );
+        console.log('[SEND-MESSAGE] Story updated successfully');
+      } catch (updateError) {
+        console.error('[SEND-MESSAGE] Error updating story:', updateError);
+        return NextResponse.json({
+          error: 'Failed to update story',
+          details: updateError instanceof Error ? updateError.message : String(updateError),
+          hint: 'Message was saved to history but story update failed'
+        }, { status: 500 });
+      }
+    }
+
+    console.log('[SEND-MESSAGE] SUCCESS - Message sent completely');
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      weekStartDate: weekStartDate
     });
   } catch (error) {
-    console.error('Admin send message error:', error);
+    console.error('[SEND-MESSAGE] Top-level error:', error);
     
     // Handle JWT verification errors
     if (error instanceof Error && error.message.includes('JWT')) {
@@ -159,31 +191,11 @@ export async function POST(req: NextRequest) {
       }, { status: 401 });
     }
     
-    // Handle database errors
-    if (error instanceof Error) {
-      const errorMessage = error.message;
-      
-      // Check for specific database errors
-      if (errorMessage.includes('does not exist') || errorMessage.includes('relation')) {
-        return NextResponse.json({
-          error: 'Database table missing',
-          details: errorMessage,
-          hint: 'Make sure story_message_history and secret_stories tables exist'
-        }, { status: 500 });
-      }
-      
-      // Return detailed error in development
-      return NextResponse.json({
-        error: 'Failed to send message',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
-        stack: process.env.NODE_ENV === 'development' && error.stack ? error.stack : undefined
-      }, { status: 500 });
-    }
-    
-    return NextResponse.json(
-      { error: 'Failed to send message', details: 'Unknown error' },
-      { status: 500 }
-    );
+    // Return detailed error
+    return NextResponse.json({
+      error: 'Failed to send message',
+      details: error instanceof Error ? error.message : String(error),
+      stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }
-
