@@ -46,9 +46,6 @@ export async function middleware(req: NextRequest) {
   
   // Public routes that don't require authentication
   const publicPaths = [
-    '/auth/teacher-login',
-    '/auth/student-login',
-    '/auth/student-signup',
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
@@ -143,11 +140,8 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
-    // Otherwise redirect to teacher login
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/auth/teacher-login';
-    redirectUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(redirectUrl);
+    // Otherwise redirect to home page (protected routes removed)
+    return NextResponse.redirect(new URL('/', req.url));
   }
 
   // If authenticated, check role-based access
@@ -187,8 +181,8 @@ export async function middleware(req: NextRequest) {
       );
       
       if (!hasAdminAccess) {
-        // Redirect non-admins/non-teachers to teacher dashboard
-        return NextResponse.redirect(new URL('/teacher/dashboard', req.url));
+        // Redirect non-admins/non-teachers to home page
+        return NextResponse.redirect(new URL('/', req.url));
       }
     }
 
@@ -202,38 +196,22 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(new URL('/admin', req.url));
         }
         if (roles.includes('teacher')) {
-          return NextResponse.redirect(new URL('/teacher/dashboard', req.url));
+          return NextResponse.redirect(new URL('/admin', req.url));
         }
-        return NextResponse.redirect(new URL('/auth/teacher-login', req.url));
+        return NextResponse.redirect(new URL('/', req.url));
       }
     }
 
-    // Teacher routes - require teacher role (or admin)
+    // Teacher routes - removed, redirect to admin or home
     if (pathname.startsWith('/teacher')) {
-      const hasTeacherAccess = roles.some(role => 
-        role === 'teacher' || role === 'admin' || role === 'super_admin'
-      );
-      
-      if (!hasTeacherAccess) {
-        // Redirect to appropriate dashboard based on role
-        if (roles.includes('parent')) {
-          return NextResponse.redirect(new URL('/parent/dashboard', req.url));
-        }
-        return NextResponse.redirect(new URL('/auth/teacher-login', req.url));
-      }
-    }
-
-    // If user is logged in but accessing login page, redirect to appropriate dashboard
-    if (pathname === '/auth/teacher-login') {
+      // Teacher dashboard removed, redirect based on role
       if (roles.includes('admin') || roles.includes('super_admin')) {
         return NextResponse.redirect(new URL('/admin', req.url));
-      }
-      if (roles.includes('teacher')) {
-        return NextResponse.redirect(new URL('/teacher/dashboard', req.url));
       }
       if (roles.includes('parent')) {
         return NextResponse.redirect(new URL('/parent/dashboard', req.url));
       }
+      return NextResponse.redirect(new URL('/', req.url));
     }
   }
 

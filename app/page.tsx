@@ -292,20 +292,6 @@ export default function Home() {
                 🎮 Games
               </Link>
               <Link 
-                href="/auth/student-login"
-                prefetch={false}
-                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                🎓 Student Portal
-              </Link>
-              <Link 
-                href="/auth/teacher-login"
-                prefetch={false}
-                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                Teacher Login
-              </Link>
-              <Link 
                 href="/admin/login"
                 prefetch={false}
                 className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
