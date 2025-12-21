@@ -18,11 +18,37 @@ CREATE TABLE IF NOT EXISTS story_users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  display_name VARCHAR(100),
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migrate existing table to new schema
+DO $$ 
+BEGIN
+  -- Add is_active column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_users' AND column_name = 'is_active'
+  ) THEN
+    ALTER TABLE story_users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    UPDATE story_users SET is_active = TRUE WHERE is_active IS NULL;
+  END IF;
+
+  -- Add display_name column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_users' AND column_name = 'display_name'
+  ) THEN
+    ALTER TABLE story_users ADD COLUMN display_name VARCHAR(100);
+  END IF;
+
+  -- Add updated_at column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_users' AND column_name = 'updated_at'
+  ) THEN
+    ALTER TABLE story_users ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+END $$;
 
 -- =====================================================
 -- TABLE 2: Admin Users (Separate from story users)
@@ -45,10 +71,20 @@ CREATE TABLE IF NOT EXISTS secret_stories (
   story_content JSONB NOT NULL, -- { paragraphs: string[] }
   hidden_message TEXT,
   message_author VARCHAR(50),
-  admin_message TEXT, -- Message from admin (appears when clicking 't')
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add admin_message column if it doesn't exist
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'secret_stories' AND column_name = 'admin_message'
+  ) THEN
+    ALTER TABLE secret_stories ADD COLUMN admin_message TEXT;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_secret_stories_week ON secret_stories(week_start_date);
 
@@ -57,14 +93,61 @@ CREATE INDEX IF NOT EXISTS idx_secret_stories_week ON secret_stories(week_start_
 -- =====================================================
 CREATE TABLE IF NOT EXISTS story_login_logs (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES story_users(id) ON DELETE CASCADE,
   username VARCHAR(50) NOT NULL,
   ip_address VARCHAR(45),
   user_agent TEXT,
-  login_at TIMESTAMPTZ DEFAULT NOW(),
-  logout_at TIMESTAMPTZ,
-  session_token TEXT
+  login_time TIMESTAMP DEFAULT NOW(),
+  session_id TEXT
 );
+
+-- Migrate existing table to new schema
+DO $$ 
+BEGIN
+  -- Add user_id column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE story_login_logs ADD COLUMN user_id INTEGER REFERENCES story_users(id) ON DELETE CASCADE;
+    
+    -- Populate user_id from username (if possible)
+    UPDATE story_login_logs log
+    SET user_id = u.id
+    FROM story_users u
+    WHERE log.username = u.username AND log.user_id IS NULL;
+  END IF;
+
+  -- Rename login_time to login_at if it exists and login_at doesn't
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_time'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_at'
+  ) THEN
+    ALTER TABLE story_login_logs RENAME COLUMN login_time TO login_at;
+    ALTER TABLE story_login_logs ALTER COLUMN login_at TYPE TIMESTAMPTZ USING login_at::TIMESTAMPTZ;
+  END IF;
+
+  -- Add logout_at column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'logout_at'
+  ) THEN
+    ALTER TABLE story_login_logs ADD COLUMN logout_at TIMESTAMPTZ;
+  END IF;
+
+  -- Rename session_id to session_token if session_id exists and session_token doesn't
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'session_id'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_login_logs' AND column_name = 'session_token'
+  ) THEN
+    ALTER TABLE story_login_logs RENAME COLUMN session_id TO session_token;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_login_logs_user ON story_login_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_login_logs_date ON story_login_logs(login_at DESC);
@@ -92,18 +175,69 @@ CREATE TABLE IF NOT EXISTS story_message_history (
   id SERIAL PRIMARY KEY,
   week_start_date DATE NOT NULL,
   author VARCHAR(50) NOT NULL,
-  message_type VARCHAR(20) NOT NULL CHECK (message_type IN ('text', 'image', 'video')),
-  content TEXT, -- For text messages
-  media_url TEXT, -- For images/videos (Supabase storage URL)
+  message_type VARCHAR(20) NOT NULL,
+  message_content TEXT,
+  media_url TEXT,
   media_filename TEXT,
-  media_size_bytes INTEGER,
-  media_mime_type VARCHAR(100),
-  thumbnail_url TEXT, -- For video thumbnails
-  is_from_admin BOOLEAN DEFAULT FALSE,
-  is_expired BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  is_expired BOOLEAN DEFAULT FALSE
 );
+
+-- Migrate existing table to new schema
+DO $$ 
+BEGIN
+  -- Rename message_content to content if it exists
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'message_content'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'content'
+  ) THEN
+    ALTER TABLE story_message_history RENAME COLUMN message_content TO content;
+  END IF;
+
+  -- Add missing columns
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'media_size_bytes'
+  ) THEN
+    ALTER TABLE story_message_history ADD COLUMN media_size_bytes INTEGER;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'media_mime_type'
+  ) THEN
+    ALTER TABLE story_message_history ADD COLUMN media_mime_type VARCHAR(100);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'thumbnail_url'
+  ) THEN
+    ALTER TABLE story_message_history ADD COLUMN thumbnail_url TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'story_message_history' AND column_name = 'is_from_admin'
+  ) THEN
+    ALTER TABLE story_message_history ADD COLUMN is_from_admin BOOLEAN DEFAULT FALSE;
+  END IF;
+
+  -- Add CHECK constraint if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE table_name = 'story_message_history' 
+    AND constraint_name = 'story_message_history_message_type_check'
+  ) THEN
+    ALTER TABLE story_message_history 
+    ADD CONSTRAINT story_message_history_message_type_check 
+    CHECK (message_type IN ('text', 'image', 'video'));
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_message_history_week ON story_message_history(week_start_date);
 CREATE INDEX IF NOT EXISTS idx_message_history_type ON story_message_history(message_type);
