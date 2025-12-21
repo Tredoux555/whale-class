@@ -22,7 +22,12 @@ export async function POST(
 ) {
   try {
     const { childId, workId } = await params;
-    const { action, status, currentLevel, notes } = await req.json();
+    const body = await req.json();
+    const { action, status, currentLevel, notes } = body;
+    
+    if (!action) {
+      return NextResponse.json({ error: 'Action is required' }, { status: 400 });
+    }
     
     let progress;
     
@@ -37,22 +42,35 @@ export async function POST(
         progress = await resetWork(childId, workId);
         break;
       case 'update':
+        if (!status) {
+          return NextResponse.json({ error: 'Status is required for update action' }, { status: 400 });
+        }
         progress = await updateWorkProgress(
           childId, 
           workId, 
           status, 
-          currentLevel, 
-          notes
+          currentLevel || 0, 
+          notes || ''
         );
         break;
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: `Invalid action: ${action}` }, { status: 400 });
     }
     
     return NextResponse.json(progress);
   } catch (error) {
     console.error('Error updating work progress:', error);
-    return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
+    return NextResponse.json(
+      { 
+        error: 'Failed to update progress',
+        details: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
+      }, 
+      { status: 500 }
+    );
   }
 }
 

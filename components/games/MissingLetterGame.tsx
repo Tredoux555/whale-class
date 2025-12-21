@@ -5,44 +5,45 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ALL_PINK_WORDS, WordData } from '@/lib/games/game-data';
+import { getMissingLetterLevel, MissingLetterWord } from '@/lib/games/missing-letter-data';
 import { GameAudio } from '@/lib/games/audio-paths';
 import Confetti from './Confetti';
 
 export default function MissingLetterGame() {
   const router = useRouter();
   
-  const [words, setWords] = useState<WordData[]>([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [words, setWords] = useState<MissingLetterWord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [missingIndex, setMissingIndex] = useState(0);
   const [options, setOptions] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [showCorrect, setShowCorrect] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
-  const [gameComplete, setGameComplete] = useState(false);
+  const [levelComplete, setLevelComplete] = useState(false);
+  const [allLevelsComplete, setAllLevelsComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-  const totalQuestions = 8;
+  const wordsPerLevel = 8;
+  const totalLevels = 8;
 
   const startGame = () => {
-    const shuffled = [...ALL_PINK_WORDS].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
-    setWords(shuffled);
+    setCurrentLevel(1);
+    const levelWords = getMissingLetterLevel(1);
+    setWords(levelWords);
     setCurrentIndex(0);
     setScore(0);
-    setGameComplete(false);
+    setLevelComplete(false);
+    setAllLevelsComplete(false);
     setGameStarted(true);
   };
 
-  // Setup missing letter and options
+  // Setup options - use the missing index from data
   useEffect(() => {
     if (words.length === 0 || currentIndex >= words.length) return;
     
-    const word = words[currentIndex].word;
-    const randIndex = Math.floor(Math.random() * word.length);
-    setMissingIndex(randIndex);
-    
-    const correctLetter = word[randIndex];
+    const wordData = words[currentIndex];
+    const correctLetter = wordData.word[wordData.missing];
     const wrongLetters = 'abcdefghijklmnopqrstuvwxyz'
       .split('')
       .filter(l => l !== correctLetter)
@@ -55,9 +56,8 @@ export default function MissingLetterGame() {
   // Play word audio
   const playWordAudio = () => {
     if (words.length === 0 || currentIndex >= words.length) return;
-    const word = words[currentIndex];
-    // Default to pink series if phase not specified
-    GameAudio.playWord(word.word, 'pink');
+    const wordData = words[currentIndex];
+    GameAudio.play(wordData.audioUrl).catch(console.error);
   };
 
   // Cleanup: Stop audio when component unmounts
@@ -70,7 +70,8 @@ export default function MissingLetterGame() {
   const handleSelect = (letter: string) => {
     if (showCorrect || showWrong) return;
     
-    const correctLetter = words[currentIndex].word[missingIndex];
+    const wordData = words[currentIndex];
+    const correctLetter = wordData.word[wordData.missing];
     
     if (letter === correctLetter) {
       setScore(prev => prev + 1);
@@ -88,13 +89,29 @@ export default function MissingLetterGame() {
     setShowCorrect(false);
     setShowWrong(false);
     
-    if (currentIndex + 1 >= totalQuestions) {
-      setGameComplete(true);
+    if (currentIndex + 1 >= wordsPerLevel) {
+      // Level complete!
+      setLevelComplete(true);
       GameAudio.playUI('complete').catch(console.error);
+      
+      // Check if all levels done
+      if (currentLevel >= totalLevels) {
+        setAllLevelsComplete(true);
+      }
     } else {
       setCurrentIndex(prev => prev + 1);
     }
-  }, [currentIndex]);
+  }, [currentIndex, currentLevel]);
+  
+  const handleNextLevel = () => {
+    if (currentLevel < totalLevels) {
+      setCurrentLevel(prev => prev + 1);
+      const levelWords = getMissingLetterLevel(currentLevel + 1);
+      setWords(levelWords);
+      setCurrentIndex(0);
+      setLevelComplete(false);
+    }
+  };
 
   useEffect(() => {
     if (showCorrect || showWrong) {
@@ -125,8 +142,8 @@ export default function MissingLetterGame() {
     );
   }
 
-  // Complete screen
-  if (gameComplete) {
+  // Level complete screen
+  if (levelComplete && !allLevelsComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400"
         style={{ fontFamily: "'Comic Sans MS', cursive" }}>
@@ -134,9 +151,34 @@ export default function MissingLetterGame() {
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
           <div className="text-6xl mb-4">{score >= 6 ? '🎉' : '💪'}</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            {score >= 6 ? 'Excellent!' : 'Good Try!'}
+            Level {currentLevel} Complete!
           </h2>
-          <p className="text-gray-600 text-xl mb-6">Score: {score}/{totalQuestions}</p>
+          <p className="text-gray-600 text-xl mb-6">Score: {score}/{wordsPerLevel}</p>
+          <div className="space-y-3">
+            <button onClick={handleNextLevel}
+              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl">
+              {currentLevel < totalLevels ? `→ Level ${currentLevel + 1}` : '🎉 All Done!'}
+            </button>
+            <button onClick={() => router.push('/games')}
+              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl">
+              ← Back to Games
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // All levels complete
+  if (allLevelsComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400"
+        style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+        <Confetti />
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="text-6xl mb-4">🏆</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">All Levels Complete!</h2>
+          <p className="text-gray-600 text-xl mb-6">You finished all {totalLevels} levels!</p>
           <div className="space-y-3">
             <button onClick={startGame}
               className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl">
@@ -154,7 +196,7 @@ export default function MissingLetterGame() {
 
   const currentWord = words[currentIndex];
   const displayWord = currentWord.word.split('').map((letter, i) => 
-    i === missingIndex ? '_' : letter
+    i === currentWord.missing ? '_' : letter
   ).join('');
 
   return (
@@ -165,13 +207,13 @@ export default function MissingLetterGame() {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => router.push('/games')} className="text-white font-bold">← Back</button>
-          <div className="text-white font-bold">{currentIndex + 1}/{totalQuestions}</div>
+          <div className="text-white font-bold">Level {currentLevel} - {currentIndex + 1}/{wordsPerLevel}</div>
           <div className="text-white font-bold">⭐ {score}</div>
         </div>
 
         <div className="h-3 bg-white/30 rounded-full overflow-hidden mb-6">
           <div className="h-full bg-white rounded-full transition-all"
-            style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
+            style={{ width: `${((currentIndex + 1) / wordsPerLevel) * 100}%` }} />
         </div>
 
         <div className="bg-white rounded-3xl shadow-2xl p-6 relative overflow-hidden">
@@ -189,7 +231,7 @@ export default function MissingLetterGame() {
               <div className="text-center">
                 <div className="text-6xl mb-4">❌</div>
                 <p className="text-white text-2xl font-bold">
-                  It was: {currentWord.word[missingIndex]}
+                  It was: {currentWord.word[currentWord.missing]}
                 </p>
               </div>
             </div>

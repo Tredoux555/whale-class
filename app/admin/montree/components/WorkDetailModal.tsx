@@ -44,11 +44,17 @@ export default function WorkDetailModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update', status, currentLevel, notes }),
       });
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || `Failed to save: ${res.statusText}`);
+      }
+      const data = await res.json();
       onUpdate();
+      onClose();
     } catch (error) {
       console.error('Failed to save progress:', error);
-      alert('Failed to save. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save. Please try again.';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -65,11 +71,17 @@ export default function WorkDetailModal({
           currentLevel: action === 'complete' ? work?.levels.length || 1 : undefined,
         }),
       });
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || `Failed to save: ${res.statusText}`);
+      }
+      const data = await res.json();
       onUpdate();
+      onClose();
     } catch (error) {
       console.error('Failed to perform action:', error);
-      alert('Failed to save. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save. Please try again.';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }

@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { PINK_SERIES, ALL_PINK_WORDS, WordData } from '@/lib/games/game-data';
+import { WordData } from '@/lib/games/game-data';
+import { getPictureMatchLevel } from '@/lib/games/picture-match-data';
 import { GameAudio } from '@/lib/games/audio-paths';
 import Confetti from './Confetti';
 
@@ -16,25 +17,30 @@ interface Props {
 export default function PictureMatchGame({ phase }: Props) {
   const router = useRouter();
   
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [words, setWords] = useState<WordData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [options, setOptions] = useState<WordData[]>([]);
   const [score, setScore] = useState(0);
   const [showCorrect, setShowCorrect] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
-  const [gameComplete, setGameComplete] = useState(false);
+  const [levelComplete, setLevelComplete] = useState(false);
+  const [allLevelsComplete, setAllLevelsComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-  const totalQuestions = 8;
+  const wordsPerLevel = 8;
+  const totalLevels = 8;
 
   // Start game
   const startGame = () => {
-    const shuffled = [...ALL_PINK_WORDS].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
-    setWords(shuffled);
+    setCurrentLevel(1);
+    const levelWords = getPictureMatchLevel(1);
+    setWords(levelWords);
     setCurrentIndex(0);
     setScore(0);
-    setGameComplete(false);
+    setLevelComplete(false);
+    setAllLevelsComplete(false);
     setGameStarted(true);
   };
 
@@ -43,7 +49,8 @@ export default function PictureMatchGame({ phase }: Props) {
     if (words.length === 0 || currentIndex >= words.length) return;
     
     const current = words[currentIndex];
-    const others = ALL_PINK_WORDS
+    // Get wrong options from current level words
+    const others = words
       .filter(w => w.word !== current.word)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
@@ -53,8 +60,7 @@ export default function PictureMatchGame({ phase }: Props) {
 
   // Play audio for option
   const playOptionAudio = (word: WordData) => {
-    // Default to pink series if phase not specified
-    GameAudio.playWord(word.word, 'pink');
+    GameAudio.play(word.audioUrl).catch(console.error);
   };
 
   // Cleanup: Stop audio when component unmounts
@@ -85,13 +91,29 @@ export default function PictureMatchGame({ phase }: Props) {
     setShowCorrect(false);
     setShowWrong(false);
     
-    if (currentIndex + 1 >= totalQuestions) {
-      setGameComplete(true);
+    if (currentIndex + 1 >= wordsPerLevel) {
+      // Level complete!
+      setLevelComplete(true);
       GameAudio.playUI('complete').catch(console.error);
+      
+      // Check if all levels done
+      if (currentLevel >= totalLevels) {
+        setAllLevelsComplete(true);
+      }
     } else {
       setCurrentIndex(prev => prev + 1);
     }
-  }, [currentIndex]);
+  }, [currentIndex, currentLevel]);
+  
+  const handleNextLevel = () => {
+    if (currentLevel < totalLevels) {
+      setCurrentLevel(prev => prev + 1);
+      const levelWords = getPictureMatchLevel(currentLevel + 1);
+      setWords(levelWords);
+      setCurrentIndex(0);
+      setLevelComplete(false);
+    }
+  };
 
   // Auto-advance
   useEffect(() => {
@@ -134,9 +156,9 @@ export default function PictureMatchGame({ phase }: Props) {
   }
 
   // ==========================================
-  // RENDER: Game Complete
+  // RENDER: Level Complete
   // ==========================================
-  if (gameComplete) {
+  if (levelComplete && !allLevelsComplete) {
     return (
       <div 
         className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
@@ -145,12 +167,49 @@ export default function PictureMatchGame({ phase }: Props) {
         {score >= 6 && <Confetti />}
         
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
-          <div className="text-6xl mb-4">{score >= 6 ? '🏆' : '💪'}</div>
+          <div className="text-6xl mb-4">{score >= 6 ? '🎉' : '💪'}</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            {score >= 6 ? 'Excellent!' : 'Good Job!'}
+            Level {currentLevel} Complete!
           </h2>
           <p className="text-gray-600 text-xl mb-6">
-            You matched {score} out of {totalQuestions}!
+            You matched {score} out of {wordsPerLevel}!
+          </p>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleNextLevel}
+              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl"
+            >
+              {currentLevel < totalLevels ? `→ Level ${currentLevel + 1}` : '🎉 All Done!'}
+            </button>
+            <button
+              onClick={() => router.push('/games')}
+              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl"
+            >
+              ← Back to Games
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // All levels complete
+  if (allLevelsComplete) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
+        style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      >
+        <Confetti />
+        
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="text-6xl mb-4">🏆</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            All Levels Complete!
+          </h2>
+          <p className="text-gray-600 text-xl mb-6">
+            You finished all {totalLevels} levels!
           </p>
 
           <div className="space-y-3">
@@ -191,7 +250,7 @@ export default function PictureMatchGame({ phase }: Props) {
             ← Back
           </button>
           <div className="text-white font-bold">
-            {currentIndex + 1} / {totalQuestions}
+            Level {currentLevel} - {currentIndex + 1} / {wordsPerLevel}
           </div>
           <div className="text-white font-bold">⭐ {score}</div>
         </div>
@@ -200,7 +259,7 @@ export default function PictureMatchGame({ phase }: Props) {
         <div className="h-3 bg-white/30 rounded-full overflow-hidden mb-6">
           <div 
             className="h-full bg-white rounded-full transition-all"
-            style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
+            style={{ width: `${((currentIndex + 1) / wordsPerLevel) * 100}%` }}
           />
         </div>
 
