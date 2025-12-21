@@ -1,58 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
-import { JWT_SECRET } from '@/lib/story-auth';
-import { getWeekStartDate, getExpirationDate, validateMessage, sanitizeInput } from '@/lib/story-utils';
+import { verifyToken, extractToken, getCurrentWeekStart, getExpirationDate } from '@/lib/story-auth';
 
+// POST: Save a text message
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
+  const token = extractToken(req.headers.get('authorization'));
   
-  if (!authHeader) {
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const token = authHeader.replace('Bearer ', '');
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const { message, author } = await req.json();
-
-    // Validate message
-    const validation = validateMessage(message);
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error || 'Invalid message' },
-        { status: 400 }
-      );
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Sanitize inputs
-    const sanitizedMessage = sanitizeInput(message);
-    const sanitizedAuthor = sanitizeInput(author || (payload.username as string));
+    const { message, author } = await req.json();
 
-    // Get current week's Monday
-    const weekStartDate = getWeekStartDate();
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
 
-    // Save to message history (permanent record for admin)
-    // Messages expire after 7 days from public view but stay in history
+    const weekStartDate = getCurrentWeekStart();
     const expiresAt = getExpirationDate();
+    const messageAuthor = author || payload.username;
 
+    // Save to message history (permanent record)
     await db.query(
       `INSERT INTO story_message_history 
-       (week_start_date, message_type, message_content, author, expires_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [weekStartDate, 'text', sanitizedMessage, sanitizedAuthor, expiresAt]
+       (week_start_date, author, message_type, content, expires_at)
+       VALUES ($1, $2, 'text', $3, $4)`,
+      [weekStartDate, messageAuthor, message.trim(), expiresAt]
     );
 
-    // Update the story with the new hidden message
-    // This OVERWRITES any previous message (no history)
+    // Update the story's hidden message (this is what shows when clicking 't')
     const result = await db.query(
       `UPDATE secret_stories 
-       SET hidden_message = $1, 
-           message_author = $2, 
-           updated_at = NOW()
+       SET hidden_message = $1, message_author = $2, updated_at = NOW()
        WHERE week_start_date = $3
        RETURNING *`,
-      [sanitizedMessage, sanitizedAuthor, weekStartDate]
+      [message.trim(), messageAuthor, weekStartDate]
     );
 
     if (result.rows.length === 0) {
@@ -75,40 +63,48 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Optional: GET endpoint to check if there's a message waiting
+// GET: Check if there's a message for this week
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
+  const token = extractToken(req.headers.get('authorization'));
   
-  if (!authHeader) {
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const token = authHeader.replace('Bearer ', '');
-    await jwtVerify(token, JWT_SECRET);
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
 
-    const weekStartDate = getWeekStartDate();
+    const weekStartDate = getCurrentWeekStart();
 
+    // Get the latest text message for this week
     const result = await db.query(
-      `SELECT hidden_message, message_author, updated_at 
-       FROM secret_stories 
-       WHERE week_start_date = $1`,
+      `SELECT content, author, created_at 
+       FROM story_message_history 
+       WHERE week_start_date = $1 
+         AND message_type = 'text'
+         AND is_expired = FALSE
+         AND (expires_at IS NULL OR expires_at > NOW())
+       ORDER BY created_at DESC 
+       LIMIT 1`,
       [weekStartDate]
     );
 
-    if (result.rows.length === 0 || !result.rows[0].hidden_message) {
+    if (result.rows.length === 0) {
       return NextResponse.json({ hasMessage: false });
     }
 
+    const msg = result.rows[0];
     return NextResponse.json({
       hasMessage: true,
-      author: result.rows[0].message_author,
-      timestamp: result.rows[0].updated_at
+      message: msg.content,
+      author: msg.author,
+      timestamp: msg.created_at
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('Message fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch message' }, { status: 500 });
   }
 }
-
-
-

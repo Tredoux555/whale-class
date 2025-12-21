@@ -1,258 +1,192 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { db } from '@/lib/db';
-import { JWT_SECRET } from '@/lib/story-auth';
 import { createClient } from '@supabase/supabase-js';
-import { getWeekStartDate, getExpirationDate, sanitizeInput } from '@/lib/story-utils';
+import { db } from '@/lib/db';
+import { verifyToken, extractToken, getCurrentWeekStart, getExpirationDate } from '@/lib/story-auth';
 
-// Increase timeout for large file uploads
-export const maxDuration = 60;
+// Initialize Supabase client for storage
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-// Helper function to get Supabase client (with validation)
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Max file sizes
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
-  if (!supabaseUrl) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is not set');
-  }
-
-  if (!supabaseKey) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is not set');
-  }
-
-  return createClient(supabaseUrl, supabaseKey);
-}
-
-// Helper function to detect file type from extension (for mobile compatibility)
-function detectFileType(file: File): 'image' | 'video' {
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
-  const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'quicktime'];
-  
-  if (extension && imageExtensions.includes(extension)) {
-    return 'image';
-  }
-  if (extension && videoExtensions.includes(extension)) {
-    return 'video';
-  }
-  
-  // Fallback to MIME type
-  if (file.type.startsWith('image/')) return 'image';
-  if (file.type.startsWith('video/')) return 'video';
-  
-  // Default to image if uncertain
-  return 'image';
-}
+// Allowed MIME types
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
+  const token = extractToken(req.headers.get('authorization'));
   
-  if (!authHeader) {
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // Validate environment variables first
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error('NEXT_PUBLIC_SUPABASE_URL environment variable is not set');
-      return NextResponse.json(
-        { 
-          error: 'Server configuration error',
-          details: 'NEXT_PUBLIC_SUPABASE_URL environment variable is missing',
-          hint: 'Please set NEXT_PUBLIC_SUPABASE_URL in your environment variables'
-        },
-        { status: 500 }
-      );
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
-
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is not set');
-      return NextResponse.json(
-        { 
-          error: 'Server configuration error',
-          details: 'SUPABASE_SERVICE_ROLE_KEY environment variable is missing',
-          hint: 'Please set SUPABASE_SERVICE_ROLE_KEY in your environment variables'
-        },
-        { status: 500 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-
-    // Get Supabase client
-    const supabase = getSupabaseClient();
 
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const author = formData.get('author') as string;
-    const providedType = formData.get('type') as string | null;
+    const file = formData.get('file') as File | null;
+    const author = (formData.get('author') as string) || payload.username;
 
-    if (!file || !author) {
+    if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Determine if image or video
+    const mimeType = file.type;
+    const isImage = ALLOWED_IMAGE_TYPES.includes(mimeType);
+    const isVideo = ALLOWED_VIDEO_TYPES.includes(mimeType);
+
+    if (!isImage && !isVideo) {
       return NextResponse.json(
-        { error: 'Missing file or author' },
+        { error: 'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP, MP4, MOV, WEBM' },
         { status: 400 }
       );
     }
 
-    // Detect file type (use provided type or auto-detect)
-    const messageType = providedType === 'image' || providedType === 'video' 
-      ? providedType 
-      : detectFileType(file);
-
-    // Validate file type - expanded list for mobile compatibility
-    const validImageTypes = [
-      'image/jpeg', 
-      'image/jpg', 
-      'image/png', 
-      'image/gif', 
-      'image/webp',
-      'image/heic',      // iOS HEIC format
-      'image/heif',      // iOS HEIF format
-      'image/x-heic',    // Alternative HEIC MIME
-      'image/x-heif'     // Alternative HEIF MIME
-    ];
-    const validVideoTypes = [
-      'video/mp4', 
-      'video/webm', 
-      'video/quicktime',
-      'video/x-msvideo', // AVI
-      'video/x-matroska', // MKV
-      'video/avi', // Alternative AVI MIME
-      'video/x-m4v', // M4V
-      'application/octet-stream' // Some mobile devices send videos as this
-    ];
-    
-    // Check by MIME type or file extension
-    const fileExtension = file.name.split('.').pop()?.toLowerCase();
-    const isValidImage = validImageTypes.includes(file.type) || 
-                         (messageType === 'image' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'].includes(fileExtension || ''));
-    const isValidVideo = validVideoTypes.includes(file.type) || 
-                         (messageType === 'video' && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'quicktime'].includes(fileExtension || '')) ||
-                         // Handle cases where MIME type is generic but extension indicates video
-                         (file.type === 'application/octet-stream' && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v'].includes(fileExtension || ''));
-    
-    if (messageType === 'image' && !isValidImage) {
-      return NextResponse.json(
-        { 
-          error: `Invalid image type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: JPEG, PNG, GIF, WebP, HEIC.`,
-          fileType: file.type,
-          fileName: file.name
-        },
-        { status: 400 }
-      );
-    }
-
-    if (messageType === 'video' && !isValidVideo) {
-      return NextResponse.json(
-        { 
-          error: `Invalid video type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: MP4, WebM, MOV, AVI, MKV, M4V.`,
-          fileType: file.type,
-          fileName: file.name
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check file size (max 50MB for images, 100MB for videos)
-    const maxSize = messageType === 'image' ? 50 * 1024 * 1024 : 100 * 1024 * 1024;
+    // Check file size
+    const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
     if (file.size > maxSize) {
+      const maxSizeMB = maxSize / (1024 * 1024);
       return NextResponse.json(
-        { error: `File too large. Size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Max: ${maxSize / 1024 / 1024}MB` },
+        { error: `File too large. Maximum size: ${maxSizeMB}MB` },
         { status: 400 }
       );
     }
 
-    // Get current week's Monday
-    const weekStartDate = getWeekStartDate();
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const extension = file.name.split('.').pop() || (isImage ? 'jpg' : 'mp4');
+    const filename = `${author}-${timestamp}-${randomId}.${extension}`;
+    const filePath = `messages/${getCurrentWeekStart()}/${filename}`;
 
-    // Upload to Supabase Storage
-    const fileExt = file.name.split('.').pop();
-    if (!fileExt) {
-      return NextResponse.json(
-        { error: 'File must have an extension' },
-        { status: 400 }
-      );
-    }
-
-    const fileName = `story-media/${weekStartDate}/${Date.now()}-${author.replace(/[^a-zA-Z0-9]/g, '_')}.${fileExt}`;
-    
+    // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Ensure content type is set (fallback to application/octet-stream if missing)
-    const contentType = file.type || (messageType === 'image' ? 'image/jpeg' : 'video/mp4');
-
+    // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('story-uploads')
-      .upload(fileName, buffer, {
-        contentType: contentType,
-        upsert: false,
-        cacheControl: '3600'
+      .from('story-media')
+      .upload(filePath, buffer, {
+        contentType: mimeType,
+        cacheControl: '3600',
+        upsert: false
       });
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
-      const errorMessage = uploadError.message || 'Unknown error';
-      const errorCode = (uploadError as any).statusCode || (uploadError as any).status || 'UNKNOWN';
-      
-      // Provide helpful hints based on error type
-      let hint = undefined;
-      if (errorMessage.includes('bucket') || errorMessage.includes('not found') || errorCode === 404) {
-        hint = 'Storage bucket "story-uploads" may not exist. Create it in Supabase Storage settings and ensure it is public.';
-      } else if (errorMessage.includes('permission') || errorMessage.includes('policy') || errorCode === 403) {
-        hint = 'Storage bucket policies may not be configured correctly. Check that INSERT policies are set for the "story-uploads" bucket.';
-      } else if (errorMessage.includes('size') || errorCode === 413) {
-        hint = 'File size exceeds limits. Images: 50MB max, Videos: 100MB max.';
-      } else if (errorCode === 401 || errorMessage.includes('unauthorized')) {
-        hint = 'Authentication failed. Check that SUPABASE_SERVICE_ROLE_KEY is set correctly.';
-      }
-
       return NextResponse.json(
-        { 
-          error: 'Failed to upload file',
-          details: errorMessage,
-          code: errorCode,
-          hint: hint
-        },
+        { error: 'Failed to upload file' },
         { status: 500 }
       );
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('story-uploads')
-      .getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage
+      .from('story-media')
+      .getPublicUrl(filePath);
 
-    // Save to message history
+    const mediaUrl = urlData.publicUrl;
+    const weekStartDate = getCurrentWeekStart();
     const expiresAt = getExpirationDate();
-    const sanitizedAuthor = sanitizeInput(author);
+    const messageType = isImage ? 'image' : 'video';
 
-    await db.query(
+    // Save to database
+    const result = await db.query(
       `INSERT INTO story_message_history 
-       (week_start_date, message_type, media_url, media_filename, author, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [weekStartDate, messageType, publicUrl, file.name, sanitizedAuthor, expiresAt]
+       (week_start_date, author, message_type, media_url, media_filename, 
+        media_size_bytes, media_mime_type, expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id`,
+      [weekStartDate, author, messageType, mediaUrl, filename, file.size, mimeType, expiresAt]
     );
 
     return NextResponse.json({
       success: true,
-      mediaUrl: publicUrl,
-      fileName: file.name,
-      message: 'Media uploaded successfully'
+      media: {
+        id: result.rows[0].id,
+        type: messageType,
+        url: mediaUrl,
+        filename: filename,
+        mimeType: mimeType,
+        author: author
+      }
     });
   } catch (error) {
-    console.error('Media upload error:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Upload error:', error);
+    const message = error instanceof Error ? error.message : 'Upload failed';
     return NextResponse.json(
-      { 
-        error: 'Failed to upload media',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An unexpected error occurred',
-        type: error instanceof Error ? error.name : 'UnknownError'
-      },
+      { error: 'Failed to upload media', details: message },
       { status: 500 }
     );
   }
 }
 
+// DELETE: Remove a media item
+export async function DELETE(req: NextRequest) {
+  const token = extractToken(req.headers.get('authorization'));
+  
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const mediaId = searchParams.get('id');
+
+    if (!mediaId) {
+      return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
+    }
+
+    // Get the media item (only allow deletion of own media)
+    const mediaResult = await db.query(
+      `SELECT media_url, author FROM story_message_history WHERE id = $1`,
+      [mediaId]
+    );
+
+    if (mediaResult.rows.length === 0) {
+      return NextResponse.json({ error: 'Media not found' }, { status: 404 });
+    }
+
+    const media = mediaResult.rows[0];
+    
+    // Check ownership (admins can delete any, users only their own)
+    if (payload.type !== 'admin' && media.author !== payload.username) {
+      return NextResponse.json({ error: 'Not authorized to delete this media' }, { status: 403 });
+    }
+
+    // Delete from storage
+    const url = new URL(media.media_url);
+    const pathParts = url.pathname.split('/story-media/');
+    if (pathParts.length > 1) {
+      const storagePath = pathParts[1];
+      await supabase.storage.from('story-media').remove([storagePath]);
+    }
+
+    // Mark as expired in database (soft delete)
+    await db.query(
+      `UPDATE story_message_history SET is_expired = TRUE WHERE id = $1`,
+      [mediaId]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete media' },
+      { status: 500 }
+    );
+  }
+}

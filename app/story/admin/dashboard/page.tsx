@@ -1,606 +1,461 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+
+interface OnlineUser {
+  username: string;
+  last_seen_at: string;
+  session_started: string;
+}
 
 interface LoginLog {
   id: number;
   username: string;
-  login_time: string;
   ip_address: string;
   user_agent: string;
+  login_at: string;
+  logout_at: string | null;
 }
 
-interface MessageHistory {
+interface Message {
   id: number;
-  week_start_date: string;
-  message_type: 'text' | 'image' | 'video';
-  message_content: string | null;
-  media_url: string | null;
-  media_filename: string | null;
+  weekStartDate: string;
   author: string;
-  created_at: string;
-  expires_at: string | null;
-  is_expired: boolean;
+  type: 'text' | 'image' | 'video';
+  content: string | null;
+  mediaUrl: string | null;
+  mediaFilename: string | null;
+  isFromAdmin: boolean;
+  isExpired: boolean;
+  createdAt: string;
 }
 
-interface Statistics {
-  message_type: string;
-  count: string;
-  expired_count: string;
+interface Stats {
+  total_messages: string;
+  text_count: string;
+  image_count: string;
+  video_count: string;
+  unique_authors: string;
 }
 
-interface OnlineUser {
-  username: string;
-  lastSeen: string;
-  secondsAgo: number;
-  isOnline: boolean;
-}
+type Tab = 'online' | 'logs' | 'messages';
 
-export default function StoryAdminDashboard() {
+export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'logs' | 'messages' | 'online'>('online');
-  const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
-  const [messages, setMessages] = useState<MessageHistory[]>([]);
-  const [statistics, setStatistics] = useState<Statistics[]>([]);
+  const [session, setSession] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('online');
+  
+  // Online users
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [adminUsername, setAdminUsername] = useState('');
   
-  // Admin message sending state
+  // Login logs
+  const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
+  const [loginStats, setLoginStats] = useState<any>(null);
+  
+  // Messages
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageStats, setMessageStats] = useState<Stats | null>(null);
+  const [availableWeeks, setAvailableWeeks] = useState<string[]>([]);
+  const [messageFilter, setMessageFilter] = useState<string>('all');
+  const [weekFilter, setWeekFilter] = useState<string>('all');
+  
+  // Admin message
   const [adminMessage, setAdminMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
-  const [messageError, setMessageError] = useState('');
 
+  // Check auth on mount
   useEffect(() => {
-    verifySession();
-  }, []);
-
-  useEffect(() => {
-    if (adminUsername) {
-      if (activeTab === 'logs') {
-        fetchLoginLogs();
-      } else if (activeTab === 'messages') {
-        fetchMessageHistory();
-      } else if (activeTab === 'online') {
-        fetchOnlineUsers();
-      }
-    }
-  }, [activeTab, adminUsername]);
-
-  // Auto-refresh online users every 5 seconds when on that tab
-  useEffect(() => {
-    if (activeTab === 'online' && adminUsername) {
-      const interval = setInterval(() => {
-        fetchOnlineUsers();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [activeTab, adminUsername]);
-
-  const verifySession = async () => {
-    const session = sessionStorage.getItem('story_admin_session');
-    
-    if (!session) {
+    const adminSession = sessionStorage.getItem('story_admin_session');
+    if (!adminSession) {
       router.push('/story/admin');
       return;
     }
+    setSession(adminSession);
+  }, [router]);
 
-    try {
-      const res = await fetch('/api/story/admin/auth', {
-        headers: { 'Authorization': `Bearer ${session}` }
-      });
-
-      if (!res.ok) {
-        sessionStorage.removeItem('story_admin_session');
-        router.push('/story/admin');
-        return;
-      }
-
-      const data = await res.json();
-      setAdminUsername(data.username);
-      setIsLoading(false);
-    } catch (err) {
-      console.error('Session verification error:', err);
-      router.push('/story/admin');
-    }
-  };
-
-  const fetchLoginLogs = async () => {
-    const session = sessionStorage.getItem('story_admin_session');
-    
-    try {
-      const res = await fetch('/api/story/admin/login-logs?limit=100', {
-        headers: { 'Authorization': `Bearer ${session}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setLoginLogs(data.logs);
-      } else {
-        setError('Failed to fetch login logs');
-      }
-    } catch (err) {
-      setError('Connection error');
-    }
-  };
-
-  const fetchMessageHistory = async () => {
-    const session = sessionStorage.getItem('story_admin_session');
-    
-    try {
-      const res = await fetch('/api/story/admin/message-history?limit=200&showExpired=false', {
-        headers: { 'Authorization': `Bearer ${session}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data.messages);
-        setStatistics(data.statistics);
-      } else {
-        setError('Failed to fetch message history');
-      }
-    } catch (err) {
-      setError('Connection error');
-    }
-  };
-
-  const fetchOnlineUsers = async () => {
-    const session = sessionStorage.getItem('story_admin_session');
-    
+  // Fetch online users
+  const fetchOnlineUsers = useCallback(async () => {
+    if (!session) return;
     try {
       const res = await fetch('/api/story/admin/online-users', {
         headers: { 'Authorization': `Bearer ${session}` }
       });
-
       if (res.ok) {
         const data = await res.json();
-        setOnlineUsers(data.onlineUsers || []);
-        setOnlineCount(data.onlineCount || 0);
-        setTotalUsers(data.totalUsers || 0);
-      } else {
-        setError('Failed to fetch online users');
+        setOnlineUsers(data.onlineUsers);
+        setOnlineCount(data.onlineCount);
+        setTotalUsers(data.totalUsers);
+      } else if (res.status === 401 || res.status === 403) {
+        sessionStorage.removeItem('story_admin_session');
+        router.push('/story/admin');
       }
     } catch (err) {
-      setError('Connection error');
+      console.error('Failed to fetch online users:', err);
     }
-  };
+  }, [session, router]);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('story_admin_session');
-    router.push('/story/admin');
-  };
+  // Fetch login logs
+  const fetchLoginLogs = useCallback(async () => {
+    if (!session) return;
+    try {
+      const res = await fetch('/api/story/admin/login-logs', {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLoginLogs(data.logs);
+        setLoginStats(data.stats);
+      }
+    } catch (err) {
+      console.error('Failed to fetch login logs:', err);
+    }
+  }, [session]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // Fetch messages
+  const fetchMessages = useCallback(async () => {
+    if (!session) return;
+    try {
+      let url = '/api/story/admin/message-history?limit=100';
+      if (messageFilter !== 'all') url += `&type=${messageFilter}`;
+      if (weekFilter !== 'all') url += `&week=${weekFilter}`;
+      
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.messages);
+        setMessageStats(data.stats);
+        setAvailableWeeks(data.availableWeeks);
+      }
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+    }
+  }, [session, messageFilter, weekFilter]);
 
+  // Auto-refresh online users
+  useEffect(() => {
+    if (session && activeTab === 'online') {
+      fetchOnlineUsers();
+      const interval = setInterval(fetchOnlineUsers, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [session, activeTab, fetchOnlineUsers]);
+
+  // Fetch data when tab changes
+  useEffect(() => {
+    if (!session) return;
+    if (activeTab === 'logs') fetchLoginLogs();
+    if (activeTab === 'messages') fetchMessages();
+  }, [session, activeTab, fetchLoginLogs, fetchMessages]);
+
+  // Refetch messages when filters change
+  useEffect(() => {
+    if (activeTab === 'messages') fetchMessages();
+  }, [messageFilter, weekFilter, fetchMessages, activeTab]);
+
+  // Send admin message
   const sendAdminMessage = async () => {
-    if (!adminMessage.trim()) return;
+    if (!adminMessage.trim() || !session) return;
     
     setSendingMessage(true);
-    setMessageError('');
-    setMessageSent(false);
-
-    const session = sessionStorage.getItem('story_admin_session');
-    if (!session) {
-      setMessageError('Session expired. Please log in again.');
-      setSendingMessage(false);
-      return;
-    }
-
     try {
       const res = await fetch('/api/story/admin/send-message', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session}`
         },
-        body: JSON.stringify({ 
-          message: adminMessage.trim(),
-          author: adminUsername || 'Admin'
-        })
+        body: JSON.stringify({ message: adminMessage.trim() })
       });
-
-      const data = await res.json();
 
       if (res.ok) {
         setMessageSent(true);
         setAdminMessage('');
-        // Auto-hide success message after 3 seconds
         setTimeout(() => setMessageSent(false), 3000);
-        // Refresh message history if on messages tab
-        if (activeTab === 'messages') {
-          fetchMessageHistory();
-        }
-      } else {
-        setMessageError(data.error || 'Failed to send message');
       }
     } catch (err) {
-      setMessageError('Network error. Please try again.');
+      console.error('Failed to send message:', err);
     } finally {
       setSendingMessage(false);
     }
   };
 
-  if (isLoading) {
+  // Logout
+  const handleLogout = () => {
+    sessionStorage.removeItem('story_admin_session');
+    sessionStorage.removeItem('story_admin_username');
+    router.push('/story/admin');
+  };
+
+  if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <div className="animate-spin text-4xl">⏳</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              📊 Story Admin Dashboard
-            </h1>
-            <p className="text-sm text-gray-600">Logged in as: {adminUsername}</p>
+      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🔐</span>
+            <h1 className="text-xl font-bold">Story Admin</h1>
           </div>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            className="text-slate-400 hover:text-white transition-colors"
           >
-            Logout
+            Logout →
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Navigation Tabs */}
-      <div className="max-w-7xl mx-auto px-6 mt-6">
-        <div className="flex space-x-4 border-b border-gray-300">
-          <button
-            onClick={() => setActiveTab('online')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'online'
-                ? 'border-b-2 border-purple-600 text-purple-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            🟢 Who's Online ({onlineCount})
-          </button>
-          <button
-            onClick={() => setActiveTab('logs')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'logs'
-                ? 'border-b-2 border-purple-600 text-purple-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            🔑 Login Logs ({loginLogs.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('messages')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'messages'
-                ? 'border-b-2 border-purple-600 text-purple-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            💬 Message History ({messages.length})
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Admin Message Sender */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
-            💬 Send Secret Message
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Send a message that will appear when users click the first 't' in the story.
+      <main className="max-w-6xl mx-auto p-6">
+        {/* Send Message Card */}
+        <div className="bg-slate-800 rounded-xl p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">📤 Send Secret Message</h2>
+          <p className="text-slate-400 text-sm mb-4">
+            This message will appear when users click the first 't' in the story.
           </p>
-          
-          <div className="space-y-4">
-            <textarea
+          <div className="flex gap-3">
+            <input
+              type="text"
               value={adminMessage}
               onChange={(e) => setAdminMessage(e.target.value)}
-              placeholder="Type your secret message here..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-              rows={3}
-              disabled={sendingMessage}
+              onKeyDown={(e) => e.key === 'Enter' && sendAdminMessage()}
+              placeholder="Type your secret message..."
+              className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            
-            <div className="flex items-center gap-4">
-              <button
-                onClick={sendAdminMessage}
-                disabled={sendingMessage || !adminMessage.trim()}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {sendingMessage ? '⏳ Sending...' : '📤 Send Message'}
-              </button>
-              
-              {messageSent && (
-                <span className="text-green-600 font-medium">
-                  ✅ Message sent successfully!
-                </span>
-              )}
-              
-              {messageError && (
-                <span className="text-red-600 font-medium">
-                  ❌ {messageError}
-                </span>
-              )}
-            </div>
+            <button
+              onClick={sendAdminMessage}
+              disabled={sendingMessage || !adminMessage.trim()}
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-600 px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              {sendingMessage ? '⏳' : '📤'} Send
+            </button>
           </div>
+          {messageSent && (
+            <p className="text-green-400 text-sm mt-2">✅ Message sent successfully!</p>
+          )}
         </div>
 
-        {/* Who's Online Tab */}
-        {activeTab === 'online' && (
-          <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
-                  🟢 Currently Online
-                </div>
-                <div className="text-4xl font-bold text-green-600">{onlineCount}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Active in last 10 minutes
-                </div>
-              </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          {[
+            { id: 'online', label: "Who's Online", icon: '🟢' },
+            { id: 'logs', label: 'Login Logs', icon: '📋' },
+            { id: 'messages', label: 'Message History', icon: '💬' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as Tab)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
 
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
-                  👥 Total Users
+        {/* Tab Content */}
+        <div className="bg-slate-800 rounded-xl p-6">
+          {/* Online Users Tab */}
+          {activeTab === 'online' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Currently Online</h2>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-green-400">🟢 {onlineCount} online</span>
+                  <span className="text-slate-400">👥 {totalUsers} total users</span>
                 </div>
-                <div className="text-4xl font-bold text-gray-900">{totalUsers}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  All time logins
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
-                  🔄 Auto-Refresh
-                </div>
-                <div className="text-4xl font-bold text-blue-600">5s</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Updates every 5 seconds
-                </div>
-              </div>
-            </div>
-
-            {/* Online Users List */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 bg-gray-50 border-b">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  🟢 Currently Online Users
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Users who logged in within the last 10 minutes
-                </p>
               </div>
               
-              {onlineUsers.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <div className="text-gray-400 text-6xl mb-4">😴</div>
-                  <div className="text-xl text-gray-600 font-medium mb-2">
-                    No one is online right now
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Users will appear here when they log in to view the story
-                  </div>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-200">
+              {onlineUsers.length > 0 ? (
+                <div className="space-y-3">
                   {onlineUsers.map((user, idx) => (
-                    <div key={idx} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="relative">
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                              {user.username.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
-                          </div>
-                          
-                          <div>
-                            <div className="text-lg font-semibold text-gray-900">
-                              {user.username}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {user.secondsAgo < 60 
-                                ? `Active ${user.secondsAgo}s ago` 
-                                : `Active ${Math.floor(user.secondsAgo / 60)}m ago`}
-                            </div>
-                          </div>
+                    <div key={idx} className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">👤</span>
+                        <div>
+                          <p className="font-bold">{user.username}</p>
+                          <p className="text-slate-400 text-sm">
+                            Session started: {new Date(user.session_started).toLocaleString()}
+                          </p>
                         </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                            🟢 ONLINE
-                          </span>
-                          <div className="text-xs text-gray-400">
-                            {formatDate(user.lastSeen)}
-                          </div>
-                        </div>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p className="text-green-400">● Active</p>
+                        <p className="text-slate-400">
+                          Last seen: {new Date(user.last_seen_at).toLocaleTimeString()}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
+              ) : (
+                <p className="text-slate-400 text-center py-8">No users currently online</p>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Login Logs Tab */}
-        {activeTab === 'logs' && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Time
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Username
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
-                      IP Address
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
-                      User Agent
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {loginLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                        No login logs found
-                      </td>
-                    </tr>
-                  ) : (
-                    loginLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {formatDate(log.login_time)}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          {log.username}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.ip_address}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                          {log.user_agent}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Message History Tab */}
-        {activeTab === 'messages' && (
-          <div className="space-y-6">
-            {/* Statistics */}
-            {statistics.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {statistics.map((stat) => (
-                  <div key={stat.message_type} className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="text-sm text-gray-600 uppercase font-semibold mb-2">
-                      {stat.message_type === 'text' ? '💬 Text' : stat.message_type === 'image' ? '🖼️ Images' : '🎥 Videos'}
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900">{stat.count}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {stat.expired_count} expired
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Messages List */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="max-h-[600px] overflow-y-auto">
-                {messages.length === 0 ? (
-                  <div className="px-6 py-8 text-center text-gray-500">
-                    No messages found
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-200">
-                    {messages.map((msg) => (
-                      <div key={msg.id} className="p-6 hover:bg-gray-50">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-2xl">
-                              {msg.message_type === 'text' ? '💬' : msg.message_type === 'image' ? '🖼️' : '🎥'}
-                            </span>
-                            <div>
-                              <div className="font-semibold text-gray-900">
-                                {msg.author}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {formatDate(msg.created_at)}
-                              </div>
-                            </div>
-                          </div>
-                          {msg.is_expired && (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">
-                              Expired
-                            </span>
-                          )}
-                        </div>
-
-                        {msg.message_type === 'text' && (
-                          <div className="text-gray-700 bg-gray-50 p-4 rounded-lg">
-                            {msg.message_content}
-                          </div>
-                        )}
-
-                        {msg.message_type === 'image' && msg.media_url && (
-                          <div>
-                            <img 
-                              src={msg.media_url} 
-                              alt={msg.media_filename || 'Image'}
-                              className="max-w-md rounded-lg shadow-sm"
-                            />
-                            <div className="text-xs text-gray-500 mt-2">
-                              {msg.media_filename}
-                            </div>
-                          </div>
-                        )}
-
-                        {msg.message_type === 'video' && msg.media_url && (
-                          <div>
-                            <video 
-                              src={msg.media_url} 
-                              controls
-                              className="max-w-md rounded-lg shadow-sm"
-                            />
-                            <div className="text-xs text-gray-500 mt-2">
-                              {msg.media_filename}
-                            </div>
-                          </div>
-                        )}
-
-                        {msg.expires_at && (
-                          <div className="text-xs text-gray-500 mt-3">
-                            Expires: {formatDate(msg.expires_at)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+          {/* Login Logs Tab */}
+          {activeTab === 'logs' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Login History</h2>
+                {loginStats && (
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-slate-400">24h: {loginStats.last_24h}</span>
+                    <span className="text-slate-400">7d: {loginStats.last_7d}</span>
+                    <span className="text-slate-400">Total: {loginStats.total_logins}</span>
                   </div>
                 )}
               </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-slate-400 text-sm border-b border-slate-700">
+                      <th className="pb-3">User</th>
+                      <th className="pb-3">IP Address</th>
+                      <th className="pb-3">Login Time</th>
+                      <th className="pb-3">Logout Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loginLogs.map((log) => (
+                      <tr key={log.id} className="border-b border-slate-700/50">
+                        <td className="py-3 font-medium">{log.username}</td>
+                        <td className="py-3 text-slate-400 font-mono text-sm">{log.ip_address}</td>
+                        <td className="py-3 text-sm">{new Date(log.login_at).toLocaleString()}</td>
+                        <td className="py-3 text-sm text-slate-400">
+                          {log.logout_at ? new Date(log.logout_at).toLocaleString() : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {/* Messages Tab */}
+          {activeTab === 'messages' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Message History</h2>
+                <div className="flex gap-3">
+                  <select
+                    value={messageFilter}
+                    onChange={(e) => setMessageFilter(e.target.value)}
+                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="text">Text</option>
+                    <option value="image">Images</option>
+                    <option value="video">Videos</option>
+                  </select>
+                  <select
+                    value={weekFilter}
+                    onChange={(e) => setWeekFilter(e.target.value)}
+                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm"
+                  >
+                    <option value="all">All Weeks</option>
+                    {availableWeeks.map((week) => (
+                      <option key={week} value={week}>
+                        Week of {new Date(week).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {messageStats && (
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div className="bg-slate-700 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold">{messageStats.total_messages}</p>
+                    <p className="text-slate-400 text-sm">Total</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold">{messageStats.text_count}</p>
+                    <p className="text-slate-400 text-sm">Text</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold">{messageStats.image_count}</p>
+                    <p className="text-slate-400 text-sm">Images</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold">{messageStats.video_count}</p>
+                    <p className="text-slate-400 text-sm">Videos</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`bg-slate-700 rounded-lg p-4 ${msg.isExpired ? 'opacity-50' : ''}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">
+                          {msg.type === 'text' ? '💬' : msg.type === 'image' ? '🖼️' : '🎬'}
+                        </span>
+                        <div>
+                          <p className="font-medium">
+                            {msg.author}
+                            {msg.isFromAdmin && (
+                              <span className="ml-2 text-xs bg-indigo-600 px-2 py-0.5 rounded">Admin</span>
+                            )}
+                          </p>
+                          <p className="text-slate-400 text-sm">
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      {msg.isExpired && (
+                        <span className="text-xs bg-red-600/30 text-red-400 px-2 py-1 rounded">Expired</span>
+                      )}
+                    </div>
+                    {msg.type === 'text' && msg.content && (
+                      <p className="mt-3 text-slate-300">{msg.content}</p>
+                    )}
+                    {msg.type === 'image' && msg.mediaUrl && (
+                      <img 
+                        src={msg.mediaUrl} 
+                        alt="" 
+                        className="mt-3 max-h-48 rounded-lg"
+                      />
+                    )}
+                    {msg.type === 'video' && msg.mediaUrl && (
+                      <video 
+                        src={msg.mediaUrl} 
+                        controls 
+                        className="mt-3 max-h-48 rounded-lg"
+                      />
+                    )}
+                  </div>
+                ))}
+                {messages.length === 0 && (
+                  <p className="text-slate-400 text-center py-8">No messages found</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
-
-
-
