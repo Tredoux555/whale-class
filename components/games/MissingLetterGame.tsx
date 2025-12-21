@@ -56,7 +56,8 @@ export default function MissingLetterGame() {
   const playWordAudio = () => {
     if (words.length === 0 || currentIndex >= words.length) return;
     const word = words[currentIndex];
-    GameAudio.playWord(word.word, phase === 'pink-series' ? 'pink' : phase === 'blue-series' ? 'blue' : 'green');
+    // Default to pink series if phase not specified
+    GameAudio.playWord(word.word, 'pink');
   };
 
   // Cleanup: Stop audio when component unmounts
