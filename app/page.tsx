@@ -283,11 +283,11 @@ export default function Home() {
                 <p className="text-sm opacity-90">Learning Videos</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Link 
                 href="/games"
                 prefetch={false}
-                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg"
               >
                 🎮 Games
               </Link>
