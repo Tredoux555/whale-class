@@ -54,8 +54,15 @@ export default function SentenceBuildGame() {
   // Play sentence audio
   const playAudio = () => {
     if (sentences.length === 0 || currentIndex >= sentences.length) return;
-    GameAudio.play(sentences[currentIndex].audioUrl).catch(console.error);
+    GameAudio.playSentence(currentIndex + 1);
   };
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
   const handleWordTap = (word: string, index: number) => {
     if (showCorrect || showWrong) return;

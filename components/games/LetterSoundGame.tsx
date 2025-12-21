@@ -106,10 +106,17 @@ export default function LetterSoundGame({ phase }: Props) {
     const letter = letters[currentIndex];
     setIsPlaying(true);
     
-    GameAudio.play(letter.audioUrl)
-      .catch(console.error)
-      .finally(() => setIsPlaying(false));
+    // Use playLetterNow for immediate playback (stops any previous audio)
+    GameAudio.playLetterNow(letter.letter);
+    setIsPlaying(false);
   }, [currentIndex, letters, isPlaying]);
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
 
   // Handle answer selection
