@@ -906,8 +906,7 @@ export const CIRCLE_TIME_PLANS: CircleTimePlan[] = [
     socialEmotional: "Oceans are precious! When we take care of the Earth (no littering, recycling), we help ocean animals stay healthy and happy.",
     homeConnection: "Watch an ocean video together! Talk about ocean animals you'd like to see. How can your family help keep oceans clean?"
   },
-];,
-// ==========================================
+  // ==========================================
   // WEEK 25 - Choose One Continent (Asia)
   // ==========================================
   {
