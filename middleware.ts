@@ -26,38 +26,48 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 export async function middleware(req: NextRequest) {
-  // CRITICAL FIX #1: FIRST LINE - Explicit /api/ bypass BEFORE any other code
-  // This prevents middleware from running on API routes even if matcher fails
-  if (req.nextUrl.pathname.startsWith('/api/')) {
+  const pathname = req.nextUrl.pathname;
+  const res = NextResponse.next();
+  
+  // ============================================
+  // ALWAYS ALLOW THESE ROUTES (no auth, no redirects)
+  // ============================================
+  
+  // CRITICAL: API routes - NEVER redirect, let them handle their own auth
+  // This MUST be first to ensure API routes are never intercepted
+  if (pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
 
-  // CRITICAL FIX #2: SECOND - Bypass static files and assets explicitly
-  const pathname = req.nextUrl.pathname;
+  // Static files and Next.js internals - bypass completely
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico') ||
-    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$/i.test(pathname)
+    pathname.startsWith('/audio/') ||
+    pathname.startsWith('/images/') ||
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4)$/i.test(pathname)
   ) {
     return NextResponse.next();
   }
-
-  const res = NextResponse.next();
   
-  // Public routes that don't require authentication
+  // Public pages - NO AUTH REQUIRED, NO REDIRECTS
+  // These routes should load directly without any authentication checks
   const publicPaths = [
+    '/',           // Home page - MUST be accessible
+    '/games',      // Games hub and all game routes
+    '/story',      // Story system (has its own auth)
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
-    '/story', // Story system (has its own auth)
-    '/games', // Public games access
     '/admin/login', // Admin login page
-    '/', // Public homepage
   ];
-
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
   
-  // If public path, skip all auth checks
+  // Check if pathname matches exactly or starts with a public path
+  const isPublicPath = publicPaths.some(path => 
+    pathname === path || pathname.startsWith(path + '/')
+  );
+  
+  // If public path, return immediately - NO AUTH CHECKS, NO REDIRECTS
   if (isPublicPath) {
     return res;
   }
