@@ -1,32 +1,27 @@
 // app/admin/circle-planner/page.tsx
-// Simplified Circle Time Planner
+// 36-Week Circle Time Curriculum Planner
 
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { THEME_LIBRARY } from '@/lib/circle-time/theme-library';
-import { DAY_CONFIG, generateWeeklyPlan } from '@/lib/circle-time/weekly-structure';
-import { WeeklyTheme, DailyPlan, DayOfWeek } from '@/lib/circle-time/types';
+import { 
+  CIRCLE_TIME_PLANS, 
+  getCircleTimePlan, 
+  getPlansByMonth,
+  type CircleTimePlan 
+} from '@/lib/circle-time/curriculum-plans';
 
 export default function CirclePlannerPage() {
-  const [selectedTheme, setSelectedTheme] = useState<WeeklyTheme | null>(null);
-  const [weekOf, setWeekOf] = useState(() => {
-    const today = new Date();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - today.getDay() + 1);
-    return monday.toISOString().split('T')[0];
-  });
-  const [weeklyPlan, setWeeklyPlan] = useState<DailyPlan[] | null>(null);
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>('monday');
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
-  const handleThemeSelect = (theme: WeeklyTheme) => {
-    setSelectedTheme(theme);
-    const plan = generateWeeklyPlan(theme, weekOf);
-    setWeeklyPlan(plan);
+  const plansByMonth = getPlansByMonth();
+  const selectedPlan = selectedWeek ? getCircleTimePlan(selectedWeek) : null;
+
+  const handlePrint = () => {
+    window.print();
   };
-
-  const currentDayPlan = weeklyPlan?.find(d => d.day === selectedDay);
 
   return (
     <div 
@@ -45,166 +40,230 @@ export default function CirclePlannerPage() {
                 🌅 Circle Time Planner
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <label className="text-sm text-gray-600">Week of:</label>
-              <input
-                type="date"
-                value={weekOf}
-                onChange={(e) => setWeekOf(e.target.value)}
-                className="border rounded-lg px-3 py-2"
-              />
-            </div>
+            {selectedPlan && (
+              <button
+                onClick={handlePrint}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-bold"
+              >
+                🖨️ Print Plan
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Theme Selector */}
-        {!selectedTheme ? (
+        {!selectedPlan ? (
+          /* Week Grid View */
           <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Choose a Theme for the Week
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Select a Week Plan
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {THEME_LIBRARY.map((theme) => (
-                <button
-                  key={theme.id}
-                  onClick={() => handleThemeSelect(theme)}
-                  className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg hover:scale-105 transition-all text-center"
-                  style={{ borderBottom: `4px solid ${theme.color}` }}
-                >
-                  <div className="text-5xl mb-3">{theme.icon}</div>
-                  <div className="font-bold text-gray-800">{theme.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    2 books • 1 song
-                  </div>
-                </button>
-              ))}
-            </div>
+            
+            {/* Month Sections */}
+            {Object.entries(plansByMonth).map(([month, plans]) => (
+              <div key={month} className="mb-8">
+                <h3 className="text-xl font-bold text-gray-700 mb-4 pb-2 border-b-2 border-orange-300">
+                  {month}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {plans.map((plan) => (
+                    <button
+                      key={plan.week}
+                      onClick={() => setSelectedWeek(plan.week)}
+                      className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg hover:scale-105 transition-all text-center border-2 border-transparent hover:border-orange-400"
+                    >
+                      <div className="text-2xl font-bold text-orange-600 mb-1">
+                        Week {plan.week}
+                      </div>
+                      <div className="text-sm font-medium text-gray-800 mb-1">
+                        {plan.theme}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {plan.dates}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
+          /* Week Plan Detail View */
           <div>
-            {/* Selected Theme Header */}
-            <div 
-              className="rounded-2xl p-6 mb-6 text-white"
-              style={{ backgroundColor: selectedTheme.color }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="text-6xl">{selectedTheme.icon}</span>
-                  <div>
-                    <h2 className="text-2xl font-bold">Theme: {selectedTheme.name}</h2>
-                    <p className="opacity-90">Song: {selectedTheme.song.title}</p>
-                    <p className="opacity-90 text-sm">
-                      Books: {selectedTheme.book1.title} • {selectedTheme.book2.title}
-                    </p>
-                  </div>
+            {/* Week Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 mb-6 text-white shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-3xl font-bold mb-2">
+                    Week {selectedPlan.week}: {selectedPlan.theme}
+                  </h2>
+                  <p className="text-lg opacity-90">{selectedPlan.dates}</p>
+                  <p className="text-sm opacity-80 mt-1">{selectedPlan.monthTopic}</p>
                 </div>
                 <button
-                  onClick={() => {
-                    setSelectedTheme(null);
-                    setWeeklyPlan(null);
-                  }}
-                  className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30"
+                  onClick={() => setSelectedWeek(null)}
+                  className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 font-bold"
                 >
-                  Change Theme
+                  ← Back to Weeks
                 </button>
               </div>
-            </div>
-
-            {/* Vocabulary Flashcards */}
-            <div className="bg-white rounded-xl p-4 mb-6 shadow-sm">
-              <h3 className="font-bold text-gray-800 mb-3">📇 Theme Vocabulary</h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedTheme.flashcards.map((word, i) => (
-                  <span 
-                    key={i}
-                    className="px-3 py-1 rounded-full text-sm font-medium"
-                    style={{ backgroundColor: `${selectedTheme.color}20`, color: selectedTheme.color }}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Day Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {(Object.keys(DAY_CONFIG) as DayOfWeek[]).map((day) => {
-                const config = DAY_CONFIG[day];
-                return (
+              
+              {/* Navigation */}
+              <div className="flex gap-2">
+                {selectedPlan.week > 1 && (
                   <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    className={`flex-shrink-0 px-4 py-3 rounded-xl font-bold transition-all ${
-                      selectedDay === day
-                        ? 'text-white shadow-lg scale-105'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                    style={selectedDay === day ? { backgroundColor: config.color } : {}}
+                    onClick={() => setSelectedWeek(selectedPlan.week - 1)}
+                    className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 font-bold"
                   >
-                    <span className="mr-2">{config.icon}</span>
-                    <span className="capitalize">{day}</span>
-                    <span className="hidden sm:inline text-xs ml-2 opacity-80">
-                      {config.label}
-                    </span>
+                    ← Previous Week
                   </button>
-                );
-              })}
+                )}
+                {selectedPlan.week < 36 && (
+                  <button
+                    onClick={() => setSelectedWeek(selectedPlan.week + 1)}
+                    className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 font-bold"
+                  >
+                    Next Week →
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Day Plan */}
-            {currentDayPlan && (
-              <div className="space-y-4">
-                {/* Day Header */}
-                <div 
-                  className="rounded-xl p-4 text-white"
-                  style={{ backgroundColor: DAY_CONFIG[selectedDay].color }}
-                >
-                  <h3 className="text-xl font-bold">
-                    {DAY_CONFIG[selectedDay].icon} {DAY_CONFIG[selectedDay].label}
-                  </h3>
-                  <p className="opacity-90 capitalize">{selectedDay}</p>
+            {/* Opening Circle */}
+            <PlanSection
+              title="🌅 Opening Circle"
+              color="from-yellow-400 to-orange-400"
+            >
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Greeting:</h4>
+                  <p className="text-gray-700">{selectedPlan.openingCircle.greeting}</p>
                 </div>
-
-                {/* Segments */}
-                <DaySegment 
-                  title="🌅 Warmup" 
-                  segment={currentDayPlan.warmup}
-                  color={DAY_CONFIG[selectedDay].color}
-                />
-                <DaySegment 
-                  title="📖 Main Activity" 
-                  segment={currentDayPlan.main}
-                  color={DAY_CONFIG[selectedDay].color}
-                />
-                <DaySegment 
-                  title="🎨 Activities" 
-                  segment={currentDayPlan.activities}
-                  color={DAY_CONFIG[selectedDay].color}
-                />
-                <DaySegment 
-                  title="👋 Closing" 
-                  segment={currentDayPlan.closing}
-                  color={DAY_CONFIG[selectedDay].color}
-                />
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Song:</h4>
+                  <p className="text-gray-700">{selectedPlan.openingCircle.song}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Movement:</h4>
+                  <p className="text-gray-700">{selectedPlan.openingCircle.movement}</p>
+                </div>
               </div>
-            )}
+            </PlanSection>
 
-            {/* Actions */}
-            <div className="flex gap-4 mt-8">
+            {/* Main Lesson */}
+            <PlanSection
+              title={`📚 Main Lesson: ${selectedPlan.mainLesson.topic}`}
+              color="from-blue-400 to-indigo-400"
+            >
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-2">Topic:</h4>
+                  <p className="text-lg font-semibold text-gray-700">{selectedPlan.mainLesson.topic}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-2">Discussion Points:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700">
+                    {selectedPlan.mainLesson.discussion.map((point, i) => (
+                      <li key={i}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-2">Activity:</h4>
+                  <p className="text-gray-700">{selectedPlan.mainLesson.activity}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-2">Materials:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPlan.mainLesson.materials.map((material, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      >
+                        {material}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </PlanSection>
+
+            {/* Literacy */}
+            <PlanSection
+              title="📖 Literacy"
+              color="from-purple-400 to-pink-400"
+            >
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Big Book:</h4>
+                  <p className="text-gray-700">{selectedPlan.literacy.bigBook}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Focus Skill:</h4>
+                  <p className="text-gray-700">{selectedPlan.literacy.focusSkill}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Vocabulary:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPlan.literacy.vocabulary.map((word, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </PlanSection>
+
+            {/* Closing Circle */}
+            <PlanSection
+              title="👋 Closing Circle"
+              color="from-green-400 to-teal-400"
+            >
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Reflection:</h4>
+                  <p className="text-gray-700">{selectedPlan.closingCircle.reflection}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Song:</h4>
+                  <p className="text-gray-700">{selectedPlan.closingCircle.song}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-1">Transition:</h4>
+                  <p className="text-gray-700">{selectedPlan.closingCircle.transition}</p>
+                </div>
+              </div>
+            </PlanSection>
+
+            {/* Social-Emotional */}
+            <PlanSection
+              title="💝 Social-Emotional Focus"
+              color="from-pink-400 to-rose-400"
+            >
+              <p className="text-gray-700 text-lg">{selectedPlan.socialEmotional}</p>
+            </PlanSection>
+
+            {/* Home Connection */}
+            <PlanSection
+              title="🏠 Home Connection"
+              color="from-cyan-400 to-blue-400"
+            >
+              <p className="text-gray-700 text-lg">{selectedPlan.homeConnection}</p>
+            </PlanSection>
+
+            {/* Print Button */}
+            <div className="mt-8 flex justify-center">
               <button
-                onClick={() => window.print()}
-                className="px-6 py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-gray-700"
+                onClick={handlePrint}
+                className="px-8 py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600 shadow-lg"
               >
-                🖨️ Print Week Plan
+                🖨️ Print This Week's Plan
               </button>
-              <Link
-                href="/admin/phonics-planner"
-                className="px-6 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600"
-              >
-                🔤 Phonics Activities →
-              </Link>
             </div>
           </div>
         )}
@@ -213,44 +272,23 @@ export default function CirclePlannerPage() {
   );
 }
 
-// Segment Component
-function DaySegment({ 
-  title, 
-  segment, 
-  color 
-}: { 
-  title: string; 
-  segment: { title: string; duration: string; content: string; materials?: string[]; notes?: string };
+// Plan Section Component
+function PlanSection({
+  title,
+  color,
+  children
+}: {
+  title: string;
   color: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div 
-        className="px-4 py-2 text-white font-bold flex justify-between items-center"
-        style={{ backgroundColor: color }}
-      >
-        <span>{title}: {segment.title}</span>
-        <span className="text-sm opacity-90">{segment.duration}</span>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+      <div className={`bg-gradient-to-r ${color} px-6 py-4 text-white font-bold text-lg`}>
+        {title}
       </div>
-      <div className="p-4">
-        <div className="whitespace-pre-wrap text-gray-700">
-          {segment.content}
-        </div>
-        
-        {segment.materials && segment.materials.length > 0 && (
-          <div className="mt-3 pt-3 border-t">
-            <span className="font-bold text-gray-600 text-sm">Materials: </span>
-            <span className="text-gray-600 text-sm">
-              {segment.materials.join(' • ')}
-            </span>
-          </div>
-        )}
-        
-        {segment.notes && (
-          <div className="mt-2 p-2 bg-yellow-50 rounded-lg text-sm text-yellow-800">
-            💡 {segment.notes}
-          </div>
-        )}
+      <div className="p-6">
+        {children}
       </div>
     </div>
   );
