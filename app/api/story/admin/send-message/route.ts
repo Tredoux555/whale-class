@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
+import { getWeekStartDate, getExpirationDate, validateMessage, sanitizeInput } from '@/lib/story-utils';
 
 const ADMIN_JWT_SECRET = new TextEncoder().encode(
   process.env.STORY_ADMIN_JWT_SECRET || process.env.STORY_JWT_SECRET || 'fallback-admin-secret-key-change-in-production'
@@ -36,29 +37,30 @@ export async function POST(req: NextRequest) {
 
     const { message, author = 'Admin' } = await req.json();
 
-    if (!message || typeof message !== 'string' || message.trim() === '') {
+    // Validate message
+    const validation = validateMessage(message);
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: 'Message is required' },
+        { error: validation.error || 'Message is required' },
         { status: 400 }
       );
     }
 
+    // Sanitize inputs
+    const sanitizedMessage = sanitizeInput(message);
+    const sanitizedAuthor = sanitizeInput(author);
+
     // Get current week's Monday
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-    const weekStartDate = monday.toISOString().split('T')[0];
+    const weekStartDate = getWeekStartDate();
 
     // Expiration: 7 days from now
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const expiresAt = getExpirationDate();
 
-    console.log('[SEND-MESSAGE] Week start date:', weekStartDate);
-    console.log('[SEND-MESSAGE] Message:', message.trim());
-    console.log('[SEND-MESSAGE] Author:', author);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[SEND-MESSAGE] Week start date:', weekStartDate);
+      console.log('[SEND-MESSAGE] Message:', sanitizedMessage);
+      console.log('[SEND-MESSAGE] Author:', sanitizedAuthor);
+    }
 
     // Step 1: Check if tables exist, if not return clear error
     let tablesExist = false;
@@ -72,7 +74,9 @@ export async function POST(req: NextRequest) {
       const historyExists = checkResult.rows[0].history_exists;
       const storiesExists = checkResult.rows[0].stories_exists;
       
-      console.log('[SEND-MESSAGE] Tables check:', { historyExists, storiesExists });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SEND-MESSAGE] Tables check:', { historyExists, storiesExists });
+      }
       
       if (!historyExists || !storiesExists) {
         return NextResponse.json({
@@ -94,14 +98,18 @@ export async function POST(req: NextRequest) {
 
     // Step 2: Try to insert into message history
     try {
-      console.log('[SEND-MESSAGE] Inserting into message history...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SEND-MESSAGE] Inserting into message history...');
+      }
       await db.query(
         `INSERT INTO story_message_history 
          (week_start_date, message_type, message_content, author, expires_at)
          VALUES ($1, $2, $3, $4, $5)`,
-        [weekStartDate, 'text', message.trim(), author, expiresAt]
+        [weekStartDate, 'text', sanitizedMessage, sanitizedAuthor, expiresAt]
       );
-      console.log('[SEND-MESSAGE] Message history inserted successfully');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SEND-MESSAGE] Message history inserted successfully');
+      }
     } catch (insertError) {
       console.error('[SEND-MESSAGE] Error inserting message history:', insertError);
       return NextResponse.json({
@@ -113,13 +121,17 @@ export async function POST(req: NextRequest) {
     // Step 3: Check if story exists for this week
     let storyExists = false;
     try {
-      console.log('[SEND-MESSAGE] Checking if story exists for week:', weekStartDate);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SEND-MESSAGE] Checking if story exists for week:', weekStartDate);
+      }
       const checkStory = await db.query(
         'SELECT id FROM secret_stories WHERE week_start_date = $1',
         [weekStartDate]
       );
       storyExists = checkStory.rows.length > 0;
-      console.log('[SEND-MESSAGE] Story exists:', storyExists);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SEND-MESSAGE] Story exists:', storyExists);
+      }
     } catch (checkStoryError) {
       console.error('[SEND-MESSAGE] Error checking story:', checkStoryError);
     }
@@ -127,7 +139,9 @@ export async function POST(req: NextRequest) {
     // Step 4: Create story if it doesn't exist
     if (!storyExists) {
       try {
-        console.log('[SEND-MESSAGE] Creating story for week:', weekStartDate);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[SEND-MESSAGE] Creating story for week:', weekStartDate);
+        }
         await db.query(
           `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author)
            VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -136,11 +150,13 @@ export async function POST(req: NextRequest) {
             'Weekly Adventure',
             'Our Weekly Story',
             JSON.stringify({ paragraphs: ['Once upon a time...', 'The end.'] }),
-            message.trim(),
-            author
+            sanitizedMessage,
+            sanitizedAuthor
           ]
         );
-        console.log('[SEND-MESSAGE] Story created successfully');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[SEND-MESSAGE] Story created successfully');
+        }
       } catch (createError) {
         console.error('[SEND-MESSAGE] Error creating story:', createError);
         return NextResponse.json({
@@ -152,7 +168,9 @@ export async function POST(req: NextRequest) {
     } else {
       // Step 5: Update existing story
       try {
-        console.log('[SEND-MESSAGE] Updating existing story...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[SEND-MESSAGE] Updating existing story...');
+        }
         const result = await db.query(
           `UPDATE secret_stories 
            SET hidden_message = $1, 
@@ -160,9 +178,11 @@ export async function POST(req: NextRequest) {
                updated_at = NOW()
            WHERE week_start_date = $3
            RETURNING *`,
-          [message.trim(), author, weekStartDate]
+          [sanitizedMessage, sanitizedAuthor, weekStartDate]
         );
-        console.log('[SEND-MESSAGE] Story updated successfully');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[SEND-MESSAGE] Story updated successfully');
+        }
       } catch (updateError) {
         console.error('[SEND-MESSAGE] Error updating story:', updateError);
         return NextResponse.json({
@@ -173,7 +193,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log('[SEND-MESSAGE] SUCCESS - Message sent completely');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[SEND-MESSAGE] SUCCESS - Message sent completely');
+    }
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',

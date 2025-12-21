@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { JWT_SECRET } from '@/lib/story-auth';
+import { getWeekStartDate, getExpirationDate, validateMessage, sanitizeInput } from '@/lib/story-utils';
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -16,33 +17,30 @@ export async function POST(req: NextRequest) {
     const { message, author } = await req.json();
 
     // Validate message
-    if (!message || typeof message !== 'string') {
+    const validation = validateMessage(message);
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: 'Invalid message' },
+        { error: validation.error || 'Invalid message' },
         { status: 400 }
       );
     }
 
-    // Get current week's Monday
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Handle Sunday
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
+    // Sanitize inputs
+    const sanitizedMessage = sanitizeInput(message);
+    const sanitizedAuthor = sanitizeInput(author || (payload.username as string));
 
-    const weekStartDate = monday.toISOString().split('T')[0];
+    // Get current week's Monday
+    const weekStartDate = getWeekStartDate();
 
     // Save to message history (permanent record for admin)
     // Messages expire after 7 days from public view but stay in history
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const expiresAt = getExpirationDate();
 
     await db.query(
       `INSERT INTO story_message_history 
        (week_start_date, message_type, message_content, author, expires_at)
        VALUES ($1, $2, $3, $4, $5)`,
-      [weekStartDate, 'text', message, author, expiresAt]
+      [weekStartDate, 'text', sanitizedMessage, sanitizedAuthor, expiresAt]
     );
 
     // Update the story with the new hidden message
@@ -54,7 +52,7 @@ export async function POST(req: NextRequest) {
            updated_at = NOW()
        WHERE week_start_date = $3
        RETURNING *`,
-      [message, author, weekStartDate]
+      [sanitizedMessage, sanitizedAuthor, weekStartDate]
     );
 
     if (result.rows.length === 0) {
@@ -89,14 +87,7 @@ export async function GET(req: NextRequest) {
     const token = authHeader.replace('Bearer ', '');
     await jwtVerify(token, JWT_SECRET);
 
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-
-    const weekStartDate = monday.toISOString().split('T')[0];
+    const weekStartDate = getWeekStartDate();
 
     const result = await db.query(
       `SELECT hidden_message, message_author, updated_at 

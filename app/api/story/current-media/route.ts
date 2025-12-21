@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { JWT_SECRET } from '@/lib/story-auth';
+import { getWeekStartDate } from '@/lib/story-utils';
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -15,13 +16,7 @@ export async function GET(req: NextRequest) {
     await jwtVerify(token, JWT_SECRET);
 
     // Get current week's Monday
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-    const weekStartDate = monday.toISOString().split('T')[0];
+    const weekStartDate = getWeekStartDate();
 
     // Get all non-expired media for current week
     const result = await db.query(

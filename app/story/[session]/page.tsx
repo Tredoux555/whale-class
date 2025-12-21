@@ -228,7 +228,14 @@ export default function StoryViewer() {
   };
 
   const saveMessage = async () => {
-    if (!messageInput.trim()) return;
+    const trimmed = messageInput.trim();
+    if (!trimmed) return;
+    
+    // Validate length on frontend (matches backend validation)
+    if (trimmed.length > 1000) {
+      alert('Message must be less than 1000 characters');
+      return;
+    }
     
     setIsSaving(true);
     try {
@@ -238,16 +245,20 @@ export default function StoryViewer() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${params.session}`
         },
-        body: JSON.stringify({ message: messageInput.trim(), author: username })
+        body: JSON.stringify({ message: trimmed, author: username })
       });
 
       if (res.ok) {
         setIsEditing(false);
         setMessageInput('');
         await loadStory(); // Refresh to show saved state
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(errorData.error || 'Failed to save message');
       }
     } catch (err) {
       console.error('Error saving message:', err);
+      alert('Network error. Please try again.');
     } finally {
       setIsSaving(false);
     }
