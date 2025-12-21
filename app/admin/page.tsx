@@ -146,31 +146,6 @@ export default function AdminDashboard() {
             </Link>
           ))}
         </div>
-
-        {/* Quick Access */}
-        <div className="mt-8 bg-slate-800 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Quick Access</h3>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/games"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-            >
-              🎮 Games
-            </Link>
-            <Link
-              href="/story"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-            >
-              📖 Story Time
-            </Link>
-            <Link
-              href="/"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              📺 Videos
-            </Link>
-          </div>
-        </div>
       </main>
     </div>
   );
