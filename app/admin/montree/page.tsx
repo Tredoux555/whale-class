@@ -47,10 +47,17 @@ export default function MontreePage() {
   const fetchProgress = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/progress/${childId}?summary=true`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch progress: ${res.statusText}`);
+      }
       const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
       setProgress(data);
     } catch (error) {
       console.error('Failed to fetch progress:', error);
+      setProgress(null);
     }
   };
 

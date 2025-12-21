@@ -1,5 +1,5 @@
 // lib/montree/db.ts
-// Database operations using EXISTING tables (children, child_work_completion)
+// Database operations using EXISTING tables (montree_children, child_work_completion)
 
 import { createServerClient } from '@/lib/supabase';
 import { 
@@ -10,16 +10,17 @@ import {
   AreaProgress,
 } from './types';
 import { CURRICULUM, findWorkLocation } from './curriculum-data';
+import { createHash } from 'crypto';
 
 // ============================================
-// CHILDREN OPERATIONS (using existing 'children' table)
+// CHILDREN OPERATIONS (using 'montree_children' table)
 // ============================================
 
 export async function getChildren(): Promise<Child[]> {
   const supabase = await createServerClient();
   
   const { data, error } = await supabase
-    .from('children')
+    .from('montree_children')
     .select('*')
     .order('name');
   
@@ -39,7 +40,7 @@ export async function getChildById(childId: string): Promise<Child | null> {
   const supabase = await createServerClient();
   
   const { data, error } = await supabase
-    .from('children')
+    .from('montree_children')
     .select('*')
     .eq('id', childId)
     .single();
@@ -58,30 +59,22 @@ export async function getChildById(childId: string): Promise<Child | null> {
 export async function createChild(name: string, dateOfBirth?: string, parentId?: string): Promise<Child> {
   const supabase = await createServerClient();
   
-  // Calculate age_group from dateOfBirth if provided
-  let ageGroup: string | undefined;
+  // Calculate age from dateOfBirth if provided
+  let age: number | null = null;
   if (dateOfBirth) {
     const birthDate = new Date(dateOfBirth);
     const today = new Date();
     const ageYears = (today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    
-    if (ageYears < 3) ageGroup = '2-3';
-    else if (ageYears < 4) ageGroup = '3-4';
-    else if (ageYears < 5) ageGroup = '4-5';
-    else ageGroup = '5-6';
-  } else {
-    ageGroup = '3-4'; // Default
+    age = Math.floor(ageYears);
   }
   
   const { data, error } = await supabase
-    .from('children')
+    .from('montree_children')
     .insert([{ 
       name, 
-      date_of_birth: dateOfBirth, 
-      parent_id: parentId,
-      age_group: ageGroup,
-      enrollment_date: new Date().toISOString().split('T')[0],
-      active_status: true,
+      age,
+      notes: null,
+      created_at: new Date().toISOString(),
     }])
     .select()
     .single();
@@ -91,8 +84,8 @@ export async function createChild(name: string, dateOfBirth?: string, parentId?:
   return {
     id: data.id,
     name: data.name,
-    dateOfBirth: data.date_of_birth,
-    parentId: data.parent_id,
+    dateOfBirth: data.date_of_birth || dateOfBirth,
+    parentId: data.parent_id || parentId,
     createdAt: data.created_at || new Date().toISOString(),
   };
 }
@@ -101,7 +94,7 @@ export async function deleteChild(childId: string): Promise<void> {
   const supabase = await createServerClient();
   
   const { error } = await supabase
-    .from('children')
+    .from('montree_children')
     .delete()
     .eq('id', childId);
   
@@ -147,7 +140,7 @@ export async function getChildProgress(childId: string): Promise<ChildProgress[]
     startedAt: row.started_at || row.created_at,
     completedAt: row.completed_at || row.completion_date,
     notes: row.notes || '',
-    updatedAt: row.updated_at || row.created_at || new Date().toISOString(),
+    updatedAt: row.created_at || new Date().toISOString(),
   }));
 }
 
@@ -172,8 +165,121 @@ export async function getWorkProgress(childId: string, workId: string): Promise<
     startedAt: data.started_at || data.created_at,
     completedAt: data.completed_at || data.completion_date,
     notes: data.notes || '',
-    updatedAt: data.updated_at || data.created_at || new Date().toISOString(),
+    updatedAt: data.created_at || new Date().toISOString(),
   };
+}
+
+// Helper function to generate a deterministic UUID from a string (for Montree work_id)
+// This is needed because curriculum_work_id is required but Montree uses string work_ids
+function generateUUIDFromString(str: string): string {
+  // Use crypto to generate a deterministic UUID-like string
+  const hash = createHash('sha256').update(`montree:${str}`).digest('hex');
+  // Format as UUID v4: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  // Use first 32 chars of hash, format as UUID
+  return `${hash.substring(0, 8)}-${hash.substring(8, 12)}-4${hash.substring(13, 16)}-${(parseInt(hash.substring(16, 17), 16) & 0x3 | 0x8).toString(16)}${hash.substring(17, 20)}-${hash.substring(20, 32)}`;
+}
+
+// Helper function to ensure a child exists in the 'children' table
+// This is needed because child_work_completion has a foreign key to children(id)
+async function ensureChildExistsInChildrenTable(childId: string): Promise<void> {
+  try {
+    const supabase = await createServerClient();
+    
+    // Check if child exists in children table
+    const { data: existingChild, error: checkError } = await supabase
+      .from('children')
+      .select('id')
+      .eq('id', childId)
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when not found
+    
+    // If child exists, we're done
+    if (existingChild) {
+      return;
+    }
+    
+    // If there was an error other than "not found", log it but continue
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.warn(`Warning checking child existence: ${checkError.message}`);
+      // Continue anyway - we'll try to create it
+    }
+    
+    // Get child data from montree_children
+    const { data: montreeChild, error: fetchError } = await supabase
+      .from('montree_children')
+      .select('*')
+      .eq('id', childId)
+      .maybeSingle();
+    
+    if (fetchError) {
+      console.error(`Error fetching Montree child: ${fetchError.message}`);
+      throw new Error(`Failed to fetch Montree child: ${fetchError.message}`);
+    }
+    
+    if (!montreeChild) {
+      throw new Error(`Montree child not found: ${childId}`);
+    }
+    
+    // Calculate age group from age or use default
+    let ageGroup = '3-4'; // Default
+    if (montreeChild.age !== null && montreeChild.age !== undefined) {
+      if (montreeChild.age < 3) ageGroup = '2-3';
+      else if (montreeChild.age < 4) ageGroup = '3-4';
+      else if (montreeChild.age < 5) ageGroup = '4-5';
+      else ageGroup = '5-6';
+    }
+    
+    // Insert into children table
+    const { error: insertError } = await supabase
+      .from('children')
+      .insert({
+        id: childId, // Use the same ID
+        name: montreeChild.name,
+        date_of_birth: montreeChild.date_of_birth || new Date().toISOString().split('T')[0],
+        enrollment_date: montreeChild.created_at ? new Date(montreeChild.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        age_group: ageGroup,
+        active_status: true,
+        notes: montreeChild.notes || null,
+      });
+    
+    if (insertError) {
+      // If it's a unique constraint violation, the child might have been created by another request
+      // Check again if it exists now
+      const { data: recheck } = await supabase
+        .from('children')
+        .select('id')
+        .eq('id', childId)
+        .maybeSingle();
+      
+      if (!recheck) {
+        // If it's a unique constraint error, the child might exist now
+        if (insertError.code === '23505') {
+          // Unique violation - check one more time
+          const { data: finalCheck } = await supabase
+            .from('children')
+            .select('id')
+            .eq('id', childId)
+            .maybeSingle();
+          
+          if (finalCheck) {
+            // Child exists now, we're good
+            return;
+          }
+        }
+        throw new Error(`Failed to create child in children table: ${insertError.message}`);
+      }
+      // Otherwise, it's fine - the child exists now
+    }
+  } catch (error) {
+    // Catch any network errors or other exceptions
+    if (error instanceof Error) {
+      // If it's already our error, rethrow it
+      if (error.message.includes('Failed to') || error.message.includes('not found')) {
+        throw error;
+      }
+      throw new Error(`Failed to ensure child exists: ${error.message}`);
+    }
+    throw new Error(`Failed to ensure child exists: ${String(error)}`);
+  }
 }
 
 export async function updateWorkProgress(
@@ -183,37 +289,96 @@ export async function updateWorkProgress(
   currentLevel: number = 0,
   notes: string = ''
 ): Promise<ChildProgress> {
-  const supabase = await createServerClient();
-  const now = new Date().toISOString();
+  try {
+    const supabase = await createServerClient();
+    const now = new Date().toISOString();
+    
+    // Ensure child exists in children table (required for foreign key constraint)
+    try {
+      await ensureChildExistsInChildrenTable(childId);
+    } catch (error) {
+      // Log the error but don't fail the entire operation
+      // The foreign key might still work if the child was created by another process
+      console.warn(`Warning: Could not ensure child exists in children table: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  
+  // First, try to get existing progress
+  const existing = await getWorkProgress(childId, workId);
+  
+  // Generate a deterministic UUID for curriculum_work_id from work_id
+  // This is needed because the table requires curriculum_work_id (NOT NULL)
+  // For Montree works, we use a deterministic UUID based on the work_id string
+  const curriculumWorkId = generateUUIDFromString(workId);
   
   const progressData: any = {
     child_id: childId,
     work_id: workId,
+    curriculum_work_id: curriculumWorkId, // Required field
     status: mapStatusToDb(status),
     current_level: currentLevel,
-    notes,
-    updated_at: now,
+    notes: notes || '',
+    completion_date: now.split('T')[0], // Required field - use today's date
   };
   
   // Set timestamps based on status
-  if (status !== 'not_started' && !progressData.started_at) {
-    progressData.started_at = now;
+  if (status !== 'not_started') {
+    if (!existing || !existing.startedAt) {
+      progressData.started_at = now;
+    } else {
+      progressData.started_at = existing.startedAt;
+    }
   }
   if (status === 'completed') {
     progressData.completed_at = now;
   }
 
-  // Upsert - insert or update
+  // Try to update existing record first
+  if (existing) {
+    const { data, error } = await supabase
+      .from('child_work_completion')
+      .update(progressData)
+      .eq('child_id', childId)
+      .eq('work_id', workId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating work progress:', error);
+      console.error('Progress data:', progressData);
+      throw new Error(`Failed to update work progress: ${error.message}`);
+    }
+    
+    if (data) {
+      return {
+        id: data.id,
+        childId: data.child_id,
+        workId: data.work_id || data.curriculum_work_id,
+        status: mapStatusFromDb(data.status),
+        currentLevel: data.current_level || 0,
+        startedAt: data.started_at,
+        completedAt: data.completed_at,
+        notes: data.notes || '',
+        updatedAt: data.created_at || new Date().toISOString(),
+      };
+    }
+  }
+  
+  // If no existing record, insert new one
   const { data, error } = await supabase
     .from('child_work_completion')
-    .upsert(progressData, { 
-      onConflict: 'child_id,work_id',
-      ignoreDuplicates: false 
-    })
+    .insert(progressData)
     .select()
     .single();
   
-  if (error) throw error;
+  if (error) {
+    console.error('Error inserting work progress:', error);
+    console.error('Progress data:', progressData);
+    throw new Error(`Failed to insert work progress: ${error.message}`);
+  }
+  
+  if (!data) {
+    throw new Error('No data returned from insert operation');
+  }
   
   return {
     id: data.id,
@@ -224,8 +389,19 @@ export async function updateWorkProgress(
     startedAt: data.started_at,
     completedAt: data.completed_at,
     notes: data.notes || '',
-    updatedAt: data.updated_at || new Date().toISOString(),
+    updatedAt: data.created_at || new Date().toISOString(),
   };
+  } catch (error) {
+    // Catch any network errors or other exceptions
+    if (error instanceof Error) {
+      // If it's already a formatted error, rethrow it
+      if (error.message.includes('Failed to')) {
+        throw error;
+      }
+      throw new Error(`Failed to update work progress: ${error.message}`);
+    }
+    throw new Error(`Failed to update work progress: ${String(error)}`);
+  }
 }
 
 export async function startWork(childId: string, workId: string): Promise<ChildProgress> {

@@ -68,7 +68,7 @@ export default function ProgressSummary({ progress, childName }: Props) {
       {/* Area Progress */}
       <h3 className="text-sm font-bold text-slate-700 mb-3">By Area</h3>
       <div className="space-y-3">
-        {progress.areaProgress.map((area) => {
+        {(progress.areaProgress || []).map((area) => {
           const areaColor = AREA_COLORS[area.areaId as keyof typeof AREA_COLORS];
           return (
             <div key={area.areaId}>

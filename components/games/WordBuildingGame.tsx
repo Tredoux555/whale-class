@@ -3,7 +3,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PINK_SERIES, BLUE_SERIES, WordData } from '@/lib/games/game-data';
 import { GameAudio } from '@/lib/games/audio-paths';
@@ -127,14 +127,26 @@ export default function WordBuildingGame({ phase, level }: Props) {
     setAvailableLetters(prev => [...prev, letter]);
   };
 
-  // Check answer
+  // Check answer - FIXED: Prevent double-trigger with hasCompletedRef
+  const hasCompletedRef = useRef(false);
+  
   useEffect(() => {
+    // Reset completion flag when word changes
+    hasCompletedRef.current = false;
+  }, [currentIndex, words.length]);
+  
+  useEffect(() => {
+    // Don't check if already showing feedback or already completed
+    if (showCorrect || showWrong || hasCompletedRef.current) return;
     if (words.length === 0 || currentIndex >= words.length) return;
     
     const currentWord = words[currentIndex];
     const builtWord = placedLetters.join('');
     
+    // Only check when word is complete
     if (builtWord.length === currentWord.word.length) {
+      hasCompletedRef.current = true; // Prevent double-trigger
+      
       if (builtWord === currentWord.word) {
         setScore(prev => prev + 1);
         setShowCorrect(true);
@@ -146,7 +158,7 @@ export default function WordBuildingGame({ phase, level }: Props) {
         GameAudio.playWrong().catch(console.error);
       }
     }
-  }, [placedLetters, currentIndex, words]);
+  }, [placedLetters, currentIndex, words, showCorrect, showWrong]);
 
   // Next question
   const handleNext = useCallback(() => {

@@ -50,3 +50,4 @@ export const labelStyles = "block text-sm font-medium text-slate-700 mb-1";
 export const headingStyles = "text-2xl font-bold text-slate-800";
 export const subheadingStyles = "text-lg font-semibold text-slate-700";
 
+

@@ -87,3 +87,4 @@ I suspect **Vercel is not deploying the API routes as functions** or there's a *
 
 The fact that this started happening after our changes suggests we might have inadvertently triggered a deployment issue, but the code itself is fine (proven by local testing).
 
+
