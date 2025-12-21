@@ -1,223 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
-import { getWeekStartDate, getExpirationDate, validateMessage, sanitizeInput } from '@/lib/story-utils';
+import { verifyToken, extractToken, getCurrentWeekStart, getExpirationDate } from '@/lib/story-auth';
 
-const ADMIN_JWT_SECRET = new TextEncoder().encode(
-  process.env.STORY_ADMIN_JWT_SECRET || process.env.STORY_JWT_SECRET || 'fallback-admin-secret-key-change-in-production'
-);
-
+// POST: Admin sends a secret message
 export async function POST(req: NextRequest) {
-  // Check admin session - support both Authorization header and cookie
-  const authHeader = req.headers.get('authorization');
-  let token: string | null = null;
-
-  if (authHeader) {
-    token = authHeader.replace('Bearer ', '');
-  } else {
-    // Try cookie as fallback
-    const cookies = req.cookies;
-    const sessionCookie = cookies.get('story_admin_session');
-    if (sessionCookie) {
-      token = sessionCookie.value;
-    }
-  }
-
+  const token = extractToken(req.headers.get('authorization'));
+  
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // Verify JWT token
-    const { payload } = await jwtVerify(token, ADMIN_JWT_SECRET);
-
-    if (payload.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const payload = await verifyToken(token);
+    
+    if (!payload || payload.type !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { message, author = 'Admin' } = await req.json();
+    const { message } = await req.json();
 
-    // Validate message
-    const validation = validateMessage(message);
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error || 'Message is required' },
-        { status: 400 }
-      );
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Sanitize inputs
-    const sanitizedMessage = sanitizeInput(message);
-    const sanitizedAuthor = sanitizeInput(author);
-
-    // Get current week's Monday
-    const weekStartDate = getWeekStartDate();
-
-    // Expiration: 7 days from now
+    const weekStartDate = getCurrentWeekStart();
     const expiresAt = getExpirationDate();
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[SEND-MESSAGE] Week start date:', weekStartDate);
-      console.log('[SEND-MESSAGE] Message:', sanitizedMessage);
-      console.log('[SEND-MESSAGE] Author:', sanitizedAuthor);
-    }
+    // Save to message history
+    await db.query(
+      `INSERT INTO story_message_history 
+       (week_start_date, author, message_type, content, is_from_admin, expires_at)
+       VALUES ($1, 'Admin', 'text', $2, TRUE, $3)`,
+      [weekStartDate, message.trim(), expiresAt]
+    );
 
-    // Step 1: Check if tables exist, if not return clear error
-    let tablesExist = false;
-    try {
-      const checkResult = await db.query(`
-        SELECT 
-          EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'story_message_history') as history_exists,
-          EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'secret_stories') as stories_exists
-      `);
-      
-      const historyExists = checkResult.rows[0].history_exists;
-      const storiesExists = checkResult.rows[0].stories_exists;
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SEND-MESSAGE] Tables check:', { historyExists, storiesExists });
-      }
-      
-      if (!historyExists || !storiesExists) {
-        return NextResponse.json({
-          error: 'Database tables missing',
-          details: `Missing tables: ${!historyExists ? 'story_message_history ' : ''}${!storiesExists ? 'secret_stories' : ''}`,
-          fix: 'Run the SQL script: FIX_STORY_TABLES_NOW.sql in Supabase SQL Editor',
-          sqlLocation: '/FIX_STORY_TABLES_NOW.sql in your project root'
-        }, { status: 500 });
-      }
-      
-      tablesExist = true;
-    } catch (checkError) {
-      console.error('[SEND-MESSAGE] Error checking tables:', checkError);
-      return NextResponse.json({
-        error: 'Database connection error',
-        details: checkError instanceof Error ? checkError.message : String(checkError)
-      }, { status: 500 });
-    }
+    // Update the story's admin message (this shows when users click 't')
+    const result = await db.query(
+      `UPDATE secret_stories 
+       SET admin_message = $1, updated_at = NOW()
+       WHERE week_start_date = $2
+       RETURNING *`,
+      [message.trim(), weekStartDate]
+    );
 
-    // Step 2: Try to insert into message history
-    try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SEND-MESSAGE] Inserting into message history...');
-      }
+    // If no story exists for this week, create one first
+    if (result.rows.length === 0) {
+      // Create a basic story for this week
       await db.query(
-        `INSERT INTO story_message_history 
-         (week_start_date, message_type, message_content, author, expires_at)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [weekStartDate, 'text', sanitizedMessage, sanitizedAuthor, expiresAt]
+        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, admin_message)
+         VALUES ($1, 'Message', 'A Special Note', '{"paragraphs": ["Today is a special day.", "Something wonderful is happening.", "Can you feel the excitement?", "Look around and notice the little things.", "Every moment is a gift."]}', $2)`,
+        [weekStartDate, message.trim()]
       );
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SEND-MESSAGE] Message history inserted successfully');
-      }
-    } catch (insertError) {
-      console.error('[SEND-MESSAGE] Error inserting message history:', insertError);
-      return NextResponse.json({
-        error: 'Failed to save message history',
-        details: insertError instanceof Error ? insertError.message : String(insertError)
-      }, { status: 500 });
     }
 
-    // Step 3: Check if story exists for this week
-    let storyExists = false;
-    try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SEND-MESSAGE] Checking if story exists for week:', weekStartDate);
-      }
-      const checkStory = await db.query(
-        'SELECT id FROM secret_stories WHERE week_start_date = $1',
-        [weekStartDate]
-      );
-      storyExists = checkStory.rows.length > 0;
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SEND-MESSAGE] Story exists:', storyExists);
-      }
-    } catch (checkStoryError) {
-      console.error('[SEND-MESSAGE] Error checking story:', checkStoryError);
-    }
-
-    // Step 4: Create story if it doesn't exist
-    if (!storyExists) {
-      try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[SEND-MESSAGE] Creating story for week:', weekStartDate);
-        }
-        await db.query(
-          `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [
-            weekStartDate,
-            'Weekly Adventure',
-            'Our Weekly Story',
-            JSON.stringify({ paragraphs: ['Once upon a time...', 'The end.'] }),
-            sanitizedMessage,
-            sanitizedAuthor
-          ]
-        );
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[SEND-MESSAGE] Story created successfully');
-        }
-      } catch (createError) {
-        console.error('[SEND-MESSAGE] Error creating story:', createError);
-        return NextResponse.json({
-          error: 'Failed to create story',
-          details: createError instanceof Error ? createError.message : String(createError),
-          hint: 'Message was saved to history but story creation failed'
-        }, { status: 500 });
-      }
-    } else {
-      // Step 5: Update existing story
-      try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[SEND-MESSAGE] Updating existing story...');
-        }
-        const result = await db.query(
-          `UPDATE secret_stories 
-           SET hidden_message = $1, 
-               message_author = $2, 
-               updated_at = NOW()
-           WHERE week_start_date = $3
-           RETURNING *`,
-          [sanitizedMessage, sanitizedAuthor, weekStartDate]
-        );
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[SEND-MESSAGE] Story updated successfully');
-        }
-      } catch (updateError) {
-        console.error('[SEND-MESSAGE] Error updating story:', updateError);
-        return NextResponse.json({
-          error: 'Failed to update story',
-          details: updateError instanceof Error ? updateError.message : String(updateError),
-          hint: 'Message was saved to history but story update failed'
-        }, { status: 500 });
-      }
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[SEND-MESSAGE] SUCCESS - Message sent completely');
-    }
-    return NextResponse.json({
+    return NextResponse.json({ 
       success: true,
-      message: 'Message sent successfully',
-      sentAt: new Date().toISOString(),
-      weekStartDate: weekStartDate
+      message: 'Admin message sent successfully'
     });
   } catch (error) {
-    console.error('[SEND-MESSAGE] Top-level error:', error);
-    
-    // Handle JWT verification errors
-    if (error instanceof Error && error.message.includes('JWT')) {
-      return NextResponse.json({ 
-        error: 'Invalid session',
-        details: error.message 
-      }, { status: 401 });
-    }
-    
-    // Return detailed error
-    return NextResponse.json({
-      error: 'Failed to send message',
-      details: error instanceof Error ? error.message : String(error),
-      stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
-    }, { status: 500 });
+    console.error('Admin send message error:', error);
+    return NextResponse.json(
+      { error: 'Failed to send message' },
+      { status: 500 }
+    );
   }
 }

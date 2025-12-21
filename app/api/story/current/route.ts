@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
-import { JWT_SECRET } from '@/lib/story-auth';
-import { getWeekStartDate } from '@/lib/story-utils';
+import { verifyToken, extractToken, getCurrentWeekStart } from '@/lib/story-auth';
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
+  const token = extractToken(req.headers.get('authorization'));
   
-  if (!authHeader) {
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const token = authHeader.replace('Bearer ', '');
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
 
-    // Get current week's Monday
-    const weekStartDate = getWeekStartDate();
+    // Update last seen
+    await db.query(
+      `UPDATE story_online_sessions SET last_seen_at = NOW(), is_online = TRUE WHERE session_token = $1`,
+      [token]
+    );
+
+    const weekStartDate = getCurrentWeekStart();
 
     // Check if story exists for this week
     let story = await db.query(
@@ -28,22 +33,10 @@ export async function GET(req: NextRequest) {
     if (story.rows.length === 0) {
       const newStory = await generateWeeklyStory();
       
-      if (!newStory) {
-        return NextResponse.json(
-          { error: 'Failed to generate story' },
-          { status: 500 }
-        );
-      }
-
       const insertResult = await db.query(
         `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content)
          VALUES ($1, $2, $3, $4) RETURNING *`,
-        [
-          weekStartDate,
-          newStory.theme,
-          newStory.title,
-          JSON.stringify({ paragraphs: newStory.paragraphs })
-        ]
+        [weekStartDate, newStory.theme, newStory.title, JSON.stringify({ paragraphs: newStory.paragraphs })]
       );
       
       story = insertResult;
@@ -60,19 +53,20 @@ export async function GET(req: NextRequest) {
         title: storyData.story_title,
         paragraphs: content.paragraphs,
         hiddenMessage: storyData.hidden_message,
-        messageAuthor: storyData.message_author
+        messageAuthor: storyData.message_author,
+        adminMessage: storyData.admin_message
       }
     });
   } catch (error) {
     console.error('Story fetch error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Failed to fetch story' }, { status: 500 });
   }
 }
 
 async function generateWeeklyStory() {
   try {
     // Try to get current Whale curriculum theme
-    let currentTheme = 'Community Helpers'; // Default theme
+    let currentTheme = 'Friendship';
     
     try {
       const themeResult = await db.query(
@@ -84,27 +78,25 @@ async function generateWeeklyStory() {
       if (themeResult.rows.length > 0) {
         currentTheme = themeResult.rows[0].theme;
       }
-    } catch (err) {
-      // If curriculum_weeks table doesn't exist or query fails, use default
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using default theme');
-      }
+    } catch {
+      // Table might not exist, use default
     }
 
-    // Call Claude API to generate story
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2024-10-22'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{
-          role: 'user',
-          content: `Write a short children's story (exactly 5 paragraphs) about "${currentTheme}". 
+    // Try Claude API
+    if (process.env.ANTHROPIC_API_KEY) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2024-10-22'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          messages: [{
+            role: 'user',
+            content: `Write a short children's story (exactly 5 paragraphs) about "${currentTheme}". 
 
 Requirements:
 - Appropriate for ages 2-6 with simple English vocabulary
@@ -116,53 +108,38 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no code 
 {
   "theme": "${currentTheme}",
   "title": "Story Title Here",
-  "paragraphs": ["paragraph 1 text", "paragraph 2 text", "paragraph 3 text", "paragraph 4 text", "paragraph 5 text"]
+  "paragraphs": ["paragraph 1", "paragraph 2", "paragraph 3", "paragraph 4", "paragraph 5"]
 }`
-        }]
-      })
-    });
+          }]
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error('Claude API request failed');
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.content[0].text;
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const storyData = JSON.parse(jsonMatch[0]);
+          if (storyData.paragraphs?.length === 5) {
+            return storyData;
+          }
+        }
+      }
     }
-
-    const data = await response.json();
-    const content = data.content[0].text;
-    
-    // Extract JSON from response (in case Claude wraps it in markdown)
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response');
-    }
-
-    const storyData = JSON.parse(jsonMatch[0]);
-    
-    // Validate the story has required fields and 't' and 'c' in first paragraph
-    if (!storyData.paragraphs || storyData.paragraphs.length !== 5) {
-      throw new Error('Invalid story structure');
-    }
-
-    const firstParagraph = storyData.paragraphs[0].toLowerCase();
-    if (!firstParagraph.includes('t') || !firstParagraph.includes('c')) {
-      throw new Error('First paragraph missing required letters');
-    }
-
-    return storyData;
   } catch (error) {
     console.error('Story generation error:', error);
-    
-    // Fallback story in case API fails
-    return {
-      theme: 'Community Helpers',
-      title: 'The Kind Doctor',
-      paragraphs: [
-        'One sunny morning, little Tom went to see the doctor with his cat named Whiskers. The doctor had a bright smile and a gentle voice.',
-        'Doctor Sarah checked Tom\'s ears and listened to his heart. "You are very healthy!" she said with a warm smile.',
-        'Tom asked, "Can you check Whiskers too?" Doctor Sarah laughed and pretended to listen to the cat\'s heartbeat.',
-        'Whiskers purred happily. Tom felt brave and strong after his checkup.',
-        'Tom waved goodbye to Doctor Sarah. "Thank you for helping me feel better!" he said happily.'
-      ]
-    };
   }
-}
 
+  // Fallback story
+  return {
+    theme: 'Friendship',
+    title: 'The Kind Friends',
+    paragraphs: [
+      'Once upon a time, there was a little cat named Tiny who loved to play in the sunshine.',
+      'One day, Tiny met a friendly dog named Buddy at the park. They decided to play together.',
+      'Buddy showed Tiny his favorite ball, and Tiny showed Buddy her favorite spot by the flowers.',
+      'They played all afternoon, running and jumping in the soft green grass.',
+      'When the sun began to set, they promised to meet again tomorrow. True friends always find each other.'
+    ]
+  };
+}

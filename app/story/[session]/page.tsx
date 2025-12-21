@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 interface Story {
@@ -8,62 +8,86 @@ interface Story {
   paragraphs: string[];
   hiddenMessage: string | null;
   messageAuthor: string | null;
+  adminMessage: string | null;
 }
 
 interface MediaItem {
   id: number;
-  message_type: 'image' | 'video';
-  media_url: string;
-  media_filename: string;
   author: string;
-  created_at: string;
+  type: 'image' | 'video';
+  url: string;
+  filename: string;
+  mimeType: string;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  isFromAdmin: boolean;
 }
 
 export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
+  const session = params.session as string;
+  
+  // Story state
   const [story, setStory] = useState<Story | null>(null);
+  const [username, setUsername] = useState('');
+  
+  // Interaction state
   const [isDecoded, setIsDecoded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [messageInput, setMessageInput] = useState('');
-  const [username, setUsername] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Media state
+  const [showMediaSection, setShowMediaSection] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
-  const [showUploadSection, setShowUploadSection] = useState(false);
-  const [lastLetterTapped, setLastLetterTapped] = useState(false);
-  const [showMediaItems, setShowMediaItems] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  
+  // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastParagraphRef = useRef<HTMLParagraphElement>(null);
 
+  // Heartbeat to keep session alive
   useEffect(() => {
-    // Check if session exists
-    const session = sessionStorage.getItem('story_session');
-    if (!session || session !== params.session) {
+    const interval = setInterval(() => {
+      fetch('/api/story/current', {
+        headers: { 'Authorization': `Bearer ${session}` }
+      }).catch(() => {});
+    }, 60000); // Every minute
+
+    return () => clearInterval(interval);
+  }, [session]);
+
+  // Initial load
+  useEffect(() => {
+    const storedSession = sessionStorage.getItem('story_session');
+    if (!storedSession || storedSession !== session) {
       router.push('/story');
       return;
     }
 
     loadStory();
+    loadMedia();
     
-    // Auto-logout on window close/unload
+    // Auto-logout on window close
     const handleUnload = () => {
       sessionStorage.removeItem('story_session');
-      fetch('/api/story/auth', { method: 'DELETE' });
+      sessionStorage.removeItem('story_username');
+      navigator.sendBeacon('/api/story/auth', JSON.stringify({ action: 'logout' }));
     };
     
     window.addEventListener('beforeunload', handleUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, [params.session, router]);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [session, router]);
 
   const loadStory = async () => {
     try {
       const res = await fetch('/api/story/current', {
-        headers: { 'Authorization': `Bearer ${params.session}` }
+        headers: { 'Authorization': `Bearer ${session}` }
       });
 
       if (!res.ok) {
@@ -75,9 +99,6 @@ export default function StoryViewer() {
       const data = await res.json();
       setStory(data.story);
       setUsername(data.username);
-      
-      // Load media
-      loadMedia();
     } catch (err) {
       console.error('Error loading story:', err);
       router.push('/story');
@@ -87,155 +108,57 @@ export default function StoryViewer() {
   const loadMedia = async () => {
     try {
       const res = await fetch('/api/story/current-media', {
-        headers: { 'Authorization': `Bearer ${params.session}` }
+        headers: { 'Authorization': `Bearer ${session}` }
       });
 
       if (res.ok) {
         const data = await res.json();
-        setMediaItems(data.media);
+        setMediaItems(data.media || []);
       }
     } catch (err) {
       console.error('Error loading media:', err);
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Handle letter clicks
+  const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number, isLastLetter: boolean) => {
+    // First paragraph: 't' toggles decode, 'c' opens editor
+    if (paragraphIndex === 0) {
+      const firstParagraph = story?.paragraphs[0] || '';
+      const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
+      const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
 
-    setIsUploadingMedia(true);
-    setUploadError('');
-
-    try {
-      // Detect file type first to determine size limit
-      const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov|avi|mkv)$/i);
-      const isImage = file.type.startsWith('image/') || file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i);
-      
-      // Validate file before upload - different limits for images vs videos
-      const fileSizeMB = file.size / 1024 / 1024;
-      const maxSizeMB = isVideo ? 100 : 50; // Videos: 100MB, Images: 50MB
-      
-      if (fileSizeMB > maxSizeMB) {
-        setUploadError(`File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is ${maxSizeMB}MB for ${isVideo ? 'videos' : 'images'}.`);
-        setIsUploadingMedia(false);
-        return;
+      if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
+        setIsDecoded(!isDecoded);
+        setIsEditing(false);
+        setShowMediaSection(false);
+      } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
+        setIsEditing(true);
+        setIsDecoded(false);
+        setShowMediaSection(false);
+        setMessageInput('');
+        setTimeout(() => {
+          paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
       }
-
-      if (!isImage && !isVideo) {
-        setUploadError('Unsupported file type. Please select an image or video file.');
-        setIsUploadingMedia(false);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('author', username);
-      
-      // Auto-detect type (prioritize video detection)
-      const messageType = isVideo ? 'video' : 'image';
-      formData.append('type', messageType);
-
-      const res = await fetch('/api/story/upload-media', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${params.session}` },
-        body: formData
-      });
-
-      let responseData;
-      try {
-        responseData = await res.json();
-      } catch (jsonError) {
-        // If response is not JSON, it might be HTML or plain text
-        const text = await res.text();
-        setUploadError(`Server error (${res.status}): ${text.substring(0, 200)}`);
-        console.error('Upload error - non-JSON response:', text);
-        return;
-      }
-
-      if (res.ok) {
-        // Reload media
-        await loadMedia();
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        // Clear any previous errors
-        setUploadError('');
-        // Hide upload section after successful upload
-        setShowUploadSection(false);
-      } else {
-        // Show detailed error message
-        const errorMsg = responseData.error || 'Failed to upload file';
-        const details = responseData.details ? ` (${responseData.details})` : '';
-        const hint = responseData.hint ? `\n\n${responseData.hint}` : '';
-        setUploadError(`${errorMsg}${details}${hint}`);
-        console.error('Upload error response:', responseData);
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Upload failed';
-      setUploadError(`Network error: ${errorMsg}. Please check your connection and try again.`);
-      console.error('Upload error:', err);
-    } finally {
-      setIsUploadingMedia(false);
     }
-  };
-
-  const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number) => {
-    if (paragraphIndex !== 0) return; // Only first paragraph interactive
     
-    const firstParagraph = story?.paragraphs[0] || '';
-    const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
-    const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
-
-    if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
-      // Toggle text message display
-      setIsDecoded(!isDecoded);
-      setIsEditing(false);
-      // CRITICAL FIX: Hide media gallery when showing text message
-      setShowMediaItems(false);
-      setShowUploadSection(false);
-      setLastLetterTapped(false);
-    } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
-      setIsEditing(true);
+    // Last paragraph, last letter: toggle media section
+    if (paragraphIndex === (story?.paragraphs.length || 0) - 1 && isLastLetter) {
+      setShowMediaSection(!showMediaSection);
       setIsDecoded(false);
-      // ALSO hide media when editing
-      setShowMediaItems(false);
-      setShowUploadSection(false);
-      setLastLetterTapped(false);
-      setMessageInput('');
-      setTimeout(() => {
-        paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      setIsEditing(false);
+      if (!showMediaSection) {
+        setTimeout(() => {
+          lastParagraphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
   };
 
-  const handleLastLetterClick = () => {
-    // Hide text message when accessing media section
-    setIsDecoded(false);
-    setIsEditing(false);
-    
-    if (!lastLetterTapped) {
-      // First tap: show upload section AND existing media
-      setLastLetterTapped(true);
-      setShowUploadSection(true);
-      setShowMediaItems(true); // Show existing media immediately
-    } else {
-      // Second tap: toggle everything off
-      setShowUploadSection(false);
-      setShowMediaItems(false);
-      setLastLetterTapped(false);
-    }
-  };
-
+  // Save text message
   const saveMessage = async () => {
-    const trimmed = messageInput.trim();
-    if (!trimmed) return;
-    
-    // Validate length on frontend (matches backend validation)
-    if (trimmed.length > 1000) {
-      alert('Message must be less than 1000 characters');
-      return;
-    }
+    if (!messageInput.trim()) return;
     
     setIsSaving(true);
     try {
@@ -243,153 +166,189 @@ export default function StoryViewer() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${params.session}`
+          'Authorization': `Bearer ${session}`
         },
-        body: JSON.stringify({ message: trimmed, author: username })
+        body: JSON.stringify({ message: messageInput.trim(), author: username })
       });
 
       if (res.ok) {
         setIsEditing(false);
         setMessageInput('');
-        await loadStory(); // Refresh to show saved state
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        alert(errorData.error || 'Failed to save message');
+        await loadStory();
       }
     } catch (err) {
       console.error('Error saving message:', err);
-      alert('Network error. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      saveMessage();
+  // Handle file upload
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError('');
+    setIsUploadingMedia(true);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('author', username);
+
+    try {
+      const res = await fetch('/api/story/upload-media', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session}` },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        await loadMedia();
+        setUploadProgress(100);
+      } else {
+        setUploadError(data.error || 'Upload failed');
+      }
+    } catch (err) {
+      setUploadError('Upload failed. Please try again.');
+    } finally {
+      setIsUploadingMedia(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
+  };
+
+  // Delete media
+  const deleteMedia = async (mediaId: number) => {
+    if (!confirm('Delete this media?')) return;
+
+    try {
+      const res = await fetch(`/api/story/upload-media?id=${mediaId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+
+      if (res.ok) {
+        await loadMedia();
+        setSelectedMedia(null);
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
+  };
+
+  // Render paragraph with interactive letters
+  const renderParagraph = (text: string, index: number) => {
+    const isFirstParagraph = index === 0;
+    const isLastParagraph = index === (story?.paragraphs.length || 0) - 1;
+    const isThirdParagraph = index === 2;
+
+    // Track which special letters have been found
+    let tFound = false;
+    let cFound = false;
+
+    return (
+      <p 
+        ref={isThirdParagraph ? paragraph3Ref : (isLastParagraph ? lastParagraphRef : null)}
+        className="mb-6 leading-relaxed text-lg text-gray-700"
+      >
+        {text.split('').map((char, i) => {
+          const lowerChar = char.toLowerCase();
+          const isLastChar = i === text.length - 1;
+          
+          // First paragraph interactions
+          let isClickable = false;
+          if (isFirstParagraph) {
+            const isFirstT = lowerChar === 't' && !tFound;
+            const isFirstC = lowerChar === 'c' && !cFound;
+            if (isFirstT) tFound = true;
+            if (isFirstC) cFound = true;
+            isClickable = isFirstT || isFirstC;
+          }
+          
+          // Last paragraph, last letter
+          if (isLastParagraph && isLastChar) {
+            isClickable = true;
+          }
+
+          return (
+            <span
+              key={i}
+              onClick={() => isClickable && handleLetterClick(char, i, index, isLastChar)}
+              className={isClickable ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+            >
+              {char}
+            </span>
+          );
+        })}
+        
+        {/* Third paragraph: show hidden message or editor */}
+        {isThirdParagraph && (
+          <>
+            {isDecoded && (story?.hiddenMessage || story?.adminMessage) && (
+              <span className="ml-2 text-indigo-600 font-medium animate-fade-in">
+                {story?.adminMessage || story?.hiddenMessage}
+                {story?.messageAuthor && !story?.adminMessage && (
+                  <span className="text-gray-400 text-sm ml-2">— {story.messageAuthor}</span>
+                )}
+              </span>
+            )}
+            {isEditing && (
+              <span className="inline-flex items-center gap-2 ml-2 align-middle">
+                <input
+                  type="text"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && saveMessage()}
+                  className="border-b-2 border-indigo-400 outline-none px-2 py-1 bg-transparent min-w-[200px] focus:border-indigo-600"
+                  autoFocus
+                  placeholder="Type your message..."
+                  disabled={isSaving}
+                />
+                <button
+                  onClick={saveMessage}
+                  disabled={isSaving || !messageInput.trim()}
+                  className="text-sm bg-indigo-500 text-white px-4 py-1 rounded-lg hover:bg-indigo-600 disabled:bg-gray-400 transition-colors"
+                >
+                  {isSaving ? '⏳' : '💾'}
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="text-sm bg-gray-200 text-gray-600 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+          </>
+        )}
+      </p>
+    );
   };
 
   if (!story) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="text-lg text-gray-600">Loading story...</div>
+        <div className="flex items-center gap-3 text-lg text-gray-600">
+          <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Loading story...
+        </div>
       </div>
     );
   }
 
-  const renderParagraph = (text: string, index: number) => {
-    // First paragraph - make first 't' and 'c' clickable
-    if (index === 0) {
-      let tFound = false;
-      let cFound = false;
-      
-      return (
-        <p className="mb-6 leading-relaxed text-lg">
-          {text.split('').map((char, i) => {
-            const lowerChar = char.toLowerCase();
-            const isFirstT = lowerChar === 't' && !tFound;
-            const isFirstC = lowerChar === 'c' && !cFound;
-            
-            if (isFirstT) tFound = true;
-            if (isFirstC) cFound = true;
-            
-            const isClickable = isFirstT || isFirstC;
-            
-            return (
-              <span
-                key={i}
-                onClick={() => isClickable && handleLetterClick(char, i, index)}
-                className={isClickable ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
-                style={isClickable ? { textDecoration: 'none' } : {}}
-              >
-                {char}
-              </span>
-            );
-          })}
-        </p>
-      );
-    }
-
-    // Third paragraph (index 2) - show hidden message or editor
-    if (index === 2) {
-      const displayText = isDecoded && story.hiddenMessage
-        ? text + ' ' + story.hiddenMessage
-        : text;
-
-      return (
-        <p ref={paragraph3Ref} className="mb-6 leading-relaxed text-lg">
-          {displayText}
-          {isEditing && (
-            <span className="inline-block ml-2 align-middle">
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="border-b-2 border-gray-400 outline-none px-2 py-1 bg-transparent animate-pulse min-w-[200px]"
-                autoFocus
-                placeholder="Type message..."
-                disabled={isSaving}
-              />
-              <button
-                onClick={saveMessage}
-                disabled={isSaving || !messageInput.trim()}
-                className="ml-3 text-sm bg-indigo-500 text-white px-4 py-1 rounded hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSaving ? '⏳' : '💾'} Save
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="ml-2 text-sm bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-            </span>
-          )}
-        </p>
-      );
-    }
-
-    // Last paragraph - make last letter clickable to show upload section
-    const isLastParagraph = index === story.paragraphs.length - 1;
-    if (isLastParagraph && text.length > 0) {
-      const lastCharIndex = text.length - 1;
-      const lastChar = text[lastCharIndex];
-      
-      return (
-        <p key={index} className="mb-6 leading-relaxed text-lg">
-          {text.split('').map((char, i) => {
-            const isLastLetter = i === lastCharIndex;
-            return (
-              <span
-                key={i}
-                onClick={() => isLastLetter && handleLastLetterClick()}
-                className={isLastLetter ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
-              >
-                {char}
-              </span>
-            );
-          })}
-        </p>
-      );
-    }
-
-    // All other paragraphs - regular text
-    return (
-      <p key={index} className="mb-6 leading-relaxed text-lg">
-        {text}
-      </p>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Story Content */}
-        <div className="bg-white rounded-lg shadow-xl p-12">
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4 md:p-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Story Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
             {story.title}
           </h1>
           <div className="prose prose-lg max-w-none">
@@ -401,85 +360,162 @@ export default function StoryViewer() {
           </div>
         </div>
 
-        {/* Media Upload Section - Only show when last letter is tapped */}
-        {showUploadSection && (
-          <div className="bg-white rounded-lg shadow-xl p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              📷 Share Photos & Videos
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Share a picture or video! It will automatically disappear after 7 days.
-            </p>
-            
+        {/* Media Section */}
+        {showMediaSection && (
+          <div className="mt-6 bg-white rounded-2xl shadow-xl p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-800">📸 Shared Moments</h2>
+              <button
+                onClick={() => setShowMediaSection(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Upload Area */}
             <div className="mb-6">
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*,.heic,.heif"
-                onChange={handleFileUpload}
-                disabled={isUploadingMedia}
-                className="block w-full text-sm text-gray-600
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-orange-50 file:text-orange-700
-                  hover:file:bg-orange-100
-                  disabled:opacity-50 disabled:cursor-not-allowed"
+                accept="image/*,video/*"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="media-upload"
               />
-              <p className="text-xs text-gray-500 mt-2">
-                Supported: JPEG, PNG, GIF, WebP, HEIC (iOS), MP4, WebM, MOV, AVI, MKV. Max size: Images 50MB, Videos 100MB
-              </p>
-              {isUploadingMedia && (
-                <div className="mt-2">
-                  <p className="text-sm text-blue-600">Uploading... Please wait</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '50%' }}></div>
+              <label
+                htmlFor="media-upload"
+                className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
+                  ${isUploadingMedia ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:border-indigo-400 hover:bg-indigo-50'}`}
+              >
+                {isUploadingMedia ? (
+                  <div className="space-y-2">
+                    <div className="animate-spin text-3xl">⏳</div>
+                    <p className="text-indigo-600">Uploading...</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-indigo-600 h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <>
+                    <span className="text-4xl block mb-2">📷</span>
+                    <p className="text-gray-600">Tap to upload photo or video</p>
+                    <p className="text-gray-400 text-sm mt-1">Max: 10MB images, 50MB videos</p>
+                  </>
+                )}
+              </label>
               {uploadError && (
-                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700 font-semibold">Upload Failed</p>
-                  <p className="text-xs text-red-600 mt-1 whitespace-pre-line">{uploadError}</p>
-                </div>
+                <p className="text-red-500 text-sm mt-2 text-center">{uploadError}</p>
               )}
             </div>
+
+            {/* Media Gallery */}
+            {mediaItems.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {mediaItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group"
+                    onClick={() => setSelectedMedia(item)}
+                  >
+                    {item.type === 'image' ? (
+                      <img
+                        src={item.url}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                        <span className="text-4xl">🎬</span>
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                      <p className="text-white text-xs truncate">{item.author}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-8">
+                No photos or videos yet. Be the first to share!
+              </p>
+            )}
           </div>
         )}
 
-        {/* Display Current Media - Only show when showMediaItems is true */}
-        {showMediaItems && mediaItems.length > 0 && (
-          <div className="bg-white rounded-lg shadow-xl p-8">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">📸 Shared Photos & Videos:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mediaItems.map((item) => (
-                <div key={item.id} className="border rounded-lg p-4 bg-gray-50">
-                  {item.message_type === 'image' ? (
-                    <img 
-                      src={item.media_url} 
-                      alt={item.media_filename}
-                      className="w-full h-48 object-cover rounded-lg mb-2"
-                    />
-                  ) : (
-                    <video 
-                      src={item.media_url} 
-                      controls
-                      className="w-full h-48 rounded-lg mb-2"
-                    />
-                  )}
-                  <div className="text-xs text-gray-600">
-                    <div className="font-semibold">{item.author}</div>
-                    <div>{new Date(item.created_at).toLocaleDateString()}</div>
-                  </div>
+        {/* Media Lightbox */}
+        {selectedMedia && (
+          <div 
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedMedia(null)}
+          >
+            <div 
+              className="max-w-4xl max-h-[90vh] relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedMedia(null)}
+                className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300"
+              >
+                ✕
+              </button>
+              
+              {selectedMedia.type === 'image' ? (
+                <img
+                  src={selectedMedia.url}
+                  alt=""
+                  className="max-w-full max-h-[80vh] rounded-lg"
+                />
+              ) : (
+                <video
+                  src={selectedMedia.url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[80vh] rounded-lg"
+                />
+              )}
+              
+              <div className="mt-4 flex items-center justify-between text-white">
+                <div>
+                  <p className="font-medium">{selectedMedia.author}</p>
+                  <p className="text-sm text-gray-400">
+                    {new Date(selectedMedia.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
-              ))}
+                {selectedMedia.author === username && (
+                  <button
+                    onClick={() => deleteMedia(selectedMedia.id)}
+                    className="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    🗑️ Delete
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* CSS Animations */}
+      <style jsx global>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
-
-
-

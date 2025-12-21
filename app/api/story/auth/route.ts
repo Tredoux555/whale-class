@@ -1,47 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { compare } from 'bcryptjs';
-import { SignJWT } from 'jose';
 import { db } from '@/lib/db';
-import { JWT_SECRET } from '@/lib/story-auth';
+import { createToken, getCurrentWeekStart } from '@/lib/story-auth';
 
 export async function POST(req: NextRequest) {
   try {
-    // Validate environment variables
-    if (!process.env.DATABASE_URL) {
-      console.error('DATABASE_URL environment variable is not set');
-      return NextResponse.json(
-        { 
-          error: 'Server configuration error',
-          details: 'DATABASE_URL environment variable is missing'
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!process.env.STORY_JWT_SECRET) {
-      console.error('STORY_JWT_SECRET environment variable is not set');
-      return NextResponse.json(
-        { 
-          error: 'Server configuration error',
-          details: 'STORY_JWT_SECRET environment variable is missing'
-        },
-        { status: 500 }
-      );
-    }
-
     const { username, password } = await req.json();
 
-    // Query database for user
-    let result;
-    try {
-      result = await db.query(
-        'SELECT * FROM story_users WHERE username = $1',
-        [username]
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: 'Username and password required' },
+        { status: 400 }
       );
-    } catch (dbError) {
-      console.error('Database query failed:', dbError);
-      throw dbError;
     }
+
+    // Query database for user
+    const result = await db.query(
+      'SELECT * FROM story_users WHERE username = $1 AND is_active = TRUE',
+      [username]
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json(
@@ -63,63 +40,65 @@ export async function POST(req: NextRequest) {
     }
 
     // Create JWT token
-    const token = await new SignJWT({ username: user.username })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('24h')
-      .sign(JWT_SECRET);
+    const token = await createToken({ username: user.username, type: 'user' });
 
-    // Log the login for admin tracking
-    try {
-      await db.query(
-        `INSERT INTO story_login_logs (username, session_id, ip_address, user_agent)
-         VALUES ($1, $2, $3, $4)`,
-        [
-          user.username,
-          token,
-          req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
-          req.headers.get('user-agent') || 'unknown'
-        ]
-      );
-    } catch (logError) {
-      console.error('Failed to log login:', logError);
-      // Don't fail the login if logging fails
-    }
+    // Get client IP
+    const forwarded = req.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+    const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    return NextResponse.json({ session: token });
+    // Log the login
+    await db.query(
+      `INSERT INTO story_login_logs (user_id, username, ip_address, user_agent, session_token)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [user.id, user.username, ip, userAgent, token]
+    );
+
+    // Create/update online session
+    await db.query(
+      `INSERT INTO story_online_sessions (user_id, username, session_token, last_seen_at, is_online)
+       VALUES ($1, $2, $3, NOW(), TRUE)
+       ON CONFLICT (session_token) 
+       DO UPDATE SET last_seen_at = NOW(), is_online = TRUE`,
+      [user.id, user.username, token]
+    );
+
+    return NextResponse.json({ 
+      session: token,
+      username: user.username,
+      displayName: user.display_name || user.username
+    });
   } catch (error) {
     console.error('Auth error:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Error details:', errorMessage);
-    
-    // Check for specific error types
-    let errorType = 'Unknown error';
-    if (errorMessage.includes('DATABASE_URL')) {
-      errorType = 'Database configuration error: DATABASE_URL not set';
-    } else if (errorMessage.includes('connection') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('timeout')) {
-      errorType = 'Database connection failed';
-    } else if (errorMessage.includes('relation') || errorMessage.includes('does not exist')) {
-      errorType = 'Database table missing: story_users table may not exist';
-    } else if (errorMessage.includes('JWT_SECRET') || errorMessage.includes('STORY_JWT_SECRET')) {
-      errorType = 'JWT secret configuration error';
-    }
-    
-    // Return more specific error for debugging
+    const message = error instanceof Error ? error.message : 'Authentication failed';
     return NextResponse.json(
-      { 
-        error: 'Authentication failed',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : errorType,
-        type: errorType
-      },
+      { error: 'Authentication failed', details: message },
       { status: 500 }
     );
   }
 }
 
-// Logout endpoint (for cleanup)
-export async function DELETE() {
-  return NextResponse.json({ success: true });
+// Logout endpoint
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      // Mark session as offline
+      await db.query(
+        `UPDATE story_online_sessions SET is_online = FALSE WHERE session_token = $1`,
+        [token]
+      );
+
+      // Update logout time in login logs
+      await db.query(
+        `UPDATE story_login_logs SET logout_at = NOW() WHERE session_token = $1`,
+        [token]
+      );
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ success: true }); // Don't fail logout
+  }
 }
-
-
-

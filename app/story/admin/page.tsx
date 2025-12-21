@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function StoryAdminLogin() {
+export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,94 +22,75 @@ export default function StoryAdminLogin() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        const { session } = await res.json();
-        sessionStorage.setItem('story_admin_session', session);
+        sessionStorage.setItem('story_admin_session', data.session);
+        sessionStorage.setItem('story_admin_username', data.username);
         router.push('/story/admin/dashboard');
       } else {
-        const errorData = await res.json().catch(() => ({}));
-        setError(errorData.error || 'Invalid credentials');
+        setError(data.error || 'Invalid credentials');
       }
     } catch (err) {
-      setError('Connection error');
+      setError('Connection error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900">
-      <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🔐</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Admin Portal
-          </h1>
-          <p className="text-gray-600">
-            Story System Administration
-          </p>
+          <span className="text-5xl">🔐</span>
+          <h1 className="text-2xl font-bold mt-4 text-gray-800">Admin Portal</h1>
+          <p className="text-gray-500 text-sm mt-1">Story Management</p>
         </div>
-
-        <form onSubmit={handleLogin} className="space-y-6">
+        
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username
-            </label>
             <input
               type="text"
+              placeholder="Admin Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
-              placeholder="Enter username"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent outline-none transition-all"
+              autoComplete="off"
+              autoFocus
               required
-              disabled={isLoading}
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
             <input
               type="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
-              placeholder="Enter password"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-transparent outline-none transition-all"
+              autoComplete="off"
               required
-              disabled={isLoading}
             />
           </div>
-
+          
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 text-red-600 text-sm text-center p-3 rounded-xl">
               {error}
             </div>
           )}
-
+          
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full bg-slate-800 text-white py-3 rounded-xl font-medium hover:bg-slate-700 disabled:bg-slate-400 transition-colors"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Authenticating...' : 'Login'}
           </button>
         </form>
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <a 
-            href="/story" 
-            className="hover:text-purple-600 transition-colors"
-          >
-            ← Back to Story
-          </a>
-        </div>
+        
+        <p className="text-center text-gray-400 text-xs mt-6">
+          Restricted access only
+        </p>
       </div>
     </div>
   );
 }
-
-
-
-
-
