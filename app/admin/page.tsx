@@ -54,6 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
     icon: '🔐',
     items: [
       { name: 'Teachers', href: '/admin/rbac-management', icon: '👩‍🏫', description: 'Roles & permissions', color: 'bg-slate-600' },
+      { name: 'Site Tester', href: '/admin/site-tester', icon: '🔍', description: 'Test site & generate reports', color: 'bg-amber-600' },
     ],
   },
 ];

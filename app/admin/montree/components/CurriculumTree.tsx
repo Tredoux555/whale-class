@@ -132,8 +132,8 @@ export default function CurriculumTree({ childId, progress, onProgressUpdate }: 
             const total = category.works.length;
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
             
-            let fillColor = STATUS_COLORS.not_started.fill;
-            let borderColor = STATUS_COLORS.not_started.border;
+            let fillColor: string = STATUS_COLORS.not_started.fill;
+            let borderColor: string = STATUS_COLORS.not_started.border;
             if (completed === total) {
               fillColor = STATUS_COLORS.completed.fill;
               borderColor = STATUS_COLORS.completed.border;

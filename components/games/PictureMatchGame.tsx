@@ -53,7 +53,8 @@ export default function PictureMatchGame({ phase }: Props) {
 
   // Play audio for option
   const playOptionAudio = (word: WordData) => {
-    GameAudio.playWord(word.word, phase === 'pink-series' ? 'pink' : phase === 'blue-series' ? 'blue' : 'green');
+    // Default to pink series if phase not specified
+    GameAudio.playWord(word.word, 'pink');
   };
 
   // Cleanup: Stop audio when component unmounts
