@@ -25,14 +25,30 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     color: 'bg-green-500 hover:bg-green-600',
   },
   
-  // Teaching Tools
+  // Material Generators
   {
     title: 'Material Generator',
-    description: 'Print learning materials',
+    description: 'Print Pink/Blue/Green series',
     href: '/admin/material-generator',
     icon: '🖨️',
     color: 'bg-pink-500 hover:bg-pink-600',
   },
+  {
+    title: '3-Part Cards',
+    description: 'Montessori card maker',
+    href: '/admin/card-generator',
+    icon: '🃏',
+    color: 'bg-purple-500 hover:bg-purple-600',
+  },
+  {
+    title: 'Song Flashcards',
+    description: 'YouTube to flashcard PDFs',
+    href: '/admin/flashcard-maker',
+    icon: '🎵',
+    color: 'bg-indigo-500 hover:bg-indigo-600',
+  },
+  
+  // Teaching Tools
   {
     title: 'Circle Time',
     description: 'Plan circle activities',
