@@ -61,22 +61,39 @@ BEGIN
 
   RAISE NOTICE 'Using primary key column: %', pk_column;
 
-  -- Add user_id column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'story_login_logs' AND column_name = 'user_id'
-  ) THEN
-    ALTER TABLE story_login_logs ADD COLUMN user_id INTEGER;
-  END IF;
+  -- Handle user_id column based on primary key type
+  IF pk_column = 'username' THEN
+    -- Username is the primary key, so we'll store username directly in user_id as TEXT
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = 'story_login_logs' AND column_name = 'user_id'
+    ) THEN
+      ALTER TABLE story_login_logs ADD COLUMN user_id TEXT;
+    END IF;
 
-  -- Populate user_id from username using dynamic column reference
-  EXECUTE format('
+    -- Populate user_id with username
     UPDATE story_login_logs log
-    SET user_id = u.%I
+    SET user_id = u.username
     FROM story_users u
-    WHERE log.username = u.username AND log.user_id IS NULL',
-    pk_column
-  );
+    WHERE log.username = u.username AND log.user_id IS NULL;
+  ELSE
+    -- Numeric primary key, add INTEGER user_id column
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = 'story_login_logs' AND column_name = 'user_id'
+    ) THEN
+      ALTER TABLE story_login_logs ADD COLUMN user_id INTEGER;
+    END IF;
+
+    -- Populate user_id using dynamic column reference
+    EXECUTE format('
+      UPDATE story_login_logs log
+      SET user_id = u.%I
+      FROM story_users u
+      WHERE log.username = u.username AND log.user_id IS NULL',
+      pk_column
+    );
+  END IF;
 
   -- Rename login_time to login_at if it exists
   IF EXISTS (

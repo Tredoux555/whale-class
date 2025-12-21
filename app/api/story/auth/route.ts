@@ -59,11 +59,12 @@ export async function POST(req: NextRequest) {
 
     // Log the login (backward compatible - try new schema first, fallback to old)
     try {
-      // Try new schema with user_id
+      // Try new schema with user_id (could be username as TEXT or numeric id)
+      const userIdValue = user.id || user.username; // Handle both cases
       await db.query(
         `INSERT INTO story_login_logs (user_id, username, ip_address, user_agent, session_token)
          VALUES ($1, $2, $3, $4, $5)`,
-        [user.id, user.username, ip, userAgent, token]
+        [userIdValue, user.username, ip, userAgent, token]
       );
     } catch (error) {
       // Fallback to old schema without user_id
@@ -81,12 +82,13 @@ export async function POST(req: NextRequest) {
 
     // Create/update online session (optional - table might not exist yet)
     try {
+      const userIdValue = user.id || user.username; // Handle both cases
       await db.query(
         `INSERT INTO story_online_sessions (user_id, username, session_token, last_seen_at, is_online)
          VALUES ($1, $2, $3, NOW(), TRUE)
-         ON CONFLICT (session_token) 
+         ON CONFLICT (session_token)
          DO UPDATE SET last_seen_at = NOW(), is_online = TRUE`,
-        [user.id, user.username, token]
+        [userIdValue, user.username, token]
       );
     } catch (error) {
       // Online sessions table might not exist yet - that's okay
