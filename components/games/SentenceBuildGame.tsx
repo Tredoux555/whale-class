@@ -51,11 +51,14 @@ export default function SentenceBuildGame() {
     setPlacedWords([]);
   }, [currentIndex, sentences]);
 
-  // Play sentence audio
-  const playAudio = () => {
+  // Play sentence audio - FIXED: Use current sentence's audioUrl directly
+  const playAudio = useCallback(() => {
     if (sentences.length === 0 || currentIndex >= sentences.length) return;
-    GameAudio.playSentence(currentIndex + 1);
-  };
+    const sentence = sentences[currentIndex];
+    if (sentence && sentence.audioUrl) {
+      GameAudio.play(sentence.audioUrl).catch(console.error);
+    }
+  }, [sentences, currentIndex]);
 
   // Cleanup: Stop audio when component unmounts
   useEffect(() => {
