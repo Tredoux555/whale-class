@@ -15,11 +15,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Update last seen
-    await db.query(
-      `UPDATE story_online_sessions SET last_seen_at = NOW(), is_online = TRUE WHERE session_token = $1`,
-      [token]
-    );
+    // Update last seen (if table exists - optional for backward compatibility)
+    try {
+      await db.query(
+        `UPDATE story_online_sessions SET last_seen_at = NOW(), is_online = TRUE WHERE session_token = $1`,
+        [token]
+      );
+    } catch (error) {
+      // Online sessions table might not exist yet - that's okay
+    }
 
     const weekStartDate = getCurrentWeekStart();
 
