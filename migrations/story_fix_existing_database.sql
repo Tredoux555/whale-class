@@ -14,14 +14,6 @@ ORDER BY table_name, ordinal_position;
 -- =====================================================
 DO $$
 BEGIN
-  -- Add id column if it doesn't exist (some schemas might not have it)
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'story_users' AND column_name = 'id'
-  ) THEN
-    ALTER TABLE story_users ADD COLUMN id SERIAL PRIMARY KEY;
-  END IF;
-
   -- Add is_active column if it doesn't exist
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
