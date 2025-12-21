@@ -943,8 +943,8 @@ const MontessoriCardGenerator = () => {
     setGenerating(false);
   };
 
-  // Crop overlay component
-  const CropOverlay = () => {
+  // Crop overlay component - using useMemo to avoid recreation
+  const CropOverlay = React.useMemo(() => {
     const card = cards.find(c => c.id === cropMode);
     if (!card) return null;
 
@@ -1082,7 +1082,7 @@ const MontessoriCardGenerator = () => {
         </div>
       </div>
     );
-  };
+  }, [cards, cropMode, cropData, cropCanvasRef, cropImageRef, handleCropStart, handleCropMove, handleCropEnd, applyCrop, setCropMode]);
 
   // Card preview component
   const CardPreview = ({ card }: { card: Card }) => (
@@ -1673,7 +1673,7 @@ const MontessoriCardGenerator = () => {
       )}
 
       {/* Crop overlay */}
-      {cropMode && <CropOverlay />}
+      {cropMode && CropOverlay}
 
       {/* Info section */}
       <div style={{

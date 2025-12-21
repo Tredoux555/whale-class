@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { CIRCLE_TIME_CURRICULUM, CircleTimePlan } from '@/lib/circle-time/curriculum-data';
+import { CIRCLE_TIME_CURRICULUM, CircleTimePlan, DayPlan } from '@/lib/circle-time/curriculum-data';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 const DAY_LABELS = {
@@ -172,7 +172,7 @@ export default function CircleTimePage() {
               </div>
 
               {(() => {
-                const dayPlan = plan[`${selectedDay}Plan` as keyof CircleTimePlan] as any;
+                const dayPlan = plan[`${selectedDay}Plan` as keyof CircleTimePlan] as DayPlan | undefined;
                 if (!dayPlan) return null;
 
                 return (
