@@ -74,6 +74,13 @@ export default function LetterTraceGame() {
     }
   };
 
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
+
   // Scale point from 0-100 to canvas size
   const scalePoint = (p: StrokePoint): StrokePoint => ({
     x: (p.x / 100) * CANVAS_SIZE,
@@ -282,7 +289,7 @@ export default function LetterTraceGame() {
     if (!strokeData) return;
     
     // Play letter sound
-    GameAudio.play(AUDIO_PATHS.getLetter(currentLetter.letter)).catch(console.error);
+    GameAudio.playLetterNow(currentLetter.letter);
     
     let currentAnimStroke = 0;
     
@@ -573,7 +580,7 @@ export default function LetterTraceGame() {
               </div>
             </div>
             <button
-              onClick={() => GameAudio.play(AUDIO_PATHS.getLetter(currentLetter.letter))}
+              onClick={() => GameAudio.playLetterNow(currentLetter.letter)}
               className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 text-xl"
             >
               🔊

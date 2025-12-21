@@ -55,8 +55,16 @@ export default function MissingLetterGame() {
   // Play word audio
   const playWordAudio = () => {
     if (words.length === 0 || currentIndex >= words.length) return;
-    GameAudio.play(words[currentIndex].audioUrl).catch(console.error);
+    const word = words[currentIndex];
+    GameAudio.playWord(word.word, phase === 'pink-series' ? 'pink' : phase === 'blue-series' ? 'blue' : 'green');
   };
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
   const handleSelect = (letter: string) => {
     if (showCorrect || showWrong) return;

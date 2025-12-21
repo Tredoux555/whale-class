@@ -53,8 +53,15 @@ export default function PictureMatchGame({ phase }: Props) {
 
   // Play audio for option
   const playOptionAudio = (word: WordData) => {
-    GameAudio.play(word.audioUrl).catch(console.error);
+    GameAudio.playWord(word.word, phase === 'pink-series' ? 'pink' : phase === 'blue-series' ? 'blue' : 'green');
   };
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
   // Handle selection
   const handleSelect = (selected: WordData) => {

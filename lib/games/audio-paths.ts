@@ -1,8 +1,7 @@
 // lib/games/audio-paths.ts
-// Central audio path configuration for all games
+// Audio system with overlap prevention
 
 export const AUDIO_PATHS = {
-  // UI Sounds
   ui: {
     correct: '/audio/ui/correct.mp3',
     wrong: '/audio/ui/wrong.mp3',
@@ -14,121 +13,254 @@ export const AUDIO_PATHS = {
     countdown: '/audio/ui/countdown.mp3',
     instructions: '/audio/ui/instructions.mp3',
   },
-  
-  // Letter sounds (a-z)
-  letters: {
-    a: '/audio/letters/a.mp3',
-    b: '/audio/letters/b.mp3',
-    c: '/audio/letters/c.mp3',
-    d: '/audio/letters/d.mp3',
-    e: '/audio/letters/e.mp3',
-    f: '/audio/letters/f.mp3',
-    g: '/audio/letters/g.mp3',
-    h: '/audio/letters/h.mp3',
-    i: '/audio/letters/i.mp3',
-    j: '/audio/letters/j.mp3',
-    k: '/audio/letters/k.mp3',
-    l: '/audio/letters/l.mp3',
-    m: '/audio/letters/m.mp3',
-    n: '/audio/letters/n.mp3',
-    o: '/audio/letters/o.mp3',
-    p: '/audio/letters/p.mp3',
-    q: '/audio/letters/q.mp3',
-    r: '/audio/letters/r.mp3',
-    s: '/audio/letters/s.mp3',
-    t: '/audio/letters/t.mp3',
-    u: '/audio/letters/u.mp3',
-    v: '/audio/letters/v.mp3',
-    w: '/audio/letters/w.mp3',
-    x: '/audio/letters/x.mp3',
-    y: '/audio/letters/y.mp3',
-    z: '/audio/letters/z.mp3',
-    celebration: '/audio/letters/celebration.mp3',
-  },
-  
-  // Helper functions
   getLetter: (letter: string) => `/audio/letters/${letter.toLowerCase()}.mp3`,
-  getWord: (word: string, series: 'pink' | 'blue' | 'green') => `/audio/words/${series}/${word.toLowerCase()}.mp3`,
+  getWord: (word: string, series: 'pink' | 'blue' | 'green' = 'pink') => 
+    `/audio/words/${series}/${word.toLowerCase()}.mp3`,
   getSightWord: (word: string) => `/audio/sight-words/${word.toLowerCase()}.mp3`,
   getSentence: (num: number) => `/audio/sentences/sentence-${num.toString().padStart(2, '0')}.mp3`,
 };
 
-// Audio player utility class
+/**
+ * GameAudio - Singleton audio manager that prevents overlapping sounds
+ * 
+ * Key features:
+ * - Only one sound plays at a time (stops previous before playing new)
+ * - Preloads frequently used sounds
+ * - Provides both fire-and-forget and await-able play methods
+ */
 export class GameAudio {
+  // Single active audio element - ensures no overlap
+  private static currentAudio: HTMLAudioElement | null = null;
+  
+  // Cache for preloaded audio elements
   private static audioCache: Map<string, HTMLAudioElement> = new Map();
+  
+  // Track if we're currently playing
+  private static isPlaying: boolean = false;
+  
+  // Celebration toggle for variety
   private static celebrationToggle: boolean = false;
   
+  // Queue for sequential sounds
+  private static audioQueue: string[] = [];
+  private static isProcessingQueue: boolean = false;
+
+  /**
+   * Stop any currently playing audio immediately
+   */
+  static stop(): void {
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio.onended = null;
+      this.currentAudio.onerror = null;
+    }
+    this.isPlaying = false;
+    this.audioQueue = [];
+    this.isProcessingQueue = false;
+  }
+
+  /**
+   * Preload an audio file into cache
+   */
+  static preload(path: string): void {
+    if (typeof window === 'undefined') return;
+    if (this.audioCache.has(path)) return;
+    
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.src = path;
+    this.audioCache.set(path, audio);
+  }
+
+  /**
+   * Preload common UI sounds
+   */
+  static preloadCommon(): void {
+    // Preload UI sounds
+    Object.values(AUDIO_PATHS.ui).forEach(path => this.preload(path));
+    
+    // Preload first few letters
+    ['a', 'b', 'c', 'd', 'e', 's', 'a', 't', 'p', 'i', 'n'].forEach(letter => {
+      this.preload(AUDIO_PATHS.getLetter(letter));
+    });
+  }
+
+  /**
+   * Play audio - stops any current audio first
+   * Returns a promise that resolves when audio finishes
+   */
   static play(path: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (typeof window === 'undefined') {
+        resolve();
+        return;
+      }
+
+      // Stop any currently playing audio
+      this.stop();
+
       try {
+        // Try to get from cache first
         let audio = this.audioCache.get(path);
-        if (!audio) {
+        
+        if (audio) {
+          // Clone the cached audio so we can play it fresh
+          audio = audio.cloneNode(true) as HTMLAudioElement;
+        } else {
+          // Create new audio element
           audio = new Audio(path);
-          this.audioCache.set(path, audio);
         }
-        audio.currentTime = 0;
-        audio.onended = () => resolve();
-        audio.onerror = () => reject(new Error(`Failed to play: ${path}`));
-        audio.play().catch(reject);
+
+        this.currentAudio = audio;
+        this.isPlaying = true;
+
+        audio.onended = () => {
+          this.isPlaying = false;
+          this.currentAudio = null;
+          resolve();
+        };
+
+        audio.onerror = (e) => {
+          console.warn(`Audio failed to play: ${path}`, e);
+          this.isPlaying = false;
+          this.currentAudio = null;
+          // Resolve instead of reject to prevent game interruption
+          resolve();
+        };
+
+        // Play with user interaction handling
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            // Auto-play was prevented (common on mobile)
+            console.warn('Audio play prevented:', error);
+            this.isPlaying = false;
+            this.currentAudio = null;
+            resolve();
+          });
+        }
       } catch (e) {
-        reject(e);
+        console.warn('Audio error:', e);
+        this.isPlaying = false;
+        resolve();
       }
     });
   }
-  
+
+  /**
+   * Play audio without waiting for it to finish
+   * Still stops any previous audio
+   */
+  static playNow(path: string): void {
+    this.play(path).catch(console.error);
+  }
+
+  /**
+   * Play a sequence of sounds one after another
+   */
+  static async playSequence(paths: string[], delayBetween: number = 200): Promise<void> {
+    for (let i = 0; i < paths.length; i++) {
+      await this.play(paths[i]);
+      if (i < paths.length - 1 && delayBetween > 0) {
+        await new Promise(r => setTimeout(r, delayBetween));
+      }
+    }
+  }
+
+  /**
+   * Play letter sound
+   */
   static playLetter(letter: string): Promise<void> {
     return this.play(AUDIO_PATHS.getLetter(letter));
   }
-  
-  static playWord(word: string, series: 'pink' | 'blue' | 'green'): Promise<void> {
+
+  /**
+   * Play letter sound (fire and forget)
+   */
+  static playLetterNow(letter: string): void {
+    this.playNow(AUDIO_PATHS.getLetter(letter));
+  }
+
+  /**
+   * Play word sound
+   */
+  static playWord(word: string, series: 'pink' | 'blue' | 'green' = 'pink'): Promise<void> {
     return this.play(AUDIO_PATHS.getWord(word, series));
   }
-  
+
+  /**
+   * Play sight word sound
+   */
   static playSightWord(word: string): Promise<void> {
     return this.play(AUDIO_PATHS.getSightWord(word));
   }
-  
+
+  /**
+   * Play sentence sound
+   */
   static playSentence(num: number): Promise<void> {
     return this.play(AUDIO_PATHS.getSentence(num));
   }
-  
-  static playUI(sound: keyof typeof AUDIO_PATHS.ui): Promise<void> {
-    return this.play(AUDIO_PATHS.ui[sound]);
-  }
-  
+
+  /**
+   * Play correct answer sound
+   */
   static playCorrect(): Promise<void> {
     return this.play(AUDIO_PATHS.ui.correct);
   }
-  
+
+  /**
+   * Play wrong answer sound
+   */
   static playWrong(): Promise<void> {
     return this.play(AUDIO_PATHS.ui.wrong);
   }
-  
-  // Alternates between celebration and complete sounds
+
+  /**
+   * Play celebration - alternates between celebration and complete sounds
+   */
   static playCelebration(): Promise<void> {
     this.celebrationToggle = !this.celebrationToggle;
-    if (this.celebrationToggle) {
-      return this.play(AUDIO_PATHS.ui.celebration);
-    } else {
-      return this.play(AUDIO_PATHS.ui.complete);
-    }
+    return this.play(
+      this.celebrationToggle ? AUDIO_PATHS.ui.celebration : AUDIO_PATHS.ui.complete
+    );
   }
-  
-  // Play only celebration (for big wins like completing a group)
+
+  /**
+   * Play big celebration (always uses celebration sound)
+   */
   static playBigCelebration(): Promise<void> {
     return this.play(AUDIO_PATHS.ui.celebration);
   }
-  
-  // Preload audio files for smoother playback
-  static preload(paths: string[]): void {
-    paths.forEach(path => {
-      if (!this.audioCache.has(path)) {
-        const audio = new Audio();
-        audio.preload = 'auto';
-        audio.src = path;
-        this.audioCache.set(path, audio);
-      }
-    });
+
+  /**
+   * Play unlock sound
+   */
+  static playUnlock(): Promise<void> {
+    return this.play(AUDIO_PATHS.ui.unlock);
+  }
+
+  /**
+   * Play any UI sound
+   */
+  static playUI(sound: keyof typeof AUDIO_PATHS.ui): Promise<void> {
+    return this.play(AUDIO_PATHS.ui[sound]);
+  }
+
+  /**
+   * Check if currently playing
+   */
+  static get playing(): boolean {
+    return this.isPlaying;
   }
 }
 
+// Auto-preload common sounds when module loads (client-side only)
+if (typeof window !== 'undefined') {
+  // Delay preload slightly to not block initial render
+  setTimeout(() => {
+    GameAudio.preloadCommon();
+  }, 1000);
+}

@@ -81,8 +81,15 @@ export default function WordBuildingGame({ phase, level }: Props) {
   const playWordAudio = useCallback(() => {
     if (words.length === 0 || currentIndex >= words.length) return;
     const word = words[currentIndex];
-    GameAudio.play(word.audioUrl).catch(console.error);
-  }, [currentIndex, words]);
+    GameAudio.playWord(word.word, selectedLevel?.series || 'pink');
+  }, [currentIndex, words, selectedLevel]);
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
   // Auto-play on new word
   useEffect(() => {

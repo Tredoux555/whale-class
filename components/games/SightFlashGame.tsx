@@ -69,8 +69,16 @@ export default function SightFlashGame() {
   // Play audio
   const playAudio = () => {
     if (words.length === 0 || currentIndex >= words.length) return;
-    GameAudio.play(words[currentIndex].audioUrl).catch(console.error);
+    const word = words[currentIndex];
+    GameAudio.playSightWord(word.word);
   };
+
+  // Cleanup: Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      GameAudio.stop();
+    };
+  }, []);
 
   const handleSelect = (selected: string) => {
     if (showCorrect || showWrong || showWord) return;
