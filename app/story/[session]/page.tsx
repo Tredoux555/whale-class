@@ -141,7 +141,16 @@ export default function StoryViewer() {
         body: formData
       });
 
-      const responseData = await res.json();
+      let responseData;
+      try {
+        responseData = await res.json();
+      } catch (jsonError) {
+        // If response is not JSON, it might be HTML or plain text
+        const text = await res.text();
+        setUploadError(`Server error (${res.status}): ${text.substring(0, 200)}`);
+        console.error('Upload error - non-JSON response:', text);
+        return;
+      }
 
       if (res.ok) {
         // Reload media

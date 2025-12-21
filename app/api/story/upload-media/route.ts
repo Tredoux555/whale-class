@@ -7,16 +7,27 @@ import { createClient } from '@supabase/supabase-js';
 // Increase timeout for large file uploads
 export const maxDuration = 60;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Helper function to get Supabase client (with validation)
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is not set');
+  }
+
+  if (!supabaseKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is not set');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 // Helper function to detect file type from extension (for mobile compatibility)
 function detectFileType(file: File): 'image' | 'video' {
   const extension = file.name.split('.').pop()?.toLowerCase();
   const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
-  const videoExtensions = ['mp4', 'webm', 'mov', 'quicktime'];
+  const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'quicktime'];
   
   if (extension && imageExtensions.includes(extension)) {
     return 'image';
@@ -41,8 +52,36 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Validate environment variables first
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('NEXT_PUBLIC_SUPABASE_URL environment variable is not set');
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          details: 'NEXT_PUBLIC_SUPABASE_URL environment variable is missing',
+          hint: 'Please set NEXT_PUBLIC_SUPABASE_URL in your environment variables'
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY environment variable is not set');
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          details: 'SUPABASE_SERVICE_ROLE_KEY environment variable is missing',
+          hint: 'Please set SUPABASE_SERVICE_ROLE_KEY in your environment variables'
+        },
+        { status: 500 }
+      );
+    }
+
     const token = authHeader.replace('Bearer ', '');
     const { payload } = await jwtVerify(token, JWT_SECRET);
+
+    // Get Supabase client
+    const supabase = getSupabaseClient();
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
@@ -107,7 +146,7 @@ export async function POST(req: NextRequest) {
     if (messageType === 'video' && !isValidVideo) {
       return NextResponse.json(
         { 
-          error: `Invalid video type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: MP4, WebM, MOV.`,
+          error: `Invalid video type. File type: ${file.type || 'unknown'}, Extension: ${fileExtension || 'none'}. Supported: MP4, WebM, MOV, AVI, MKV, M4V.`,
           fileType: file.type,
           fileName: file.name
         },
@@ -135,29 +174,52 @@ export async function POST(req: NextRequest) {
 
     // Upload to Supabase Storage
     const fileExt = file.name.split('.').pop();
-    const fileName = `story-media/${weekStartDate}/${Date.now()}-${author}.${fileExt}`;
+    if (!fileExt) {
+      return NextResponse.json(
+        { error: 'File must have an extension' },
+        { status: 400 }
+      );
+    }
+
+    const fileName = `story-media/${weekStartDate}/${Date.now()}-${author.replace(/[^a-zA-Z0-9]/g, '_')}.${fileExt}`;
     
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Ensure content type is set (fallback to application/octet-stream if missing)
+    const contentType = file.type || (messageType === 'image' ? 'image/jpeg' : 'video/mp4');
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('story-uploads')
       .upload(fileName, buffer, {
-        contentType: file.type,
-        upsert: false
+        contentType: contentType,
+        upsert: false,
+        cacheControl: '3600'
       });
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
       const errorMessage = uploadError.message || 'Unknown error';
+      const errorCode = (uploadError as any).statusCode || (uploadError as any).status || 'UNKNOWN';
+      
+      // Provide helpful hints based on error type
+      let hint = undefined;
+      if (errorMessage.includes('bucket') || errorMessage.includes('not found') || errorCode === 404) {
+        hint = 'Storage bucket "story-uploads" may not exist. Create it in Supabase Storage settings and ensure it is public.';
+      } else if (errorMessage.includes('permission') || errorMessage.includes('policy') || errorCode === 403) {
+        hint = 'Storage bucket policies may not be configured correctly. Check that INSERT policies are set for the "story-uploads" bucket.';
+      } else if (errorMessage.includes('size') || errorCode === 413) {
+        hint = 'File size exceeds limits. Images: 50MB max, Videos: 100MB max.';
+      } else if (errorCode === 401 || errorMessage.includes('unauthorized')) {
+        hint = 'Authentication failed. Check that SUPABASE_SERVICE_ROLE_KEY is set correctly.';
+      }
+
       return NextResponse.json(
         { 
           error: 'Failed to upload file',
           details: errorMessage,
-          code: (uploadError as any).statusCode || (uploadError as any).status || 'UNKNOWN',
-          hint: errorMessage.includes('bucket') || errorMessage.includes('not found')
-            ? 'Storage bucket "story-uploads" may not exist. Create it in Supabase Storage settings.'
-            : undefined
+          code: errorCode,
+          hint: hint
         },
         { status: 500 }
       );
