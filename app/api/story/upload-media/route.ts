@@ -3,6 +3,7 @@ import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { JWT_SECRET } from '@/lib/story-auth';
 import { createClient } from '@supabase/supabase-js';
+import { getWeekStartDate, getExpirationDate, sanitizeInput } from '@/lib/story-utils';
 
 // Increase timeout for large file uploads
 export const maxDuration = 60;
@@ -164,13 +165,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get current week's Monday
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-    const weekStartDate = monday.toISOString().split('T')[0];
+    const weekStartDate = getWeekStartDate();
 
     // Upload to Supabase Storage
     const fileExt = file.name.split('.').pop();
@@ -231,14 +226,14 @@ export async function POST(req: NextRequest) {
       .getPublicUrl(fileName);
 
     // Save to message history
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const expiresAt = getExpirationDate();
+    const sanitizedAuthor = sanitizeInput(author);
 
     await db.query(
       `INSERT INTO story_message_history 
        (week_start_date, message_type, media_url, media_filename, author, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [weekStartDate, messageType, publicUrl, file.name, author, expiresAt]
+      [weekStartDate, messageType, publicUrl, file.name, sanitizedAuthor, expiresAt]
     );
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { db } from '@/lib/db';
 import { JWT_SECRET } from '@/lib/story-auth';
+import { getWeekStartDate } from '@/lib/story-utils';
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -15,14 +16,7 @@ export async function GET(req: NextRequest) {
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
     // Get current week's Monday
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Handle Sunday
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diff);
-    monday.setHours(0, 0, 0, 0);
-
-    const weekStartDate = monday.toISOString().split('T')[0];
+    const weekStartDate = getWeekStartDate();
 
     // Check if story exists for this week
     let story = await db.query(
@@ -92,7 +86,9 @@ async function generateWeeklyStory() {
       }
     } catch (err) {
       // If curriculum_weeks table doesn't exist or query fails, use default
-      console.log('Using default theme');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Using default theme');
+      }
     }
 
     // Call Claude API to generate story

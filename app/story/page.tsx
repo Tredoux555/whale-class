@@ -22,16 +22,12 @@ export default function StoryLogin() {
         setIsLoading(false);
         return;
       }
-
-      console.log('Attempting login for user:', username); // Debug log
       
       const res = await fetch('/api/story/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
       });
-
-      console.log('Login response status:', res.status); // Debug log
 
       if (res.ok) {
         const data = await res.json();
