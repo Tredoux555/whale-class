@@ -19,11 +19,11 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Get login logs
+    // Get login logs (handle both login_time and login_at columns)
     const result = await query<LoginLog>(
-      `SELECT id, username, login_time, session_id, ip_address, user_agent
+      `SELECT id, username, COALESCE(login_at, login_time) as login_time, session_id, ip_address, user_agent
        FROM story_login_logs
-       ORDER BY login_time DESC
+       ORDER BY COALESCE(login_at, login_time) DESC
        LIMIT $1 OFFSET $2`,
       [limit, offset]
     );
