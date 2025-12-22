@@ -26,6 +26,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if required tables exist
+    try {
+      const tablesCheck = await query(`
+        SELECT table_name FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name IN ('story_users', 'story_message_history', 'secret_stories')
+      `);
+      const existingTables = tablesCheck.rows.map(r => r.table_name);
+      console.log('Existing tables:', existingTables);
+
+      if (!existingTables.includes('story_users')) {
+        return NextResponse.json({ error: 'Database not set up: story_users table missing' }, { status: 500 });
+      }
+      if (!existingTables.includes('story_message_history')) {
+        return NextResponse.json({ error: 'Database not set up: story_message_history table missing' }, { status: 500 });
+      }
+      if (!existingTables.includes('secret_stories')) {
+        return NextResponse.json({ error: 'Database not set up: secret_stories table missing' }, { status: 500 });
+      }
+    } catch (tableError) {
+      console.error('Table check failed:', tableError);
+      return NextResponse.json({ error: 'Database setup check failed' }, { status: 500 });
+    }
+
     const token = extractToken(req.headers.get('authorization'));
 
     if (!token) {
