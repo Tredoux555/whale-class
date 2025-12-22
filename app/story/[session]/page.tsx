@@ -182,6 +182,8 @@ export default function StoryViewer() {
         setIsEditing(false);
         setMessageInput('');
         await loadStory();
+        // Add a small delay and reload again to ensure message appears
+        setTimeout(() => loadStory(), 300);
       }
     } catch (err) {
       console.error('Error saving message:', err);
@@ -346,10 +348,10 @@ export default function StoryViewer() {
       <div className="max-w-3xl mx-auto">
         {/* Story Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-amber-100">
-          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
+          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800">
             {story.title}
           </h1>
-          <div className="prose prose-lg max-w-none font-serif">
+          <div className="prose prose-lg max-w-none">
             {story.paragraphs.map((paragraph, index) => (
               <div key={index}>
                 {renderParagraph(paragraph, index)}
@@ -367,7 +369,7 @@ export default function StoryViewer() {
         {showMediaSection && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-amber-100 animate-fade-in">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-serif text-gray-700">Story Memories</h2>
+              <h2 className="text-xl text-gray-700">Story Memories</h2>
               <button
                 onClick={() => setShowMediaSection(false)}
                 className="text-gray-300 hover:text-gray-500 transition-colors"
@@ -439,7 +441,7 @@ export default function StoryViewer() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-300 py-6 font-serif italic">
+              <p className="text-center text-gray-300 py-6 italic">
                 No memories yet
               </p>
             )}
