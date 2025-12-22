@@ -39,7 +39,7 @@ export default function StoryLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 font-serif">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm border border-amber-100">
         <div className="text-center mb-8">
           <span className="text-5xl">📖</span>
