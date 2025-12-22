@@ -93,8 +93,13 @@ body {
 
 /* Site Makeover Utility Classes */
 /* Base styles matching admin dashboard */
-body {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+/* Force Comic Sans across entire platform */
+*, *::before, *::after {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+}
+
+body, html {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
   background-color: #f8fafc;
   color: #1e293b;
 }
@@ -126,7 +131,7 @@ body {
 /* Smooth page transitions */
 .page-container {
   @apply min-h-screen bg-slate-50 p-4 md:p-6;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
 }
 
 /* Loading skeleton */
