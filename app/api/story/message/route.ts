@@ -200,7 +200,7 @@ export async function POST(req: NextRequest) {
     let storyCheck;
     try {
       storyCheck = await dbQuery(
-        'SELECT id FROM secret_stories WHERE week_start_date = $1',
+        'SELECT week_start_date FROM secret_stories WHERE week_start_date = $1',
         [weekStart]
       );
       console.log('[Message] Story check result:', storyCheck.rows.length > 0 ? 'exists' : 'new');
