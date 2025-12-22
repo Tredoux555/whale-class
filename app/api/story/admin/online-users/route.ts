@@ -1,51 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { verifyToken, extractToken } from '@/lib/story-auth';
+import { query } from '@/lib/story/db';
+import { extractToken, verifyAdminToken } from '@/lib/story/auth';
+
+interface OnlineUserRow {
+  username: string;
+  last_login: string;
+  seconds_ago: number;
+}
+
+const ONLINE_THRESHOLD_MINUTES = 10;
 
 export async function GET(req: NextRequest) {
-  const token = extractToken(req.headers.get('authorization'));
-  
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
-    const payload = await verifyToken(token);
+    // Verify admin
+    const token = extractToken(req.headers.get('authorization'));
     
-    if (!payload || payload.type !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // First, mark stale sessions as offline (no activity in 5 minutes)
-    await db.query(
-      `UPDATE story_online_sessions 
-       SET is_online = FALSE 
-       WHERE last_seen_at < NOW() - INTERVAL '5 minutes' AND is_online = TRUE`
+    await verifyAdminToken(token);
+
+    // Get users who logged in within threshold
+    const result = await query<OnlineUserRow>(
+      `SELECT 
+        username, 
+        MAX(login_time) as last_login,
+        EXTRACT(EPOCH FROM (NOW() - MAX(login_time)))::integer as seconds_ago
+       FROM story_login_logs
+       WHERE login_time > NOW() - INTERVAL '${ONLINE_THRESHOLD_MINUTES} minutes'
+       GROUP BY username
+       ORDER BY last_login DESC`
     );
 
-    // Get online users
-    const onlineResult = await db.query(
-      `SELECT username, last_seen_at, created_at as session_started
-       FROM story_online_sessions 
-       WHERE is_online = TRUE
-       ORDER BY last_seen_at DESC`
+    // Get total user count
+    const totalResult = await query<{ count: string }>(
+      'SELECT COUNT(DISTINCT username) as count FROM story_users'
     );
-
-    // Get total registered users
-    const totalResult = await db.query(
-      `SELECT COUNT(*) as count FROM story_users WHERE is_active = TRUE`
-    );
+    const totalUsers = parseInt(totalResult.rows[0]?.count || '0');
 
     return NextResponse.json({
-      onlineUsers: onlineResult.rows,
-      onlineCount: onlineResult.rows.length,
-      totalUsers: parseInt(totalResult.rows[0].count)
+      onlineUsers: result.rows.map(row => ({
+        username: row.username,
+        lastLogin: row.last_login,
+        secondsAgo: row.seconds_ago
+      })),
+      onlineCount: result.rows.length,
+      totalUsers,
+      thresholdMinutes: ONLINE_THRESHOLD_MINUTES
     });
   } catch (error) {
     console.error('Online users error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch online users' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }

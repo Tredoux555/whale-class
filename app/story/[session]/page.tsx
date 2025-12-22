@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 interface Story {
@@ -8,87 +8,49 @@ interface Story {
   paragraphs: string[];
   hiddenMessage: string | null;
   messageAuthor: string | null;
-  adminMessage: string | null;
 }
 
 interface MediaItem {
   id: number;
-  author: string;
   type: 'image' | 'video';
   url: string;
-  filename: string;
-  mimeType: string;
-  thumbnailUrl: string | null;
-  createdAt: string;
-  isFromAdmin: boolean;
+  filename: string | null;
+  author: string;
+  created_at: string;
 }
 
 export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
-  const session = params.session as string;
-
-  // Story state
+  
+  // Core state
   const [story, setStory] = useState<Story | null>(null);
   const [username, setUsername] = useState('');
-
+  
   // Interaction state
   const [isDecoded, setIsDecoded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [messageInput, setMessageInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
+  
   // Media state
-  const [showMediaSection, setShowMediaSection] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [showMediaSection, setShowMediaSection] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-
+  
   // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const lastParagraphRef = useRef<HTMLParagraphElement>(null);
 
-  // Heartbeat to keep session alive
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('/api/story/current', {
-        headers: { 'Authorization': `Bearer ${session}` }
-      }).catch(() => {});
-    }, 60000); // Every minute
+  const getSession = useCallback(() => {
+    return sessionStorage.getItem('story_session');
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [session]);
+  const loadStory = useCallback(async () => {
+    const session = getSession();
+    if (!session) return;
 
-  // Initial load
-  useEffect(() => {
-    const storedSession = sessionStorage.getItem('story_session');
-    if (!storedSession || storedSession !== session) {
-      router.push('/story');
-      return;
-    }
-
-    const storedUsername = sessionStorage.getItem('story_username');
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-
-    loadStory();
-    loadMedia();
-
-    const handleUnload = () => {
-      sessionStorage.removeItem('story_session');
-      sessionStorage.removeItem('story_username');
-      navigator.sendBeacon('/api/story/auth', JSON.stringify({ action: 'logout' }));
-    };
-
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [session, router]);
-
-  const loadStory = async () => {
     try {
       const res = await fetch('/api/story/current', {
         headers: { 'Authorization': `Bearer ${session}` }
@@ -101,19 +63,17 @@ export default function StoryViewer() {
       }
 
       const data = await res.json();
-      console.log('Loaded story data:', data.story);
       setStory(data.story);
-      if (data.username) {
-        setUsername(data.username);
-        sessionStorage.setItem('story_username', data.username);
-      }
-    } catch (err) {
-      console.error('Error loading story:', err);
+      setUsername(data.username);
+    } catch {
       router.push('/story');
     }
-  };
+  }, [router, getSession]);
 
-  const loadMedia = async () => {
+  const loadMedia = useCallback(async () => {
+    const session = getSession();
+    if (!session) return;
+
     try {
       const res = await fetch('/api/story/current-media', {
         headers: { 'Authorization': `Bearer ${session}` }
@@ -123,16 +83,38 @@ export default function StoryViewer() {
         const data = await res.json();
         setMediaItems(data.media || []);
       }
-    } catch (err) {
-      console.error('Error loading media:', err);
+    } catch {
+      // Non-critical, ignore
     }
-  };
+  }, [getSession]);
+
+  useEffect(() => {
+    const session = getSession();
+    if (!session || session !== params.session) {
+      router.push('/story');
+      return;
+    }
+
+    loadStory();
+    loadMedia();
+    
+    // Auto-logout on window close
+    const handleUnload = () => {
+      sessionStorage.removeItem('story_session');
+      fetch('/api/story/auth', { method: 'DELETE' }).catch(() => {});
+    };
+    
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [params.session, router, loadStory, loadMedia, getSession]);
 
   // Handle letter clicks
-  const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number, isLastLetter: boolean) => {
-    // First paragraph: 't' toggles decode, 'c' opens editor
+  const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number) => {
+    if (!story) return;
+
+    // First paragraph: 't' and 'c' interactions
     if (paragraphIndex === 0) {
-      const firstParagraph = story?.paragraphs[0] || '';
+      const firstParagraph = story.paragraphs[0] || '';
       const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
       const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
 
@@ -151,15 +133,16 @@ export default function StoryViewer() {
       }
     }
 
-    // Last paragraph, last letter: toggle media section
-    if (paragraphIndex === (story?.paragraphs.length || 0) - 1 && isLastLetter) {
-      setShowMediaSection(!showMediaSection);
-      setIsDecoded(false);
-      setIsEditing(false);
-      if (!showMediaSection) {
-        setTimeout(() => {
-          lastParagraphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+    // Last paragraph, last letter: media toggle
+    const lastParagraphIndex = story.paragraphs.length - 1;
+    if (paragraphIndex === lastParagraphIndex) {
+      const lastParagraph = story.paragraphs[lastParagraphIndex] || '';
+      const lastCharIndex = lastParagraph.length - 1;
+      
+      if (charIndex === lastCharIndex) {
+        setShowMediaSection(!showMediaSection);
+        setIsDecoded(false);
+        setIsEditing(false);
       }
     }
   };
@@ -167,10 +150,10 @@ export default function StoryViewer() {
   // Save text message
   const saveMessage = async () => {
     if (!messageInput.trim()) return;
-
-    console.log('Saving message:', messageInput.trim());
+    
     setIsSaving(true);
     try {
+      const session = getSession();
       const res = await fetch('/api/story/message', {
         method: 'POST',
         headers: {
@@ -180,40 +163,31 @@ export default function StoryViewer() {
         body: JSON.stringify({ message: messageInput.trim(), author: username })
       });
 
-      console.log('Save response:', res.status, res.ok);
-
       if (res.ok) {
-        console.log('Message saved successfully');
         setIsEditing(false);
         setMessageInput('');
         await loadStory();
-        // Add a small delay and reload again to ensure message appears
-        setTimeout(() => loadStory(), 300);
-      } else {
-        const errorData = await res.json();
-        console.error('Save failed:', errorData);
       }
-    } catch (err) {
-      console.error('Error saving message:', err);
+    } catch {
+      // Handle silently
     } finally {
       setIsSaving(false);
     }
   };
 
   // Handle file upload
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadError('');
     setIsUploadingMedia(true);
-    setUploadProgress(0);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('author', username);
+    setUploadError('');
 
     try {
+      const session = getSession();
+      const formData = new FormData();
+      formData.append('file', file);
+
       const res = await fetch('/api/story/upload-media', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session}` },
@@ -224,303 +198,227 @@ export default function StoryViewer() {
 
       if (res.ok) {
         await loadMedia();
-        setUploadProgress(100);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
         setUploadError(data.error || 'Upload failed');
       }
-    } catch (err) {
+    } catch {
       setUploadError('Upload failed. Please try again.');
     } finally {
       setIsUploadingMedia(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
-  // Delete media
-  const deleteMedia = async (mediaId: number) => {
-    if (!confirm('Remove this memory?')) return;
-
-    try {
-      const res = await fetch(`/api/story/upload-media?id=${mediaId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${session}` }
-      });
-
-      if (res.ok) {
-        await loadMedia();
-        setSelectedMedia(null);
-      }
-    } catch (err) {
-      console.error('Delete failed:', err);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveMessage();
     }
   };
 
   // Render paragraph with interactive letters
   const renderParagraph = (text: string, index: number) => {
+    if (!story) return null;
+
     const isFirstParagraph = index === 0;
-    const isLastParagraph = index === (story?.paragraphs.length || 0) - 1;
+    const isLastParagraph = index === story.paragraphs.length - 1;
     const isThirdParagraph = index === 2;
 
-    let tFound = false;
-    let cFound = false;
-
-    return (
-      <p
-        ref={isThirdParagraph ? paragraph3Ref : (isLastParagraph ? lastParagraphRef : null)}
-        className="mb-6 leading-relaxed text-lg text-gray-700"
-      >
-        {text.split('').map((char, i) => {
-          const lowerChar = char.toLowerCase();
-          const isLastChar = i === text.length - 1;
-
-          let isClickable = false;
-          if (isFirstParagraph) {
+    // First paragraph - make first 't' and 'c' clickable
+    if (isFirstParagraph) {
+      let tFound = false;
+      let cFound = false;
+      
+      return (
+        <p className="mb-6 leading-relaxed text-lg">
+          {text.split('').map((char, i) => {
+            const lowerChar = char.toLowerCase();
             const isFirstT = lowerChar === 't' && !tFound;
             const isFirstC = lowerChar === 'c' && !cFound;
+            
             if (isFirstT) tFound = true;
             if (isFirstC) cFound = true;
-            isClickable = isFirstT || isFirstC;
-          }
-
-          if (isLastParagraph && isLastChar) {
-            isClickable = true;
-          }
-
-          return (
-            <span
-              key={i}
-              onClick={() => isClickable && handleLetterClick(char, i, index, isLastChar)}
-              className={isClickable ? 'cursor-pointer hover:text-amber-700 transition-colors' : ''}
-            >
-              {char}
-            </span>
-          );
-        })}
-
-        {/* Third paragraph: show note or editor - styled to blend in naturally */}
-        {isThirdParagraph && (
-          <>
-            {(() => {
-              if (isDecoded && (story?.hiddenMessage || story?.adminMessage)) {
-                console.log('Displaying message:', { hiddenMessage: story?.hiddenMessage, adminMessage: story?.adminMessage });
-                return (
-                  <span className="ml-1 text-gray-600 italic">
-                    {story?.adminMessage || story?.hiddenMessage}
-                  </span>
-                );
-              }
-              return null;
-            })()}
-            {isEditing && (
-              <span className="inline-flex items-center gap-2 ml-2 align-middle">
-                <input
-                  type="text"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && saveMessage()}
-                  className="border-b border-gray-300 outline-none px-2 py-1 bg-transparent min-w-[200px] focus:border-gray-500 text-gray-600"
-                  autoFocus
-                  placeholder="Add a note..."
-                  disabled={isSaving}
-                />
-                <button
-                  onClick={saveMessage}
-                  disabled={isSaving || !messageInput.trim()}
-                  className="text-sm bg-amber-100 text-amber-800 px-3 py-1 rounded hover:bg-amber-200 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
-                >
-                  {isSaving ? '...' : '✓'}
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  ✕
-                </button>
+            
+            const isClickable = isFirstT || isFirstC;
+            
+            return (
+              <span
+                key={i}
+                onClick={() => isClickable && handleLetterClick(char, i, index)}
+                className={isClickable ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+              >
+                {char}
               </span>
-            )}
-          </>
-        )}
+            );
+          })}
+        </p>
+      );
+    }
+
+    // Third paragraph - show hidden message or editor
+    if (isThirdParagraph) {
+      const displayText = isDecoded && story.hiddenMessage
+        ? text + ' ' + story.hiddenMessage
+        : text;
+
+      return (
+        <p ref={paragraph3Ref} className="mb-6 leading-relaxed text-lg">
+          {displayText}
+          {isEditing && (
+            <span className="inline-block ml-2 align-middle">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="border-b-2 border-gray-400 outline-none px-2 py-1 bg-transparent animate-pulse min-w-[200px]"
+                autoFocus
+                placeholder="Type message..."
+                disabled={isSaving}
+              />
+              <button
+                onClick={saveMessage}
+                disabled={isSaving || !messageInput.trim()}
+                className="ml-3 text-sm bg-indigo-500 text-white px-4 py-1 rounded hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSaving ? '⏳' : '💾'} Save
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="ml-2 text-sm bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </span>
+          )}
+        </p>
+      );
+    }
+
+    // Last paragraph - make last letter clickable
+    if (isLastParagraph) {
+      const lastIndex = text.length - 1;
+      
+      return (
+        <p className="mb-6 leading-relaxed text-lg">
+          {text.split('').map((char, i) => {
+            const isLastChar = i === lastIndex;
+            
+            return (
+              <span
+                key={i}
+                onClick={() => isLastChar && handleLetterClick(char, i, index)}
+                className={isLastChar ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+              >
+                {char}
+              </span>
+            );
+          })}
+        </p>
+      );
+    }
+
+    // Regular paragraph
+    return (
+      <p className="mb-6 leading-relaxed text-lg">
+        {text}
       </p>
     );
   };
 
+  // Loading state
   if (!story) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
-        <div className="flex items-center gap-3 text-lg text-gray-500">
-          <span className="animate-pulse">📖</span>
-          Opening story...
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
+        <div className="text-lg text-gray-600">Loading story...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 p-4 md:p-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Story Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-amber-100">
-          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800">
-            {story.title}
-          </h1>
-          <div className="prose prose-lg max-w-none">
-            {story.paragraphs.map((paragraph, index) => (
-              <div key={index}>
-                {renderParagraph(paragraph, index)}
-              </div>
-            ))}
-          </div>
-
-          {/* Subtle footer decoration */}
-          <div className="mt-8 text-center text-amber-300 text-2xl">
-            ✦ ✦ ✦
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-xl p-12">
+        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
+          {story.title}
+        </h1>
+        
+        <div className="prose prose-lg max-w-none">
+          {story.paragraphs.map((paragraph, index) => (
+            <div key={index}>
+              {renderParagraph(paragraph, index)}
+            </div>
+          ))}
         </div>
 
-        {/* Media Section - styled as "Story Memories" */}
+        {/* Media Section */}
         {showMediaSection && (
-          <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-amber-100 animate-fade-in">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl text-gray-700">Story Memories</h2>
-              <button
-                onClick={() => setShowMediaSection(false)}
-                className="text-gray-300 hover:text-gray-500 transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Upload Area */}
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            {/* Upload Section */}
             <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3 text-gray-700">Share a photo or video</h3>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,video/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="media-upload"
+                onChange={handleFileUpload}
+                disabled={isUploadingMedia}
+                className="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100
+                  disabled:opacity-50"
               />
-              <label
-                htmlFor="media-upload"
-                className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
-                  ${isUploadingMedia ? 'border-amber-200 bg-amber-50' : 'border-gray-200 hover:border-amber-300 hover:bg-amber-50'}`}
-              >
-                {isUploadingMedia ? (
-                  <div className="space-y-2">
-                    <div className="text-2xl animate-pulse">📷</div>
-                    <p className="text-gray-500">Saving memory...</p>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-xs mx-auto">
-                      <div
-                        className="bg-amber-400 h-1.5 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <span className="text-3xl block mb-2">📷</span>
-                    <p className="text-gray-500">Add a memory</p>
-                    <p className="text-gray-300 text-sm mt-1">Photos & videos</p>
-                  </>
-                )}
-              </label>
+              {isUploadingMedia && (
+                <p className="mt-2 text-sm text-indigo-600 animate-pulse">Uploading...</p>
+              )}
               {uploadError && (
-                <p className="text-red-400 text-sm mt-2 text-center">{uploadError}</p>
+                <p className="mt-2 text-sm text-red-500">{uploadError}</p>
               )}
             </div>
 
             {/* Media Gallery */}
-            {mediaItems.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {mediaItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group shadow-sm hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedMedia(item)}
-                  >
-                    {item.type === 'image' ? (
-                      <img
-                        src={item.url}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                        <span className="text-3xl">🎬</span>
+            {mediaItems.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-gray-700">Shared memories</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mediaItems.map((item) => (
+                    <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={item.filename || 'Shared image'}
+                          className="w-full h-48 object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          controls
+                          className="w-full h-48 object-cover"
+                        />
+                      )}
+                      <div className="p-2 text-sm text-gray-500">
+                        <span className="font-medium">{item.author}</span>
+                        <span className="mx-2">•</span>
+                        <span>{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : (
-              <p className="text-center text-gray-300 py-6 italic">
-                No memories yet
+            )}
+
+            {mediaItems.length === 0 && (
+              <p className="text-gray-500 text-center py-4">
+                No photos or videos shared yet this week.
               </p>
             )}
           </div>
         )}
-
-        {/* Media Lightbox */}
-        {selectedMedia && (
-          <div
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedMedia(null)}
-          >
-            <div
-              className="max-w-4xl max-h-[90vh] relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedMedia(null)}
-                className="absolute -top-10 right-0 text-white/70 text-2xl hover:text-white"
-              >
-                ✕
-              </button>
-
-              {selectedMedia.type === 'image' ? (
-                <img
-                  src={selectedMedia.url}
-                  alt=""
-                  className="max-w-full max-h-[80vh] rounded-lg"
-                />
-              ) : (
-                <video
-                  src={selectedMedia.url}
-                  controls
-                  autoPlay
-                  className="max-w-full max-h-[80vh] rounded-lg"
-                />
-              )}
-
-              <div className="mt-4 flex items-center justify-between text-white/70">
-                <p className="text-sm">
-                  {new Date(selectedMedia.createdAt).toLocaleDateString()}
-                </p>
-                {selectedMedia.author === username && (
-                  <button
-                    onClick={() => deleteMedia(selectedMedia.id)}
-                    className="text-red-300 hover:text-red-200 text-sm"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
-      <style jsx global>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
