@@ -30,32 +30,96 @@ CREATE TABLE IF NOT EXISTS story_users (
 
 -- 3. STORY LOGIN LOGS TABLE
 -- Track all logins for admin monitoring
-CREATE TABLE IF NOT EXISTS story_login_logs (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  login_time TIMESTAMP DEFAULT NOW(),
-  session_id TEXT,
-  ip_address VARCHAR(45),
-  user_agent TEXT
-);
+DO $$
+BEGIN
+  -- Create table if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'story_login_logs'
+  ) THEN
+    CREATE TABLE story_login_logs (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(50) NOT NULL,
+      login_time TIMESTAMP DEFAULT NOW(),
+      session_id TEXT,
+      ip_address VARCHAR(45),
+      user_agent TEXT
+    );
+  END IF;
 
-CREATE INDEX IF NOT EXISTS idx_story_login_logs_time ON story_login_logs(login_time DESC);
+  -- Add missing columns if they don't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'session_token'
+  ) THEN
+    ALTER TABLE story_login_logs ADD COLUMN session_token TEXT;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'logout_at'
+  ) THEN
+    ALTER TABLE story_login_logs ADD COLUMN logout_at TIMESTAMP;
+  END IF;
+
+  -- Rename login_time to login_at if it exists (for backward compatibility)
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_time'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_at'
+  ) THEN
+    ALTER TABLE story_login_logs RENAME COLUMN login_time TO login_at;
+  END IF;
+END $$;
+
+-- Create indexes (ignore if they already exist)
+CREATE INDEX IF NOT EXISTS idx_story_login_logs_time ON story_login_logs(COALESCE(login_at, login_time) DESC);
 CREATE INDEX IF NOT EXISTS idx_story_login_logs_user ON story_login_logs(username);
 
 -- 4. STORY MESSAGE HISTORY TABLE
 -- Complete history of all messages and media (permanent record)
-CREATE TABLE IF NOT EXISTS story_message_history (
-  id SERIAL PRIMARY KEY,
-  week_start_date DATE NOT NULL,
-  message_type VARCHAR(20) NOT NULL, -- 'text', 'image', 'video'
-  message_content TEXT,
-  media_url TEXT,
-  media_filename TEXT,
-  author VARCHAR(50) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  expires_at TIMESTAMP,
-  is_expired BOOLEAN DEFAULT FALSE
-);
+DO $$
+BEGIN
+  -- Create table if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'story_message_history'
+  ) THEN
+    CREATE TABLE story_message_history (
+      id SERIAL PRIMARY KEY,
+      week_start_date DATE NOT NULL,
+      message_type VARCHAR(20) NOT NULL, -- 'text', 'image', 'video'
+      message_content TEXT,
+      media_url TEXT,
+      media_filename TEXT,
+      author VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      expires_at TIMESTAMP,
+      is_expired BOOLEAN DEFAULT FALSE
+    );
+  END IF;
+
+  -- Add missing columns if they don't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_message_history' AND column_name = 'is_from_admin'
+  ) THEN
+    ALTER TABLE story_message_history ADD COLUMN is_from_admin BOOLEAN DEFAULT FALSE;
+  END IF;
+
+  -- Rename message_content to content if needed for backward compatibility
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_message_history' AND column_name = 'message_content'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_message_history' AND column_name = 'content'
+  ) THEN
+    ALTER TABLE story_message_history RENAME COLUMN message_content TO content;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_story_message_week ON story_message_history(week_start_date);
 CREATE INDEX IF NOT EXISTS idx_story_message_time ON story_message_history(created_at DESC);
