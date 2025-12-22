@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query, queryOne } from '@/lib/story/db';
+import { db } from '@/lib/db';
 import { extractToken, verifyUserToken } from '@/lib/story/auth';
 import { getCurrentWeekStart, getExpirationDate } from '@/lib/story/week';
 
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     // Test database connection
     try {
-      const testResult = await query('SELECT 1');
+      const testResult = await db.query('SELECT 1');
       console.log('Database connection OK');
     } catch (dbError) {
       console.error('Database connection failed:', dbError);
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     // Check if tables exist
     try {
-      const tableCheck = await query(`
+      const tableCheck = await db.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name IN ('story_message_history', 'secret_stories')
       `);
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     // Save to message history (permanent record)
     console.log('Saving to message history...');
-    await query(
+    await db.query(
       `INSERT INTO story_message_history
        (week_start_date, message_type, message_content, author, expires_at)
        VALUES ($1, 'text', $2, $3, $4)`,
@@ -97,15 +97,16 @@ export async function POST(req: NextRequest) {
 
     // Check if story exists, create one if not
     console.log('Checking if story exists for week:', weekStartDate);
-    const existingStory = await queryOne(
+    const existingStoryResult = await db.query(
       'SELECT id FROM secret_stories WHERE week_start_date = $1',
       [weekStartDate]
     );
+    const existingStory = existingStoryResult.rows[0];
 
     if (!existingStory) {
       console.log('No story found, creating basic story with message...');
       // Create a basic story if none exists
-      await query(
+      await db.query(
         `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author, created_at, updated_at)
          VALUES ($1, 'Messages', 'Message Board', '{"paragraphs": ["Welcome to our message board.", "Share your thoughts and messages here.", "Click the letters to explore features."]}', $2, $3, NOW(), NOW())`,
         [weekStartDate, message, author || 'Unknown']
@@ -114,7 +115,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Update existing story
       console.log('Updating existing story...');
-      await query(
+      await db.query(
         `UPDATE secret_stories
          SET hidden_message = $1,
              message_author = $2,
@@ -152,12 +153,13 @@ export async function GET(req: NextRequest) {
     await verifyUserToken(token);
     const weekStartDate = getCurrentWeekStart();
 
-    const result = await queryOne<MessageCheck>(
-      `SELECT hidden_message, message_author, updated_at 
-       FROM secret_stories 
+    const resultQuery = await db.query(
+      `SELECT hidden_message, message_author, updated_at
+       FROM secret_stories
        WHERE week_start_date = $1`,
       [weekStartDate]
     );
+    const result = resultQuery.rows[0] as MessageCheck | undefined;
 
     if (!result || !result.hidden_message) {
       return NextResponse.json({ hasMessage: false });
