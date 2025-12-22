@@ -47,9 +47,16 @@ export async function GET(req: NextRequest) {
     }
 
     const storyData = story.rows[0];
-    const content = typeof storyData.story_content === 'string' 
+    const content = typeof storyData.story_content === 'string'
       ? JSON.parse(storyData.story_content)
       : storyData.story_content;
+
+    console.log('Returning story data:', {
+      title: storyData.story_title,
+      hiddenMessage: storyData.hidden_message,
+      messageAuthor: storyData.message_author,
+      adminMessage: storyData.admin_message
+    });
 
     return NextResponse.json({
       username: payload.username,

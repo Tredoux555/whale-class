@@ -35,20 +35,27 @@ export async function POST(req: NextRequest) {
     );
 
     // Update the story's hidden message (this is what shows when clicking 't')
+    console.log('Saving message:', { message: message.trim(), author: messageAuthor, weekStartDate });
+
     const result = await db.query(
-      `UPDATE secret_stories 
+      `UPDATE secret_stories
        SET hidden_message = $1, message_author = $2, updated_at = NOW()
        WHERE week_start_date = $3
        RETURNING *`,
       [message.trim(), messageAuthor, weekStartDate]
     );
 
+    console.log('Update result:', result.rows.length, 'rows updated');
+
     if (result.rows.length === 0) {
+      console.log('No story found for week:', weekStartDate);
       return NextResponse.json(
         { error: 'Story not found for current week' },
         { status: 404 }
       );
     }
+
+    console.log('Message saved successfully:', result.rows[0].hidden_message);
 
     return NextResponse.json({ 
       success: true,
