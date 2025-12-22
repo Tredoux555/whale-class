@@ -148,6 +148,44 @@ export default function WorkDetailModal({
             </div>
           )}
 
+          {/* VIDEO LINK - NEW SECTION */}
+          {work.videoSearchTerms && work.videoSearchTerms.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                <span className="text-lg">🎬</span>
+                Video Reference
+              </h3>
+              <div className="space-y-2">
+                {work.videoSearchTerms.map((term, index) => (
+                  <a
+                    key={index}
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(term + ' montessori')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors group"
+                  >
+                    <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-red-700 group-hover:text-red-800 truncate">
+                        Watch: {term}
+                      </p>
+                      <p className="text-xs text-red-500">
+                        Opens YouTube search
+                      </p>
+                    </div>
+                    <svg className="w-5 h-5 text-red-400 group-hover:text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="text-sm font-bold text-slate-700 mb-2">Levels / Progressions</h3>
             <div className="space-y-2">
