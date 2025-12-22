@@ -302,11 +302,17 @@ export default function StoryViewer() {
         {/* Third paragraph: show note or editor - styled to blend in naturally */}
         {isThirdParagraph && (
           <>
-            {isDecoded && (story?.hiddenMessage || story?.adminMessage) && (
-              <span className="ml-1 text-gray-600 italic">
-                {console.log('Displaying message:', { hiddenMessage: story?.hiddenMessage, adminMessage: story?.adminMessage }) || (story?.adminMessage || story?.hiddenMessage)}
-              </span>
-            )}
+            {(() => {
+              if (isDecoded && (story?.hiddenMessage || story?.adminMessage)) {
+                console.log('Displaying message:', { hiddenMessage: story?.hiddenMessage, adminMessage: story?.adminMessage });
+                return (
+                  <span className="ml-1 text-gray-600 italic">
+                    {story?.adminMessage || story?.hiddenMessage}
+                  </span>
+                );
+              }
+              return null;
+            })()}
             {isEditing && (
               <span className="inline-flex items-center gap-2 ml-2 align-middle">
                 <input
