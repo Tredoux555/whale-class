@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // Check if required tables exist
     try {
-      const tablesCheck = await query(`
+      const tablesCheck = await db.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name IN ('story_users', 'story_message_history', 'secret_stories')
       `);
