@@ -101,6 +101,7 @@ export default function StoryViewer() {
       }
 
       const data = await res.json();
+      console.log('Loaded story data:', data.story);
       setStory(data.story);
       if (data.username) {
         setUsername(data.username);
@@ -167,6 +168,7 @@ export default function StoryViewer() {
   const saveMessage = async () => {
     if (!messageInput.trim()) return;
 
+    console.log('Saving message:', messageInput.trim());
     setIsSaving(true);
     try {
       const res = await fetch('/api/story/message', {
@@ -178,12 +180,18 @@ export default function StoryViewer() {
         body: JSON.stringify({ message: messageInput.trim(), author: username })
       });
 
+      console.log('Save response:', res.status, res.ok);
+
       if (res.ok) {
+        console.log('Message saved successfully');
         setIsEditing(false);
         setMessageInput('');
         await loadStory();
         // Add a small delay and reload again to ensure message appears
         setTimeout(() => loadStory(), 300);
+      } else {
+        const errorData = await res.json();
+        console.error('Save failed:', errorData);
       }
     } catch (err) {
       console.error('Error saving message:', err);
@@ -296,7 +304,7 @@ export default function StoryViewer() {
           <>
             {isDecoded && (story?.hiddenMessage || story?.adminMessage) && (
               <span className="ml-1 text-gray-600 italic">
-                {story?.adminMessage || story?.hiddenMessage}
+                {console.log('Displaying message:', { hiddenMessage: story?.hiddenMessage, adminMessage: story?.adminMessage }) || (story?.adminMessage || story?.hiddenMessage)}
               </span>
             )}
             {isEditing && (
