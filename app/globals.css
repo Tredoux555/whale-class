@@ -93,13 +93,13 @@ body {
 
 /* Site Makeover Utility Classes */
 /* Base styles matching admin dashboard */
-/* Force Comic Sans across entire platform */
+/* Force Comic Sans across entire platform - with proper mobile fallbacks */
 *, *::before, *::after {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+  font-family: 'Comic Sans MS', 'Comic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
 }
 
 body, html {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+  font-family: 'Comic Sans MS', 'Comic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
   background-color: #f8fafc;
   color: #1e293b;
 }
@@ -131,7 +131,7 @@ body, html {
 /* Smooth page transitions */
 .page-container {
   @apply min-h-screen bg-slate-50 p-4 md:p-6;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+  font-family: 'Comic Sans MS', 'Comic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
 }
 
 /* Loading skeleton */

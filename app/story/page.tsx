@@ -43,7 +43,7 @@ export default function StoryLogin() {
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm border border-amber-100">
         <div className="text-center mb-8">
           <span className="text-5xl">📖</span>
-          <h1 className="text-2xl font-serif font-bold mt-4 text-gray-700">Story Time</h1>
+          <h1 className="text-2xl font-bold mt-4 text-gray-700">Story Time</h1>
           <p className="text-gray-400 text-sm mt-1">Enter your reading garden</p>
         </div>
 

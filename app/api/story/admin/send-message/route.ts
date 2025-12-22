@@ -34,22 +34,26 @@ export async function POST(req: NextRequest) {
       [weekStartDate, message.trim(), expiresAt]
     );
 
-    // Update the story's admin message (this shows when users click 't')
-    const result = await db.query(
-      `UPDATE secret_stories 
-       SET admin_message = $1, updated_at = NOW()
-       WHERE week_start_date = $2
-       RETURNING *`,
-      [message.trim(), weekStartDate]
+    // Check if story exists first
+    const existingStory = await db.query(
+      `SELECT id FROM secret_stories WHERE week_start_date = $1`,
+      [weekStartDate]
     );
 
-    // If no story exists for this week, create one first
-    if (result.rows.length === 0) {
-      // Create a basic story for this week
+    if (existingStory.rows.length === 0) {
+      // Create a basic story for this week only if none exists
       await db.query(
-        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, admin_message)
-         VALUES ($1, 'Message', 'A Special Note', '{"paragraphs": ["Today is a special day.", "Something wonderful is happening.", "Can you feel the excitement?", "Look around and notice the little things.", "Every moment is a gift."]}', $2)`,
+        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, admin_message, created_at, updated_at)
+         VALUES ($1, 'Message', 'A Special Note', '{"paragraphs": ["Today is a special day.", "Something wonderful is happening.", "Can you feel the excitement?", "Look around and notice the little things.", "Every moment is a gift."]}', $2, NOW(), NOW())`,
         [weekStartDate, message.trim()]
+      );
+    } else {
+      // Update existing story's admin message
+      await db.query(
+        `UPDATE secret_stories
+         SET admin_message = $1, updated_at = NOW()
+         WHERE week_start_date = $2`,
+        [message.trim(), weekStartDate]
       );
     }
 
