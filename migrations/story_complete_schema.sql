@@ -1,68 +1,10 @@
--- =====================================================
--- STORY MESSAGING SYSTEM - COMPLETE DATABASE SCHEMA
+-- =============================================
+-- STORY SYSTEM - COMPLETE DATABASE SCHEMA
 -- Run this in Supabase SQL Editor
--- =====================================================
+-- =============================================
 
--- Drop existing tables if you want a clean slate (CAREFUL!)
--- DROP TABLE IF EXISTS story_message_history CASCADE;
--- DROP TABLE IF EXISTS story_login_logs CASCADE;
--- DROP TABLE IF EXISTS story_online_sessions CASCADE;
--- DROP TABLE IF EXISTS story_admin_users CASCADE;
--- DROP TABLE IF EXISTS story_users CASCADE;
--- DROP TABLE IF EXISTS secret_stories CASCADE;
-
--- =====================================================
--- TABLE 1: Story Users (T and Z)
--- =====================================================
-CREATE TABLE IF NOT EXISTS story_users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Migrate existing table to new schema
-DO $$ 
-BEGIN
-  -- Add is_active column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_users' AND column_name = 'is_active'
-  ) THEN
-    ALTER TABLE story_users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
-    UPDATE story_users SET is_active = TRUE WHERE is_active IS NULL;
-  END IF;
-
-  -- Add display_name column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_users' AND column_name = 'display_name'
-  ) THEN
-    ALTER TABLE story_users ADD COLUMN display_name VARCHAR(100);
-  END IF;
-
-  -- Add updated_at column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_users' AND column_name = 'updated_at'
-  ) THEN
-    ALTER TABLE story_users ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
-  END IF;
-END $$;
-
--- =====================================================
--- TABLE 2: Admin Users (Separate from story users)
--- =====================================================
-CREATE TABLE IF NOT EXISTS story_admin_users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- =====================================================
--- TABLE 3: Weekly Stories (Auto-generated)
--- =====================================================
+-- 1. SECRET STORIES TABLE
+-- Stores weekly stories with hidden messages
 CREATE TABLE IF NOT EXISTS secret_stories (
   id SERIAL PRIMARY KEY,
   week_start_date DATE NOT NULL UNIQUE,
@@ -71,268 +13,151 @@ CREATE TABLE IF NOT EXISTS secret_stories (
   story_content JSONB NOT NULL, -- { paragraphs: string[] }
   hidden_message TEXT,
   message_author VARCHAR(50),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
-
--- Add admin_message column if it doesn't exist
-DO $$ 
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'secret_stories' AND column_name = 'admin_message'
-  ) THEN
-    ALTER TABLE secret_stories ADD COLUMN admin_message TEXT;
-  END IF;
-END $$;
 
 CREATE INDEX IF NOT EXISTS idx_secret_stories_week ON secret_stories(week_start_date);
 
--- =====================================================
--- TABLE 4: Login Logs (Track who logged in when)
--- =====================================================
+-- 2. STORY USERS TABLE
+-- User authentication for story viewers
+CREATE TABLE IF NOT EXISTS story_users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 3. STORY LOGIN LOGS TABLE
+-- Track all logins for admin monitoring
 CREATE TABLE IF NOT EXISTS story_login_logs (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) NOT NULL,
-  ip_address VARCHAR(45),
-  user_agent TEXT,
   login_time TIMESTAMP DEFAULT NOW(),
-  session_id TEXT
+  session_id TEXT,
+  ip_address VARCHAR(45),
+  user_agent TEXT
 );
 
--- Migrate existing table to new schema
-DO $$ 
-BEGIN
-  -- Add user_id column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'user_id'
-  ) THEN
-    ALTER TABLE story_login_logs ADD COLUMN user_id INTEGER REFERENCES story_users(id) ON DELETE CASCADE;
-    
-    -- Populate user_id from username (if possible)
-    UPDATE story_login_logs log
-    SET user_id = u.id
-    FROM story_users u
-    WHERE log.username = u.username AND log.user_id IS NULL;
-  END IF;
+CREATE INDEX IF NOT EXISTS idx_story_login_logs_time ON story_login_logs(login_time DESC);
+CREATE INDEX IF NOT EXISTS idx_story_login_logs_user ON story_login_logs(username);
 
-  -- Rename login_time to login_at if it exists and login_at doesn't
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'login_time'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'login_at'
-  ) THEN
-    ALTER TABLE story_login_logs RENAME COLUMN login_time TO login_at;
-    ALTER TABLE story_login_logs ALTER COLUMN login_at TYPE TIMESTAMPTZ USING login_at::TIMESTAMPTZ;
-  END IF;
-
-  -- Add logout_at column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'logout_at'
-  ) THEN
-    ALTER TABLE story_login_logs ADD COLUMN logout_at TIMESTAMPTZ;
-  END IF;
-
-  -- Rename session_id to session_token if session_id exists and session_token doesn't
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'session_id'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_login_logs' AND column_name = 'session_token'
-  ) THEN
-    ALTER TABLE story_login_logs RENAME COLUMN session_id TO session_token;
-  END IF;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_login_logs_user ON story_login_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_login_logs_date ON story_login_logs(login_at DESC);
-
--- =====================================================
--- TABLE 5: Online Sessions (Track who's currently online)
--- =====================================================
-CREATE TABLE IF NOT EXISTS story_online_sessions (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES story_users(id) ON DELETE CASCADE,
-  username VARCHAR(50) NOT NULL,
-  session_token TEXT UNIQUE NOT NULL,
-  last_seen_at TIMESTAMPTZ DEFAULT NOW(),
-  is_online BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_online_sessions_token ON story_online_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_online_sessions_online ON story_online_sessions(is_online) WHERE is_online = TRUE;
-
--- =====================================================
--- TABLE 6: Message History (Text + Media)
--- =====================================================
+-- 4. STORY MESSAGE HISTORY TABLE
+-- Complete history of all messages and media (permanent record)
 CREATE TABLE IF NOT EXISTS story_message_history (
   id SERIAL PRIMARY KEY,
   week_start_date DATE NOT NULL,
-  author VARCHAR(50) NOT NULL,
-  message_type VARCHAR(20) NOT NULL,
+  message_type VARCHAR(20) NOT NULL, -- 'text', 'image', 'video'
   message_content TEXT,
   media_url TEXT,
   media_filename TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ,
+  author VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP,
   is_expired BOOLEAN DEFAULT FALSE
 );
 
--- Migrate existing table to new schema
-DO $$ 
-BEGIN
-  -- Rename message_content to content if it exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'message_content'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'content'
-  ) THEN
-    ALTER TABLE story_message_history RENAME COLUMN message_content TO content;
-  END IF;
+CREATE INDEX IF NOT EXISTS idx_story_message_week ON story_message_history(week_start_date);
+CREATE INDEX IF NOT EXISTS idx_story_message_time ON story_message_history(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_story_message_expired ON story_message_history(is_expired, expires_at);
 
-  -- Add missing columns
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'media_size_bytes'
-  ) THEN
-    ALTER TABLE story_message_history ADD COLUMN media_size_bytes INTEGER;
-  END IF;
+-- 5. STORY ADMIN USERS TABLE
+-- Admin authentication
+CREATE TABLE IF NOT EXISTS story_admin_users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  last_login TIMESTAMP
+);
 
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'media_mime_type'
-  ) THEN
-    ALTER TABLE story_message_history ADD COLUMN media_mime_type VARCHAR(100);
-  END IF;
+-- =============================================
+-- SEED DATA - Users
+-- Passwords: T=redoux, Z=oe
+-- =============================================
 
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'thumbnail_url'
-  ) THEN
-    ALTER TABLE story_message_history ADD COLUMN thumbnail_url TEXT;
-  END IF;
+-- Regular users (story viewers)
+INSERT INTO story_users (username, password_hash) VALUES
+  ('T', '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO'),
+  ('Z', '$2b$10$o8s80aV2vWkgVjZKSsIRKu7IPvNbuLwb08HiWECZ7xCtv4f5bQkPK')
+ON CONFLICT (username) DO UPDATE
+SET password_hash = EXCLUDED.password_hash;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'story_message_history' AND column_name = 'is_from_admin'
-  ) THEN
-    ALTER TABLE story_message_history ADD COLUMN is_from_admin BOOLEAN DEFAULT FALSE;
-  END IF;
+-- Admin user
+INSERT INTO story_admin_users (username, password_hash) VALUES
+  ('T', '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO')
+ON CONFLICT (username) DO UPDATE
+SET password_hash = EXCLUDED.password_hash;
 
-  -- Add CHECK constraint if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.table_constraints 
-    WHERE table_name = 'story_message_history' 
-    AND constraint_name = 'story_message_history_message_type_check'
-  ) THEN
-    ALTER TABLE story_message_history 
-    ADD CONSTRAINT story_message_history_message_type_check 
-    CHECK (message_type IN ('text', 'image', 'video'));
-  END IF;
-END $$;
+-- =============================================
+-- FUNCTION: Mark expired messages
+-- Call this periodically or via pg_cron
+-- =============================================
 
-CREATE INDEX IF NOT EXISTS idx_message_history_week ON story_message_history(week_start_date);
-CREATE INDEX IF NOT EXISTS idx_message_history_type ON story_message_history(message_type);
-CREATE INDEX IF NOT EXISTS idx_message_history_expired ON story_message_history(is_expired, expires_at);
-
--- =====================================================
--- FUNCTIONS
--- =====================================================
-
--- Function to clean up expired media
-CREATE OR REPLACE FUNCTION cleanup_expired_media()
-RETURNS INTEGER AS $$
-DECLARE
-  deleted_count INTEGER;
+CREATE OR REPLACE FUNCTION mark_expired_messages()
+RETURNS void AS $$
 BEGIN
   UPDATE story_message_history
   SET is_expired = TRUE
-  WHERE expires_at < NOW() AND is_expired = FALSE;
-  
-  GET DIAGNOSTICS deleted_count = ROW_COUNT;
-  RETURN deleted_count;
+  WHERE is_expired = FALSE
+    AND expires_at IS NOT NULL
+    AND expires_at < NOW();
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to mark user as offline (for stale sessions)
-CREATE OR REPLACE FUNCTION cleanup_stale_sessions()
-RETURNS INTEGER AS $$
-DECLARE
-  updated_count INTEGER;
-BEGIN
-  UPDATE story_online_sessions
-  SET is_online = FALSE
-  WHERE last_seen_at < NOW() - INTERVAL '5 minutes' AND is_online = TRUE;
-  
-  GET DIAGNOSTICS updated_count = ROW_COUNT;
-  RETURN updated_count;
-END;
-$$ LANGUAGE plpgsql;
+-- =============================================
+-- STORAGE BUCKET SETUP
+-- Run this separately in Supabase Storage settings
+-- Or use the SQL below if using storage extension
+-- =============================================
 
--- Function to update last_seen
-CREATE OR REPLACE FUNCTION update_user_last_seen(p_session_token TEXT)
-RETURNS VOID AS $$
-BEGIN
-  UPDATE story_online_sessions
-  SET last_seen_at = NOW(), is_online = TRUE
-  WHERE session_token = p_session_token;
-END;
-$$ LANGUAGE plpgsql;
+-- Create the storage bucket (run in Supabase Dashboard > Storage)
+-- Bucket name: story-uploads
+-- Public: Yes
 
--- =====================================================
--- STORAGE BUCKET FOR MEDIA
--- =====================================================
+-- If you have the storage extension, you can use:
+-- INSERT INTO storage.buckets (id, name, public)
+-- VALUES ('story-uploads', 'story-uploads', true)
+-- ON CONFLICT (id) DO NOTHING;
 
--- Create storage bucket for story media
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'story-media',
-  'story-media',
-  true,
-  52428800, -- 50MB limit for videos
-  ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm']
-)
-ON CONFLICT (id) DO NOTHING;
+-- Storage policies (create in Supabase Dashboard > Storage > Policies):
+-- 
+-- Policy 1: Allow authenticated uploads
+-- Name: Allow uploads
+-- Operation: INSERT
+-- Target roles: authenticated
+-- Policy: true
+--
+-- Policy 2: Allow public reads
+-- Name: Allow public reads
+-- Operation: SELECT
+-- Target roles: public
+-- Policy: true
 
--- Storage policies
-CREATE POLICY "Public read access for story media"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'story-media');
+-- =============================================
+-- OPTIONAL: Schedule expiration check (pg_cron)
+-- Only works if pg_cron extension is enabled
+-- =============================================
 
-CREATE POLICY "Authenticated upload for story media"
-ON storage.objects FOR INSERT
-WITH CHECK (bucket_id = 'story-media');
+-- SELECT cron.schedule(
+--   'mark-expired-story-messages',
+--   '0 * * * *',  -- Every hour
+--   'SELECT mark_expired_messages()'
+-- );
 
-CREATE POLICY "Authenticated delete for story media"
-ON storage.objects FOR DELETE
-USING (bucket_id = 'story-media');
+-- =============================================
+-- VERIFICATION QUERIES
+-- Run these to verify setup
+-- =============================================
 
--- =====================================================
--- SEED DATA: Create test users (T and Z)
--- Password: "love" (you should change this!)
--- Hash generated with bcrypt, 10 rounds
--- =====================================================
+-- Check tables exist
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name LIKE 'story%' OR table_name = 'secret_stories';
 
--- Generate hashes for password "love" using bcrypt
--- You'll need to generate these in your app or use:
--- await bcrypt.hash('love', 10)
+-- Check users exist
+SELECT username FROM story_users;
+SELECT username FROM story_admin_users;
 
--- INSERT INTO story_users (username, password_hash, display_name) VALUES
---   ('T', '$2a$10$YOUR_HASH_HERE', 'T'),
---   ('Z', '$2a$10$YOUR_HASH_HERE', 'Z');
-
--- INSERT INTO story_admin_users (username, password_hash) VALUES
---   ('admin', '$2a$10$YOUR_ADMIN_HASH_HERE');
-
--- =====================================================
--- COMPLETE!
--- =====================================================
-
+-- Check indexes
+SELECT indexname FROM pg_indexes WHERE tablename LIKE 'story%';

@@ -1,45 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { verifyToken, extractToken, getCurrentWeekStart } from '@/lib/story-auth';
+import { query } from '@/lib/story/db';
+import { extractToken, verifyUserToken } from '@/lib/story/auth';
+import { getCurrentWeekStart } from '@/lib/story/week';
+import { MediaItem } from '@/lib/story/types';
+
+interface MediaRow {
+  id: number;
+  message_type: 'image' | 'video';
+  media_url: string;
+  media_filename: string | null;
+  author: string;
+  created_at: string;
+  expires_at: string | null;
+}
 
 export async function GET(req: NextRequest) {
-  const token = extractToken(req.headers.get('authorization'));
-  
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
-    const payload = await verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // Verify authentication
+    const token = extractToken(req.headers.get('authorization'));
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Update last seen (if table exists - optional for backward compatibility)
-    try {
-      await db.query(
-        `UPDATE story_online_sessions SET last_seen_at = NOW() WHERE session_token = $1`,
-        [token]
-      );
-    } catch (error) {
-      // Online sessions table might not exist yet - that's okay
-    }
-
+    await verifyUserToken(token);
     const weekStartDate = getCurrentWeekStart();
 
-    // First, mark expired items
-    await db.query(
-      `UPDATE story_message_history 
-       SET is_expired = TRUE 
-       WHERE expires_at < NOW() AND is_expired = FALSE`
-    );
-
-    // Get all non-expired media for this week
-    const result = await db.query(
-      `SELECT id, author, message_type, media_url, media_filename, 
-              media_mime_type, thumbnail_url, created_at, is_from_admin
-       FROM story_message_history 
-       WHERE week_start_date = $1 
+    // Get non-expired media for current week
+    const result = await query<MediaRow>(
+      `SELECT id, message_type, media_url, media_filename, author, created_at, expires_at
+       FROM story_message_history
+       WHERE week_start_date = $1
          AND message_type IN ('image', 'video')
          AND is_expired = FALSE
          AND (expires_at IS NULL OR expires_at > NOW())
@@ -47,24 +38,19 @@ export async function GET(req: NextRequest) {
       [weekStartDate]
     );
 
-    return NextResponse.json({
-      media: result.rows.map(row => ({
-        id: row.id,
-        author: row.author,
-        type: row.message_type,
-        url: row.media_url,
-        filename: row.media_filename,
-        mimeType: row.media_mime_type,
-        thumbnailUrl: row.thumbnail_url,
-        createdAt: row.created_at,
-        isFromAdmin: row.is_from_admin
-      }))
-    });
+    const media: MediaItem[] = result.rows.map(row => ({
+      id: row.id,
+      type: row.message_type,
+      url: row.media_url,
+      filename: row.media_filename,
+      author: row.author,
+      created_at: row.created_at,
+      expires_at: row.expires_at
+    }));
+
+    return NextResponse.json({ media });
   } catch (error) {
     console.error('Media fetch error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch media' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }

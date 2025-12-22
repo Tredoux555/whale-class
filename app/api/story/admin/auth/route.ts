@@ -1,49 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { compare } from 'bcryptjs';
-import { db } from '@/lib/db';
-import { createToken, verifyToken, extractToken } from '@/lib/story-auth';
+import { query, queryOne } from '@/lib/story/db';
+import { 
+  createAdminToken, 
+  verifyAdminToken, 
+  verifyPassword, 
+  extractToken,
+  hashPassword 
+} from '@/lib/story/auth';
+import { StoryAdminUser } from '@/lib/story/types';
 
-// Admin uses SAME credentials as story_users table
-// Username: T, Password: redoux
-
+// Admin login
 export async function POST(req: NextRequest) {
   try {
     const { username, password } = await req.json();
 
     if (!username || !password) {
       return NextResponse.json(
-        { error: 'Username and password required' },
+        { error: 'Missing credentials' },
         { status: 400 }
       );
     }
 
-    // Query the story_users table (same as regular user login)
-    let result;
-    try {
-      result = await db.query(
-        'SELECT * FROM story_users WHERE username = $1 AND is_active = TRUE',
-        [username]
-      );
-    } catch (error) {
-      // Fallback to old schema without is_active
-      result = await db.query(
-        'SELECT * FROM story_users WHERE username = $1',
-        [username]
-      );
-    }
+    // Find admin user
+    const admin = await queryOne<StoryAdminUser>(
+      'SELECT * FROM story_admin_users WHERE username = $1',
+      [username]
+    );
 
-    if (result.rows.length === 0) {
+    if (!admin) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    const user = result.rows[0];
-
     // Verify password
-    const validPassword = await compare(password, user.password_hash);
-
+    const validPassword = await verifyPassword(password, admin.password_hash);
+    
     if (!validPassword) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -51,14 +44,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create JWT token with admin type
-    const token = await createToken({ username: user.username, type: 'admin' });
+    // Update last login
+    await query(
+      'UPDATE story_admin_users SET last_login = NOW() WHERE id = $1',
+      [admin.id]
+    );
 
-    return NextResponse.json({
-      session: token,
-      username: user.username,
-      displayName: user.display_name || user.username
-    });
+    // Create admin token
+    const token = await createAdminToken(admin.username);
+
+    return NextResponse.json({ session: token });
   } catch (error) {
     console.error('Admin auth error:', error);
     return NextResponse.json(
@@ -72,28 +67,34 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const token = extractToken(req.headers.get('authorization'));
-
+    
     if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await verifyToken(token);
+    const payload = await verifyAdminToken(token);
 
-    if (!payload || payload.type !== 'admin') {
-      return NextResponse.json({ error: 'Invalid admin session' }, { status: 401 });
-    }
-
-    return NextResponse.json({
-      valid: true,
-      username: payload.username
+    return NextResponse.json({ 
+      valid: true, 
+      username: payload.username,
+      role: 'admin'
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
 
-// Logout
-export async function DELETE(req: NextRequest) {
-  // Admin logout - just return success, client handles session cleanup
-  return NextResponse.json({ success: true });
+// Hash password utility (development only)
+export async function PUT(req: NextRequest) {
+  if (process.env.NODE_ENV !== 'development') {
+    return NextResponse.json({ error: 'Not available' }, { status: 403 });
+  }
+  
+  try {
+    const { password } = await req.json();
+    const hash = await hashPassword(password);
+    return NextResponse.json({ hash });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to hash' }, { status: 500 });
+  }
 }
