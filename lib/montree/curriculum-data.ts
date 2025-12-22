@@ -12,6 +12,23 @@ import culturalData from '@/lib/curriculum/data/cultural.json';
 
 // Convert JSON work to our Work interface
 function convertWork(jsonWork: any): Work {
+  // Extract all videoSearchTerms from levels and combine with work-level terms
+  const levelVideoTerms: string[] = [];
+  const levels = jsonWork.levels || [
+    { level: 1, name: 'Introduction', description: 'First presentation' },
+    { level: 2, name: 'Practice', description: 'Independent practice' },
+    { level: 3, name: 'Mastery', description: 'Full mastery' },
+  ];
+  
+  levels.forEach((level: any) => {
+    if (level.videoSearchTerms && Array.isArray(level.videoSearchTerms)) {
+      levelVideoTerms.push(...level.videoSearchTerms);
+    }
+  });
+  
+  const workVideoTerms = jsonWork.videoSearchTerms || jsonWork.video_search_terms || [];
+  const allVideoTerms = Array.from(new Set([...levelVideoTerms, ...(Array.isArray(workVideoTerms) ? workVideoTerms : [])]));
+  
   return {
     id: jsonWork.id,
     name: jsonWork.name,
@@ -19,16 +36,12 @@ function convertWork(jsonWork: any): Work {
     description: jsonWork.description || '',
     ageRange: jsonWork.ageRange || jsonWork.age_range || '3-6',
     materials: jsonWork.materials || [],
-    levels: jsonWork.levels || [
-      { level: 1, name: 'Introduction', description: 'First presentation' },
-      { level: 2, name: 'Practice', description: 'Independent practice' },
-      { level: 3, name: 'Mastery', description: 'Full mastery' },
-    ],
+    levels: levels,
     prerequisites: jsonWork.prerequisites || [],
     directAims: jsonWork.directAims || jsonWork.direct_aims,
     indirectAims: jsonWork.indirectAims || jsonWork.indirect_aims,
     controlOfError: jsonWork.controlOfError || jsonWork.control_of_error,
-    videoSearchTerms: jsonWork.videoSearchTerms || jsonWork.video_search_terms,
+    videoSearchTerms: allVideoTerms.length > 0 ? allVideoTerms : undefined,
   };
 }
 
