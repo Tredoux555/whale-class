@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 
     // Get messages
     const result = await query<MessageHistory>(
-      `SELECT id, week_start_date, message_type, message_content, media_url, 
+      `SELECT id, week_start_date, message_type, content as message_content, media_url, 
               media_filename, author, created_at, expires_at, is_expired
        FROM story_message_history
        ${whereClause}

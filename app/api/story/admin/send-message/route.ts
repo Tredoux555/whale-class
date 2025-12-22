@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Save to message history
     await query(
       `INSERT INTO story_message_history 
-       (week_start_date, message_type, message_content, author, expires_at)
+       (week_start_date, message_type, content, author, expires_at)
        VALUES ($1, 'text', $2, $3, $4)`,
       [weekStartDate, trimmedMessage, author, expiresAt]
     );
