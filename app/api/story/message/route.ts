@@ -1,177 +1,308 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { extractToken, verifyUserToken } from '@/lib/story/auth';
-import { getCurrentWeekStart, getExpirationDate } from '@/lib/story/week';
+import { jwtVerify } from 'jose';
+import { Pool } from 'pg';
 
-interface MessageCheck {
-  hidden_message: string | null;
-  message_author: string | null;
-  updated_at: string;
+// ============ INLINE HELPERS - NO EXTERNAL IMPORTS ============
+
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL not set');
+    }
+    
+    const connectionString = process.env.DATABASE_URL;
+    const isSupabase = connectionString.includes('supabase') || connectionString.includes('supabase.co');
+    
+    pool = new Pool({
+      connectionString,
+      ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
+      max: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+    
+    pool.on('error', (err) => {
+      console.error('[Message] Pool error:', err);
+    });
+  }
+  return pool;
 }
 
-// Save a text message
-export async function POST(req: NextRequest) {
+async function dbQuery(text: string, params?: unknown[]) {
   try {
-    console.log('Message API called');
+    const client = getPool();
+    return await client.query(text, params);
+  } catch (error) {
+    console.error('[Message] dbQuery error:', error);
+    throw error;
+  }
+}
 
-    // Test database connection
-    try {
-      const testResult = await db.query('SELECT 1');
-      console.log('Database connection OK');
-    } catch (dbError) {
-      console.error('Database connection failed:', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed', details: dbError instanceof Error ? dbError.message : 'Unknown error' },
-        { status: 500 }
-      );
-    }
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.STORY_JWT_SECRET;
+  if (!secret) throw new Error('STORY_JWT_SECRET not set');
+  return new TextEncoder().encode(secret);
+}
 
-    // Check if required tables exist
-    try {
-      const tablesCheck = await db.query(`
-        SELECT table_name FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name IN ('story_users', 'story_message_history', 'secret_stories')
-      `);
-      const existingTables = tablesCheck.rows.map(r => r.table_name);
-      console.log('Existing tables:', existingTables);
+function getCurrentWeekStart(): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0];
+}
 
-      if (!existingTables.includes('story_users')) {
-        return NextResponse.json({ error: 'Database not set up: story_users table missing' }, { status: 500 });
-      }
-      if (!existingTables.includes('story_message_history')) {
-        return NextResponse.json({ error: 'Database not set up: story_message_history table missing' }, { status: 500 });
-      }
-      if (!existingTables.includes('secret_stories')) {
-        return NextResponse.json({ error: 'Database not set up: secret_stories table missing' }, { status: 500 });
-      }
-    } catch (tableError) {
-      console.error('Table check failed:', tableError);
-      return NextResponse.json({ error: 'Database setup check failed' }, { status: 500 });
-    }
+async function verifyToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const secret = getJWTSecret();
+    const { payload } = await jwtVerify(token, secret);
+    return payload.username as string;
+  } catch (e) {
+    console.error('[Message] Token verify failed:', e);
+    return null;
+  }
+}
 
-    const token = extractToken(req.headers.get('authorization'));
+// ============ ENSURE TABLES EXIST ============
 
-    if (!token) {
-      console.log('No token provided');
+async function ensureTables() {
+  try {
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS secret_stories (
+        id SERIAL PRIMARY KEY,
+        week_start_date DATE NOT NULL UNIQUE,
+        theme VARCHAR(255) NOT NULL,
+        story_title VARCHAR(255) NOT NULL,
+        story_content JSONB NOT NULL,
+        hidden_message TEXT,
+        message_author VARCHAR(50),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS story_message_history (
+        id SERIAL PRIMARY KEY,
+        week_start_date DATE NOT NULL,
+        message_type VARCHAR(20) NOT NULL,
+        content TEXT,
+        media_url TEXT,
+        media_filename TEXT,
+        author VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        expires_at TIMESTAMP,
+        is_expired BOOLEAN DEFAULT FALSE
+      )
+    `);
+    
+    return true;
+  } catch (e) {
+    console.error('[Message] ensureTables error:', e);
+    throw e;
+  }
+}
+
+// ============ POST - SAVE MESSAGE ============
+
+export async function POST(req: NextRequest) {
+  console.log('[Message] POST request started');
+  
+  // Check env vars
+  if (!process.env.DATABASE_URL) {
+    console.error('[Message] DATABASE_URL missing');
+    return NextResponse.json({ 
+      error: 'Database not configured',
+      details: 'DATABASE_URL environment variable is not set'
+    }, { status: 500 });
+  }
+  
+  if (!process.env.STORY_JWT_SECRET) {
+    console.error('[Message] STORY_JWT_SECRET missing');
+    return NextResponse.json({ 
+      error: 'Auth not configured',
+      details: 'STORY_JWT_SECRET environment variable is not set'
+    }, { status: 500 });
+  }
+
+  try {
+    // Auth check
+    const username = await verifyToken(req.headers.get('authorization'));
+    if (!username) {
+      console.log('[Message] Auth failed - no valid token');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    console.log('[Message] User authenticated:', username);
 
-    const user = await verifyUserToken(token);
-    console.log('User verified:', user?.username);
-
-    const { message, author } = await req.json();
-    console.log('Message data:', { message: message?.substring(0, 50), author });
-
-    if (!message || typeof message !== 'string') {
-      console.log('Invalid message data');
-      return NextResponse.json(
-        { error: 'Invalid message' },
-        { status: 400 }
-      );
-    }
-
-    const weekStartDate = getCurrentWeekStart();
-    const expiresAt = getExpirationDate();
-    console.log('Week start date:', weekStartDate);
-
-    // Check if tables exist
+    // Parse body
+    let body;
     try {
-      const tableCheck = await db.query(`
-        SELECT table_name FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name IN ('story_message_history', 'secret_stories')
-      `);
-      console.log('Existing tables:', tableCheck.rows.map(r => r.table_name));
-    } catch (tableError) {
-      console.error('Table check failed:', tableError);
+      body = await req.json();
+    } catch (e) {
+      console.error('[Message] JSON parse error:', e);
+      return NextResponse.json({ 
+        error: 'Invalid request body',
+        details: e instanceof Error ? e.message : 'Failed to parse JSON'
+      }, { status: 400 });
+    }
+    
+    const { message, author } = body;
+    
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return NextResponse.json({ 
+        error: 'Message required',
+        details: 'Message must be a non-empty string'
+      }, { status: 400 });
     }
 
-    // Save to message history (permanent record)
-    console.log('Saving to message history...');
-    await db.query(
-      `INSERT INTO story_message_history
-       (week_start_date, message_type, message_content, author, expires_at)
-       VALUES ($1, 'text', $2, $3, $4)`,
-      [weekStartDate, message, author || 'Unknown', expiresAt]
-    );
-    console.log('Message history saved');
+    const weekStart = getCurrentWeekStart();
+    const msgAuthor = author || username;
+    const trimmedMsg = message.trim();
+    
+    console.log('[Message] Week:', weekStart, 'Author:', msgAuthor);
 
-    // Check if story exists, create one if not
-    console.log('Checking if story exists for week:', weekStartDate);
-    const existingStoryResult = await db.query(
-      'SELECT id FROM secret_stories WHERE week_start_date = $1',
-      [weekStartDate]
-    );
-    const existingStory = existingStoryResult.rows[0];
+    // Ensure tables exist
+    try {
+      await ensureTables();
+      console.log('[Message] Tables ensured');
+    } catch (e) {
+      console.error('[Message] Table creation failed:', e);
+      return NextResponse.json({ 
+        error: 'Database setup failed', 
+        details: e instanceof Error ? e.message : 'Unknown error',
+        hint: 'Check database connection and permissions'
+      }, { status: 500 });
+    }
 
-    if (!existingStory) {
-      console.log('No story found, creating basic story with message...');
-      // Create a basic story if none exists
-      await db.query(
-        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author, created_at, updated_at)
-         VALUES ($1, 'Messages', 'Message Board', '{"paragraphs": ["Welcome to our message board.", "Share your thoughts and messages here.", "Click the letters to explore features."]}', $2, $3, NOW(), NOW())`,
-        [weekStartDate, message, author || 'Unknown']
+    // Save to history (non-critical)
+    try {
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 7);
+      
+      await dbQuery(
+        `INSERT INTO story_message_history (week_start_date, message_type, content, author, expires_at)
+         VALUES ($1, 'text', $2, $3, $4)`,
+        [weekStart, trimmedMsg, msgAuthor, expires]
       );
-      console.log('Basic story created with message');
+      console.log('[Message] Saved to history');
+    } catch (e) {
+      console.error('[Message] History save failed (non-critical):', e);
+      // Continue anyway - history is non-critical
+    }
+
+    // Check if story exists
+    let storyCheck;
+    try {
+      storyCheck = await dbQuery(
+        'SELECT id FROM secret_stories WHERE week_start_date = $1',
+        [weekStart]
+      );
+      console.log('[Message] Story check result:', storyCheck.rows.length > 0 ? 'exists' : 'new');
+    } catch (e) {
+      console.error('[Message] Story check failed:', e);
+      return NextResponse.json({ 
+        error: 'Database query failed', 
+        details: e instanceof Error ? e.message : 'Unknown error',
+        hint: 'Check if secret_stories table exists'
+      }, { status: 500 });
+    }
+
+    if (storyCheck.rows.length > 0) {
+      // Update existing
+      try {
+        await dbQuery(
+          `UPDATE secret_stories SET hidden_message = $1, message_author = $2, updated_at = NOW() WHERE week_start_date = $3`,
+          [trimmedMsg, msgAuthor, weekStart]
+        );
+        console.log('[Message] Updated existing story');
+      } catch (e) {
+        console.error('[Message] Update failed:', e);
+        return NextResponse.json({ 
+          error: 'Failed to update story', 
+          details: e instanceof Error ? e.message : 'Unknown error'
+        }, { status: 500 });
+      }
     } else {
-      // Update existing story
-      console.log('Updating existing story...');
-      await db.query(
-        `UPDATE secret_stories
-         SET hidden_message = $1,
-             message_author = $2,
-             updated_at = NOW()
-         WHERE week_start_date = $3`,
-        [message, author || 'Unknown', weekStartDate]
-      );
-      console.log('Story updated with message');
+      // Create new
+      try {
+        const content = JSON.stringify({
+          paragraphs: [
+            'The story is being created...',
+            'Please wait a moment.',
+            'Something special is coming.',
+            'Keep watching!',
+            'Check back soon.'
+          ]
+        });
+        
+        await dbQuery(
+          `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author)
+           VALUES ($1, 'Message', 'Story Loading...', $2, $3, $4)`,
+          [weekStart, content, trimmedMsg, msgAuthor]
+        );
+        console.log('[Message] Created new story');
+      } catch (e) {
+        console.error('[Message] Insert failed:', e);
+        return NextResponse.json({ 
+          error: 'Failed to create story', 
+          details: e instanceof Error ? e.message : 'Unknown error',
+          hint: 'Check database permissions and table structure'
+        }, { status: 500 });
+      }
     }
 
-    console.log('Message saved successfully');
-    return NextResponse.json({
-      success: true,
-      message: 'Message saved successfully'
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Message save error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('[Message] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
-      { error: 'Failed to save message', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Failed', 
+        details: errorMessage,
+        stack: errorStack,
+        hint: 'Check server logs for more details'
+      },
       { status: 500 }
     );
   }
 }
 
-// Check if message exists
+// ============ GET - CHECK MESSAGE ============
+
 export async function GET(req: NextRequest) {
   try {
-    const token = extractToken(req.headers.get('authorization'));
-    
-    if (!token) {
+    const username = await verifyToken(req.headers.get('authorization'));
+    if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await verifyUserToken(token);
-    const weekStartDate = getCurrentWeekStart();
-
-    const resultQuery = await db.query(
-      `SELECT hidden_message, message_author, updated_at
-       FROM secret_stories
-       WHERE week_start_date = $1`,
-      [weekStartDate]
+    const weekStart = getCurrentWeekStart();
+    const result = await dbQuery(
+      'SELECT hidden_message, message_author FROM secret_stories WHERE week_start_date = $1',
+      [weekStart]
     );
-    const result = resultQuery.rows[0] as MessageCheck | undefined;
 
-    if (!result || !result.hidden_message) {
+    if (result.rows.length === 0 || !result.rows[0].hidden_message) {
       return NextResponse.json({ hasMessage: false });
     }
 
     return NextResponse.json({
       hasMessage: true,
-      author: result.message_author,
-      timestamp: result.updated_at
+      author: result.rows[0].message_author
     });
   } catch (error) {
-    console.error('Message check error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('[Message GET] Error:', error);
+    return NextResponse.json({ 
+      error: 'Failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
