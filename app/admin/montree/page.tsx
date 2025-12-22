@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Child, ChildOverallProgress, STATUS_COLORS } from '@/lib/montree/types';
 import ChildSelector from './components/ChildSelector';
 import ProgressSummary from './components/ProgressSummary';
@@ -90,8 +91,21 @@ export default function MontreePage() {
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-slate-800">🌳 Montree</h1>
-            <span className="text-slate-500">Montessori Progress Tracker</span>
+            <Link
+              href="/admin/montree/students"
+              className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-3"
+            >
+              <div className="text-3xl">👶</div>
+              <div>
+                <div className="text-lg font-bold text-slate-800">All Students</div>
+                <div className="text-xs text-slate-500">Quick view of all enrolled students</div>
+              </div>
+            </Link>
+            <div className="border-l border-slate-300 h-12 mx-4"></div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">🌳 Montree</h1>
+              <p className="text-slate-500 text-sm">Montessori Progress Tracker</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">

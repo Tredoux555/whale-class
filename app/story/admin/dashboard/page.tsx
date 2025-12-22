@@ -1,459 +1,469 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface OnlineUser {
   username: string;
-  last_seen_at: string;
-  session_started: string;
+  lastSeen: string;
+  isOnline: boolean;
 }
 
 interface LoginLog {
   id: number;
   username: string;
-  ip_address: string;
-  user_agent: string;
-  login_at: string;
-  logout_at: string | null;
+  ipAddress: string;
+  userAgent: string;
+  loginAt: string;
+  logoutAt: string | null;
 }
 
 interface Message {
   id: number;
-  weekStartDate: string;
   author: string;
-  type: 'text' | 'image' | 'video';
   content: string | null;
   mediaUrl: string | null;
-  mediaFilename: string | null;
-  isFromAdmin: boolean;
-  isExpired: boolean;
+  mediaType: string | null;
   createdAt: string;
+  isFromAdmin: boolean;
 }
 
-interface Stats {
-  total_messages: string;
-  text_count: string;
-  image_count: string;
-  video_count: string;
-  unique_authors: string;
+interface Statistics {
+  totalMessages: number;
+  totalMedia: number;
+  thisWeekMessages: number;
+  thisWeekMedia: number;
 }
 
-type Tab = 'online' | 'logs' | 'messages';
-
-export default function AdminDashboard() {
+export default function StoryAdminDashboard() {
   const router = useRouter();
-  const [session, setSession] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('online');
-  
-  // Online users
+  const [activeTab, setActiveTab] = useState<'readers' | 'activity' | 'notes'>('readers');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Data states
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const [onlineCount, setOnlineCount] = useState(0);
-  const [totalUsers, setTotalUsers] = useState(0);
-  
-  // Login logs
   const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
-  const [loginStats, setLoginStats] = useState<any>(null);
-  
-  // Messages
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageStats, setMessageStats] = useState<Stats | null>(null);
-  const [availableWeeks, setAvailableWeeks] = useState<string[]>([]);
-  const [messageFilter, setMessageFilter] = useState<string>('all');
-  const [weekFilter, setWeekFilter] = useState<string>('all');
-  
-  // Admin message
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+
+  // Admin message state
   const [adminMessage, setAdminMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
 
-  // Check auth on mount
+  // Delete state
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Authentication check
   useEffect(() => {
-    const adminSession = sessionStorage.getItem('story_admin_session');
-    if (!adminSession) {
+    const session = sessionStorage.getItem('story_admin_session');
+    if (!session) {
       router.push('/story/admin');
       return;
     }
-    setSession(adminSession);
+
+    verifySession(session);
   }, [router]);
 
-  // Fetch online users
-  const fetchOnlineUsers = useCallback(async () => {
-    if (!session) return;
+  const verifySession = async (session: string) => {
     try {
-      const res = await fetch('/api/story/admin/online-users', {
+      const res = await fetch('/api/story/admin/auth', {
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${session}` }
       });
+
       if (res.ok) {
-        const data = await res.json();
-        setOnlineUsers(data.onlineUsers);
-        setOnlineCount(data.onlineCount);
-        setTotalUsers(data.totalUsers);
-      } else if (res.status === 401 || res.status === 403) {
+        setIsAuthenticated(true);
+        loadAllData();
+      } else {
         sessionStorage.removeItem('story_admin_session');
         router.push('/story/admin');
       }
-    } catch (err) {
-      console.error('Failed to fetch online users:', err);
+    } catch {
+      router.push('/story/admin');
+    } finally {
+      setIsLoading(false);
     }
-  }, [session, router]);
+  };
 
-  // Fetch login logs
-  const fetchLoginLogs = useCallback(async () => {
-    if (!session) return;
+  const getAuthHeader = () => ({
+    'Authorization': `Bearer ${sessionStorage.getItem('story_admin_session')}`
+  });
+
+  const loadAllData = async () => {
+    await Promise.all([
+      loadOnlineUsers(),
+      loadLoginLogs(),
+      loadMessages()
+    ]);
+  };
+
+  const loadOnlineUsers = async () => {
+    try {
+      const res = await fetch('/api/story/admin/online-users', {
+        headers: getAuthHeader()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('Error loading online users:', err);
+    }
+  };
+
+  const loadLoginLogs = async () => {
     try {
       const res = await fetch('/api/story/admin/login-logs', {
-        headers: { 'Authorization': `Bearer ${session}` }
+        headers: getAuthHeader()
       });
       if (res.ok) {
         const data = await res.json();
-        setLoginLogs(data.logs);
-        setLoginStats(data.stats);
+        setLoginLogs(data.logs || []);
       }
     } catch (err) {
-      console.error('Failed to fetch login logs:', err);
+      console.error('Error loading login logs:', err);
     }
-  }, [session]);
+  };
 
-  // Fetch messages
-  const fetchMessages = useCallback(async () => {
-    if (!session) return;
+  const loadMessages = async () => {
     try {
-      let url = '/api/story/admin/message-history?limit=100';
-      if (messageFilter !== 'all') url += `&type=${messageFilter}`;
-      if (weekFilter !== 'all') url += `&week=${weekFilter}`;
-      
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${session}` }
+      const res = await fetch('/api/story/admin/message-history', {
+        headers: getAuthHeader()
       });
       if (res.ok) {
         const data = await res.json();
-        setMessages(data.messages);
-        setMessageStats(data.stats);
-        setAvailableWeeks(data.availableWeeks);
+        setMessages(data.messages || []);
+        setStatistics(data.statistics || null);
       }
     } catch (err) {
-      console.error('Failed to fetch messages:', err);
+      console.error('Error loading messages:', err);
     }
-  }, [session, messageFilter, weekFilter]);
+  };
 
   // Auto-refresh online users
   useEffect(() => {
-    if (session && activeTab === 'online') {
-      fetchOnlineUsers();
-      const interval = setInterval(fetchOnlineUsers, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [session, activeTab, fetchOnlineUsers]);
+    if (!isAuthenticated) return;
 
-  // Fetch data when tab changes
-  useEffect(() => {
-    if (!session) return;
-    if (activeTab === 'logs') fetchLoginLogs();
-    if (activeTab === 'messages') fetchMessages();
-  }, [session, activeTab, fetchLoginLogs, fetchMessages]);
+    const interval = setInterval(loadOnlineUsers, 5000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
-  // Refetch messages when filters change
-  useEffect(() => {
-    if (activeTab === 'messages') fetchMessages();
-  }, [messageFilter, weekFilter, fetchMessages, activeTab]);
-
-  // Send admin message
   const sendAdminMessage = async () => {
-    if (!adminMessage.trim() || !session) return;
-    
+    if (!adminMessage.trim()) return;
+
     setSendingMessage(true);
     try {
       const res = await fetch('/api/story/admin/send-message', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session}`
+          ...getAuthHeader()
         },
         body: JSON.stringify({ message: adminMessage.trim() })
       });
 
       if (res.ok) {
-        setMessageSent(true);
         setAdminMessage('');
+        setMessageSent(true);
         setTimeout(() => setMessageSent(false), 3000);
+        await loadMessages();
       }
     } catch (err) {
-      console.error('Failed to send message:', err);
+      console.error('Error sending message:', err);
     } finally {
       setSendingMessage(false);
     }
   };
 
-  // Logout
+  // Delete media/message from admin
+  const deleteMessage = async (messageId: number) => {
+    if (!confirm('Delete this item permanently?')) return;
+
+    setDeletingId(messageId);
+    try {
+      const res = await fetch(`/api/story/admin/delete-media?id=${messageId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      });
+
+      if (res.ok) {
+        await loadMessages();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete');
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Delete failed');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem('story_admin_session');
     sessionStorage.removeItem('story_admin_username');
     router.push('/story/admin');
   };
 
-  if (!session) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  };
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="animate-spin text-4xl">⏳</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-3 text-slate-500">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Loading...
+        </div>
       </div>
     );
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const onlineCount = onlineUsers.filter(u => u.isOnline).length;
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+      <header className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🔐</span>
-            <h1 className="text-xl font-bold">Story Admin</h1>
+            <span className="text-2xl">📚</span>
+            <div>
+              <h1 className="text-lg font-semibold text-slate-700">Reading Progress</h1>
+              <p className="text-sm text-slate-400">Curriculum Overview</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            Logout →
+            Sign out
           </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-6">
-        {/* Send Message Card */}
-        <div className="bg-slate-800 rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">📤 Send Secret Message</h2>
-          <p className="text-slate-400 text-sm mb-4">
-            This message will appear when users click the first 't' in the story.
-          </p>
-          <div className="flex gap-3">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <p className="text-sm text-slate-400">Active Readers</p>
+            <p className="text-2xl font-semibold text-slate-700">{onlineCount}</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <p className="text-sm text-slate-400">This Week</p>
+            <p className="text-2xl font-semibold text-slate-700">{statistics?.thisWeekMessages || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <p className="text-sm text-slate-400">Total Notes</p>
+            <p className="text-2xl font-semibold text-slate-700">{statistics?.totalMessages || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <p className="text-sm text-slate-400">Media Items</p>
+            <p className="text-2xl font-semibold text-slate-700">{statistics?.totalMedia || 0}</p>
+          </div>
+        </div>
+
+        {/* Quick Note Section */}
+        <div className="bg-white rounded-lg border border-slate-200 p-4 mb-6">
+          <div className="flex items-center gap-3">
             <input
               type="text"
               value={adminMessage}
               onChange={(e) => setAdminMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendAdminMessage()}
-              placeholder="Type your secret message..."
-              className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Add a reading note for students..."
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-300 focus:border-transparent outline-none text-slate-700"
+              disabled={sendingMessage}
             />
             <button
               onClick={sendAdminMessage}
               disabled={sendingMessage || !adminMessage.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-600 px-6 py-2 rounded-lg font-medium transition-colors"
+              className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:bg-slate-300 transition-colors"
             >
-              {sendingMessage ? '⏳' : '📤'} Send
+              {sendingMessage ? '...' : 'Post'}
             </button>
           </div>
           {messageSent && (
-            <p className="text-green-400 text-sm mt-2">✅ Message sent successfully!</p>
+            <p className="text-sm text-green-600 mt-2">Note posted successfully</p>
           )}
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {[
-            { id: 'online', label: "Who's Online", icon: '🟢' },
-            { id: 'logs', label: 'Login Logs', icon: '📋' },
-            { id: 'messages', label: 'Message History', icon: '💬' }
-          ].map((tab) => (
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="flex border-b border-slate-200">
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as Tab)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+              onClick={() => setActiveTab('readers')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'readers'
+                  ? 'text-slate-700 border-b-2 border-slate-700 bg-slate-50'
+                  : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              {tab.icon} {tab.label}
+              Readers {onlineCount > 0 && <span className="ml-1 text-green-500">●</span>}
             </button>
-          ))}
-        </div>
+            <button
+              onClick={() => setActiveTab('activity')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'activity'
+                  ? 'text-slate-700 border-b-2 border-slate-700 bg-slate-50'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Activity Log
+            </button>
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'notes'
+                  ? 'text-slate-700 border-b-2 border-slate-700 bg-slate-50'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Notes & Media
+            </button>
+          </div>
 
-        {/* Tab Content */}
-        <div className="bg-slate-800 rounded-xl p-6">
-          {/* Online Users Tab */}
-          {activeTab === 'online' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Currently Online</h2>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-green-400">🟢 {onlineCount} online</span>
-                  <span className="text-slate-400">👥 {totalUsers} total users</span>
-                </div>
-              </div>
-              
-              {onlineUsers.length > 0 ? (
-                <div className="space-y-3">
-                  {onlineUsers.map((user, idx) => (
-                    <div key={idx} className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="p-4">
+            {/* Readers Tab */}
+            {activeTab === 'readers' && (
+              <div className="space-y-2">
+                {onlineUsers.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No reader activity yet</p>
+                ) : (
+                  onlineUsers.map((user, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">👤</span>
-                        <div>
-                          <p className="font-bold">{user.username}</p>
-                          <p className="text-slate-400 text-sm">
-                            Session started: {new Date(user.session_started).toLocaleString()}
-                          </p>
-                        </div>
+                        <div className={`w-2 h-2 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-slate-300'}`} />
+                        <span className="text-slate-700 font-medium">{user.username}</span>
                       </div>
-                      <div className="text-right text-sm">
-                        <p className="text-green-400">● Active</p>
-                        <p className="text-slate-400">
-                          Last seen: {new Date(user.last_seen_at).toLocaleTimeString()}
-                        </p>
-                      </div>
+                      <span className="text-sm text-slate-400">
+                        {user.isOnline ? 'Reading now' : formatTimeAgo(user.lastSeen)}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-400 text-center py-8">No users currently online</p>
-              )}
-            </div>
-          )}
-
-          {/* Login Logs Tab */}
-          {activeTab === 'logs' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Login History</h2>
-                {loginStats && (
-                  <div className="flex gap-4 text-sm">
-                    <span className="text-slate-400">24h: {loginStats.last_24h}</span>
-                    <span className="text-slate-400">7d: {loginStats.last_7d}</span>
-                    <span className="text-slate-400">Total: {loginStats.total_logins}</span>
-                  </div>
+                  ))
                 )}
               </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-slate-400 text-sm border-b border-slate-700">
-                      <th className="pb-3">User</th>
-                      <th className="pb-3">IP Address</th>
-                      <th className="pb-3">Login Time</th>
-                      <th className="pb-3">Logout Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loginLogs.map((log) => (
-                      <tr key={log.id} className="border-b border-slate-700/50">
-                        <td className="py-3 font-medium">{log.username}</td>
-                        <td className="py-3 text-slate-400 font-mono text-sm">{log.ip_address}</td>
-                        <td className="py-3 text-sm">{new Date(log.login_at).toLocaleString()}</td>
-                        <td className="py-3 text-sm text-slate-400">
-                          {log.logout_at ? new Date(log.logout_at).toLocaleString() : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Messages Tab */}
-          {activeTab === 'messages' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Message History</h2>
-                <div className="flex gap-3">
-                  <select
-                    value={messageFilter}
-                    onChange={(e) => setMessageFilter(e.target.value)}
-                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="text">Text</option>
-                    <option value="image">Images</option>
-                    <option value="video">Videos</option>
-                  </select>
-                  <select
-                    value={weekFilter}
-                    onChange={(e) => setWeekFilter(e.target.value)}
-                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm"
-                  >
-                    <option value="all">All Weeks</option>
-                    {availableWeeks.map((week) => (
-                      <option key={week} value={week}>
-                        Week of {new Date(week).toLocaleDateString()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {messageStats && (
-                <div className="grid grid-cols-4 gap-4 mb-6">
-                  <div className="bg-slate-700 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold">{messageStats.total_messages}</p>
-                    <p className="text-slate-400 text-sm">Total</p>
-                  </div>
-                  <div className="bg-slate-700 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold">{messageStats.text_count}</p>
-                    <p className="text-slate-400 text-sm">Text</p>
-                  </div>
-                  <div className="bg-slate-700 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold">{messageStats.image_count}</p>
-                    <p className="text-slate-400 text-sm">Images</p>
-                  </div>
-                  <div className="bg-slate-700 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold">{messageStats.video_count}</p>
-                    <p className="text-slate-400 text-sm">Videos</p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="space-y-3">
-                {messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
-                    className={`bg-slate-700 rounded-lg p-4 ${msg.isExpired ? 'opacity-50' : ''}`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">
-                          {msg.type === 'text' ? '💬' : msg.type === 'image' ? '🖼️' : '🎬'}
-                        </span>
-                        <div>
-                          <p className="font-medium">
-                            {msg.author}
-                            {msg.isFromAdmin && (
-                              <span className="ml-2 text-xs bg-indigo-600 px-2 py-0.5 rounded">Admin</span>
-                            )}
-                          </p>
-                          <p className="text-slate-400 text-sm">
-                            {new Date(msg.createdAt).toLocaleString()}
-                          </p>
-                        </div>
+            {/* Activity Log Tab */}
+            {activeTab === 'activity' && (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {loginLogs.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No activity recorded</p>
+                ) : (
+                  loginLogs.slice(0, 50).map((log) => (
+                    <div
+                      key={log.id}
+                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg text-sm"
+                    >
+                      <div>
+                        <span className="text-slate-700 font-medium">{log.username}</span>
+                        <span className="text-slate-400 ml-2">opened story</span>
                       </div>
-                      {msg.isExpired && (
-                        <span className="text-xs bg-red-600/30 text-red-400 px-2 py-1 rounded">Expired</span>
+                      <span className="text-slate-400">{formatDate(log.loginAt)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Notes & Media Tab */}
+            {activeTab === 'notes' && (
+              <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                {messages.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">No notes yet</p>
+                ) : (
+                  messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`p-3 rounded-lg relative group ${msg.isFromAdmin ? 'bg-slate-100' : 'bg-slate-50'}`}
+                    >
+                      {/* Delete button */}
+                      <button
+                        onClick={() => deleteMessage(msg.id)}
+                        disabled={deletingId === msg.id}
+                        className="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Delete"
+                      >
+                        {deletingId === msg.id ? (
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {msg.content && (
+                        <p className="text-slate-700 pr-8">{msg.content}</p>
                       )}
+                      {msg.mediaUrl && (
+                        <div className="mt-2">
+                          {msg.mediaType?.startsWith('image') ? (
+                            <img
+                              src={msg.mediaUrl}
+                              alt=""
+                              className="max-w-xs rounded-lg cursor-pointer hover:opacity-90"
+                              onClick={() => window.open(msg.mediaUrl!, '_blank')}
+                            />
+                          ) : msg.mediaType?.startsWith('video') ? (
+                            <video
+                              src={msg.mediaUrl}
+                              controls
+                              className="max-w-xs rounded-lg"
+                            />
+                          ) : (
+                            <a
+                              href={msg.mediaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              View attachment
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-400 mt-2">
+                        {formatDate(msg.createdAt)}
+                      </p>
                     </div>
-                    {msg.type === 'text' && msg.content && (
-                      <p className="mt-3 text-slate-300">{msg.content}</p>
-                    )}
-                    {msg.type === 'image' && msg.mediaUrl && (
-                      <img 
-                        src={msg.mediaUrl} 
-                        alt="" 
-                        className="mt-3 max-h-48 rounded-lg"
-                      />
-                    )}
-                    {msg.type === 'video' && msg.mediaUrl && (
-                      <video 
-                        src={msg.mediaUrl} 
-                        controls 
-                        className="mt-3 max-h-48 rounded-lg"
-                      />
-                    )}
-                  </div>
-                ))}
-                {messages.length === 0 && (
-                  <p className="text-slate-400 text-center py-8">No messages found</p>
+                  ))
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </main>
     </div>

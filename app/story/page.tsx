@@ -14,7 +14,7 @@ export default function StoryLogin() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       const res = await fetch('/api/story/auth', {
         method: 'POST',
@@ -39,14 +39,14 @@ export default function StoryLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm border border-amber-100">
         <div className="text-center mb-8">
           <span className="text-5xl">📖</span>
-          <h1 className="text-2xl font-bold mt-4 text-gray-800">Story Time</h1>
-          <p className="text-gray-500 text-sm mt-1">Enter your secret garden</p>
+          <h1 className="text-2xl font-serif font-bold mt-4 text-gray-700">Story Time</h1>
+          <p className="text-gray-400 text-sm mt-1">Enter your reading garden</p>
         </div>
-        
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <input
@@ -54,7 +54,7 @@ export default function StoryLogin() {
               placeholder="Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-200 focus:border-transparent outline-none transition-all text-gray-700"
               autoComplete="off"
               autoFocus
               required
@@ -66,22 +66,22 @@ export default function StoryLogin() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-200 focus:border-transparent outline-none transition-all"
               autoComplete="off"
               required
             />
           </div>
-          
+
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm text-center p-3 rounded-xl">
+            <div className="bg-red-50 text-red-500 text-sm text-center p-3 rounded-xl">
               {error}
             </div>
           )}
-          
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 disabled:bg-indigo-400 transition-colors"
+            className="w-full bg-amber-500 text-white py-3 rounded-xl font-medium hover:bg-amber-600 disabled:bg-amber-300 transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
@@ -89,10 +89,10 @@ export default function StoryLogin() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Loading...
+                Opening...
               </span>
             ) : (
-              'Enter'
+              'Read Story'
             )}
           </button>
         </form>

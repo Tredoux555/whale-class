@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 interface Story {
@@ -27,17 +27,17 @@ export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
   const session = params.session as string;
-  
+
   // Story state
   const [story, setStory] = useState<Story | null>(null);
   const [username, setUsername] = useState('');
-  
+
   // Interaction state
   const [isDecoded, setIsDecoded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [messageInput, setMessageInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Media state
   const [showMediaSection, setShowMediaSection] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -45,7 +45,7 @@ export default function StoryViewer() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  
+
   // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,16 +70,20 @@ export default function StoryViewer() {
       return;
     }
 
+    const storedUsername = sessionStorage.getItem('story_username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+
     loadStory();
     loadMedia();
-    
-    // Auto-logout on window close
+
     const handleUnload = () => {
       sessionStorage.removeItem('story_session');
       sessionStorage.removeItem('story_username');
       navigator.sendBeacon('/api/story/auth', JSON.stringify({ action: 'logout' }));
     };
-    
+
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [session, router]);
@@ -98,7 +102,10 @@ export default function StoryViewer() {
 
       const data = await res.json();
       setStory(data.story);
-      setUsername(data.username);
+      if (data.username) {
+        setUsername(data.username);
+        sessionStorage.setItem('story_username', data.username);
+      }
     } catch (err) {
       console.error('Error loading story:', err);
       router.push('/story');
@@ -142,7 +149,7 @@ export default function StoryViewer() {
         }, 100);
       }
     }
-    
+
     // Last paragraph, last letter: toggle media section
     if (paragraphIndex === (story?.paragraphs.length || 0) - 1 && isLastLetter) {
       setShowMediaSection(!showMediaSection);
@@ -159,7 +166,7 @@ export default function StoryViewer() {
   // Save text message
   const saveMessage = async () => {
     if (!messageInput.trim()) return;
-    
+
     setIsSaving(true);
     try {
       const res = await fetch('/api/story/message', {
@@ -223,7 +230,7 @@ export default function StoryViewer() {
 
   // Delete media
   const deleteMedia = async (mediaId: number) => {
-    if (!confirm('Delete this media?')) return;
+    if (!confirm('Remove this memory?')) return;
 
     try {
       const res = await fetch(`/api/story/upload-media?id=${mediaId}`, {
@@ -246,20 +253,18 @@ export default function StoryViewer() {
     const isLastParagraph = index === (story?.paragraphs.length || 0) - 1;
     const isThirdParagraph = index === 2;
 
-    // Track which special letters have been found
     let tFound = false;
     let cFound = false;
 
     return (
-      <p 
+      <p
         ref={isThirdParagraph ? paragraph3Ref : (isLastParagraph ? lastParagraphRef : null)}
         className="mb-6 leading-relaxed text-lg text-gray-700"
       >
         {text.split('').map((char, i) => {
           const lowerChar = char.toLowerCase();
           const isLastChar = i === text.length - 1;
-          
-          // First paragraph interactions
+
           let isClickable = false;
           if (isFirstParagraph) {
             const isFirstT = lowerChar === 't' && !tFound;
@@ -268,8 +273,7 @@ export default function StoryViewer() {
             if (isFirstC) cFound = true;
             isClickable = isFirstT || isFirstC;
           }
-          
-          // Last paragraph, last letter
+
           if (isLastParagraph && isLastChar) {
             isClickable = true;
           }
@@ -278,22 +282,19 @@ export default function StoryViewer() {
             <span
               key={i}
               onClick={() => isClickable && handleLetterClick(char, i, index, isLastChar)}
-              className={isClickable ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}
+              className={isClickable ? 'cursor-pointer hover:text-amber-700 transition-colors' : ''}
             >
               {char}
             </span>
           );
         })}
-        
-        {/* Third paragraph: show hidden message or editor */}
+
+        {/* Third paragraph: show note or editor - styled to blend in naturally */}
         {isThirdParagraph && (
           <>
             {isDecoded && (story?.hiddenMessage || story?.adminMessage) && (
-              <span className="ml-2 text-indigo-600 font-medium animate-fade-in">
+              <span className="ml-1 text-gray-600 italic">
                 {story?.adminMessage || story?.hiddenMessage}
-                {story?.messageAuthor && !story?.adminMessage && (
-                  <span className="text-gray-400 text-sm ml-2">— {story.messageAuthor}</span>
-                )}
               </span>
             )}
             {isEditing && (
@@ -303,21 +304,21 @@ export default function StoryViewer() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && saveMessage()}
-                  className="border-b-2 border-indigo-400 outline-none px-2 py-1 bg-transparent min-w-[200px] focus:border-indigo-600"
+                  className="border-b border-gray-300 outline-none px-2 py-1 bg-transparent min-w-[200px] focus:border-gray-500 text-gray-600"
                   autoFocus
-                  placeholder="Type your message..."
+                  placeholder="Add a note..."
                   disabled={isSaving}
                 />
                 <button
                   onClick={saveMessage}
                   disabled={isSaving || !messageInput.trim()}
-                  className="text-sm bg-indigo-500 text-white px-4 py-1 rounded-lg hover:bg-indigo-600 disabled:bg-gray-400 transition-colors"
+                  className="text-sm bg-amber-100 text-amber-800 px-3 py-1 rounded hover:bg-amber-200 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
                 >
-                  {isSaving ? '⏳' : '💾'}
+                  {isSaving ? '...' : '✓'}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="text-sm bg-gray-200 text-gray-600 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   ✕
                 </button>
@@ -331,43 +332,45 @@ export default function StoryViewer() {
 
   if (!story) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="flex items-center gap-3 text-lg text-gray-600">
-          <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Loading story...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
+        <div className="flex items-center gap-3 text-lg text-gray-500">
+          <span className="animate-pulse">📖</span>
+          Opening story...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 p-4 md:p-8">
       <div className="max-w-3xl mx-auto">
         {/* Story Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-amber-100">
           <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800 font-serif">
             {story.title}
           </h1>
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg max-w-none font-serif">
             {story.paragraphs.map((paragraph, index) => (
               <div key={index}>
                 {renderParagraph(paragraph, index)}
               </div>
             ))}
           </div>
+
+          {/* Subtle footer decoration */}
+          <div className="mt-8 text-center text-amber-300 text-2xl">
+            ✦ ✦ ✦
+          </div>
         </div>
 
-        {/* Media Section */}
+        {/* Media Section - styled as "Story Memories" */}
         {showMediaSection && (
-          <div className="mt-6 bg-white rounded-2xl shadow-xl p-6 animate-slide-up">
+          <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-amber-100 animate-fade-in">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800">📸 Shared Moments</h2>
+              <h2 className="text-xl font-serif text-gray-700">Story Memories</h2>
               <button
                 onClick={() => setShowMediaSection(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-300 hover:text-gray-500 transition-colors"
               >
                 ✕
               </button>
@@ -385,40 +388,40 @@ export default function StoryViewer() {
               />
               <label
                 htmlFor="media-upload"
-                className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
-                  ${isUploadingMedia ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:border-indigo-400 hover:bg-indigo-50'}`}
+                className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+                  ${isUploadingMedia ? 'border-amber-200 bg-amber-50' : 'border-gray-200 hover:border-amber-300 hover:bg-amber-50'}`}
               >
                 {isUploadingMedia ? (
                   <div className="space-y-2">
-                    <div className="animate-spin text-3xl">⏳</div>
-                    <p className="text-indigo-600">Uploading...</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-indigo-600 h-2 rounded-full transition-all"
+                    <div className="text-2xl animate-pulse">📷</div>
+                    <p className="text-gray-500">Saving memory...</p>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-xs mx-auto">
+                      <div
+                        className="bg-amber-400 h-1.5 rounded-full transition-all"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
                   </div>
                 ) : (
                   <>
-                    <span className="text-4xl block mb-2">📷</span>
-                    <p className="text-gray-600">Tap to upload photo or video</p>
-                    <p className="text-gray-400 text-sm mt-1">Max: 10MB images, 50MB videos</p>
+                    <span className="text-3xl block mb-2">📷</span>
+                    <p className="text-gray-500">Add a memory</p>
+                    <p className="text-gray-300 text-sm mt-1">Photos & videos</p>
                   </>
                 )}
               </label>
               {uploadError && (
-                <p className="text-red-500 text-sm mt-2 text-center">{uploadError}</p>
+                <p className="text-red-400 text-sm mt-2 text-center">{uploadError}</p>
               )}
             </div>
 
             {/* Media Gallery */}
             {mediaItems.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {mediaItems.map((item) => (
                   <div
                     key={item.id}
-                    className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group"
+                    className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group shadow-sm hover:shadow-md transition-shadow"
                     onClick={() => setSelectedMedia(item)}
                   >
                     {item.type === 'image' ? (
@@ -429,18 +432,15 @@ export default function StoryViewer() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                        <span className="text-4xl">🎬</span>
+                        <span className="text-3xl">🎬</span>
                       </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                      <p className="text-white text-xs truncate">{item.author}</p>
-                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-400 py-8">
-                No photos or videos yet. Be the first to share!
+              <p className="text-center text-gray-300 py-6 font-serif italic">
+                No memories yet
               </p>
             )}
           </div>
@@ -448,21 +448,21 @@ export default function StoryViewer() {
 
         {/* Media Lightbox */}
         {selectedMedia && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedMedia(null)}
           >
-            <div 
+            <div
               className="max-w-4xl max-h-[90vh] relative"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedMedia(null)}
-                className="absolute -top-10 right-0 text-white text-2xl hover:text-gray-300"
+                className="absolute -top-10 right-0 text-white/70 text-2xl hover:text-white"
               >
                 ✕
               </button>
-              
+
               {selectedMedia.type === 'image' ? (
                 <img
                   src={selectedMedia.url}
@@ -477,20 +477,17 @@ export default function StoryViewer() {
                   className="max-w-full max-h-[80vh] rounded-lg"
                 />
               )}
-              
-              <div className="mt-4 flex items-center justify-between text-white">
-                <div>
-                  <p className="font-medium">{selectedMedia.author}</p>
-                  <p className="text-sm text-gray-400">
-                    {new Date(selectedMedia.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
+
+              <div className="mt-4 flex items-center justify-between text-white/70">
+                <p className="text-sm">
+                  {new Date(selectedMedia.createdAt).toLocaleDateString()}
+                </p>
                 {selectedMedia.author === username && (
                   <button
                     onClick={() => deleteMedia(selectedMedia.id)}
-                    className="text-red-400 hover:text-red-300 text-sm"
+                    className="text-red-300 hover:text-red-200 text-sm"
                   >
-                    🗑️ Delete
+                    Remove
                   </button>
                 )}
               </div>
@@ -499,21 +496,13 @@ export default function StoryViewer() {
         )}
       </div>
 
-      {/* CSS Animations */}
       <style jsx global>{`
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(20px); }
+          from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
         }
       `}</style>
     </div>
