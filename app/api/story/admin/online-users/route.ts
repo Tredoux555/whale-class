@@ -21,14 +21,14 @@ export async function GET(req: NextRequest) {
 
     await verifyAdminToken(token);
 
-    // Get users who logged in within threshold
+    // Get users who logged in within threshold (handle both login_time and login_at columns)
     const result = await query<OnlineUserRow>(
       `SELECT 
         username, 
-        MAX(login_time) as last_login,
-        EXTRACT(EPOCH FROM (NOW() - MAX(login_time)))::integer as seconds_ago
+        MAX(COALESCE(login_at, login_time)) as last_login,
+        EXTRACT(EPOCH FROM (NOW() - MAX(COALESCE(login_at, login_time))))::integer as seconds_ago
        FROM story_login_logs
-       WHERE login_time > NOW() - INTERVAL '${ONLINE_THRESHOLD_MINUTES} minutes'
+       WHERE COALESCE(login_at, login_time) > NOW() - INTERVAL '${ONLINE_THRESHOLD_MINUTES} minutes'
        GROUP BY username
        ORDER BY last_login DESC`
     );
