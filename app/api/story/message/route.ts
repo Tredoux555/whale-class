@@ -95,25 +95,34 @@ export async function POST(req: NextRequest) {
     );
     console.log('Message history saved');
 
-    // Update secret_stories with hidden message (overwrites previous)
-    console.log('Updating secret_stories...');
-    const result = await query(
-      `UPDATE secret_stories
-       SET hidden_message = $1,
-           message_author = $2,
-           updated_at = NOW()
-       WHERE week_start_date = $3
-       RETURNING *`,
-      [message, author || 'Unknown', weekStartDate]
+    // Check if story exists, create one if not
+    console.log('Checking if story exists for week:', weekStartDate);
+    const existingStory = await queryOne(
+      'SELECT id FROM secret_stories WHERE week_start_date = $1',
+      [weekStartDate]
     );
-    console.log('Secret stories update result:', result.rows.length, 'rows');
 
-    if (result.rows.length === 0) {
-      console.log('No story found for week:', weekStartDate);
-      return NextResponse.json(
-        { error: 'Story not found for current week' },
-        { status: 404 }
+    if (!existingStory) {
+      console.log('No story found, creating basic story with message...');
+      // Create a basic story if none exists
+      await query(
+        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author, created_at, updated_at)
+         VALUES ($1, 'Messages', 'Message Board', '{"paragraphs": ["Welcome to our message board.", "Share your thoughts and messages here.", "Click the letters to explore features."]}', $2, $3, NOW(), NOW())`,
+        [weekStartDate, message, author || 'Unknown']
       );
+      console.log('Basic story created with message');
+    } else {
+      // Update existing story
+      console.log('Updating existing story...');
+      await query(
+        `UPDATE secret_stories
+         SET hidden_message = $1,
+             message_author = $2,
+             updated_at = NOW()
+         WHERE week_start_date = $3`,
+        [message, author || 'Unknown', weekStartDate]
+      );
+      console.log('Story updated with message');
     }
 
     console.log('Message saved successfully');
