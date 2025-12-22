@@ -74,8 +74,36 @@ BEGIN
   END IF;
 END $$;
 
--- Create indexes (ignore if they already exist)
-CREATE INDEX IF NOT EXISTS idx_story_login_logs_time ON story_login_logs(COALESCE(login_at, login_time) DESC);
+-- Create indexes (handle both login_time and login_at columns)
+DO $$
+BEGIN
+  -- Create time index based on which column exists
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_at'
+  ) THEN
+    -- Use login_at if it exists
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_indexes 
+      WHERE tablename = 'story_login_logs' AND indexname = 'idx_story_login_logs_time'
+    ) THEN
+      CREATE INDEX idx_story_login_logs_time ON story_login_logs(login_at DESC);
+    END IF;
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'story_login_logs' AND column_name = 'login_time'
+  ) THEN
+    -- Use login_time if login_at doesn't exist
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_indexes 
+      WHERE tablename = 'story_login_logs' AND indexname = 'idx_story_login_logs_time'
+    ) THEN
+      CREATE INDEX idx_story_login_logs_time ON story_login_logs(login_time DESC);
+    END IF;
+  END IF;
+END $$;
+
+-- Create username index (ignore if it already exists)
 CREATE INDEX IF NOT EXISTS idx_story_login_logs_user ON story_login_logs(username);
 
 -- 4. STORY MESSAGE HISTORY TABLE
