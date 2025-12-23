@@ -20,9 +20,10 @@ interface LoginLog {
 interface Message {
   id: number;
   week_start_date: string;
-  message_type: 'text' | 'image' | 'video';
+  message_type: 'text' | 'image' | 'video' | 'audio';
   message_content: string | null;
   media_url: string | null;
+  media_filename: string | null;
   author: string;
   created_at: string;
   is_expired: boolean;
@@ -56,6 +57,7 @@ export default function AdminDashboard() {
   const [adminMessage, setAdminMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
+  const [messageError, setMessageError] = useState('');
   
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -172,6 +174,7 @@ export default function AdminDashboard() {
 
     setSendingMessage(true);
     setMessageSent(false);
+    setMessageError('');
 
     try {
       const session = getSession();
@@ -184,14 +187,18 @@ export default function AdminDashboard() {
         body: JSON.stringify({ message: adminMessage.trim() })
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         setAdminMessage('');
         setMessageSent(true);
         await loadMessages();
         setTimeout(() => setMessageSent(false), 3000);
+      } else {
+        setMessageError(data.error || 'Failed to send');
       }
     } catch {
-      // Handle silently
+      setMessageError('Connection error');
     } finally {
       setSendingMessage(false);
     }
@@ -212,6 +219,26 @@ export default function AdminDashboard() {
     return `${Math.floor(seconds / 3600)}h ago`;
   };
 
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'text': return '💬';
+      case 'image': return '📷';
+      case 'video': return '🎬';
+      case 'audio': return '🎵';
+      default: return '📎';
+    }
+  };
+
+  const getTypeBadgeClass = (type: string) => {
+    switch (type) {
+      case 'text': return 'bg-blue-100 text-blue-700';
+      case 'image': return 'bg-green-100 text-green-700';
+      case 'video': return 'bg-purple-100 text-purple-700';
+      case 'audio': return 'bg-pink-100 text-pink-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -225,7 +252,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Story Admin</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Classroom Manager</h1>
           <button
             onClick={handleLogout}
             className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
@@ -234,20 +261,21 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Send Message Card */}
+        {/* Send Note Card */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-3 text-gray-700">Send Secret Message</h2>
+          <h2 className="text-lg font-semibold mb-3 text-gray-700">Send Teacher Note</h2>
           <p className="text-sm text-gray-500 mb-3">
-            This message will appear when users click the first &apos;t&apos; in the story.
+            This note will appear when parents view the weekly activities.
           </p>
           <div className="flex gap-3">
             <input
               type="text"
               value={adminMessage}
               onChange={(e) => setAdminMessage(e.target.value)}
-              placeholder="Type your secret message..."
+              placeholder="Type your note for parents..."
               className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
               disabled={sendingMessage}
+              onKeyPress={(e) => e.key === 'Enter' && sendAdminMessage()}
             />
             <button
               onClick={sendAdminMessage}
@@ -258,7 +286,10 @@ export default function AdminDashboard() {
             </button>
           </div>
           {messageSent && (
-            <p className="mt-2 text-sm text-green-600">✓ Message sent successfully!</p>
+            <p className="mt-2 text-sm text-green-600">✓ Note sent successfully!</p>
+          )}
+          {messageError && (
+            <p className="mt-2 text-sm text-red-600">✗ {messageError}</p>
           )}
         </div>
 
@@ -275,9 +306,9 @@ export default function AdminDashboard() {
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                {tab === 'online' && `Who's Online (${onlineCount})`}
-                {tab === 'logs' && 'Login Logs'}
-                {tab === 'messages' && 'Message History'}
+                {tab === 'online' && `Active Users (${onlineCount})`}
+                {tab === 'logs' && 'Activity Logs'}
+                {tab === 'messages' && 'Note History'}
               </button>
             ))}
           </div>
@@ -288,7 +319,7 @@ export default function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-gray-500">
-                    {onlineCount} of {totalUsers} users online (last 10 minutes)
+                    {onlineCount} of {totalUsers} users active (last 10 minutes)
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -297,7 +328,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {onlineUsers.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No users currently online</p>
+                  <p className="text-gray-500 text-center py-8">No users currently active</p>
                 ) : (
                   <div className="space-y-3">
                     {onlineUsers.map((user) => (
@@ -317,7 +348,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
-                          Online
+                          Active
                         </span>
                       </div>
                     ))}
@@ -329,10 +360,10 @@ export default function AdminDashboard() {
             {/* Login Logs Tab */}
             {activeTab === 'logs' && (
               <div>
-                <p className="text-sm text-gray-500 mb-4">Recent login activity</p>
+                <p className="text-sm text-gray-500 mb-4">Recent user activity</p>
                 
                 {loginLogs.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No login logs yet</p>
+                  <p className="text-gray-500 text-center py-8">No activity logs yet</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -366,8 +397,8 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex gap-4">
                     {statistics.map((stat) => (
-                      <span key={stat.message_type} className="text-sm text-gray-500">
-                        {stat.message_type}: <strong>{stat.count}</strong>
+                      <span key={stat.message_type} className="text-sm text-gray-500 flex items-center gap-1">
+                        {getTypeIcon(stat.message_type)} {stat.message_type}: <strong>{stat.count}</strong>
                       </span>
                     ))}
                   </div>
@@ -383,7 +414,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {messages.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No messages yet</p>
+                  <p className="text-gray-500 text-center py-8">No notes yet</p>
                 ) : (
                   <div className="space-y-3">
                     {messages.map((msg) => (
@@ -397,12 +428,8 @@ export default function AdminDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-gray-800">{msg.author}</span>
-                              <span className={`px-2 py-0.5 text-xs rounded ${
-                                msg.message_type === 'text' ? 'bg-blue-100 text-blue-700' :
-                                msg.message_type === 'image' ? 'bg-green-100 text-green-700' :
-                                'bg-purple-100 text-purple-700'
-                              }`}>
-                                {msg.message_type}
+                              <span className={`px-2 py-0.5 text-xs rounded flex items-center gap-1 ${getTypeBadgeClass(msg.message_type)}`}>
+                                {getTypeIcon(msg.message_type)} {msg.message_type}
                               </span>
                               {msg.is_expired && (
                                 <span className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded">
@@ -429,6 +456,20 @@ export default function AdminDashboard() {
                                 controls
                                 className="max-w-xs rounded mt-2"
                               />
+                            )}
+
+                            {msg.message_type === 'audio' && msg.media_url && (
+                              <div className="mt-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-3 max-w-md">
+                                <p className="text-sm text-gray-600 mb-2">
+                                  🎵 {msg.media_filename || 'Audio file'}
+                                </p>
+                                <audio
+                                  src={msg.media_url}
+                                  controls
+                                  className="w-full h-10"
+                                  preload="metadata"
+                                />
+                              </div>
                             )}
                           </div>
                           

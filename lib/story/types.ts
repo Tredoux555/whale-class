@@ -39,7 +39,7 @@ export interface LoginLog {
 export interface MessageHistory {
   id: number;
   week_start_date: string;
-  message_type: 'text' | 'image' | 'video';
+  message_type: 'text' | 'image' | 'video' | 'audio';
   message_content: string | null;
   media_url: string | null;
   media_filename: string | null;
@@ -51,7 +51,7 @@ export interface MessageHistory {
 
 export interface MediaItem {
   id: number;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'audio';
   url: string;
   filename: string | null;
   author: string;

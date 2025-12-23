@@ -1,47 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/story/db';
-import { extractToken, verifyAdminToken } from '@/lib/story/auth';
-import { LoginLog } from '@/lib/story/types';
+import { jwtVerify } from 'jose';
+import { Pool } from 'pg';
+
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+    });
+  }
+  return pool;
+}
+
+async function dbQuery(text: string, params?: unknown[]) {
+  const client = getPool();
+  return client.query(text, params);
+}
+
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.STORY_JWT_SECRET;
+  if (!secret) throw new Error('STORY_JWT_SECRET not set');
+  return new TextEncoder().encode(secret);
+}
+
+async function verifyAdminToken(authHeader: string | null): Promise<boolean> {
+  if (!authHeader) return false;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const secret = getJWTSecret();
+    const { payload } = await jwtVerify(token, secret);
+    return payload.role === 'admin';
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify admin
-    const token = extractToken(req.headers.get('authorization'));
-    
-    if (!token) {
+    const isAdmin = await verifyAdminToken(req.headers.get('authorization'));
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await verifyAdminToken(token);
-
-    // Get query params
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Get login logs (handle both login_time and login_at columns)
-    const result = await query<LoginLog>(
-      `SELECT id, username, COALESCE(login_at, login_time) as login_time, session_id, ip_address, user_agent
+    // Query with correct column name: login_at (not login_time)
+    const result = await dbQuery(
+      `SELECT id, username, login_at, ip_address, user_agent
        FROM story_login_logs
-       ORDER BY COALESCE(login_at, login_time) DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
+       ORDER BY login_at DESC
+       LIMIT $1`,
+      [limit]
     );
 
-    // Get total count
-    const countResult = await query<{ count: string }>(
-      'SELECT COUNT(*) as count FROM story_login_logs'
-    );
-    const total = parseInt(countResult.rows[0]?.count || '0');
+    // Map to expected format for frontend
+    const logs = result.rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      login_time: row.login_at, // Frontend expects login_time
+      ip_address: row.ip_address,
+      user_agent: row.user_agent
+    }));
 
-    return NextResponse.json({
-      logs: result.rows,
-      total,
-      limit,
-      offset
-    });
+    return NextResponse.json({ logs });
   } catch (error) {
-    console.error('Login logs error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('[LoginLogs] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 });
   }
 }
