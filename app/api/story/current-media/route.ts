@@ -6,7 +6,7 @@ import { MediaItem } from '@/lib/story/types';
 
 interface MediaRow {
   id: number;
-  message_type: 'image' | 'video';
+  message_type: 'image' | 'video' | 'audio';
   media_url: string;
   media_filename: string | null;
   author: string;
@@ -26,12 +26,12 @@ export async function GET(req: NextRequest) {
     await verifyUserToken(token);
     const weekStartDate = getCurrentWeekStart();
 
-    // Get non-expired media for current week
+    // Get non-expired media for current week (images, videos, AND audio)
     const result = await query<MediaRow>(
       `SELECT id, message_type, media_url, media_filename, author, created_at, expires_at
        FROM story_message_history
        WHERE week_start_date = $1
-         AND message_type IN ('image', 'video')
+         AND message_type IN ('image', 'video', 'audio')
          AND is_expired = FALSE
          AND (expires_at IS NULL OR expires_at > NOW())
        ORDER BY created_at DESC`,

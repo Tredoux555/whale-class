@@ -12,7 +12,7 @@ interface Story {
 
 interface MediaItem {
   id: number;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'audio';
   url: string;
   filename: string | null;
   author: string;
@@ -33,6 +33,10 @@ export default function StoryViewer() {
   const [messageInput, setMessageInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   
+  // Track last seen message to detect new ones
+  const [lastMessageTime, setLastMessageTime] = useState<string | null>(null);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+  
   // Media state
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [showMediaSection, setShowMediaSection] = useState(false);
@@ -47,7 +51,7 @@ export default function StoryViewer() {
     return sessionStorage.getItem('story_session');
   }, []);
 
-  const loadStory = useCallback(async () => {
+  const loadStory = useCallback(async (silent = false) => {
     const session = getSession();
     if (!session) return;
 
@@ -65,10 +69,18 @@ export default function StoryViewer() {
       const data = await res.json();
       setStory(data.story);
       setUsername(data.username);
+      
+      // Check if there's a new message
+      if (data.story.hiddenMessage && data.story.updatedAt) {
+        if (lastMessageTime && data.story.updatedAt !== lastMessageTime) {
+          setHasNewMessage(true);
+        }
+        setLastMessageTime(data.story.updatedAt);
+      }
     } catch {
-      router.push('/story');
+      if (!silent) router.push('/story');
     }
-  }, [router, getSession]);
+  }, [router, getSession, lastMessageTime]);
 
   const loadMedia = useCallback(async () => {
     const session = getSession();
@@ -87,6 +99,15 @@ export default function StoryViewer() {
       // Non-critical, ignore
     }
   }, [getSession]);
+
+  // Check for new messages periodically (every 10 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadStory(true); // Silent refresh
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [loadStory]);
 
   useEffect(() => {
     const session = getSession();
@@ -109,7 +130,7 @@ export default function StoryViewer() {
   }, [params.session, router, loadStory, loadMedia, getSession]);
 
   // Handle letter clicks
-  const handleLetterClick = (letter: string, charIndex: number, paragraphIndex: number) => {
+  const handleLetterClick = async (letter: string, charIndex: number, paragraphIndex: number) => {
     if (!story) return;
 
     // First paragraph: 't' and 'c' interactions
@@ -119,9 +140,12 @@ export default function StoryViewer() {
       const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
 
       if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
+        // Refresh story to get latest message before showing
+        await loadStory(true);
         setIsDecoded(!isDecoded);
         setIsEditing(false);
         setShowMediaSection(false);
+        setHasNewMessage(false); // Clear new message indicator
       } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
         setIsEditing(true);
         setIsDecoded(false);
@@ -218,6 +242,14 @@ export default function StoryViewer() {
     }
   };
 
+  // Get display name for audio files
+  const getAudioDisplayName = (item: MediaItem) => {
+    if (item.filename) {
+      return item.filename.replace(/\.[^/.]+$/, '').replace(/-|_/g, ' ');
+    }
+    return 'Shared Song';
+  };
+
   // Render paragraph with interactive letters
   const renderParagraph = (text: string, index: number) => {
     if (!story) return null;
@@ -253,6 +285,9 @@ export default function StoryViewer() {
               </span>
             );
           })}
+          {hasNewMessage && (
+            <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" title="New note available"></span>
+          )}
         </p>
       );
     }
@@ -275,7 +310,7 @@ export default function StoryViewer() {
                 onKeyPress={handleKeyPress}
                 className="border-b-2 border-gray-400 outline-none px-2 py-1 bg-transparent animate-pulse min-w-[200px]"
                 autoFocus
-                placeholder="Type message..."
+                placeholder="Type note..."
                 disabled={isSaving}
               />
               <button
@@ -332,7 +367,7 @@ export default function StoryViewer() {
   if (!story) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="text-lg text-gray-600">Loading story...</div>
+        <div className="text-lg text-gray-600">Loading classroom activities...</div>
       </div>
     );
   }
@@ -357,11 +392,13 @@ export default function StoryViewer() {
           <div className="mt-8 pt-8 border-t border-gray-200">
             {/* Upload Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3 text-gray-700">Share a photo or video</h3>
+              <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                Share classroom photos and songs 🎵
+              </h3>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept="image/*,video/*,audio/*"
                 onChange={handleFileUpload}
                 disabled={isUploadingMedia}
                 className="block w-full text-sm text-gray-500
@@ -372,6 +409,9 @@ export default function StoryViewer() {
                   hover:file:bg-indigo-100
                   disabled:opacity-50"
               />
+              <p className="mt-1 text-xs text-gray-400">
+                Supports: Images, Videos, and Audio (expires in 24 hours)
+              </p>
               {isUploadingMedia && (
                 <p className="mt-2 text-sm text-indigo-600 animate-pulse">Uploading...</p>
               )}
@@ -380,42 +420,110 @@ export default function StoryViewer() {
               )}
             </div>
 
-            {/* Media Gallery */}
-            {mediaItems.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-gray-700">Shared memories</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {mediaItems.map((item) => (
-                    <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
-                      {item.type === 'image' ? (
-                        <img
-                          src={item.url}
-                          alt={item.filename || 'Shared image'}
-                          className="w-full h-48 object-cover"
-                        />
-                      ) : (
-                        <video
-                          src={item.url}
-                          controls
-                          className="w-full h-48 object-cover"
-                        />
-                      )}
-                      <div className="p-2 text-sm text-gray-500">
-                        <span className="font-medium">{item.author}</span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(item.created_at).toLocaleDateString()}</span>
+            {/* Separate media by type */}
+            {(() => {
+              const images = mediaItems.filter(m => m.type === 'image');
+              const videos = mediaItems.filter(m => m.type === 'video');
+              const songs = mediaItems.filter(m => m.type === 'audio');
+
+              return (
+                <>
+                  {/* Songs Section */}
+                  {songs.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                        <span>🎵</span> Classroom Songs
+                      </h3>
+                      <div className="space-y-3">
+                        {songs.map((item) => (
+                          <div 
+                            key={item.id} 
+                            className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100"
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white text-lg">
+                                🎵
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800">
+                                  {getAudioDisplayName(item)}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Shared by {item.author} • {new Date(item.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <audio
+                              src={item.url}
+                              controls
+                              className="w-full h-10"
+                              preload="metadata"
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  )}
 
-            {mediaItems.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                No photos or videos shared yet this week.
-              </p>
-            )}
+                  {/* Photos Section */}
+                  {images.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                        <span>📷</span> Classroom Photos
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {images.map((item) => (
+                          <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
+                            <img
+                              src={item.url}
+                              alt={item.filename || 'Classroom photo'}
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="p-2 text-sm text-gray-500">
+                              <span className="font-medium">{item.author}</span>
+                              <span className="mx-2">•</span>
+                              <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Videos Section */}
+                  {videos.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                        <span>🎬</span> Classroom Videos
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {videos.map((item) => (
+                          <div key={item.id} className="rounded-lg overflow-hidden bg-gray-50">
+                            <video
+                              src={item.url}
+                              controls
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="p-2 text-sm text-gray-500">
+                              <span className="font-medium">{item.author}</span>
+                              <span className="mx-2">•</span>
+                              <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty State */}
+                  {mediaItems.length === 0 && (
+                    <p className="text-gray-500 text-center py-4">
+                      No classroom photos or songs shared yet today.
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>

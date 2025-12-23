@@ -1,56 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/story/db';
-import { extractToken, verifyAdminToken } from '@/lib/story/auth';
+import { jwtVerify } from 'jose';
+import { Pool } from 'pg';
 
-interface OnlineUserRow {
-  username: string;
-  last_login: string;
-  seconds_ago: number;
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+    });
+  }
+  return pool;
 }
 
-const ONLINE_THRESHOLD_MINUTES = 10;
+async function dbQuery(text: string, params?: unknown[]) {
+  const client = getPool();
+  return client.query(text, params);
+}
+
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.STORY_JWT_SECRET;
+  if (!secret) throw new Error('STORY_JWT_SECRET not set');
+  return new TextEncoder().encode(secret);
+}
+
+async function verifyAdminToken(authHeader: string | null): Promise<boolean> {
+  if (!authHeader) return false;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const secret = getJWTSecret();
+    const { payload } = await jwtVerify(token, secret);
+    return payload.role === 'admin';
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify admin
-    const token = extractToken(req.headers.get('authorization'));
-    
-    if (!token) {
+    const isAdmin = await verifyAdminToken(req.headers.get('authorization'));
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await verifyAdminToken(token);
+    // Get users who logged in within the last 10 minutes (considered "online")
+    // Using login_at column (correct column name)
+    const result = await dbQuery(`
+      SELECT DISTINCT ON (username) 
+        username,
+        login_at as "lastLogin",
+        EXTRACT(EPOCH FROM (NOW() - login_at))::integer as "secondsAgo"
+      FROM story_login_logs
+      WHERE login_at > NOW() - INTERVAL '10 minutes'
+        AND logout_at IS NULL
+      ORDER BY username, login_at DESC
+    `);
 
-    // Get users who logged in within threshold (handle both login_time and login_at columns)
-    const result = await query<OnlineUserRow>(
-      `SELECT 
-        username, 
-        MAX(COALESCE(login_at, login_time)) as last_login,
-        EXTRACT(EPOCH FROM (NOW() - MAX(COALESCE(login_at, login_time))))::integer as seconds_ago
-       FROM story_login_logs
-       WHERE COALESCE(login_at, login_time) > NOW() - INTERVAL '${ONLINE_THRESHOLD_MINUTES} minutes'
-       GROUP BY username
-       ORDER BY last_login DESC`
-    );
+    // Get total unique users
+    const totalResult = await dbQuery(`
+      SELECT COUNT(DISTINCT username) as count FROM story_login_logs
+    `);
 
-    // Get total user count
-    const totalResult = await query<{ count: string }>(
-      'SELECT COUNT(DISTINCT username) as count FROM story_users'
-    );
-    const totalUsers = parseInt(totalResult.rows[0]?.count || '0');
+    const onlineUsers = result.rows.map(row => ({
+      username: row.username,
+      lastLogin: row.lastLogin,
+      secondsAgo: row.secondsAgo
+    }));
 
     return NextResponse.json({
-      onlineUsers: result.rows.map(row => ({
-        username: row.username,
-        lastLogin: row.last_login,
-        secondsAgo: row.seconds_ago
-      })),
-      onlineCount: result.rows.length,
-      totalUsers,
-      thresholdMinutes: ONLINE_THRESHOLD_MINUTES
+      onlineUsers,
+      onlineCount: onlineUsers.length,
+      totalUsers: parseInt(totalResult.rows[0]?.count || '0')
     });
   } catch (error) {
-    console.error('Online users error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('[OnlineUsers] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch online users' }, { status: 500 });
   }
 }

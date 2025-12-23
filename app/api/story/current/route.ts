@@ -1,71 +1,130 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query, queryOne } from '@/lib/story/db';
-import { extractToken, verifyUserToken } from '@/lib/story/auth';
-import { getCurrentWeekStart } from '@/lib/story/week';
-import { generateWeeklyStory } from '@/lib/story/generate';
-import { Story, StoryResponse } from '@/lib/story/types';
+import { jwtVerify } from 'jose';
+import { Pool } from 'pg';
+
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+    });
+  }
+  return pool;
+}
+
+async function dbQuery(text: string, params?: unknown[]) {
+  const client = getPool();
+  return client.query(text, params);
+}
+
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.STORY_JWT_SECRET;
+  if (!secret) throw new Error('STORY_JWT_SECRET not set');
+  return new TextEncoder().encode(secret);
+}
+
+function getCurrentWeekStart(): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0];
+}
+
+async function verifyToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const secret = getJWTSecret();
+    const { payload } = await jwtVerify(token, secret);
+    return payload.username as string;
+  } catch {
+    return null;
+  }
+}
+
+// Default story content (innocent education theme)
+function getDefaultStory() {
+  return {
+    theme: 'Weekly Learning',
+    title: 'Classroom Activities',
+    content: {
+      paragraphs: [
+        'Today we learned about counting and colors in class.',
+        'The children practiced their letters and sounds.',
+        'Everyone had fun during circle time activities.',
+        'We read a wonderful story about friendship and sharing.',
+        'Looking forward to more learning adventures tomorrow.'
+      ]
+    }
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify authentication
-    const token = extractToken(req.headers.get('authorization'));
+    const username = await verifyToken(req.headers.get('authorization'));
     
-    if (!token) {
+    if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await verifyUserToken(token);
     const weekStartDate = getCurrentWeekStart();
 
-    // Get or create story for this week
-    let story = await queryOne<Story>(
-      'SELECT * FROM secret_stories WHERE week_start_date = $1',
+    // Get story for this week
+    const result = await dbQuery(
+      `SELECT story_title, story_content, hidden_message, message_author, updated_at 
+       FROM secret_stories 
+       WHERE week_start_date = $1`,
       [weekStartDate]
     );
 
-    if (!story) {
-      // Generate new story
-      const newStory = await generateWeeklyStory();
+    let story;
+    let updatedAt = null;
+
+    if (result.rows.length === 0) {
+      // No story exists - create default one
+      const defaultStory = getDefaultStory();
       
-      const result = await query<Story>(
+      await dbQuery(
         `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [
-          weekStartDate,
-          newStory.theme,
-          newStory.title,
-          JSON.stringify({ paragraphs: newStory.paragraphs })
-        ]
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (week_start_date) DO NOTHING`,
+        [weekStartDate, defaultStory.theme, defaultStory.title, JSON.stringify(defaultStory.content)]
       );
-      
-      story = result.rows[0];
-    }
 
-    if (!story) {
-      return NextResponse.json(
-        { error: 'Failed to load story' },
-        { status: 500 }
-      );
-    }
+      story = {
+        title: defaultStory.title,
+        paragraphs: defaultStory.content.paragraphs,
+        hiddenMessage: null,
+        messageAuthor: null
+      };
+    } else {
+      const row = result.rows[0];
+      const content = typeof row.story_content === 'string' 
+        ? JSON.parse(row.story_content)
+        : row.story_content;
 
-    // Parse story content
-    const content = typeof story.story_content === 'string' 
-      ? JSON.parse(story.story_content)
-      : story.story_content;
-
-    const response: { username: string; story: StoryResponse } = {
-      username: payload.username,
-      story: {
-        title: story.story_title,
+      story = {
+        title: row.story_title,
         paragraphs: content.paragraphs || [],
-        hiddenMessage: story.hidden_message,
-        messageAuthor: story.message_author
-      }
-    };
+        hiddenMessage: row.hidden_message,
+        messageAuthor: row.message_author
+      };
+      updatedAt = row.updated_at;
+    }
 
-    return NextResponse.json(response);
+    return NextResponse.json({
+      username,
+      story,
+      updatedAt
+    });
   } catch (error) {
-    console.error('Story fetch error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('[Current Story] Error:', error);
+    return NextResponse.json({ error: 'Failed to load' }, { status: 500 });
   }
 }
