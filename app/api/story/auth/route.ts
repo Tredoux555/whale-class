@@ -3,8 +3,6 @@ import { SignJWT } from 'jose';
 import { compare } from 'bcryptjs';
 import { Pool } from 'pg';
 
-// ============ INLINE HELPERS - NO EXTERNAL IMPORTS ============
-
 let pool: Pool | null = null;
 
 function getPool(): Pool {
@@ -29,8 +27,6 @@ function getJWTSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-// ============ ENSURE USERS TABLE EXISTS ============
-
 async function ensureUsersTable() {
   try {
     await dbQuery(`
@@ -54,10 +50,12 @@ async function ensureUsersTable() {
       CREATE TABLE IF NOT EXISTS story_login_logs (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) NOT NULL,
-        login_time TIMESTAMP DEFAULT NOW(),
-        session_id TEXT,
+        login_at TIMESTAMP DEFAULT NOW(),
+        session_token TEXT,
         ip_address VARCHAR(45),
-        user_agent TEXT
+        user_agent TEXT,
+        user_id VARCHAR(50),
+        logout_at TIMESTAMP
       )
     `);
     
@@ -68,12 +66,10 @@ async function ensureUsersTable() {
   }
 }
 
-// ============ POST - USER LOGIN ============
-
+// POST - User Login
 export async function POST(req: NextRequest) {
   console.log('[Auth] POST login request');
   
-  // Check env vars
   if (!process.env.DATABASE_URL) {
     console.error('[Auth] DATABASE_URL missing');
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -94,7 +90,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
     }
 
-    // Ensure table exists with default users
+    // Ensure tables exist
     await ensureUsersTable();
 
     // Find user
@@ -109,7 +105,6 @@ export async function POST(req: NextRequest) {
     }
 
     const user = result.rows[0];
-    console.log('[Auth] User found, verifying password...');
 
     // Verify password
     const validPassword = await compare(password, user.password_hash);
@@ -131,16 +126,20 @@ export async function POST(req: NextRequest) {
 
     console.log('[Auth] Token created successfully');
 
-    // Log the login (non-critical)
+    // Log the login - THIS IS THE IMPORTANT PART
     try {
-      const ip = req.headers.get('x-forwarded-for') || 'unknown';
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
       const userAgent = req.headers.get('user-agent') || 'unknown';
+      
       await dbQuery(
-        `INSERT INTO story_login_logs (username, session_id, ip_address, user_agent) VALUES ($1, $2, $3, $4)`,
-        [user.username, token.substring(0, 50), ip, userAgent]
+        `INSERT INTO story_login_logs (username, login_at, session_token, ip_address, user_agent, user_id) 
+         VALUES ($1, NOW(), $2, $3, $4, $5)`,
+        [user.username, token.substring(0, 50), ip, userAgent, user.username]
       );
-    } catch (e) {
-      console.warn('[Auth] Could not log login');
+      console.log('[Auth] Login logged successfully for:', user.username);
+    } catch (logError) {
+      console.error('[Auth] Failed to log login (non-critical):', logError);
+      // Don't fail the login if logging fails
     }
 
     return NextResponse.json({ session: token });
@@ -154,8 +153,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ============ DELETE - LOGOUT ============
-
+// DELETE - Logout
 export async function DELETE() {
   return NextResponse.json({ success: true });
 }
