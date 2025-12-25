@@ -64,29 +64,29 @@ export async function POST(req: NextRequest) {
     console.error('[AdminAuth] STORY_JWT_SECRET missing');
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
-  
+
   try {
     const body = await req.json();
     const { username, password } = body;
     
     console.log('[AdminAuth] Login attempt for:', username);
-    
+
     if (!username || !password) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
     }
-    
+
     await ensureAdminTable();
-    
+
     const result = await dbQuery(
       'SELECT username, password_hash FROM story_admin_users WHERE username = $1',
       [username]
     );
-    
+
     if (result.rows.length === 0) {
       console.log('[AdminAuth] Admin user not found:', username);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    
+
     const admin = result.rows[0];
     const validPassword = await compare(password, admin.password_hash);
     
@@ -94,16 +94,16 @@ export async function POST(req: NextRequest) {
       console.log('[AdminAuth] Invalid password for admin:', username);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    
+
     console.log('[AdminAuth] Password valid, creating token...');
-    
+
     const secret = getJWTSecret();
     const token = await new SignJWT({ username: admin.username, role: 'admin' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('24h')
       .sign(secret);
-    
+
     console.log('[AdminAuth] Token created successfully');
     
     try {
@@ -133,17 +133,17 @@ export async function GET(req: NextRequest) {
     if (!authHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const token = authHeader.replace('Bearer ', '');
     const secret = getJWTSecret();
     
     const { jwtVerify } = await import('jose');
     const { payload } = await jwtVerify(token, secret);
-    
+
     if (payload.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     return NextResponse.json({ authenticated: true, username: payload.username });
   } catch (error) {
     console.error('[AdminAuth] Verification error:', error);
