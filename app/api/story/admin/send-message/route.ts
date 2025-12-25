@@ -98,17 +98,16 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMessage);
 
-    const historyResult = await dbQuery(
+    await dbQuery(
       `INSERT INTO story_message_history 
        (week_start_date, message_type, content, author, expires_at, is_from_admin)
-       VALUES ($1, 'text', $2, $3, $4, TRUE)
-       RETURNING id`,
+       VALUES ($1, 'text', $2, $3, $4, TRUE)`,
       [weekStartDate, encryptedMessage, adminUsername, expiresAt]
     );
-    console.log('[SendMessage] Message history entry created:', historyResult.rows[0]?.id);
+    console.log('[SendMessage] Message history entry created');
 
     const storyExists = await dbQuery(
-      'SELECT id FROM secret_stories WHERE week_start_date = $1',
+      'SELECT week_start_date FROM secret_stories WHERE week_start_date = $1',
       [weekStartDate]
     );
     console.log('[SendMessage] Story exists:', storyExists.rows.length > 0);
@@ -137,7 +136,7 @@ export async function POST(req: NextRequest) {
         `INSERT INTO secret_stories 
          (week_start_date, theme, story_title, story_content, hidden_message, message_author)
          VALUES ($1, 'Weekly Learning', 'Classroom Activities', $2, $3, $4)
-         RETURNING id, hidden_message`,
+         RETURNING hidden_message`,
         [weekStartDate, defaultContent, encryptedMessage, adminUsername]
       );
       console.log('[SendMessage] Created new story:', insertResult.rows[0]);
@@ -154,7 +153,7 @@ export async function POST(req: NextRequest) {
       message: 'Note sent successfully',
       sentAt: new Date().toISOString(),
       weekStartDate,
-      messageId: historyResult.rows[0]?.id
+      messageId: null
     });
   } catch (error) {
     console.error('[SendMessage] Error:', error);
