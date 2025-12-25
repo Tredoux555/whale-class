@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Pool } from 'pg';
+import { encryptMessage } from '@/lib/message-encryption';
 
 let pool: Pool | null = null;
 
@@ -36,7 +37,6 @@ function getCurrentWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
 
-// 24-hour expiration
 function getExpirationDate(): Date {
   const expires = new Date();
   expires.setHours(expires.getHours() + 24);
@@ -44,14 +44,25 @@ function getExpirationDate(): Date {
 }
 
 async function verifyAdminToken(authHeader: string | null): Promise<string | null> {
-  if (!authHeader) return null;
+  if (!authHeader) {
+    console.error('[SendMessage] No auth header provided');
+    return null;
+  }
   try {
     const token = authHeader.replace('Bearer ', '');
     const secret = getJWTSecret();
     const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== 'admin') return null;
+    
+    console.log('[SendMessage] Token payload:', payload);
+    
+    if (payload.role !== 'admin') {
+      console.error('[SendMessage] User is not admin. Role:', payload.role);
+      return null;
+    }
+    
     return payload.username as string;
-  } catch {
+  } catch (error) {
+    console.error('[SendMessage] Token verification failed:', error);
     return null;
   }
 }
@@ -61,83 +72,92 @@ export async function POST(req: NextRequest) {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     
     if (!adminUsername) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('[SendMessage] Authorization failed');
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' }, 
+        { status: 401 }
+      );
     }
 
-    const { message } = await req.json();
+    const body = await req.json();
+    const { message } = body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Message is required' }, 
+        { status: 400 }
+      );
     }
 
     const weekStartDate = getCurrentWeekStart();
     const trimmedMessage = message.trim();
     const expiresAt = getExpirationDate();
 
-    console.log('[AdminSendMessage] Sending message for week:', weekStartDate);
-    console.log('[AdminSendMessage] Message:', trimmedMessage);
+    console.log('[SendMessage] Sending message for week:', weekStartDate);
+    console.log('[SendMessage] Author:', adminUsername);
 
-    // Save to message history
-    await dbQuery(
+    const encryptedMessage = encryptMessage(trimmedMessage);
+
+    const historyResult = await dbQuery(
       `INSERT INTO story_message_history 
        (week_start_date, message_type, content, author, expires_at, is_from_admin)
-       VALUES ($1, 'text', $2, $3, $4, TRUE)`,
-      [weekStartDate, trimmedMessage, adminUsername, expiresAt]
+       VALUES ($1, 'text', $2, $3, $4, TRUE)
+       RETURNING id`,
+      [weekStartDate, encryptedMessage, adminUsername, expiresAt]
     );
+    console.log('[SendMessage] Message history entry created:', historyResult.rows[0]?.id);
 
-    // Check if story exists for this week
     const storyExists = await dbQuery(
       'SELECT id FROM secret_stories WHERE week_start_date = $1',
       [weekStartDate]
     );
-
-    console.log('[AdminSendMessage] Story exists:', storyExists.rows.length > 0);
+    console.log('[SendMessage] Story exists:', storyExists.rows.length > 0);
 
     if (storyExists.rows.length > 0) {
-      // Update existing story with hidden message
-      await dbQuery(
+      const updateResult = await dbQuery(
         `UPDATE secret_stories 
          SET hidden_message = $1, message_author = $2, updated_at = NOW()
-         WHERE week_start_date = $3`,
-        [trimmedMessage, adminUsername, weekStartDate]
+         WHERE week_start_date = $3
+         RETURNING hidden_message, message_author, updated_at`,
+        [encryptedMessage, adminUsername, weekStartDate]
       );
-      console.log('[AdminSendMessage] Updated existing story');
+      console.log('[SendMessage] Updated existing story:', updateResult.rows[0]);
     } else {
-      // Create new story with the message
       const defaultContent = JSON.stringify({
         paragraphs: [
-          'Today we learned about counting and colors.',
-          'The children practiced their letters and sounds.',
-          'Everyone had fun during circle time activities.',
-          'We read a wonderful story about friendship.',
-          'Looking forward to more learning tomorrow.'
+          'Today we learned about counting and colors in class.',
+          'The children practiced their letters and sounds with great enthusiasm.',
+          'Everyone had fun during our interactive circle time activities.',
+          'We read a wonderful story about friendship and collaboration.',
+          'Looking forward to more exciting learning adventures tomorrow!'
         ]
       });
 
-      await dbQuery(
+      const insertResult = await dbQuery(
         `INSERT INTO secret_stories 
          (week_start_date, theme, story_title, story_content, hidden_message, message_author)
-         VALUES ($1, 'Weekly Learning', 'Classroom Activities', $2, $3, $4)`,
-        [weekStartDate, defaultContent, trimmedMessage, adminUsername]
+         VALUES ($1, 'Weekly Learning', 'Classroom Activities', $2, $3, $4)
+         RETURNING id, hidden_message`,
+        [weekStartDate, defaultContent, encryptedMessage, adminUsername]
       );
-      console.log('[AdminSendMessage] Created new story with message');
+      console.log('[SendMessage] Created new story:', insertResult.rows[0]);
     }
 
-    // Verify the message was saved
     const verify = await dbQuery(
-      'SELECT hidden_message, message_author FROM secret_stories WHERE week_start_date = $1',
+      'SELECT hidden_message, message_author, updated_at FROM secret_stories WHERE week_start_date = $1',
       [weekStartDate]
     );
-    console.log('[AdminSendMessage] Verification:', verify.rows[0]);
+    console.log('[SendMessage] Verification - Story data saved');
 
     return NextResponse.json({
       success: true,
       message: 'Note sent successfully',
       sentAt: new Date().toISOString(),
-      weekStartDate
+      weekStartDate,
+      messageId: historyResult.rows[0]?.id
     });
   } catch (error) {
-    console.error('[AdminSendMessage] Error:', error);
+    console.error('[SendMessage] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { error: 'Failed to send note', details: message },
