@@ -29,7 +29,7 @@ function getJWTSecret(): Uint8Array {
 }
 
 const VAULT_PASSWORD = process.env.VAULT_PASSWORD || 'change-this-in-env';
-const VAULT_PASSWORD_HASH = '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO'; // bcrypt hash of VAULT_PASSWORD
+const VAULT_PASSWORD_HASH = '$2b$10$ECecBvSrgN8mfruLKzvdjehcTXZaQonVkUyriGoIKdZPWHvrixssC'; // bcrypt hash of zoemylove
 
 async function verifyAdminToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
