@@ -133,7 +133,7 @@ export async function GET(
       ['file_download', adminUsername, ipAddress, `Downloaded: ${file.filename}`]
     ).catch(() => {});
 
-    return new NextResponse(decryptedBuffer, {
+    return new NextResponse(decryptedBuffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${file.filename}"`,
