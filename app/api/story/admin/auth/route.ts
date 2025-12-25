@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT } from 'jose';
 import { compare } from 'bcryptjs';
 import { Pool } from 'pg';
 
@@ -7,15 +7,8 @@ let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
-    console.log('[AdminAuth] DATABASE_URL exists:', !!connectionString);
-    
-    if (!connectionString) {
-      throw new Error('DATABASE_URL not set');
-    }
-    
     pool = new Pool({
-      connectionString,
+      connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       max: 5,
     });
@@ -30,7 +23,6 @@ async function dbQuery(text: string, params?: unknown[]) {
 
 function getJWTSecret(): Uint8Array {
   const secret = process.env.STORY_JWT_SECRET;
-  console.log('[AdminAuth] STORY_JWT_SECRET exists:', !!secret);
   if (!secret) throw new Error('STORY_JWT_SECRET not set');
   return new TextEncoder().encode(secret);
 }
@@ -48,8 +40,8 @@ async function ensureAdminTable() {
     `);
     
     await dbQuery(`
-      INSERT INTO story_admin_users (username, password_hash)
-      VALUES ('T', '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO')
+      INSERT INTO story_admin_users (username, password_hash) VALUES
+        ('T', '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO')
       ON CONFLICT (username) DO NOTHING
     `);
     
@@ -60,116 +52,80 @@ async function ensureAdminTable() {
   }
 }
 
-// POST - Admin Login
 export async function POST(req: NextRequest) {
-  console.log('[AdminAuth] ========== POST login request ==========');
-  
-  // Check env vars
-  console.log('[AdminAuth] Checking environment variables...');
-  console.log('[AdminAuth] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'MISSING');
-  console.log('[AdminAuth] STORY_JWT_SECRET:', process.env.STORY_JWT_SECRET ? 'SET' : 'MISSING');
+  console.log('[AdminAuth] POST admin login request');
   
   if (!process.env.DATABASE_URL) {
-    console.error('[AdminAuth] DATABASE_URL is missing!');
-    return NextResponse.json({ error: 'Database not configured', details: 'DATABASE_URL missing' }, { status: 500 });
+    console.error('[AdminAuth] DATABASE_URL missing');
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
   }
   
   if (!process.env.STORY_JWT_SECRET) {
-    console.error('[AdminAuth] STORY_JWT_SECRET is missing!');
-    return NextResponse.json({ error: 'Auth not configured', details: 'STORY_JWT_SECRET missing' }, { status: 500 });
+    console.error('[AdminAuth] STORY_JWT_SECRET missing');
+    return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
-
+  
   try {
-    // Parse body
-    console.log('[AdminAuth] Parsing request body...');
-    let body;
-    try {
-      body = await req.json();
-      console.log('[AdminAuth] Body parsed:', { username: body?.username, hasPassword: !!body?.password });
-    } catch (parseError) {
-      console.error('[AdminAuth] Body parse error:', parseError);
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    }
-    
+    const body = await req.json();
     const { username, password } = body;
-
+    
+    console.log('[AdminAuth] Login attempt for:', username);
+    
     if (!username || !password) {
-      console.log('[AdminAuth] Missing credentials - username:', !!username, 'password:', !!password);
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
     }
-
-    // Ensure table exists
-    console.log('[AdminAuth] Ensuring admin table exists...');
+    
     await ensureAdminTable();
-    console.log('[AdminAuth] Admin table ready');
-
-    // Find admin
-    console.log('[AdminAuth] Looking up user:', username);
+    
     const result = await dbQuery(
-      'SELECT id, username, password_hash FROM story_admin_users WHERE username = $1',
+      'SELECT username, password_hash FROM story_admin_users WHERE username = $1',
       [username]
     );
-    console.log('[AdminAuth] Query result rows:', result.rows.length);
-
+    
     if (result.rows.length === 0) {
-      console.log('[AdminAuth] User not found:', username);
+      console.log('[AdminAuth] Admin user not found:', username);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-
+    
     const admin = result.rows[0];
-    console.log('[AdminAuth] Found user:', admin.username);
-    console.log('[AdminAuth] Password hash exists:', !!admin.password_hash);
-    console.log('[AdminAuth] Password hash length:', admin.password_hash?.length);
-
-    // Verify password
-    console.log('[AdminAuth] Comparing password...');
-    let validPassword = false;
-    try {
-      validPassword = await compare(password, admin.password_hash);
-      console.log('[AdminAuth] Password valid:', validPassword);
-    } catch (compareError) {
-      console.error('[AdminAuth] Password compare error:', compareError);
-      return NextResponse.json({ error: 'Password verification failed', details: String(compareError) }, { status: 500 });
-    }
+    const validPassword = await compare(password, admin.password_hash);
     
     if (!validPassword) {
-      console.log('[AdminAuth] Invalid password for user:', username);
+      console.log('[AdminAuth] Invalid password for admin:', username);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-
-    // Update last login
-    console.log('[AdminAuth] Updating last login...');
-    await dbQuery('UPDATE story_admin_users SET last_login = NOW() WHERE id = $1', [admin.id]);
-
-    // Create JWT
-    console.log('[AdminAuth] Creating JWT token...');
+    
+    console.log('[AdminAuth] Password valid, creating token...');
+    
     const secret = getJWTSecret();
-    const token = await new SignJWT({ 
-      username: admin.username, 
-      role: 'admin' 
-    })
+    const token = await new SignJWT({ username: admin.username, role: 'admin' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime('8h')
+      .setExpirationTime('24h')
       .sign(secret);
-
-    console.log('[AdminAuth] Token created successfully, length:', token.length);
-    return NextResponse.json({ session: token });
     
+    console.log('[AdminAuth] Token created successfully');
+    
+    try {
+      await dbQuery(
+        `UPDATE story_admin_users SET last_login = NOW() WHERE username = $1`,
+        [admin.username]
+      );
+      console.log('[AdminAuth] Last login updated for:', admin.username);
+    } catch (updateError) {
+      console.error('[AdminAuth] Failed to update last login (non-critical):', updateError);
+    }
+    
+    return NextResponse.json({ session: token });
   } catch (error) {
-    console.error('[AdminAuth] ========== CAUGHT ERROR ==========');
-    console.error('[AdminAuth] Error type:', typeof error);
-    console.error('[AdminAuth] Error name:', error instanceof Error ? error.name : 'unknown');
-    console.error('[AdminAuth] Error message:', error instanceof Error ? error.message : String(error));
-    console.error('[AdminAuth] Error stack:', error instanceof Error ? error.stack : 'no stack');
-    return NextResponse.json({ 
-      error: 'Login failed', 
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
+    console.error('[AdminAuth] Error:', error);
+    return NextResponse.json(
+      { error: 'Login failed', details: error instanceof Error ? error.message : 'Unknown' },
+      { status: 500 }
+    );
   }
 }
 
-// GET - Verify Admin Session
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -177,23 +133,20 @@ export async function GET(req: NextRequest) {
     if (!authHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
+    
     const token = authHeader.replace('Bearer ', '');
     const secret = getJWTSecret();
     
+    const { jwtVerify } = await import('jose');
     const { payload } = await jwtVerify(token, secret);
-
+    
     if (payload.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    return NextResponse.json({ 
-      valid: true, 
-      username: payload.username,
-      role: 'admin'
-    });
+    
+    return NextResponse.json({ authenticated: true, username: payload.username });
   } catch (error) {
-    console.error('[AdminAuth] Verify error:', error);
+    console.error('[AdminAuth] Verification error:', error);
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
