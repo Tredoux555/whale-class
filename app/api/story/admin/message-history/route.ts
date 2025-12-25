@@ -1,80 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/story/db';
-import { extractToken, verifyAdminToken } from '@/lib/story/auth';
-import { MessageHistory } from '@/lib/story/types';
+import { jwtVerify } from 'jose';
+import { Pool } from 'pg';
+import { decryptMessage } from '@/lib/message-encryption';
 
-interface Statistics {
-  message_type: string;
-  count: string;
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+    });
+  }
+  return pool;
+}
+
+async function dbQuery(text: string, params?: unknown[]) {
+  const client = getPool();
+  return client.query(text, params);
+}
+
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.STORY_JWT_SECRET;
+  if (!secret) throw new Error('STORY_JWT_SECRET not set');
+  return new TextEncoder().encode(secret);
+}
+
+async function verifyAdminToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const secret = getJWTSecret();
+    const { payload } = await jwtVerify(token, secret);
+    if (payload.role !== 'admin') return null;
+    return payload.username as string;
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify admin
-    const token = extractToken(req.headers.get('authorization'));
-    
-    if (!token) {
+    const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
+    if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await verifyAdminToken(token);
+    const url = new URL(req.url);
+    const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+    const showExpired = url.searchParams.get('showExpired') === 'true';
 
-    // Get query params
-    const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const type = searchParams.get('type'); // text, image, video
-    const showExpired = searchParams.get('showExpired') === 'true';
-
-    // Build query
-    let whereClause = 'WHERE 1=1';
+    let query = `SELECT id, week_start_date, message_type, content, media_url, media_filename, author, created_at, is_expired 
+                 FROM story_message_history 
+                 WHERE 1=1`;
     const params: unknown[] = [];
-    let paramIndex = 1;
-
-    if (type) {
-      whereClause += ` AND message_type = $${paramIndex}`;
-      params.push(type);
-      paramIndex++;
-    }
 
     if (!showExpired) {
-      whereClause += ` AND is_expired = FALSE`;
+      query += ` AND is_expired = FALSE`;
     }
 
-    // Get messages
-    const result = await query<MessageHistory>(
-      `SELECT id, week_start_date, message_type, content as message_content, media_url, 
-              media_filename, author, created_at, expires_at, is_expired
-       FROM story_message_history
-       ${whereClause}
-       ORDER BY created_at DESC
-       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-      [...params, limit, offset]
-    );
+    query += ` ORDER BY created_at DESC LIMIT $1`;
+    params.push(limit);
 
-    // Get total count
-    const countResult = await query<{ count: string }>(
-      `SELECT COUNT(*) as count FROM story_message_history ${whereClause}`,
-      params
-    );
-    const total = parseInt(countResult.rows[0]?.count || '0');
+    const result = await dbQuery(query, params);
 
-    // Get statistics
-    const statsResult = await query<Statistics>(
-      `SELECT message_type, COUNT(*) as count 
-       FROM story_message_history 
-       GROUP BY message_type`
-    );
+    const messages = result.rows.map(row => {
+      let content = row.content;
+      if (row.message_type === 'text' && content) {
+        try {
+          content = decryptMessage(content);
+        } catch (e) {
+          console.error('[MessageHistory] Failed to decrypt message:', e);
+          content = '[Encrypted - decryption failed]';
+        }
+      }
 
-    return NextResponse.json({
-      messages: result.rows,
-      total,
-      limit,
-      offset,
-      statistics: statsResult.rows
+      return {
+        id: row.id,
+        week_start_date: row.week_start_date,
+        message_type: row.message_type,
+        message_content: content,
+        media_url: row.media_url,
+        media_filename: row.media_filename,
+        author: row.author,
+        created_at: row.created_at,
+        is_expired: row.is_expired
+      };
     });
+
+    const statsResult = await dbQuery(
+      `SELECT message_type, COUNT(*) as count FROM story_message_history 
+       WHERE is_expired = FALSE GROUP BY message_type`
+    );
+
+    const statistics = statsResult.rows.map(row => ({
+      message_type: row.message_type,
+      count: row.count
+    }));
+
+    return NextResponse.json({ messages, statistics });
   } catch (error) {
-    console.error('Message history error:', error);
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('[MessageHistory] Error:', error);
+    return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });
   }
 }

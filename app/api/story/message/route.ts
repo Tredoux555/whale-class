@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Pool } from 'pg';
+import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
 
 let pool: Pool | null = null;
 
@@ -36,7 +37,6 @@ function getCurrentWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
 
-// 24-hour expiration
 function getExpirationDate(): Date {
   const expires = new Date();
   expires.setHours(expires.getHours() + 24);
@@ -69,7 +69,6 @@ async function ensureTables() {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `);
-  
   await dbQuery(`
     CREATE TABLE IF NOT EXISTS story_message_history (
       id SERIAL PRIMARY KEY,
@@ -86,7 +85,6 @@ async function ensureTables() {
   `);
 }
 
-// POST - Save message
 export async function POST(req: NextRequest) {
   try {
     const username = await verifyToken(req.headers.get('authorization'));
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { message, author } = body;
-    
+
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
@@ -104,18 +102,18 @@ export async function POST(req: NextRequest) {
     const weekStart = getCurrentWeekStart();
     const msgAuthor = author || username;
     const trimmedMsg = message.trim();
-    const expiresAt = getExpirationDate(); // 24 hours
+    const expiresAt = getExpirationDate();
+
+    const encryptedMessage = encryptMessage(trimmedMsg);
 
     await ensureTables();
 
-    // Save to history with 24-hour expiry
     await dbQuery(
       `INSERT INTO story_message_history (week_start_date, message_type, content, author, expires_at)
        VALUES ($1, 'text', $2, $3, $4)`,
-      [weekStart, trimmedMsg, msgAuthor, expiresAt]
+      [weekStart, encryptedMessage, msgAuthor, expiresAt]
     );
 
-    // Update or create story with hidden message
     const storyCheck = await dbQuery(
       'SELECT week_start_date FROM secret_stories WHERE week_start_date = $1',
       [weekStart]
@@ -124,7 +122,7 @@ export async function POST(req: NextRequest) {
     if (storyCheck.rows.length > 0) {
       await dbQuery(
         `UPDATE secret_stories SET hidden_message = $1, message_author = $2, updated_at = NOW() WHERE week_start_date = $3`,
-        [trimmedMsg, msgAuthor, weekStart]
+        [encryptedMessage, msgAuthor, weekStart]
       );
     } else {
       const content = JSON.stringify({
@@ -136,11 +134,10 @@ export async function POST(req: NextRequest) {
           'Looking forward to more learning tomorrow.'
         ]
       });
-      
       await dbQuery(
         `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content, hidden_message, message_author)
          VALUES ($1, 'Weekly Learning', 'Classroom Activities', $2, $3, $4)`,
-        [weekStart, content, trimmedMsg, msgAuthor]
+        [weekStart, content, encryptedMessage, msgAuthor]
       );
     }
 
@@ -151,7 +148,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET - Check for message
 export async function GET(req: NextRequest) {
   try {
     const username = await verifyToken(req.headers.get('authorization'));
@@ -160,6 +156,7 @@ export async function GET(req: NextRequest) {
     }
 
     const weekStart = getCurrentWeekStart();
+
     const result = await dbQuery(
       'SELECT hidden_message, message_author, updated_at FROM secret_stories WHERE week_start_date = $1',
       [weekStart]
@@ -169,9 +166,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ hasMessage: false });
     }
 
+    let hiddenMessage = result.rows[0].hidden_message;
+    try {
+      hiddenMessage = decryptMessage(hiddenMessage);
+    } catch (e) {
+      console.error('[Message GET] Failed to decrypt:', e);
+      hiddenMessage = '[Message encrypted - decryption failed]';
+    }
+
     return NextResponse.json({
       hasMessage: true,
       author: result.rows[0].message_author,
+      message: hiddenMessage,
       updatedAt: result.rows[0].updated_at
     });
   } catch (error) {

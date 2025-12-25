@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Pool } from 'pg';
+import { decryptMessage } from '@/lib/message-encryption';
 
 let pool: Pool | null = null;
 
@@ -48,18 +49,17 @@ async function verifyToken(authHeader: string | null): Promise<string | null> {
   }
 }
 
-// Default story content (innocent education theme)
 function getDefaultStory() {
   return {
     theme: 'Weekly Learning',
     title: 'Classroom Activities',
     content: {
       paragraphs: [
-        'Today we learned about counting and colors in class.',
-        'The children practiced their letters and sounds.',
-        'Everyone had fun during circle time activities.',
-        'We read a wonderful story about friendship and sharing.',
-        'Looking forward to more learning adventures tomorrow.'
+        'Today we learned about counting and colors.',
+        'The children practiced their letters.',
+        'Everyone had fun during circle time.',
+        'We read a wonderful story together.',
+        'Looking forward to more learning tomorrow.'
       ]
     }
   };
@@ -68,14 +68,12 @@ function getDefaultStory() {
 export async function GET(req: NextRequest) {
   try {
     const username = await verifyToken(req.headers.get('authorization'));
-    
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const weekStartDate = getCurrentWeekStart();
 
-    // Get story for this week
     const result = await dbQuery(
       `SELECT story_title, story_content, hidden_message, message_author, updated_at 
        FROM secret_stories 
@@ -87,9 +85,7 @@ export async function GET(req: NextRequest) {
     let updatedAt = null;
 
     if (result.rows.length === 0) {
-      // No story exists - create default one
       const defaultStory = getDefaultStory();
-      
       await dbQuery(
         `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content)
          VALUES ($1, $2, $3, $4)
@@ -109,10 +105,20 @@ export async function GET(req: NextRequest) {
         ? JSON.parse(row.story_content)
         : row.story_content;
 
+      let hiddenMessage = row.hidden_message;
+      if (hiddenMessage) {
+        try {
+          hiddenMessage = decryptMessage(hiddenMessage);
+        } catch (e) {
+          console.error('[Story] Failed to decrypt message:', e);
+          hiddenMessage = '[Message encrypted - decryption failed]';
+        }
+      }
+
       story = {
         title: row.story_title,
         paragraphs: content.paragraphs || [],
-        hiddenMessage: row.hidden_message,
+        hiddenMessage: hiddenMessage,
         messageAuthor: row.message_author
       };
       updatedAt = row.updated_at;

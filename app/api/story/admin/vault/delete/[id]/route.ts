@@ -41,15 +41,16 @@ async function verifyAdminToken(authHeader: string | null): Promise<string | nul
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const fileId = parseInt(params.id, 10);
+    const fileId = parseInt(id, 10);
     if (isNaN(fileId)) {
       return NextResponse.json({ error: 'Invalid file ID' }, { status: 400 });
     }
@@ -76,6 +77,7 @@ export async function DELETE(
     );
 
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error('[Vault Delete] Error:', error);
     return NextResponse.json(
@@ -84,4 +86,3 @@ export async function DELETE(
     );
   }
 }
-
