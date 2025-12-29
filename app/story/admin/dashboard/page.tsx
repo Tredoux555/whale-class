@@ -56,6 +56,8 @@ const [vaultUnlocked, setVaultUnlocked] = useState(false);
 const [vaultFiles, setVaultFiles] = useState<VaultFile[]>([]);
 const [uploadingVault, setUploadingVault] = useState(false);
 const [vaultError, setVaultError] = useState('');
+const [savingToVault, setSavingToVault] = useState<number | null>(null);
+const [savedToVault, setSavedToVault] = useState<Set<number>>(new Set());
 const getSession = useCallback(() => {
 return sessionStorage.getItem('story_admin_session');
 }, []);
@@ -158,6 +160,9 @@ return () => clearInterval(interval);
 useEffect(() => {
 if (activeTab === 'messages') {
 loadMessages();
+// Auto-refresh messages every 10 seconds
+const interval = setInterval(() => loadMessages(), 10000);
+return () => clearInterval(interval);
 }
 }, [showExpired, activeTab, loadMessages]);
 useEffect(() => {
@@ -285,6 +290,31 @@ try {
 } catch {
   setVaultError('Delete failed');
 }
+};
+const saveMessageToVault = async (messageId: number, mediaUrl: string, filename: string | null) => {
+  setSavingToVault(messageId);
+  try {
+    const session = getSession();
+    const res = await fetch('/api/story/admin/vault/save-from-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session}`
+      },
+      body: JSON.stringify({ messageId, mediaUrl, filename })
+    });
+    if (res.ok) {
+      setSavedToVault(prev => new Set(prev).add(messageId));
+      await loadVaultFiles();
+    } else {
+      const data = await res.json();
+      alert('Save failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch {
+    alert('Save to vault failed');
+  } finally {
+    setSavingToVault(null);
+  }
 };
 const handleLogout = () => {
 sessionStorage.removeItem('story_admin_session');
@@ -642,10 +672,28 @@ Sign Out
                       <p className="text-gray-800">{msg.message_content}</p>
                     )}
                     {msg.message_type === 'image' && msg.media_url && (
-                      <img src={msg.media_url} alt="Message" className="max-w-xs rounded-lg mt-2" />
+                      <div className="mt-2">
+                        <img src={msg.media_url} alt="Message" className="max-w-xs rounded-lg" />
+                        <button
+                          onClick={() => saveMessageToVault(msg.id, msg.media_url!, msg.media_filename)}
+                          disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
+                          className="mt-2 px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {savedToVault.has(msg.id) ? '✓ Saved to Vault' : savingToVault === msg.id ? '⏳ Saving...' : '🔒 Save to Vault'}
+                        </button>
+                      </div>
                     )}
                     {msg.message_type === 'video' && msg.media_url && (
-                      <video src={msg.media_url} controls className="max-w-xs rounded-lg mt-2" />
+                      <div className="mt-2">
+                        <video src={msg.media_url} controls className="max-w-xs rounded-lg" />
+                        <button
+                          onClick={() => saveMessageToVault(msg.id, msg.media_url!, msg.media_filename)}
+                          disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
+                          className="mt-2 px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {savedToVault.has(msg.id) ? '✓ Saved to Vault' : savingToVault === msg.id ? '⏳ Saving...' : '🔒 Save to Vault'}
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
