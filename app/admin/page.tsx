@@ -79,6 +79,13 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     icon: '🔍',
     color: 'bg-teal-500 hover:bg-teal-600',
   },
+  {
+    title: 'Progress Reports',
+    description: 'View student progress',
+    href: '/admin/montessori/reports',
+    icon: '📊',
+    color: 'bg-orange-500 hover:bg-orange-600',
+  },
 ];
 
 export default function AdminDashboard() {
