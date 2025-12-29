@@ -63,6 +63,13 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     icon: '🔤',
     color: 'bg-red-500 hover:bg-red-600',
   },
+  {
+    title: 'English Area',
+    description: 'Procurement checklist',
+    href: '/admin/english-procurement',
+    icon: '📚',
+    color: 'bg-blue-500 hover:bg-blue-600',
+  },
   
   // Utilities
   {
