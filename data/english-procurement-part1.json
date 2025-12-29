@@ -1,12 +1,13 @@
 {
   "metadata": {
     "title": "AMI English Language Area - Complete Procurement Guide",
-    "version": "1.0",
+    "version": "2.0 - Deep Dive Research Edition",
     "lastUpdated": "2024-12-29",
     "totalWorks": 43,
     "categories": 5,
     "currency": "CNY",
-    "notes": "search1688 = primary search term, searchAlt = alternative if primary fails"
+    "notes": "search1688 = VERIFIED primary search term, searchAlt = alternative. Terms marked 'verified: true' have been tested on 1688.com",
+    "manufacturingHub": "云和县 (Yunhe County), Lishui City, Zhejiang Province - main Montessori supplier region"
   },
   "procurementCategories": [
     {
@@ -26,13 +27,13 @@
         },
         {
           "id": "la_classified_cards",
-          "name": "Classified Cards (Nomenclature)",
+          "name": "Classified Cards (Three-Part Cards)",
           "sequence": 2,
           "materials": [
+            {"item": "Three-Part Card Sets", "qty": "5+ sets", "source": "BUY", "search1688": "蒙氏三部卡", "searchAlt": "三段卡 蒙氏", "price": "¥20-60/set", "verified": true},
+            {"item": "Card Storage Box (compartments)", "qty": "3 boxes", "source": "BUY", "search1688": "木质卡片收纳盒 分格", "searchAlt": "名称三部卡片盒", "price": "¥30-80", "verified": true},
             {"item": "Animal Classification Cards", "qty": "100+ cards", "source": "MAKE", "generator": "/admin/card-generator"},
-            {"item": "Plant Classification Cards", "qty": "50+ cards", "source": "MAKE", "generator": "/admin/card-generator"},
-            {"item": "Vehicle Classification Cards", "qty": "30+ cards", "source": "MAKE", "generator": "/admin/card-generator"},
-            {"item": "Wooden Card Storage Boxes", "qty": "5 boxes", "source": "BUY", "search1688": "蒙氏教具木质卡片收纳盒", "searchAlt": "木制分格卡片盒", "price": "¥25-50/ea"}
+            {"item": "Plant Classification Cards", "qty": "50+ cards", "source": "MAKE", "generator": "/admin/card-generator"}
           ]
         },
         {
@@ -49,9 +50,10 @@
           "id": "la_sound_games",
           "name": "Sound Games (I Spy)",
           "sequence": 4,
+          "essentialNote": "MUST complete ALL 6 stages before introducing Sandpaper Letters",
           "materials": [
             {"item": "Initial Sound Objects (26 letters)", "qty": "130+ objects", "source": "BUY", "search1688": "蒙氏语言区字母首音小物件套装", "searchAlt": "字母认知迷你模型分类", "price": "¥150-300"},
-            {"item": "Sound Sorting Baskets", "qty": "10 baskets", "source": "BUY", "search1688": "蒙氏教具藤编小篮子", "searchAlt": "幼儿园收纳小篮", "price": "¥30-60"},
+            {"item": "Sound Sorting Baskets (natural)", "qty": "10 baskets", "source": "BUY", "search1688": "木质分类篮 蒙氏", "searchAlt": "蒙氏教具藤编小篮子", "price": "¥30-60"},
             {"item": "Letter Sound Cards", "qty": "26 cards", "source": "MAKE", "generator": "/admin/material-generator"}
           ]
         },

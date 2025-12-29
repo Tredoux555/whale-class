@@ -8,11 +8,11 @@
       "name": "Metal Insets",
       "sequence": 1,
       "materials": [
-        {"item": "Metal Insets Set (10 shapes)", "qty": "1 complete set", "source": "BUY", "search1688": "蒙特梭利金属嵌板10件套", "searchAlt": "蒙氏金属镶嵌板教具", "price": "¥150-300", "priority": "ESSENTIAL"},
-        {"item": "Metal Inset Stand/Holder", "qty": "1 stand", "source": "BUY", "search1688": "蒙氏金属嵌板架子", "searchAlt": "金属镶嵌板收纳架", "price": "¥50-100"},
-        {"item": "Colored Pencils (quality)", "qty": "2 sets of 12", "source": "BUY", "search1688": "儿童三角杆彩色铅笔", "searchAlt": "幼儿粗杆彩铅", "price": "¥30-60"},
-        {"item": "Inset Paper (14x14cm)", "qty": "500 sheets", "source": "BUY", "search1688": "蒙氏金属嵌板专用纸", "searchAlt": "正方形白卡纸14cm", "price": "¥20-40"},
-        {"item": "Pencil Holder", "qty": "2-3", "source": "BUY", "search1688": "蒙氏笔筒木质", "searchAlt": "幼儿园木制笔筒", "price": "¥15-30"}
+        {"item": "Metal Insets Set (10 shapes)", "qty": "1 complete set", "source": "BUY", "search1688": "蒙氏铁制几何嵌板教具", "searchAlt": "金属嵌板 蒙氏", "price": "¥150-350", "priority": "ESSENTIAL", "verified": true, "results": "36 products"},
+        {"item": "Metal Inset Stand/Holder", "qty": "1 stand", "source": "BUY", "search1688": "蒙氏嵌板架 木质", "searchAlt": "金属镶嵌板收纳架", "price": "¥40-80"},
+        {"item": "Colored Pencils (thick barrel)", "qty": "2 sets of 12", "source": "BUY", "search1688": "彩色铅笔 粗杆 12色 幼儿", "searchAlt": "儿童三角杆彩色铅笔", "price": "¥15-30"},
+        {"item": "Inset Paper (14x14cm)", "qty": "500 sheets", "source": "BUY", "search1688": "白卡纸 14厘米 正方形", "searchAlt": "蒙氏金属嵌板专用纸", "price": "¥15-25"},
+        {"item": "Pencil Holder (12 holes)", "qty": "2-3", "source": "BUY", "search1688": "蒙氏铅笔筒 12孔 木质", "searchAlt": "幼儿园木制笔筒", "price": "¥25-45"}
       ]
     },
     {
@@ -20,9 +20,9 @@
       "name": "Sandpaper Letters",
       "sequence": 2,
       "materials": [
-        {"item": "Sandpaper Letters Lowercase (26)", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利砂纸字母小写26个", "searchAlt": "蒙氏砂字母板英文", "price": "¥80-150", "priority": "ESSENTIAL"},
-        {"item": "Sandpaper Letters Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏砂纸字母收纳盒", "searchAlt": "字母卡片木盒", "price": "¥30-50"},
-        {"item": "Sand Tray", "qty": "1 tray", "source": "BUY", "search1688": "蒙氏沙盘写字盘", "searchAlt": "儿童沙盘教具木质", "price": "¥40-80"}
+        {"item": "Sandpaper Letters Lowercase (26)", "qty": "1 set", "source": "BUY", "search1688": "蒙氏砂纸字母 小写", "searchAlt": "红蓝砂子字母板", "price": "¥60-120", "priority": "ESSENTIAL", "verified": true, "results": "57 products"},
+        {"item": "Sandpaper Phonograms (sh, ch, th, etc)", "qty": "1 set", "source": "BUY", "search1688": "蒙台蒙特梭利 双字母砂纸板", "searchAlt": "蒙氏语音组合砂纸板", "price": "¥40-80", "priority": "ESSENTIAL"},
+        {"item": "Sandpaper Letters Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏砂纸字母收纳盒", "searchAlt": "字母卡片木盒", "price": "¥30-60"}
       ]
     },
     {
@@ -30,28 +30,27 @@
       "name": "Sand Tray Writing",
       "sequence": 3,
       "materials": [
-        {"item": "Wooden Sand Tray (large)", "qty": "1 tray", "source": "BUY", "search1688": "蒙特梭利木质沙盘大号", "searchAlt": "儿童写字沙盘教具", "price": "¥50-100"},
-        {"item": "Colored Sand (fine)", "qty": "2kg", "source": "BUY", "search1688": "彩色细沙幼儿园", "searchAlt": "儿童沙盘用沙", "price": "¥20-40"}
-      ]
-    },
-    {
-      "id": "la_chalkboard_writing",
-      "name": "Chalkboard Writing",
-      "sequence": 4,
-      "materials": [
-        {"item": "Individual Chalkboards", "qty": "6-8 boards", "source": "BUY", "search1688": "儿童小黑板木质", "searchAlt": "幼儿园练字小黑板", "price": "¥10-20/ea"},
-        {"item": "Chalk Set (dustless)", "qty": "2 boxes", "source": "BUY", "search1688": "无尘粉笔彩色", "searchAlt": "儿童环保粉笔", "price": "¥15-30"},
-        {"item": "Chalkboard Erasers", "qty": "6-8", "source": "BUY", "search1688": "小黑板擦迷你", "searchAlt": "粉笔擦儿童", "price": "¥10-20"}
+        {"item": "Wooden Sand Tray", "qty": "1 tray", "source": "BUY", "search1688": "刮沙盒", "searchAlt": "蒙氏沙盘 木质 写字", "price": "¥20-60", "verified": true, "results": "473 products"},
+        {"item": "Colored Sand (fine, blue)", "qty": "2kg", "source": "BUY", "search1688": "彩色沙子 蓝色 细沙", "searchAlt": "儿童沙盘用沙", "price": "¥10-20"}
       ]
     },
     {
       "id": "la_moveable_alphabet",
       "name": "Moveable Alphabet",
+      "sequence": 4,
+      "materials": [
+        {"item": "Large Moveable Alphabet Box", "qty": "1 set", "source": "BUY", "search1688": "蒙氏活动字母箱", "searchAlt": "语言区活动字母箱", "price": "¥80-200", "priority": "ESSENTIAL", "verified": true},
+        {"item": "Small Moveable Alphabet", "qty": "1 set", "source": "BUY", "search1688": "蒙氏小号活动字母", "searchAlt": "木制小字母教具", "price": "¥60-100"}
+      ]
+    },
+    {
+      "id": "la_chalkboard_writing",
+      "name": "Chalkboard Writing",
       "sequence": 5,
       "materials": [
-        {"item": "Large Moveable Alphabet (wooden)", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利活动字母大号木质", "searchAlt": "蒙氏木制字母教具蓝红", "price": "¥120-250", "priority": "ESSENTIAL"},
-        {"item": "Moveable Alphabet Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏活动字母收纳盒", "searchAlt": "字母分类盒木质", "price": "¥50-100"},
-        {"item": "Small Moveable Alphabet", "qty": "1 set", "source": "BUY", "search1688": "蒙氏活动字母小号", "searchAlt": "木制小字母教具", "price": "¥80-150"}
+        {"item": "Individual Chalkboards", "qty": "6-8 boards", "source": "BUY", "search1688": "儿童小黑板木质", "searchAlt": "幼儿园练字小黑板", "price": "¥10-20/ea"},
+        {"item": "Chalk Set (dustless)", "qty": "2 boxes", "source": "BUY", "search1688": "无尘粉笔彩色", "searchAlt": "儿童环保粉笔", "price": "¥15-30"},
+        {"item": "Chalkboard Erasers", "qty": "6-8", "source": "BUY", "search1688": "小黑板擦迷你", "searchAlt": "粉笔擦儿童", "price": "¥10-20"}
       ]
     },
     {
@@ -62,16 +61,6 @@
         {"item": "Lined Handwriting Paper", "qty": "500 sheets", "source": "BUY", "search1688": "蒙氏书写纸四线三格", "searchAlt": "幼儿写字练习纸", "price": "¥30-50"},
         {"item": "Beginner Pencils (thick)", "qty": "12 pencils", "source": "BUY", "search1688": "儿童三角杆粗铅笔", "searchAlt": "幼儿握笔矫正铅笔", "price": "¥20-40"},
         {"item": "Letter Formation Cards", "qty": "26 cards", "source": "MAKE", "generator": "/admin/material-generator"}
-      ]
-    },
-    {
-      "id": "la_creative_writing",
-      "name": "Creative Writing",
-      "sequence": 7,
-      "materials": [
-        {"item": "Blank Writing Journals", "qty": "10 journals", "source": "BUY", "search1688": "幼儿园图画日记本", "searchAlt": "儿童绘画写字本", "price": "¥30-50"},
-        {"item": "Writing Prompt Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/card-generator"},
-        {"item": "Story Starter Pictures", "qty": "30 pictures", "source": "MAKE", "generator": "/admin/card-generator"}
       ]
     }
   ]
