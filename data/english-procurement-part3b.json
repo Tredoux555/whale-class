@@ -1,0 +1,55 @@
+{
+  "category": "reading_continued",
+  "name": "Reading (continued)",
+  "works": [
+    {
+      "id": "la_reading_analysis",
+      "name": "Reading Analysis",
+      "sequence": 7,
+      "materials": [
+        {"item": "Reading Analysis Materials", "qty": "1 set", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Phonogram Chart", "qty": "1 chart", "source": "BUY", "search1688": "英语音素表挂图", "searchAlt": "phonics chart海报", "price": "¥20-40"}
+      ]
+    },
+    {
+      "id": "la_reading_classification",
+      "name": "Reading Classification",
+      "sequence": 8,
+      "materials": [
+        {"item": "Classification Reading Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Classification Trays", "qty": "3 trays", "source": "BUY", "search1688": "蒙氏分类托盘木质", "searchAlt": "幼儿园木制分类盘", "price": "¥20-40/ea"}
+      ]
+    },
+    {
+      "id": "la_command_cards",
+      "name": "Command Cards (Action Reading)",
+      "sequence": 9,
+      "materials": [
+        {"item": "Simple Command Cards", "qty": "30 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Two-Step Command Cards", "qty": "30 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Complex Command Cards", "qty": "30 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Command Card Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏卡片盒木质", "searchAlt": "木制卡片收纳盒", "price": "¥20-40"}
+      ]
+    },
+    {
+      "id": "la_interpretive_reading",
+      "name": "Interpretive Reading",
+      "sequence": 10,
+      "materials": [
+        {"item": "Poetry Cards", "qty": "20 poems", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Short Story Cards", "qty": "20 stories", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Drama Scripts for Children", "qty": "10 scripts", "source": "BUY", "search1688": "儿童英语短剧本", "searchAlt": "幼儿英语戏剧表演", "price": "¥30-60"}
+      ]
+    },
+    {
+      "id": "la_silent_reading",
+      "name": "Silent Reading",
+      "sequence": 11,
+      "materials": [
+        {"item": "Leveled Readers Set", "qty": "50+ books", "source": "BUY", "search1688": "儿童英语分级阅读绘本", "searchAlt": "Oxford Reading Tree牛津树", "price": "¥150-300", "priority": "ESSENTIAL"},
+        {"item": "Book Corner Shelf", "qty": "1 shelf", "source": "BUY", "search1688": "幼儿园绘本架木质", "searchAlt": "儿童书架展示架", "price": "¥100-200"},
+        {"item": "Reading Cushions", "qty": "4-6", "source": "BUY", "search1688": "儿童阅读坐垫", "searchAlt": "幼儿园地垫坐垫", "price": "¥50-100"}
+      ]
+    }
+  ]
+}

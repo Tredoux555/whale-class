@@ -1,0 +1,68 @@
+{
+  "category": "word_study",
+  "name": "Word Study",
+  "sequence": 5,
+  "works": [
+    {
+      "id": "la_word_families",
+      "name": "Word Families",
+      "sequence": 1,
+      "materials": [
+        {"item": "Word Family Cards", "qty": "200+ cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Word Family Charts", "qty": "20 charts", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Word Family Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏卡片分类盒", "searchAlt": "木制卡片收纳盒带分隔", "price": "¥25-50"}
+      ]
+    },
+    {
+      "id": "la_spelling_rules",
+      "name": "Spelling Rules",
+      "sequence": 2,
+      "materials": [
+        {"item": "Spelling Rule Charts", "qty": "10 charts", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Word Sorting Materials", "qty": "100+ cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Spelling Rule Storage", "qty": "1 box", "source": "BUY", "search1688": "蒙氏卡片盒木质", "searchAlt": "木制分格盒", "price": "¥20-40"}
+      ]
+    },
+    {
+      "id": "la_compound_words",
+      "name": "Compound Words",
+      "sequence": 3,
+      "materials": [
+        {"item": "Compound Word Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Compound Word Matching Game", "qty": "1 set", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Compound Word Pictures", "qty": "50 pictures", "source": "MAKE", "generator": "/admin/card-generator"}
+      ]
+    },
+    {
+      "id": "la_prefixes_suffixes",
+      "name": "Prefixes and Suffixes",
+      "sequence": 4,
+      "materials": [
+        {"item": "Prefix Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Suffix Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Root Word Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Word Building Tray", "qty": "2 trays", "source": "BUY", "search1688": "蒙氏拼词托盘", "searchAlt": "木质词汇拼接板", "price": "¥30-60"}
+      ]
+    },
+    {
+      "id": "la_synonyms_antonyms",
+      "name": "Synonyms and Antonyms",
+      "sequence": 5,
+      "materials": [
+        {"item": "Synonym Matching Cards", "qty": "50 pairs", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Antonym Matching Cards", "qty": "50 pairs", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Synonym/Antonym Game", "qty": "1 set", "source": "BUY", "search1688": "儿童英语近义词反义词卡片", "searchAlt": "英语词汇配对游戏", "price": "¥30-60"}
+      ]
+    },
+    {
+      "id": "la_homonyms",
+      "name": "Homonyms",
+      "sequence": 6,
+      "materials": [
+        {"item": "Homophone Cards with Pictures", "qty": "60 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Multiple Meaning Cards", "qty": "40 cards", "source": "MAKE", "generator": "/admin/card-generator"},
+        {"item": "Homonym Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏卡片收纳盒", "searchAlt": "木制分类卡片盒", "price": "¥20-40"}
+      ]
+    }
+  ]
+}
