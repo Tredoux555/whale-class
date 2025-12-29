@@ -59,6 +59,7 @@ export async function middleware(req: NextRequest) {
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
+    '/auth/student-login', // Student login page
     '/admin/login', // Admin login page
   ];
   
