@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "title": "AMI English Language Area - Complete Procurement Guide",
+    "version": "1.0",
+    "lastUpdated": "2024-12-29",
+    "totalWorks": 43,
+    "categories": 5
+  },
+  "procurementCategories": [
+    {
+      "id": "oral_language",
+      "name": "Oral Language Development",
+      "sequence": 1,
+      "totalItems": 8,
+      "works": [
+        {
+          "id": "la_enrichment_vocabulary",
+          "name": "Vocabulary Enrichment",
+          "chineseName": "蒙特梭利词汇丰富",
+          "sequence": 1,
+          "materials": [
+            {
+              "item": "Real Objects Set - Classroom Items",
+              "quantity": "1 set (50+ items)",
+              "source": "BUY",
+              "search1688": "蒙特梭利语言区实物教具",
+              "searchAlt": "早教认知实物模型套装",
+              "estimatedPrice": "¥80-150",
+              "notes": "Miniature real objects: fruits, vegetables, animals, household items"
+            },
+            {
+              "item": "Picture Cards - Vocabulary",
+              "quantity": "200+ cards",
+              "source": "MAKE",
+              "generatorPath": "/admin/card-generator",
+              "notes": "Use your 3-Part Card Generator with real photos"
+            },
+            {
+              "item": "Vocabulary Books",
+              "quantity": "10-15 books",
+              "source": "BUY",
+              "search1688": "儿童英语认知绘本",
+              "searchAlt": "幼儿英文单词书",
+              "estimatedPrice": "¥50-100",
+              "notes": "Simple picture books with clear images and labels"
+            }
+          ]
+        },
+        {
+          "id": "la_classified_cards",
+          "name": "Classified Cards (Nomenclature Cards)",
+          "chineseName": "蒙特梭利分类卡片",
+          "sequence": 2,
+          "materials": [
+            {
+              "item": "Classified Card Sets - Animals",
+              "quantity": "1 set (100+ cards)",
+              "source": "MAKE",
+              "generatorPath": "/admin/card-generator",
+              "notes": "Farm animals, wild animals, ocean animals, insects - use 3-Part Card Generator"
+            },
+            {
+              "item": "Classified Card Sets - Plants",
+              "quantity": "1 set (50+ cards)",
+              "source": "MAKE",
+              "generatorPath": "/admin/card-generator",
+              "notes": "Flowers, trees, vegetables, fruits"
+            },
+            {
+              "item": "Classified Card Sets - Vehicles",
+              "quantity": "1 set (30+ cards)",
+              "source": "MAKE",
+              "generatorPath": "/admin/card-generator",
+              "notes": "Land, air, water vehicles"
+            },
+            {
+              "item": "Classified Card Storage Box",
+              "quantity": "3-5 boxes",
+              "source": "BUY",
+              "search1688": "蒙氏教具木质卡片盒",
+              "searchAlt": "木制卡片收纳盒带分隔",
+              "estimatedPrice": "¥25-50 each",
+              "notes": "Wooden boxes with compartments for organizing card sets"
+            }
+          ]
+        },
+        {
+          "id": "la_object_picture_matching",
+          "name": "Object to Picture Matching",
+          "chineseName": "蒙特梭利实物图片配对",
+          "sequence": 3,
+          "materials": [
+            {
+              "item": "Miniature Objects Set",
+              "quantity": "1 set (30-50 objects)",
+              "source": "BUY",
+              "search1688": "蒙氏语言区迷你仿真模型",
+              "searchAlt": "微缩仿真小物件教具套装",
+              "estimatedPrice": "¥60-120",
+              "notes": "Small realistic replicas: animals, foods, household items"
+            },
+            {
+              "item": "Matching Picture Cards",
+              "quantity": "30-50 cards",
+              "source": "MAKE",
+              "generatorPath": "/admin/card-generator",
+              "notes": "Photos matching each miniature object"
+            },
+            {
+              "item": "Matching Tray/Basket",
+              "quantity": "2-3",
+              "source": "BUY",
+              "search1688": "蒙氏教具木质托盘",
+              "searchAlt": "幼儿园木制收纳托盘",
+              "estimatedPrice": "¥15-30 each",
+              "notes": "Wooden trays for presenting the work"
+            }
+          ]
+        },
+        {
+          "id": "la_sound_games",
+          "name": "Sound Games (I Spy)",
+          "chineseName": "蒙特梭利声音游戏",
+          "sequence": 4,
+          "materials": [
+            {
+              "item": "Sound Sorting Objects - Initial Sounds",
+              "quantity": "5-6 sets (by letter)",
+              "source": "BUY",
+              "search1688": "蒙氏语言区首音分类小物件",
+              "searchAlt": "迷你仿真模型字母分类套装",
+              "estimatedPrice": "¥100-200",
+              "notes": "26 groups of small objects starting with each letter sound"
+            },
+            {
+              "item": "Sound Baskets/Boxes",
+              "quantity": "6-10 baskets",
+              "source": "BUY",
+              "search1688": "蒙氏教具小篮子收纳",
+              "searchAlt": "藤编小篮子幼儿园教具",
+              "estimatedPrice": "¥30-60",
+              "notes": "Small baskets for sorting objects by initial sound"
+            },
+            {
+              "item": "Letter Sound Cards",
+              "quantity": "26 cards",
+              "source": "MAKE",
+              "generatorPath": "/admin/material-generator",
+              "notes": "Use Material Generator - Sandpaper Letters option"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

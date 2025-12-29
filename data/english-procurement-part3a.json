@@ -1,0 +1,80 @@
+{
+  "category": "reading",
+  "name": "Reading",
+  "sequence": 3,
+  "works": [
+    {
+      "id": "la_object_boxes",
+      "name": "Object Boxes (Pink/Blue/Green)",
+      "sequence": 1,
+      "materials": [
+        {"item": "Pink Object Box with CVC Miniatures", "qty": "1 set (30+ objects)", "source": "BUY", "search1688": "蒙氏粉色系列物品盒CVC", "searchAlt": "蒙特梭利语言区迷你物品粉色", "price": "¥80-150", "priority": "ESSENTIAL"},
+        {"item": "Blue Object Box with Blend Miniatures", "qty": "1 set (30+ objects)", "source": "BUY", "search1688": "蒙氏蓝色系列物品盒", "searchAlt": "蒙特梭利语言区迷你物品蓝色", "price": "¥80-150", "priority": "ESSENTIAL"},
+        {"item": "Green Object Box with Phonogram Miniatures", "qty": "1 set (30+ objects)", "source": "BUY", "search1688": "蒙氏绿色系列物品盒", "searchAlt": "蒙特梭利语言区迷你物品绿色", "price": "¥80-150", "priority": "ESSENTIAL"},
+        {"item": "Word Labels for Object Boxes", "qty": "100+ labels", "source": "MAKE", "generator": "/admin/material-generator"}
+      ]
+    },
+    {
+      "id": "la_pink_series",
+      "name": "Pink Series (CVC Words)",
+      "sequence": 2,
+      "materials": [
+        {"item": "Pink Series Complete Set", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利粉色系列全套", "searchAlt": "蒙氏粉色阅读材料CVC", "price": "¥100-200", "priority": "ESSENTIAL"},
+        {"item": "Pink Picture-Word Cards", "qty": "200+ cards", "source": "MAKE", "generator": "/admin/material-generator", "notes": "Use Pink Series in Material Generator"},
+        {"item": "Pink Word Lists", "qty": "20 lists", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Pink Phrases Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Pink Sentences Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Pink Booklets/Readers", "qty": "10 booklets", "source": "BUY", "search1688": "蒙氏粉色系列阅读小书", "searchAlt": "CVC单词小读本", "price": "¥40-80"},
+        {"item": "Pink Series Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏语言区卡片收纳盒粉色", "searchAlt": "木质分格盒粉色", "price": "¥30-60"}
+      ]
+    },
+    {
+      "id": "la_blue_series",
+      "name": "Blue Series (Blends)",
+      "sequence": 3,
+      "materials": [
+        {"item": "Blue Series Complete Set", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利蓝色系列全套", "searchAlt": "蒙氏蓝色阅读材料辅音组合", "price": "¥100-200", "priority": "ESSENTIAL"},
+        {"item": "Blue Picture-Word Cards", "qty": "200+ cards", "source": "MAKE", "generator": "/admin/material-generator", "notes": "Use Blue Series in Material Generator"},
+        {"item": "Blue Word Lists", "qty": "20 lists", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Blue Phrases Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Blue Sentences Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Blue Booklets/Readers", "qty": "10 booklets", "source": "BUY", "search1688": "蒙氏蓝色系列阅读小书", "searchAlt": "辅音组合小读本", "price": "¥40-80"},
+        {"item": "Blue Series Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏语言区卡片收纳盒蓝色", "searchAlt": "木质分格盒蓝色", "price": "¥30-60"}
+      ]
+    },
+    {
+      "id": "la_phonogram_intro",
+      "name": "Phonogram Introduction",
+      "sequence": 4,
+      "materials": [
+        {"item": "Sandpaper Phonograms Set", "qty": "1 set (40+ phonograms)", "source": "BUY", "search1688": "蒙特梭利砂纸音素卡", "searchAlt": "蒙氏砂纸双字母组合", "price": "¥60-120", "priority": "ESSENTIAL"},
+        {"item": "Phonogram Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Phonogram Key Cards", "qty": "1 set", "source": "MAKE", "generator": "/admin/material-generator"}
+      ]
+    },
+    {
+      "id": "la_green_series",
+      "name": "Green Series (Phonograms)",
+      "sequence": 5,
+      "materials": [
+        {"item": "Green Series Complete Set", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利绿色系列全套", "searchAlt": "蒙氏绿色阅读材料音素", "price": "¥120-250", "priority": "ESSENTIAL"},
+        {"item": "Green Picture-Word Cards", "qty": "300+ cards", "source": "MAKE", "generator": "/admin/material-generator", "notes": "Use Green Series in Material Generator"},
+        {"item": "Green Word Lists by Phonogram", "qty": "30 lists", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Green Phrases Cards", "qty": "60 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Green Sentences Cards", "qty": "60 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Green Booklets/Readers", "qty": "15 booklets", "source": "BUY", "search1688": "蒙氏绿色系列阅读小书", "searchAlt": "音素组合小读本", "price": "¥50-100"},
+        {"item": "Green Series Storage Boxes", "qty": "2-3 boxes", "source": "BUY", "search1688": "蒙氏语言区卡片收纳盒绿色", "searchAlt": "木质分格盒绿色", "price": "¥30-60/ea"}
+      ]
+    },
+    {
+      "id": "la_puzzle_words",
+      "name": "Puzzle Words (Sight Words)",
+      "sequence": 6,
+      "materials": [
+        {"item": "Sight Word Cards (Dolch List)", "qty": "220 cards", "source": "MAKE", "generator": "/admin/material-generator"},
+        {"item": "Sight Word Booklets", "qty": "10 booklets", "source": "BUY", "search1688": "儿童英语高频词小书", "searchAlt": "sight words阅读本", "price": "¥40-80"},
+        {"item": "Sight Word Storage Box", "qty": "1 box", "source": "BUY", "search1688": "蒙氏卡片收纳盒", "searchAlt": "木制分类卡片盒", "price": "¥25-50"}
+      ]
+    }
+  ]
+}
