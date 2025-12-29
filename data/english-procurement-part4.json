@@ -2,110 +2,50 @@
   "category": "grammar",
   "name": "Grammar",
   "sequence": 4,
+  "l2Note": "CRITICAL for Chinese learners: Extended practice on articles (a/an/the), plurals (-s), and tenses (-ed) - features absent from Chinese",
   "works": [
     {
-      "id": "la_noun_intro",
-      "name": "Introduction to the Noun",
+      "id": "la_grammar_symbols_set",
+      "name": "Complete Grammar Symbols Set",
       "sequence": 1,
       "materials": [
-        {"item": "Noun Grammar Symbol (Black Triangle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号名词黑色三角", "searchAlt": "蒙氏语法教具三角形", "price": "¥30-60"},
-        {"item": "Noun Lesson Objects", "qty": "30+ objects", "source": "BUY", "search1688": "蒙氏语言区名词小物件", "searchAlt": "迷你仿真模型套装", "price": "¥50-100"},
-        {"item": "Noun Labels/Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"}
+        {"item": "Basic Grammar Symbols (wooden, 3D)", "qty": "1 set", "source": "BUY", "search1688": "蒙氏语法符号", "searchEn": "Montessori grammar symbols wooden", "price": "¥40-100", "priority": "ESSENTIAL", "verified": true},
+        {"item": "Flat Grammar Symbols", "qty": "1 set", "source": "BUY", "search1688": "蒙氏平面语法符号", "searchEn": "Montessori flat grammar symbols", "price": "¥25-60"},
+        {"item": "Grammar Boxes (8 boxes)", "qty": "1 set", "source": "BUY", "search1688": "蒙氏语法盒", "searchEn": "Montessori grammar boxes set", "price": "¥150-300", "priority": "ESSENTIAL", "verified": true}
       ]
     },
     {
-      "id": "la_article_intro",
-      "name": "Introduction to the Article",
+      "id": "la_noun_intro",
+      "name": "Introduction to the Noun (Farm Game)",
       "sequence": 2,
       "materials": [
-        {"item": "Article Grammar Symbol (Light Blue Small Triangle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号冠词浅蓝三角", "searchAlt": "蒙氏语法教具小三角", "price": "¥20-40"},
-        {"item": "Article Cards (a, an, the)", "qty": "30 cards", "source": "MAKE", "generator": "/admin/material-generator"}
-      ]
-    },
-    {
-      "id": "la_adjective_intro",
-      "name": "Introduction to the Adjective",
-      "sequence": 3,
-      "materials": [
-        {"item": "Adjective Grammar Symbol (Dark Blue Medium Triangle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号形容词深蓝三角", "searchAlt": "蒙氏语法教具中三角", "price": "¥25-50"},
-        {"item": "Detective Adjective Game Set", "qty": "1 set", "source": "BUY", "search1688": "蒙氏形容词侦探游戏", "searchAlt": "蒙特梭利形容词教具", "price": "¥40-80"},
-        {"item": "Adjective Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"}
+        {"item": "Miniature Farm Set", "qty": "1 set", "source": "BUY", "search1688": "蒙氏语法农场", "searchEn": "Montessori grammar farm miniatures", "price": "¥100-200"},
+        {"item": "Noun Labels", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"}
       ]
     },
     {
       "id": "la_verb_intro",
-      "name": "Introduction to the Verb",
+      "name": "Introduction to the Verb (Command Game)",
+      "sequence": 3,
+      "materials": [
+        {"item": "Action Verb Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"}
+      ]
+    },
+    {
+      "id": "la_adjective_intro",
+      "name": "Introduction to the Adjective (Detective Game)",
       "sequence": 4,
       "materials": [
-        {"item": "Verb Grammar Symbol (Large Red Circle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号动词红色圆形", "searchAlt": "蒙氏语法教具圆形", "price": "¥25-50"},
-        {"item": "Action Verb Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"},
-        {"item": "Verb Command Game Materials", "qty": "1 set", "source": "MAKE", "generator": "/admin/card-generator"}
-      ]
-    },
-    {
-      "id": "la_adverb_intro",
-      "name": "Introduction to the Adverb",
-      "sequence": 5,
-      "materials": [
-        {"item": "Adverb Grammar Symbol (Small Orange Circle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号副词橙色小圆", "searchAlt": "蒙氏语法教具小圆形", "price": "¥20-40"},
-        {"item": "Adverb Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"},
-        {"item": "Adverb Game Materials", "qty": "1 set", "source": "MAKE", "generator": "/admin/card-generator"}
-      ]
-    },
-    {
-      "id": "la_pronoun_intro",
-      "name": "Introduction to the Pronoun",
-      "sequence": 6,
-      "materials": [
-        {"item": "Pronoun Grammar Symbol (Purple Triangle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号代词紫色三角", "searchAlt": "蒙氏语法教具紫三角", "price": "¥20-40"},
-        {"item": "Pronoun Cards", "qty": "30 cards", "source": "MAKE", "generator": "/admin/material-generator"}
-      ]
-    },
-    {
-      "id": "la_preposition_intro",
-      "name": "Introduction to the Preposition",
-      "sequence": 7,
-      "materials": [
-        {"item": "Preposition Grammar Symbol (Green Crescent)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号介词绿色月牙", "searchAlt": "蒙氏语法教具弯月形", "price": "¥20-40"},
-        {"item": "Preposition Cards", "qty": "30 cards", "source": "MAKE", "generator": "/admin/material-generator"},
-        {"item": "Preposition Game Objects", "qty": "1 set", "source": "BUY", "search1688": "蒙氏介词游戏教具", "searchAlt": "方位词教具套装", "price": "¥30-60"}
-      ]
-    },
-    {
-      "id": "la_conjunction_intro",
-      "name": "Introduction to the Conjunction",
-      "sequence": 8,
-      "materials": [
-        {"item": "Conjunction Grammar Symbol (Pink Rectangle)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号连词粉色长方形", "searchAlt": "蒙氏语法教具长方形", "price": "¥20-40"},
-        {"item": "Conjunction Cards", "qty": "20 cards", "source": "MAKE", "generator": "/admin/material-generator"}
-      ]
-    },
-    {
-      "id": "la_interjection_intro",
-      "name": "Introduction to the Interjection",
-      "sequence": 9,
-      "materials": [
-        {"item": "Interjection Grammar Symbol (Gold Keyhole)", "qty": "10 symbols", "source": "BUY", "search1688": "蒙特梭利语法符号感叹词金色", "searchAlt": "蒙氏语法教具钥匙孔形", "price": "¥20-40"},
-        {"item": "Interjection Cards", "qty": "20 cards", "source": "MAKE", "generator": "/admin/material-generator"}
-      ]
-    },
-    {
-      "id": "la_grammar_boxes",
-      "name": "Grammar Boxes (I-VIII)",
-      "sequence": 10,
-      "materials": [
-        {"item": "Grammar Boxes Complete Set (8 boxes)", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利语法盒全套8个", "searchAlt": "蒙氏语法填充盒", "price": "¥200-400", "priority": "ESSENTIAL"},
-        {"item": "Grammar Box Filling Cards", "qty": "200+ cards", "source": "MAKE", "generator": "/admin/material-generator"}
+        {"item": "Detective Game Objects", "qty": "1 set", "source": "BUY", "search1688": "蒙氏形容词教具套装", "searchEn": "Montessori adjective materials", "price": "¥40-80"},
+        {"item": "Adjective Cards", "qty": "100 cards", "source": "MAKE", "generator": "/admin/material-generator"}
       ]
     },
     {
       "id": "la_sentence_analysis",
       "name": "Sentence Analysis",
-      "sequence": 11,
+      "sequence": 5,
       "materials": [
-        {"item": "Sentence Analysis Charts", "qty": "1 set", "source": "BUY", "search1688": "蒙特梭利句子分析图表", "searchAlt": "蒙氏句子结构教具", "price": "¥80-150"},
-        {"item": "Question Arrows Set", "qty": "1 set", "source": "BUY", "search1688": "蒙氏句子分析箭头", "searchAlt": "蒙特梭利问题箭头", "price": "¥40-80"},
-        {"item": "Sentence Analysis Cards", "qty": "50 cards", "source": "MAKE", "generator": "/admin/material-generator"}
+        {"item": "Sentence Analysis Charts", "qty": "1 set", "source": "BUY", "search1688": "蒙氏句子分析图", "searchEn": "Montessori sentence analysis chart", "price": "¥50-100"}
       ]
     }
   ]
