@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import { decryptMessage } from '@/lib/message-encryption';
 
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 5,
-    });
-  }
-  return pool;
-}
-
-async function dbQuery(text: string, params?: unknown[]) {
-  const client = getPool();
-  return client.query(text, params);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase not configured');
+  return createClient(url, key);
 }
 
 function getJWTSecret(): Uint8Array {
@@ -31,8 +20,7 @@ async function verifyAdminToken(authHeader: string | null): Promise<string | nul
   if (!authHeader) return null;
   try {
     const token = authHeader.replace('Bearer ', '');
-    const secret = getJWTSecret();
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getJWTSecret());
     if (payload.role !== 'admin') return null;
     return payload.username as string;
   } catch {
@@ -47,31 +35,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabase = getSupabase();
     const url = new URL(req.url);
     const limit = parseInt(url.searchParams.get('limit') || '50', 10);
     const showExpired = url.searchParams.get('showExpired') === 'true';
 
-    let query = `SELECT id, week_start_date, message_type, content, media_url, media_filename, author, created_at, is_expired 
-                 FROM story_message_history 
-                 WHERE 1=1`;
-    const params: unknown[] = [];
+    let query = supabase
+      .from('story_message_history')
+      .select('id, week_start_date, message_type, content, media_url, media_filename, author, created_at, is_expired')
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (!showExpired) {
-      query += ` AND is_expired = FALSE`;
+      query = query.eq('is_expired', false);
     }
 
-    query += ` ORDER BY created_at DESC LIMIT $1`;
-    params.push(limit);
+    const { data: rows, error } = await query;
 
-    const result = await dbQuery(query, params);
+    if (error) throw error;
 
-    const messages = result.rows.map(row => {
+    const messages = (rows || []).map(row => {
       let content = row.content;
       if (row.message_type === 'text' && content) {
         try {
           content = decryptMessage(content);
         } catch (e) {
-          console.error('[MessageHistory] Failed to decrypt message:', e);
+          console.error('[MessageHistory] Decrypt failed:', e);
           content = '[Encrypted - decryption failed]';
         }
       }
@@ -89,14 +78,20 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const statsResult = await dbQuery(
-      `SELECT message_type, COUNT(*) as count FROM story_message_history 
-       WHERE is_expired = FALSE GROUP BY message_type`
-    );
+    // Get stats
+    const { data: statsRows } = await supabase
+      .from('story_message_history')
+      .select('message_type')
+      .eq('is_expired', false);
 
-    const statistics = statsResult.rows.map(row => ({
-      message_type: row.message_type,
-      count: row.count
+    const statsCounts: Record<string, number> = {};
+    (statsRows || []).forEach(r => {
+      statsCounts[r.message_type] = (statsCounts[r.message_type] || 0) + 1;
+    });
+
+    const statistics = Object.entries(statsCounts).map(([message_type, count]) => ({
+      message_type,
+      count
     }));
 
     return NextResponse.json({ messages, statistics });
