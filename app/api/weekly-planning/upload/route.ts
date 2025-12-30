@@ -14,21 +14,25 @@ function getAnthropic(): Anthropic {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 }
 
-interface WorkAssignment {
+interface WorkItem {
+  area: string;
+  workNameChinese: string;
+  workNameEnglish: string;
+  matchedWorkId?: string;
+}
+
+interface ChildAssignment {
   childName: string;
-  works: {
-    area: string;
-    workNameChinese: string;
-    workNameEnglish: string;
-    matchedWorkId?: string;
-  }[];
+  works: WorkItem[];
+  focusArea?: string;
+  observationNotes?: string;
 }
 
 interface TranslatedPlan {
   weekNumber: number;
   startDate?: string;
   endDate?: string;
-  assignments: WorkAssignment[];
+  assignments: ChildAssignment[];
 }
 
 export async function POST(request: NextRequest) {
@@ -50,32 +54,36 @@ export async function POST(request: NextRequest) {
     // Extract text from docx
     const textContent = await extractDocxText(buffer);
     console.log('[Upload] Extracted text length:', textContent.length);
-    console.log('[Upload] Text preview:', textContent.substring(0, 500));
 
-    // Get work translations from database for context
-    const { data: translations, error: transError } = await supabase
+    // Get existing translations for context
+    const { data: translations } = await supabase
       .from('work_translations')
       .select('chinese_name, english_name, area, aliases');
     
-    console.log('[Upload] Translations count:', translations?.length || 0);
-    if (transError) console.log('[Upload] Translations error:', transError);
+    // Get curriculum works for matching
+    const { data: curriculumWorks } = await supabase
+      .from('curriculum_roadmap')
+      .select('id, name, chinese_name, area_id');
 
-    // Use Claude to translate and structure the plan
+    // Use Claude to parse and translate
     let translatedPlan: TranslatedPlan;
     try {
-      translatedPlan = await translatePlanWithClaude(textContent, translations || []);
-      console.log('[Upload] Claude response - assignments:', translatedPlan.assignments?.length || 0);
+      translatedPlan = await translatePlanWithClaude(
+        textContent, 
+        translations || [],
+        curriculumWorks || []
+      );
+      console.log('[Upload] Parsed assignments:', translatedPlan.assignments?.length || 0);
     } catch (claudeError: any) {
       console.error('[Upload] Claude API error:', claudeError.message);
       return NextResponse.json({ 
         error: 'Claude API failed', 
-        details: claudeError.message,
-        textPreview: textContent.substring(0, 200)
+        details: claudeError.message 
       }, { status: 500 });
     }
 
     // Match works to curriculum database
-    const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan);
+    const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan, curriculumWorks || []);
 
     // Save to database
     const { data: savedPlan, error: saveError } = await supabase
@@ -85,7 +93,7 @@ export async function POST(request: NextRequest) {
         year: year,
         original_filename: file.name,
         translated_content: matchedPlan,
-        status: 'draft',
+        status: 'active',
         start_date: translatedPlan.startDate,
         end_date: translatedPlan.endDate,
       }, {
@@ -109,19 +117,14 @@ export async function POST(request: NextRequest) {
       plan: savedPlan,
       translatedContent: matchedPlan,
       debug: {
-        textLength: textContent.length,
-        textPreview: textContent.substring(0, 300),
-        translationsCount: translations?.length || 0,
-        assignmentsCount: matchedPlan.assignments?.length || 0
+        childrenCount: matchedPlan.assignments?.length || 0,
+        totalWorks: matchedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0
       }
     });
 
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process file' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
   }
 }
 
@@ -137,51 +140,70 @@ async function extractDocxText(buffer: Buffer): Promise<string> {
   }
 }
 
+
 async function translatePlanWithClaude(
   content: string, 
-  translations: any[]
+  translations: any[],
+  curriculumWorks: any[]
 ): Promise<TranslatedPlan> {
   const anthropic = getAnthropic();
-  const translationContext = translations
-    .map(t => `${t.chinese_name} = ${t.english_name} (${t.area})`)
-    .join('\n');
+  
+  // Build context with known works
+  const knownWorks = curriculumWorks.slice(0, 100).map(w => 
+    `${w.chinese_name || ''} = ${w.name} (${w.area_id})`
+  ).filter(s => s.includes(' = ')).join('\n');
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
+    max_tokens: 8000,
     messages: [
       {
         role: 'user',
-        content: `You are a Montessori curriculum expert. Translate and structure this weekly plan.
+        content: `You are a Montessori curriculum expert. Parse this Chinese weekly plan document.
 
-KNOWN WORK TRANSLATIONS:
-${translationContext}
+DOCUMENT FORMAT:
+The document has a table where each child has TWO rows:
+- Row 1: Name | Practical Life | Sensorial | Math | Language | Culture | Notes
+- Row 2: Focus Area (like 社交, 专注力, 意志力) | empty cells | observation notes
+
+KNOWN MONTESSORI WORKS:
+${knownWorks}
+
+AREA MAPPING:
+- Practical Life / practical_life: 食物制备, 剪纸, 编辫子, 照顾环境, 洗桌子, 衣饰框, 插花, 倒, 舀豆子, 叠衣服
+- Sensorial / sensorial: 三项式, 二项式, 味觉瓶, 嗅觉瓶, 音感钟, 色板, 粉红塔, 棕色梯, 红棒, 几何图橱
+- Mathematics / mathematics: 数棒, 砂纸数字, 纺锤棒箱, 数字与筹码, 金色珠子, 直线数数, 加法蛇, 邮票游戏
+- Language / language: Anything with letters, WBW, WFW, CVC, 3ptc, phonics, matching
+- Culture / culture: 地球仪, 地图, 鸟, 鱼, 青蛙, 蝴蝶, 花, 树, 叶, 动物
 
 DOCUMENT CONTENT:
 ${content}
 
-Extract and return a JSON object with this structure:
+Extract and return a JSON object with this exact structure:
 {
-  "weekNumber": <number>,
-  "startDate": "<YYYY-MM-DD or null>",
-  "endDate": "<YYYY-MM-DD or null>",
+  "weekNumber": <number from document title or 0>,
   "assignments": [
     {
-      "childName": "<child name>",
+      "childName": "<child name exactly as written>",
       "works": [
         {
           "area": "<practical_life|sensorial|mathematics|language|culture>",
           "workNameChinese": "<original Chinese name>",
           "workNameEnglish": "<translated English name>"
         }
-      ]
+      ],
+      "focusArea": "<focus area like 社交, 专注力, etc - if present>",
+      "observationNotes": "<any observation notes from the notes column>"
     }
   ]
 }
 
-Use the known translations when available. For unknown works, provide your best translation.
-Categorize each work into one of the 5 Montessori areas.
-Return ONLY valid JSON, no explanation.`
+IMPORTANT:
+- Include ALL children from the document
+- Each work must be categorized into exactly one area
+- The focusArea is usually on the row below the child's main data (社交, 专注力, 意志力, etc)
+- Observation notes may contain progress notes in Chinese
+- Return ONLY valid JSON, no markdown or explanation`
       }
     ]
   });
@@ -189,32 +211,33 @@ Return ONLY valid JSON, no explanation.`
   const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
   
   try {
+    // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-    throw new Error('No valid JSON found');
+    throw new Error('No valid JSON found in response');
   } catch (e) {
-    console.error('Failed to parse Claude response:', responseText);
+    console.error('Failed to parse Claude response:', responseText.substring(0, 500));
     return { weekNumber: 0, assignments: [] };
   }
 }
 
 
-async function matchWorksToCurriculum(supabase: SupabaseClient, plan: TranslatedPlan): Promise<TranslatedPlan> {
-  const { data: curriculumWorks } = await supabase
-    .from('curriculum_roadmap')
-    .select('id, name, chinese_name, area_id');
-
+async function matchWorksToCurriculum(
+  supabase: SupabaseClient, 
+  plan: TranslatedPlan,
+  curriculumWorks: any[]
+): Promise<TranslatedPlan> {
+  
   const { data: translations } = await supabase
     .from('work_translations')
     .select('chinese_name, english_name, curriculum_work_id, aliases');
 
-  if (!curriculumWorks || !translations) return plan;
-
   for (const assignment of plan.assignments) {
     for (const work of assignment.works) {
-      const translation = translations.find(t => 
+      // Try to match via translations table
+      const translation = translations?.find(t => 
         t.chinese_name === work.workNameChinese ||
         t.aliases?.includes(work.workNameChinese)
       );
@@ -224,8 +247,9 @@ async function matchWorksToCurriculum(supabase: SupabaseClient, plan: Translated
         continue;
       }
 
+      // Try direct match on curriculum works
       const curriculumMatch = curriculumWorks.find(c =>
-        c.name.toLowerCase() === work.workNameEnglish.toLowerCase() ||
+        c.name?.toLowerCase() === work.workNameEnglish?.toLowerCase() ||
         c.chinese_name === work.workNameChinese
       );
 
@@ -238,42 +262,62 @@ async function matchWorksToCurriculum(supabase: SupabaseClient, plan: Translated
   return plan;
 }
 
-async function createAssignments(supabase: SupabaseClient, planId: string, plan: TranslatedPlan) {
+
+async function createAssignments(
+  supabase: SupabaseClient, 
+  planId: string, 
+  plan: TranslatedPlan
+) {
+  // Get children from database
   const { data: children } = await supabase
     .from('children')
     .select('id, name');
 
   if (!children) return;
 
+  // Build assignments
   const assignments = [];
 
   for (const assignment of plan.assignments) {
+    // Find matching child (case-insensitive)
     const child = children.find(c => 
       c.name.toLowerCase() === assignment.childName.toLowerCase()
     );
 
-    if (!child) continue;
+    if (!child) {
+      console.log(`[Upload] Child not found: ${assignment.childName}`);
+      continue;
+    }
 
     for (const work of assignment.works) {
       assignments.push({
         weekly_plan_id: planId,
         child_id: child.id,
         work_id: work.matchedWorkId || null,
-        work_name: work.workNameEnglish,
+        work_name: work.workNameEnglish || work.workNameChinese,
         area: work.area,
         progress_status: 'not_started',
+        notes: null
       });
     }
   }
 
   if (assignments.length > 0) {
+    // Delete existing assignments for this plan
     await supabase
       .from('weekly_assignments')
       .delete()
       .eq('weekly_plan_id', planId);
 
-    await supabase
+    // Insert new assignments
+    const { error } = await supabase
       .from('weekly_assignments')
       .insert(assignments);
+
+    if (error) {
+      console.error('Failed to insert assignments:', error);
+    } else {
+      console.log(`[Upload] Created ${assignments.length} assignments`);
+    }
   }
 }
