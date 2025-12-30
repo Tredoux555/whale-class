@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Transpile server-only modules
-  transpilePackages: ['jose'],
+  // Transpile server-only modules (bcryptjs v3 is ESM-only)
+  transpilePackages: ['jose', 'bcryptjs'],
   // Use webpack instead of Turbopack for PWA compatibility
   webpack: (config, { isServer }) => {
     if (isServer) {
