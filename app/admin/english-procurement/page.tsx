@@ -5066,10 +5066,17 @@ export default function EnglishProcurementPage() {
             </label>
           )}
           <a
+            href="/docs/1688_Procurement_Guide.pdf"
+            download="1688_Procurement_Guide.pdf"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition ml-auto"
+          >
+            📄 Download Guide
+          </a>
+          <a
             href="https://www.1688.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition ml-auto"
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition"
           >
             🔗 Open 1688.com
           </a>
