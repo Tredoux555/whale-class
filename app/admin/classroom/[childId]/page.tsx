@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 
@@ -13,9 +13,6 @@ interface WorkAssignment {
   work_id?: string;
   video_url?: string;
   notes?: string;
-  presented_date?: string;
-  practicing_date?: string;
-  mastered_date?: string;
 }
 
 interface ChildDetail {
@@ -43,7 +40,23 @@ const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: strin
   culture: { label: 'Culture', color: 'text-purple-800', bgColor: 'bg-purple-50 border-purple-200' },
 };
 
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+    </div>
+  );
+}
+
 export default function ChildDetailPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <ChildDetailContent />
+    </Suspense>
+  );
+}
+
+function ChildDetailContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const childId = params.childId as string;
@@ -55,9 +68,7 @@ export default function ChildDetailPage() {
   const [videoModal, setVideoModal] = useState<{ url: string; title: string } | null>(null);
 
   useEffect(() => {
-    if (childId) {
-      fetchChildDetail();
-    }
+    if (childId) fetchChildDetail();
   }, [childId, weekNumber, year]);
 
   async function fetchChildDetail() {
@@ -73,8 +84,6 @@ export default function ChildDetailPage() {
 
   async function updateProgress(assignmentId: string, newStatus: string) {
     if (!child) return;
-    
-    // Optimistic update
     setChild({
       ...child,
       assignments: child.assignments.map(a => 
@@ -99,14 +108,12 @@ export default function ChildDetailPage() {
     updateProgress(assignment.id, nextStatus);
   };
 
-  // Group assignments by area
   const assignmentsByArea = child?.assignments.reduce((acc, a) => {
     if (!acc[a.area]) acc[a.area] = [];
     acc[a.area].push(a);
     return acc;
   }, {} as Record<string, WorkAssignment[]>) || {};
 
-  // Calculate stats
   const stats = child ? {
     total: child.assignments.length,
     mastered: child.assignments.filter(a => a.progress_status === 'mastered').length,
@@ -115,13 +122,7 @@ export default function ChildDetailPage() {
     notStarted: child.assignments.filter(a => a.progress_status === 'not_started').length,
   } : null;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   if (!child) {
     return (
@@ -139,7 +140,6 @@ export default function ChildDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-md">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -156,15 +156,10 @@ export default function ChildDetailPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
-        {/* Child Header Card */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 mb-6 text-white">
           <h1 className="text-3xl font-bold mb-2">{child.name}</h1>
+          {child.age_group && <p className="text-blue-100 mb-4">Age group: {child.age_group}</p>}
           
-          {child.age_group && (
-            <p className="text-blue-100 mb-4">Age group: {child.age_group}</p>
-          )}
-
-          {/* Progress Bar */}
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span>Week Progress</span>
@@ -178,7 +173,6 @@ export default function ChildDetailPage() {
             </div>
           </div>
 
-          {/* Stats Row */}
           {stats && (
             <div className="grid grid-cols-4 gap-2 text-center">
               <div className="bg-white/20 rounded-lg py-2">
@@ -201,7 +195,6 @@ export default function ChildDetailPage() {
           )}
         </div>
 
-        {/* Focus Area */}
         {child.focus_area && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
             <h2 className="font-semibold text-yellow-800 mb-1">🎯 Focus Area</h2>
@@ -209,7 +202,6 @@ export default function ChildDetailPage() {
           </div>
         )}
 
-        {/* Observation Notes */}
         {child.observation_notes && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <h2 className="font-semibold text-blue-800 mb-1">📝 Notes</h2>
@@ -217,7 +209,6 @@ export default function ChildDetailPage() {
           </div>
         )}
 
-        {/* Works by Area */}
         <h2 className="text-lg font-bold text-gray-800 mb-4">This Week's Works</h2>
         
         {Object.entries(AREA_CONFIG).map(([areaKey, areaConfig]) => {
@@ -239,7 +230,6 @@ export default function ChildDetailPage() {
                 {areaAssignments.map(assignment => (
                   <div key={assignment.id} className="p-4">
                     <div className="flex items-center gap-4">
-                      {/* Large Status Button */}
                       <button
                         onClick={() => handleStatusTap(assignment)}
                         className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center font-bold
@@ -250,7 +240,6 @@ export default function ChildDetailPage() {
                         <span className="text-[10px] font-normal opacity-70">tap</span>
                       </button>
 
-                      {/* Work Info */}
                       <div className="flex-1">
                         <p className="font-semibold text-gray-800">{assignment.work_name}</p>
                         {assignment.work_name_chinese && (
@@ -261,13 +250,9 @@ export default function ChildDetailPage() {
                         </p>
                       </div>
 
-                      {/* Video Button */}
                       {assignment.video_url && (
                         <button
-                          onClick={() => setVideoModal({ 
-                            url: assignment.video_url!, 
-                            title: assignment.work_name 
-                          })}
+                          onClick={() => setVideoModal({ url: assignment.video_url!, title: assignment.work_name })}
                           className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center hover:bg-red-200 transition-colors"
                         >
                           ▶️
@@ -275,7 +260,6 @@ export default function ChildDetailPage() {
                       )}
                     </div>
 
-                    {/* Assignment Notes */}
                     {assignment.notes && (
                       <div className="mt-3 pl-20 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
                         {assignment.notes}
@@ -288,7 +272,6 @@ export default function ChildDetailPage() {
           );
         })}
 
-        {/* Empty state */}
         {child.assignments.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl">
             <div className="text-5xl mb-4">📋</div>
@@ -297,16 +280,9 @@ export default function ChildDetailPage() {
         )}
       </main>
 
-      {/* Video Modal */}
       {videoModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-          onClick={() => setVideoModal(null)}
-        >
-          <div 
-            className="bg-white rounded-xl overflow-hidden max-w-4xl w-full"
-            onClick={e => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setVideoModal(null)}>
+          <div className="bg-white rounded-xl overflow-hidden max-w-4xl w-full" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="font-semibold">{videoModal.title}</h3>
               <button onClick={() => setVideoModal(null)} className="p-2 hover:bg-gray-100 rounded-lg">✕</button>
