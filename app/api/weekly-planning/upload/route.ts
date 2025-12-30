@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase not configured');
+  return createClient(url, key);
+}
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropic(): Anthropic {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error('Anthropic API key not configured');
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
 
 interface WorkAssignment {
   childName: string;
@@ -30,6 +33,7 @@ interface TranslatedPlan {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const weekNumber = parseInt(formData.get('weekNumber') as string) || 0;
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
     const translatedPlan = await translatePlanWithClaude(textContent, translations || []);
 
     // Match works to curriculum database
-    const matchedPlan = await matchWorksToCurriculum(translatedPlan);
+    const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan);
 
     // Save to database
     const { data: savedPlan, error: saveError } = await supabase
@@ -81,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Create assignments for each child-work pair
     if (savedPlan) {
-      await createAssignments(savedPlan.id, matchedPlan);
+      await createAssignments(supabase, savedPlan.id, matchedPlan);
     }
 
     return NextResponse.json({
@@ -99,14 +103,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
+
 async function extractDocxText(buffer: Buffer): Promise<string> {
-  // Use mammoth for proper docx extraction
   try {
     const mammoth = await import('mammoth');
     const result = await mammoth.extractRawText({ buffer });
     return result.value;
   } catch {
-    // Fallback: basic extraction
     const text = buffer.toString('utf-8');
     return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
@@ -116,6 +119,7 @@ async function translatePlanWithClaude(
   content: string, 
   translations: any[]
 ): Promise<TranslatedPlan> {
+  const anthropic = getAnthropic();
   const translationContext = translations
     .map(t => `${t.chinese_name} = ${t.english_name} (${t.area})`)
     .join('\n');
@@ -174,7 +178,8 @@ Return ONLY valid JSON, no explanation.`
   }
 }
 
-async function matchWorksToCurriculum(plan: TranslatedPlan): Promise<TranslatedPlan> {
+
+async function matchWorksToCurriculum(supabase: SupabaseClient, plan: TranslatedPlan): Promise<TranslatedPlan> {
   const { data: curriculumWorks } = await supabase
     .from('curriculum_roadmap')
     .select('id, name, chinese_name, area_id');
@@ -211,7 +216,7 @@ async function matchWorksToCurriculum(plan: TranslatedPlan): Promise<TranslatedP
   return plan;
 }
 
-async function createAssignments(planId: string, plan: TranslatedPlan) {
+async function createAssignments(supabase: SupabaseClient, planId: string, plan: TranslatedPlan) {
   const { data: children } = await supabase
     .from('children')
     .select('id, name');
