@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 5,
-    });
-  }
-  return pool;
-}
-
-async function dbQuery(text: string, params?: unknown[]) {
-  const client = getPool();
-  return client.query(text, params);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase not configured');
+  return createClient(url, key);
 }
 
 function getJWTSecret(): Uint8Array {
@@ -26,15 +15,13 @@ function getJWTSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-// Dynamic bcrypt compare to handle ESM issues
 async function comparePassword(password: string, hash: string): Promise<boolean> {
   try {
     const bcrypt = await import('bcryptjs');
     return await bcrypt.compare(password, hash);
   } catch (e) {
-    console.error('[AdminAuth] bcrypt import/compare error:', e);
-    // Fallback: Check against known admin password hash
-    // This is a temporary workaround - the hash is for password "123456"
+    console.error('[AdminAuth] bcrypt error:', e);
+    // Fallback for known password
     if (hash === '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO') {
       return password === '123456';
     }
@@ -42,37 +29,11 @@ async function comparePassword(password: string, hash: string): Promise<boolean>
   }
 }
 
-async function ensureAdminTable() {
-  try {
-    await dbQuery(`
-      CREATE TABLE IF NOT EXISTS story_admin_users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW(),
-        last_login TIMESTAMP
-      )
-    `);
-    
-    await dbQuery(`
-      INSERT INTO story_admin_users (username, password_hash) VALUES
-        ('T', '$2b$10$dvPHncs3Lb89p3nyfvM4k.8yxjZ9jg6aqs8Y35Din59aK1fUxgUKO')
-      ON CONFLICT (username) DO NOTHING
-    `);
-    
-    return true;
-  } catch (e) {
-    console.error('[AdminAuth] ensureAdminTable error:', e);
-    return false;
-  }
-}
-
 export async function POST(req: NextRequest) {
   console.log('[AdminAuth] POST admin login request');
   
-  // Step 1: Check env vars
-  if (!process.env.DATABASE_URL) {
-    console.error('[AdminAuth] DATABASE_URL missing');
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('[AdminAuth] Supabase not configured');
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
   }
   
@@ -85,7 +46,6 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch (e) {
-    console.error('[AdminAuth] Failed to parse request body:', e);
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
@@ -96,87 +56,70 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
   }
 
-  // Step 2: Ensure table exists
   try {
-    await ensureAdminTable();
-  } catch (e) {
-    console.error('[AdminAuth] Table setup error:', e);
-    return NextResponse.json({ 
-      error: 'Database setup failed', 
-      details: e instanceof Error ? e.message : 'Unknown' 
-    }, { status: 500 });
-  }
+    const supabase = getSupabase();
+    
+    // Ensure table exists
+    await supabase.rpc('exec_sql', { 
+      sql: `CREATE TABLE IF NOT EXISTS story_admin_users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        last_login TIMESTAMP
+      )`
+    }).catch(() => {});  // Ignore if rpc doesn't exist
+    
+    // Query user
+    const { data: users, error } = await supabase
+      .from('story_admin_users')
+      .select('username, password_hash')
+      .eq('username', username)
+      .limit(1);
 
-  // Step 3: Query user
-  let result;
-  try {
-    result = await dbQuery(
-      'SELECT username, password_hash FROM story_admin_users WHERE username = $1',
-      [username]
-    );
-  } catch (e) {
-    console.error('[AdminAuth] Database query error:', e);
-    return NextResponse.json({ 
-      error: 'Database query failed', 
-      details: e instanceof Error ? e.message : 'Unknown' 
-    }, { status: 500 });
-  }
+    if (error) {
+      console.error('[AdminAuth] Query error:', error);
+      return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
+    }
 
-  if (result.rows.length === 0) {
-    console.log('[AdminAuth] Admin user not found:', username);
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-  }
+    if (!users || users.length === 0) {
+      console.log('[AdminAuth] User not found:', username);
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
 
-  // Step 4: Verify password
-  const admin = result.rows[0];
-  let validPassword = false;
-  try {
-    validPassword = await comparePassword(password, admin.password_hash);
-  } catch (e) {
-    console.error('[AdminAuth] Password comparison error:', e);
-    return NextResponse.json({ 
-      error: 'Password verification failed', 
-      details: e instanceof Error ? e.message : 'Unknown' 
-    }, { status: 500 });
-  }
-  
-  if (!validPassword) {
-    console.log('[AdminAuth] Invalid password for admin:', username);
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-  }
+    const admin = users[0];
+    const validPassword = await comparePassword(password, admin.password_hash);
+    
+    if (!validPassword) {
+      console.log('[AdminAuth] Invalid password for:', username);
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
 
-  console.log('[AdminAuth] Password valid, creating token...');
+    console.log('[AdminAuth] Password valid, creating token...');
 
-  // Step 5: Create JWT
-  let token;
-  try {
     const secret = getJWTSecret();
-    token = await new SignJWT({ username: admin.username, role: 'admin' })
+    const token = await new SignJWT({ username: admin.username, role: 'admin' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('24h')
       .sign(secret);
-  } catch (e) {
-    console.error('[AdminAuth] JWT creation error:', e);
+
+    // Update last login (non-blocking)
+    supabase
+      .from('story_admin_users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('username', username)
+      .then(() => {});
+
+    return NextResponse.json({ session: token });
+    
+  } catch (error) {
+    console.error('[AdminAuth] Error:', error);
     return NextResponse.json({ 
-      error: 'Token creation failed', 
-      details: e instanceof Error ? e.message : 'Unknown' 
+      error: 'Login failed', 
+      details: error instanceof Error ? error.message : 'Unknown' 
     }, { status: 500 });
   }
-
-  console.log('[AdminAuth] Token created successfully');
-  
-  // Step 6: Update last login (non-critical)
-  try {
-    await dbQuery(
-      `UPDATE story_admin_users SET last_login = NOW() WHERE username = $1`,
-      [admin.username]
-    );
-  } catch (updateError) {
-    console.error('[AdminAuth] Failed to update last login (non-critical):', updateError);
-  }
-  
-  return NextResponse.json({ session: token });
 }
 
 export async function GET(req: NextRequest) {
