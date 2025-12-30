@@ -47,6 +47,512 @@ interface Category {
 // COMPLETE CURRICULUM DATA
 // =============================================================================
 
+// =============================================================================
+// REFERENCE DATA: INITIAL SOUND OBJECTS (A-Z)
+// Complete list of miniature objects for Sound Games and Object Boxes
+// =============================================================================
+const initialSoundObjects: Record<string, string[]> = {
+  a: ['apple', 'alligator', 'ant', 'astronaut', 'avocado', 'anchor', 'acorn', 'ambulance', 'angel', 'arrow'],
+  b: ['ball', 'bear', 'bus', 'banana', 'bee', 'bird', 'boat', 'button', 'butterfly', 'book', 'bed', 'bat'],
+  c: ['cat', 'car', 'cup', 'cow', 'cake', 'candle', 'carrot', 'camel', 'corn', 'cookie', 'crab', 'cap'],
+  d: ['dog', 'duck', 'doll', 'door', 'dinosaur', 'deer', 'drum', 'dolphin', 'domino', 'donut', 'dragon'],
+  e: ['egg', 'elephant', 'elf', 'elbow', 'envelope', 'engine', 'eagle', 'ear', 'eraser', 'emerald'],
+  f: ['fish', 'frog', 'fan', 'fork', 'fox', 'feather', 'finger', 'flag', 'flower', 'fruit', 'fence', 'fire'],
+  g: ['goat', 'guitar', 'grape', 'gift', 'girl', 'gorilla', 'ghost', 'glove', 'grass', 'gum', 'game'],
+  h: ['hat', 'horse', 'house', 'hammer', 'heart', 'hand', 'hippo', 'helicopter', 'horn', 'hose', 'hen'],
+  i: ['igloo', 'iguana', 'insect', 'ice cream', 'inch', 'infant', 'ink', 'ivy', 'iron', 'island'],
+  j: ['jar', 'jet', 'jug', 'jam', 'jacket', 'jellyfish', 'jump rope', 'jeep', 'juice', 'jeans', 'jewel'],
+  k: ['key', 'kite', 'king', 'kangaroo', 'kitten', 'kettle', 'kick', 'koala', 'kitchen', 'knife', 'knee'],
+  l: ['lion', 'lamp', 'leaf', 'lemon', 'ladder', 'lizard', 'lock', 'log', 'lobster', 'leg', 'lips', 'lime'],
+  m: ['mouse', 'moon', 'monkey', 'map', 'mitten', 'mushroom', 'milk', 'mop', 'mask', 'mug', 'man', 'mat'],
+  n: ['nut', 'nest', 'nurse', 'nail', 'necklace', 'nose', 'net', 'needle', 'notebook', 'nine', 'napkin'],
+  o: ['octopus', 'orange', 'owl', 'otter', 'olive', 'ox', 'ostrich', 'onion', 'opera', 'orbit', 'oven'],
+  p: ['pig', 'pen', 'pan', 'pizza', 'pear', 'penguin', 'pumpkin', 'purse', 'piano', 'parrot', 'pot', 'pin'],
+  q: ['queen', 'quilt', 'question mark', 'quarter', 'quail', 'quiver'],
+  r: ['rabbit', 'ring', 'rocket', 'rainbow', 'robot', 'rose', 'rug', 'rain', 'rope', 'rat', 'rock', 'ruler'],
+  s: ['sun', 'star', 'snake', 'sock', 'strawberry', 'spider', 'seal', 'scissors', 'soap', 'spoon', 'ship'],
+  t: ['tiger', 'tree', 'turtle', 'table', 'tent', 'tooth', 'train', 'truck', 'tomato', 'top', 'tie', 'toad'],
+  u: ['umbrella', 'unicorn', 'umpire', 'underwear', 'uniform', 'utensils'],
+  v: ['van', 'violin', 'vase', 'vest', 'vacuum', 'vegetable', 'volcano', 'vulture', 'vine', 'village'],
+  w: ['watch', 'whale', 'wagon', 'watermelon', 'web', 'wolf', 'worm', 'window', 'wig', 'well', 'wing'],
+  x: ['x-ray', 'xylophone', 'fox (ending)', 'box (ending)', 'six (ending)', 'mix (ending)'],
+  y: ['yo-yo', 'yarn', 'yak', 'yacht', 'yam', 'yogurt', 'yolk'],
+  z: ['zebra', 'zipper', 'zoo', 'zero', 'zucchini', 'zigzag', 'zone']
+};
+
+// =============================================================================
+// REFERENCE DATA: CVC WORD LISTS BY FAMILY
+// Complete word families for Pink Series
+// =============================================================================
+const cvcWordFamilies: Record<string, string[]> = {
+  // Short A families
+  '-at': ['bat', 'cat', 'fat', 'hat', 'mat', 'pat', 'rat', 'sat', 'vat', 'brat', 'chat', 'flat', 'that', 'scat'],
+  '-an': ['ban', 'can', 'dan', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'bran', 'clan', 'plan', 'scan', 'than'],
+  '-ap': ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'sap', 'tap', 'zap', 'chap', 'clap', 'flap', 'slap', 'snap', 'trap', 'wrap'],
+  '-ad': ['bad', 'dad', 'had', 'lad', 'mad', 'pad', 'sad', 'tad', 'brad', 'chad', 'glad'],
+  '-ag': ['bag', 'gag', 'hag', 'lag', 'nag', 'rag', 'sag', 'tag', 'wag', 'brag', 'drag', 'flag', 'shag', 'snag', 'stag'],
+  '-am': ['bam', 'dam', 'ham', 'jam', 'ram', 'yam', 'clam', 'cram', 'gram', 'scam', 'sham', 'slam', 'spam', 'swam', 'tram'],
+  '-ab': ['cab', 'dab', 'gab', 'jab', 'lab', 'nab', 'tab', 'crab', 'grab', 'scab', 'stab'],
+  '-ack': ['back', 'hack', 'jack', 'lack', 'pack', 'rack', 'sack', 'tack', 'black', 'crack', 'knack', 'shack', 'slack', 'smack', 'snack', 'stack', 'track', 'whack'],
+  '-ash': ['bash', 'cash', 'dash', 'gash', 'hash', 'lash', 'mash', 'rash', 'clash', 'crash', 'flash', 'slash', 'smash', 'stash', 'trash'],
+  '-ang': ['bang', 'fang', 'gang', 'hang', 'rang', 'sang', 'clang', 'slang'],
+  '-ank': ['bank', 'dank', 'rank', 'sank', 'tank', 'yank', 'blank', 'clank', 'crank', 'drank', 'frank', 'plank', 'prank', 'shank', 'spank', 'stank', 'thank'],
+
+  // Short E families
+  '-et': ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'vet', 'wet', 'yet', 'fret'],
+  '-en': ['ben', 'den', 'hen', 'ken', 'men', 'pen', 'ten', 'yen', 'glen', 'then', 'when', 'wren'],
+  '-ed': ['bed', 'fed', 'led', 'red', 'wed', 'bled', 'bred', 'fled', 'shed', 'shred', 'sled', 'sped'],
+  '-eg': ['beg', 'keg', 'leg', 'peg'],
+  '-ell': ['bell', 'cell', 'dell', 'fell', 'hell', 'jell', 'sell', 'tell', 'well', 'yell', 'dwell', 'shell', 'smell', 'spell', 'swell'],
+  '-eck': ['beck', 'deck', 'neck', 'peck', 'check', 'fleck', 'speck', 'wreck'],
+  '-est': ['best', 'fest', 'jest', 'nest', 'pest', 'rest', 'test', 'vest', 'west', 'zest', 'blest', 'chest', 'crest', 'quest'],
+  '-ent': ['bent', 'dent', 'gent', 'lent', 'rent', 'sent', 'tent', 'vent', 'went', 'scent', 'spent'],
+  '-end': ['bend', 'fend', 'lend', 'mend', 'rend', 'send', 'tend', 'vend', 'wend', 'blend', 'spend', 'trend'],
+
+  // Short I families
+  '-it': ['bit', 'fit', 'hit', 'kit', 'lit', 'pit', 'sit', 'wit', 'grit', 'knit', 'quit', 'skit', 'slit', 'spit', 'split', 'twit'],
+  '-in': ['bin', 'din', 'fin', 'gin', 'kin', 'pin', 'sin', 'tin', 'win', 'chin', 'grin', 'shin', 'skin', 'spin', 'thin', 'twin'],
+  '-ig': ['big', 'dig', 'fig', 'gig', 'jig', 'pig', 'rig', 'wig', 'brig', 'grig', 'prig', 'sprig', 'swig', 'twig'],
+  '-ip': ['dip', 'hip', 'lip', 'nip', 'rip', 'sip', 'tip', 'zip', 'chip', 'clip', 'drip', 'flip', 'grip', 'ship', 'skip', 'slip', 'snip', 'strip', 'trip', 'whip'],
+  '-id': ['bid', 'did', 'hid', 'kid', 'lid', 'rid', 'grid', 'skid', 'slid', 'squid'],
+  '-ill': ['bill', 'dill', 'fill', 'gill', 'hill', 'ill', 'kill', 'mill', 'pill', 'sill', 'till', 'will', 'chill', 'drill', 'frill', 'grill', 'quill', 'skill', 'spill', 'still', 'thrill', 'trill'],
+  '-ick': ['dick', 'kick', 'lick', 'nick', 'pick', 'quick', 'rick', 'sick', 'tick', 'wick', 'brick', 'chick', 'click', 'flick', 'prick', 'slick', 'stick', 'thick', 'trick'],
+  '-ing': ['bing', 'ding', 'king', 'ping', 'ring', 'sing', 'wing', 'zing', 'bring', 'cling', 'fling', 'sling', 'sting', 'string', 'swing', 'thing', 'wring'],
+  '-ink': ['ink', 'kink', 'link', 'mink', 'pink', 'rink', 'sink', 'wink', 'blink', 'brink', 'clink', 'drink', 'shrink', 'slink', 'stink', 'think'],
+
+  // Short O families
+  '-ot': ['cot', 'dot', 'got', 'hot', 'jot', 'lot', 'not', 'pot', 'rot', 'tot', 'blot', 'clot', 'knot', 'plot', 'shot', 'slot', 'spot', 'trot'],
+  '-op': ['bop', 'cop', 'hop', 'mop', 'pop', 'sop', 'top', 'chop', 'crop', 'drop', 'flop', 'plop', 'prop', 'shop', 'slop', 'stop'],
+  '-og': ['bog', 'cog', 'dog', 'fog', 'hog', 'jog', 'log', 'blog', 'clog', 'flog', 'frog', 'grog', 'slog', 'smog'],
+  '-ob': ['bob', 'cob', 'gob', 'job', 'mob', 'rob', 'sob', 'blob', 'glob', 'knob', 'slob', 'snob', 'throb'],
+  '-ock': ['cock', 'dock', 'hock', 'knock', 'lock', 'mock', 'rock', 'sock', 'block', 'clock', 'crock', 'flock', 'frock', 'shock', 'smock', 'stock'],
+  '-ong': ['bong', 'dong', 'gong', 'long', 'pong', 'song', 'tong', 'prong', 'strong', 'thong', 'wrong'],
+
+  // Short U families
+  '-ut': ['but', 'cut', 'gut', 'hut', 'jut', 'nut', 'put', 'rut', 'tut', 'glut', 'shut', 'slut', 'smut', 'strut'],
+  '-un': ['bun', 'dun', 'fun', 'gun', 'nun', 'pun', 'run', 'sun', 'shun', 'spun', 'stun'],
+  '-ug': ['bug', 'dug', 'hug', 'jug', 'lug', 'mug', 'pug', 'rug', 'tug', 'chug', 'drug', 'plug', 'slug', 'smug', 'snug', 'thug'],
+  '-up': ['cup', 'pup', 'sup'],
+  '-ub': ['cub', 'dub', 'hub', 'nub', 'pub', 'rub', 'sub', 'tub', 'club', 'grub', 'scrub', 'shrub', 'snub', 'stub'],
+  '-uck': ['buck', 'duck', 'luck', 'muck', 'puck', 'suck', 'tuck', 'yuck', 'chuck', 'cluck', 'pluck', 'shuck', 'stuck', 'struck', 'truck'],
+  '-ump': ['bump', 'dump', 'hump', 'jump', 'lump', 'pump', 'rump', 'sump', 'chump', 'clump', 'grump', 'plump', 'slump', 'stump', 'thump', 'trump'],
+  '-unk': ['bunk', 'dunk', 'funk', 'gunk', 'hunk', 'junk', 'punk', 'sunk', 'chunk', 'drunk', 'flunk', 'plunk', 'shrunk', 'skunk', 'slunk', 'spunk', 'stunk', 'trunk'],
+  '-ung': ['bung', 'dung', 'hung', 'lung', 'rung', 'sung', 'clung', 'flung', 'slung', 'sprung', 'stung', 'strung', 'swung', 'wrung', 'young'],
+  '-uss': ['buss', 'fuss', 'muss', 'puss', 'plus', 'truss']
+};
+
+// =============================================================================
+// REFERENCE DATA: COMPLETE PHONOGRAM LIST
+// All English phonograms with example words
+// =============================================================================
+const phonogramData: Record<string, { sound: string; position: string; examples: string[] }> = {
+  // Consonant Digraphs
+  'sh': { sound: '/sh/', position: 'beginning or end', examples: ['ship', 'shop', 'shell', 'fish', 'dish', 'wish', 'wash', 'brush', 'crash', 'splash'] },
+  'ch': { sound: '/ch/', position: 'beginning or end', examples: ['chip', 'chop', 'chin', 'chair', 'cheese', 'rich', 'much', 'such', 'each', 'beach', 'teach', 'lunch'] },
+  'th': { sound: '/th/ (voiced or unvoiced)', position: 'beginning or end', examples: ['this', 'that', 'the', 'them', 'then', 'thin', 'thick', 'thing', 'thank', 'think', 'three', 'with', 'bath', 'math', 'path'] },
+  'wh': { sound: '/wh/ or /w/', position: 'beginning', examples: ['what', 'when', 'where', 'which', 'white', 'whale', 'wheel', 'wheat', 'whisper', 'whistle'] },
+  'ck': { sound: '/k/', position: 'end (after short vowel)', examples: ['back', 'deck', 'kick', 'lock', 'duck', 'black', 'stick', 'truck', 'clock', 'brick'] },
+  'ng': { sound: '/ng/', position: 'end', examples: ['ring', 'sing', 'song', 'long', 'king', 'thing', 'bring', 'spring', 'strong', 'young'] },
+  'nk': { sound: '/nk/', position: 'end', examples: ['bank', 'sink', 'think', 'drink', 'trunk', 'blank', 'skunk', 'shrink'] },
+  'ph': { sound: '/f/', position: 'beginning or end', examples: ['phone', 'photo', 'phrase', 'phantom', 'dolphin', 'elephant', 'alphabet', 'graph', 'paragraph'] },
+  'gh': { sound: '/f/ or silent', position: 'end', examples: ['laugh', 'cough', 'enough', 'rough', 'tough', 'night', 'light', 'right', 'high', 'sigh'] },
+  'kn': { sound: '/n/ (k silent)', position: 'beginning', examples: ['knee', 'knife', 'knit', 'knock', 'knot', 'know', 'knight', 'knob', 'kneel', 'knack'] },
+  'wr': { sound: '/r/ (w silent)', position: 'beginning', examples: ['write', 'wrong', 'wrap', 'wrist', 'wreck', 'wrench', 'wrestle', 'wrinkle', 'wring', 'wrote'] },
+  'gn': { sound: '/n/ (g silent)', position: 'beginning or end', examples: ['gnat', 'gnaw', 'gnome', 'sign', 'design', 'resign', 'foreign', 'reign'] },
+  'mb': { sound: '/m/ (b silent)', position: 'end', examples: ['lamb', 'comb', 'bomb', 'climb', 'thumb', 'dumb', 'numb', 'crumb', 'limb', 'tomb'] },
+  'tch': { sound: '/ch/', position: 'end (after short vowel)', examples: ['catch', 'match', 'watch', 'fetch', 'sketch', 'stitch', 'switch', 'witch', 'pitch', 'batch'] },
+  'dge': { sound: '/j/', position: 'end (after short vowel)', examples: ['badge', 'edge', 'bridge', 'fridge', 'ridge', 'judge', 'fudge', 'budge', 'ledge', 'hedge'] },
+
+  // Vowel Digraphs - Long A
+  'ai': { sound: '/ā/ (long a)', position: 'middle', examples: ['rain', 'train', 'brain', 'chain', 'pain', 'main', 'tail', 'sail', 'nail', 'pail', 'wait', 'bait'] },
+  'ay': { sound: '/ā/ (long a)', position: 'end', examples: ['day', 'play', 'say', 'way', 'may', 'stay', 'gray', 'pray', 'spray', 'tray', 'birthday', 'today'] },
+  'a_e': { sound: '/ā/ (long a)', position: 'split', examples: ['make', 'cake', 'lake', 'take', 'bake', 'wake', 'game', 'name', 'came', 'same', 'safe', 'cave', 'gave', 'save', 'wave', 'brave'] },
+  'eigh': { sound: '/ā/ (long a)', position: 'middle', examples: ['eight', 'weigh', 'sleigh', 'neighbor', 'freight', 'weight'] },
+  'ey': { sound: '/ā/ or /ē/', position: 'end', examples: ['they', 'grey', 'prey', 'hey', 'obey', 'survey'] },
+
+  // Vowel Digraphs - Long E
+  'ee': { sound: '/ē/ (long e)', position: 'middle or end', examples: ['feet', 'tree', 'see', 'bee', 'free', 'green', 'sleep', 'keep', 'deep', 'week', 'need', 'feed', 'speed', 'three'] },
+  'ea': { sound: '/ē/ (long e) usually', position: 'middle', examples: ['sea', 'read', 'eat', 'team', 'beach', 'cream', 'dream', 'clean', 'mean', 'bean', 'leaf', 'weak', 'speak', 'treat'] },
+  'e_e': { sound: '/ē/ (long e)', position: 'split', examples: ['these', 'theme', 'gene', 'scene', 'extreme', 'complete', 'compete'] },
+  'ie': { sound: '/ē/ (long e)', position: 'middle', examples: ['field', 'chief', 'thief', 'piece', 'niece', 'brief', 'belief', 'relief', 'achieve'] },
+
+  // Vowel Digraphs - Long I
+  'i_e': { sound: '/ī/ (long i)', position: 'split', examples: ['like', 'bike', 'time', 'five', 'nine', 'line', 'mine', 'hide', 'ride', 'side', 'wide', 'smile', 'white', 'write', 'drive'] },
+  'igh': { sound: '/ī/ (long i)', position: 'middle', examples: ['high', 'light', 'night', 'right', 'bright', 'flight', 'fright', 'might', 'sight', 'tight', 'thigh', 'sigh'] },
+  'y': { sound: '/ī/ (long i) at end', position: 'end', examples: ['my', 'by', 'fly', 'sky', 'try', 'cry', 'dry', 'fry', 'why', 'shy', 'spy', 'sly'] },
+  'ie': { sound: '/ī/ (long i)', position: 'end', examples: ['pie', 'tie', 'lie', 'die', 'vie'] },
+
+  // Vowel Digraphs - Long O
+  'oa': { sound: '/ō/ (long o)', position: 'middle', examples: ['boat', 'coat', 'road', 'soap', 'toast', 'float', 'goat', 'load', 'roast', 'coach', 'foam', 'groan'] },
+  'ow': { sound: '/ō/ (long o)', position: 'middle or end', examples: ['snow', 'grow', 'show', 'blow', 'flow', 'glow', 'know', 'throw', 'slow', 'yellow', 'window', 'follow', 'elbow', 'rainbow'] },
+  'o_e': { sound: '/ō/ (long o)', position: 'split', examples: ['home', 'bone', 'cone', 'hole', 'note', 'hope', 'rope', 'rose', 'nose', 'stone', 'phone', 'stove', 'drove', 'woke', 'joke', 'smoke'] },
+  'oe': { sound: '/ō/ (long o)', position: 'middle or end', examples: ['toe', 'hoe', 'doe', 'foe', 'goes', 'poem'] },
+
+  // Vowel Digraphs - Long U
+  'u_e': { sound: '/ū/ (long u)', position: 'split', examples: ['cute', 'huge', 'use', 'cube', 'tube', 'June', 'rule', 'mule', 'flute', 'prune', 'fuse', 'fume', 'mute'] },
+  'ue': { sound: '/ū/ (long u)', position: 'end', examples: ['blue', 'clue', 'glue', 'true', 'due', 'sue', 'rescue', 'continue', 'value', 'argue', 'statue'] },
+  'ew': { sound: '/ū/ (long u)', position: 'middle or end', examples: ['new', 'few', 'dew', 'drew', 'flew', 'grew', 'blew', 'chew', 'crew', 'stew', 'threw', 'jewel', 'news'] },
+
+  // R-Controlled Vowels
+  'ar': { sound: '/ar/', position: 'any', examples: ['car', 'star', 'far', 'bar', 'card', 'yard', 'farm', 'barn', 'park', 'dark', 'smart', 'start', 'chart', 'shark'] },
+  'or': { sound: '/or/', position: 'any', examples: ['for', 'or', 'corn', 'horn', 'fork', 'pork', 'storm', 'north', 'short', 'sport', 'horse', 'more', 'store', 'score', 'before'] },
+  'er': { sound: '/er/', position: 'any', examples: ['her', 'fern', 'after', 'sister', 'water', 'butter', 'letter', 'better', 'pepper', 'tiger', 'never', 'ever', 'under', 'over'] },
+  'ir': { sound: '/er/', position: 'any', examples: ['bird', 'girl', 'first', 'third', 'shirt', 'stir', 'dirt', 'skirt', 'twirl', 'swirl', 'circle', 'birthday'] },
+  'ur': { sound: '/er/', position: 'any', examples: ['fur', 'turn', 'burn', 'hurt', 'purple', 'turtle', 'nurse', 'purse', 'curb', 'church', 'burst', 'return', 'disturb'] },
+  'ear': { sound: '/ēr/ or /er/', position: 'any', examples: ['ear', 'hear', 'near', 'dear', 'fear', 'year', 'clear', 'earth', 'learn', 'early', 'search', 'pearl'] },
+  'air': { sound: '/âr/', position: 'any', examples: ['air', 'hair', 'pair', 'fair', 'chair', 'stair', 'repair', 'airplane'] },
+  'are': { sound: '/âr/', position: 'end', examples: ['care', 'share', 'rare', 'bare', 'dare', 'fare', 'hare', 'mare', 'scare', 'spare', 'square', 'stare', 'prepare', 'compare'] },
+
+  // Diphthongs
+  'oo': { sound: '/o͞o/ or /o͝o/', position: 'middle', examples: ['moon', 'food', 'cool', 'room', 'tooth', 'pool', 'school', 'spoon', 'book', 'look', 'cook', 'good', 'wood', 'foot', 'hook', 'brook', 'stood'] },
+  'ou': { sound: '/ou/', position: 'middle', examples: ['out', 'house', 'mouse', 'cloud', 'sound', 'found', 'round', 'ground', 'pound', 'count', 'about', 'south', 'mouth', 'loud', 'proud', 'couch'] },
+  'ow': { sound: '/ou/', position: 'middle or end', examples: ['cow', 'how', 'now', 'down', 'brown', 'town', 'crown', 'frown', 'clown', 'drown', 'flower', 'power', 'tower', 'shower', 'vowel', 'towel', 'owl', 'howl', 'growl'] },
+  'oi': { sound: '/oi/', position: 'middle', examples: ['oil', 'coin', 'join', 'point', 'voice', 'choice', 'noise', 'moist', 'boil', 'soil', 'foil', 'spoil', 'avoid'] },
+  'oy': { sound: '/oi/', position: 'end', examples: ['boy', 'toy', 'joy', 'enjoy', 'royal', 'loyal', 'voyage', 'annoy', 'destroy', 'employ'] },
+  'aw': { sound: '/ô/', position: 'middle or end', examples: ['saw', 'paw', 'law', 'jaw', 'raw', 'claw', 'draw', 'straw', 'crawl', 'yawn', 'dawn', 'lawn', 'fawn', 'hawk', 'awful'] },
+  'au': { sound: '/ô/', position: 'middle', examples: ['auto', 'fault', 'haul', 'haunt', 'laundry', 'sauce', 'cause', 'pause', 'because', 'applause', 'daughter', 'caught', 'taught'] },
+
+  // Other Common Patterns
+  'tion': { sound: '/shun/', position: 'end', examples: ['action', 'nation', 'station', 'vacation', 'education', 'information', 'question', 'attention', 'direction', 'collection', 'addition', 'subtraction'] },
+  'sion': { sound: '/shun/ or /zhun/', position: 'end', examples: ['mission', 'session', 'passion', 'vision', 'decision', 'television', 'conclusion', 'confusion', 'explosion'] },
+  'ture': { sound: '/cher/', position: 'end', examples: ['picture', 'nature', 'future', 'creature', 'culture', 'capture', 'mixture', 'furniture', 'adventure', 'temperature'] },
+  'ous': { sound: '/us/', position: 'end', examples: ['famous', 'nervous', 'serious', 'curious', 'delicious', 'enormous', 'dangerous', 'mysterious', 'tremendous', 'marvelous'] },
+  'ough': { sound: 'varies', position: 'end', examples: ['through (oo)', 'though (ō)', 'thought (ô)', 'rough (uf)', 'cough (of)', 'bough (ou)', 'enough (uf)', 'dough (ō)'] },
+  'ful': { sound: '/ful/', position: 'end (suffix)', examples: ['helpful', 'careful', 'joyful', 'beautiful', 'wonderful', 'powerful', 'thankful', 'colorful', 'peaceful'] },
+  'less': { sound: '/les/', position: 'end (suffix)', examples: ['helpless', 'careless', 'fearless', 'homeless', 'hopeless', 'endless', 'useless', 'harmless', 'countless'] },
+  'able': { sound: '/əbəl/', position: 'end (suffix)', examples: ['able', 'table', 'stable', 'comfortable', 'available', 'reasonable', 'enjoyable', 'valuable'] },
+  'ible': { sound: '/əbəl/', position: 'end (suffix)', examples: ['possible', 'visible', 'terrible', 'horrible', 'responsible', 'incredible', 'flexible'] }
+};
+
+// =============================================================================
+// REFERENCE DATA: GRAMMAR BOX SENTENCES
+// Example sentences for each of the 9 Grammar Boxes
+// =============================================================================
+const grammarBoxSentences: Record<string, { instruction: string; sentences: string[] }> = {
+  'Box 1 - Article': {
+    instruction: 'Fill in with: the, a, an',
+    sentences: [
+      '___ dog ran fast.',
+      '___ apple is red.',
+      '___ sun is bright.',
+      'I see ___ elephant.',
+      '___ cat sat on ___ mat.',
+      'She ate ___ orange.',
+      'He found ___ egg.',
+      '___ umbrella is blue.',
+      'We saw ___ lion at ___ zoo.',
+      'I want ___ book from ___ library.'
+    ]
+  },
+  'Box 2 - Adjective': {
+    instruction: 'Fill in with a describing word',
+    sentences: [
+      'The ___ dog barked.',
+      'I ate a ___ apple.',
+      'She wore a ___ dress.',
+      'The ___ bird sang.',
+      'He has ___ eyes.',
+      'We saw a ___ mountain.',
+      'The ___ flower bloomed.',
+      'I like the ___ cat.',
+      'She found a ___ shell.',
+      'The ___ boy ran fast.'
+    ]
+  },
+  'Box 3 - Noun': {
+    instruction: 'Fill in with a naming word (person, place, thing)',
+    sentences: [
+      'The ___ is sleeping.',
+      'I see a ___.',
+      'The ___ is on the table.',
+      'My ___ is kind.',
+      'The ___ flew away.',
+      'I put the ___ in the box.',
+      'The ___ is very tall.',
+      'She gave me a ___.',
+      'The ___ swims in water.',
+      'We went to the ___.'
+    ]
+  },
+  'Box 4 - Verb': {
+    instruction: 'Fill in with an action word',
+    sentences: [
+      'The dog ___.',
+      'I ___ to school.',
+      'She ___ a book.',
+      'The bird ___ in the sky.',
+      'He ___ the ball.',
+      'We ___ our dinner.',
+      'The cat ___ the mouse.',
+      'They ___ in the pool.',
+      'I ___ my shoes.',
+      'She ___ the door.'
+    ]
+  },
+  'Box 5 - Preposition': {
+    instruction: 'Fill in with a position word (on, in, under, beside, behind, etc.)',
+    sentences: [
+      'The cat sat ___ the box.',
+      'The book is ___ the table.',
+      'She hid ___ the tree.',
+      'The bird flew ___ the house.',
+      'He put it ___ the drawer.',
+      'The dog ran ___ the yard.',
+      'She stood ___ her mom.',
+      'The ball rolled ___ the fence.',
+      'We walked ___ the bridge.',
+      'The fish swam ___ the water.'
+    ]
+  },
+  'Box 6 - Adverb': {
+    instruction: 'Fill in with a word that tells how',
+    sentences: [
+      'She walked ___.',
+      'The turtle moved ___.',
+      'He spoke ___.',
+      'The bird sang ___.',
+      'She danced ___.',
+      'The car drove ___.',
+      'He ate ___.',
+      'She wrote ___.',
+      'The dog ran ___.',
+      'They worked ___.'
+    ]
+  },
+  'Box 7 - Pronoun': {
+    instruction: 'Fill in with: I, you, he, she, it, we, they',
+    sentences: [
+      '___ am happy.',
+      '___ is my friend.',
+      '___ are playing.',
+      '___ like to read.',
+      '___ is a beautiful day.',
+      '___ went to the store.',
+      '___ can do it.',
+      '___ are kind people.',
+      '___ was very tired.',
+      '___ will help you.'
+    ]
+  },
+  'Box 8 - Conjunction': {
+    instruction: 'Fill in with: and, or, but, so, because',
+    sentences: [
+      'I like cats ___ dogs.',
+      'Do you want tea ___ coffee?',
+      'She tried hard ___ she won.',
+      'I was hungry ___ I ate lunch.',
+      'He ran fast ___ he was late.',
+      'We can go now ___ later.',
+      'It was raining ___ I took an umbrella.',
+      'She is smart ___ kind.',
+      'I wanted to go ___ I was sick.',
+      'Read a book ___ play a game.'
+    ]
+  },
+  'Box 9 - Interjection': {
+    instruction: 'Fill in with: Oh, Wow, Ouch, Yay, Hooray, Oops, Shh, Hey, Ah, Ugh',
+    sentences: [
+      '___! That hurt!',
+      '___! What a beautiful sunset!',
+      '___! I forgot my homework.',
+      '___! We won the game!',
+      '___! Be quiet please.',
+      '___! Look at that!',
+      '___! I did it!',
+      '___! That was hard work.',
+      '___! I understand now.',
+      '___! It\'s cold outside!'
+    ]
+  }
+};
+
+// =============================================================================
+// REFERENCE DATA: SHELF ORGANIZATION
+// How to arrange language materials on classroom shelves
+// =============================================================================
+const shelfOrganization = [
+  {
+    shelf: 'Shelf 1: Oral Language',
+    position: 'Top left of language area',
+    contents: [
+      'Vocabulary baskets (categorized)',
+      'Three-part card sets (in boxes)',
+      'Parts-of cards',
+      'Classified pictures',
+      'Definition cards'
+    ],
+    notes: 'Arrange baskets by category. Three-part cards should have control cards separate.'
+  },
+  {
+    shelf: 'Shelf 2: Sound Games & Sandpaper Letters',
+    position: 'Below oral language',
+    contents: [
+      'Initial sound objects basket',
+      'CVC object sets',
+      'Sandpaper letter box (lowercase)',
+      'Sandpaper letter box (capitals)',
+      'Phonogram sandpaper letters',
+      'Sand tray with tools'
+    ],
+    notes: 'Sandpaper letters organized alphabetically or by presentation groups.'
+  },
+  {
+    shelf: 'Shelf 3: Metal Insets',
+    position: 'Dedicated writing preparation area',
+    contents: [
+      'Metal inset stands (2)',
+      'Inset paper box (14×14cm)',
+      'Colored pencil holders (11 colors)',
+      'Completed work display'
+    ],
+    notes: 'Place near table with good light. Include sample completed designs.'
+  },
+  {
+    shelf: 'Shelf 4: Moveable Alphabet & Word Building',
+    position: 'Central language area',
+    contents: [
+      'Large Moveable Alphabet box',
+      'Small Moveable Alphabet',
+      'Pink object box',
+      'Pink picture/word cards',
+      'Blue object box',
+      'Blue picture/word cards',
+      'Mats for word building'
+    ],
+    notes: 'Alphabet boxes at easy reach. Object boxes below alphabets.'
+  },
+  {
+    shelf: 'Shelf 5: Green Series & Phonograms',
+    position: 'Adjacent to moveable alphabet',
+    contents: [
+      'Green phonogram cards (organized by pattern)',
+      'Word family folders',
+      'Phonogram booklets',
+      'Silent e materials',
+      'R-controlled vowel cards'
+    ],
+    notes: 'Organize by phonogram pattern in labeled boxes or folders.'
+  },
+  {
+    shelf: 'Shelf 6: Reading',
+    position: 'Comfortable reading corner',
+    contents: [
+      'Pink booklets',
+      'Blue booklets',
+      'Green booklets',
+      'Leveled readers',
+      'Sight word cards',
+      'Command cards',
+      'Comprehension cards'
+    ],
+    notes: 'Include cozy reading space with pillows/chairs nearby.'
+  },
+  {
+    shelf: 'Shelf 7: Grammar',
+    position: 'Language area extension',
+    contents: [
+      '3D grammar symbols (on tray)',
+      '2D grammar symbols box',
+      'Grammar boxes 1-9',
+      'Verb tense materials',
+      'Sentence analysis charts',
+      'Grammar command cards'
+    ],
+    notes: '3D symbols displayed on tray. 2D symbols organized by part of speech.'
+  },
+  {
+    shelf: 'Shelf 8: Writing & Word Study',
+    position: 'Near writing tables',
+    contents: [
+      'Lined writing paper',
+      'Primary pencils',
+      'Writing journals',
+      'Story paper',
+      'Copy work cards',
+      'Blank books',
+      'Compound word cards',
+      'Prefix/suffix cards',
+      'Synonym/antonym cards'
+    ],
+    notes: 'Writing materials near tables with good posture support.'
+  }
+];
+
+// =============================================================================
+// REFERENCE DATA: ASSESSMENT CHECKLIST
+// Progress tracking through the language curriculum
+// =============================================================================
+const assessmentChecklist = {
+  'Oral Language': [
+    { skill: 'Participates in Three-Period Lessons', indicators: 'Names objects correctly, responds to "show me", recalls names independently' },
+    { skill: 'Uses classified vocabulary', indicators: 'Knows 10+ categories with 5+ items each' },
+    { skill: 'Matches three-part cards', indicators: 'Independently matches picture to control, later label to picture' },
+    { skill: 'Identifies parts-of nomenclature', indicators: 'Labels parts of leaf, flower, bird correctly' },
+    { skill: 'Retells stories in sequence', indicators: 'Tells story with beginning, middle, end' }
+  ],
+  'Phonemic Awareness': [
+    { skill: 'I Spy Level 1 - Beginning sounds', indicators: 'Identifies beginning sounds 8/10 times' },
+    { skill: 'I Spy Level 2 - Ending sounds', indicators: 'Identifies ending sounds accurately' },
+    { skill: 'I Spy Level 3 - Middle sounds', indicators: 'Identifies vowel sounds in CVC words' },
+    { skill: 'I Spy Level 4 - Full segmenting', indicators: 'Segments any 3-4 sound word into individual phonemes' },
+    { skill: 'Blending', indicators: 'Blends individual sounds into words' }
+  ],
+  'Sandpaper Letters': [
+    { skill: 'Traces letters correctly', indicators: 'Uses correct finger position and direction' },
+    { skill: 'Associates sounds with symbols', indicators: 'Says sound while tracing, not letter name' },
+    { skill: 'Knows Groups 1-3', indicators: 'c, m, a, t, s, r, i, p, b, f, o, g' },
+    { skill: 'Knows Groups 4-7', indicators: 'Remaining letters including q, x, z' },
+    { skill: 'Knows phonograms', indicators: 'Recognizes sh, ch, th, and common vowel digraphs' },
+    { skill: 'Knows capitals', indicators: 'Associates capitals with lowercase' }
+  ],
+  'Writing Preparation': [
+    { skill: 'Uses sand tray', indicators: 'Forms letters in sand matching sandpaper model' },
+    { skill: 'Uses chalkboard', indicators: 'Writes letters with proper formation on vertical surface' },
+    { skill: 'Metal Insets 1-3', indicators: 'Traces, fills with horizontal and vertical lines' },
+    { skill: 'Metal Insets 4-7', indicators: 'Creates designs, uses gradation, combines shapes' },
+    { skill: 'Proper pencil grip', indicators: 'Holds pencil with tripod grip consistently' }
+  ],
+  'Moveable Alphabet': [
+    { skill: 'Builds CVC words', indicators: 'Segments sounds and selects correct letters' },
+    { skill: 'Builds from pictures', indicators: 'Builds words without object present' },
+    { skill: 'Builds phrases', indicators: 'Uses spacing between words' },
+    { skill: 'Builds sentences', indicators: 'Uses capital at beginning, period at end' },
+    { skill: 'Uses phonograms', indicators: 'Incorporates digraphs and blends correctly' }
+  ],
+  'Reading': [
+    { skill: 'Reads Pink Series', indicators: 'Decodes CVC words fluently' },
+    { skill: 'Reads Blue Series', indicators: 'Decodes words with consonant blends' },
+    { skill: 'Reads Green Series', indicators: 'Decodes words with phonograms' },
+    { skill: 'Knows sight words', indicators: 'Recognizes 50+ high-frequency words automatically' },
+    { skill: 'Reads sentences fluently', indicators: 'Reads with expression and comprehension' },
+    { skill: 'Independent reading', indicators: 'Chooses and reads books independently' }
+  ],
+  'Handwriting': [
+    { skill: 'Writes letters on paper', indicators: 'Forms letters correctly on lined paper' },
+    { skill: 'Writes words', indicators: 'Spaces letters within words appropriately' },
+    { skill: 'Writes sentences', indicators: 'Uses capitals and punctuation' },
+    { skill: 'Writes creatively', indicators: 'Expresses original ideas in writing' },
+    { skill: 'Copies accurately', indicators: 'Copies text with correct spelling and punctuation' }
+  ],
+  'Word Study': [
+    { skill: 'Identifies compound words', indicators: 'Recognizes and creates compound words' },
+    { skill: 'Uses contractions', indicators: 'Reads and writes common contractions' },
+    { skill: 'Understands prefixes', indicators: 'Knows un-, re-, pre- change meaning' },
+    { skill: 'Understands suffixes', indicators: 'Knows -ed, -ing, -er, -est, -ly, -ful, -less' },
+    { skill: 'Identifies synonyms/antonyms', indicators: 'Matches words with similar/opposite meanings' },
+    { skill: 'Distinguishes homophones', indicators: 'Uses correct spelling for sound-alike words in context' }
+  ],
+  'Grammar': [
+    { skill: 'Identifies nouns', indicators: 'Points out naming words, uses black triangle' },
+    { skill: 'Identifies verbs', indicators: 'Points out action words, uses red circle' },
+    { skill: 'Identifies adjectives', indicators: 'Points out describing words, uses dark blue triangle' },
+    { skill: 'Uses all 9 grammar symbols', indicators: 'Correctly labels all parts of speech in sentences' },
+    { skill: 'Analyzes simple sentences', indicators: 'Identifies subject and predicate' },
+    { skill: 'Uses correct verb tense', indicators: 'Distinguishes past, present, future' },
+    { skill: 'Forms plurals correctly', indicators: 'Applies spelling rules for plurals' }
+  ]
+};
+
 const curriculumData: Category[] = [
   // =========================================================================
   // 1. ORAL LANGUAGE FOUNDATION
@@ -3070,8 +3576,10 @@ export default function EnglishProcurementPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedWork, setSelectedWork] = useState<string | null>(null);
   const [copiedTerm, setCopiedTerm] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'sequence' | 'shopping'>('sequence');
+  const [viewMode, setViewMode] = useState<'sequence' | 'shopping' | 'objects' | 'words' | 'phonograms' | 'grammar' | 'shelves' | 'checklist'>('sequence');
   const [essentialOnly, setEssentialOnly] = useState(false);
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [selectedPhonogramType, setSelectedPhonogramType] = useState<string>('all');
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -3145,6 +3653,54 @@ export default function EnglishProcurementPage() {
           >
             🛒 Shopping List ({filteredMaterials.length})
           </button>
+          <button
+            onClick={() => { setViewMode('objects'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'objects' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            🔤 Objects A-Z
+          </button>
+          <button
+            onClick={() => { setViewMode('words'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'words' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            📝 Word Families
+          </button>
+          <button
+            onClick={() => { setViewMode('phonograms'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'phonograms' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            🔊 Phonograms
+          </button>
+          <button
+            onClick={() => { setViewMode('grammar'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'grammar' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            📋 Grammar Boxes
+          </button>
+          <button
+            onClick={() => { setViewMode('shelves'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'shelves' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            🗄️ Shelf Layout
+          </button>
+          <button
+            onClick={() => { setViewMode('checklist'); setSelectedCategory(null); setSelectedWork(null); }}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            ✅ Assessment
+          </button>
           {viewMode === 'shopping' && (
             <label className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg cursor-pointer">
               <input
@@ -3215,6 +3771,283 @@ export default function EnglishProcurementPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* OBJECTS A-Z VIEW */}
+        {viewMode === 'objects' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Initial Sound Objects (A-Z)</h2>
+            <p className="text-gray-600 mb-6">Complete list of miniature objects for Sound Games and Object Boxes. Click a letter to see objects.</p>
+            
+            {/* Letter selector */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {Object.keys(initialSoundObjects).map(letter => (
+                <button
+                  key={letter}
+                  onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+                  className={`w-10 h-10 rounded-lg font-bold transition ${
+                    selectedLetter === letter 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {letter.toUpperCase()}
+                </button>
+              ))}
+              <button
+                onClick={() => setSelectedLetter('all')}
+                className={`px-4 h-10 rounded-lg font-medium transition ${
+                  selectedLetter === 'all' 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Show All
+              </button>
+            </div>
+
+            {/* Objects display */}
+            {selectedLetter === 'all' ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Object.entries(initialSoundObjects).map(([letter, objects]) => (
+                  <div key={letter} className="border rounded-lg p-4">
+                    <div className="font-bold text-2xl text-indigo-600 mb-2">{letter.toUpperCase()}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {objects.map((obj, i) => (
+                        <span key={i} className="bg-gray-100 px-2 py-1 rounded text-sm">{obj}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : selectedLetter ? (
+              <div className="border rounded-lg p-6">
+                <div className="font-bold text-4xl text-indigo-600 mb-4">{selectedLetter.toUpperCase()}</div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {initialSoundObjects[selectedLetter]?.map((obj, i) => (
+                    <div key={i} className="bg-gray-50 border rounded-lg p-3 text-center">
+                      <div className="font-medium">{obj}</div>
+                      <div className="text-xs text-gray-500">/{selectedLetter}/ sound</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-12">
+                Click a letter above to see objects for that sound
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* WORD FAMILIES VIEW */}
+        {viewMode === 'words' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Complete Word Family Lists</h2>
+            <p className="text-gray-600 mb-6">All CVC word families organized by vowel sound. Use for Pink Series materials and word family cards.</p>
+            
+            {/* Vowel tabs */}
+            <div className="flex gap-2 mb-6 border-b pb-2">
+              {['Short A', 'Short E', 'Short I', 'Short O', 'Short U'].map(vowel => (
+                <button
+                  key={vowel}
+                  onClick={() => setSelectedLetter(vowel)}
+                  className={`px-4 py-2 rounded-t-lg font-medium transition ${
+                    selectedLetter === vowel 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {vowel}
+                </button>
+              ))}
+            </div>
+
+            {/* Word families grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(cvcWordFamilies)
+                .filter(([family]) => {
+                  if (!selectedLetter) return true;
+                  const vowelMap: Record<string, string[]> = {
+                    'Short A': ['-at', '-an', '-ap', '-ad', '-ag', '-am', '-ab', '-ack', '-ash', '-ang', '-ank'],
+                    'Short E': ['-et', '-en', '-ed', '-eg', '-ell', '-eck', '-est', '-ent', '-end'],
+                    'Short I': ['-it', '-in', '-ig', '-ip', '-id', '-ill', '-ick', '-ing', '-ink'],
+                    'Short O': ['-ot', '-op', '-og', '-ob', '-ock', '-ong'],
+                    'Short U': ['-ut', '-un', '-ug', '-up', '-ub', '-uck', '-ump', '-unk', '-ung', '-uss']
+                  };
+                  return vowelMap[selectedLetter]?.includes(family);
+                })
+                .map(([family, words]) => (
+                  <div key={family} className="border rounded-lg p-4">
+                    <div className="font-bold text-lg text-indigo-600 mb-2">{family}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {words.map((word, i) => (
+                        <span key={i} className="bg-pink-50 text-pink-700 px-2 py-1 rounded text-sm">{word}</span>
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2">{words.length} words</div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* PHONOGRAMS VIEW */}
+        {viewMode === 'phonograms' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Complete Phonogram Reference</h2>
+            <p className="text-gray-600 mb-6">All English phonograms with sounds, positions, and example words.</p>
+            
+            {/* Filter tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'consonant', label: 'Consonant Digraphs' },
+                { id: 'long-a', label: 'Long A' },
+                { id: 'long-e', label: 'Long E' },
+                { id: 'long-i', label: 'Long I' },
+                { id: 'long-o', label: 'Long O' },
+                { id: 'long-u', label: 'Long U' },
+                { id: 'r-controlled', label: 'R-Controlled' },
+                { id: 'diphthong', label: 'Diphthongs' },
+                { id: 'other', label: 'Other Patterns' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedPhonogramType(tab.id)}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                    selectedPhonogramType === tab.id 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Phonograms grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {Object.entries(phonogramData)
+                .filter(([phonogram]) => {
+                  if (selectedPhonogramType === 'all') return true;
+                  const categories: Record<string, string[]> = {
+                    'consonant': ['sh', 'ch', 'th', 'wh', 'ck', 'ng', 'nk', 'ph', 'gh', 'kn', 'wr', 'gn', 'mb', 'tch', 'dge'],
+                    'long-a': ['ai', 'ay', 'a_e', 'eigh', 'ey'],
+                    'long-e': ['ee', 'ea', 'e_e', 'ie'],
+                    'long-i': ['i_e', 'igh', 'y', 'ie'],
+                    'long-o': ['oa', 'ow', 'o_e', 'oe'],
+                    'long-u': ['u_e', 'ue', 'ew'],
+                    'r-controlled': ['ar', 'or', 'er', 'ir', 'ur', 'ear', 'air', 'are'],
+                    'diphthong': ['oo', 'ou', 'ow', 'oi', 'oy', 'aw', 'au'],
+                    'other': ['tion', 'sion', 'ture', 'ous', 'ough', 'ful', 'less', 'able', 'ible']
+                  };
+                  return categories[selectedPhonogramType]?.includes(phonogram);
+                })
+                .map(([phonogram, data]) => (
+                  <div key={phonogram} className="border rounded-lg p-4 bg-green-50/30">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-green-600 text-white px-3 py-1 rounded-lg font-bold text-lg">{phonogram}</span>
+                      <span className="text-gray-600">{data.sound}</span>
+                    </div>
+                    <div className="text-sm text-gray-500 mb-2">Position: {data.position}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.examples.map((word, i) => (
+                        <span key={i} className="bg-white border px-2 py-1 rounded text-sm">{word}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* GRAMMAR BOXES VIEW */}
+        {viewMode === 'grammar' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Grammar Box Sentences</h2>
+            <p className="text-gray-600 mb-6">Example sentences for each of the 9 Grammar Filling Boxes. Print these for classroom use.</p>
+            
+            <div className="space-y-6">
+              {Object.entries(grammarBoxSentences).map(([box, data]) => (
+                <div key={box} className="border rounded-lg overflow-hidden">
+                  <div className="bg-indigo-50 px-4 py-3 border-b">
+                    <h3 className="font-bold text-indigo-800">{box}</h3>
+                    <p className="text-sm text-indigo-600">{data.instruction}</p>
+                  </div>
+                  <div className="p-4 grid md:grid-cols-2 gap-2">
+                    {data.sentences.map((sentence, i) => (
+                      <div key={i} className="bg-gray-50 p-2 rounded text-sm font-mono">
+                        {i + 1}. {sentence}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SHELF LAYOUT VIEW */}
+        {viewMode === 'shelves' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Classroom Shelf Organization</h2>
+            <p className="text-gray-600 mb-6">How to arrange language materials on classroom shelves for optimal flow and accessibility.</p>
+            
+            <div className="space-y-4">
+              {shelfOrganization.map((shelf, i) => (
+                <div key={i} className="border rounded-lg overflow-hidden">
+                  <div className="bg-amber-50 px-4 py-3 border-b flex justify-between items-center">
+                    <h3 className="font-bold text-amber-800">{shelf.shelf}</h3>
+                    <span className="text-sm text-amber-600">{shelf.position}</span>
+                  </div>
+                  <div className="p-4">
+                    <ul className="list-disc list-inside space-y-1 mb-3">
+                      {shelf.contents.map((item, j) => (
+                        <li key={j} className="text-gray-700">{item}</li>
+                      ))}
+                    </ul>
+                    <div className="bg-blue-50 text-blue-700 text-sm p-2 rounded">
+                      💡 {shelf.notes}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ASSESSMENT CHECKLIST VIEW */}
+        {viewMode === 'checklist' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Assessment Checklist</h2>
+            <p className="text-gray-600 mb-6">Track child progress through the language curriculum. Print and use for individual student records.</p>
+            
+            <div className="space-y-6">
+              {Object.entries(assessmentChecklist).map(([category, skills]) => (
+                <div key={category} className="border rounded-lg overflow-hidden">
+                  <div className="bg-purple-50 px-4 py-3 border-b">
+                    <h3 className="font-bold text-purple-800">{category}</h3>
+                  </div>
+                  <div className="divide-y">
+                    {skills.map((skill, i) => (
+                      <div key={i} className="p-3 flex gap-4">
+                        <input type="checkbox" className="mt-1 h-5 w-5 rounded" />
+                        <div className="flex-1">
+                          <div className="font-medium">{skill.skill}</div>
+                          <div className="text-sm text-gray-500">{skill.indicators}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+              <strong>Note:</strong> This checklist is interactive for preview purposes. For classroom use, print this page or export to create permanent student records.
             </div>
           </div>
         )}
