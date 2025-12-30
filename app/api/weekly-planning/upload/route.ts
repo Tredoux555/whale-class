@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const weekNumber = parseInt(formData.get('weekNumber') as string) || 0;
-    const year = parseInt(formData.get('year') as string) || new Date().getFullYear();
+    // Week number comes from document parsing, not form
+    const year = new Date().getFullYear();
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -85,11 +85,17 @@ export async function POST(request: NextRequest) {
     // Match works to curriculum database
     const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan, curriculumWorks || []);
 
+    // Use week number from parsed document
+    const weekNumber = translatedPlan.weekNumber;
+    if (!weekNumber || weekNumber === 0) {
+      return NextResponse.json({ error: 'Could not detect week number from document' }, { status: 400 });
+    }
+
     // Save to database
     const { data: savedPlan, error: saveError } = await supabase
       .from('weekly_plans')
       .upsert({
-        week_number: weekNumber || translatedPlan.weekNumber,
+        week_number: weekNumber,
         year: year,
         original_filename: file.name,
         translated_content: matchedPlan,
