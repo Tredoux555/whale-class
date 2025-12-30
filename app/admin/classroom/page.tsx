@@ -242,6 +242,18 @@ function ClassroomView() {
                 {area.label}
               </button>
             ))}
+            
+            {/* Print Button */}
+            {selectedWeek > 0 && (
+              <Link
+                href={`/admin/classroom/print?week=${selectedWeek}&year=${selectedYear}`}
+                target="_blank"
+                className="ml-2 w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center hover:bg-blue-200 transition-colors"
+                title="Print weekly plan"
+              >
+                🖨️
+              </Link>
+            )}
           </div>
         </div>
       </header>
