@@ -8,6 +8,10 @@ const execAsync = promisify(exec);
 
 const TEMP_DIR = '/tmp/flashcard-maker';
 
+// Extend timeout for this route
+export const maxDuration = 300; // 5 minutes
+export const dynamic = 'force-dynamic';
+
 interface VTTCue {
   start: number;
   end: number;
@@ -78,6 +82,9 @@ function findLyricForTimestamp(cues: VTTCue[], timestamp: number): string | unde
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  console.log('[Extract] Starting frame extraction...');
+  
   try {
     const { 
       filePath, 
@@ -86,6 +93,8 @@ export async function POST(request: NextRequest) {
       subtitles,
       targetFrames = 20
     } = await request.json();
+    
+    console.log(`[Extract] File: ${filePath}, Target: ${targetFrames} frames`);
 
     if (!filePath) {
       return NextResponse.json({ message: 'File path is required' }, { status: 400 });
@@ -93,6 +102,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await fs.access(filePath);
+      console.log('[Extract] File exists');
     } catch {
       return NextResponse.json({ message: 'Video file not found' }, { status: 404 });
     }
