@@ -21,12 +21,13 @@ function getLocalPaths() {
   return { dataDir, videosFile };
 }
 
-// Get videos from local filesystem (localhost) or Supabase Storage (Vercel)
+// Get videos from local filesystem (localhost) or Supabase Storage (cloud)
 export async function getVideos(): Promise<Video[]> {
-  const isVercel = process.env.VERCEL === "1";
+  // Use Supabase if on Vercel, Railway, or any cloud deployment
+  const isCloud = process.env.VERCEL === "1" || process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === "production";
   
   try {
-    if (isVercel) {
+    if (isCloud) {
       // On Vercel: Read from Supabase Storage
       try {
         const supabase = createSupabaseAdmin();
@@ -98,12 +99,13 @@ export async function getVideos(): Promise<Video[]> {
   }
 }
 
-// Save videos to local filesystem (localhost) or Supabase Storage (Vercel)
+// Save videos to local filesystem (localhost) or Supabase Storage (cloud)
 export async function saveVideos(videos: Video[]): Promise<void> {
-  const isVercel = process.env.VERCEL === "1";
+  // Use Supabase if on Vercel, Railway, or any cloud deployment
+  const isCloud = process.env.VERCEL === "1" || process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === "production";
   
   try {
-    if (isVercel) {
+    if (isCloud) {
       // Check if Supabase is configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
         const errorMsg = "Supabase Storage is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your Vercel project settings.";
