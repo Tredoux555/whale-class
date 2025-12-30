@@ -36,6 +36,7 @@ const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: strin
   practical_life: { label: 'Practical Life', color: 'text-amber-800', bgColor: 'bg-amber-50 border-amber-200' },
   sensorial: { label: 'Sensorial', color: 'text-pink-800', bgColor: 'bg-pink-50 border-pink-200' },
   mathematics: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
+  math: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
   language: { label: 'Language', color: 'text-green-800', bgColor: 'bg-green-50 border-green-200' },
   culture: { label: 'Culture', color: 'text-purple-800', bgColor: 'bg-purple-50 border-purple-200' },
 };
