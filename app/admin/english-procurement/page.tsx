@@ -3621,7 +3621,7 @@ export default function EnglishProcurementPage() {
   const essentialCount = allMaterials.filter(m => m.essential).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-700 to-purple-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -3631,9 +3631,9 @@ export default function EnglishProcurementPage() {
           <h1 className="text-3xl font-bold">AMI English Language Album</h1>
           <p className="text-indigo-200 mt-1">Complete Montessori literacy curriculum for ages 3-6</p>
           <div className="flex gap-4 mt-3 text-sm">
-            <span className="bg-white/20 px-3 py-1 rounded-full">{curriculumData.length} Categories</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">{totalWorks} Works</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">{allMaterials.length} Materials</span>
+            <span className="bg-slate-800/20 px-3 py-1 rounded-full">{curriculumData.length} Categories</span>
+            <span className="bg-slate-800/20 px-3 py-1 rounded-full">{totalWorks} Works</span>
+            <span className="bg-slate-800/20 px-3 py-1 rounded-full">{allMaterials.length} Materials</span>
             <span className="bg-green-400/30 px-3 py-1 rounded-full">{essentialCount} Essential</span>
           </div>
         </div>
@@ -3645,7 +3645,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('sequence'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'sequence' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'sequence' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             📚 Curriculum Sequence
@@ -3653,7 +3653,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('shopping'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'shopping' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'shopping' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             🛒 Shopping List ({filteredMaterials.length})
@@ -3661,7 +3661,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('objects'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'objects' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'objects' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             🔤 Objects A-Z
@@ -3669,7 +3669,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('words'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'words' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'words' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             📝 Word Families
@@ -3677,7 +3677,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('phonograms'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'phonograms' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'phonograms' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             🔊 Phonograms
@@ -3685,7 +3685,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('grammar'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'grammar' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'grammar' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-gray-200 hover:bg-slate-600'
             }`}
           >
             📋 Grammar Boxes
@@ -3693,7 +3693,7 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('shelves'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'shelves' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'shelves' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             🗄️ Shelf Layout
@@ -3701,20 +3701,20 @@ export default function EnglishProcurementPage() {
           <button
             onClick={() => { setViewMode('checklist'); setSelectedCategory(null); setSelectedWork(null); }}
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+              viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
             }`}
           >
             ✅ Assessment
           </button>
           {viewMode === 'shopping' && (
-            <label className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg cursor-pointer">
+            <label className="flex items-center gap-2 px-4 py-2 bg-slate-700 rounded-lg cursor-pointer">
               <input
                 type="checkbox"
                 checked={essentialOnly}
                 onChange={(e) => setEssentialOnly(e.target.checked)}
                 className="rounded"
               />
-              <span className="text-sm text-gray-700">Essential only ({essentialCount})</span>
+              <span className="text-sm text-gray-200">Essential only ({essentialCount})</span>
             </label>
           )}
           <a
@@ -3729,14 +3729,14 @@ export default function EnglishProcurementPage() {
 
         {/* SHOPPING LIST VIEW */}
         {viewMode === 'shopping' && (
-          <div className="bg-white rounded-xl shadow-sm">
-            <div className="p-4 border-b bg-gray-50">
+          <div className="bg-slate-800 rounded-xl shadow-sm">
+            <div className="p-4 border-b border-slate-600 bg-slate-700">
               <h2 className="font-bold">Complete Materials List</h2>
-              <p className="text-sm text-gray-600">Click any search term to copy for 1688.com</p>
+              <p className="text-sm text-gray-300">Click any search term to copy for 1688.com</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-slate-700 border-b">
                   <tr>
                     <th className="text-left p-3 font-medium">Material</th>
                     <th className="text-left p-3 font-medium">1688 Search Term</th>
@@ -3746,13 +3746,13 @@ export default function EnglishProcurementPage() {
                 </thead>
                 <tbody>
                   {filteredMaterials.map((mat, i) => (
-                    <tr key={i} className={`border-b hover:bg-gray-50 ${mat.essential ? 'bg-green-50/50' : ''}`}>
+                    <tr key={i} className={`border-b hover:bg-slate-700 ${mat.essential ? 'bg-green-50/50' : ''}`}>
                       <td className="p-3">
                         <div className="flex items-start gap-2">
                           {mat.essential && <span className="text-green-600 text-xs">★</span>}
                           <div>
                             <div className="font-medium">{mat.name}</div>
-                            <div className="text-gray-500 text-xs">{mat.categoryIcon} {mat.categoryName}</div>
+                            <div className="text-gray-400 text-xs">{mat.categoryIcon} {mat.categoryName}</div>
                           </div>
                         </div>
                       </td>
@@ -3770,7 +3770,7 @@ export default function EnglishProcurementPage() {
                           </div>
                         </button>
                       </td>
-                      <td className="p-3 text-gray-600 text-xs">{mat.specs}</td>
+                      <td className="p-3 text-gray-300 text-xs">{mat.specs}</td>
                       <td className="p-3 font-medium text-green-700">{mat.price}</td>
                     </tr>
                   ))}
@@ -3782,9 +3782,9 @@ export default function EnglishProcurementPage() {
 
         {/* OBJECTS A-Z VIEW */}
         {viewMode === 'objects' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Initial Sound Objects (A-Z)</h2>
-            <p className="text-gray-600 mb-6">Complete list of miniature objects for Sound Games and Object Boxes. Click a letter to see objects.</p>
+            <p className="text-gray-300 mb-6">Complete list of miniature objects for Sound Games and Object Boxes. Click a letter to see objects.</p>
             
             {/* Letter selector */}
             <div className="flex flex-wrap gap-2 mb-6">
@@ -3795,7 +3795,7 @@ export default function EnglishProcurementPage() {
                   className={`w-10 h-10 rounded-lg font-bold transition ${
                     selectedLetter === letter 
                       ? 'bg-indigo-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
                   }`}
                 >
                   {letter.toUpperCase()}
@@ -3806,7 +3806,7 @@ export default function EnglishProcurementPage() {
                 className={`px-4 h-10 rounded-lg font-medium transition ${
                   selectedLetter === 'all' 
                     ? 'bg-indigo-600 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
                 }`}
               >
                 Show All
@@ -3817,30 +3817,30 @@ export default function EnglishProcurementPage() {
             {selectedLetter === 'all' ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(initialSoundObjects).map(([letter, objects]) => (
-                  <div key={letter} className="border rounded-lg p-4">
+                  <div key={letter} className="border border-slate-600 rounded-lg p-4">
                     <div className="font-bold text-2xl text-indigo-600 mb-2">{letter.toUpperCase()}</div>
                     <div className="flex flex-wrap gap-1">
                       {objects.map((obj, i) => (
-                        <span key={i} className="bg-gray-100 px-2 py-1 rounded text-sm">{obj}</span>
+                        <span key={i} className="bg-slate-600 px-2 py-1 rounded text-sm">{obj}</span>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
             ) : selectedLetter ? (
-              <div className="border rounded-lg p-6">
+              <div className="border border-slate-600 rounded-lg p-6">
                 <div className="font-bold text-4xl text-indigo-600 mb-4">{selectedLetter.toUpperCase()}</div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {initialSoundObjects[selectedLetter]?.map((obj, i) => (
-                    <div key={i} className="bg-gray-50 border rounded-lg p-3 text-center">
+                    <div key={i} className="bg-slate-700 border border-slate-600 rounded-lg p-3 text-center">
                       <div className="font-medium">{obj}</div>
-                      <div className="text-xs text-gray-500">/{selectedLetter}/ sound</div>
+                      <div className="text-xs text-gray-400">/{selectedLetter}/ sound</div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="text-center text-gray-500 py-12">
+              <div className="text-center text-gray-400 py-12">
                 Click a letter above to see objects for that sound
               </div>
             )}
@@ -3849,9 +3849,9 @@ export default function EnglishProcurementPage() {
 
         {/* WORD FAMILIES VIEW */}
         {viewMode === 'words' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Complete Word Family Lists</h2>
-            <p className="text-gray-600 mb-6">All CVC word families organized by vowel sound. Use for Pink Series materials and word family cards.</p>
+            <p className="text-gray-300 mb-6">All CVC word families organized by vowel sound. Use for Pink Series materials and word family cards.</p>
             
             {/* Vowel tabs */}
             <div className="flex gap-2 mb-6 border-b pb-2">
@@ -3862,7 +3862,7 @@ export default function EnglishProcurementPage() {
                   className={`px-4 py-2 rounded-t-lg font-medium transition ${
                     selectedLetter === vowel 
                       ? 'bg-indigo-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
                   }`}
                 >
                   {vowel}
@@ -3885,14 +3885,14 @@ export default function EnglishProcurementPage() {
                   return vowelMap[selectedLetter]?.includes(family);
                 })
                 .map(([family, words]) => (
-                  <div key={family} className="border rounded-lg p-4">
+                  <div key={family} className="border border-slate-600 rounded-lg p-4">
                     <div className="font-bold text-lg text-indigo-600 mb-2">{family}</div>
                     <div className="flex flex-wrap gap-1">
                       {words.map((word, i) => (
                         <span key={i} className="bg-pink-50 text-pink-700 px-2 py-1 rounded text-sm">{word}</span>
                       ))}
                     </div>
-                    <div className="text-xs text-gray-500 mt-2">{words.length} words</div>
+                    <div className="text-xs text-gray-400 mt-2">{words.length} words</div>
                   </div>
                 ))}
             </div>
@@ -3901,9 +3901,9 @@ export default function EnglishProcurementPage() {
 
         {/* PHONOGRAMS VIEW */}
         {viewMode === 'phonograms' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Complete Phonogram Reference</h2>
-            <p className="text-gray-600 mb-6">All English phonograms with sounds, positions, and example words.</p>
+            <p className="text-gray-300 mb-6">All English phonograms with sounds, positions, and example words.</p>
             
             {/* Filter tabs */}
             <div className="flex flex-wrap gap-2 mb-6">
@@ -3925,7 +3925,7 @@ export default function EnglishProcurementPage() {
                   className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
                     selectedPhonogramType === tab.id 
                       ? 'bg-green-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-slate-600 text-gray-200 hover:bg-slate-500'
                   }`}
                 >
                   {tab.label}
@@ -3952,15 +3952,15 @@ export default function EnglishProcurementPage() {
                   return categories[selectedPhonogramType]?.includes(phonogram);
                 })
                 .map(([phonogram, data]) => (
-                  <div key={phonogram} className="border rounded-lg p-4 bg-green-50/30">
+                  <div key={phonogram} className="border border-slate-600 rounded-lg p-4 bg-green-50/30">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="bg-green-600 text-white px-3 py-1 rounded-lg font-bold text-lg">{phonogram}</span>
-                      <span className="text-gray-600">{data.sound}</span>
+                      <span className="text-gray-300">{data.sound}</span>
                     </div>
-                    <div className="text-sm text-gray-500 mb-2">Position: {data.position}</div>
+                    <div className="text-sm text-gray-400 mb-2">Position: {data.position}</div>
                     <div className="flex flex-wrap gap-1">
                       {data.examples.map((word, i) => (
-                        <span key={i} className="bg-white border px-2 py-1 rounded text-sm">{word}</span>
+                        <span key={i} className="bg-slate-800 border px-2 py-1 rounded text-sm">{word}</span>
                       ))}
                     </div>
                   </div>
@@ -3971,20 +3971,20 @@ export default function EnglishProcurementPage() {
 
         {/* GRAMMAR BOXES VIEW */}
         {viewMode === 'grammar' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Grammar Box Sentences</h2>
-            <p className="text-gray-600 mb-6">Example sentences for each of the 9 Grammar Filling Boxes. Print these for classroom use.</p>
+            <p className="text-gray-300 mb-6">Example sentences for each of the 9 Grammar Filling Boxes. Print these for classroom use.</p>
             
             <div className="space-y-6">
               {Object.entries(grammarBoxSentences).map(([box, data]) => (
-                <div key={box} className="border rounded-lg overflow-hidden">
+                <div key={box} className="border border-slate-600 rounded-lg overflow-hidden">
                   <div className="bg-indigo-50 px-4 py-3 border-b">
                     <h3 className="font-bold text-indigo-800">{box}</h3>
                     <p className="text-sm text-indigo-600">{data.instruction}</p>
                   </div>
                   <div className="p-4 grid md:grid-cols-2 gap-2">
                     {data.sentences.map((sentence, i) => (
-                      <div key={i} className="bg-gray-50 p-2 rounded text-sm font-mono">
+                      <div key={i} className="bg-slate-700 p-2 rounded text-sm font-mono">
                         {i + 1}. {sentence}
                       </div>
                     ))}
@@ -3997,13 +3997,13 @@ export default function EnglishProcurementPage() {
 
         {/* SHELF LAYOUT VIEW */}
         {viewMode === 'shelves' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Classroom Shelf Organization</h2>
-            <p className="text-gray-600 mb-6">How to arrange language materials on classroom shelves for optimal flow and accessibility.</p>
+            <p className="text-gray-300 mb-6">How to arrange language materials on classroom shelves for optimal flow and accessibility.</p>
             
             <div className="space-y-4">
               {shelfOrganization.map((shelf, i) => (
-                <div key={i} className="border rounded-lg overflow-hidden">
+                <div key={i} className="border border-slate-600 rounded-lg overflow-hidden">
                   <div className="bg-amber-50 px-4 py-3 border-b flex justify-between items-center">
                     <h3 className="font-bold text-amber-800">{shelf.shelf}</h3>
                     <span className="text-sm text-amber-600">{shelf.position}</span>
@@ -4011,7 +4011,7 @@ export default function EnglishProcurementPage() {
                   <div className="p-4">
                     <ul className="list-disc list-inside space-y-1 mb-3">
                       {shelf.contents.map((item, j) => (
-                        <li key={j} className="text-gray-700">{item}</li>
+                        <li key={j} className="text-gray-200">{item}</li>
                       ))}
                     </ul>
                     <div className="bg-blue-50 text-blue-700 text-sm p-2 rounded">
@@ -4026,13 +4026,13 @@ export default function EnglishProcurementPage() {
 
         {/* ASSESSMENT CHECKLIST VIEW */}
         {viewMode === 'checklist' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Assessment Checklist</h2>
-            <p className="text-gray-600 mb-6">Track child progress through the language curriculum. Print and use for individual student records.</p>
+            <p className="text-gray-300 mb-6">Track child progress through the language curriculum. Print and use for individual student records.</p>
             
             <div className="space-y-6">
               {Object.entries(assessmentChecklist).map(([category, skills]) => (
-                <div key={category} className="border rounded-lg overflow-hidden">
+                <div key={category} className="border border-slate-600 rounded-lg overflow-hidden">
                   <div className="bg-purple-50 px-4 py-3 border-b">
                     <h3 className="font-bold text-purple-800">{category}</h3>
                   </div>
@@ -4042,7 +4042,7 @@ export default function EnglishProcurementPage() {
                         <input type="checkbox" className="mt-1 h-5 w-5 rounded" />
                         <div className="flex-1">
                           <div className="font-medium">{skill.skill}</div>
-                          <div className="text-sm text-gray-500">{skill.indicators}</div>
+                          <div className="text-sm text-gray-400">{skill.indicators}</div>
                         </div>
                       </div>
                     ))}
@@ -4051,7 +4051,7 @@ export default function EnglishProcurementPage() {
               ))}
             </div>
             
-            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+            <div className="mt-6 p-4 bg-slate-600 rounded-lg text-sm text-gray-300">
               <strong>Note:</strong> This checklist is interactive for preview purposes. For classroom use, print this page or export to create permanent student records.
             </div>
           </div>
@@ -4074,7 +4074,7 @@ export default function EnglishProcurementPage() {
               <div
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className="bg-white rounded-xl shadow-sm p-6 cursor-pointer hover:shadow-md transition border-l-4 border-indigo-500"
+                className="bg-slate-800 rounded-xl shadow-sm p-6 cursor-pointer hover:shadow-md transition border-l-4 border-indigo-500"
               >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">{category.icon}</div>
@@ -4085,11 +4085,11 @@ export default function EnglishProcurementPage() {
                       </span>
                       <h2 className="text-xl font-bold">{category.name}</h2>
                     </div>
-                    <p className="text-gray-600">{category.description}</p>
+                    <p className="text-gray-300">{category.description}</p>
                     {category.amiNotes && (
                       <p className="text-amber-600 text-sm mt-2 italic">{category.amiNotes}</p>
                     )}
-                    <div className="mt-3 text-sm text-gray-500">
+                    <div className="mt-3 text-sm text-gray-400">
                       {category.works.length} work{category.works.length > 1 ? 's' : ''} • Click to expand
                     </div>
                   </div>
@@ -4099,17 +4099,17 @@ export default function EnglishProcurementPage() {
             ))}
 
             {/* Grammar Symbols Reference */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
+            <div className="bg-slate-800 rounded-xl shadow-sm p-6 mt-8">
               <h2 className="text-xl font-bold mb-4">🔺 Grammar Symbols Quick Reference</h2>
               <div className="grid md:grid-cols-3 gap-3">
                 {grammarSymbols.map((sym) => (
-                  <div key={sym.part} className="border rounded-lg p-3">
+                  <div key={sym.part} className="border border-slate-600 rounded-lg p-3">
                     <div className="font-bold text-lg">{sym.part}</div>
-                    <div className="text-gray-600 text-sm">{sym.shape}</div>
-                    <div className="text-gray-600 text-sm font-medium" style={{color: sym.color.toLowerCase().includes('black') ? '#333' : sym.color.toLowerCase().includes('blue') ? '#3b82f6' : sym.color.toLowerCase().includes('red') ? '#ef4444' : sym.color.toLowerCase().includes('orange') ? '#f97316' : sym.color.toLowerCase().includes('green') ? '#22c55e' : sym.color.toLowerCase().includes('purple') ? '#a855f7' : sym.color.toLowerCase().includes('pink') ? '#ec4899' : sym.color.toLowerCase().includes('gold') ? '#eab308' : '#666'}}>
+                    <div className="text-gray-300 text-sm">{sym.shape}</div>
+                    <div className="text-gray-300 text-sm font-medium" style={{color: sym.color.toLowerCase().includes('black') ? '#333' : sym.color.toLowerCase().includes('blue') ? '#3b82f6' : sym.color.toLowerCase().includes('red') ? '#ef4444' : sym.color.toLowerCase().includes('orange') ? '#f97316' : sym.color.toLowerCase().includes('green') ? '#22c55e' : sym.color.toLowerCase().includes('purple') ? '#a855f7' : sym.color.toLowerCase().includes('pink') ? '#ec4899' : sym.color.toLowerCase().includes('gold') ? '#eab308' : '#666'}}>
                       {sym.color}
                     </div>
-                    <div className="text-gray-500 text-xs mt-1">{sym.meaning}</div>
+                    <div className="text-gray-400 text-xs mt-1">{sym.meaning}</div>
                   </div>
                 ))}
               </div>
@@ -4127,7 +4127,7 @@ export default function EnglishProcurementPage() {
               ← Back to sequence
             </button>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div className="bg-slate-800 rounded-xl shadow-sm p-6 mb-6">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-4xl">{selectedCategoryData?.icon}</span>
                 <div>
@@ -4137,7 +4137,7 @@ export default function EnglishProcurementPage() {
                   <h1 className="text-2xl font-bold">{selectedCategoryData?.name}</h1>
                 </div>
               </div>
-              <p className="text-gray-600">{selectedCategoryData?.description}</p>
+              <p className="text-gray-300">{selectedCategoryData?.description}</p>
               {selectedCategoryData?.amiNotes && (
                 <p className="text-amber-600 text-sm mt-2 bg-amber-50 p-3 rounded-lg">{selectedCategoryData.amiNotes}</p>
               )}
@@ -4148,7 +4148,7 @@ export default function EnglishProcurementPage() {
                 <div
                   key={work.id}
                   onClick={() => setSelectedWork(work.id)}
-                  className="bg-white rounded-xl shadow-sm p-5 cursor-pointer hover:shadow-md transition"
+                  className="bg-slate-800 rounded-xl shadow-sm p-5 cursor-pointer hover:shadow-md transition"
                 >
                   <div className="flex items-start gap-4">
                     <div className="bg-indigo-100 text-indigo-700 font-bold w-8 h-8 rounded-full flex items-center justify-center text-sm">
@@ -4156,9 +4156,9 @@ export default function EnglishProcurementPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg">{work.name}</h3>
-                      <p className="text-gray-500 text-sm">Age: {work.age}</p>
-                      <p className="text-gray-600 mt-1">{work.directAim}</p>
-                      <div className="mt-2 text-sm text-gray-500">
+                      <p className="text-gray-400 text-sm">Age: {work.age}</p>
+                      <p className="text-gray-300 mt-1">{work.directAim}</p>
+                      <div className="mt-2 text-sm text-gray-400">
                         {work.materials.length} material{work.materials.length > 1 ? 's' : ''} • Click for full details
                       </div>
                     </div>
@@ -4180,7 +4180,7 @@ export default function EnglishProcurementPage() {
               ← Back to {selectedCategoryData?.name}
             </button>
 
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-slate-800 rounded-xl shadow-sm overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4">
                 <div className="text-indigo-200 text-sm">{selectedCategoryData?.icon} {selectedCategoryData?.name}</div>
@@ -4192,12 +4192,12 @@ export default function EnglishProcurementPage() {
                 {/* Aims */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-2">Direct Aim</h3>
-                    <p className="text-gray-600">{selectedWorkData.directAim}</p>
+                    <h3 className="font-bold text-gray-100 mb-2">Direct Aim</h3>
+                    <p className="text-gray-300">{selectedWorkData.directAim}</p>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-2">Indirect Aims</h3>
-                    <ul className="text-gray-600 space-y-1">
+                    <h3 className="font-bold text-gray-100 mb-2">Indirect Aims</h3>
+                    <ul className="text-gray-300 space-y-1">
                       {selectedWorkData.indirectAims.map((aim, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <span className="text-indigo-400">•</span>
@@ -4231,10 +4231,10 @@ export default function EnglishProcurementPage() {
 
                 {/* Presentation */}
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-3">Presentation</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <h3 className="font-bold text-gray-100 mb-3">Presentation</h3>
+                  <div className="bg-slate-700 rounded-lg p-4 space-y-2">
                     {selectedWorkData.presentation.map((step, i) => (
-                      <div key={i} className={`${step.startsWith('GROUP') || step.startsWith('STAGE') || step.startsWith('PRESENTATION') || step.includes(':') && step.split(':')[0].length < 20 && step.split(':')[0] === step.split(':')[0].toUpperCase() ? 'font-bold text-indigo-700 mt-3' : 'text-gray-700'} ${step === '' ? 'h-2' : ''}`}>
+                      <div key={i} className={`${step.startsWith('GROUP') || step.startsWith('STAGE') || step.startsWith('PRESENTATION') || step.includes(':') && step.split(':')[0].length < 20 && step.split(':')[0] === step.split(':')[0].toUpperCase() ? 'font-bold text-indigo-700 mt-3' : 'text-gray-200'} ${step === '' ? 'h-2' : ''}`}>
                         {step}
                       </div>
                     ))}
@@ -4243,26 +4243,26 @@ export default function EnglishProcurementPage() {
 
                 {/* Materials */}
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-3">Materials & 1688 Search Terms</h3>
+                  <h3 className="font-bold text-gray-100 mb-3">Materials & 1688 Search Terms</h3>
                   <div className="space-y-4">
                     {selectedWorkData.materials.filter(m => m.price !== '—' && m.search1688 !== '同上').map((mat, i) => (
-                      <div key={i} className={`border rounded-lg p-4 ${mat.essential ? 'border-green-300 bg-green-50/50' : 'bg-gray-50'}`}>
+                      <div key={i} className={`border border-slate-600 rounded-lg p-4 ${mat.essential ? 'border-green-300 bg-green-50/50' : 'bg-slate-700'}`}>
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <div className="font-bold flex items-center gap-2">
                               {mat.name}
                               {mat.essential && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Essential</span>}
                             </div>
-                            <div className="text-gray-500 text-sm">{mat.nameZh}</div>
+                            <div className="text-gray-400 text-sm">{mat.nameZh}</div>
                           </div>
                           <div className="text-right">
                             <div className="font-bold text-green-600">{mat.price}</div>
                           </div>
                         </div>
-                        <div className="text-gray-600 text-sm mb-3">{mat.specs}</div>
+                        <div className="text-gray-300 text-sm mb-3">{mat.specs}</div>
                         <button
                           onClick={(e) => { e.stopPropagation(); copyToClipboard(mat.search1688); }}
-                          className="w-full text-left bg-white border rounded-lg p-3 hover:bg-indigo-50 transition"
+                          className="w-full text-left bg-slate-800 border border-slate-600 rounded-lg p-3 hover:bg-indigo-50 transition"
                         >
                           <div className="text-indigo-600 font-medium">{mat.search1688}</div>
                           {mat.altSearch && (
@@ -4280,18 +4280,18 @@ export default function EnglishProcurementPage() {
                 {/* Control & Point of Interest */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-2">Control of Error</h3>
-                    <p className="text-gray-600">{selectedWorkData.controlOfError}</p>
+                    <h3 className="font-bold text-gray-100 mb-2">Control of Error</h3>
+                    <p className="text-gray-300">{selectedWorkData.controlOfError}</p>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-2">Point of Interest</h3>
-                    <p className="text-gray-600">{selectedWorkData.pointOfInterest}</p>
+                    <h3 className="font-bold text-gray-100 mb-2">Point of Interest</h3>
+                    <p className="text-gray-300">{selectedWorkData.pointOfInterest}</p>
                   </div>
                 </div>
 
                 {/* Extensions */}
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-2">Extensions</h3>
+                  <h3 className="font-bold text-gray-100 mb-2">Extensions</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedWorkData.extensions.map((ext, i) => (
                       <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm">
