@@ -1,19 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface WorkAssignment {
   id: string;
   work_name: string;
+  work_name_chinese?: string;
   area: string;
   progress_status: 'not_started' | 'presented' | 'practicing' | 'mastered';
   work_id?: string;
   video_url?: string;
+  notes?: string;
 }
 
 interface ChildWithAssignments {
   id: string;
   name: string;
+  focus_area?: string;
+  observation_notes?: string;
   assignments: WorkAssignment[];
 }
 
@@ -31,17 +37,28 @@ const STATUS_CONFIG = {
 };
 
 const AREA_COLORS: Record<string, string> = {
-  practical_life: 'border-l-amber-500',
-  sensorial: 'border-l-pink-500',
-  mathematics: 'border-l-blue-500',
-  language: 'border-l-green-500',
-  culture: 'border-l-purple-500',
+  practical_life: 'border-l-amber-500 bg-amber-50',
+  sensorial: 'border-l-pink-500 bg-pink-50',
+  mathematics: 'border-l-blue-500 bg-blue-50',
+  language: 'border-l-green-500 bg-green-50',
+  culture: 'border-l-purple-500 bg-purple-50',
+};
+
+const AREA_LABELS: Record<string, string> = {
+  practical_life: 'P',
+  sensorial: 'S',
+  mathematics: 'M',
+  language: 'L',
+  culture: 'C',
 };
 
 export default function ClassroomView() {
+  const searchParams = useSearchParams();
   const [children, setChildren] = useState<ChildWithAssignments[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<WeeklyPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [selectedWeek, setSelectedWeek] = useState<number>(0);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [filterArea, setFilterArea] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [videoModal, setVideoModal] = useState<{ url: string; title: string } | null>(null);
@@ -49,6 +66,22 @@ export default function ClassroomView() {
   useEffect(() => {
     fetchWeeklyPlans();
   }, []);
+
+  useEffect(() => {
+    // Check URL params for week/year
+    const weekParam = searchParams.get('week');
+    const yearParam = searchParams.get('year');
+    if (weekParam && yearParam) {
+      const plan = weeklyPlans.find(p => 
+        p.week_number === parseInt(weekParam) && p.year === parseInt(yearParam)
+      );
+      if (plan) {
+        setSelectedPlanId(plan.id);
+        setSelectedWeek(plan.week_number);
+        setSelectedYear(plan.year);
+      }
+    }
+  }, [searchParams, weeklyPlans]);
 
   useEffect(() => {
     if (selectedPlanId) {
@@ -62,7 +95,10 @@ export default function ClassroomView() {
       const data = await res.json();
       setWeeklyPlans(data.plans || []);
       if (data.plans?.length > 0) {
-        setSelectedPlanId(data.plans[0].id);
+        const firstPlan = data.plans[0];
+        setSelectedPlanId(firstPlan.id);
+        setSelectedWeek(firstPlan.week_number);
+        setSelectedYear(firstPlan.year);
       }
     } catch (err) {
       console.error('Failed to fetch plans:', err);
@@ -73,7 +109,7 @@ export default function ClassroomView() {
 
   async function fetchAssignments(planId: string) {
     try {
-      const res = await fetch(`/api/weekly-planning/assignments?planId=${planId}`);
+      const res = await fetch(`/api/weekly-planning/by-plan?planId=${planId}`);
       const data = await res.json();
       setChildren(data.children || []);
     } catch (err) {
@@ -98,14 +134,25 @@ export default function ClassroomView() {
       });
     } catch (err) {
       console.error('Failed to update progress:', err);
-      // Revert on error
       fetchAssignments(selectedPlanId);
     }
   }
 
-  const handleStatusTap = (assignment: WorkAssignment) => {
+  const handleStatusTap = (e: React.MouseEvent, assignment: WorkAssignment) => {
+    e.preventDefault();
+    e.stopPropagation();
     const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
     updateProgress(assignment.id, nextStatus);
+  };
+
+  // Calculate completion stats for each child
+  const getChildStats = (assignments: WorkAssignment[]) => {
+    const total = assignments.length;
+    const mastered = assignments.filter(a => a.progress_status === 'mastered').length;
+    const inProgress = assignments.filter(a => 
+      a.progress_status === 'presented' || a.progress_status === 'practicing'
+    ).length;
+    return { total, mastered, inProgress, notStarted: total - mastered - inProgress };
   };
 
   const filteredChildren = children.map(child => ({
@@ -113,7 +160,7 @@ export default function ClassroomView() {
     assignments: filterArea === 'all'
       ? child.assignments
       : child.assignments.filter(a => a.area === filterArea)
-  })).filter(child => child.assignments.length > 0);
+  }));
 
   if (loading) {
     return (
@@ -128,14 +175,27 @@ export default function ClassroomView() {
       {/* Header - Fixed */}
       <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <h1 className="text-xl font-bold">🐋 Classroom View</h1>
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+              ← Admin
+            </Link>
+            <h1 className="text-xl font-bold">🐋 Classroom View</h1>
+          </div>
           
           {/* Week Selector */}
           <select
             value={selectedPlanId}
-            onChange={(e) => setSelectedPlanId(e.target.value)}
+            onChange={(e) => {
+              const plan = weeklyPlans.find(p => p.id === e.target.value);
+              setSelectedPlanId(e.target.value);
+              if (plan) {
+                setSelectedWeek(plan.week_number);
+                setSelectedYear(plan.year);
+              }
+            }}
             className="px-4 py-2 border rounded-lg font-medium"
           >
+            <option value="">Select week...</option>
             {weeklyPlans.map(plan => (
               <option key={plan.id} value={plan.id}>
                 Week {plan.week_number}, {plan.year}
@@ -145,16 +205,23 @@ export default function ClassroomView() {
 
           {/* Area Filter */}
           <div className="flex gap-1">
-            {['all', 'practical_life', 'sensorial', 'mathematics', 'language', 'culture'].map(area => (
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'practical_life', label: 'P' },
+              { key: 'sensorial', label: 'S' },
+              { key: 'mathematics', label: 'M' },
+              { key: 'language', label: 'L' },
+              { key: 'culture', label: 'C' },
+            ].map(area => (
               <button
-                key={area}
-                onClick={() => setFilterArea(area)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors
-                  ${filterArea === area 
+                key={area.key}
+                onClick={() => setFilterArea(area.key)}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-colors
+                  ${filterArea === area.key 
                     ? 'bg-gray-800 text-white' 
                     : 'bg-gray-200 hover:bg-gray-300'}`}
               >
-                {area === 'all' ? 'All' : area.charAt(0).toUpperCase()}
+                {area.label}
               </button>
             ))}
           </div>
@@ -164,41 +231,50 @@ export default function ClassroomView() {
       {/* Legend */}
       <div className="bg-white border-b px-4 py-2">
         <div className="flex items-center justify-center gap-6 text-sm max-w-7xl mx-auto">
-          <span className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">○</span>
-            Not started
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center font-bold">P</span>
-            Presented
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center font-bold">Pr</span>
-            Practicing
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center font-bold">M</span>
-            Mastered
-          </span>
+          {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+            <span key={key} className="flex items-center gap-2">
+              <span className={`w-8 h-8 rounded-full ${config.color} flex items-center justify-center font-bold`}>
+                {config.label}
+              </span>
+              <span className="capitalize">{key.replace('_', ' ')}</span>
+            </span>
+          ))}
         </div>
       </div>
 
       {/* Main Grid */}
       <main className="p-4 max-w-7xl mx-auto">
-        {filteredChildren.length === 0 ? (
+        {!selectedPlanId ? (
           <div className="text-center py-12">
             <div className="text-5xl mb-4">📋</div>
-            <p className="text-gray-600">No assignments for this week yet</p>
-            <p className="text-gray-400 text-sm mt-2">
-              Upload a weekly plan to get started
-            </p>
+            <p className="text-gray-600 text-lg">Select a week to view assignments</p>
+            <Link
+              href="/admin/weekly-planning"
+              className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Upload Weekly Plan
+            </Link>
+          </div>
+        ) : filteredChildren.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-5xl mb-4">📋</div>
+            <p className="text-gray-600">No assignments for Week {selectedWeek} yet</p>
+            <Link
+              href="/admin/weekly-planning"
+              className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Upload Weekly Plan
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredChildren.map(child => (
               <ChildCard
                 key={child.id}
                 child={child}
+                stats={getChildStats(child.assignments)}
+                weekNumber={selectedWeek}
+                year={selectedYear}
                 onStatusTap={handleStatusTap}
                 onVideoTap={(url, title) => setVideoModal({ url, title })}
               />
@@ -221,30 +297,57 @@ export default function ClassroomView() {
 
 interface ChildCardProps {
   child: ChildWithAssignments;
-  onStatusTap: (assignment: WorkAssignment) => void;
+  stats: { total: number; mastered: number; inProgress: number; notStarted: number };
+  weekNumber: number;
+  year: number;
+  onStatusTap: (e: React.MouseEvent, assignment: WorkAssignment) => void;
   onVideoTap: (url: string, title: string) => void;
 }
 
-function ChildCard({ child, onStatusTap, onVideoTap }: ChildCardProps) {
+function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: ChildCardProps) {
+  const completionPercent = stats.total > 0 
+    ? Math.round((stats.mastered / stats.total) * 100) 
+    : 0;
+
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <Link
+      href={`/admin/classroom/${child.id}?week=${weekNumber}&year=${year}`}
+      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer block"
+    >
       {/* Child Header */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
-        <h3 className="text-white font-bold text-lg">{child.name}</h3>
-        <p className="text-blue-100 text-sm">{child.assignments.length} works this week</p>
+        <h3 className="text-white font-bold text-lg truncate">{child.name}</h3>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1 bg-blue-400/30 rounded-full h-2">
+            <div 
+              className="bg-white rounded-full h-2 transition-all"
+              style={{ width: `${completionPercent}%` }}
+            />
+          </div>
+          <span className="text-blue-100 text-xs">{completionPercent}%</span>
+        </div>
       </div>
 
-      {/* Work List */}
+      {/* Focus Area (if exists) */}
+      {child.focus_area && (
+        <div className="px-3 py-2 bg-yellow-50 border-b border-yellow-100">
+          <p className="text-xs text-yellow-800 truncate">
+            🎯 {child.focus_area}
+          </p>
+        </div>
+      )}
+
+      {/* Work Summary - Show first 5 works */}
       <div className="divide-y">
-        {child.assignments.map(assignment => (
+        {child.assignments.slice(0, 5).map(assignment => (
           <div
             key={assignment.id}
-            className={`flex items-center gap-3 p-3 border-l-4 ${AREA_COLORS[assignment.area]}`}
+            className={`flex items-center gap-2 px-3 py-2 border-l-4 ${AREA_COLORS[assignment.area] || 'border-l-gray-300'}`}
           >
-            {/* Status Button - Large touch target */}
+            {/* Status Button */}
             <button
-              onClick={() => onStatusTap(assignment)}
-              className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg
+              onClick={(e) => onStatusTap(e, assignment)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
                 ${STATUS_CONFIG[assignment.progress_status].color}
                 active:scale-95 transition-transform touch-manipulation`}
             >
@@ -253,25 +356,28 @@ function ChildCard({ child, onStatusTap, onVideoTap }: ChildCardProps) {
 
             {/* Work Name */}
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{assignment.work_name}</p>
-              <p className="text-xs text-gray-400 capitalize">
-                {assignment.area.replace('_', ' ')}
-              </p>
+              <p className="text-sm font-medium truncate">{assignment.work_name}</p>
+              {assignment.work_name_chinese && (
+                <p className="text-xs text-gray-400 truncate">{assignment.work_name_chinese}</p>
+              )}
             </div>
-
-            {/* Video Button */}
-            {assignment.video_url && (
-              <button
-                onClick={() => onVideoTap(assignment.video_url!, assignment.work_name)}
-                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"
-              >
-                ▶️
-              </button>
-            )}
           </div>
         ))}
       </div>
-    </div>
+
+      {/* More indicator */}
+      {child.assignments.length > 5 && (
+        <div className="px-3 py-2 text-center text-xs text-gray-400 border-t">
+          +{child.assignments.length - 5} more works
+        </div>
+      )}
+
+      {/* Quick Stats */}
+      <div className="px-3 py-2 bg-gray-50 flex justify-between text-xs">
+        <span className="text-gray-500">{stats.total} works</span>
+        <span className="text-green-600 font-medium">{stats.mastered} done</span>
+      </div>
+    </Link>
   );
 }
 
@@ -282,7 +388,6 @@ interface VideoModalProps {
 }
 
 function VideoModal({ url, title, onClose }: VideoModalProps) {
-  // Extract video ID for embedding
   const getEmbedUrl = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
     if (match) {
@@ -302,12 +407,7 @@ function VideoModal({ url, title, onClose }: VideoModalProps) {
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">{title}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            ✕
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">✕</button>
         </div>
         <div className="aspect-video">
           <iframe

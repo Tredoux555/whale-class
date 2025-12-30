@@ -1,6 +1,14 @@
--- Weekly Assignments Table (Simple Version)
--- Run this in Supabase SQL Editor
+-- First check existing table structure
+-- Run this to see what columns exist:
 
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'weekly_assignments';
+
+-- If table exists with wrong schema, drop and recreate:
+-- DROP TABLE IF EXISTS weekly_assignments CASCADE;
+
+-- Then create fresh:
 CREATE TABLE IF NOT EXISTS weekly_assignments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   week_number INTEGER NOT NULL,
@@ -15,21 +23,10 @@ CREATE TABLE IF NOT EXISTS weekly_assignments (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index for fast lookups by week
 CREATE INDEX IF NOT EXISTS idx_weekly_assignments_week 
 ON weekly_assignments(year, week_number);
 
--- Index for child lookups
-CREATE INDEX IF NOT EXISTS idx_weekly_assignments_child 
-ON weekly_assignments(child_id);
-
--- Unique constraint to prevent duplicate assignments
-CREATE UNIQUE INDEX IF NOT EXISTS idx_weekly_assignments_unique 
-ON weekly_assignments(week_number, year, child_id, work_name);
-
--- Enable RLS
 ALTER TABLE weekly_assignments ENABLE ROW LEVEL SECURITY;
 
--- Policy for service role (full access)
 CREATE POLICY "Service role full access" ON weekly_assignments
   FOR ALL USING (true) WITH CHECK (true);

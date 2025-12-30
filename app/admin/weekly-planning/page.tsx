@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 
 interface Child {
   id: string;
@@ -8,21 +9,36 @@ interface Child {
   avatar_emoji?: string;
 }
 
-interface Work {
-  id: string;
-  work_name: string;
-  area: string;
+interface ParsedAssignment {
+  childName: string;
+  works: {
+    area: string;
+    workNameChinese: string;
+    workNameEnglish: string;
+    matchedWorkId?: string;
+  }[];
+  notes?: string;
+  focusArea?: string;
 }
 
-interface Assignment {
+interface UploadResult {
+  success: boolean;
+  plan?: any;
+  translatedContent?: {
+    weekNumber: number;
+    assignments: ParsedAssignment[];
+  };
+  error?: string;
+  debug?: any;
+}
+
+interface WeeklyPlan {
   id: string;
-  child_id: string;
-  child_name: string;
-  work_id: string;
-  work_name: string;
-  area: string;
-  status: 'not_started' | 'in_progress' | 'completed';
-  notes?: string;
+  week_number: number;
+  year: number;
+  status: string;
+  original_filename?: string;
+  created_at: string;
 }
 
 const AREA_COLORS: Record<string, string> = {
@@ -31,16 +47,14 @@ const AREA_COLORS: Record<string, string> = {
   mathematics: 'bg-blue-100 text-blue-800 border-blue-300',
   language: 'bg-green-100 text-green-800 border-green-300',
   culture: 'bg-purple-100 text-purple-800 border-purple-300',
-  english: 'bg-teal-100 text-teal-800 border-teal-300',
 };
 
 const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
+  practical_life: 'Practical',
   sensorial: 'Sensorial',
   mathematics: 'Math',
   language: 'Language',
   culture: 'Culture',
-  english: 'English',
 };
 
 function getCurrentWeek(): number {
@@ -67,164 +81,109 @@ function getWeekDates(week: number, year: number): { start: string; end: string 
 export default function WeeklyPlanningPage() {
   const [weekNumber, setWeekNumber] = useState(getCurrentWeek());
   const [year, setYear] = useState(new Date().getFullYear());
-  const [children, setChildren] = useState<Child[]>([]);
-  const [works, setWorks] = useState<Work[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [existingPlans, setExistingPlans] = useState<WeeklyPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   
-  // Form state
-  const [selectedChild, setSelectedChild] = useState('');
-  const [selectedWork, setSelectedWork] = useState('');
-  const [workSearch, setWorkSearch] = useState('');
-  const [filterArea, setFilterArea] = useState('all');
+  // Upload state
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Load initial data
+  // Load existing plans
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
+    async function loadPlans() {
       try {
-        const [childrenRes, worksRes] = await Promise.all([
-          fetch('/api/weekly-planning/children'),
-          fetch('/api/weekly-planning/works')
-        ]);
-        
-        if (childrenRes.ok) {
-          const data = await childrenRes.json();
-          setChildren(data.children || []);
-        }
-        
-        if (worksRes.ok) {
-          const data = await worksRes.json();
-          setWorks(data.works || []);
+        const res = await fetch('/api/weekly-planning/list');
+        if (res.ok) {
+          const data = await res.json();
+          setExistingPlans(data.plans || []);
         }
       } catch (err) {
-        console.error('Failed to load data:', err);
+        console.error('Failed to load plans:', err);
       }
       setLoading(false);
     }
-    loadData();
+    loadPlans();
   }, []);
 
-  // Load assignments when week/year changes
-  useEffect(() => {
-    async function loadAssignments() {
-      try {
-        const res = await fetch(`/api/weekly-planning/assignments?week=${weekNumber}&year=${year}`);
-        if (res.ok) {
-          const data = await res.json();
-          setAssignments(data.assignments || []);
-        }
-      } catch (err) {
-        console.error('Failed to load assignments:', err);
-      }
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await processFile(files[0]);
     }
-    loadAssignments();
   }, [weekNumber, year]);
 
-  // Filter works by search and area
-  const filteredWorks = works.filter(w => {
-    const matchesSearch = workSearch === '' || 
-      w.work_name.toLowerCase().includes(workSearch.toLowerCase());
-    const matchesArea = filterArea === 'all' || w.area === filterArea;
-    return matchesSearch && matchesArea;
-  });
-
-  // Group assignments by child
-  const assignmentsByChild = assignments.reduce((acc, a) => {
-    if (!acc[a.child_id]) {
-      acc[a.child_id] = { name: a.child_name, assignments: [] };
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      await processFile(files[0]);
     }
-    acc[a.child_id].assignments.push(a);
-    return acc;
-  }, {} as Record<string, { name: string; assignments: Assignment[] }>);
+  };
 
-  // Add assignment
-  async function addAssignment() {
-    if (!selectedChild || !selectedWork) return;
-    
-    const work = works.find(w => w.id === selectedWork);
-    const child = children.find(c => c.id === selectedChild);
-    if (!work || !child) return;
+  async function processFile(file: File) {
+    if (!file.name.endsWith('.docx')) {
+      setUploadError('Please upload a .docx file');
+      return;
+    }
 
-    setSaving(true);
+    setUploading(true);
+    setUploadError(null);
+    setUploadResult(null);
+
     try {
-      const res = await fetch('/api/weekly-planning/assignments', {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('weekNumber', weekNumber.toString());
+      formData.append('year', year.toString());
+
+      const res = await fetch('/api/weekly-planning/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          week: weekNumber,
-          year,
-          child_id: selectedChild,
-          work_id: selectedWork,
-          work_name: work.work_name,
-          area: work.area
-        })
+        body: formData,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssignments(prev => [...prev, {
-          ...data.assignment,
-          child_name: child.name
-        }]);
-        setSelectedWork('');
-        setWorkSearch('');
+      const result = await res.json();
+
+      if (result.success) {
+        setUploadResult(result);
+        // Refresh plans list
+        const plansRes = await fetch('/api/weekly-planning/list');
+        if (plansRes.ok) {
+          const data = await plansRes.json();
+          setExistingPlans(data.plans || []);
+        }
+      } else {
+        setUploadError(result.error || 'Upload failed');
       }
     } catch (err) {
-      console.error('Failed to add assignment:', err);
+      console.error('Upload error:', err);
+      setUploadError('Failed to upload file');
     }
-    setSaving(false);
-  }
-
-  // Toggle status
-  async function toggleStatus(assignmentId: string, currentStatus: string) {
-    const nextStatus = currentStatus === 'not_started' ? 'in_progress' 
-      : currentStatus === 'in_progress' ? 'completed' : 'not_started';
     
-    try {
-      const res = await fetch(`/api/weekly-planning/assignments/${assignmentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus })
-      });
-
-      if (res.ok) {
-        setAssignments(prev => prev.map(a => 
-          a.id === assignmentId ? { ...a, status: nextStatus as Assignment['status'] } : a
-        ));
-      }
-    } catch (err) {
-      console.error('Failed to update status:', err);
-    }
-  }
-
-  // Delete assignment
-  async function deleteAssignment(assignmentId: string) {
-    if (!confirm('Remove this assignment?')) return;
-    
-    try {
-      const res = await fetch(`/api/weekly-planning/assignments/${assignmentId}`, {
-        method: 'DELETE'
-      });
-
-      if (res.ok) {
-        setAssignments(prev => prev.filter(a => a.id !== assignmentId));
-      }
-    } catch (err) {
-      console.error('Failed to delete:', err);
-    }
+    setUploading(false);
   }
 
   const weekDates = getWeekDates(weekNumber, year);
+  const currentPlan = existingPlans.find(p => p.week_number === weekNumber && p.year === year);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">📋</div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
       </div>
     );
   }
@@ -233,11 +192,17 @@ export default function WeeklyPlanningPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            📋 Weekly Planning
-          </h1>
-          <p className="text-gray-600 mt-1">Assign works to children for the week</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">📋 Weekly Planning</h1>
+            <p className="text-gray-600 mt-1">Drop a weekly plan document to assign works to all children</p>
+          </div>
+          <Link
+            href="/admin/classroom"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+          >
+            🐋 Open Classroom View →
+          </Link>
         </div>
 
         {/* Week Selector */}
@@ -267,170 +232,151 @@ export default function WeeklyPlanningPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
               <p className="text-lg font-semibold text-blue-600">{weekDates.start} - {weekDates.end}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
-              <p className="text-sm text-gray-600">
-                {assignments.length} assignments • {Object.keys(assignmentsByChild).length} children
-              </p>
-            </div>
+            {currentPlan && (
+              <div className="text-right">
+                <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  ✓ Plan exists
+                </span>
+                <p className="text-xs text-gray-500 mt-1">{currentPlan.original_filename}</p>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Add Assignment Form */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-4 sticky top-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">➕ Add Assignment</h2>
-              
-              {/* Child Selector */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Child</label>
-                <select
-                  value={selectedChild}
-                  onChange={(e) => setSelectedChild(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select child...</option>
-                  {children.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.avatar_emoji || '👤'} {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Area Filter */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Area</label>
-                <select
-                  value={filterArea}
-                  onChange={(e) => setFilterArea(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Areas</option>
-                  {Object.entries(AREA_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Work Search */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Search Work ({filteredWorks.length})
-                </label>
+        {/* Upload Zone */}
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`relative border-2 border-dashed rounded-xl p-8 mb-6 transition-all text-center
+            ${isDragging 
+              ? 'border-blue-500 bg-blue-50' 
+              : 'border-gray-300 bg-white hover:border-gray-400'
+            }
+            ${uploading ? 'opacity-50 pointer-events-none' : ''}
+          `}
+        >
+          {uploading ? (
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4" />
+              <p className="text-lg font-medium text-gray-700">Processing document...</p>
+              <p className="text-sm text-gray-500">Translating and matching works to curriculum</p>
+            </div>
+          ) : (
+            <>
+              <div className="text-5xl mb-4">📄</div>
+              <p className="text-lg font-medium text-gray-700 mb-2">
+                Drop your weekly plan here
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                .docx file with Chinese weekly plan table
+              </p>
+              <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors font-medium">
+                Choose File
                 <input
-                  type="text"
-                  value={workSearch}
-                  onChange={(e) => setWorkSearch(e.target.value)}
-                  placeholder="Type to search..."
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  type="file"
+                  accept=".docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
                 />
-              </div>
+              </label>
+            </>
+          )}
+        </div>
 
-              {/* Work Selector */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Work</label>
-                <select
-                  value={selectedWork}
-                  onChange={(e) => setSelectedWork(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  size={8}
+        {/* Upload Error */}
+        {uploadError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800 font-medium">❌ {uploadError}</p>
+          </div>
+        )}
+
+        {/* Upload Success */}
+        {uploadResult?.success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-bold text-green-800 mb-4">
+              ✅ Week {uploadResult.translatedContent?.weekNumber || weekNumber} Plan Created!
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {uploadResult.translatedContent?.assignments?.slice(0, 6).map((assignment, i) => (
+                <div key={i} className="bg-white rounded-lg p-3 shadow-sm">
+                  <p className="font-semibold text-gray-800 mb-2">{assignment.childName}</p>
+                  <div className="space-y-1">
+                    {assignment.works.map((work, j) => (
+                      <div key={j} className="flex items-center gap-2 text-sm">
+                        <span className={`px-2 py-0.5 rounded text-xs ${AREA_COLORS[work.area] || 'bg-gray-100'}`}>
+                          {AREA_LABELS[work.area]?.charAt(0) || '?'}
+                        </span>
+                        <span className="truncate">{work.workNameEnglish}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {(uploadResult.translatedContent?.assignments?.length || 0) > 6 && (
+              <p className="text-sm text-gray-600">
+                +{(uploadResult.translatedContent?.assignments?.length || 0) - 6} more children...
+              </p>
+            )}
+
+            <Link
+              href="/admin/classroom"
+              className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              🐋 View in Classroom →
+            </Link>
+          </div>
+        )}
+
+        {/* Existing Plans */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">📚 Existing Plans</h2>
+          
+          {existingPlans.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No plans uploaded yet</p>
+          ) : (
+            <div className="space-y-2">
+              {existingPlans.map(plan => (
+                <div 
+                  key={plan.id}
+                  className={`flex items-center justify-between p-3 rounded-lg border ${
+                    plan.week_number === weekNumber && plan.year === year
+                      ? 'bg-blue-50 border-blue-200'
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
                 >
-                  {filteredWorks.slice(0, 50).map(w => (
-                    <option key={w.id} value={w.id}>
-                      {w.work_name}
-                    </option>
-                  ))}
-                </select>
-                {filteredWorks.length > 50 && (
-                  <p className="text-xs text-gray-500 mt-1">Showing first 50. Use search to narrow.</p>
-                )}
-              </div>
-
-              {/* Add Button */}
-              <button
-                onClick={addAssignment}
-                disabled={!selectedChild || !selectedWork || saving}
-                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
-              >
-                {saving ? '⏳ Adding...' : '➕ Add Assignment'}
-              </button>
-            </div>
-          </div>
-
-          {/* Assignments List */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                📚 Week {weekNumber} Assignments
-              </h2>
-
-              {Object.keys(assignmentsByChild).length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <div className="text-5xl mb-3">📝</div>
-                  <p className="text-lg">No assignments yet</p>
-                  <p className="text-sm">Select a child and work to add assignments</p>
+                  <div>
+                    <p className="font-medium">
+                      Week {plan.week_number}, {plan.year}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {plan.original_filename || 'Manual entry'} • {plan.status}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setWeekNumber(plan.week_number);
+                        setYear(plan.year);
+                      }}
+                      className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                    >
+                      Select
+                    </button>
+                    <Link
+                      href={`/admin/classroom?week=${plan.week_number}&year=${plan.year}`}
+                      className="px-3 py-1.5 text-sm bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-lg transition-colors"
+                    >
+                      View
+                    </Link>
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(assignmentsByChild).map(([childId, { name, assignments: childAssignments }]) => (
-                    <div key={childId} className="border rounded-lg overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-2 border-b">
-                        <h3 className="font-semibold text-gray-800">
-                          {children.find(c => c.id === childId)?.avatar_emoji || '👤'} {name}
-                          <span className="ml-2 text-sm font-normal text-gray-500">
-                            ({childAssignments.length} works)
-                          </span>
-                        </h3>
-                      </div>
-                      <div className="divide-y">
-                        {childAssignments.map(assignment => (
-                          <div 
-                            key={assignment.id} 
-                            className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50"
-                          >
-                            {/* Status Toggle */}
-                            <button
-                              onClick={() => toggleStatus(assignment.id, assignment.status)}
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-colors ${
-                                assignment.status === 'completed' ? 'bg-green-100 text-green-600' :
-                                assignment.status === 'in_progress' ? 'bg-yellow-100 text-yellow-600' :
-                                'bg-gray-100 text-gray-400'
-                              }`}
-                              title={assignment.status}
-                            >
-                              {assignment.status === 'completed' ? '✓' :
-                               assignment.status === 'in_progress' ? '◐' : '○'}
-                            </button>
-                            
-                            {/* Work Info */}
-                            <div className="flex-1">
-                              <p className={`font-medium ${assignment.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
-                                {assignment.work_name}
-                              </p>
-                              <span className={`inline-block text-xs px-2 py-0.5 rounded border ${AREA_COLORS[assignment.area] || 'bg-gray-100'}`}>
-                                {AREA_LABELS[assignment.area] || assignment.area}
-                              </span>
-                            </div>
-
-                            {/* Delete */}
-                            <button
-                              onClick={() => deleteAssignment(assignment.id)}
-                              className="text-red-400 hover:text-red-600 p-1"
-                              title="Remove"
-                            >
-                              🗑
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
