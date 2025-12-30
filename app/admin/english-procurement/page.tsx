@@ -32,6 +32,17 @@ interface Work {
   extensions: string[];
   notes?: string;
   videoUrl?: string;
+  videoSearchTerm?: string; // YouTube search term instead of direct link
+  beginnerGuide?: {
+    whatIsThis: string;
+    whyItMatters: string;
+    beforeYouStart: string[];
+    exactScript: string[];
+    commonMistakes: string[];
+    successIndicators: string[];
+    sessionLength: string;
+    frequency: string;
+  };
 }
 
 // Extension detail information for expandable extension cards
@@ -1651,20 +1662,95 @@ const curriculumData: Category[] = [
         directAim: 'Build vocabulary through classified real objects',
         indirectAims: ['Classification', 'Language enrichment', 'Preparation for reading'],
         prerequisites: 'Basic classroom orientation',
+        videoSearchTerm: 'Montessori three period lesson vocabulary objects demonstration',
+        beginnerGuide: {
+          whatIsThis: 'Baskets containing 5-8 real miniature objects from one category (farm animals, fruits, vehicles). You teach the names using the Three-Period Lesson - a specific teaching technique that introduces vocabulary in three stages: naming, recognition, and recall.',
+          whyItMatters: 'Children learn vocabulary best through handling REAL objects, not flashcards. The Three-Period Lesson is the foundation technique for teaching ANY vocabulary in Montessori - you\'ll use it for everything from object names to letter sounds to grammar symbols. Master this first!',
+          beforeYouStart: [
+            'Basket contains 5-8 REALISTIC miniatures from ONE category',
+            'Objects have SIMPLE, CLEAR names (use "cow" not "bovine")',
+            'You know all the object names yourself (including correct terms)',
+            'Start with objects the child has some experience with',
+            'Mat or clear workspace ready'
+          ],
+          exactScript: [
+            '[Bring basket to mat. Sit beside child. Remove 3 objects with contrasting names.]',
+            '',
+            'PERIOD 1 — NAMING (brief):',
+            '[Pick up first object, examine it, then offer to child]',
+            'YOU: "This is a cow."',
+            '[Child holds and explores object. Repeat for other 2 objects.]',
+            'YOU: "This is a pig."',
+            'YOU: "This is a horse."',
+            '',
+            'PERIOD 2 — RECOGNITION (longest - 80% of lesson!):',
+            'YOU: "Show me the cow."',
+            'YOU: "Can you point to the horse?"',
+            'YOU: "Put the pig on the mat."',
+            'YOU: "Hand me the cow."',
+            'YOU: "Put the horse next to the pig."',
+            'YOU: "Can you find the cow with your eyes closed?"',
+            '[Mix objects, vary requests, add movement, make it FUN - do 10+ requests]',
+            '',
+            'PERIOD 3 — RECALL (brief, only when confident):',
+            '[Point to an object]',
+            'YOU: "What is this?"',
+            'CHILD: "Cow!"',
+            'YOU: "Yes, it\'s a cow!"',
+            '[If wrong: DON\'T correct. Say "Let me show you" and return to Period 1]'
+          ],
+          commonMistakes: [
+            'Rushing through Period 2 - this should be the LONGEST part (80% of lesson)',
+            'Testing too early (Period 3) before child is ready',
+            'Correcting mistakes directly - instead, return to Period 1 and reteach',
+            'Using too many objects at once - start with just 2-3',
+            'Choosing similar-sounding names (cat/cap, bear/pear)',
+            'Not letting child handle and explore the objects',
+            'Skipping Period 2 variations (movement, eyes closed, placement)'
+          ],
+          successIndicators: [
+            'Child correctly responds to 8/10 Period 2 requests',
+            'Child looks eager and engaged (not frustrated)',
+            'Child can name objects correctly in Period 3',
+            'Child starts using new vocabulary naturally in conversation',
+            'Child asks for "more words" or wants to see new baskets'
+          ],
+          sessionLength: '5-10 minutes (ages 2-3), 10-15 minutes (ages 3-4+)',
+          frequency: 'Daily with new baskets weekly'
+        },
         presentation: [
-          'Select basket with 5-6 related objects (e.g., kitchen items)',
-          'Invite child to mat',
-          'Remove objects one at a time',
-          'Three-Period Lesson with 2-3 objects at a time',
-          'Always choose objects with contrasting characteristics',
-          'Replace objects in basket when finished'
+          'THE THREE-PERIOD LESSON (Use for ALL vocabulary teaching):',
+          '',
+          'PERIOD 1 — NAMING ("This is..."):',
+          'Pick up object, show and name: "This is a cow"',
+          'Let child hold and explore',
+          'Repeat for 2-3 objects',
+          '',
+          'PERIOD 2 — RECOGNITION ("Show me...") — LONGEST PHASE:',
+          '"Show me the cow"',
+          '"Point to the horse"',
+          '"Put the pig on the mat"',
+          '"Hand me the cow"',
+          'Add movement: "Put the horse on the shelf"',
+          'Do MANY variations - this is where learning happens!',
+          '',
+          'PERIOD 3 — RECALL ("What is this?"):',
+          'Point to object: "What is this?"',
+          'Only do this when SUCCESS is guaranteed',
+          'If child is wrong, don\'t correct - return to Period 1',
+          '',
+          'KEY POINTS:',
+          '• Period 2 should be 80% of the lesson',
+          '• Never correct directly - just reteach',
+          '• 2-3 NEW objects at a time, max 6 in review',
+          '• Use PRECISE vocabulary (Dalmatian, not doggy)'
         ],
         materials: [
           {
             name: 'Miniature Object Sets - Animals',
             nameZh: '仿真动物模型',
-            search1688: '仿真动物模型 迷你 儿童认知 农场',
-            altSearch: '蒙氏语言区 动物小物件',
+            search1688: '仿真动物模型 迷你 儿童认知 农场海洋',
+            altSearch: 'Safari TOOB 动物模型 微缩',
             specs: 'Realistic miniatures 3-6cm, farm/wild/ocean sets',
             price: '¥40-100 per set',
             essential: true
@@ -1672,7 +1758,7 @@ const curriculumData: Category[] = [
           {
             name: 'Miniature Object Sets - Fruits & Vegetables',
             nameZh: '仿真水果蔬菜',
-            search1688: '仿真水果蔬菜 迷你 过家家',
+            search1688: '仿真水果蔬菜 迷你 过家家 认知',
             specs: 'Realistic miniatures 2-4cm',
             price: '¥30-60',
             essential: true
@@ -1680,7 +1766,7 @@ const curriculumData: Category[] = [
           {
             name: 'Miniature Object Sets - Vehicles',
             nameZh: '合金车模型',
-            search1688: '合金车模型 迷你 认知',
+            search1688: '合金车模型 迷你 儿童认知玩具',
             specs: 'Various vehicle types 3-5cm',
             price: '¥40-80',
             essential: true
@@ -1688,7 +1774,7 @@ const curriculumData: Category[] = [
           {
             name: 'Miniature Object Sets - Tools',
             nameZh: '迷你工具模型',
-            search1688: '迷你工具模型 过家家 认知',
+            search1688: '迷你工具模型 过家家 儿童认知',
             specs: 'Household/garden tools',
             price: '¥30-50',
             essential: false
@@ -1696,7 +1782,7 @@ const curriculumData: Category[] = [
           {
             name: 'Miniature Object Sets - Furniture',
             nameZh: '迷你家具模型',
-            search1688: '迷你家具模型 娃娃屋',
+            search1688: '迷你家具模型 娃娃屋 仿真',
             specs: 'Household furniture items',
             price: '¥40-80',
             essential: false
@@ -1705,7 +1791,7 @@ const curriculumData: Category[] = [
             name: 'Sorting/Storage Baskets',
             nameZh: '收纳篮',
             search1688: '藤编收纳篮 小号 幼儿园',
-            altSearch: '木质分类篮 蒙氏',
+            altSearch: '木质分类盒 桌面收纳',
             specs: 'Natural wicker or wood, 10-15cm diameter',
             price: '¥10-25 each',
             essential: true
@@ -2076,22 +2162,78 @@ const curriculumData: Category[] = [
         directAim: 'Train the ear to isolate beginning sounds in words',
         indirectAims: ['Phonemic awareness', 'Concentration', 'Vocabulary'],
         prerequisites: 'Vocabulary of 100+ words',
-        videoUrl: 'https://www.youtube.com/watch?v=5PmB0TSuCpY',
+        videoSearchTerm: 'Montessori I Spy sound game beginning sounds presentation',
+        beginnerGuide: {
+          whatIsThis: 'A listening game that teaches children to hear individual sounds in words. You hold objects and ask "I spy something that begins with /s/" (the SOUND, not the letter name). Child finds the object. This is NOT about letters yet - just training the ear.',
+          whyItMatters: 'Phonemic awareness (hearing sounds in words) is the #1 predictor of reading success. Children who skip this struggle with reading later. This game builds the mental skill of breaking words into sounds - essential for both reading AND spelling.',
+          beforeYouStart: [
+            'Child knows names of at least 100 objects (basic vocabulary)',
+            'You can make PURE letter sounds without adding "uh" (say /s/ not "suh", /t/ not "tuh")',
+            'You have 3-5 objects ready with DIFFERENT beginning sounds',
+            'Objects have simple, unambiguous names (use "cat" not "kitty")',
+            'Room is quiet with no distractions'
+          ],
+          exactScript: [
+            '[Hold ONE object in your hand - make this first attempt impossible to fail]',
+            'YOU: "Let\'s play a game! I spy with my little eye something that begins with... /k/" (hold cup visibly)',
+            'CHILD: "Cup!"',
+            'YOU: "Yes! Cup begins with /k/! K-k-k-cup!"',
+            '',
+            '[Now place TWO objects on mat - cup and ball]',
+            'YOU: "I spy with my little eye something that begins with /b/"',
+            'CHILD: (points to ball)',
+            'YOU: "That\'s right! Ball begins with /b/!"',
+            '',
+            '[Gradually add more objects - up to 5-6]',
+            'YOU: "I spy something that begins with /m/"',
+            '[If child struggles, add clues: "I spy something you drink from that begins with /m/"]'
+          ],
+          commonMistakes: [
+            'Using letter NAMES instead of SOUNDS - say /s/ not "ess", /f/ not "eff"',
+            'Adding "uh" to consonants - say /t/ not "tuh", /b/ not "buh"',
+            'Starting with too many objects - begin with just ONE, then two',
+            'Correcting the child directly - if wrong, just try again with easier setup',
+            'Using objects with ambiguous names (rabbit/bunny, car/automobile)',
+            'Rushing to test before teaching - Period 2 (recognition) should be longest'
+          ],
+          successIndicators: [
+            'Child correctly identifies objects 8/10 times with 3+ objects',
+            'Child starts spontaneously identifying sounds: "Ball starts with /b/!"',
+            'Child wants to give YOU clues (role reversal)',
+            'Child notices beginning sounds in daily life without prompting'
+          ],
+          sessionLength: '5-10 minutes (stop before child loses interest)',
+          frequency: 'Daily for 4-8 weeks until mastery'
+        },
         presentation: [
-          'FIRST: Single object - "I spy with my little eye something that begins with /f/" (holding fork)',
-          'Use phonetic SOUNDS not letter names: /f/ not "eff", /s/ not "ess"',
-          'Make success inevitable at first',
-          'TWO objects: Place two objects with different starting sounds',
-          'Child selects correct one',
-          'THREE+ objects: Gradually increase to 5-6 objects',
-          'Add descriptive clues: "I spy something you eat that starts with /b/"'
+          'GOLDEN RULE: Use SOUNDS not letter names. /s/ not "ess", /f/ not "eff"',
+          '',
+          'STAGE 1 — ONE OBJECT (Guaranteed Success):',
+          'Hold single object in your hand',
+          'Say: "I spy with my little eye something that begins with /k/" (holding cup)',
+          'Child can only give one answer - success is guaranteed',
+          '',
+          'STAGE 2 — TWO OBJECTS:',
+          'Place two objects with VERY different sounds (cup, ball)',
+          'Give same "I spy" prompt',
+          'Child must now discriminate between two options',
+          '',
+          'STAGE 3 — MULTIPLE OBJECTS:',
+          'Gradually increase to 3, then 4, then 5-6 objects',
+          'Add descriptive clues if needed: "I spy something you eat that starts with /b/"',
+          '',
+          'TIPS:',
+          '• Keep consonants CRISP - no "uh" at end (say /t/ not "tuh")',
+          '• Continuant sounds (s, m, f, l, n, z) can be stretched: "sssss"',
+          '• Stop sounds (b, d, g, k, p, t) must stay short',
+          '• Never correct directly - just make it easier and try again'
         ],
         materials: [
           {
             name: 'Initial Sound Objects - Complete Set',
-            nameZh: '首音小物件全套',
-            search1688: '蒙氏语言区字母首音小物件套装',
-            altSearch: '蒙氏英文字母小物件 26字母',
+            nameZh: '蒙台梭利首音小物件全套',
+            search1688: '迷你仿真小物件 儿童认知 微缩模型 塑料小玩具',
+            altSearch: 'Safari TOOB 仿真动物模型 微缩',
             specs: '130+ miniature objects, 4-6 per letter sound, realistic, 1-4cm',
             price: '¥150-300',
             essential: true
@@ -2099,7 +2241,7 @@ const curriculumData: Category[] = [
           {
             name: 'Sound Sorting Mat',
             nameZh: '分类垫',
-            search1688: '蒙氏工作毯 小号',
+            search1688: '毛毡垫 工作垫 桌垫 纯色',
             specs: 'Small work mat for sorting',
             price: '¥15-30',
             essential: false
@@ -2107,7 +2249,7 @@ const curriculumData: Category[] = [
         ],
         controlOfError: 'Teacher; object names are phonetically clear',
         pointOfInterest: 'The game format; finding the object',
-        extensions: ['Child gives clues to teacher', 'Playing with peers', 'Environmental sounds']
+        extensions: ['Ending sounds', 'Middle sounds', 'Full segmentation']
       },
       {
         id: 'i_spy_level2',
@@ -2215,25 +2357,89 @@ const curriculumData: Category[] = [
         directAim: 'Associate phonetic sounds with written symbols through touch',
         indirectAims: ['Preparation for writing', 'Left-to-right movement', 'Muscular memory of letter forms'],
         prerequisites: 'Sound Games Level 1 (beginning sounds)',
-        videoUrl: 'https://www.youtube.com/watch?v=hTWZ_8vRdZM',
+        videoSearchTerm: 'Montessori sandpaper letters presentation three period lesson',
+        beginnerGuide: {
+          whatIsThis: 'Tactile letters made of sandpaper mounted on colored boards. Child traces the letter shape while you say the SOUND (not name). Pink boards = consonants, blue boards = vowels. The rough texture creates muscle memory of letter forms before the child ever holds a pencil.',
+          whyItMatters: 'This connects the sounds children already know (from I Spy) to written symbols. The tactile tracing builds motor memory so writing becomes automatic. AMI research shows children who learn letters this way have better handwriting and spelling than those who just see letters.',
+          beforeYouStart: [
+            'Child can play I Spy with beginning sounds (8/10 correct)',
+            'You know the SOUNDS each letter makes (not letter names!)',
+            'You\'ve practiced the correct tracing direction for each letter',
+            'You have 3 letters ready: 2 consonants + 1 vowel (start with c, m, a or s, a, t)',
+            'Letters chosen have DIFFERENT shapes and sounds (never b/d or m/n together)'
+          ],
+          exactScript: [
+            '[Sit BESIDE child on their dominant-hand side. Stack 3 letters face-down.]',
+            '',
+            'PERIOD 1 - NAMING:',
+            '[Pick up first letter (c). Run your index + middle fingers lightly over surface.]',
+            'YOU: "This letter says /k/" [trace letter correctly while saying sound]',
+            'YOU: "/k/" [trace again] "/k/" [trace again]',
+            'YOU: "Now you try. Trace it and say /k/"',
+            'CHILD: [traces] "/k/"',
+            '[Repeat for second and third letters: m → /m/, a → /a/]',
+            '',
+            'PERIOD 2 - RECOGNITION (longest part!):',
+            'YOU: "Show me the one that says /m/"',
+            'YOU: "Can you trace /k/?"',
+            'YOU: "Put /a/ on the mat"',
+            'YOU: "Hand me /m/"',
+            '[Make it playful - shuffle letters, add movement, do 8-10 requests]',
+            '',
+            'PERIOD 3 - RECALL:',
+            '[Only do this when you\'re SURE child will succeed]',
+            'YOU: [Point to letter] "What does this say?"',
+            'CHILD: "/m/"',
+            'YOU: "Yes! /m/!"',
+            '[If wrong, don\'t correct - just say "Let me show you again" and return to Period 1]'
+          ],
+          commonMistakes: [
+            'Saying letter NAMES instead of SOUNDS - say /k/ not "see", /s/ not "ess"',
+            'Using wrong tracing direction - practice beforehand! (most start at top)',
+            'Using one finger - always use index AND middle finger together',
+            'Rushing through Period 2 - this should be the LONGEST part',
+            'Testing before teaching (Period 3 too early)',
+            'Introducing similar letters together (b/d, p/q, m/n)',
+            'Correcting mistakes directly - instead, make it easier and reteach'
+          ],
+          successIndicators: [
+            'Child traces letters correctly without guidance',
+            'Child says sound automatically while tracing',
+            'Child starts noticing letters in environment: "That says /s/!"',
+            'Child asks for new letters',
+            'Child can do Period 3 consistently for a group of 3 letters'
+          ],
+          sessionLength: '10-15 minutes',
+          frequency: 'Daily - introduce 2-3 new letters per week'
+        },
         presentation: [
-          'Select 3 letters: 2 consonants + 1 vowel with contrasting shapes/sounds',
-          'Traditional first group: c, m, a, t (allows word building: cat, mat, at)',
-          'Sit beside child (same orientation)',
-          'Trace letter with index and middle fingers in writing direction',
-          'Say SOUND while tracing: "/k/" not "see"',
-          'Three-Period Lesson:',
-          'Period 1: "This says /k/" (trace), "This says /a/" (trace)',
-          'Period 2: "Trace the one that says /k/" (multiple requests with movement)',
-          'Period 3: "What does this say?" (only when success assured)',
-          'Child practices tracing independently'
+          'SETUP:',
+          'Sit beside child (same orientation for correct letter view)',
+          'Select 3 letters: 2 consonants + 1 vowel',
+          'First group: c, m, a, t (allows building: cat, mat, at)',
+          '',
+          'HOW TO TRACE:',
+          'Use index AND middle fingers together',
+          'Trace in the direction you would WRITE the letter',
+          'Say the SOUND (not name) after each trace',
+          '',
+          'THREE-PERIOD LESSON:',
+          'Period 1 (Naming): "This says /k/" [trace 3 times, child traces]',
+          'Period 2 (Recognition): "Show me /k/", "Trace /m/", "Hand me /a/"',
+          'Period 3 (Recall): "What does this say?" [only when confident of success]',
+          '',
+          'KEY POINTS:',
+          '• SOUNDS not letter names (/k/ not "see")',
+          '• Period 2 should be LONGEST - lots of playful requests',
+          '• Never correct directly - just reteach if needed',
+          '• 3 letters at a time, contrasting shapes/sounds'
         ],
         materials: [
           {
             name: 'Sandpaper Letters - Lowercase Cursive',
             nameZh: '砂纸字母-小写草书',
-            search1688: '蒙氏砂纸字母 小写 草书 专业版',
-            altSearch: '蒙台梭利 砂字母板 红蓝',
+            search1688: '蒙氏砂纸字母板 英文 小写 26个',
+            altSearch: '蒙台梭利 砂字母板 粉蓝',
             specs: 'Cursive script, Pink consonants/Blue vowels, Standard 16×12cm, fine-grit sandpaper on HDF',
             price: '¥50-120',
             essential: true
@@ -2241,7 +2447,7 @@ const curriculumData: Category[] = [
           {
             name: 'Sandpaper Letters - Tall Letters',
             nameZh: '砂纸字母-高字母',
-            search1688: '蒙氏砂纸字母 大号',
+            search1688: '蒙氏砂纸字母 26个全套',
             specs: 'For b,d,f,h,k,l,t: 19×14cm boards',
             price: 'Usually included in set',
             essential: true
@@ -2249,7 +2455,7 @@ const curriculumData: Category[] = [
           {
             name: 'Sandpaper Letters - Wide Letters',
             nameZh: '砂纸字母-宽字母',
-            search1688: '蒙氏砂纸字母 大号',
+            search1688: '蒙氏砂纸字母 26个全套',
             specs: 'For m,w: 19×12cm boards',
             price: 'Usually included in set',
             essential: true
@@ -2257,7 +2463,7 @@ const curriculumData: Category[] = [
           {
             name: 'Sandpaper Letter Storage Box',
             nameZh: '砂纸字母收纳盒',
-            search1688: '蒙氏砂纸字母收纳盒 木质 26格',
+            search1688: '蒙氏砂纸字母收纳盒 木质',
             specs: 'Compartmentalized wood box with dividers',
             price: '¥40-80',
             essential: true
@@ -2630,32 +2836,101 @@ const curriculumData: Category[] = [
         directAim: 'Compose words by selecting letters representing sounds heard',
         indirectAims: ['Preparation for reading', 'Spelling patterns', 'Left-to-right sequence'],
         prerequisites: 'Sound Games Level 4 (full segmenting); Most sandpaper letters known',
-        videoUrl: 'https://www.youtube.com/watch?v=Qe2BK5Bqmqo',
+        videoSearchTerm: 'Montessori moveable alphabet first presentation word building',
+        beginnerGuide: {
+          whatIsThis: 'A box of loose letters (pink consonants, blue vowels) that children use to BUILD words without needing to write. Child hears a word, breaks it into sounds, finds the letter for each sound, and arranges them into a word. This is WRITING without a pencil!',
+          whyItMatters: 'Children can express ideas in writing YEARS before they can physically write with a pencil. The Moveable Alphabet removes the fine motor barrier. AMI principle: children WRITE (encode) before they READ (decode). This is often when children suddenly "explode" into reading because they understand that letters represent sounds.',
+          beforeYouStart: [
+            'Child can segment CVC words into sounds ("cat" → /k/ - /a/ - /t/)',
+            'Child knows at least 12-15 letter sounds from sandpaper letters',
+            'Child knows at least 2 vowels (a, o or a, i)',
+            'You have 3-5 small CVC objects ready (cat, dog, pig, cup, hat)',
+            'Objects have SIMPLE phonetic spellings (no silent letters)',
+            'Work mat is large enough for alphabet box + word building space'
+          ],
+          exactScript: [
+            'FIRST SESSION - ORIENTATION ONLY:',
+            '[Bring alphabet box to mat. This first session is JUST exploring the box.]',
+            'YOU: "Today I have something special. You\'re ready for the moveable alphabet!"',
+            'YOU: "Watch how I carry it - hands in the middle so it doesn\'t tip."',
+            'YOU: "Can you find the letter that says /m/?"',
+            'CHILD: [finds m]',
+            'YOU: "Great! Now put it back. See how we scan left to right to find its spot?"',
+            '[Let child practice finding and returning letters. That\'s the WHOLE first session.]',
+            '',
+            'SECOND SESSION - FIRST WORD:',
+            '[Place ONE object on mat - a small cat figure]',
+            'YOU: "This is a cat. We\'re going to BUILD the word cat."',
+            'YOU: "What\'s the FIRST sound you hear? C-c-cat?"',
+            'CHILD: "/k/"',
+            'YOU: "Find the letter that says /k/."',
+            'CHILD: [finds c, places on mat]',
+            'YOU: "What\'s the NEXT sound? Ca-a-at?"',
+            'CHILD: "/a/"',
+            'CHILD: [finds a, places to the RIGHT of c]',
+            'YOU: "What\'s the LAST sound? Cat-t-t?"',
+            'CHILD: "/t/"',
+            'CHILD: [finds t, places after a]',
+            'YOU: "You WROTE cat! Let\'s build another!"',
+            '',
+            '[NEVER ask child to READ what they wrote - that\'s a different skill]'
+          ],
+          commonMistakes: [
+            'Asking child to READ what they built - this is WRITING, not reading!',
+            'Correcting spelling - phonetic spelling is developmentally appropriate',
+            'Dictating words - prompt with questions, let child segment sounds',
+            'Starting with words that have tricky spellings (knife, phone)',
+            'Moving too fast - orientation session should be separate from word building',
+            'Not letting child choose which words to build (after initial presentation)',
+            'Rushing to sentences before child is fluent with single words'
+          ],
+          successIndicators: [
+            'Child can segment a word and find letters independently',
+            'Child builds words enthusiastically without frustration',
+            'Child starts building words without being asked',
+            'Child wants to build their own chosen words',
+            'Child builds 4-6 words in one session',
+            'Child may spontaneously start READING the words they built'
+          ],
+          sessionLength: '10-20 minutes',
+          frequency: '2-3 times per week, or daily if child is eager'
+        },
         presentation: [
-          'ORIENTATION:',
-          '- Show alphabet box layout',
-          '- Vowels in one section (blue), consonants in another (pink)',
-          '- Practice finding specific letters',
+          'SESSION 1 — ORIENTATION (Box exploration only):',
+          'Show alphabet box layout',
+          'Blue vowels in one section, pink consonants in another',
+          'Practice: "Find the letter that says /m/"',
+          'Practice returning letters to correct spots',
           '',
-          'FIRST WORD BUILDING:',
-          '- Place object on mat (e.g., cat)',
-          '- "Let\'s build the word cat"',
-          '- "What\'s the first sound?" /k/',
-          '- "Find the letter that makes /k/"',
-          '- Child finds "c", places on mat',
-          '- "What\'s the next sound?" /a/',
-          '- Child finds "a", places after "c"',
-          '- Continue until word complete',
-          '- "You wrote cat!"',
+          'SESSION 2+ — WORD BUILDING:',
           '',
-          'KEY: Child is WRITING, not reading'
+          'STEP 1: Place object on mat (e.g., toy cat)',
+          '"Let\'s build the word CAT"',
+          '',
+          'STEP 2: Segment the first sound',
+          '"What\'s the FIRST sound?" (stretch: c-c-cat)',
+          'Child says /k/',
+          'Child finds "c", places on mat',
+          '',
+          'STEP 3: Continue with remaining sounds',
+          '"What\'s the NEXT sound?" (stretch: ca-a-at)',
+          'Child finds and places each letter LEFT TO RIGHT',
+          '',
+          'STEP 4: Celebrate!',
+          '"You WROTE cat!"',
+          '',
+          'KEY PRINCIPLES:',
+          '• This is WRITING, never ask child to read it back',
+          '• Phonetic spelling is correct (e.g., "kat" is fine)',
+          '• Let child choose words after initial presentation',
+          '• Objects → Pictures → Own ideas'
         ],
         materials: [
           {
             name: 'Large Moveable Alphabet',
             nameZh: '大号活动字母箱',
-            search1688: '蒙氏活动字母箱 英文 大号 专业版',
-            altSearch: '蒙台梭利 活动字母 红蓝',
+            search1688: '蒙氏活动字母箱 木质 英文 26字母',
+            altSearch: '蒙台梭利 活动字母盒 粉蓝',
             specs: 'Cursive lowercase, Pink consonants (10 of each), Blue vowels (15 of each), 2-layer beechwood box with lid',
             price: '¥100-250',
             essential: true
@@ -5431,66 +5706,157 @@ export default function EnglishProcurementPage() {
                 </div>
 
                 {/* Prerequisites */}
-                <div className="bg-amber-50 rounded-lg p-4">
-                  <h3 className="font-bold text-amber-800 mb-1">Prerequisites</h3>
-                  <p className="text-amber-700">{selectedWorkData.prerequisites}</p>
+                <div className="bg-amber-900/30 border border-amber-500/40 rounded-lg p-4">
+                  <h3 className="font-bold text-amber-300 mb-1">Prerequisites</h3>
+                  <p className="text-amber-100">{selectedWorkData.prerequisites}</p>
                 </div>
 
                 {/* Video Tutorial */}
-                {selectedWorkData.videoUrl && (
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <h3 className="font-bold text-red-800 mb-2">📺 Video Tutorial</h3>
+                {(selectedWorkData.videoUrl || selectedWorkData.videoSearchTerm) && (
+                  <div className="bg-rose-900/30 border border-rose-500/40 rounded-lg p-4">
+                    <h3 className="font-bold text-rose-300 mb-2">📺 Video Tutorial</h3>
                     <a 
-                      href={selectedWorkData.videoUrl} 
+                      href={selectedWorkData.videoSearchTerm 
+                        ? `https://www.youtube.com/results?search_query=${encodeURIComponent(selectedWorkData.videoSearchTerm)}`
+                        : selectedWorkData.videoUrl
+                      } 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-red-600 hover:text-red-800 underline flex items-center gap-2"
+                      className="text-rose-300 hover:text-rose-100 underline flex items-center gap-2"
                     >
-                      Watch presentation on YouTube →
+                      {selectedWorkData.videoSearchTerm 
+                        ? `Search YouTube: "${selectedWorkData.videoSearchTerm}" →`
+                        : 'Watch presentation on YouTube →'
+                      }
                     </a>
                   </div>
                 )}
 
                 {/* Presentation */}
                 <div>
-                  <h3 className="font-bold text-gray-100 mb-3">Presentation</h3>
-                  <div className="bg-slate-700 rounded-lg p-4 space-y-2">
+                  <h3 className="font-bold text-gray-100 mb-3">Presentation Steps</h3>
+                  <div className="bg-slate-700/50 rounded-lg p-4 space-y-2">
                     {selectedWorkData.presentation.map((step, i) => (
-                      <div key={i} className={`${step.startsWith('GROUP') || step.startsWith('STAGE') || step.startsWith('PRESENTATION') || step.includes(':') && step.split(':')[0].length < 20 && step.split(':')[0] === step.split(':')[0].toUpperCase() ? 'font-bold text-indigo-700 mt-3' : 'text-gray-200'} ${step === '' ? 'h-2' : ''}`}>
+                      <div key={i} className={`${step.startsWith('GROUP') || step.startsWith('STAGE') || step.startsWith('PRESENTATION') || step.startsWith('PERIOD') || step.startsWith('LEVEL') || (step.includes(':') && step.split(':')[0].length < 20 && step.split(':')[0] === step.split(':')[0].toUpperCase()) ? 'font-bold text-cyan-400 mt-4 text-lg' : 'text-gray-200 pl-4'} ${step === '' ? 'h-2' : ''}`}>
                         {step}
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* Beginner's Guide - The Dummies Guide Section */}
+                {selectedWorkData.beginnerGuide && (
+                  <div className="bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-500/30 rounded-xl p-6">
+                    <h3 className="font-bold text-xl text-violet-300 mb-4 flex items-center gap-2">
+                      📖 Complete Beginner's Guide
+                      <span className="text-xs bg-violet-600 text-violet-100 px-2 py-1 rounded">For Non-Montessori Teachers</span>
+                    </h3>
+                    
+                    {/* What is this? */}
+                    <div className="mb-5">
+                      <h4 className="font-semibold text-violet-200 mb-2">What is this activity?</h4>
+                      <p className="text-gray-200 leading-relaxed">{selectedWorkData.beginnerGuide.whatIsThis}</p>
+                    </div>
+
+                    {/* Why it matters */}
+                    <div className="mb-5 bg-violet-800/30 rounded-lg p-4">
+                      <h4 className="font-semibold text-violet-200 mb-2">Why does it matter?</h4>
+                      <p className="text-gray-200 leading-relaxed">{selectedWorkData.beginnerGuide.whyItMatters}</p>
+                    </div>
+
+                    {/* Before you start */}
+                    <div className="mb-5">
+                      <h4 className="font-semibold text-violet-200 mb-2">Before you start, make sure:</h4>
+                      <ul className="space-y-2">
+                        {selectedWorkData.beginnerGuide.beforeYouStart.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2 text-gray-200">
+                            <span className="text-emerald-400 mt-1">✓</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Exact Script */}
+                    <div className="mb-5 bg-slate-800/80 rounded-lg p-4 border border-slate-600">
+                      <h4 className="font-semibold text-cyan-300 mb-3">📝 Exact Script (Say This Word-for-Word)</h4>
+                      <div className="space-y-3 font-mono text-sm">
+                        {selectedWorkData.beginnerGuide.exactScript.map((line, i) => (
+                          <div key={i} className={`${line.startsWith('YOU:') ? 'text-cyan-300 pl-0' : line.startsWith('CHILD:') ? 'text-pink-300 pl-4' : line.startsWith('[') ? 'text-gray-500 italic pl-0' : 'text-gray-300 pl-4'}`}>
+                            {line}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Common Mistakes */}
+                    <div className="mb-5 bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                      <h4 className="font-semibold text-red-300 mb-2">❌ Common Mistakes to Avoid</h4>
+                      <ul className="space-y-2">
+                        {selectedWorkData.beginnerGuide.commonMistakes.map((mistake, i) => (
+                          <li key={i} className="flex items-start gap-2 text-gray-200">
+                            <span className="text-red-400">•</span>
+                            {mistake}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Success Indicators */}
+                    <div className="mb-5 bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
+                      <h4 className="font-semibold text-emerald-300 mb-2">✅ You know it's working when:</h4>
+                      <ul className="space-y-2">
+                        {selectedWorkData.beginnerGuide.successIndicators.map((indicator, i) => (
+                          <li key={i} className="flex items-start gap-2 text-gray-200">
+                            <span className="text-emerald-400">•</span>
+                            {indicator}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Timing */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Session Length</div>
+                        <div className="text-lg font-semibold text-gray-100">{selectedWorkData.beginnerGuide.sessionLength}</div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">How Often</div>
+                        <div className="text-lg font-semibold text-gray-100">{selectedWorkData.beginnerGuide.frequency}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Materials */}
                 <div>
                   <h3 className="font-bold text-gray-100 mb-3">Materials & 1688 Search Terms</h3>
                   <div className="space-y-4">
                     {selectedWorkData.materials.filter(m => m.price !== '—' && m.search1688 !== '同上').map((mat, i) => (
-                      <div key={i} className={`border border-slate-600 rounded-lg p-4 ${mat.essential ? 'border-green-300 bg-green-50/50' : 'bg-slate-700'}`}>
+                      <div key={i} className={`border rounded-lg p-4 ${mat.essential ? 'border-emerald-500/50 bg-emerald-900/20' : 'border-slate-600 bg-slate-700'}`}>
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <div className="font-bold flex items-center gap-2">
+                            <div className="font-bold text-gray-100 flex items-center gap-2">
                               {mat.name}
-                              {mat.essential && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Essential</span>}
+                              {mat.essential && <span className="text-xs bg-emerald-600 text-emerald-100 px-2 py-0.5 rounded">Essential</span>}
                             </div>
                             <div className="text-gray-400 text-sm">{mat.nameZh}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-green-600">{mat.price}</div>
+                            <div className="font-bold text-emerald-400">{mat.price}</div>
                           </div>
                         </div>
                         <div className="text-gray-300 text-sm mb-3">{mat.specs}</div>
                         <button
                           onClick={(e) => { e.stopPropagation(); copyToClipboard(mat.search1688); }}
-                          className="w-full text-left bg-slate-800 border border-slate-600 rounded-lg p-3 hover:bg-indigo-50 transition"
+                          className="w-full text-left bg-slate-800 border border-slate-600 rounded-lg p-3 hover:bg-slate-600 transition"
                         >
-                          <div className="text-indigo-600 font-medium">{mat.search1688}</div>
+                          <div className="text-cyan-400 font-medium">{mat.search1688}</div>
                           {mat.altSearch && (
                             <div className="text-gray-400 text-sm mt-1">Alternative: {mat.altSearch}</div>
                           )}
-                          <div className="text-xs text-gray-400 mt-2">
+                          <div className="text-xs text-gray-500 mt-2">
                             {copiedTerm === mat.search1688 ? '✓ Copied to clipboard!' : 'Click to copy for 1688.com'}
                           </div>
                         </button>
