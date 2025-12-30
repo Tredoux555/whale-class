@@ -296,14 +296,16 @@ async function createAssignments(
     }
 
     for (const work of assignment.works) {
+      // Map area names to match DB constraint (mathematics → math)
+      let area = work.area;
+      if (area === 'mathematics') area = 'math';
+      
       assignments.push({
         weekly_plan_id: planId,
         child_id: child.id,
         work_id: work.matchedWorkId || null,
         work_name: work.workNameEnglish || work.workNameChinese,
-        area: work.area,
-        progress_status: 'not_started',
-        notes: null
+        area: area
       });
     }
   }
