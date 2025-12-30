@@ -31,6 +31,7 @@ interface Work {
   pointOfInterest: string;
   extensions: string[];
   notes?: string;
+  videoUrl?: string;
 }
 
 interface Category {
@@ -1026,6 +1027,7 @@ const curriculumData: Category[] = [
         directAim: 'Train the ear to isolate beginning sounds in words',
         indirectAims: ['Phonemic awareness', 'Concentration', 'Vocabulary'],
         prerequisites: 'Vocabulary of 100+ words',
+        videoUrl: 'https://www.youtube.com/watch?v=5PmB0TSuCpY',
         presentation: [
           'FIRST: Single object - "I spy with my little eye something that begins with /f/" (holding fork)',
           'Use phonetic SOUNDS not letter names: /f/ not "eff", /s/ not "ess"',
@@ -1164,6 +1166,7 @@ const curriculumData: Category[] = [
         directAim: 'Associate phonetic sounds with written symbols through touch',
         indirectAims: ['Preparation for writing', 'Left-to-right movement', 'Muscular memory of letter forms'],
         prerequisites: 'Sound Games Level 1 (beginning sounds)',
+        videoUrl: 'https://www.youtube.com/watch?v=hTWZ_8vRdZM',
         presentation: [
           'Select 3 letters: 2 consonants + 1 vowel with contrasting shapes/sounds',
           'Traditional first group: c, m, a, t (allows word building: cat, mat, at)',
@@ -1432,6 +1435,7 @@ const curriculumData: Category[] = [
         directAim: 'Develop pencil control through tracing and filling shapes',
         indirectAims: ['Proper pencil grip', 'Lightness of touch', 'Continuous strokes', 'Left-to-right movement'],
         prerequisites: 'Fine motor readiness; ability to hold pencil',
+        videoUrl: 'https://www.youtube.com/watch?v=_6PkTDvmiXg',
         presentation: [
           'PRESENTATION 1 - Frame Outline & Horizontal Lines:',
           '- Select frame, place on paper',
@@ -1577,6 +1581,7 @@ const curriculumData: Category[] = [
         directAim: 'Compose words by selecting letters representing sounds heard',
         indirectAims: ['Preparation for reading', 'Spelling patterns', 'Left-to-right sequence'],
         prerequisites: 'Sound Games Level 4 (full segmenting); Most sandpaper letters known',
+        videoUrl: 'https://www.youtube.com/watch?v=Qe2BK5Bqmqo',
         presentation: [
           'ORIENTATION:',
           '- Show alphabet box layout',
@@ -4208,6 +4213,21 @@ export default function EnglishProcurementPage() {
                   <h3 className="font-bold text-amber-800 mb-1">Prerequisites</h3>
                   <p className="text-amber-700">{selectedWorkData.prerequisites}</p>
                 </div>
+
+                {/* Video Tutorial */}
+                {selectedWorkData.videoUrl && (
+                  <div className="bg-red-50 rounded-lg p-4">
+                    <h3 className="font-bold text-red-800 mb-2">📺 Video Tutorial</h3>
+                    <a 
+                      href={selectedWorkData.videoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-red-600 hover:text-red-800 underline flex items-center gap-2"
+                    >
+                      Watch presentation on YouTube →
+                    </a>
+                  </div>
+                )}
 
                 {/* Presentation */}
                 <div>
