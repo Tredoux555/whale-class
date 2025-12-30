@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import { encryptMessage } from '@/lib/message-encryption';
 
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 5,
-    });
-  }
-  return pool;
-}
-
-async function dbQuery(text: string, params?: unknown[]) {
-  const client = getPool();
-  return client.query(text, params);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase not configured');
+  return createClient(url, key);
 }
 
 function getJWTSecret(): Uint8Array {
@@ -37,32 +26,14 @@ function getCurrentWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
 
-function getExpirationDate(): Date {
-  const expires = new Date();
-  expires.setHours(expires.getHours() + 24);
-  return expires;
-}
-
 async function verifyAdminToken(authHeader: string | null): Promise<string | null> {
-  if (!authHeader) {
-    console.error('[SendMessage] No auth header provided');
-    return null;
-  }
+  if (!authHeader) return null;
   try {
     const token = authHeader.replace('Bearer ', '');
-    const secret = getJWTSecret();
-    const { payload } = await jwtVerify(token, secret);
-    
-    console.log('[SendMessage] Token payload:', payload);
-    
-    if (payload.role !== 'admin') {
-      console.error('[SendMessage] User is not admin. Role:', payload.role);
-      return null;
-    }
-    
+    const { payload } = await jwtVerify(token, getJWTSecret());
+    if (payload.role !== 'admin') return null;
     return payload.username as string;
-  } catch (error) {
-    console.error('[SendMessage] Token verification failed:', error);
+  } catch {
     return null;
   }
 }
@@ -70,97 +41,79 @@ async function verifyAdminToken(authHeader: string | null): Promise<string | nul
 export async function POST(req: NextRequest) {
   try {
     const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
-    
     if (!adminUsername) {
-      console.log('[SendMessage] Authorization failed');
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' }, 
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
     const { message } = body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Message is required' }, 
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    const supabase = getSupabase();
     const weekStartDate = getCurrentWeekStart();
     const trimmedMessage = message.trim();
-    const expiresAt = getExpirationDate();
-
-    console.log('[SendMessage] Sending message for week:', weekStartDate);
-    console.log('[SendMessage] Author:', adminUsername);
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
 
     const encryptedMessage = encryptMessage(trimmedMessage);
 
-    await dbQuery(
-      `INSERT INTO story_message_history 
-       (week_start_date, message_type, content, author, expires_at, is_from_admin)
-       VALUES ($1, 'text', $2, $3, $4, TRUE)`,
-      [weekStartDate, encryptedMessage, adminUsername, expiresAt]
-    );
-    console.log('[SendMessage] Message history entry created');
+    // Save to history
+    await supabase.from('story_message_history').insert({
+      week_start_date: weekStartDate,
+      message_type: 'text',
+      content: encryptedMessage,
+      author: adminUsername,
+      expires_at: expiresAt.toISOString(),
+      is_from_admin: true
+    });
 
-    const storyExists = await dbQuery(
-      'SELECT week_start_date FROM secret_stories WHERE week_start_date = $1',
-      [weekStartDate]
-    );
-    console.log('[SendMessage] Story exists:', storyExists.rows.length > 0);
+    // Check if story exists
+    const { data: existing } = await supabase
+      .from('secret_stories')
+      .select('week_start_date')
+      .eq('week_start_date', weekStartDate)
+      .limit(1);
 
-    if (storyExists.rows.length > 0) {
-      const updateResult = await dbQuery(
-        `UPDATE secret_stories 
-         SET hidden_message = $1, message_author = $2, updated_at = NOW()
-         WHERE week_start_date = $3
-         RETURNING hidden_message, message_author, updated_at`,
-        [encryptedMessage, adminUsername, weekStartDate]
-      );
-      console.log('[SendMessage] Updated existing story:', updateResult.rows[0]);
+    if (existing && existing.length > 0) {
+      await supabase.from('secret_stories')
+        .update({
+          hidden_message: encryptedMessage,
+          message_author: adminUsername,
+          updated_at: new Date().toISOString()
+        })
+        .eq('week_start_date', weekStartDate);
     } else {
-      const defaultContent = JSON.stringify({
+      const defaultContent = {
         paragraphs: [
           'Today we learned about counting and colors in class.',
-          'The children practiced their letters and sounds with great enthusiasm.',
-          'Everyone had fun during our interactive circle time activities.',
-          'We read a wonderful story about friendship and collaboration.',
-          'Looking forward to more exciting learning adventures tomorrow!'
+          'The children practiced their letters and sounds.',
+          'Everyone had fun during circle time.',
+          'We read a wonderful story together.',
+          'Looking forward to more learning tomorrow!'
         ]
+      };
+
+      await supabase.from('secret_stories').insert({
+        week_start_date: weekStartDate,
+        theme: 'Weekly Learning',
+        story_title: 'Classroom Activities',
+        story_content: defaultContent,
+        hidden_message: encryptedMessage,
+        message_author: adminUsername
       });
-
-      const insertResult = await dbQuery(
-        `INSERT INTO secret_stories 
-         (week_start_date, theme, story_title, story_content, hidden_message, message_author)
-         VALUES ($1, 'Weekly Learning', 'Classroom Activities', $2, $3, $4)
-         RETURNING hidden_message`,
-        [weekStartDate, defaultContent, encryptedMessage, adminUsername]
-      );
-      console.log('[SendMessage] Created new story:', insertResult.rows[0]);
     }
-
-    const verify = await dbQuery(
-      'SELECT hidden_message, message_author, updated_at FROM secret_stories WHERE week_start_date = $1',
-      [weekStartDate]
-    );
-    console.log('[SendMessage] Verification - Story data saved');
 
     return NextResponse.json({
       success: true,
       message: 'Note sent successfully',
       sentAt: new Date().toISOString(),
-      weekStartDate,
-      messageId: null
+      weekStartDate
     });
   } catch (error) {
     console.error('[SendMessage] Error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { error: 'Failed to send note', details: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to send note' }, { status: 500 });
   }
 }

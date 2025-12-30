@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import { decryptMessage } from '@/lib/message-encryption';
 
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 5,
-    });
-  }
-  return pool;
-}
-
-async function dbQuery(text: string, params?: unknown[]) {
-  const client = getPool();
-  return client.query(text, params);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Supabase not configured');
+  return createClient(url, key);
 }
 
 function getJWTSecret(): Uint8Array {
@@ -41,8 +30,7 @@ async function verifyToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
   try {
     const token = authHeader.replace('Bearer ', '');
-    const secret = getJWTSecret();
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getJWTSecret());
     return payload.username as string;
   } catch {
     return null;
@@ -72,26 +60,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabase = getSupabase();
     const weekStartDate = getCurrentWeekStart();
 
-    const result = await dbQuery(
-      `SELECT story_title, story_content, hidden_message, message_author, updated_at 
-       FROM secret_stories 
-       WHERE week_start_date = $1`,
-      [weekStartDate]
-    );
+    const { data: rows, error } = await supabase
+      .from('secret_stories')
+      .select('story_title, story_content, hidden_message, message_author, updated_at')
+      .eq('week_start_date', weekStartDate)
+      .limit(1);
+
+    if (error) throw error;
 
     let story;
     let updatedAt = null;
 
-    if (result.rows.length === 0) {
+    if (!rows || rows.length === 0) {
       const defaultStory = getDefaultStory();
-      await dbQuery(
-        `INSERT INTO secret_stories (week_start_date, theme, story_title, story_content)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (week_start_date) DO NOTHING`,
-        [weekStartDate, defaultStory.theme, defaultStory.title, JSON.stringify(defaultStory.content)]
-      );
+      
+      await supabase.from('secret_stories').upsert({
+        week_start_date: weekStartDate,
+        theme: defaultStory.theme,
+        story_title: defaultStory.title,
+        story_content: defaultStory.content
+      }, { onConflict: 'week_start_date' });
 
       story = {
         title: defaultStory.title,
@@ -100,7 +91,7 @@ export async function GET(req: NextRequest) {
         messageAuthor: null
       };
     } else {
-      const row = result.rows[0];
+      const row = rows[0];
       const content = typeof row.story_content === 'string' 
         ? JSON.parse(row.story_content)
         : row.story_content;
@@ -110,25 +101,21 @@ export async function GET(req: NextRequest) {
         try {
           hiddenMessage = decryptMessage(hiddenMessage);
         } catch (e) {
-          console.error('[Story] Failed to decrypt message:', e);
+          console.error('[Story] Decrypt failed:', e);
           hiddenMessage = '[Message encrypted - decryption failed]';
         }
       }
 
       story = {
         title: row.story_title,
-        paragraphs: content.paragraphs || [],
+        paragraphs: content?.paragraphs || [],
         hiddenMessage: hiddenMessage,
         messageAuthor: row.message_author
       };
       updatedAt = row.updated_at;
     }
 
-    return NextResponse.json({
-      username,
-      story,
-      updatedAt
-    });
+    return NextResponse.json({ username, story, updatedAt });
   } catch (error) {
     console.error('[Current Story] Error:', error);
     return NextResponse.json({ error: 'Failed to load' }, { status: 500 });
