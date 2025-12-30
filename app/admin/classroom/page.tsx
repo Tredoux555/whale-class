@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -52,7 +52,25 @@ const AREA_LABELS: Record<string, string> = {
   culture: 'C',
 };
 
-export default function ClassroomView() {
+// Loading fallback
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+    </div>
+  );
+}
+
+// Main export wrapped in Suspense
+export default function ClassroomPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <ClassroomView />
+    </Suspense>
+  );
+}
+
+function ClassroomView() {
   const searchParams = useSearchParams();
   const [children, setChildren] = useState<ChildWithAssignments[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<WeeklyPlan[]>([]);
@@ -68,7 +86,6 @@ export default function ClassroomView() {
   }, []);
 
   useEffect(() => {
-    // Check URL params for week/year
     const weekParam = searchParams.get('week');
     const yearParam = searchParams.get('year');
     if (weekParam && yearParam) {
@@ -118,7 +135,6 @@ export default function ClassroomView() {
   }
 
   async function updateProgress(assignmentId: string, newStatus: string) {
-    // Optimistic update
     setChildren(prev => prev.map(child => ({
       ...child,
       assignments: child.assignments.map(a => 
@@ -145,7 +161,6 @@ export default function ClassroomView() {
     updateProgress(assignment.id, nextStatus);
   };
 
-  // Calculate completion stats for each child
   const getChildStats = (assignments: WorkAssignment[]) => {
     const total = assignments.length;
     const mastered = assignments.filter(a => a.progress_status === 'mastered').length;
@@ -163,16 +178,11 @@ export default function ClassroomView() {
   }));
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header - Fixed */}
       <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
@@ -182,7 +192,6 @@ export default function ClassroomView() {
             <h1 className="text-xl font-bold">🐋 Classroom View</h1>
           </div>
           
-          {/* Week Selector */}
           <select
             value={selectedPlanId}
             onChange={(e) => {
@@ -203,7 +212,6 @@ export default function ClassroomView() {
             ))}
           </select>
 
-          {/* Area Filter */}
           <div className="flex gap-1">
             {[
               { key: 'all', label: 'All' },
@@ -228,7 +236,6 @@ export default function ClassroomView() {
         </div>
       </header>
 
-      {/* Legend */}
       <div className="bg-white border-b px-4 py-2">
         <div className="flex items-center justify-center gap-6 text-sm max-w-7xl mx-auto">
           {Object.entries(STATUS_CONFIG).map(([key, config]) => (
@@ -242,7 +249,6 @@ export default function ClassroomView() {
         </div>
       </div>
 
-      {/* Main Grid */}
       <main className="p-4 max-w-7xl mx-auto">
         {!selectedPlanId ? (
           <div className="text-center py-12">
@@ -276,14 +282,12 @@ export default function ClassroomView() {
                 weekNumber={selectedWeek}
                 year={selectedYear}
                 onStatusTap={handleStatusTap}
-                onVideoTap={(url, title) => setVideoModal({ url, title })}
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* Video Modal */}
       {videoModal && (
         <VideoModal
           url={videoModal.url}
@@ -301,10 +305,9 @@ interface ChildCardProps {
   weekNumber: number;
   year: number;
   onStatusTap: (e: React.MouseEvent, assignment: WorkAssignment) => void;
-  onVideoTap: (url: string, title: string) => void;
 }
 
-function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: ChildCardProps) {
+function ChildCard({ child, stats, weekNumber, year, onStatusTap }: ChildCardProps) {
   const completionPercent = stats.total > 0 
     ? Math.round((stats.mastered / stats.total) * 100) 
     : 0;
@@ -314,7 +317,6 @@ function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: 
       href={`/admin/classroom/${child.id}?week=${weekNumber}&year=${year}`}
       className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer block"
     >
-      {/* Child Header */}
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
         <h3 className="text-white font-bold text-lg truncate">{child.name}</h3>
         <div className="flex items-center gap-2 mt-1">
@@ -328,23 +330,18 @@ function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: 
         </div>
       </div>
 
-      {/* Focus Area (if exists) */}
       {child.focus_area && (
         <div className="px-3 py-2 bg-yellow-50 border-b border-yellow-100">
-          <p className="text-xs text-yellow-800 truncate">
-            🎯 {child.focus_area}
-          </p>
+          <p className="text-xs text-yellow-800 truncate">🎯 {child.focus_area}</p>
         </div>
       )}
 
-      {/* Work Summary - Show first 5 works */}
       <div className="divide-y">
         {child.assignments.slice(0, 5).map(assignment => (
           <div
             key={assignment.id}
             className={`flex items-center gap-2 px-3 py-2 border-l-4 ${AREA_COLORS[assignment.area] || 'border-l-gray-300'}`}
           >
-            {/* Status Button */}
             <button
               onClick={(e) => onStatusTap(e, assignment)}
               className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
@@ -353,8 +350,6 @@ function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: 
             >
               {STATUS_CONFIG[assignment.progress_status].label}
             </button>
-
-            {/* Work Name */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{assignment.work_name}</p>
               {assignment.work_name_chinese && (
@@ -365,14 +360,12 @@ function ChildCard({ child, stats, weekNumber, year, onStatusTap, onVideoTap }: 
         ))}
       </div>
 
-      {/* More indicator */}
       {child.assignments.length > 5 && (
         <div className="px-3 py-2 text-center text-xs text-gray-400 border-t">
           +{child.assignments.length - 5} more works
         </div>
       )}
 
-      {/* Quick Stats */}
       <div className="px-3 py-2 bg-gray-50 flex justify-between text-xs">
         <span className="text-gray-500">{stats.total} works</span>
         <span className="text-green-600 font-medium">{stats.mastered} done</span>
@@ -390,21 +383,13 @@ interface VideoModalProps {
 function VideoModal({ url, title, onClose }: VideoModalProps) {
   const getEmbedUrl = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-    if (match) {
-      return `https://www.youtube.com/embed/${match[1]}`;
-    }
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
     return url;
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-xl overflow-hidden max-w-4xl w-full"
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl overflow-hidden max-w-4xl w-full" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">{title}</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">✕</button>
