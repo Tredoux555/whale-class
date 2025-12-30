@@ -24,6 +24,20 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     icon: '🌳',
     color: 'bg-green-500 hover:bg-green-600',
   },
+  {
+    title: 'Weekly Planning',
+    description: 'Upload plans, track progress',
+    href: '/admin/weekly-planning',
+    icon: '📅',
+    color: 'bg-cyan-500 hover:bg-cyan-600',
+  },
+  {
+    title: 'Classroom View',
+    description: 'iPad-friendly progress tracking',
+    href: '/admin/classroom',
+    icon: '🎯',
+    color: 'bg-emerald-500 hover:bg-emerald-600',
+  },
   
   // Material Generators
   {
