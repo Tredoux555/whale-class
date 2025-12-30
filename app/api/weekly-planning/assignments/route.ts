@@ -8,93 +8,81 @@ function getSupabase() {
   return createClient(url, key);
 }
 
+// GET - fetch assignments for a week
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const planId = searchParams.get('planId');
-
-  if (!planId) {
-    return NextResponse.json({ error: 'planId required' }, { status: 400 });
-  }
-
   try {
     const supabase = getSupabase();
-    
-    // Get all children with their assignments for this plan
-    const { data: assignments, error: assignError } = await supabase
+    const url = new URL(request.url);
+    const week = parseInt(url.searchParams.get('week') || '0');
+    const year = parseInt(url.searchParams.get('year') || '2025');
+
+    const { data, error } = await supabase
       .from('weekly_assignments')
       .select(`
         id,
+        child_id,
+        work_id,
         work_name,
         area,
-        progress_status,
-        work_id,
-        child_id,
-        children (
-          id,
-          name
-        )
+        status,
+        notes,
+        children(name)
       `)
-      .eq('weekly_plan_id', planId);
+      .eq('week_number', week)
+      .eq('year', year)
+      .order('created_at');
 
-    if (assignError) throw assignError;
+    if (error) throw error;
 
-    // Get video URLs for matched works
-    const workIds = assignments
-      ?.filter(a => a.work_id)
-      .map(a => a.work_id) || [];
+    const assignments = (data || []).map(a => ({
+      id: a.id,
+      child_id: a.child_id,
+      child_name: (a.children as any)?.name || 'Unknown',
+      work_id: a.work_id,
+      work_name: a.work_name,
+      area: a.area,
+      status: a.status || 'not_started',
+      notes: a.notes
+    }));
 
-    let videoMap: Record<string, string> = {};
-    if (workIds.length > 0) {
-      const { data: works } = await supabase
-        .from('curriculum_roadmap')
-        .select('id, video_url')
-        .in('id', workIds);
-
-      if (works) {
-        videoMap = works.reduce((acc, w) => {
-          if (w.video_url) acc[w.id] = w.video_url;
-          return acc;
-        }, {} as Record<string, string>);
-      }
-    }
-
-    // Group by child
-    const childrenMap = new Map<string, {
-      id: string;
-      name: string;
-      assignments: any[];
-    }>();
-
-    for (const assignment of (assignments || [])) {
-      const childData = assignment.children as any;
-      if (!childData) continue;
-
-      if (!childrenMap.has(childData.id)) {
-        childrenMap.set(childData.id, {
-          id: childData.id,
-          name: childData.name,
-          assignments: [],
-        });
-      }
-
-      childrenMap.get(childData.id)!.assignments.push({
-        id: assignment.id,
-        work_name: assignment.work_name,
-        area: assignment.area,
-        progress_status: assignment.progress_status,
-        work_id: assignment.work_id,
-        video_url: assignment.work_id ? videoMap[assignment.work_id] : undefined,
-      });
-    }
-
-    // Sort children alphabetically
-    const children = Array.from(childrenMap.values())
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    return NextResponse.json({ children });
-
+    return NextResponse.json({ assignments });
   } catch (error) {
     console.error('Failed to fetch assignments:', error);
-    return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
+    return NextResponse.json({ assignments: [] });
+  }
+}
+
+
+// POST - create new assignment
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { week, year, child_id, work_id, work_name, area } = body;
+
+    if (!child_id || !work_name) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('weekly_assignments')
+      .insert({
+        week_number: week,
+        year: year,
+        child_id: child_id,
+        work_id: work_id || null,
+        work_name: work_name,
+        area: area || 'practical_life',
+        status: 'not_started'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ assignment: data });
+  } catch (error) {
+    console.error('Failed to create assignment:', error);
+    return NextResponse.json({ error: 'Failed to create' }, { status: 500 });
   }
 }
