@@ -5300,15 +5300,15 @@ export default function EnglishProcurementPage() {
                   return categories[selectedPhonogramType]?.includes(phonogram);
                 })
                 .map(([phonogram, data]) => (
-                  <div key={phonogram} className="border border-slate-600 rounded-lg p-4 bg-green-50/30">
+                  <div key={phonogram} className="border border-slate-600 rounded-lg p-4 bg-slate-700/50">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="bg-green-600 text-white px-3 py-1 rounded-lg font-bold text-lg">{phonogram}</span>
-                      <span className="text-gray-300">{data.sound}</span>
+                      <span className="text-gray-200">{data.sound}</span>
                     </div>
                     <div className="text-sm text-gray-400 mb-2">Position: {data.position}</div>
                     <div className="flex flex-wrap gap-1">
                       {data.examples.map((word, i) => (
-                        <span key={i} className="bg-slate-800 border px-2 py-1 rounded text-sm">{word}</span>
+                        <span key={i} className="bg-slate-700 border border-slate-600 px-2 py-1 rounded text-sm text-gray-100">{word}</span>
                       ))}
                     </div>
                   </div>
@@ -5326,13 +5326,13 @@ export default function EnglishProcurementPage() {
             <div className="space-y-6">
               {Object.entries(grammarBoxSentences).map(([box, data]) => (
                 <div key={box} className="border border-slate-600 rounded-lg overflow-hidden">
-                  <div className="bg-indigo-50 px-4 py-3 border-b">
-                    <h3 className="font-bold text-indigo-800">{box}</h3>
-                    <p className="text-sm text-indigo-600">{data.instruction}</p>
+                  <div className="bg-indigo-900/50 px-4 py-3 border-b border-slate-600">
+                    <h3 className="font-bold text-indigo-300">{box}</h3>
+                    <p className="text-sm text-indigo-400">{data.instruction}</p>
                   </div>
                   <div className="p-4 grid md:grid-cols-2 gap-2">
                     {data.sentences.map((sentence, i) => (
-                      <div key={i} className="bg-slate-700 p-2 rounded text-sm font-mono">
+                      <div key={i} className="bg-slate-700 p-2 rounded text-sm font-mono text-gray-200">
                         {i + 1}. {sentence}
                       </div>
                     ))}
