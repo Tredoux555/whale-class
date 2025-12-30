@@ -1,52 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/story/db';
-import { extractToken, verifyUserToken } from '@/lib/story/auth';
-import { getCurrentWeekStart } from '@/lib/story/week';
-import { MediaItem } from '@/lib/story/types';
-
-interface MediaRow {
-  id: number;
-  message_type: 'image' | 'video' | 'audio';
-  media_url: string;
-  media_filename: string | null;
-  author: string;
-  created_at: string;
-  expires_at: string | null;
-}
+import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify authentication
-    const token = extractToken(req.headers.get('authorization'));
-    
-    if (!token) {
+    const username = await verifyUserToken(req.headers.get('authorization'));
+    if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await verifyUserToken(token);
+    const supabase = getSupabase();
     const weekStartDate = getCurrentWeekStart();
 
-    // Get non-expired media for current week (images, videos, AND audio)
-    const result = await query<MediaRow>(
-      `SELECT id, message_type, media_url, media_filename, author, created_at, expires_at
-       FROM story_message_history
-       WHERE week_start_date = $1
-         AND message_type IN ('image', 'video', 'audio')
-         AND is_expired = FALSE
-         AND (expires_at IS NULL OR expires_at > NOW())
-       ORDER BY created_at DESC`,
-      [weekStartDate]
-    );
+    const { data: rows, error } = await supabase
+      .from('story_message_history')
+      .select('id, message_type, media_url, media_filename, author, created_at, expires_at')
+      .eq('week_start_date', weekStartDate)
+      .in('message_type', ['image', 'video', 'audio'])
+      .eq('is_expired', false)
+      .order('created_at', { ascending: false });
 
-    const media: MediaItem[] = result.rows.map(row => ({
-      id: row.id,
-      type: row.message_type,
-      url: row.media_url,
-      filename: row.media_filename,
-      author: row.author,
-      created_at: row.created_at,
-      expires_at: row.expires_at
-    }));
+    if (error) throw error;
+
+    // Filter out expired items
+    const now = new Date();
+    const media = (rows || [])
+      .filter(row => !row.expires_at || new Date(row.expires_at) > now)
+      .map(row => ({
+        id: row.id,
+        type: row.message_type,
+        url: row.media_url,
+        filename: row.media_filename,
+        author: row.author,
+        created_at: row.created_at,
+        expires_at: row.expires_at
+      }));
 
     return NextResponse.json({ media });
   } catch (error) {
