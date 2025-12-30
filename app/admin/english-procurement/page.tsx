@@ -181,7 +181,7 @@ const phonogramData: Record<string, { sound: string; position: string; examples:
   'i_e': { sound: '/ī/ (long i)', position: 'split', examples: ['like', 'bike', 'time', 'five', 'nine', 'line', 'mine', 'hide', 'ride', 'side', 'wide', 'smile', 'white', 'write', 'drive'] },
   'igh': { sound: '/ī/ (long i)', position: 'middle', examples: ['high', 'light', 'night', 'right', 'bright', 'flight', 'fright', 'might', 'sight', 'tight', 'thigh', 'sigh'] },
   'y': { sound: '/ī/ (long i) at end', position: 'end', examples: ['my', 'by', 'fly', 'sky', 'try', 'cry', 'dry', 'fry', 'why', 'shy', 'spy', 'sly'] },
-  'ie': { sound: '/ī/ (long i)', position: 'end', examples: ['pie', 'tie', 'lie', 'die', 'vie'] },
+  'ie_long_i': { sound: '/ī/ (long i)', position: 'end', examples: ['pie', 'tie', 'lie', 'die', 'vie'] },
 
   // Vowel Digraphs - Long O
   'oa': { sound: '/ō/ (long o)', position: 'middle', examples: ['boat', 'coat', 'road', 'soap', 'toast', 'float', 'goat', 'load', 'roast', 'coach', 'foam', 'groan'] },
@@ -207,7 +207,7 @@ const phonogramData: Record<string, { sound: string; position: string; examples:
   // Diphthongs
   'oo': { sound: '/o͞o/ or /o͝o/', position: 'middle', examples: ['moon', 'food', 'cool', 'room', 'tooth', 'pool', 'school', 'spoon', 'book', 'look', 'cook', 'good', 'wood', 'foot', 'hook', 'brook', 'stood'] },
   'ou': { sound: '/ou/', position: 'middle', examples: ['out', 'house', 'mouse', 'cloud', 'sound', 'found', 'round', 'ground', 'pound', 'count', 'about', 'south', 'mouth', 'loud', 'proud', 'couch'] },
-  'ow': { sound: '/ou/', position: 'middle or end', examples: ['cow', 'how', 'now', 'down', 'brown', 'town', 'crown', 'frown', 'clown', 'drown', 'flower', 'power', 'tower', 'shower', 'vowel', 'towel', 'owl', 'howl', 'growl'] },
+  'ow_diphthong': { sound: '/ou/', position: 'middle or end', examples: ['cow', 'how', 'now', 'down', 'brown', 'town', 'crown', 'frown', 'clown', 'drown', 'flower', 'power', 'tower', 'shower', 'vowel', 'towel', 'owl', 'howl', 'growl'] },
   'oi': { sound: '/oi/', position: 'middle', examples: ['oil', 'coin', 'join', 'point', 'voice', 'choice', 'noise', 'moist', 'boil', 'soil', 'foil', 'spoil', 'avoid'] },
   'oy': { sound: '/oi/', position: 'end', examples: ['boy', 'toy', 'joy', 'enjoy', 'royal', 'loyal', 'voyage', 'annoy', 'destroy', 'employ'] },
   'aw': { sound: '/ô/', position: 'middle or end', examples: ['saw', 'paw', 'law', 'jaw', 'raw', 'claw', 'draw', 'straw', 'crawl', 'yawn', 'dawn', 'lawn', 'fawn', 'hawk', 'awful'] },
@@ -368,114 +368,828 @@ const grammarBoxSentences: Record<string, { instruction: string; sentences: stri
 };
 
 // =============================================================================
-// REFERENCE DATA: SHELF ORGANIZATION
-// How to arrange language materials on classroom shelves
+// REFERENCE DATA: DETAILED SHELF ORGANIZATION
+// Comprehensive guide with tiers, quantities, and specifications
+// 🟢 Essential | 🔵 Complete | 🟣 Premium
 // =============================================================================
-const shelfOrganization = [
+
+interface ShelfItemDetail {
+  name: string;
+  tier: 'essential' | 'complete' | 'premium';
+  what: string;
+  quantity: string;
+  size: string;
+  container: string;
+  contents?: string[];
+  tips: string;
+  price: string;
+}
+
+interface ShelfItem {
+  name: string;
+  details: ShelfItemDetail[];
+}
+
+interface ShelfData {
+  shelf: string;
+  position: string;
+  items: ShelfItem[];
+  notes: string;
+}
+
+const detailedShelfOrganization: ShelfData[] = [
   {
     shelf: 'Shelf 1: Oral Language',
     position: 'Top left of language area',
-    contents: [
-      'Vocabulary baskets (categorized)',
-      'Three-part card sets (in boxes)',
-      'Parts-of cards',
-      'Classified pictures',
-      'Definition cards'
-    ],
-    notes: 'Arrange baskets by category. Three-part cards should have control cards separate.'
+    notes: 'Foundation of all language work. Start here with youngest children (2.5+). Builds vocabulary needed before reading.',
+    items: [
+      {
+        name: 'Vocabulary baskets (categorized)',
+        details: [
+          {
+            name: 'Vocabulary Baskets',
+            tier: 'essential',
+            what: 'Small baskets with miniature realistic objects grouped by theme. Used for Three-Period Lessons to build spoken vocabulary.',
+            quantity: '8-10 baskets on shelf (15 total for rotation)',
+            size: 'Baskets: 20-22cm diameter × 8-10cm height. Objects: 2-4cm each.',
+            container: 'Natural wicker or bamboo baskets, low-sided for child access',
+            contents: [
+              '🐄 Farm Animals: cow, pig, horse, sheep, chicken, duck, goat, rooster',
+              '🦁 Wild Animals: lion, elephant, giraffe, zebra, hippo, tiger, monkey',
+              '🐠 Ocean Life: whale, dolphin, shark, octopus, starfish, crab, turtle',
+              '🚗 Transportation: car, truck, bus, airplane, train, boat, bicycle',
+              '🍎 Fruits: apple, banana, orange, grapes, strawberry, pear, lemon',
+              '🥕 Vegetables: carrot, tomato, broccoli, potato, corn, pepper',
+              '🔧 Tools: hammer, screwdriver, wrench, pliers, saw',
+              '🏠 Household: spoon, fork, cup, plate, key, lamp, brush'
+            ],
+            tips: 'Start with Safari Ltd TOOB tubes (~¥80 each, 10-12 figures). Begin with 3-4 objects per basket for young children, increase to 6-8 for older. Rotate themes monthly.',
+            price: '¥400-600 for 8 baskets + 80 objects'
+          },
+          {
+            name: 'Vocabulary Baskets',
+            tier: 'complete',
+            what: 'Extended collection with 20-25 themed baskets covering curriculum areas: animals by continent, botany, geography, community helpers.',
+            quantity: '12 baskets on shelf (25 total for rotation)',
+            size: 'Mix of small (20cm) and medium (25cm) baskets',
+            container: 'Matching natural wicker set with fabric liners',
+            contents: [
+              'All Essential themes PLUS:',
+              '🌍 Animals by Continent sets (7 sets)',
+              '🌸 Botany: flowers, trees, leaves',
+              '👨‍🚒 Community Helpers: firefighter, doctor, teacher, chef',
+              '🎵 Musical Instruments: drum, guitar, trumpet, violin, flute',
+              '🦋 Insects: butterfly, bee, ladybug, ant, dragonfly, caterpillar'
+            ],
+            tips: 'Use Schleich figures for exceptional realism. Label baskets with picture + word. Include matching 3-part cards for each basket.',
+            price: '¥1,000-1,500 for 25 baskets + 150 objects'
+          },
+          {
+            name: 'Vocabulary Baskets',
+            tier: 'premium',
+            what: 'Comprehensive museum-quality collection with seasonal rotation system, custom storage cabinet, and complete curriculum coverage.',
+            quantity: '15+ baskets on shelf (30+ total)',
+            size: 'Graduated sizes in matching set',
+            container: 'Custom wooden cabinet with labeled compartments',
+            contents: [
+              'All Complete themes PLUS:',
+              '🎄 Seasonal sets (4 seasons)',
+              '🎃 Holiday-themed sets',
+              '🔬 Science: magnets, simple machines, weather',
+              '🎨 Art tools and materials',
+              '🌿 Extended botany: parts of plants, life cycles'
+            ],
+            tips: 'Schleich or CollectA for all animals. Include real items where possible (shells, seeds, rocks). Photo documentation of each basket for inventory.',
+            price: '¥2,500-4,000 for premium setup'
+          }
+        ]
+      },
+      {
+        name: 'Three-part card sets (in boxes)',
+        details: [
+          {
+            name: 'Three-Part Cards',
+            tier: 'essential',
+            what: 'Nomenclature cards with 3 parts: Control card (picture + label), Picture card, Label card. Child matches picture to control, then reads label to match.',
+            quantity: '15-20 complete sets',
+            size: 'Control: 9.5×12.7cm, Picture: 9.5×10.2cm, Label: 9.5×2.5cm',
+            container: 'Felt pouches (color-coded by subject) or small wooden boxes',
+            contents: [
+              '🏠 Household items (spoon, cup, chair, bed)',
+              '👕 Clothing (shirt, pants, shoes, hat)',
+              '🍽️ Foods (bread, milk, egg, apple)',
+              '👨‍👩‍👧 Family members (mother, father, baby)',
+              '🐕 Pets (dog, cat, fish, bird)'
+            ],
+            tips: 'Use REAL photographs, not clip art. Print on 80lb cardstock (216gsm), laminate with 5-mil. Start with 4-6 cards per set for beginners.',
+            price: '¥150-300 (DIY) or ¥400-600 (purchased sets)'
+          },
+          {
+            name: 'Three-Part Cards',
+            tier: 'complete',
+            what: 'Professional quality sets covering full curriculum with matching objects for concrete-to-abstract progression.',
+            quantity: '25-30 sets with rotation system',
+            size: 'Standard Nienhuis dimensions',
+            container: 'Wooden boxes with sliding lids, labeled',
+            contents: [
+              'All Essential sets PLUS:',
+              '🌍 Continents and countries',
+              '🚂 Transportation by type',
+              '👨‍⚕️ Community helpers',
+              '🌸 Botany nomenclature',
+              '🦴 Zoology nomenclature'
+            ],
+            tips: 'Store control cards separately (in envelope behind box). Include corresponding miniature object where possible.',
+            price: '¥800-1,200'
+          },
+          {
+            name: 'Three-Part Cards',
+            tier: 'premium',
+            what: 'Complete Nienhuis-quality collection with custom cabinet, extension activities, and bilingual options.',
+            quantity: '40+ sets',
+            size: 'Museum-quality printing',
+            container: 'Dedicated card cabinet with 40+ compartments',
+            contents: [
+              'Complete curriculum coverage',
+              'Bilingual sets (English/Chinese)',
+              'Extension definition cards',
+              'Sentence strips for each set'
+            ],
+            tips: 'Professional printing on 300gsm with matte lamination. Include answer booklets for independent work.',
+            price: '¥2,000-3,500'
+          }
+        ]
+      },
+      {
+        name: 'Parts-of cards',
+        details: [
+          {
+            name: 'Parts-of Cards',
+            tier: 'essential',
+            what: 'Cards showing whole item with ONE part highlighted in red, others grayed. Teaches anatomical vocabulary for botany and zoology.',
+            quantity: '5 essential sets',
+            size: 'Same as 3-part cards: 9.5×12.7cm',
+            container: 'Felt pouches, stored with matching puzzle if available',
+            contents: [
+              '🌳 Parts of a Tree: trunk, branches, roots, leaves, crown',
+              '🍃 Parts of a Leaf: blade, petiole, veins, margin, midrib',
+              '🌸 Parts of a Flower: petals, sepals, stamen, pistil, stem',
+              '🐦 Parts of a Bird: beak, wings, tail, feet, feathers',
+              '🐟 Parts of a Fish: fins, gills, scales, tail, eye'
+            ],
+            tips: 'Use with 3D wooden puzzles (tree puzzle, leaf puzzle, flower puzzle) for concrete experience first.',
+            price: '¥200-400'
+          },
+          {
+            name: 'Parts-of Cards',
+            tier: 'complete',
+            what: 'Extended collection covering full primary botany and zoology curriculum.',
+            quantity: '12 sets',
+            size: 'Standard dimensions',
+            container: 'Organized by subject (Botany/Zoology folders)',
+            contents: [
+              'All Essential PLUS:',
+              '🌱 Parts of a Root, Seed, Fruit',
+              '🐴 Parts of a Horse (with wooden puzzle)',
+              '🐢 Parts of a Turtle',
+              '🐸 Parts of a Frog (life cycle)',
+              '🦋 Parts of an Insect'
+            ],
+            tips: 'Pair with real specimens where possible (real leaves, shells, feathers). Add definition cards for older children.',
+            price: '¥500-900'
+          },
+          {
+            name: 'Parts-of Cards',
+            tier: 'premium',
+            what: 'Complete AMI collection with wooden puzzles, specimens, and extension materials.',
+            quantity: '20+ sets',
+            size: 'Premium printing',
+            container: 'Dedicated puzzle cabinet + card storage',
+            contents: [
+              'All Complete sets PLUS matching wooden puzzles',
+              'Microscope work extensions',
+              'Life cycle materials',
+              'Definition and function cards'
+            ],
+            tips: 'Nienhuis wooden puzzles are the gold standard. Include magnifying glasses for specimen examination.',
+            price: '¥2,000-4,000 (including puzzles)'
+          }
+        ]
+      },
+      {
+        name: 'Classified pictures',
+        details: [
+          {
+            name: 'Classified Pictures',
+            tier: 'essential',
+            what: 'Picture collections for sorting and classification. Simpler than 3-part cards - just images for grouping activities.',
+            quantity: '10 categories, 8-10 pictures each',
+            size: '7.5×10cm cards',
+            container: 'File folders, color-coded by category',
+            contents: [
+              'Foods by type (fruits, vegetables, grains, dairy, protein)',
+              'Animals by habitat (farm, ocean, jungle, forest)',
+              'Transport by medium (land, water, air)'
+            ],
+            tips: 'Use for sorting on mat. Progress to classification charts. Great for younger children before 3-part cards.',
+            price: '¥100-200'
+          },
+          {
+            name: 'Classified Pictures',
+            tier: 'complete',
+            what: 'Comprehensive classification system with sorting charts and extension activities.',
+            quantity: '20 categories, 10-12 pictures each',
+            size: 'Standard card size with sorting mats',
+            container: 'Basket system with labeled compartments',
+            contents: [
+              'Living/Non-living',
+              'Animal kingdoms (vertebrates, invertebrates)',
+              'Plant types',
+              'Materials (wood, metal, glass, plastic)'
+            ],
+            tips: 'Include blank sorting charts and classification trees. Add real objects to match.',
+            price: '¥300-500'
+          }
+        ]
+      },
+      {
+        name: 'Definition cards',
+        details: [
+          {
+            name: 'Definition Cards',
+            tier: 'complete',
+            what: 'Advanced vocabulary cards with child-friendly definitions. For fluent readers (5-6 years).',
+            quantity: '10-15 sets',
+            size: 'Definition card: 9.5×7.5cm',
+            container: 'With corresponding 3-part card sets',
+            contents: [
+              'Geometry shape definitions',
+              'Land and water form definitions',
+              'Botany term definitions',
+              'Grammar term definitions'
+            ],
+            tips: 'Keep definitions brief (1-2 sentences). Include "definition with word blank" for matching activity.',
+            price: '¥200-400'
+          }
+        ]
+      }
+    ]
   },
   {
     shelf: 'Shelf 2: Sound Games & Sandpaper Letters',
     position: 'Below oral language',
-    contents: [
-      'Initial sound objects basket',
-      'CVC object sets',
-      'Sandpaper letter box (lowercase)',
-      'Sandpaper letter box (capitals)',
-      'Phonogram sandpaper letters',
-      'Sand tray with tools'
-    ],
-    notes: 'Sandpaper letters organized alphabetically or by presentation groups.'
+    notes: 'Phonemic awareness foundation. CRITICAL: All sound work happens WITHOUT written letters first. Child must hear sounds before seeing symbols.',
+    items: [
+      {
+        name: 'Initial sound objects basket',
+        details: [
+          {
+            name: 'Initial Sound Objects',
+            tier: 'essential',
+            what: 'Miniature objects for I Spy games. Train the ear to isolate beginning sounds in words - the foundation of reading.',
+            quantity: '78 objects minimum (3 per letter)',
+            size: 'Objects 1-4cm each (most 2-3cm)',
+            container: 'Divided compartment box (23+ sections) or individual pouches',
+            contents: [
+              'A: alligator, apple, ant',
+              'B: bear, bus, banana',
+              'C: cat, car, cup',
+              'D: dog, duck, dinosaur',
+              'E: elephant, egg, elf',
+              'F: fish, frog, fork',
+              'G: goat, grapes, guitar',
+              'H: hat, horse, hammer',
+              'I: igloo, iguana, insect',
+              'J: jet, jar, jellyfish',
+              'K: key, kite, kangaroo',
+              'L: lion, leaf, lemon',
+              'M: mouse, moon, mop',
+              'N: nest, nut, nail',
+              'O: octopus, orange, otter',
+              'P: pig, pen, pizza',
+              'Q: queen, quilt',
+              'R: rabbit, ring, robot',
+              'S: sun, snake, star',
+              'T: tiger, tree, turtle',
+              'U: umbrella, unicorn',
+              'V: van, violin, vase',
+              'W: whale, watch, wagon',
+              'X: (use for ending: fox, box)',
+              'Y: yo-yo, yarn, yak',
+              'Z: zebra, zipper, zero'
+            ],
+            tips: 'Say SOUNDS not letter names: "/b/" not "bee". Start with single object, add more as child progresses. Safari TOOB tubes are perfect source.',
+            price: '¥300-500'
+          },
+          {
+            name: 'Initial Sound Objects',
+            tier: 'complete',
+            what: 'Extended collection with 4-5 objects per sound, including digraphs (sh, ch, th, wh).',
+            quantity: '110+ objects plus digraph sets',
+            size: '1-4cm each',
+            container: 'Large compartment box or basket system with letter labels',
+            contents: [
+              '4-5 objects per letter',
+              'PLUS Digraphs:',
+              'SH: shark, sheep, shell, ship, shoe',
+              'CH: chair, cheese, cherry, chicken',
+              'TH: thimble, thread, thumb',
+              'WH: whale, wheel, whistle'
+            ],
+            tips: 'Include picture cards matching each object. Add rhyming object sets for extension.',
+            price: '¥600-900'
+          },
+          {
+            name: 'Initial Sound Objects',
+            tier: 'premium',
+            what: 'Comprehensive collection with 5+ objects per sound, all digraphs, sorting trays, and matching nomenclature.',
+            quantity: '150+ objects',
+            size: 'Premium quality figures',
+            container: 'Custom wooden sorting cabinet with 30+ compartments',
+            contents: [
+              '5+ objects per letter (Schleich/CollectA quality)',
+              'Complete digraph collection',
+              'Picture matching cards',
+              'Sorting trays and mats'
+            ],
+            tips: 'Include sound sorting mats. Add ending sound objects for extension. Document with photo inventory.',
+            price: '¥1,200-2,000'
+          }
+        ]
+      },
+      {
+        name: 'CVC object sets',
+        details: [
+          {
+            name: 'CVC Object Sets',
+            tier: 'essential',
+            what: 'Miniature objects for 3-letter phonetic words (Consonant-Vowel-Consonant). Used with Moveable Alphabet for first word building.',
+            quantity: '40 objects (8 per vowel sound)',
+            size: '2-4cm each',
+            container: '5 PINK containers (one per short vowel)',
+            contents: [
+              '🔴 Short A: cat, bat, hat, can, fan, map, bag, cap',
+              '🔴 Short E: bed, hen, net, pen, jet, web, leg, peg',
+              '🔴 Short I: pig, pin, wig, bib, lid, fig, kit, fin',
+              '🔴 Short O: dog, box, pot, mop, fox, top, log, cob',
+              '🔴 Short U: bug, mug, cup, bus, tub, jug, sun, nut'
+            ],
+            tips: 'Organize by vowel sound, NOT word family. Child builds word with Moveable Alphabet, then checks with object. Pink containers match "Pink Series".',
+            price: '¥200-400'
+          },
+          {
+            name: 'CVC Object Sets',
+            tier: 'complete',
+            what: 'Extended CVC collection with matching word cards and picture cards for full Pink Series progression.',
+            quantity: '60 objects + matching cards',
+            size: 'Objects + 6×2.5cm word labels',
+            container: 'Pink boxes with word cards in envelope',
+            contents: [
+              '10-12 objects per vowel',
+              'Matching word cards (pink border)',
+              'Picture cards for reading without objects',
+              'Control lists for self-checking'
+            ],
+            tips: 'Progress: Object → Build word → Object + word card → Picture + word card → Word card only',
+            price: '¥400-700'
+          }
+        ]
+      },
+      {
+        name: 'Sandpaper letter box (lowercase)',
+        details: [
+          {
+            name: 'Sandpaper Letters - Lowercase',
+            tier: 'essential',
+            what: 'Textured letters on colored boards. Child traces while saying SOUND (not name). Connects sound to written symbol through touch.',
+            quantity: '1 complete set (26 letters)',
+            size: 'Boards: 15.9×12cm or 19×14cm. Fine-grit sandpaper.',
+            container: 'Compartmentalized wooden box',
+            contents: [
+              'Pink/Red boards: 21 consonants',
+              'Blue boards: 5 vowels (a, e, i, o, u)',
+              'Lowercase CURSIVE (AMI standard) or Print'
+            ],
+            tips: 'CURSIVE is traditional AMI - one continuous stroke aids muscle memory. Say SOUND while tracing: "/s/" not "ess". Use Two-finger tracing (index + middle).',
+            price: '¥120-350'
+          },
+          {
+            name: 'Sandpaper Letters - Lowercase',
+            tier: 'complete',
+            what: 'Quality set with consistent sandpaper texture, plus capital letters.',
+            quantity: '1 lowercase + 1 capital set',
+            size: 'Standard Nienhuis dimensions',
+            container: 'Matching wooden boxes',
+            contents: [
+              '26 lowercase letters',
+              '26 capital letters',
+              'Color-coded: consonants/vowels'
+            ],
+            tips: 'Introduce capitals AFTER lowercase mastery. Use Three-Period Lesson for introduction.',
+            price: '¥400-700'
+          },
+          {
+            name: 'Sandpaper Letters - Lowercase',
+            tier: 'premium',
+            what: 'Nienhuis quality with digraph boards and double sets for busy classrooms.',
+            quantity: '2 lowercase + capitals + digraphs',
+            size: 'Nienhuis standard',
+            container: 'Premium wooden storage',
+            contents: [
+              '2 complete lowercase sets',
+              '1 capital set',
+              'Green digraph boards: sh, ch, th, wh, ck, ng, qu'
+            ],
+            tips: 'Double set allows two children to work simultaneously. Digraphs on GREEN boards for visual distinction.',
+            price: '¥800-1,500'
+          }
+        ]
+      },
+      {
+        name: 'Sand tray with tools',
+        details: [
+          {
+            name: 'Sand Tray',
+            tier: 'essential',
+            what: 'Shallow tray with fine sand for practicing letter formation. Bridges sandpaper letters to chalkboard to paper writing.',
+            quantity: '2-3 trays for 20 children',
+            size: 'Tray: 26×16cm (small) or 30×20cm (standard). Depth: 3-4cm.',
+            container: 'Wooden tray with low sides',
+            contents: [
+              'Wooden tray',
+              'Fine white sand (1-2kg)',
+              'Wooden stylus (14cm)',
+              'Scraper/smoother (20-27cm) for erasing'
+            ],
+            tips: 'Child traces sandpaper letter, then writes in sand. Finger is primary tool - stylus for refinement. Salt or cornmeal work as sand alternatives.',
+            price: '¥150-300'
+          },
+          {
+            name: 'Sand Tray',
+            tier: 'complete',
+            what: 'Multiple trays with lids for dust-free storage, colored sand options.',
+            quantity: '4-5 trays',
+            size: 'Medium: 30×20cm',
+            container: 'Trays with fitted lids',
+            contents: [
+              'Multiple trays for simultaneous use',
+              'White sand + colored options',
+              'Tools for each tray',
+              'Spray bottle for moisture'
+            ],
+            tips: 'Lids essential for storage. Different colored sand for visual interest and seasonal rotation.',
+            price: '¥400-600'
+          }
+        ]
+      }
+    ]
   },
   {
     shelf: 'Shelf 3: Metal Insets',
     position: 'Dedicated writing preparation area',
-    contents: [
-      'Metal inset stands (2)',
-      'Inset paper box (14×14cm)',
-      'Colored pencil holders (11 colors)',
-      'Completed work display'
-    ],
-    notes: 'Place near table with good light. Include sample completed designs.'
+    notes: 'Develops pencil control, proper grip, and continuous strokes through design work. The PRIMARY handwriting preparation. Daily practice recommended.',
+    items: [
+      {
+        name: 'Metal Insets with stands',
+        details: [
+          {
+            name: 'Metal Insets - Complete Set',
+            tier: 'essential',
+            what: '10 geometric shapes for tracing and filling. Develops hand control needed for handwriting without letter formation pressure.',
+            quantity: '1 complete set',
+            size: 'Frames and insets: 14×14cm exactly',
+            container: '2 sloping wooden stands (75×16×3.5cm each)',
+            contents: [
+              'STRAIGHT-SIDED (5): Square, Rectangle, Triangle, Pentagon, Trapezoid',
+              'CURVED (5): Circle, Oval, Ellipse, Quatrefoil, Curvilinear Triangle',
+              'Colors: BLUE insets with knob, PINK/RED frames'
+            ],
+            tips: 'Start with circle (easiest). Trace INSIDE of frame first, then double outline. Fill with horizontal LEFT-TO-RIGHT lines (reading direction practice).',
+            price: '¥350-600'
+          },
+          {
+            name: 'Metal Insets - Complete Set',
+            tier: 'complete',
+            what: 'Professional quality insets with dedicated storage and ample supplies.',
+            quantity: '1-2 complete sets',
+            size: 'Standard 14×14cm',
+            container: 'Stands + dedicated shelf space',
+            contents: [
+              'Complete 10-shape set',
+              '2 wooden stands',
+              'Paper cabinet nearby',
+              'Pencil organizers'
+            ],
+            tips: 'Second set allows more children to work. Display completed work to inspire. Show progression of designs.',
+            price: '¥600-1,000'
+          },
+          {
+            name: 'Metal Insets - Complete Set',
+            tier: 'premium',
+            what: 'Nienhuis quality with frame cabinet and extensive supplies.',
+            quantity: '2-3 sets',
+            size: 'Nienhuis standard',
+            container: 'Floor frame cabinet (72×23×76cm)',
+            contents: [
+              '2+ complete sets',
+              'Frame cabinet holding all materials',
+              'Extensive paper supply',
+              'Full colored pencil system'
+            ],
+            tips: 'Frame cabinet is beautiful and practical - holds everything. Worth the investment for proper classroom.',
+            price: '¥1,500-3,000'
+          }
+        ]
+      },
+      {
+        name: 'Inset paper box (14×14cm)',
+        details: [
+          {
+            name: 'Metal Inset Paper',
+            tier: 'essential',
+            what: 'Paper cut to EXACT frame size. Must be 14×14cm to match frames precisely.',
+            quantity: '500-750 sheets/month for 20 children',
+            size: '14×14cm EXACTLY (5.5×5.5 inches)',
+            container: 'Wooden paper box or tray',
+            contents: [
+              'White paper (primary)',
+              '3-4 colors for variety',
+              '20lb bond weight'
+            ],
+            tips: 'Paper MUST match frame size exactly - this IS the control of error. Pre-cut or use paper cutter. Children go through lots of paper - stock up!',
+            price: '¥80-150/month'
+          },
+          {
+            name: 'Metal Inset Paper',
+            tier: 'complete',
+            what: 'Full color range with organized storage system.',
+            quantity: '1,000-1,500 sheets/month',
+            size: '14×14cm',
+            container: 'Multi-compartment paper box',
+            contents: [
+              'White + 5 colors',
+              'Organized by color',
+              'Consistent 20lb weight'
+            ],
+            tips: 'Color paper makes beautiful designs. Rotate colors monthly for variety. Save paper by demonstrating technique well.',
+            price: '¥150-250/month'
+          }
+        ]
+      },
+      {
+        name: 'Colored pencil holders (11 colors)',
+        details: [
+          {
+            name: 'Colored Pencils - System',
+            tier: 'essential',
+            what: 'Triangular colored pencils organized by color in individual holders. One color per holder.',
+            quantity: '11 colors × 12 pencils = 132 minimum',
+            size: 'Pencils: 3-sided grip, 3.8mm lead',
+            container: '11 individual wooden holders (one per color)',
+            contents: [
+              'Standard 11 colors: red, orange, yellow, light green, dark green, light blue, dark blue, purple, pink, brown, black',
+              'Triangular grip for proper hold',
+              'Thick lead for beginners'
+            ],
+            tips: 'Triangular pencils teach tripod grip naturally. Sharpen daily - dull pencils frustrate children. Brands: Lyra Groove, Staedtler Noris Junior.',
+            price: '¥200-400 for pencils + holders'
+          }
+        ]
+      }
+    ]
   },
   {
     shelf: 'Shelf 4: Moveable Alphabet & Word Building',
     position: 'Central language area',
-    contents: [
-      'Large Moveable Alphabet box',
-      'Small Moveable Alphabet',
-      'Pink object box',
-      'Pink picture/word cards',
-      'Blue object box',
-      'Blue picture/word cards',
-      'Mats for word building'
-    ],
-    notes: 'Alphabet boxes at easy reach. Object boxes below alphabets.'
+    notes: 'The BREAKTHROUGH material! Child WRITES (encodes) before READING (decodes). Moveable letters allow expression without fine motor demands of pencil.',
+    items: [
+      {
+        name: 'Large Moveable Alphabet box',
+        details: [
+          {
+            name: 'Large Moveable Alphabet (LMA)',
+            tier: 'essential',
+            what: 'Box of loose letters for building words. Child selects letters for sounds heard - first writing! Red/pink consonants, blue vowels.',
+            quantity: '2 sets for 20 children',
+            size: 'Short letters: 5cm tall. Tall letters (b,d,f,h,k,l,t): 8.5-9cm. Box: 58-61×25-35×8cm',
+            container: 'Compartmentalized wooden box with letter guide on bottom',
+            contents: [
+              'VOWELS: 10-15 of each (a, e, i, o, u) = 50-75 blue',
+              'CONSONANTS: 5-10 of each (21 letters) = 105-210 pink',
+              'High-frequency: extra n, r, s, t (10+ each)',
+              'Total: ~155-285 letters per set'
+            ],
+            tips: 'Child builds words on mat below box. Start with CVC objects: "Build the word CAT". Progress: Objects → Pictures → Word lists → Sentences. NOT for reading - for WRITING.',
+            price: '¥300-600 per set'
+          },
+          {
+            name: 'Large Moveable Alphabet (LMA)',
+            tier: 'complete',
+            what: 'Quality wooden or plastic sets with ample quantities for active classroom.',
+            quantity: '3 sets',
+            size: 'Standard dimensions',
+            container: 'Matching wooden boxes',
+            contents: [
+              'Vowels: 15 each',
+              'Consonants: 8-10 each',
+              'Extra common letters'
+            ],
+            tips: 'Multiple sets allow simultaneous work. Check daily that letters are sorted correctly - children mix them up!',
+            price: '¥800-1,500 for 3 sets'
+          },
+          {
+            name: 'Large Moveable Alphabet (LMA)',
+            tier: 'premium',
+            what: 'Nienhuis quality with maximum letter quantities and perfect consistency.',
+            quantity: '4 sets',
+            size: 'Nienhuis: thick durable plastic',
+            container: 'Premium boxes with silk-screened guides',
+            contents: [
+              'Vowels: 15 each',
+              'Consonants: 10 each',
+              'Perfectly consistent sizing'
+            ],
+            tips: 'Nienhuis letters last decades. Worth investment for proper classroom. Thick plastic resists breaking.',
+            price: '¥1,800-3,000 for 4 sets'
+          }
+        ]
+      },
+      {
+        name: 'Pink/Blue/Green object boxes',
+        details: [
+          {
+            name: 'Pink Series Materials',
+            tier: 'essential',
+            what: 'Complete CVC (3-letter word) reading system. Pink = phonetic 3-letter words. Objects → Pictures → Word cards → Booklets.',
+            quantity: '1 complete Pink Series set',
+            size: 'Objects: 2-4cm. Cards: 7.5×10cm. Booklets: 14×11cm.',
+            container: 'Pink-colored boxes/containers',
+            contents: [
+              'OBJECT BOX: 30-50 CVC objects with word labels',
+              'PICTURE CARDS: 48-60 pictures with matching word cards',
+              'WORD LISTS: Short A, Short E, Short I, Short O, Short U',
+              'PHRASE CARDS: "a fat cat", "the red hen"',
+              'BOOKLETS: 24 mini-readers (one per word family)',
+              'SIGHT WORDS: the, a, an, is, in, on, at, it, I, and, to'
+            ],
+            tips: 'Progression: Build words with LMA + objects → Read word labels → Read phrases → Read booklets. Pink = CVC only, no exceptions!',
+            price: '¥400-800'
+          },
+          {
+            name: 'Blue Series Materials',
+            tier: 'essential',
+            what: 'Consonant blends (4+ letter words). Blue = beginning and ending blends like bl-, cr-, -nd, -nk.',
+            quantity: '1 complete Blue Series set',
+            size: 'Same as Pink',
+            container: 'Blue-colored boxes/containers',
+            contents: [
+              'BEGINNING BLENDS: bl, cl, fl, gl, pl, sl, br, cr, dr, fr, gr, pr, tr, sc, sk, sm, sn, sp, st, sw',
+              'ENDING BLENDS: -nd, -nk, -nt, -mp, -ft, -lt, -ck, -ff, -ll, -ss',
+              'Object box with blend words',
+              'Picture cards + word cards',
+              'Booklets: 10 mini-readers'
+            ],
+            tips: 'Master Pink before Blue. Introduce double consonants (ff, ll, ss) first, then L-blends, R-blends, S-blends.',
+            price: '¥400-800'
+          },
+          {
+            name: 'Green Series Materials',
+            tier: 'complete',
+            what: 'Phonograms (letter combinations making special sounds). Green = ai, ee, oa, sh, ch, th, etc.',
+            quantity: '1 complete Green Series set',
+            size: 'Same as Pink/Blue',
+            container: 'Green-colored boxes/containers',
+            contents: [
+              'CONSONANT DIGRAPHS: sh, ch, th, wh, ck, ng',
+              'LONG VOWELS: a_e, ai, ay, ee, ea, i_e, ie, o_e, oa, ow, u_e, ue',
+              'R-CONTROLLED: ar, er, ir, or, ur',
+              'OTHER: oo, ou, oi, oy, au, aw',
+              '36 phonogram booklets (one per phonogram)'
+            ],
+            tips: 'Phonogram highlighted in RED within words. Start with consonant digraphs, then silent-e patterns, then vowel teams.',
+            price: '¥600-1,200'
+          }
+        ]
+      }
+    ]
   },
   {
-    shelf: 'Shelf 5: Green Series & Phonograms',
-    position: 'Adjacent to moveable alphabet',
-    contents: [
-      'Green phonogram cards (organized by pattern)',
-      'Word family folders',
-      'Phonogram booklets',
-      'Silent e materials',
-      'R-controlled vowel cards'
-    ],
-    notes: 'Organize by phonogram pattern in labeled boxes or folders.'
-  },
-  {
-    shelf: 'Shelf 6: Reading',
-    position: 'Comfortable reading corner',
-    contents: [
-      'Pink booklets',
-      'Blue booklets',
-      'Green booklets',
-      'Leveled readers',
-      'Sight word cards',
-      'Command cards',
-      'Comprehension cards'
-    ],
-    notes: 'Include cozy reading space with pillows/chairs nearby.'
-  },
-  {
-    shelf: 'Shelf 7: Grammar',
+    shelf: 'Shelf 5: Grammar',
     position: 'Language area extension',
-    contents: [
-      '3D grammar symbols (on tray)',
-      '2D grammar symbols box',
-      'Grammar boxes 1-9',
-      'Verb tense materials',
-      'Sentence analysis charts',
-      'Grammar command cards'
-    ],
-    notes: '3D symbols displayed on tray. 2D symbols organized by part of speech.'
-  },
-  {
-    shelf: 'Shelf 8: Writing & Word Study',
-    position: 'Near writing tables',
-    contents: [
-      'Lined writing paper',
-      'Primary pencils',
-      'Writing journals',
-      'Story paper',
-      'Copy work cards',
-      'Blank books',
-      'Compound word cards',
-      'Prefix/suffix cards',
-      'Synonym/antonym cards'
-    ],
-    notes: 'Writing materials near tables with good posture support.'
+    notes: 'Grammar introduced in final Primary year (5-6) to fluent readers. Focus is SENSORIAL exploration through games - NOT formal workbooks.',
+    items: [
+      {
+        name: '3D grammar symbols (on tray)',
+        details: [
+          {
+            name: '3D Grammar Symbols',
+            tier: 'complete',
+            what: 'Large solid wooden shapes representing parts of speech. For introduction and impressionistic lesson.',
+            quantity: '1 set on display tray',
+            size: '8.5×8.5cm base, varying heights',
+            container: 'Wooden tray with stands',
+            contents: [
+              '⚫ NOUN: Large black triangle',
+              '🔵 ARTICLE: Small light blue triangle',
+              '🔷 ADJECTIVE: Medium dark blue triangle',
+              '🔴 VERB: Red circle',
+              '🟠 ADVERB: Small orange circle',
+              '🟢 PREPOSITION: Green crescent',
+              '🟣 PRONOUN: Purple isosceles triangle',
+              '💗 CONJUNCTION: Pink rectangle',
+              '💛 INTERJECTION: Gold keyhole'
+            ],
+            tips: 'Use for impressionistic introduction. Tell "story" of each part of speech. Progress to 2D flat symbols for daily work.',
+            price: '¥400-800'
+          }
+        ]
+      },
+      {
+        name: '2D grammar symbols box',
+        details: [
+          {
+            name: '2D Grammar Symbols',
+            tier: 'essential',
+            what: 'Flat symbols for daily work - labeling words in sentences, grammar games, sentence analysis.',
+            quantity: '2-3 sets for classroom use',
+            size: 'Large triangle: 4-5cm base. Circle: 4.5cm diameter.',
+            container: '10-15 compartment wooden box',
+            contents: [
+              '10 of each symbol per set',
+              'Same shapes/colors as 3D',
+              'Flat for table work'
+            ],
+            tips: 'Children place symbols above each word in sentence. Start with noun + verb only. Add article, adjective gradually.',
+            price: '¥150-400'
+          }
+        ]
+      },
+      {
+        name: 'Grammar Farm materials',
+        details: [
+          {
+            name: 'Grammar Farm (Miniature Environment)',
+            tier: 'complete',
+            what: 'Miniature farm with labels for Function of Words activities. Most engaging way to introduce grammar.',
+            quantity: '1 farm setup',
+            size: 'Barn ~30cm. Animals 5-10cm.',
+            container: 'Farm + labeled basket of word cards',
+            contents: [
+              'Wooden barn or farm set',
+              'Farm animals (5-8): cow, horse, pig, sheep, chicken, duck',
+              'Farmer figure',
+              'Fencing, trees, accessories',
+              'BLACK noun labels for all items',
+              'RED verb command cards',
+              'BLUE adjective cards'
+            ],
+            tips: 'The farm makes grammar come alive! Child labels all nouns black, reads verb commands ("The pig walks"), adds adjectives ("the big pig").',
+            price: '¥300-600'
+          }
+        ]
+      },
+      {
+        name: 'Command cards',
+        details: [
+          {
+            name: 'Command Cards (Verb Cards)',
+            tier: 'essential',
+            what: 'Action word cards that child reads and performs. Experiential introduction to verbs.',
+            quantity: '20-30 cards per level',
+            size: '9×3cm, RED color coding',
+            container: 'Small basket or card box',
+            contents: [
+              'PINK LEVEL: sit, run, hop, skip, jump, stand',
+              'BLUE LEVEL: walk quickly, hop twice, stand near the door',
+              'GREEN LEVEL: Walk to the window and wave.'
+            ],
+            tips: 'RED cards = action! Child reads silently, does action, class guesses word. Fun and active way to learn verbs.',
+            price: '¥50-150'
+          }
+        ]
+      },
+      {
+        name: 'Detective Adjective Game',
+        details: [
+          {
+            name: 'Detective Adjective Game',
+            tier: 'complete',
+            what: '63 triangles in 3 colors (red, yellow, blue), 3 types (equilateral, isosceles, scalene), 3 sizes. Demonstrates how adjectives narrow down choices.',
+            quantity: '1 set',
+            size: 'Triangles vary. Box: 25×17cm.',
+            container: 'Wooden box with compartments',
+            contents: [
+              '21 red triangles (7 each type × 3 sizes)',
+              '21 yellow triangles',
+              '21 blue triangles',
+              'Cards: "Give me a triangle" → "Give me a blue triangle" → "Give me a small blue triangle"'
+            ],
+            tips: 'Shows WHY we need adjectives - to be specific! Detective must narrow down from 63 to 1 using adjectives.',
+            price: '¥100-250'
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -3585,6 +4299,7 @@ export default function EnglishProcurementPage() {
   const [essentialOnly, setEssentialOnly] = useState(false);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [selectedPhonogramType, setSelectedPhonogramType] = useState<string>('all');
+  const [expandedShelfItem, setExpandedShelfItem] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -3997,29 +4712,200 @@ export default function EnglishProcurementPage() {
 
         {/* SHELF LAYOUT VIEW */}
         {viewMode === 'shelves' && (
-          <div className="bg-slate-800 rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold mb-4">Classroom Shelf Organization</h2>
-            <p className="text-gray-300 mb-6">How to arrange language materials on classroom shelves for optimal flow and accessibility.</p>
-            
-            <div className="space-y-4">
-              {shelfOrganization.map((shelf, i) => (
-                <div key={i} className="border border-slate-600 rounded-lg overflow-hidden">
-                  <div className="bg-amber-50 px-4 py-3 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-amber-800">{shelf.shelf}</h3>
-                    <span className="text-sm text-amber-600">{shelf.position}</span>
-                  </div>
-                  <div className="p-4">
-                    <ul className="list-disc list-inside space-y-1 mb-3">
-                      {shelf.contents.map((item, j) => (
-                        <li key={j} className="text-gray-200">{item}</li>
-                      ))}
-                    </ul>
-                    <div className="bg-blue-50 text-blue-700 text-sm p-2 rounded">
-                      💡 {shelf.notes}
-                    </div>
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-600">
+              <h2 className="text-2xl font-bold mb-2">🗄️ Complete Shelf Setup Guide</h2>
+              <p className="text-gray-300 mb-4">Click any item for detailed specifications. Three tiers help you prioritize your budget.</p>
+              
+              {/* Tier Legend */}
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-emerald-500"></span>
+                  <span className="text-emerald-400 font-medium">Essential</span>
+                  <span className="text-gray-400">- Minimum viable, budget-friendly</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-blue-500"></span>
+                  <span className="text-blue-400 font-medium">Complete</span>
+                  <span className="text-gray-400">- Professional AMI standard</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-purple-500"></span>
+                  <span className="text-purple-400 font-medium">Premium</span>
+                  <span className="text-gray-400">- Comprehensive, beautiful</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Shelves */}
+            {detailedShelfOrganization.map((shelf, shelfIndex) => (
+              <div key={shelfIndex} className="bg-slate-800 rounded-xl overflow-hidden border border-slate-600">
+                {/* Shelf Header */}
+                <div className="bg-gradient-to-r from-amber-600 to-amber-700 px-5 py-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-xl text-white">{shelf.shelf}</h3>
+                    <span className="text-amber-100 text-sm bg-amber-800/50 px-3 py-1 rounded-full">{shelf.position}</span>
                   </div>
                 </div>
-              ))}
+                
+                {/* Shelf Note */}
+                <div className="bg-blue-900/30 border-b border-blue-500/30 px-5 py-3">
+                  <p className="text-blue-200 text-sm">💡 {shelf.notes}</p>
+                </div>
+
+                {/* Items List */}
+                <div className="divide-y divide-slate-700">
+                  {shelf.items.map((item, itemIndex) => {
+                    const itemKey = `${shelfIndex}-${itemIndex}`;
+                    const isExpanded = expandedShelfItem === itemKey;
+                    
+                    return (
+                      <div key={itemIndex} className="bg-slate-800">
+                        {/* Item Header - Clickable */}
+                        <button
+                          onClick={() => setExpandedShelfItem(isExpanded ? null : itemKey)}
+                          className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-700/50 transition text-left"
+                        >
+                          <span className="font-medium text-gray-100">{item.name}</span>
+                          <div className="flex items-center gap-3">
+                            {/* Tier indicators */}
+                            <div className="flex gap-1">
+                              {item.details.some(d => d.tier === 'essential') && (
+                                <span className="w-3 h-3 rounded-full bg-emerald-500" title="Essential"></span>
+                              )}
+                              {item.details.some(d => d.tier === 'complete') && (
+                                <span className="w-3 h-3 rounded-full bg-blue-500" title="Complete"></span>
+                              )}
+                              {item.details.some(d => d.tier === 'premium') && (
+                                <span className="w-3 h-3 rounded-full bg-purple-500" title="Premium"></span>
+                              )}
+                            </div>
+                            <span className={`text-xl transition-transform ${isExpanded ? 'rotate-90' : ''}`}>›</span>
+                          </div>
+                        </button>
+
+                        {/* Expanded Details */}
+                        {isExpanded && (
+                          <div className="px-5 pb-5 space-y-4">
+                            {item.details.map((detail, detailIndex) => {
+                              const tierColors = {
+                                essential: { bg: 'bg-emerald-900/30', border: 'border-emerald-500/40', badge: 'bg-emerald-500', text: 'text-emerald-300' },
+                                complete: { bg: 'bg-blue-900/30', border: 'border-blue-500/40', badge: 'bg-blue-500', text: 'text-blue-300' },
+                                premium: { bg: 'bg-purple-900/30', border: 'border-purple-500/40', badge: 'bg-purple-500', text: 'text-purple-300' }
+                              };
+                              const colors = tierColors[detail.tier];
+
+                              return (
+                                <div key={detailIndex} className={`rounded-lg p-5 ${colors.bg} border ${colors.border}`}>
+                                  {/* Tier Badge */}
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <span className={`${colors.badge} text-white text-xs font-bold px-3 py-1 rounded-full uppercase`}>
+                                      {detail.tier === 'essential' ? '🟢 Essential' : detail.tier === 'complete' ? '🔵 Complete' : '🟣 Premium'}
+                                    </span>
+                                    <span className={`${colors.text} font-medium`}>{detail.price}</span>
+                                  </div>
+
+                                  {/* What */}
+                                  <div className="mb-4">
+                                    <h5 className="text-xs uppercase tracking-wide text-gray-400 mb-1">What is this?</h5>
+                                    <p className="text-gray-200">{detail.what}</p>
+                                  </div>
+
+                                  {/* Grid of specs */}
+                                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                    <div className="bg-slate-800/50 rounded-lg p-3">
+                                      <h5 className="text-xs uppercase tracking-wide text-gray-400 mb-1">📦 How Many?</h5>
+                                      <p className="text-gray-200 text-sm">{detail.quantity}</p>
+                                    </div>
+                                    <div className="bg-slate-800/50 rounded-lg p-3">
+                                      <h5 className="text-xs uppercase tracking-wide text-gray-400 mb-1">📐 Size</h5>
+                                      <p className="text-gray-200 text-sm">{detail.size}</p>
+                                    </div>
+                                    <div className="bg-slate-800/50 rounded-lg p-3 md:col-span-2">
+                                      <h5 className="text-xs uppercase tracking-wide text-gray-400 mb-1">📁 Container / Storage</h5>
+                                      <p className="text-gray-200 text-sm">{detail.container}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Contents if available */}
+                                  {detail.contents && detail.contents.length > 0 && (
+                                    <div className="mb-4">
+                                      <h5 className="text-xs uppercase tracking-wide text-gray-400 mb-2">📋 What to Include</h5>
+                                      <div className="bg-slate-800/50 rounded-lg p-3">
+                                        <ul className="space-y-1">
+                                          {detail.contents.map((content, i) => (
+                                            <li key={i} className="text-gray-200 text-sm">{content}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Tips */}
+                                  <div className="bg-amber-900/40 border border-amber-500/30 rounded-lg p-3">
+                                    <h5 className="text-xs uppercase tracking-wide text-amber-400 mb-1">💡 Practical Tips</h5>
+                                    <p className="text-amber-200/90 text-sm">{detail.tips}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Budget Summary */}
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-600">
+              <h3 className="text-xl font-bold mb-4">💰 Budget Summary (20 Children)</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-emerald-900/30 border border-emerald-500/40 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-4 h-4 rounded-full bg-emerald-500"></span>
+                    <span className="font-bold text-emerald-400">Essential Tier</span>
+                  </div>
+                  <div className="text-3xl font-bold text-white mb-1">¥5,500 - ¥10,000</div>
+                  <div className="text-emerald-300 text-sm">Minimum viable classroom setup</div>
+                  <ul className="text-gray-300 text-sm mt-3 space-y-1">
+                    <li>• Basic vocabulary baskets</li>
+                    <li>• 1 set sandpaper letters</li>
+                    <li>• 2 moveable alphabets</li>
+                    <li>• 1 Pink/Blue/Green series</li>
+                  </ul>
+                </div>
+                <div className="bg-blue-900/30 border border-blue-500/40 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-4 h-4 rounded-full bg-blue-500"></span>
+                    <span className="font-bold text-blue-400">Complete Tier</span>
+                  </div>
+                  <div className="text-3xl font-bold text-white mb-1">¥17,000 - ¥30,000</div>
+                  <div className="text-blue-300 text-sm">Professional AMI standard</div>
+                  <ul className="text-gray-300 text-sm mt-3 space-y-1">
+                    <li>• Full vocabulary collection</li>
+                    <li>• Quality card materials</li>
+                    <li>• 3 moveable alphabets</li>
+                    <li>• Grammar materials</li>
+                  </ul>
+                </div>
+                <div className="bg-purple-900/30 border border-purple-500/40 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-4 h-4 rounded-full bg-purple-500"></span>
+                    <span className="font-bold text-purple-400">Premium Tier</span>
+                  </div>
+                  <div className="text-3xl font-bold text-white mb-1">¥40,000 - ¥80,000</div>
+                  <div className="text-purple-300 text-sm">Comprehensive, museum quality</div>
+                  <ul className="text-gray-300 text-sm mt-3 space-y-1">
+                    <li>• Nienhuis materials</li>
+                    <li>• Custom wooden storage</li>
+                    <li>• 4+ moveable alphabets</li>
+                    <li>• Complete everything</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         )}
