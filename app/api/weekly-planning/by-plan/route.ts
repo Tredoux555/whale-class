@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         work_name: a.work_name,
         work_name_chinese: videoInfo?.chinese,
         area: a.area,
-        progress_status: a.progress_status || 'not_started',
+        progress_status: 'not_started',
         work_id: a.work_id,
         video_url: videoInfo?.url,
         notes: a.notes

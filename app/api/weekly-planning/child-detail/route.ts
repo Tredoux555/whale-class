@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     // Get assignments for this child and plan
     let assignmentsQuery = supabase
       .from('weekly_assignments')
-      .select('id, work_id, work_name, area, progress_status, notes')
+      .select('id, work_id, work_name, area, notes')
       .eq('child_id', childId);
 
     if (planId) {
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
         work_name: a.work_name,
         work_name_chinese: workInfo?.chinese,
         area: a.area,
-        progress_status: a.progress_status || 'not_started',
+        progress_status: 'not_started',
         work_id: a.work_id,
         video_url: workInfo?.url,
         notes: a.notes
