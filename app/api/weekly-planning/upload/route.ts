@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     // Create assignments for each child-work pair
     if (savedPlan) {
-      await createAssignments(supabase, savedPlan.id, matchedPlan);
+      await createAssignments(supabase, weekNumber, year, matchedPlan);
     }
 
     return NextResponse.json({
@@ -271,7 +271,8 @@ async function matchWorksToCurriculum(
 
 async function createAssignments(
   supabase: SupabaseClient, 
-  planId: string, 
+  weekNumber: number,
+  year: number,
   plan: TranslatedPlan
 ) {
   // Get children from database
@@ -301,7 +302,8 @@ async function createAssignments(
       if (area === 'mathematics') area = 'math';
       
       assignments.push({
-        weekly_plan_id: planId,
+        week_number: weekNumber,
+        year: year,
         child_id: child.id,
         work_id: work.matchedWorkId || null,
         work_name: work.workNameEnglish || work.workNameChinese,
@@ -311,11 +313,12 @@ async function createAssignments(
   }
 
   if (assignments.length > 0) {
-    // Delete existing assignments for this plan
+    // Delete existing assignments for this week
     await supabase
       .from('weekly_assignments')
       .delete()
-      .eq('weekly_plan_id', planId);
+      .eq('week_number', weekNumber)
+      .eq('year', year);
 
     // Insert new assignments
     const { error } = await supabase

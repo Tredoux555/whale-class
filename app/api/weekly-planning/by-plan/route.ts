@@ -13,19 +13,31 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const url = new URL(request.url);
     const planId = url.searchParams.get('planId');
+    const week = url.searchParams.get('week');
+    const year = url.searchParams.get('year');
 
-    if (!planId) {
-      return NextResponse.json({ error: 'planId required' }, { status: 400 });
+    // Get week/year from plan if planId provided
+    let weekNumber = week ? parseInt(week) : 0;
+    let yearNumber = year ? parseInt(year) : new Date().getFullYear();
+
+    if (planId) {
+      const { data: plan } = await supabase
+        .from('weekly_plans')
+        .select('week_number, year, translated_content')
+        .eq('id', planId)
+        .single();
+      
+      if (plan) {
+        weekNumber = plan.week_number;
+        yearNumber = plan.year;
+      }
     }
 
-    // Get the plan to extract translated content (for notes/focus areas)
-    const { data: plan } = await supabase
-      .from('weekly_plans')
-      .select('translated_content')
-      .eq('id', planId)
-      .single();
+    if (!weekNumber) {
+      return NextResponse.json({ error: 'week required' }, { status: 400 });
+    }
 
-    // Get all assignments for this plan
+    // Get all assignments for this week/year (NOT weekly_plan_id!)
     const { data: assignments, error } = await supabase
       .from('weekly_assignments')
       .select(`
@@ -34,10 +46,13 @@ export async function GET(request: NextRequest) {
         work_id,
         work_name,
         area,
+        status,
+        progress_status,
         notes,
         children(id, name, avatar_emoji)
       `)
-      .eq('weekly_plan_id', planId)
+      .eq('week_number', weekNumber)
+      .eq('year', yearNumber)
       .order('area');
 
     if (error) {
@@ -47,32 +62,20 @@ export async function GET(request: NextRequest) {
 
     // Get video URLs for matched works
     const workIds = assignments?.map(a => a.work_id).filter(Boolean) || [];
-    const { data: videos } = await supabase
-      .from('curriculum_roadmap')
-      .select('id, video_url, chinese_name')
-      .in('id', workIds);
-
-    const videoMap = new Map(videos?.map(v => [v.id, { url: v.video_url, chinese: v.chinese_name }]) || []);
-
-    // Extract notes and focus areas from translated content
-    const planContent = plan?.translated_content as any;
-    const childNotesMap = new Map<string, { notes?: string; focusArea?: string }>();
+    let videoMap = new Map();
     
-    if (planContent?.assignments) {
-      for (const assignment of planContent.assignments) {
-        childNotesMap.set(assignment.childName.toLowerCase(), {
-          notes: assignment.observationNotes,
-          focusArea: assignment.focusArea
-        });
-      }
+    if (workIds.length > 0) {
+      const { data: videos } = await supabase
+        .from('curriculum_roadmap')
+        .select('id, video_url, chinese_name')
+        .in('id', workIds);
+      videoMap = new Map(videos?.map(v => [v.id, { url: v.video_url, chinese: v.chinese_name }]) || []);
     }
 
     // Group assignments by child
     const childMap = new Map<string, {
       id: string;
       name: string;
-      focus_area?: string;
-      observation_notes?: string;
       assignments: any[];
     }>();
 
@@ -84,12 +87,9 @@ export async function GET(request: NextRequest) {
       const childName = childData.name;
       
       if (!childMap.has(childId)) {
-        const extraInfo = childNotesMap.get(childName.toLowerCase()) || {};
         childMap.set(childId, {
           id: childId,
           name: childName,
-          focus_area: extraInfo.focusArea,
-          observation_notes: extraInfo.notes,
           assignments: []
         });
       }
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         work_name: a.work_name,
         work_name_chinese: videoInfo?.chinese,
         area: a.area,
-        progress_status: 'not_started',
+        progress_status: a.progress_status || a.status || 'not_started',
         work_id: a.work_id,
         video_url: videoInfo?.url,
         notes: a.notes
@@ -112,7 +112,12 @@ export async function GET(request: NextRequest) {
     const children = Array.from(childMap.values())
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return NextResponse.json({ children });
+    return NextResponse.json({ 
+      children,
+      week: weekNumber,
+      year: yearNumber,
+      totalAssignments: assignments?.length || 0
+    });
 
   } catch (error) {
     console.error('Failed to fetch assignments by plan:', error);
