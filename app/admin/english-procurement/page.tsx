@@ -34,6 +34,341 @@ interface Work {
   videoUrl?: string;
 }
 
+// Extension detail information for expandable extension cards
+interface ExtensionDetail {
+  name: string;
+  what: string;
+  howTo: string;
+  materials?: string;
+  readiness: string;
+}
+
+const extensionDetails: Record<string, ExtensionDetail> = {
+  // Oral Language Extensions
+  'Label matching after learning to read': {
+    name: 'Label Matching',
+    what: 'Child reads labels and places them on corresponding objects around the classroom.',
+    howTo: 'Prepare laminated word labels for classroom objects. Child takes a basket of labels, reads each one, walks to find the object, places label on or near it. Self-correcting: object and label must match.',
+    materials: 'Laminated word labels (same font as reading materials), small basket to carry labels',
+    readiness: 'Child can read CVC words and some sight words fluently'
+  },
+  'Creating own labels': {
+    name: 'Creating Own Labels',
+    what: 'Child writes their own labels for objects using Moveable Alphabet or pencil.',
+    howTo: 'Child chooses an object, sounds out the word, builds it with Moveable Alphabet or writes on paper strip. Teacher helps with spelling if needed. Child places their label on the object.',
+    materials: 'Paper strips, pencil, or Moveable Alphabet',
+    readiness: 'Child can build simple words with Moveable Alphabet'
+  },
+  'Sorting objects by category': {
+    name: 'Sorting by Category',
+    what: 'Child groups objects from mixed basket into categories (animals, foods, tools, etc.).',
+    howTo: 'Present mixed basket of objects from multiple categories. Child sorts onto mat creating distinct groups. Discuss why items belong together. Add category labels for readers.',
+    materials: 'Mixed object basket, sorting mat, category labels',
+    readiness: 'Child knows names of objects and understands grouping concept'
+  },
+  'Adding more objects to categories': {
+    name: 'Expanding Categories',
+    what: 'Find additional objects that belong in established categories.',
+    howTo: 'After mastering initial category, child searches classroom or brings items from home that fit the category. Discuss what makes something belong (or not).',
+    materials: 'Existing category baskets, new objects to add',
+    readiness: 'Child understands classification principles'
+  },
+  'Child teaches younger child': {
+    name: 'Peer Teaching',
+    what: 'Older child presents the Three-Period Lesson to a younger child.',
+    howTo: 'Observe older child demonstrating mastery. Invite them to "help" a younger friend learn. Guide gently but let older child lead. Validates learning and builds confidence.',
+    materials: 'Same materials used for original presentation',
+    readiness: 'Child has fully mastered the material and shows patience'
+  },
+  'Story dictation': {
+    name: 'Story Dictation',
+    what: 'Child tells a story while adult writes it down, then child illustrates.',
+    howTo: 'Invite child to tell a story. Write exactly what they say (their words, their grammar). Read it back. Child illustrates. Bind into book. Powerful bridge to writing.',
+    materials: 'Paper, pencil, colored pencils, stapler for binding',
+    readiness: 'Child can form simple sentences verbally'
+  },
+  'Matching card to card': {
+    name: 'Card Matching',
+    what: 'Match identical picture cards without the control card present.',
+    howTo: 'Use two identical sets of picture cards. Lay out one set. Child matches second set by finding pairs. Builds visual discrimination.',
+    materials: 'Two identical sets of picture cards',
+    readiness: 'Child has mastered basic three-part card work'
+  },
+  'Memory game with cards': {
+    name: 'Memory/Concentration Game',
+    what: 'Classic memory game using nomenclature cards turned face-down.',
+    howTo: 'Place cards face-down in grid. Child turns over two at a time seeking matches. Say the name of each card turned. Builds memory, vocabulary reinforcement.',
+    materials: 'Matching pairs of picture cards',
+    readiness: 'Child knows all vocabulary in the set'
+  },
+  'Child makes own cards': {
+    name: 'Child-Made Cards',
+    what: 'Child creates their own three-part card set from drawings or cut pictures.',
+    howTo: 'Child draws or cuts pictures, creates labels (with Moveable Alphabet or writing). Mount on cardstock. Laminate if possible. Child has ownership of their creation.',
+    materials: 'Paper, scissors, glue, magazines for cutting, laminating sheets (optional)',
+    readiness: 'Child can write or build words, has fine motor control for cutting'
+  },
+  'Classify objects as living/non-living': {
+    name: 'Living/Non-Living Sort',
+    what: 'Sort objects or pictures into living and non-living categories.',
+    howTo: 'Introduce concept: "Living things grow, need food, breathe." Sort pictures or miniatures. Discuss edge cases (seeds, wood). Great science-language connection.',
+    materials: 'Mixed pictures or objects of living/non-living things, sorting mat',
+    readiness: 'Child understands that things can be grouped by characteristics'
+  },
+  'Research projects on animals/plants': {
+    name: 'Research Projects',
+    what: 'Child investigates a topic of interest and creates a report or presentation.',
+    howTo: 'Child chooses topic (favorite animal, plant, etc.). Use books, pictures, observation. Child creates booklet with drawings and dictated/written facts. Share with class.',
+    materials: 'Reference books, paper for booklet, drawing materials',
+    readiness: 'Child shows sustained interest in a topic, can dictate or write simple sentences'
+  },
+  // Sound Games Extensions
+  'Ending sounds': {
+    name: 'Ending Sound I Spy',
+    what: 'Identify the ENDING sound of words instead of beginning.',
+    howTo: '"I spy something that ends with /t/." Progress after solid beginning sound mastery. More challenging as ending sounds are less prominent in speech.',
+    materials: 'Same objects used for beginning sounds',
+    readiness: 'Child consistently identifies beginning sounds'
+  },
+  'Middle sounds': {
+    name: 'Middle Sound I Spy',
+    what: 'Identify the MIDDLE (vowel) sound of CVC words.',
+    howTo: '"I spy something with /a/ in the middle." Most challenging level. Focus on short vowels. Essential preparation for reading.',
+    materials: 'CVC objects only (cat, pig, cup, etc.)',
+    readiness: 'Child identifies both beginning and ending sounds easily'
+  },
+  'Full segmentation': {
+    name: 'Full Segmentation',
+    what: 'Child breaks word into ALL individual sounds.',
+    howTo: '"What sounds do you hear in CAT?" Child says "/c/ - /a/ - /t/" while tapping or using counters. This is phonemic awareness at its highest level.',
+    materials: 'Objects, counters or tapping surface',
+    readiness: 'Child identifies beginning, middle, and ending sounds separately'
+  },
+  'Rhyming games': {
+    name: 'Rhyming Games',
+    what: 'Identify words that rhyme (sound the same at the end).',
+    howTo: 'Present pairs: "Do CAT and BAT rhyme?" Progress to "What rhymes with CAT?" Use objects, pictures, or just words. Songs and books with rhymes help.',
+    materials: 'Rhyming object pairs, rhyming picture cards, rhyming books',
+    readiness: 'Child has been exposed to rhyming books/songs, ready around age 3.5+'
+  },
+  // Sandpaper Letter Extensions
+  'Capital letters': {
+    name: 'Capital Sandpaper Letters',
+    what: 'Introduce uppercase letters after lowercase mastery.',
+    howTo: 'Same Three-Period Lesson approach. Connect to lowercase: "This is the capital A. It makes the same sound /a/ as lowercase a."',
+    materials: 'Capital sandpaper letter set',
+    readiness: 'Child knows all lowercase letters and sounds'
+  },
+  'Phonogram sandpaper letters': {
+    name: 'Phonogram Letters',
+    what: 'Introduce letter combinations that make special sounds (sh, ch, th, etc.).',
+    howTo: 'Present on GREEN boards to distinguish from single letters. "These two letters together say /sh/." Same tracing technique.',
+    materials: 'Phonogram sandpaper letters (usually green)',
+    readiness: 'Child knows all single letter sounds, beginning to read'
+  },
+  'Eyes closed tracing': {
+    name: 'Eyes Closed Tracing',
+    what: 'Trace sandpaper letters with eyes closed to strengthen muscle memory.',
+    howTo: 'Child traces while looking, says sound. Then closes eyes and traces again, relying on touch and muscle memory. Builds strong tactile connection.',
+    materials: 'Sandpaper letters',
+    readiness: 'Child knows the letter well, seeks challenge'
+  },
+  'Mystery bag with letters': {
+    name: 'Mystery Letter Bag',
+    what: 'Identify letters by touch alone in a mystery bag.',
+    howTo: 'Place 3-5 known letters in fabric bag. Child reaches in, feels letter without looking, says the sound. Pulls out to verify.',
+    materials: 'Fabric bag, sandpaper letters',
+    readiness: 'Child knows several letters confidently'
+  },
+  // Metal Inset Extensions
+  'Combine two shapes': {
+    name: 'Combined Shape Designs',
+    what: 'Trace two or more insets overlapping to create complex designs.',
+    howTo: 'Trace first shape, then position second overlapping. Different colored pencils for each. Fill sections with different patterns. Creates beautiful complex artwork.',
+    materials: 'Metal insets, colored pencils, paper',
+    readiness: 'Child has mastered single shape filling'
+  },
+  'Create patterns and designs': {
+    name: 'Pattern Designs',
+    what: 'Fill shapes with varied patterns: zigzags, waves, spirals, dots.',
+    howTo: 'After mastering horizontal lines, introduce new filling patterns. Demonstrate one new pattern at a time. Child experiments with creating their own patterns.',
+    materials: 'Metal insets, colored pencils, paper',
+    readiness: 'Child fills shapes with consistent horizontal lines'
+  },
+  'Gradation of color': {
+    name: 'Color Gradation',
+    what: 'Fill shape with color that gradually shifts from dark to light.',
+    howTo: 'Use one colored pencil, press hard at top (dark), gradually lighter pressure moving down. Or use color family: dark blue → blue → light blue.',
+    materials: 'Metal insets, colored pencils (same color family), paper',
+    readiness: 'Child has good pencil control and understands light/dark'
+  },
+  'Fill with curved lines': {
+    name: 'Curved Line Filling',
+    what: 'Fill shapes with curved or wavy lines instead of straight.',
+    howTo: 'Demonstrate smooth curved lines following the shape contour. Or free-form waves. Builds flexibility in hand movement.',
+    materials: 'Metal insets, colored pencils, paper',
+    readiness: 'Child has mastered straight line filling'
+  },
+  // Moveable Alphabet Extensions
+  'Build from pictures': {
+    name: 'Picture Word Building',
+    what: 'Build words from picture cards without the object present.',
+    howTo: 'Present picture card. Child says word, segments sounds, builds with Moveable Alphabet. More abstract than objects - can\'t hold/manipulate picture.',
+    materials: 'Picture cards, Moveable Alphabet',
+    readiness: 'Child can build words with objects present'
+  },
+  'Build phrases': {
+    name: 'Phrase Building',
+    what: 'Build two or more words together forming a phrase.',
+    howTo: '"a fat cat" - child builds three words with spaces between. Introduces word spacing concept. Use phrase cards for reading back.',
+    materials: 'Moveable Alphabet, phrase cards or objects',
+    readiness: 'Child can build individual words fluently'
+  },
+  'Build sentences': {
+    name: 'Sentence Building',
+    what: 'Build complete sentences with capital letter and punctuation.',
+    howTo: 'Introduce capital letter at beginning, period at end. "The cat sat." Progress to longer sentences. Child can write own stories.',
+    materials: 'Moveable Alphabet (including capitals and punctuation)',
+    readiness: 'Child builds phrases easily, ready for full sentences'
+  },
+  'Build with phonograms': {
+    name: 'Phonogram Word Building',
+    what: 'Build words containing phonograms (sh, ch, ee, ai, etc.).',
+    howTo: 'Use words with known phonograms. Some alphabets have phonogram tiles; otherwise use two letters together. Bridge to Green Series reading.',
+    materials: 'Moveable Alphabet, phonogram objects/pictures',
+    readiness: 'Child knows phonogram sounds from sandpaper letters'
+  },
+  // Reading Extensions
+  'Object to word matching': {
+    name: 'Object-Word Matching',
+    what: 'Match word cards to corresponding objects.',
+    howTo: 'Lay out objects. Child reads each word card, places with matching object. Self-checking through the match.',
+    materials: 'Objects, word cards with pink/blue/green border to match series',
+    readiness: 'Child is decoding at that series level'
+  },
+  'Picture to word matching': {
+    name: 'Picture-Word Matching',
+    what: 'Match word cards to picture cards.',
+    howTo: 'Lay out pictures. Child reads word cards, matches to pictures. More abstract than objects. Can be self-correcting with control card.',
+    materials: 'Picture cards, word cards',
+    readiness: 'Child can decode words at that level'
+  },
+  'Word list reading': {
+    name: 'Word Lists',
+    what: 'Read lists of words organized by pattern.',
+    howTo: 'Lists organized by word family or phonogram. Child reads down the list, noticing patterns. Builds fluency through repetition.',
+    materials: 'Printed word lists (teacher-made or commercial)',
+    readiness: 'Child can decode the pattern type'
+  },
+  'Booklet reading': {
+    name: 'Phonetic Readers',
+    what: 'Read simple booklets using controlled vocabulary.',
+    howTo: 'Small booklets with only decodable words (plus sight words). Child reads independently. Discuss story. Build reading confidence.',
+    materials: 'Phonetic readers at Pink/Blue/Green level',
+    readiness: 'Child can decode words at that level, wants to "read a book"'
+  },
+  'Sentence strips': {
+    name: 'Sentence Strip Reading',
+    what: 'Read sentences and match to pictures or perform actions.',
+    howTo: 'Present sentence strip. Child reads, then matches to picture or performs the action described. "The cat is on the mat."',
+    materials: 'Sentence strips, matching pictures or real objects',
+    readiness: 'Child can read phrases fluently'
+  },
+  'Command cards': {
+    name: 'Action Commands',
+    what: 'Read action sentences and perform them.',
+    howTo: 'Child reads card silently, performs action (hop, sit, get the book). Other children guess the word/phrase. Kinesthetic reading practice.',
+    materials: 'Command cards (red-coded for verbs)',
+    readiness: 'Child can read sentences, enjoys movement activities'
+  },
+  'Dictation': {
+    name: 'Spelling Dictation',
+    what: 'Teacher says word, child writes/builds it.',
+    howTo: 'Teacher says word clearly. Child segments sounds mentally, writes or builds with Moveable Alphabet. Reversal of reading process - encoding.',
+    materials: 'Paper and pencil, or Moveable Alphabet',
+    readiness: 'Child is reading at that level, ready to practice spelling'
+  },
+  // Grammar Extensions
+  'Add more nouns': {
+    name: 'Noun Expansion',
+    what: 'Find more nouns in environment, pictures, or text.',
+    howTo: 'After basic introduction, hunt for nouns everywhere. "How many nouns can you find on this shelf?" Place black triangle above each noun in a sentence.',
+    materials: 'Environment, texts, grammar symbols',
+    readiness: 'Child understands noun concept'
+  },
+  'Noun hunt in classroom': {
+    name: 'Classroom Noun Hunt',
+    what: 'Walk around classroom labeling nouns with black triangles.',
+    howTo: 'Child carries bag of paper triangles or sticky notes. Labels everything that is a noun. Count how many nouns in the room!',
+    materials: 'Paper triangles or sticky notes, classroom',
+    readiness: 'Child can identify nouns reliably'
+  },
+  'Add more verbs': {
+    name: 'Verb Expansion',
+    what: 'Generate and act out many different verbs.',
+    howTo: '"How many action words can you think of?" List them, act them out, use in sentences. Read verb cards and perform actions.',
+    materials: 'Paper for listing, command cards, grammar symbols',
+    readiness: 'Child understands verb concept'
+  },
+  'Verb charades': {
+    name: 'Verb Charades',
+    what: 'Act out verbs for others to guess.',
+    howTo: 'Child picks verb card, acts it out silently. Others guess the verb. Fun way to internalize that verbs are ACTION words.',
+    materials: 'Verb cards',
+    readiness: 'Child knows many verbs, enjoys dramatic play'
+  },
+  'Add more adjectives': {
+    name: 'Adjective Expansion',
+    what: 'Generate many adjectives to describe a single noun.',
+    howTo: 'Pick an object. "How many describing words for this ball?" Big, red, bouncy, round, rubber... List them all. See how specific we can be.',
+    materials: 'Various objects, paper for listing',
+    readiness: 'Child understands adjective concept'
+  },
+  'Describe objects in detail': {
+    name: 'Detailed Description',
+    what: 'Use multiple adjectives to describe one object precisely.',
+    howTo: 'Challenge: describe object using 5+ adjectives. Try to make description unique enough that others know exactly which object you mean.',
+    materials: 'Collection of similar objects, grammar symbols',
+    readiness: 'Child knows many adjectives'
+  },
+  'Write sentences with article-adjective-noun': {
+    name: 'Sentence Pattern Practice',
+    what: 'Write sentences following specific grammar patterns.',
+    howTo: 'Give pattern: Article + Adjective + Noun + Verb. Child constructs: "The big dog runs." Use grammar symbols to check.',
+    materials: 'Paper, grammar symbols for checking',
+    readiness: 'Child knows basic parts of speech, can write simple words'
+  },
+  // Generic Extensions
+  'Increase vocabulary': {
+    name: 'Vocabulary Expansion',
+    what: 'Add more challenging or specific words to the activity.',
+    howTo: 'After mastering basic vocabulary, introduce specialized terms, synonyms, or less common words. Building rich vocabulary is ongoing.',
+    materials: 'Additional word cards, objects, or pictures',
+    readiness: 'Child has mastered basic vocabulary, shows interest in more'
+  },
+  'Sentence building': {
+    name: 'Simple Sentence Building',
+    what: 'Construct simple sentences using the vocabulary.',
+    howTo: 'Use known vocabulary words in sentence context. "The ___ is ___." Fill in blanks orally, then with word cards or Moveable Alphabet.',
+    materials: 'Vocabulary from activity, sentence frames, Moveable Alphabet',
+    readiness: 'Child knows vocabulary well, speaks in sentences'
+  },
+  'Creative writing': {
+    name: 'Creative Writing',
+    what: 'Child writes own stories using learned vocabulary and patterns.',
+    howTo: 'Provide starting prompt or let child choose topic. Write independently using invented spelling or with adult support. Illustrate work.',
+    materials: 'Paper, pencils, colored pencils for illustration',
+    readiness: 'Child can write or build many words, has stories to tell'
+  },
+  'Word building': {
+    name: 'Word Building',
+    what: 'Build words with Moveable Alphabet.',
+    howTo: 'Child sounds out words and selects letters to build them. The foundation of encoding (spelling). Use objects or pictures as prompts.',
+    materials: 'Moveable Alphabet, objects or pictures',
+    readiness: 'Child knows letter sounds'
+  }
+};
+
 interface Category {
   id: string;
   name: string;
@@ -4300,6 +4635,7 @@ export default function EnglishProcurementPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [selectedPhonogramType, setSelectedPhonogramType] = useState<string>('all');
   const [expandedShelfItem, setExpandedShelfItem] = useState<string | null>(null);
+  const [expandedExtension, setExpandedExtension] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -5177,13 +5513,65 @@ export default function EnglishProcurementPage() {
 
                 {/* Extensions */}
                 <div>
-                  <h3 className="font-bold text-gray-100 mb-2">Extensions</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedWorkData.extensions.map((ext, i) => (
-                      <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm">
-                        {ext}
-                      </span>
-                    ))}
+                  <h3 className="font-bold text-gray-100 mb-3">Extensions</h3>
+                  <p className="text-gray-400 text-sm mb-3">Click any extension to learn how to present it:</p>
+                  <div className="space-y-2">
+                    {selectedWorkData.extensions.map((ext, i) => {
+                      const detail = extensionDetails[ext];
+                      const isExpanded = expandedExtension === ext;
+                      
+                      return (
+                        <div key={i} className="border border-slate-600 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => setExpandedExtension(isExpanded ? null : ext)}
+                            className={`w-full px-4 py-3 flex items-center justify-between transition text-left ${
+                              isExpanded 
+                                ? 'bg-indigo-600 text-white' 
+                                : 'bg-slate-700 hover:bg-slate-600 text-gray-100'
+                            }`}
+                          >
+                            <span className="font-medium">{ext}</span>
+                            <span className={`text-lg transition-transform ${isExpanded ? 'rotate-90' : ''}`}>›</span>
+                          </button>
+                          
+                          {isExpanded && detail && (
+                            <div className="bg-slate-800 p-4 space-y-4 border-t border-slate-600">
+                              {/* What */}
+                              <div>
+                                <h5 className="text-xs uppercase tracking-wide text-indigo-400 mb-1">What is this extension?</h5>
+                                <p className="text-gray-200">{detail.what}</p>
+                              </div>
+                              
+                              {/* How To */}
+                              <div>
+                                <h5 className="text-xs uppercase tracking-wide text-indigo-400 mb-1">How to present it</h5>
+                                <p className="text-gray-200">{detail.howTo}</p>
+                              </div>
+                              
+                              {/* Materials */}
+                              {detail.materials && (
+                                <div>
+                                  <h5 className="text-xs uppercase tracking-wide text-indigo-400 mb-1">Materials needed</h5>
+                                  <p className="text-gray-300 bg-slate-700 px-3 py-2 rounded">{detail.materials}</p>
+                                </div>
+                              )}
+                              
+                              {/* Readiness */}
+                              <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-lg p-3">
+                                <h5 className="text-xs uppercase tracking-wide text-emerald-400 mb-1">✓ Child is ready when...</h5>
+                                <p className="text-emerald-200">{detail.readiness}</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {isExpanded && !detail && (
+                            <div className="bg-slate-800 p-4 border-t border-slate-600">
+                              <p className="text-gray-400 italic">Details for this extension coming soon. Use the main activity presentation as a guide.</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
