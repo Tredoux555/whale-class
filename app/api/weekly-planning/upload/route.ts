@@ -49,14 +49,30 @@ export async function POST(request: NextRequest) {
     
     // Extract text from docx
     const textContent = await extractDocxText(buffer);
+    console.log('[Upload] Extracted text length:', textContent.length);
+    console.log('[Upload] Text preview:', textContent.substring(0, 500));
 
     // Get work translations from database for context
-    const { data: translations } = await supabase
+    const { data: translations, error: transError } = await supabase
       .from('work_translations')
       .select('chinese_name, english_name, area, aliases');
+    
+    console.log('[Upload] Translations count:', translations?.length || 0);
+    if (transError) console.log('[Upload] Translations error:', transError);
 
     // Use Claude to translate and structure the plan
-    const translatedPlan = await translatePlanWithClaude(textContent, translations || []);
+    let translatedPlan: TranslatedPlan;
+    try {
+      translatedPlan = await translatePlanWithClaude(textContent, translations || []);
+      console.log('[Upload] Claude response - assignments:', translatedPlan.assignments?.length || 0);
+    } catch (claudeError: any) {
+      console.error('[Upload] Claude API error:', claudeError.message);
+      return NextResponse.json({ 
+        error: 'Claude API failed', 
+        details: claudeError.message,
+        textPreview: textContent.substring(0, 200)
+      }, { status: 500 });
+    }
 
     // Match works to curriculum database
     const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan);
@@ -92,6 +108,12 @@ export async function POST(request: NextRequest) {
       success: true,
       plan: savedPlan,
       translatedContent: matchedPlan,
+      debug: {
+        textLength: textContent.length,
+        textPreview: textContent.substring(0, 300),
+        translationsCount: translations?.length || 0,
+        assignmentsCount: matchedPlan.assignments?.length || 0
+      }
     });
 
   } catch (error) {
