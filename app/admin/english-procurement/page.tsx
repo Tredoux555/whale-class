@@ -286,6 +286,218 @@ const curriculumData: Category[] = [
         controlOfError: 'The rhythm and rhyme patterns',
         pointOfInterest: 'The musicality of language',
         extensions: ['Identifying rhymes', 'Creating own rhymes', 'Poetry recitation']
+      },
+      {
+        id: 'parts_of_cards',
+        name: 'Parts-of Cards (Nomenclature)',
+        age: '3.5-6 years',
+        directAim: 'Learn specialized vocabulary for parts of objects in nature',
+        indirectAims: ['Scientific vocabulary', 'Classification', 'Reading enrichment'],
+        prerequisites: 'Three-Part Cards; some reading ability',
+        presentation: [
+          'BOTANY PARTS-OF:',
+          '- Parts of a Leaf: blade, petiole, veins, margin, apex, base',
+          '- Parts of a Flower: petal, sepal, stamen, pistil, stem',
+          '- Parts of a Tree: trunk, branches, roots, crown, bark',
+          '- Parts of a Seed: seed coat, embryo, cotyledon',
+          '',
+          'ZOOLOGY PARTS-OF:',
+          '- Parts of a Bird: beak, wing, feather, talon, tail',
+          '- Parts of a Fish: fin, scales, gills, tail',
+          '- Parts of an Insect: head, thorax, abdomen, antenna, wings',
+          '- Parts of a Horse: mane, hoof, muzzle, withers',
+          '',
+          'Use control chart showing all parts labeled',
+          'Child matches labels to parts'
+        ],
+        materials: [
+          {
+            name: 'Parts of Leaf Cards',
+            nameZh: '叶子部位卡',
+            search1688: '蒙氏植物部位卡 叶子 英文',
+            altSearch: '蒙氏植物学三部卡',
+            specs: 'Large control chart + individual part labels',
+            price: '¥30-60',
+            essential: true
+          },
+          {
+            name: 'Parts of Flower Cards',
+            nameZh: '花朵部位卡',
+            search1688: '蒙氏植物部位卡 花 英文',
+            specs: 'Flower anatomy with labels',
+            price: '¥30-60',
+            essential: true
+          },
+          {
+            name: 'Parts of Tree Cards',
+            nameZh: '树木部位卡',
+            search1688: '蒙氏植物部位卡 树 英文',
+            specs: 'Tree anatomy with labels',
+            price: '¥30-60',
+            essential: false
+          },
+          {
+            name: 'Parts of Bird Cards',
+            nameZh: '鸟类部位卡',
+            search1688: '蒙氏动物部位卡 鸟 英文',
+            altSearch: '蒙氏动物学三部卡',
+            specs: 'Bird anatomy with labels',
+            price: '¥30-60',
+            essential: true
+          },
+          {
+            name: 'Parts of Fish Cards',
+            nameZh: '鱼类部位卡',
+            search1688: '蒙氏动物部位卡 鱼 英文',
+            specs: 'Fish anatomy with labels',
+            price: '¥30-60',
+            essential: true
+          },
+          {
+            name: 'Parts of Insect Cards',
+            nameZh: '昆虫部位卡',
+            search1688: '蒙氏动物部位卡 昆虫 英文',
+            specs: 'Insect anatomy with labels',
+            price: '¥30-60',
+            essential: false
+          },
+          {
+            name: 'Botany Cabinet Cards',
+            nameZh: '植物学橱卡片',
+            search1688: '蒙氏植物学橱 叶形卡片',
+            specs: 'Leaf shape classification cards',
+            price: '¥40-80',
+            essential: false
+          }
+        ],
+        controlOfError: 'Control chart with all parts labeled',
+        pointOfInterest: 'Discovering the specialized names',
+        extensions: ['Examining real specimens', 'Drawing and labeling', 'Creating own parts-of cards']
+      },
+      {
+        id: 'definition_cards',
+        name: 'Definition Cards',
+        age: '5-6 years',
+        directAim: 'Learn to match terms with their definitions',
+        indirectAims: ['Reading comprehension', 'Vocabulary depth', 'Study skills'],
+        prerequisites: 'Reading sentences; Three-Part Cards mastery',
+        presentation: [
+          'Term cards + Definition cards + Control cards',
+          'Child reads term, finds matching definition',
+          'Self-checks with control card',
+          '',
+          'Example - Geometry:',
+          'Term: "triangle" / Definition: "a shape with three sides and three angles"',
+          '',
+          'Categories: Geometry shapes, Land/water forms, Animal classifications'
+        ],
+        materials: [
+          {
+            name: 'Definition Cards - Geometry',
+            nameZh: '定义卡-几何',
+            search1688: '蒙氏定义卡 几何 英文',
+            specs: 'Shape terms with definitions',
+            price: '¥30-50',
+            essential: false
+          },
+          {
+            name: 'Definition Cards - Geography',
+            nameZh: '定义卡-地理',
+            search1688: '蒙氏定义卡 地理 英文',
+            specs: 'Landform and water form definitions',
+            price: '¥30-50',
+            essential: false
+          }
+        ],
+        controlOfError: 'Control cards for self-checking',
+        pointOfInterest: 'Reading for meaning; matching concepts',
+        extensions: ['Creating definitions', 'Dictionary use', 'Research']
+      },
+      {
+        id: 'classified_pictures',
+        name: 'Classified Pictures',
+        age: '2.5-6 years',
+        directAim: 'Expand vocabulary through classified picture collections',
+        indirectAims: ['Visual discrimination', 'Classification', 'Reading preparation'],
+        prerequisites: 'Vocabulary baskets',
+        presentation: [
+          'Large collection of classified pictures:',
+          '',
+          'LIVING THINGS:',
+          '- Mammals, Birds, Fish, Reptiles, Amphibians, Insects',
+          '- Trees, Flowers, Vegetables, Fruits',
+          '',
+          'NON-LIVING THINGS:',
+          '- Vehicles, Tools, Furniture, Clothing',
+          '- Buildings, Musical instruments',
+          '',
+          'Use for sorting, vocabulary, later reading'
+        ],
+        materials: [
+          {
+            name: 'Classified Picture Cards - Animals',
+            nameZh: '分类图卡-动物',
+            search1688: '蒙氏分类图卡 动物 真实照片',
+            altSearch: '认知卡片 动物 真实图片',
+            specs: 'Realistic photos, 7×7cm, categorized',
+            price: '¥40-80 per set',
+            essential: true
+          },
+          {
+            name: 'Classified Picture Cards - Plants',
+            nameZh: '分类图卡-植物',
+            search1688: '蒙氏分类图卡 植物 真实照片',
+            specs: 'Fruits, vegetables, flowers, trees',
+            price: '¥40-80 per set',
+            essential: true
+          },
+          {
+            name: 'Classified Picture Cards - Objects',
+            nameZh: '分类图卡-物品',
+            search1688: '蒙氏分类图卡 日常用品',
+            specs: 'Vehicles, tools, household items',
+            price: '¥40-80 per set',
+            essential: false
+          }
+        ],
+        controlOfError: 'Classification logic; teacher',
+        pointOfInterest: 'Discovering categories and relationships',
+        extensions: ['Sorting activities', 'Label matching', 'Creating categories']
+      },
+      {
+        id: 'action_command_cards',
+        name: 'Action Command Cards',
+        age: '4-5.5 years',
+        directAim: 'Read and perform action commands',
+        indirectAims: ['Reading comprehension', 'Following directions', 'Verb vocabulary'],
+        prerequisites: 'Reading CVC words; Pink series',
+        presentation: [
+          'Single action cards: "sit" "hop" "clap"',
+          'Child reads card, performs action',
+          'Progress to multi-step: "hop to the door"',
+          'Progress to complex: "pick up the red pen and put it on the shelf"'
+        ],
+        materials: [
+          {
+            name: 'Action Command Cards - Simple',
+            nameZh: '动作指令卡-简单',
+            search1688: '蒙氏动作指令卡 英文 简单',
+            specs: 'Single verb commands',
+            price: '¥20-40',
+            essential: true
+          },
+          {
+            name: 'Action Command Cards - Complex',
+            nameZh: '动作指令卡-复杂',
+            search1688: '蒙氏指令卡 英文 多步骤',
+            specs: 'Multi-step commands',
+            price: '¥20-40',
+            essential: false
+          }
+        ],
+        controlOfError: 'Action either done correctly or not',
+        pointOfInterest: 'Reading leads to action',
+        extensions: ['Writing own commands', 'Command games with peers']
       }
     ]
   },
@@ -1250,6 +1462,421 @@ const curriculumData: Category[] = [
         controlOfError: 'Recognition; use in reading',
         pointOfInterest: 'These "rule-breakers" are everywhere!',
         extensions: ['Personal word bank', 'Sight word games', 'Reading fluency']
+      },
+      {
+        id: 'word_families',
+        name: 'Word Families (Phonogram Patterns)',
+        age: '4.5-6 years',
+        directAim: 'Recognize and read words with common patterns',
+        indirectAims: ['Spelling patterns', 'Decoding efficiency', 'Word attack skills'],
+        prerequisites: 'Pink series; introduction to phonograms',
+        presentation: [
+          'SHORT VOWEL FAMILIES:',
+          '-at: cat, hat, mat, sat, bat, rat, flat',
+          '-an: can, man, pan, ran, tan, van, plan',
+          '-ap: cap, map, tap, nap, clap, snap',
+          '-ig: big, dig, pig, wig, twig',
+          '-in: bin, fin, pin, win, thin, spin',
+          '-it: bit, fit, hit, sit, spit, split',
+          '-op: cop, hop, mop, top, stop, drop',
+          '-ot: cot, dot, got, hot, not, spot',
+          '-ug: bug, dug, hug, mug, rug, plug',
+          '-un: bun, fun, run, sun, spun, stun',
+          '',
+          'LONG VOWEL FAMILIES:',
+          '-ake: bake, cake, lake, make, wake, snake',
+          '-ame: came, game, name, same, flame',
+          '-ate: date, gate, late, plate, skate',
+          '-ine: fine, line, mine, nine, shine',
+          '-ice: dice, mice, nice, rice, twice',
+          '-oke: joke, poke, woke, broke, smoke',
+          '-one: bone, cone, tone, phone, stone',
+          '',
+          'Sort word cards by family',
+          'Read lists, then mixed practice'
+        ],
+        materials: [
+          {
+            name: 'Word Family Cards - Short Vowels',
+            nameZh: '词族卡-短元音',
+            search1688: '蒙氏词族卡 word family 短元音',
+            altSearch: '英文词族卡 CVC word family',
+            specs: 'Cards for -at, -an, -ig, -op, -ug families',
+            price: '¥40-80',
+            essential: true
+          },
+          {
+            name: 'Word Family Cards - Long Vowels',
+            nameZh: '词族卡-长元音',
+            search1688: '蒙氏词族卡 word family 长元音',
+            altSearch: '英文词族卡 CVCe silent e',
+            specs: 'Cards for -ake, -ine, -oke families',
+            price: '¥40-80',
+            essential: true
+          },
+          {
+            name: 'Word Family Sorting Mats',
+            nameZh: '词族分类垫',
+            search1688: '蒙氏分类垫 word family',
+            specs: 'Mats for sorting word cards by family',
+            price: '¥20-40',
+            essential: false
+          }
+        ],
+        controlOfError: 'Pattern consistency; rhyming',
+        pointOfInterest: 'Discovering patterns in words',
+        extensions: ['Creating rhymes', 'Word family bingo', 'Speed reading']
+      },
+      {
+        id: 'phonogram_detail_consonant',
+        name: 'Consonant Digraph Reading',
+        age: '5-6 years',
+        directAim: 'Read words with consonant digraphs fluently',
+        indirectAims: ['Spelling consonant digraphs', 'Decoding complex words'],
+        prerequisites: 'Phonogram sandpaper letters; Green series introduction',
+        presentation: [
+          'SH - /sh/ sound:',
+          'Beginning: ship, shop, shell, sheep, shark, shirt',
+          'Ending: fish, dish, wish, wash, bush, push',
+          '',
+          'CH - /ch/ sound:',
+          'Beginning: chip, chop, chin, chair, cheese, cherry',
+          'Ending: rich, much, such, each, beach, teach',
+          '',
+          'TH - two sounds:',
+          'Voiced /th/: this, that, the, them, there, then',
+          'Unvoiced /th/: thin, thick, thing, thank, think, three',
+          '',
+          'WH - /wh/ sound:',
+          'what, when, where, which, white, whale, wheel',
+          '',
+          'CK - /k/ sound (after short vowels):',
+          'back, deck, kick, lock, duck, black, stick',
+          '',
+          'NG - /ng/ sound:',
+          'Ending: ring, sing, song, long, king, thing',
+          '',
+          'Sort words by digraph, read in context'
+        ],
+        materials: [
+          {
+            name: 'SH Digraph Cards',
+            nameZh: 'SH音组卡',
+            search1688: '蒙氏音组卡 sh 英文',
+            altSearch: '蒙氏phonics sh digraph',
+            specs: 'Picture + word cards for sh words',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'CH Digraph Cards',
+            nameZh: 'CH音组卡',
+            search1688: '蒙氏音组卡 ch 英文',
+            specs: 'Picture + word cards for ch words',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'TH Digraph Cards',
+            nameZh: 'TH音组卡',
+            search1688: '蒙氏音组卡 th 英文',
+            specs: 'Picture + word cards for th words',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'Consonant Digraph Booklets',
+            nameZh: '辅音音组小书',
+            search1688: '蒙氏phonics小书 digraph sh ch th',
+            specs: 'Decodable readers featuring digraphs',
+            price: '¥40-80',
+            essential: true
+          }
+        ],
+        controlOfError: 'Picture matching; meaning',
+        pointOfInterest: 'Two letters making one sound',
+        extensions: ['Digraph hunts in books', 'Spelling practice', 'Writing with digraphs']
+      },
+      {
+        id: 'phonogram_detail_vowel',
+        name: 'Vowel Team Reading',
+        age: '5-6 years',
+        directAim: 'Read words with vowel teams/digraphs',
+        indirectAims: ['Long vowel spelling patterns', 'Advanced decoding'],
+        prerequisites: 'Consonant digraphs; short vowel fluency',
+        presentation: [
+          'AI / AY - long a:',
+          'ai (middle): rain, train, brain, chain, paint',
+          'ay (end): day, play, say, way, stay, gray',
+          '',
+          'EE / EA - long e:',
+          'ee: feet, tree, see, bee, green, sleep',
+          'ea: sea, read, eat, team, beach, cream',
+          '',
+          'OA / OW - long o:',
+          'oa: boat, coat, road, soap, toast, float',
+          'ow (long o): snow, grow, show, blow, yellow',
+          '',
+          'OO - two sounds:',
+          'Long /oo/: moon, food, cool, room, tooth',
+          'Short /oo/: book, look, cook, good, wood',
+          '',
+          'OU / OW - /ou/ sound:',
+          'ou: out, house, mouse, cloud, sound',
+          'ow: cow, how, now, down, brown, town',
+          '',
+          'OI / OY - /oi/ sound:',
+          'oi: oil, coin, join, point, voice',
+          'oy: boy, toy, joy, enjoy, royal'
+        ],
+        materials: [
+          {
+            name: 'AI/AY Vowel Team Cards',
+            nameZh: 'AI/AY元音组卡',
+            search1688: '蒙氏音组卡 ai ay 英文',
+            specs: 'Picture + word cards',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'EE/EA Vowel Team Cards',
+            nameZh: 'EE/EA元音组卡',
+            search1688: '蒙氏音组卡 ee ea 英文',
+            specs: 'Picture + word cards',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'OA/OW Vowel Team Cards',
+            nameZh: 'OA/OW元音组卡',
+            search1688: '蒙氏音组卡 oa ow 英文',
+            specs: 'Picture + word cards',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'OO/OU Vowel Team Cards',
+            nameZh: 'OO/OU元音组卡',
+            search1688: '蒙氏音组卡 oo ou 英文',
+            specs: 'Picture + word cards',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'Vowel Team Booklets',
+            nameZh: '元音组小书',
+            search1688: '蒙氏phonics小书 vowel team',
+            altSearch: '英文phonics阅读 长元音',
+            specs: 'Decodable readers by vowel team',
+            price: '¥50-100',
+            essential: true
+          }
+        ],
+        controlOfError: 'Picture matching; sound consistency',
+        pointOfInterest: 'Unlocking long vowel sounds',
+        extensions: ['Sorting by pattern', 'Spelling rules', 'Writing practice']
+      },
+      {
+        id: 'r_controlled_vowels',
+        name: 'R-Controlled Vowel Reading',
+        age: '5-6 years',
+        directAim: 'Read words where R changes the vowel sound',
+        indirectAims: ['Understanding vowel modification', 'Spelling r-controlled words'],
+        prerequisites: 'Short and long vowel patterns',
+        presentation: [
+          'AR - /ar/ sound:',
+          'car, star, far, bar, card, yard, farm, barn, park',
+          '',
+          'OR - /or/ sound:',
+          'for, or, corn, horn, fork, pork, storm, north, short',
+          '',
+          'ER, IR, UR - same /er/ sound:',
+          'er: her, fern, after, sister, water',
+          'ir: bird, girl, first, third, shirt, stir',
+          'ur: fur, turn, burn, hurt, purple, turtle',
+          '',
+          'Bossy R - R changes the vowel sound',
+          'Sort words by r-controlled pattern'
+        ],
+        materials: [
+          {
+            name: 'AR Words Cards',
+            nameZh: 'AR词卡',
+            search1688: '蒙氏音组卡 ar 英文',
+            specs: 'Picture + word cards for ar words',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'OR Words Cards',
+            nameZh: 'OR词卡',
+            search1688: '蒙氏音组卡 or 英文',
+            specs: 'Picture + word cards for or words',
+            price: '¥25-40',
+            essential: true
+          },
+          {
+            name: 'ER/IR/UR Words Cards',
+            nameZh: 'ER/IR/UR词卡',
+            search1688: '蒙氏音组卡 er ir ur 英文',
+            specs: 'Picture + word cards showing same sound',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'R-Controlled Booklets',
+            nameZh: 'R控制元音小书',
+            search1688: '蒙氏phonics小书 bossy r',
+            specs: 'Readers featuring r-controlled words',
+            price: '¥40-60',
+            essential: true
+          }
+        ],
+        controlOfError: 'Pattern consistency',
+        pointOfInterest: 'R is "bossy" - changes vowel sounds',
+        extensions: ['Bossy R rules', 'Spelling patterns', 'Writing practice']
+      },
+      {
+        id: 'silent_e',
+        name: 'Silent E (Magic E) Reading',
+        age: '5-6 years',
+        directAim: 'Read CVCe words where silent e makes vowel say its name',
+        indirectAims: ['Spelling rule: silent e', 'Long vowel patterns'],
+        prerequisites: 'CVC words fluent; understand short/long vowel difference',
+        presentation: [
+          'Magic E Rule: Silent e at end makes vowel say its name',
+          '',
+          'A_E words: make, cake, lake, take, game, name, came, made, safe, cave',
+          'I_E words: like, bike, time, five, nine, line, mine, hide, ride, smile',
+          'O_E words: home, bone, cone, hole, note, hope, rope, rose, nose, stone',
+          'U_E words: cute, huge, use, cube, tube, June, rule, mule',
+          '',
+          'Compare CVC to CVCe:',
+          'cap → cape, tap → tape, kit → kite, bit → bite',
+          'hop → hope, not → note, cub → cube, tub → tube',
+          '',
+          'Sort word pairs showing transformation'
+        ],
+        materials: [
+          {
+            name: 'Silent E Word Cards',
+            nameZh: '魔法E词卡',
+            search1688: '蒙氏phonics magic e 英文',
+            altSearch: '蒙氏CVCe单词卡 silent e',
+            specs: 'Word cards with CVCe pattern',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'CVC to CVCe Comparison Cards',
+            nameZh: 'CVC变CVCe对比卡',
+            search1688: '蒙氏phonics CVC CVCe 对比',
+            specs: 'Paired cards: cap/cape, hop/hope',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'Silent E Booklets',
+            nameZh: '魔法E小书',
+            search1688: '蒙氏phonics小书 magic e silent e',
+            specs: 'Readers featuring CVCe words',
+            price: '¥40-60',
+            essential: true
+          }
+        ],
+        controlOfError: 'Pattern consistency; word pairs',
+        pointOfInterest: 'Magic e transforms words!',
+        extensions: ['Word transformation games', 'Spelling practice', 'Silent e hunt']
+      },
+      {
+        id: 'interpretive_reading',
+        name: 'Interpretive Reading',
+        age: '5-6 years',
+        directAim: 'Read with meaning, expression, and comprehension',
+        indirectAims: ['Fluency', 'Comprehension', 'Expression'],
+        prerequisites: 'Decoding fluency across series',
+        presentation: [
+          'Command cards requiring interpretation:',
+          '"Walk slowly to the door, then skip back quickly"',
+          'Child must understand meaning to perform action',
+          '',
+          'Questions requiring inference:',
+          'Read passage, answer comprehension questions',
+          '',
+          'Expression practice:',
+          'Read dialogue with appropriate voices',
+          'Read with punctuation awareness'
+        ],
+        materials: [
+          {
+            name: 'Interpretive Command Cards',
+            nameZh: '理解性指令卡',
+            search1688: '蒙氏阅读理解卡 英文',
+            specs: 'Multi-step commands requiring comprehension',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'Reading Comprehension Cards',
+            nameZh: '阅读理解卡',
+            search1688: '蒙氏阅读理解 问答卡 英文',
+            specs: 'Short passages with questions',
+            price: '¥40-60',
+            essential: true
+          }
+        ],
+        controlOfError: 'Action/answer correctness',
+        pointOfInterest: 'Reading leads to understanding and action',
+        extensions: ['Readers theater', 'Story discussion', 'Question generation']
+      },
+      {
+        id: 'total_reading',
+        name: 'Total Reading',
+        age: '5-6 years',
+        directAim: 'Independent reading of varied texts for meaning',
+        indirectAims: ['Reading stamina', 'Comprehension', 'Love of reading'],
+        prerequisites: 'All phonetic series; sight words; interpretive reading',
+        presentation: [
+          'Provide varied reading materials:',
+          '- Decodable books at independent level',
+          '- Picture books (paired reading)',
+          '- Non-fiction texts',
+          '- Child\'s own writing',
+          '',
+          'Daily independent reading time',
+          'Book discussions and sharing',
+          'Reading log/journal'
+        ],
+        materials: [
+          {
+            name: 'Leveled Readers Set',
+            nameZh: '分级阅读套装',
+            search1688: '英文分级阅读 幼儿园 套装',
+            altSearch: 'Oxford Reading Tree 英文原版',
+            specs: 'Progressive difficulty readers',
+            price: '¥100-300 set',
+            essential: true
+          },
+          {
+            name: 'Reading Corner Books',
+            nameZh: '阅读角图书',
+            search1688: '英文绘本 幼儿园 套装',
+            specs: 'Quality picture books for shared reading',
+            price: '¥200-500 collection',
+            essential: true
+          },
+          {
+            name: 'Reading Log',
+            nameZh: '阅读记录本',
+            search1688: '阅读记录本 儿童',
+            specs: 'Simple log for tracking reading',
+            price: '¥10-20',
+            essential: false
+          }
+        ],
+        controlOfError: 'Comprehension; enjoyment',
+        pointOfInterest: 'Reading for pleasure and information',
+        extensions: ['Book recommendations', 'Author studies', 'Genre exploration']
       }
     ]
   },
@@ -1336,18 +1963,537 @@ const curriculumData: Category[] = [
         controlOfError: 'Meaning; communication success',
         pointOfInterest: 'Sharing own ideas',
         extensions: ['Book making', 'Letter writing', 'Poetry']
+      },
+      {
+        id: 'copy_work',
+        name: 'Copy Work',
+        age: '5-6 years',
+        directAim: 'Develop handwriting fluency through copying quality text',
+        indirectAims: ['Spelling internalization', 'Punctuation awareness', 'Sentence structure'],
+        prerequisites: 'Letter formation; reading sentences',
+        presentation: [
+          'Provide quality text for copying:',
+          '- Poems and rhymes',
+          '- Inspirational quotes',
+          '- Nature observations',
+          '- Song lyrics',
+          '',
+          'Child reads text first',
+          'Copies carefully with attention to:',
+          '- Letter formation',
+          '- Spacing between words',
+          '- Punctuation',
+          '- Capital letters'
+        ],
+        materials: [
+          {
+            name: 'Copy Work Cards',
+            nameZh: '抄写卡',
+            search1688: '英文抄写卡 儿童 名言',
+            specs: 'Quality text for copying in cursive or print',
+            price: '¥20-40',
+            essential: true
+          },
+          {
+            name: 'Copy Work Notebook',
+            nameZh: '抄写本',
+            search1688: '英文抄写本 四线三格',
+            specs: 'Lined notebook for copy work',
+            price: '¥10-20',
+            essential: true
+          }
+        ],
+        controlOfError: 'Visual comparison with original',
+        pointOfInterest: 'Beautiful handwriting; quality content',
+        extensions: ['Longer passages', 'Favorite poems', 'Book excerpts']
+      },
+      {
+        id: 'dictation',
+        name: 'Dictation',
+        age: '5.5-6 years',
+        directAim: 'Write words and sentences from auditory input',
+        indirectAims: ['Spelling', 'Listening skills', 'Sound-symbol connection'],
+        prerequisites: 'Copy work; phonetic spelling; sight words',
+        presentation: [
+          'Start with single phonetic words',
+          'Progress to phrases',
+          'Progress to sentences',
+          '',
+          'Process:',
+          '1. Say word/sentence clearly',
+          '2. Child repeats to confirm hearing',
+          '3. Child writes',
+          '4. Check together',
+          '',
+          'Accept phonetic spelling initially',
+          'Gradually expect conventional spelling for learned patterns'
+        ],
+        materials: [
+          {
+            name: 'Dictation Word Lists',
+            nameZh: '听写词表',
+            search1688: '英文听写词表 phonics',
+            specs: 'Graded word lists for dictation',
+            price: '¥15-30',
+            essential: true
+          },
+          {
+            name: 'Dictation Notebook',
+            nameZh: '听写本',
+            search1688: '英文听写本 幼儿',
+            specs: 'Lined notebook for dictation',
+            price: '¥10-20',
+            essential: true
+          }
+        ],
+        controlOfError: 'Comparison with correct spelling',
+        pointOfInterest: 'Writing what is heard',
+        extensions: ['Story dictation', 'Parent letters', 'Research notes']
+      },
+      {
+        id: 'book_making',
+        name: 'Book Making',
+        age: '5-6 years',
+        directAim: 'Create personal books combining writing and illustration',
+        indirectAims: ['Story structure', 'Publishing process', 'Pride in work'],
+        prerequisites: 'Creative writing; illustration skills',
+        presentation: [
+          'Types of books children can make:',
+          '- "All About Me" books',
+          '- Nature observation journals',
+          '- Story books',
+          '- How-to books',
+          '- ABC/counting books',
+          '',
+          'Process:',
+          '1. Plan story/content',
+          '2. Draft text',
+          '3. Create illustrations',
+          '4. Assemble pages',
+          '5. Create cover',
+          '6. Share with class/family'
+        ],
+        materials: [
+          {
+            name: 'Blank Books',
+            nameZh: '空白书',
+            search1688: '空白绘本 DIY 儿童',
+            altSearch: '手工书 空白页 儿童',
+            specs: 'Pre-bound blank books, various sizes',
+            price: '¥10-25 each',
+            essential: true
+          },
+          {
+            name: 'Book Making Supplies',
+            nameZh: '制书工具',
+            search1688: '儿童手工书工具 装订',
+            specs: 'Paper, stapler, cover materials',
+            price: '¥30-60',
+            essential: false
+          }
+        ],
+        controlOfError: 'Communication of meaning',
+        pointOfInterest: 'Being a real author',
+        extensions: ['Author visits', 'Class library', 'Book gifts']
       }
     ]
   },
 
   // =========================================================================
-  // 9. GRAMMAR
+  // 9. WORD STUDY
+  // =========================================================================
+  {
+    id: 'word_study',
+    name: 'Word Study',
+    icon: '🔍',
+    sequence: 9,
+    description: 'Explore how words are built, related, and modified. Compound words, contractions, prefixes, suffixes, synonyms, antonyms, and homonyms.',
+    amiNotes: 'Word study begins when child is reading fluently and notices patterns in words. Presented through discovery and sorting activities.',
+    works: [
+      {
+        id: 'compound_words',
+        name: 'Compound Words',
+        age: '5-6 years',
+        directAim: 'Understand that two words can combine to make a new word',
+        indirectAims: ['Vocabulary expansion', 'Word analysis', 'Spelling'],
+        prerequisites: 'Reading fluency; understanding word meaning',
+        presentation: [
+          'Show two words combining:',
+          'sun + flower = sunflower',
+          'rain + bow = rainbow',
+          'cup + cake = cupcake',
+          '',
+          'COMPOUND WORD EXAMPLES:',
+          'airplane, backpack, baseball, bathroom, bedroom',
+          'birthday, butterfly, classroom, cowboy, cupcake',
+          'doghouse, doorbell, downtown, dragonfly, earring',
+          'fireman, football, goldfish, grandma, grasshopper',
+          'haircut, homework, hotdog, inside, ladybug',
+          'moonlight, notebook, outside, pancake, playground',
+          'rainbow, sailboat, seashell, snowman, starfish',
+          'sunflower, toothbrush, waterfall, weekend, without',
+          '',
+          'Activities:',
+          '- Match word halves',
+          '- Picture + word matching',
+          '- Create compound word equations'
+        ],
+        materials: [
+          {
+            name: 'Compound Word Cards',
+            nameZh: '复合词卡',
+            search1688: '蒙氏复合词卡 英文 compound',
+            altSearch: '英文复合词配对卡',
+            specs: 'Word halves for matching, pictures',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Compound Word Pictures',
+            nameZh: '复合词图片',
+            search1688: '复合词图片卡 英文',
+            specs: 'Pictures of compound words',
+            price: '¥30-50',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning - combined word makes sense',
+        pointOfInterest: 'Word math! Two words make one',
+        extensions: ['Finding compounds in reading', 'Creating new compounds', 'Compound word hunt']
+      },
+      {
+        id: 'contractions',
+        name: 'Contractions',
+        age: '5-6 years',
+        directAim: 'Understand that contractions shorten two words into one',
+        indirectAims: ['Reading fluency', 'Writing conventions', 'Apostrophe use'],
+        prerequisites: 'Reading fluently; understanding the component words',
+        presentation: [
+          'Show how words combine with apostrophe:',
+          'I + am = I\'m',
+          'you + are = you\'re',
+          'it + is = it\'s',
+          '',
+          'CONTRACTION FAMILIES:',
+          '',
+          'NOT contractions:',
+          'is not = isn\'t, are not = aren\'t, was not = wasn\'t',
+          'do not = don\'t, does not = doesn\'t, did not = didn\'t',
+          'can not = can\'t, will not = won\'t, would not = wouldn\'t',
+          'should not = shouldn\'t, could not = couldn\'t, have not = haven\'t',
+          '',
+          'IS/ARE/AM contractions:',
+          'I am = I\'m, you are = you\'re, he is = he\'s',
+          'she is = she\'s, it is = it\'s, we are = we\'re',
+          'they are = they\'re, that is = that\'s, what is = what\'s',
+          '',
+          'WILL/WOULD contractions:',
+          'I will = I\'ll, you will = you\'ll, he will = he\'ll',
+          'I would = I\'d, you would = you\'d, we would = we\'d',
+          '',
+          'HAVE/HAS contractions:',
+          'I have = I\'ve, you have = you\'ve, we have = we\'ve',
+          'he has = he\'s, she has = she\'s'
+        ],
+        materials: [
+          {
+            name: 'Contraction Cards',
+            nameZh: '缩写词卡',
+            search1688: '蒙氏缩写词卡 英文 contraction',
+            altSearch: '英文缩写配对卡',
+            specs: 'Two words → contraction matching cards',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'Contraction Chart',
+            nameZh: '缩写词表',
+            search1688: '英文缩写词表 海报',
+            specs: 'Reference chart showing common contractions',
+            price: '¥15-30',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning equivalence',
+        pointOfInterest: 'Shortcut words! Apostrophe replaces letters',
+        extensions: ['Finding contractions in text', 'Expanding contractions', 'Writing with contractions']
+      },
+      {
+        id: 'prefixes',
+        name: 'Prefixes',
+        age: '5.5-6 years',
+        directAim: 'Understand that prefixes added to beginning change word meaning',
+        indirectAims: ['Vocabulary expansion', 'Word analysis', 'Reading comprehension'],
+        prerequisites: 'Reading fluency; base word recognition',
+        presentation: [
+          'PREFIX = word part added to BEGINNING',
+          '',
+          'UN- (not, opposite):',
+          'happy → unhappy, kind → unkind, do → undo',
+          'fair → unfair, lock → unlock, tie → untie',
+          '',
+          'RE- (again):',
+          'do → redo, read → reread, write → rewrite',
+          'play → replay, build → rebuild, make → remake',
+          '',
+          'PRE- (before):',
+          'school → preschool, heat → preheat, view → preview',
+          '',
+          'DIS- (not, opposite):',
+          'like → dislike, agree → disagree, appear → disappear',
+          '',
+          'MIS- (wrongly):',
+          'spell → misspell, lead → mislead, behave → misbehave',
+          '',
+          'Activities:',
+          '- Sort words by prefix',
+          '- Build words with prefix cards',
+          '- Find prefix words in reading'
+        ],
+        materials: [
+          {
+            name: 'Prefix Cards',
+            nameZh: '前缀卡',
+            search1688: '蒙氏前缀卡 英文 prefix',
+            altSearch: '英文前缀后缀卡片',
+            specs: 'Prefix + base word combination cards',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Prefix Reference Chart',
+            nameZh: '前缀参考表',
+            search1688: '英文前缀表 海报',
+            specs: 'Wall chart showing common prefixes',
+            price: '¥15-30',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning change; dictionary',
+        pointOfInterest: 'Small parts change big meanings!',
+        extensions: ['Prefix hunt', 'Creating new words', 'Suffix connection']
+      },
+      {
+        id: 'suffixes',
+        name: 'Suffixes',
+        age: '5.5-6 years',
+        directAim: 'Understand that suffixes added to ending change word meaning or type',
+        indirectAims: ['Vocabulary expansion', 'Grammar connections', 'Spelling patterns'],
+        prerequisites: 'Reading fluency; prefix work',
+        presentation: [
+          'SUFFIX = word part added to END',
+          '',
+          '-ED (past tense):',
+          'walk → walked, jump → jumped, play → played',
+          '',
+          '-ING (ongoing action):',
+          'walk → walking, jump → jumping, play → playing',
+          '',
+          '-ER (one who / comparison):',
+          'teach → teacher, farm → farmer, fast → faster',
+          '',
+          '-EST (most):',
+          'fast → fastest, tall → tallest, big → biggest',
+          '',
+          '-LY (how/manner):',
+          'slow → slowly, quick → quickly, quiet → quietly',
+          '',
+          '-FUL (full of):',
+          'help → helpful, care → careful, joy → joyful',
+          '',
+          '-LESS (without):',
+          'help → helpless, care → careless, fear → fearless',
+          '',
+          'SPELLING CHANGES:',
+          '- Double consonant: hop → hopping, big → bigger',
+          '- Drop e: make → making, hope → hoped',
+          '- Y to i: happy → happily, carry → carried'
+        ],
+        materials: [
+          {
+            name: 'Suffix Cards',
+            nameZh: '后缀卡',
+            search1688: '蒙氏后缀卡 英文 suffix',
+            altSearch: '英文前缀后缀卡片',
+            specs: 'Base word + suffix combination cards',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Suffix Reference Chart',
+            nameZh: '后缀参考表',
+            search1688: '英文后缀表 海报',
+            specs: 'Wall chart showing common suffixes',
+            price: '¥15-30',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning/function change; spelling rules',
+        pointOfInterest: 'Endings change how words work!',
+        extensions: ['Suffix sorting', 'Spelling rule practice', 'Grammar connections']
+      },
+      {
+        id: 'synonyms',
+        name: 'Synonyms',
+        age: '5-6 years',
+        directAim: 'Understand that different words can have similar meanings',
+        indirectAims: ['Vocabulary expansion', 'Writing variety', 'Precise expression'],
+        prerequisites: 'Strong vocabulary base; reading fluency',
+        presentation: [
+          'SYNONYMS = words with SIMILAR meanings',
+          '',
+          'COMMON SYNONYM PAIRS:',
+          'big - large, little - small, happy - glad',
+          'sad - unhappy, fast - quick, slow - sluggish',
+          'pretty - beautiful, ugly - hideous, nice - kind',
+          'mean - cruel, smart - clever, silly - foolish',
+          'begin - start, end - finish, look - see',
+          'talk - speak, walk - stroll, run - sprint',
+          'like - enjoy, hate - despise, want - desire',
+          'good - excellent, bad - terrible, old - ancient',
+          '',
+          'Activities:',
+          '- Match synonym pairs',
+          '- Find synonyms in thesaurus',
+          '- Replace words in sentences'
+        ],
+        materials: [
+          {
+            name: 'Synonym Cards',
+            nameZh: '同义词卡',
+            search1688: '蒙氏同义词卡 英文 synonym',
+            altSearch: '英文同义词配对卡',
+            specs: 'Matching cards for synonym pairs',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'Children\'s Thesaurus',
+            nameZh: '儿童同义词典',
+            search1688: '儿童同义词典 英文',
+            specs: 'Simple thesaurus for children',
+            price: '¥50-100',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning similarity; thesaurus',
+        pointOfInterest: 'Many ways to say the same thing!',
+        extensions: ['Sentence variety', 'Writing improvement', 'Word games']
+      },
+      {
+        id: 'antonyms',
+        name: 'Antonyms',
+        age: '5-6 years',
+        directAim: 'Understand that some words have opposite meanings',
+        indirectAims: ['Vocabulary expansion', 'Logical thinking', 'Word relationships'],
+        prerequisites: 'Strong vocabulary base; synonym work',
+        presentation: [
+          'ANTONYMS = words with OPPOSITE meanings',
+          '',
+          'COMMON ANTONYM PAIRS:',
+          'big - small, tall - short, long - short',
+          'hot - cold, wet - dry, fast - slow',
+          'happy - sad, good - bad, nice - mean',
+          'up - down, in - out, on - off',
+          'open - close, start - stop, come - go',
+          'day - night, light - dark, sun - moon',
+          'boy - girl, man - woman, old - young',
+          'yes - no, true - false, right - wrong',
+          'hard - soft, loud - quiet, rough - smooth',
+          'full - empty, heavy - light, thick - thin',
+          '',
+          'Activities:',
+          '- Match opposite pairs',
+          '- Opposite word hunt',
+          '- Complete the opposite sentences'
+        ],
+        materials: [
+          {
+            name: 'Antonym Cards',
+            nameZh: '反义词卡',
+            search1688: '蒙氏反义词卡 英文 antonym',
+            altSearch: '英文反义词配对卡',
+            specs: 'Matching cards for antonym pairs',
+            price: '¥30-50',
+            essential: true
+          },
+          {
+            name: 'Antonym Pictures',
+            nameZh: '反义词图片',
+            search1688: '反义词图片卡 英文',
+            specs: 'Picture pairs showing opposites',
+            price: '¥30-50',
+            essential: false
+          }
+        ],
+        controlOfError: 'Clear opposition in meaning',
+        pointOfInterest: 'Words can be opposites!',
+        extensions: ['Antonym stories', 'Comparison writing', 'Word games']
+      },
+      {
+        id: 'homonyms',
+        name: 'Homonyms (Homophones & Homographs)',
+        age: '5.5-6 years',
+        directAim: 'Understand that some words sound same but have different meanings/spellings',
+        indirectAims: ['Spelling awareness', 'Context clues', 'Careful reading'],
+        prerequisites: 'Reading fluency; spelling awareness',
+        presentation: [
+          'HOMOPHONES = sound same, spelled differently:',
+          'to - too - two, there - their - they\'re',
+          'here - hear, see - sea, be - bee',
+          'know - no, write - right, read - red',
+          'blue - blew, new - knew, ate - eight',
+          'sun - son, one - won, flour - flower',
+          'dear - deer, bear - bare, hair - hare',
+          'tail - tale, sale - sail, pail - pale',
+          'meet - meat, week - weak, break - brake',
+          '',
+          'HOMOGRAPHS = spelled same, different meanings:',
+          'bat (animal) - bat (baseball)',
+          'can (able) - can (container)',
+          'fly (insect) - fly (to soar)',
+          'left (direction) - left (departed)',
+          'ring (jewelry) - ring (sound)',
+          '',
+          'Activities:',
+          '- Sort homophones with pictures',
+          '- Use in sentences to show meaning',
+          '- Homophone riddles'
+        ],
+        materials: [
+          {
+            name: 'Homophone Cards',
+            nameZh: '同音词卡',
+            search1688: '蒙氏同音词卡 英文 homophone',
+            altSearch: '英文同音异形词卡',
+            specs: 'Cards with homophones and pictures',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Homophone Sentences',
+            nameZh: '同音词句子卡',
+            search1688: '英文同音词句子练习',
+            specs: 'Fill-in sentences for homophones',
+            price: '¥20-40',
+            essential: false
+          }
+        ],
+        controlOfError: 'Context and meaning',
+        pointOfInterest: 'Tricky words that sound the same!',
+        extensions: ['Homophone hunt', 'Writing practice', 'Spelling focus']
+      }
+    ]
+  },
+
+  // =========================================================================
+  // 10. GRAMMAR
   // =========================================================================
   {
     id: 'grammar',
     name: 'Grammar & Sentence Analysis',
     icon: '🔺',
-    sequence: 9,
+    sequence: 10,
     description: 'Parts of speech through games and symbols. Experience before terminology. The 9 grammar symbols represent the parts of speech.',
     amiNotes: 'Grammar is taught experientially through games and action, not through worksheets. Each part of speech is introduced through a specific game before symbols are given.',
     works: [
@@ -1630,6 +2776,274 @@ const curriculumData: Category[] = [
         controlOfError: 'Question system; control cards',
         pointOfInterest: 'Discovering sentence patterns',
         extensions: ['Complex sentences', 'Clause analysis', 'Elementary grammar']
+      },
+      {
+        id: 'logical_adjective',
+        name: 'Logical Adjective Game',
+        age: '5-6 years',
+        directAim: 'Understand logical vs illogical adjective use',
+        indirectAims: ['Critical thinking', 'Vocabulary precision', 'Comprehension'],
+        prerequisites: 'Adjective function game',
+        presentation: [
+          'Present sentences with logical adjectives:',
+          '"The tall man" ✓',
+          '"The sweet candy" ✓',
+          '',
+          'Present sentences with illogical adjectives:',
+          '"The loud pencil" ✗',
+          '"The wet fire" ✗',
+          '',
+          'Children identify which make sense',
+          'Discuss why some combinations are illogical',
+          'Sort sentences into logical/illogical'
+        ],
+        materials: [
+          {
+            name: 'Logical Adjective Cards',
+            nameZh: '逻辑形容词卡',
+            search1688: '蒙氏语法游戏卡 形容词 英文',
+            specs: 'Sentence cards for logical/illogical sorting',
+            price: '¥25-40',
+            essential: false
+          }
+        ],
+        controlOfError: 'Logic and meaning',
+        pointOfInterest: 'Some combinations are silly!',
+        extensions: ['Creating silly sentences', 'Writing sensible descriptions']
+      },
+      {
+        id: 'detective_adjective',
+        name: 'Detective Adjective Game',
+        age: '5-6 years',
+        directAim: 'Use adjectives precisely to identify specific objects',
+        indirectAims: ['Descriptive precision', 'Vocabulary expansion', 'Observation skills'],
+        prerequisites: 'Logical adjective game',
+        presentation: [
+          'Place several similar objects on table',
+          '(e.g., 5 different pencils)',
+          '',
+          'Child must find ONE specific pencil using adjectives',
+          '"Find the pencil" - which one?',
+          '"Find the long pencil" - still several',
+          '"Find the long, red pencil" - narrowing down',
+          '"Find the long, red, sharp pencil" - found it!',
+          '',
+          'Children play as "detective" and "describer"'
+        ],
+        materials: [
+          {
+            name: 'Detective Game Objects',
+            nameZh: '侦探游戏物件',
+            search1688: '蒙氏形容词游戏物件',
+            specs: 'Sets of similar objects with varying attributes',
+            price: '¥30-50',
+            essential: false
+          }
+        ],
+        controlOfError: 'Correct object identification',
+        pointOfInterest: 'Being a word detective!',
+        extensions: ['I Spy with adjectives', 'Written descriptions', 'Mystery descriptions']
+      },
+      {
+        id: 'verb_tense',
+        name: 'Verb Tenses',
+        age: '5.5-6 years',
+        directAim: 'Understand verbs change form to show time',
+        indirectAims: ['Time concepts', 'Writing conventions', 'Grammar foundations'],
+        prerequisites: 'Verb function game; reading fluently',
+        presentation: [
+          'PAST - PRESENT - FUTURE:',
+          '',
+          'Yesterday I walked. (past)',
+          'Today I walk. (present)',
+          'Tomorrow I will walk. (future)',
+          '',
+          'REGULAR PAST TENSE (-ed):',
+          'walk → walked, jump → jumped, play → played',
+          '',
+          'IRREGULAR PAST TENSE:',
+          'go → went, see → saw, eat → ate',
+          'run → ran, come → came, make → made',
+          'say → said, take → took, give → gave',
+          '',
+          'Use timeline visual: past | present | future',
+          'Sort verb cards by tense'
+        ],
+        materials: [
+          {
+            name: 'Verb Tense Cards',
+            nameZh: '动词时态卡',
+            search1688: '蒙氏动词时态卡 英文 过去现在将来',
+            altSearch: '英文动词变形卡',
+            specs: 'Cards showing tense changes',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Verb Tense Timeline',
+            nameZh: '时态时间线',
+            search1688: '英文时态时间线 教具',
+            specs: 'Visual timeline for sorting',
+            price: '¥20-40',
+            essential: false
+          },
+          {
+            name: 'Irregular Verb Cards',
+            nameZh: '不规则动词卡',
+            search1688: '英文不规则动词卡 过去式',
+            specs: 'Common irregular verb pairs',
+            price: '¥30-50',
+            essential: true
+          }
+        ],
+        controlOfError: 'Timeline logic; verb charts',
+        pointOfInterest: 'Words change to show time!',
+        extensions: ['Irregular verb practice', 'Story writing with tenses', 'Tense sort games']
+      },
+      {
+        id: 'grammar_boxes_detail',
+        name: 'Grammar Filling Boxes (9 Boxes)',
+        age: '5.5-6 years',
+        directAim: 'Practice each part of speech through sentence analysis',
+        indirectAims: ['Grammar internalization', 'Sentence structure', 'Writing preparation'],
+        prerequisites: 'All function of words games; grammar symbols',
+        presentation: [
+          'Each box focuses on ONE part of speech:',
+          '',
+          'BOX 1 - ARTICLE: the, a, an',
+          'Fill in: ___ dog ran. (The/A)',
+          '',
+          'BOX 2 - ADJECTIVE: describing words',
+          'Fill in: The ___ cat slept. (big, small, orange)',
+          '',
+          'BOX 3 - NOUN: naming words',
+          'Fill in: The big ___ ran. (dog, cat, boy)',
+          '',
+          'BOX 4 - VERB: action words',
+          'Fill in: The dog ___. (ran, jumped, ate)',
+          '',
+          'BOX 5 - PREPOSITION: position words',
+          'Fill in: The cat sat ___ the box. (on, in, under)',
+          '',
+          'BOX 6 - ADVERB: how words',
+          'Fill in: She walked ___. (slowly, quickly, quietly)',
+          '',
+          'BOX 7 - PRONOUN: replacement words',
+          'Fill in: ___ ran fast. (He, She, They)',
+          '',
+          'BOX 8 - CONJUNCTION: connecting words',
+          'Fill in: cats ___ dogs (and, or, but)',
+          '',
+          'BOX 9 - INTERJECTION: exclamation words',
+          'Fill in: ___! That hurts! (Ouch, Wow, Oh)'
+        ],
+        materials: [
+          {
+            name: 'Grammar Filling Boxes - Complete',
+            nameZh: '语法填空盒全套',
+            search1688: '蒙氏语法盒 英文 9盒 全套',
+            altSearch: '蒙台梭利 grammar box 英文',
+            specs: '9 boxes with sentence cards and word cards',
+            price: '¥200-400',
+            essential: true
+          },
+          {
+            name: 'Grammar Box Refill Cards',
+            nameZh: '语法盒补充卡',
+            search1688: '蒙氏语法盒补充卡 英文',
+            specs: 'Additional sentence cards for each box',
+            price: '¥40-80',
+            essential: false
+          }
+        ],
+        controlOfError: 'Meaning; grammar logic',
+        pointOfInterest: 'Building correct sentences',
+        extensions: ['Creating own fill-in sentences', 'Writing with varied parts of speech']
+      },
+      {
+        id: 'plural_nouns',
+        name: 'Plural Nouns',
+        age: '5-6 years',
+        directAim: 'Understand singular and plural noun forms',
+        indirectAims: ['Spelling patterns', 'Grammar accuracy', 'Writing conventions'],
+        prerequisites: 'Noun function game',
+        presentation: [
+          'REGULAR PLURALS - add S:',
+          'cat → cats, dog → dogs, book → books',
+          '',
+          'ADD -ES (s, x, z, ch, sh endings):',
+          'bus → buses, box → boxes, dish → dishes',
+          'church → churches, buzz → buzzes',
+          '',
+          'Y → IES (consonant + y):',
+          'baby → babies, city → cities, fly → flies',
+          'BUT: boy → boys, key → keys (vowel + y)',
+          '',
+          'F/FE → VES:',
+          'leaf → leaves, knife → knives, wife → wives',
+          '',
+          'IRREGULAR:',
+          'child → children, man → men, woman → women',
+          'foot → feet, tooth → teeth, mouse → mice',
+          'fish → fish, sheep → sheep, deer → deer'
+        ],
+        materials: [
+          {
+            name: 'Singular/Plural Cards',
+            nameZh: '单复数卡',
+            search1688: '蒙氏单复数卡 英文 名词',
+            altSearch: '英文名词单复数配对卡',
+            specs: 'Matching cards for singular/plural pairs',
+            price: '¥40-60',
+            essential: true
+          },
+          {
+            name: 'Plural Rules Chart',
+            nameZh: '复数规则表',
+            search1688: '英文复数规则表 海报',
+            specs: 'Reference chart for plural spelling rules',
+            price: '¥15-30',
+            essential: false
+          }
+        ],
+        controlOfError: 'Pattern rules; dictionary',
+        pointOfInterest: 'One vs many changes words!',
+        extensions: ['Sorting by pattern', 'Irregular plural practice', 'Writing plurals']
+      },
+      {
+        id: 'possessive_nouns',
+        name: 'Possessive Nouns',
+        age: '5.5-6 years',
+        directAim: 'Understand apostrophe shows ownership',
+        indirectAims: ['Punctuation', 'Writing conventions', 'Grammar accuracy'],
+        prerequisites: 'Noun function; reading apostrophes',
+        presentation: [
+          'SINGULAR POSSESSIVE - add \'s:',
+          'the dog\'s bone, Mary\'s book, the cat\'s tail',
+          '',
+          'PLURAL POSSESSIVE (regular plurals) - add \':',
+          'the dogs\' bones, the girls\' books',
+          '',
+          'PLURAL POSSESSIVE (irregular plurals) - add \'s:',
+          'the children\'s toys, the men\'s hats, the mice\'s cheese',
+          '',
+          'Show meaning:',
+          '"The bone belongs to the dog" = "the dog\'s bone"'
+        ],
+        materials: [
+          {
+            name: 'Possessive Noun Cards',
+            nameZh: '所有格名词卡',
+            search1688: '蒙氏所有格卡 英文',
+            altSearch: '英文所有格练习卡',
+            specs: 'Cards practicing possessive forms',
+            price: '¥30-50',
+            essential: true
+          }
+        ],
+        controlOfError: 'Meaning check - who owns what?',
+        pointOfInterest: 'Apostrophe shows belonging!',
+        extensions: ['Possessive in writing', 'Contraction vs possessive distinction']
       }
     ]
   }
