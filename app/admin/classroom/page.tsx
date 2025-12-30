@@ -128,7 +128,15 @@ function ClassroomView() {
 
   async function fetchAssignments(planId: string) {
     try {
-      const res = await fetch(`/api/weekly-planning/by-plan?planId=${planId}`);
+      // Use week/year if available, fall back to planId
+      const params = new URLSearchParams();
+      if (selectedWeek && selectedYear) {
+        params.set('week', selectedWeek.toString());
+        params.set('year', selectedYear.toString());
+      } else {
+        params.set('planId', planId);
+      }
+      const res = await fetch(`/api/weekly-planning/by-plan?${params}`);
       const data = await res.json();
       setChildren(data.children || []);
     } catch (err) {
