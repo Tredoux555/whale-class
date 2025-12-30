@@ -4061,9 +4061,9 @@ export default function EnglishProcurementPage() {
         {viewMode === 'sequence' && !selectedCategory && (
           <div className="space-y-4">
             {/* AMI Note */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <h3 className="font-bold text-amber-800 mb-1">⚠️ Important AMI Note</h3>
-              <p className="text-amber-700 text-sm">
+            <div className="bg-amber-900/30 border border-amber-500/30 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-amber-300 mb-1">⚠️ Important AMI Note</h3>
+              <p className="text-amber-200/80 text-sm">
                 The Pink/Blue/Green color-coded reading series is NOT official AMI - it was developed by Margaret Homfray and Phoebe Child for English. 
                 Authentic AMI uses the Muriel Dwyer approach with cursive script. This guide includes both for practicality, following the sequence used in most English-speaking Montessori schools.
               </p>
@@ -4074,26 +4074,26 @@ export default function EnglishProcurementPage() {
               <div
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className="bg-slate-800 rounded-xl shadow-sm p-6 cursor-pointer hover:shadow-md transition border-l-4 border-indigo-500"
+                className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 cursor-pointer hover:from-slate-600 hover:to-slate-700 transition-all duration-200 border border-slate-600 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10"
               >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">{category.icon}</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded">
+                      <span className="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2 py-0.5 rounded border border-indigo-500/30">
                         Step {category.sequence}
                       </span>
-                      <h2 className="text-xl font-bold">{category.name}</h2>
+                      <h2 className="text-xl font-bold text-white">{category.name}</h2>
                     </div>
-                    <p className="text-gray-300">{category.description}</p>
+                    <p className="text-slate-300">{category.description}</p>
                     {category.amiNotes && (
-                      <p className="text-amber-600 text-sm mt-2 italic">{category.amiNotes}</p>
+                      <p className="text-amber-400 text-sm mt-2 italic">{category.amiNotes}</p>
                     )}
-                    <div className="mt-3 text-sm text-gray-400">
+                    <div className="mt-3 text-sm text-slate-400">
                       {category.works.length} work{category.works.length > 1 ? 's' : ''} • Click to expand
                     </div>
                   </div>
-                  <div className="text-gray-400 text-2xl">›</div>
+                  <div className="text-indigo-400 text-2xl">›</div>
                 </div>
               </div>
             ))}
@@ -4122,24 +4122,24 @@ export default function EnglishProcurementPage() {
           <div>
             <button
               onClick={() => setSelectedCategory(null)}
-              className="text-indigo-600 hover:text-indigo-800 mb-4 flex items-center gap-1"
+              className="text-indigo-400 hover:text-indigo-300 mb-4 flex items-center gap-1"
             >
               ← Back to sequence
             </button>
 
-            <div className="bg-slate-800 rounded-xl shadow-sm p-6 mb-6">
+            <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 mb-6 border border-slate-600">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-4xl">{selectedCategoryData?.icon}</span>
                 <div>
-                  <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded">
+                  <span className="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2 py-1 rounded border border-indigo-500/30">
                     Step {selectedCategoryData?.sequence}
                   </span>
-                  <h1 className="text-2xl font-bold">{selectedCategoryData?.name}</h1>
+                  <h1 className="text-2xl font-bold text-white">{selectedCategoryData?.name}</h1>
                 </div>
               </div>
-              <p className="text-gray-300">{selectedCategoryData?.description}</p>
+              <p className="text-slate-300">{selectedCategoryData?.description}</p>
               {selectedCategoryData?.amiNotes && (
-                <p className="text-amber-600 text-sm mt-2 bg-amber-50 p-3 rounded-lg">{selectedCategoryData.amiNotes}</p>
+                <p className="text-amber-400 text-sm mt-2 bg-amber-900/30 p-3 rounded-lg border border-amber-500/30">{selectedCategoryData.amiNotes}</p>
               )}
             </div>
 
@@ -4148,21 +4148,21 @@ export default function EnglishProcurementPage() {
                 <div
                   key={work.id}
                   onClick={() => setSelectedWork(work.id)}
-                  className="bg-slate-800 rounded-xl shadow-sm p-5 cursor-pointer hover:shadow-md transition"
+                  className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-5 cursor-pointer hover:from-slate-600 hover:to-slate-700 transition-all duration-200 border border-slate-600 hover:border-indigo-500"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="bg-indigo-100 text-indigo-700 font-bold w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                    <div className="bg-indigo-500/20 text-indigo-300 font-bold w-8 h-8 rounded-full flex items-center justify-center text-sm border border-indigo-500/30">
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">{work.name}</h3>
-                      <p className="text-gray-400 text-sm">Age: {work.age}</p>
-                      <p className="text-gray-300 mt-1">{work.directAim}</p>
-                      <div className="mt-2 text-sm text-gray-400">
+                      <h3 className="font-bold text-lg text-white">{work.name}</h3>
+                      <p className="text-slate-400 text-sm">Age: {work.age}</p>
+                      <p className="text-slate-300 mt-1">{work.directAim}</p>
+                      <div className="mt-2 text-sm text-slate-400">
                         {work.materials.length} material{work.materials.length > 1 ? 's' : ''} • Click for full details
                       </div>
                     </div>
-                    <div className="text-gray-400 text-xl">›</div>
+                    <div className="text-indigo-400 text-xl">›</div>
                   </div>
                 </div>
               ))}
@@ -4175,12 +4175,12 @@ export default function EnglishProcurementPage() {
           <div>
             <button
               onClick={() => setSelectedWork(null)}
-              className="text-indigo-600 hover:text-indigo-800 mb-4 flex items-center gap-1"
+              className="text-indigo-400 hover:text-indigo-300 mb-4 flex items-center gap-1"
             >
               ← Back to {selectedCategoryData?.name}
             </button>
 
-            <div className="bg-slate-800 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl overflow-hidden border border-slate-600">
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4">
                 <div className="text-indigo-200 text-sm">{selectedCategoryData?.icon} {selectedCategoryData?.name}</div>
