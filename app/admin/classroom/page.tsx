@@ -40,6 +40,7 @@ const AREA_COLORS: Record<string, string> = {
   practical_life: 'border-l-amber-500 bg-amber-50',
   sensorial: 'border-l-pink-500 bg-pink-50',
   mathematics: 'border-l-blue-500 bg-blue-50',
+  math: 'border-l-blue-500 bg-blue-50',
   language: 'border-l-green-500 bg-green-50',
   culture: 'border-l-purple-500 bg-purple-50',
 };
@@ -48,6 +49,7 @@ const AREA_LABELS: Record<string, string> = {
   practical_life: 'P',
   sensorial: 'S',
   mathematics: 'M',
+  math: 'M',
   language: 'L',
   culture: 'C',
 };

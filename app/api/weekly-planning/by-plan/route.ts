@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
         work_id,
         work_name,
         area,
-        progress_status,
         notes,
         children(id, name, avatar_emoji)
       `)
