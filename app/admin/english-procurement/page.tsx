@@ -1633,6 +1633,7 @@ const curriculumData: Category[] = [
         directAim: 'Build vocabulary through real objects in the classroom',
         indirectAims: ['Language development', 'Classification skills', 'Connection to environment'],
         prerequisites: 'None - entry point',
+        videoSearchTerm: 'Montessori naming objects environment three period lesson',
         presentation: [
           'Walk with child through environment',
           'Name objects clearly: "This is a chair"',
@@ -1808,6 +1809,7 @@ const curriculumData: Category[] = [
         directAim: 'Bridge from concrete objects to abstract pictures and words',
         indirectAims: ['Preparation for reading', 'Classification', 'Vocabulary enrichment'],
         prerequisites: 'Vocabulary baskets with same category; later: sandpaper letters',
+        videoSearchTerm: 'Montessori three part cards nomenclature presentation how to use',
         presentation: [
           'STAGE 1 - Control Cards Only:',
           'Select 5-6 control cards from one category',
@@ -1872,6 +1874,7 @@ const curriculumData: Category[] = [
         directAim: 'Develop oral expression and listening skills',
         indirectAims: ['Sequencing', 'Comprehension', 'Social skills', 'Preparation for writing'],
         prerequisites: 'None',
+        videoSearchTerm: 'Montessori storytelling oral language preschool read aloud',
         presentation: [
           'Read quality literature daily',
           'Ask open-ended questions about stories',
@@ -1908,6 +1911,7 @@ const curriculumData: Category[] = [
         directAim: 'Develop phonological awareness through rhythm and rhyme',
         indirectAims: ['Memory', 'Phonemic awareness', 'Cultural enrichment', 'Joy in language'],
         prerequisites: 'None',
+        videoSearchTerm: 'Montessori nursery rhymes phonological awareness preschool songs',
         presentation: [
           'Recite poems and nursery rhymes daily',
           'Emphasize rhyming words',
@@ -1936,6 +1940,7 @@ const curriculumData: Category[] = [
         directAim: 'Learn specialized vocabulary for parts of objects in nature',
         indirectAims: ['Scientific vocabulary', 'Classification', 'Reading enrichment'],
         prerequisites: 'Three-Part Cards; some reading ability',
+        videoSearchTerm: 'Montessori parts of nomenclature cards botany flower leaf',
         presentation: [
           'BOTANY PARTS-OF:',
           '- Parts of a Leaf: blade, petiole, veins, margin, apex, base',
@@ -2023,6 +2028,7 @@ const curriculumData: Category[] = [
         directAim: 'Learn to match terms with their definitions',
         indirectAims: ['Reading comprehension', 'Vocabulary depth', 'Study skills'],
         prerequisites: 'Reading sentences; Three-Part Cards mastery',
+        videoSearchTerm: 'Montessori definition cards vocabulary matching reading',
         presentation: [
           'Term cards + Definition cards + Control cards',
           'Child reads term, finds matching definition',
@@ -2062,6 +2068,7 @@ const curriculumData: Category[] = [
         directAim: 'Expand vocabulary through classified picture collections',
         indirectAims: ['Visual discrimination', 'Classification', 'Reading preparation'],
         prerequisites: 'Vocabulary baskets',
+        videoSearchTerm: 'Montessori classified pictures sorting vocabulary language',
         presentation: [
           'Large collection of classified pictures:',
           '',
@@ -2113,6 +2120,7 @@ const curriculumData: Category[] = [
         directAim: 'Read and perform action commands',
         indirectAims: ['Reading comprehension', 'Following directions', 'Verb vocabulary'],
         prerequisites: 'Reading CVC words; Pink series',
+        videoSearchTerm: 'Montessori action command cards reading comprehension verbs',
         presentation: [
           'Single action cards: "sit" "hop" "clap"',
           'Child reads card, performs action',
@@ -2258,6 +2266,7 @@ const curriculumData: Category[] = [
         directAim: 'Train the ear to isolate ending sounds',
         indirectAims: ['Complete phonemic awareness', 'Preparation for spelling'],
         prerequisites: 'Mastery of beginning sounds (8/10 correct)',
+        videoSearchTerm: 'Montessori I Spy game ending sounds phonemic awareness',
         presentation: [
           '"I spy something that ENDS with /t/" (cat)',
           'Use same objects as beginning sounds',
@@ -2286,6 +2295,7 @@ const curriculumData: Category[] = [
         directAim: 'Train the ear to isolate middle/vowel sounds',
         indirectAims: ['Complete phonemic awareness', 'Vowel discrimination'],
         prerequisites: 'Mastery of beginning AND ending sounds',
+        videoSearchTerm: 'Montessori I Spy middle sounds vowels phonemic awareness',
         presentation: [
           'Middle sounds are HARDEST - introduce last',
           '"I spy something with /a/ in the middle" (cat, hat, mat)',
@@ -2313,6 +2323,7 @@ const curriculumData: Category[] = [
         directAim: 'Segment ALL individual sounds in words',
         indirectAims: ['Direct preparation for Moveable Alphabet', 'Spelling foundation'],
         prerequisites: 'Mastery of Levels 1-3',
+        videoSearchTerm: 'Montessori sound segmentation phonemic awareness word sounds',
         presentation: [
           '"Tell me ALL the sounds in cat"',
           'Child responds: "/k/ - /a/ - /t/"',
@@ -2480,6 +2491,7 @@ const curriculumData: Category[] = [
         directAim: 'Learn all 26 letter-sound correspondences in optimal sequence',
         indirectAims: ['Enable early word building', 'Systematic progression'],
         prerequisites: 'First group mastered (c, m, a, t)',
+        videoSearchTerm: 'Montessori sandpaper letters sequence order which letters first',
         presentation: [
           'Traditional AMI letter groupings for English:',
           'GROUP 1: c, m, a, t → builds: cat, mat, at, am',
@@ -2513,6 +2525,7 @@ const curriculumData: Category[] = [
         directAim: 'Learn capital letter forms for names and sentence beginnings',
         indirectAims: ['Reading printed text', 'Proper noun recognition'],
         prerequisites: 'Most lowercase letters mastered; reading CVC words',
+        videoSearchTerm: 'Montessori capital letters uppercase sandpaper introduction',
         presentation: [
           'Introduce when child asks or needs capitals for names',
           'Pair with lowercase: "This also says /b/, we use it at the start of names"',
@@ -2541,6 +2554,7 @@ const curriculumData: Category[] = [
         directAim: 'Learn that some sounds require two or more letters',
         indirectAims: ['Reading complex words', 'Spelling patterns'],
         prerequisites: 'Most single letters mastered; reading CVC words; encounter phonograms in reading',
+        videoSearchTerm: 'Montessori sandpaper phonograms digraphs sh ch th double letters',
         presentation: [
           'Introduce when child encounters phonograms in reading',
           'Present as ONE sound: "These two letters together say /sh/"',
@@ -2593,6 +2607,7 @@ const curriculumData: Category[] = [
         directAim: 'Practice letter formation with immediate tactile feedback',
         indirectAims: ['Preparation for writing on paper', 'Letter form memory', 'Fine motor control'],
         prerequisites: 'Introduction to sandpaper letters',
+        videoSearchTerm: 'Montessori sand tray letter writing practice presentation',
         presentation: [
           'Child traces sandpaper letter first',
           'Immediately writes same letter in sand using finger or stylus',
@@ -2632,6 +2647,7 @@ const curriculumData: Category[] = [
         directAim: 'Practice letter formation on vertical surface',
         indirectAims: ['Arm strength', 'Larger movements before fine motor', 'Easy correction'],
         prerequisites: 'Sand tray work; several sandpaper letters known',
+        videoSearchTerm: 'Montessori chalkboard writing letters preschool handwriting',
         presentation: [
           'Start with LARGE letters using whole arm movement',
           'Trace sandpaper letter, write on chalkboard',
@@ -2690,7 +2706,7 @@ const curriculumData: Category[] = [
         directAim: 'Develop pencil control through tracing and filling shapes',
         indirectAims: ['Proper pencil grip', 'Lightness of touch', 'Continuous strokes', 'Left-to-right movement'],
         prerequisites: 'Fine motor readiness; ability to hold pencil',
-        videoUrl: 'https://www.youtube.com/watch?v=_6PkTDvmiXg',
+        videoSearchTerm: 'Montessori metal insets presentation tracing filling shapes',
         presentation: [
           'PRESENTATION 1 - Frame Outline & Horizontal Lines:',
           '- Select frame, place on paper',
@@ -2773,6 +2789,7 @@ const curriculumData: Category[] = [
         directAim: 'Refine pencil control with increasingly complex designs',
         indirectAims: ['Creativity', 'Patience', 'Aesthetic sense', 'Pressure control'],
         prerequisites: 'Presentations 1-3 mastered',
+        videoSearchTerm: 'Montessori metal insets advanced designs patterns overlay',
         presentation: [
           'PRESENTATION 4 - Different Inset in Frame:',
           '- Trace frame with one shape',
@@ -2947,6 +2964,7 @@ const curriculumData: Category[] = [
         directAim: 'Progress from objects to pictures to word lists to sentences',
         indirectAims: ['Automatic letter selection', 'Spelling internalization'],
         prerequisites: 'Building CVC words with objects',
+        videoSearchTerm: 'Montessori moveable alphabet word building sentences progression',
         presentation: [
           'STAGE 1 - Objects:',
           '- Build words for miniature objects',
@@ -3000,6 +3018,7 @@ const curriculumData: Category[] = [
         directAim: 'Build longer words and texts; work with phonograms',
         indirectAims: ['Transition to paper writing', 'More complex spelling'],
         prerequisites: 'Fluent with Large Moveable Alphabet; phonograms introduced',
+        videoSearchTerm: 'Montessori small moveable alphabet phonograms writing',
         presentation: [
           'Introduced when child needs:',
           '- More letters for longer words',
@@ -3046,6 +3065,7 @@ const curriculumData: Category[] = [
         directAim: 'Read simple CVC words by matching to objects',
         indirectAims: ['Decoding skills', 'Reading confidence'],
         prerequisites: 'Building CVC words with Moveable Alphabet',
+        videoSearchTerm: 'Montessori pink series object box CVC reading presentation',
         presentation: [
           'Place objects on mat (e.g., cat, dog, pig)',
           'Give child word labels to read',
@@ -3075,6 +3095,7 @@ const curriculumData: Category[] = [
         directAim: 'Read CVC words without object support',
         indirectAims: ['Reading independence', 'Decoding fluency'],
         prerequisites: 'Pink object boxes',
+        videoSearchTerm: 'Montessori pink series picture word cards matching reading',
         presentation: [
           'Lay out picture cards',
           'Give word cards to read and match',
@@ -3103,6 +3124,7 @@ const curriculumData: Category[] = [
         directAim: 'Read CVC words fluently without picture support',
         indirectAims: ['Reading fluency', 'Decoding automaticity'],
         prerequisites: 'Pink picture word cards',
+        videoSearchTerm: 'Montessori pink series word lists booklets phrases sentences',
         presentation: [
           'WORD LISTS:',
           '- Lists of CVC words organized by pattern',

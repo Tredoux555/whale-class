@@ -50,6 +50,9 @@ const [adminMessage, setAdminMessage] = useState('');
 const [sendingMessage, setSendingMessage] = useState(false);
 const [messageSent, setMessageSent] = useState(false);
 const [messageError, setMessageError] = useState('');
+const [selectedImage, setSelectedImage] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState<string | null>(null);
+const [uploadingImage, setUploadingImage] = useState(false);
 const [isLoading, setIsLoading] = useState(true);
 const [vaultPassword, setVaultPassword] = useState('');
 const [vaultUnlocked, setVaultUnlocked] = useState(false);
@@ -171,34 +174,82 @@ loadVaultFiles();
 }
 }, [activeTab, vaultUnlocked, loadVaultFiles]);
 const sendAdminMessage = async () => {
-if (!adminMessage.trim()) return;
-setSendingMessage(true);
-setMessageSent(false);
-setMessageError('');
-try {
-const session = getSession();
-const res = await fetch('/api/story/admin/send-message', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'Authorization': `Bearer ${session}`
-},
-body: JSON.stringify({ message: adminMessage.trim() })
-});
-const data = await res.json();
-if (res.ok) {
-setAdminMessage('');
-setMessageSent(true);
-await loadMessages();
-setTimeout(() => setMessageSent(false), 3000);
-} else {
-setMessageError(data.error || 'Failed to send');
-}
-} catch {
-setMessageError('Connection error');
-} finally {
-setSendingMessage(false);
-}
+  if (!adminMessage.trim() && !selectedImage) return;
+  setSendingMessage(true);
+  setMessageSent(false);
+  setMessageError('');
+  try {
+    const session = getSession();
+    
+    // If there's an image, upload it first
+    if (selectedImage) {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append('file', selectedImage);
+      formData.append('caption', adminMessage.trim());
+      
+      const res = await fetch('/api/story/admin/send-image', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session}` },
+        body: formData
+      });
+      
+      const data = await res.json();
+      setUploadingImage(false);
+      
+      if (res.ok) {
+        setAdminMessage('');
+        setSelectedImage(null);
+        setImagePreview(null);
+        setMessageSent(true);
+        await loadMessages();
+        setTimeout(() => setMessageSent(false), 3000);
+      } else {
+        setMessageError(data.error || 'Failed to send image');
+      }
+    } else {
+      // Text only
+      const res = await fetch('/api/story/admin/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session}`
+        },
+        body: JSON.stringify({ message: adminMessage.trim() })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAdminMessage('');
+        setMessageSent(true);
+        await loadMessages();
+        setTimeout(() => setMessageSent(false), 3000);
+      } else {
+        setMessageError(data.error || 'Failed to send');
+      }
+    }
+  } catch {
+    setMessageError('Connection error');
+  } finally {
+    setSendingMessage(false);
+    setUploadingImage(false);
+  }
+};
+
+const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const clearImage = () => {
+  setSelectedImage(null);
+  setImagePreview(null);
 };
 const handleVaultUnlock = async () => {
 const session = getSession();
@@ -321,7 +372,17 @@ sessionStorage.removeItem('story_admin_session');
 router.push('/story/admin');
 };
 const formatTime = (dateString: string) => {
-return new Date(dateString).toLocaleString();
+  // Convert to Beijing time (UTC+8)
+  const date = new Date(dateString);
+  return date.toLocaleString('en-GB', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
 };
 const formatSecondsAgo = (seconds: number) => {
 if (seconds < 60) return `${seconds}s`;
@@ -428,20 +489,45 @@ Sign Out
               <textarea
                 value={adminMessage}
                 onChange={(e) => setAdminMessage(e.target.value)}
-                placeholder="Write a message for your students..."
+                placeholder={selectedImage ? "Add a caption (optional)..." : "Write a message for your students..."}
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 rows={3}
               />
-              <div className="flex gap-2">
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative inline-block">
+                  <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-lg border border-gray-200" />
+                  <button
+                    onClick={clearImage}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              <div className="flex gap-2 flex-wrap">
+                {/* Image Upload Button */}
+                <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+                  📷 Add Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </label>
+                
                 <button
                   onClick={sendAdminMessage}
-                  disabled={sendingMessage || !adminMessage.trim()}
+                  disabled={sendingMessage || uploadingImage || (!adminMessage.trim() && !selectedImage)}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  {sendingMessage ? '⟳ Sending...' : '✓ Send Message'}
+                  {uploadingImage ? '⟳ Uploading...' : sendingMessage ? '⟳ Sending...' : selectedImage ? '✓ Send Photo' : '✓ Send Message'}
                 </button>
                 <button
-                  onClick={() => { setAdminMessage(''); setMessageError(''); }}
+                  onClick={() => { setAdminMessage(''); setMessageError(''); clearImage(); }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Clear
