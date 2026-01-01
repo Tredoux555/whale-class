@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
     }
 
     const supabase = getSupabase();
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const now = Date.now();
+    const tenMinutesAgo = new Date(now - 10 * 60 * 1000).toISOString();
 
     // Get recent logins (within 10 min, not logged out)
     const { data: rows, error } = await supabase
@@ -25,7 +26,15 @@ export async function GET(req: NextRequest) {
     const userMap = new Map<string, { username: string; lastLogin: string; secondsAgo: number }>();
     (rows || []).forEach(row => {
       if (!userMap.has(row.username)) {
-        const secondsAgo = Math.floor((Date.now() - new Date(row.login_at).getTime()) / 1000);
+        // Parse the timestamp - ensure UTC interpretation
+        // If the timestamp doesn't end with Z, add it for correct UTC parsing
+        let loginTime = row.login_at;
+        if (loginTime && !loginTime.endsWith('Z') && !loginTime.includes('+')) {
+          loginTime = loginTime + 'Z';
+        }
+        const loginTimestamp = new Date(loginTime).getTime();
+        const secondsAgo = Math.max(0, Math.floor((now - loginTimestamp) / 1000));
+        
         userMap.set(row.username, {
           username: row.username,
           lastLogin: row.login_at,
@@ -46,7 +55,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       onlineUsers,
       onlineCount: onlineUsers.length,
-      totalUsers: uniqueUsers.size
+      totalUsers: uniqueUsers.size,
+      serverTime: new Date().toISOString() // Include server time for debugging
     });
   } catch (error) {
     console.error('[OnlineUsers] Error:', error);
