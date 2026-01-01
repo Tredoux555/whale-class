@@ -375,13 +375,22 @@ const formatTime = (dateString: string) => {
   if (!dateString) return '—';
   
   try {
-    // Parse the timestamp - Supabase returns ISO format
-    // Handle both with and without timezone indicator
-    let timestamp = dateString;
+    // Normalize the timestamp for reliable parsing
+    let timestamp = dateString.trim();
     
-    // If no timezone indicator, assume UTC (Supabase TIMESTAMPTZ stores in UTC)
-    if (!timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
-      timestamp = timestamp.replace(' ', 'T') + 'Z';
+    // Replace space with T if needed (Supabase sometimes returns "2026-01-01 15:30:00")
+    if (timestamp.includes(' ') && !timestamp.includes('T')) {
+      timestamp = timestamp.replace(' ', 'T');
+    }
+    
+    // Check if timestamp already has timezone info
+    const hasTimezone = timestamp.endsWith('Z') || 
+                        /[+-]\d{2}:\d{2}$/.test(timestamp) || 
+                        /[+-]\d{2}$/.test(timestamp);
+    
+    // If no timezone, assume UTC (Supabase TIMESTAMPTZ stores in UTC)
+    if (!hasTimezone) {
+      timestamp = timestamp + 'Z';
     }
     
     const date = new Date(timestamp);
@@ -389,7 +398,7 @@ const formatTime = (dateString: string) => {
     // Check for invalid date
     if (isNaN(date.getTime())) {
       console.warn('Invalid date:', dateString);
-      return dateString; // Return original if parsing fails
+      return dateString;
     }
     
     // Convert to Beijing time (UTC+8)
