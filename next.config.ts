@@ -3,16 +3,14 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // Ignore ESLint during production builds (fix later)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   // Ignore TypeScript errors during builds (fix later)
   typescript: {
     ignoreBuildErrors: true,
   },
   // Transpile server-only modules (bcryptjs v3 is ESM-only)
   transpilePackages: ['jose', 'bcryptjs'],
+  // Empty turbopack config to silence Next.js 16 warning
+  turbopack: {},
   // Use webpack instead of Turbopack for PWA compatibility
   webpack: (config, { isServer }) => {
     if (isServer) {

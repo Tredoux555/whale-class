@@ -372,17 +372,40 @@ sessionStorage.removeItem('story_admin_session');
 router.push('/story/admin');
 };
 const formatTime = (dateString: string) => {
-  // Convert to Beijing time (UTC+8)
-  const date = new Date(dateString);
-  return date.toLocaleString('en-GB', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  if (!dateString) return '—';
+  
+  try {
+    // Parse the timestamp - Supabase returns ISO format
+    // Handle both with and without timezone indicator
+    let timestamp = dateString;
+    
+    // If no timezone indicator, assume UTC (Supabase TIMESTAMPTZ stores in UTC)
+    if (!timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
+      timestamp = timestamp.replace(' ', 'T') + 'Z';
+    }
+    
+    const date = new Date(timestamp);
+    
+    // Check for invalid date
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date:', dateString);
+      return dateString; // Return original if parsing fails
+    }
+    
+    // Convert to Beijing time (UTC+8)
+    return date.toLocaleString('en-GB', {
+      timeZone: 'Asia/Shanghai',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (error) {
+    console.error('Date formatting error:', error, dateString);
+    return dateString;
+  }
 };
 const formatSecondsAgo = (seconds: number) => {
 if (seconds < 60) return `${seconds}s`;
