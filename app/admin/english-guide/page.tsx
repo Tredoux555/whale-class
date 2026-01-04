@@ -768,12 +768,297 @@ const ENGLISH_GUIDE = [
 ];
 
 // ============================================
+// FIRST 100 WORDS - VOCABULARY PROGRESSION
+// ============================================
+
+const VOCABULARY_PROGRESSION = [
+  {
+    phase: 1,
+    title: 'Body & Classroom',
+    weeks: 'Weeks 1-3',
+    icon: '🏫',
+    color: '#3B82F6',
+    why: 'Concrete, touchable, always available. Point to real things.',
+    words: [
+      { word: 'leg', type: 'CVC', series: 'pink' },
+      { word: 'arm', type: 'CVC', series: 'pink' },
+      { word: 'lip', type: 'CVC', series: 'pink' },
+      { word: 'hand', type: 'blend', series: 'blue' },
+      { word: 'head', type: 'CVC', series: 'pink' },
+      { word: 'nose', type: 'silent-e', series: 'green' },
+      { word: 'pen', type: 'CVC', series: 'pink' },
+      { word: 'bag', type: 'CVC', series: 'pink' },
+      { word: 'box', type: 'CVC', series: 'pink' },
+      { word: 'mat', type: 'CVC', series: 'pink' },
+      { word: 'rug', type: 'CVC', series: 'pink' },
+      { word: 'bin', type: 'CVC', series: 'pink' },
+      { word: 'lid', type: 'CVC', series: 'pink' },
+      { word: 'cup', type: 'CVC', series: 'pink' },
+      { word: 'desk', type: 'blend', series: 'blue' },
+    ]
+  },
+  {
+    phase: 2,
+    title: 'Animals',
+    weeks: 'Weeks 3-5',
+    icon: '🐾',
+    color: '#10B981',
+    why: 'High engagement! Children LOVE animals. Most are CVC words.',
+    words: [
+      { word: 'cat', type: 'CVC', series: 'pink' },
+      { word: 'dog', type: 'CVC', series: 'pink' },
+      { word: 'pig', type: 'CVC', series: 'pink' },
+      { word: 'hen', type: 'CVC', series: 'pink' },
+      { word: 'fox', type: 'CVC', series: 'pink' },
+      { word: 'rat', type: 'CVC', series: 'pink' },
+      { word: 'bat', type: 'CVC', series: 'pink' },
+      { word: 'bug', type: 'CVC', series: 'pink' },
+      { word: 'ant', type: 'blend', series: 'blue' },
+      { word: 'bee', type: 'phonogram', series: 'green' },
+      { word: 'cow', type: 'phonogram', series: 'green' },
+      { word: 'duck', type: 'CVC+ck', series: 'pink' },
+      { word: 'fish', type: 'digraph', series: 'pink' },
+      { word: 'frog', type: 'blend', series: 'blue' },
+      { word: 'bird', type: 'r-control', series: 'green' },
+    ]
+  },
+  {
+    phase: 3,
+    title: 'Food & Kitchen',
+    weeks: 'Weeks 5-7',
+    icon: '🍎',
+    color: '#F59E0B',
+    why: 'Daily relevance - snack time, lunch, cooking activities.',
+    words: [
+      { word: 'pot', type: 'CVC', series: 'pink' },
+      { word: 'pan', type: 'CVC', series: 'pink' },
+      { word: 'jam', type: 'CVC', series: 'pink' },
+      { word: 'ham', type: 'CVC', series: 'pink' },
+      { word: 'egg', type: 'CVC', series: 'pink' },
+      { word: 'nut', type: 'CVC', series: 'pink' },
+      { word: 'bun', type: 'CVC', series: 'pink' },
+      { word: 'mug', type: 'CVC', series: 'pink' },
+      { word: 'jug', type: 'CVC', series: 'pink' },
+      { word: 'milk', type: 'blend', series: 'blue' },
+      { word: 'corn', type: 'r-control', series: 'green' },
+      { word: 'pea', type: 'phonogram', series: 'green' },
+      { word: 'rice', type: 'silent-e', series: 'green' },
+      { word: 'fish', type: 'digraph', series: 'pink' },
+      { word: 'cake', type: 'silent-e', series: 'green' },
+    ]
+  },
+  {
+    phase: 4,
+    title: 'Home & Clothing',
+    weeks: 'Weeks 7-9',
+    icon: '🏠',
+    color: '#8B5CF6',
+    why: 'Personal connection - items they use every day.',
+    words: [
+      { word: 'bed', type: 'CVC', series: 'pink' },
+      { word: 'cot', type: 'CVC', series: 'pink' },
+      { word: 'tub', type: 'CVC', series: 'pink' },
+      { word: 'tap', type: 'CVC', series: 'pink' },
+      { word: 'mop', type: 'CVC', series: 'pink' },
+      { word: 'fan', type: 'CVC', series: 'pink' },
+      { word: 'hat', type: 'CVC', series: 'pink' },
+      { word: 'cap', type: 'CVC', series: 'pink' },
+      { word: 'sock', type: 'CVC+ck', series: 'pink' },
+      { word: 'vest', type: 'blend', series: 'blue' },
+      { word: 'belt', type: 'blend', series: 'blue' },
+      { word: 'lamp', type: 'blend', series: 'blue' },
+      { word: 'door', type: 'r-control', series: 'green' },
+      { word: 'coat', type: 'phonogram', series: 'green' },
+      { word: 'shoe', type: 'phonogram', series: 'green' },
+    ]
+  },
+  {
+    phase: 5,
+    title: 'Actions & Verbs',
+    weeks: 'Weeks 9-11',
+    icon: '🏃',
+    color: '#EF4444',
+    why: 'Movement words for games, songs, and grammar prep.',
+    words: [
+      { word: 'run', type: 'CVC', series: 'pink' },
+      { word: 'hop', type: 'CVC', series: 'pink' },
+      { word: 'sit', type: 'CVC', series: 'pink' },
+      { word: 'cut', type: 'CVC', series: 'pink' },
+      { word: 'dig', type: 'CVC', series: 'pink' },
+      { word: 'hug', type: 'CVC', series: 'pink' },
+      { word: 'mix', type: 'CVC', series: 'pink' },
+      { word: 'nap', type: 'CVC', series: 'pink' },
+      { word: 'tap', type: 'CVC', series: 'pink' },
+      { word: 'clap', type: 'blend', series: 'blue' },
+      { word: 'jump', type: 'blend', series: 'blue' },
+      { word: 'skip', type: 'blend', series: 'blue' },
+      { word: 'kick', type: 'CVC+ck', series: 'pink' },
+      { word: 'wash', type: 'digraph', series: 'pink' },
+      { word: 'eat', type: 'phonogram', series: 'green' },
+    ]
+  },
+  {
+    phase: 6,
+    title: 'Colors, Numbers & Position',
+    weeks: 'Weeks 11-13',
+    icon: '🎨',
+    color: '#EC4899',
+    why: 'Essential descriptors. Prepare for adjectives and prepositions.',
+    words: [
+      { word: 'red', type: 'CVC', series: 'pink' },
+      { word: 'big', type: 'CVC', series: 'pink' },
+      { word: 'hot', type: 'CVC', series: 'pink' },
+      { word: 'wet', type: 'CVC', series: 'pink' },
+      { word: 'one', type: 'sight', series: 'sight' },
+      { word: 'two', type: 'sight', series: 'sight' },
+      { word: 'up', type: 'CVC', series: 'pink' },
+      { word: 'in', type: 'CVC', series: 'pink' },
+      { word: 'on', type: 'CVC', series: 'pink' },
+      { word: 'top', type: 'CVC', series: 'pink' },
+      { word: 'blue', type: 'phonogram', series: 'green' },
+      { word: 'green', type: 'phonogram', series: 'green' },
+      { word: 'pink', type: 'blend', series: 'blue' },
+      { word: 'black', type: 'blend', series: 'blue' },
+      { word: 'three', type: 'phonogram', series: 'green' },
+    ]
+  }
+];
+
+// ============================================
+// VOCABULARY BASKETS SHOPPING GUIDE
+// ============================================
+
+const VOCABULARY_BASKETS = [
+  {
+    name: 'Animals Basket',
+    icon: '🐾',
+    color: '#10B981',
+    budget: '¥50-80',
+    whereToBuy: 'Taobao: Safari Ltd TOOBS, or local toy store',
+    items: [
+      'cat (plastic figurine)',
+      'dog',
+      'pig',
+      'hen/chicken',
+      'cow',
+      'duck',
+      'frog',
+      'fish',
+      'bird',
+      'ant (or bug set)',
+    ],
+    tip: 'Safari Ltd TOOBS are perfect - realistic, durable, and right size for little hands.'
+  },
+  {
+    name: 'Kitchen Basket',
+    icon: '🍳',
+    color: '#F59E0B',
+    budget: '¥30-50',
+    whereToBuy: 'Daiso/Miniso toy section, or real mini items',
+    items: [
+      'pot (mini)',
+      'pan',
+      'cup',
+      'mug',
+      'jug',
+      'egg (plastic)',
+      'spoon',
+      'fork',
+      'bowl',
+      'lid',
+    ],
+    tip: 'Real miniature items work better than toys. Check kitchen section for tiny measuring cups, etc.'
+  },
+  {
+    name: 'Classroom Basket',
+    icon: '✏️',
+    color: '#3B82F6',
+    budget: '¥20-40',
+    whereToBuy: 'Already in your classroom! Collect extras.',
+    items: [
+      'pen',
+      'pencil',
+      'bag (small pouch)',
+      'box',
+      'book (mini)',
+      'mat (coaster size)',
+      'pin',
+      'clip',
+      'tape',
+      'ruler',
+    ],
+    tip: 'Use real objects from your classroom. More authentic than toys.'
+  },
+  {
+    name: 'Clothing Basket',
+    icon: '👕',
+    color: '#8B5CF6',
+    budget: '¥30-60',
+    whereToBuy: 'Doll clothes section, or baby/toddler socks',
+    items: [
+      'hat (doll size)',
+      'cap',
+      'sock (baby)',
+      'vest',
+      'belt (doll)',
+      'shoe (doll)',
+      'coat (doll)',
+      'dress (doll)',
+      'pants (doll)',
+      'shirt (doll)',
+    ],
+    tip: 'Doll clothes from Taobao work great. Get variety of colors for adjective work later.'
+  },
+  {
+    name: 'Home Items Basket',
+    icon: '🏠',
+    color: '#EC4899',
+    budget: '¥40-70',
+    whereToBuy: 'Dollhouse furniture sets on Taobao',
+    items: [
+      'bed (dollhouse)',
+      'tub/bath',
+      'lamp',
+      'fan (mini)',
+      'door (from craft store)',
+      'rug (felt square)',
+      'chair',
+      'table',
+      'sofa',
+      'clock',
+    ],
+    tip: 'Dollhouse furniture sets are goldmine. One ¥50 set covers 20+ vocabulary words.'
+  },
+  {
+    name: 'Food Basket',
+    icon: '🍎',
+    color: '#EF4444',
+    budget: '¥40-60',
+    whereToBuy: 'Taobao: wooden play food sets',
+    items: [
+      'apple',
+      'egg (wooden)',
+      'bun/bread',
+      'fish',
+      'ham/meat',
+      'corn',
+      'nut (real walnuts work!)',
+      'cake',
+      'pie',
+      'jam jar (mini)',
+    ],
+    tip: 'Wooden play food is durable and beautiful. Melissa & Doug style sets available cheap on Taobao.'
+  }
+];
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 
 export default function EnglishGuidePage() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
+  const [showVocabGuide, setShowVocabGuide] = useState(false);
 
   const stage = ENGLISH_GUIDE.find(s => s.id === selectedStage);
   const skill = stage && selectedSkill !== null ? stage.skills[selectedSkill] : null;
@@ -947,10 +1232,136 @@ export default function EnglishGuidePage() {
 
         {/* Empty State */}
         {!selectedStage && (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div className="text-6xl mb-4">👆</div>
-            <h2 className="text-xl font-bold text-gray-700">Select a Stage Above</h2>
-            <p className="text-gray-500 mt-2">Click any stage to see the skills and teaching guides</p>
+          <div className="space-y-4">
+            {/* Toggle Buttons */}
+            <div className="bg-white rounded-xl shadow-sm p-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowVocabGuide(false)}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
+                    !showVocabGuide ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  📋 First 100 Words
+                </button>
+                <button
+                  onClick={() => setShowVocabGuide(true)}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
+                    showVocabGuide ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  🧺 Shopping Guide
+                </button>
+              </div>
+            </div>
+
+            {/* First 100 Words */}
+            {!showVocabGuide && (
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white">
+                  <h2 className="text-2xl font-bold mb-2">📋 First 100 Words Progression</h2>
+                  <p className="text-blue-100">Strategic vocabulary that feeds directly into Pink/Blue/Green reading series. Teach these words NOW so children recognize them when they learn to READ.</p>
+                </div>
+
+                {VOCABULARY_PROGRESSION.map((phase) => (
+                  <div key={phase.phase} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div className="p-4 border-b" style={{ backgroundColor: phase.color + '15' }}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{phase.icon}</span>
+                        <div>
+                          <h3 className="font-bold text-lg" style={{ color: phase.color }}>
+                            Phase {phase.phase}: {phase.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">{phase.weeks}</p>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-gray-700">{phase.why}</p>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        {phase.words.map((w, idx) => (
+                          <span
+                            key={idx}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              w.series === 'pink' ? 'bg-red-100 text-red-700' :
+                              w.series === 'blue' ? 'bg-blue-100 text-blue-700' :
+                              w.series === 'green' ? 'bg-green-100 text-green-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}
+                            title={w.type}
+                          >
+                            {w.word}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-3 flex gap-4 text-xs">
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-400"></span> Pink (CVC)</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-400"></span> Blue (Blends)</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-400"></span> Green (Phonograms)</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200">
+                  <h3 className="font-bold text-yellow-800 mb-2">💡 Teaching Tip</h3>
+                  <p className="text-yellow-700">Spend 2-3 weeks per phase. Don't rush! A child who KNOWS 100 words will learn to READ them much faster than one who's seeing words for the first time.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Shopping Guide */}
+            {showVocabGuide && (
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-6 text-white">
+                  <h2 className="text-2xl font-bold mb-2">🧺 Vocabulary Baskets Shopping Guide</h2>
+                  <p className="text-amber-100">What to buy and where to find it. Build 6 themed baskets for around ¥250-400 total.</p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {VOCABULARY_BASKETS.map((basket, idx) => (
+                    <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                      <div className="p-4 border-b" style={{ backgroundColor: basket.color + '15' }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{basket.icon}</span>
+                            <h3 className="font-bold" style={{ color: basket.color }}>{basket.name}</h3>
+                          </div>
+                          <span className="text-sm font-medium px-2 py-1 rounded-full bg-white" style={{ color: basket.color }}>
+                            {basket.budget}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">{basket.whereToBuy}</p>
+                      </div>
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-1 text-sm">
+                          {basket.items.map((item, i) => (
+                            <div key={i} className="flex items-center gap-1">
+                              <span className="text-gray-400">•</span>
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-3 p-2 bg-gray-50 rounded-lg text-xs text-gray-600">
+                          💡 {basket.tip}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-green-50 rounded-xl p-6 border-2 border-green-200">
+                  <h3 className="font-bold text-green-800 mb-2">🛒 Quick Start Shopping List</h3>
+                  <p className="text-green-700 mb-3">Search these on Taobao for best prices:</p>
+                  <ul className="text-green-700 space-y-1 text-sm">
+                    <li>• <strong>Safari Ltd TOOBS</strong> - Animal sets (仿真动物模型)</li>
+                    <li>• <strong>Wooden play food</strong> - 木制过家家食物</li>
+                    <li>• <strong>Dollhouse furniture</strong> - 迷你家具套装</li>
+                    <li>• <strong>Doll clothes set</strong> - 娃娃衣服配件</li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
