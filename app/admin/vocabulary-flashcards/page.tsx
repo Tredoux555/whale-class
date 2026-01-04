@@ -339,43 +339,49 @@ const VocabularyFlashcardGenerator = () => {
   <meta charset="UTF-8">
   <title>Vocabulary Flashcards - Week ${selectedWeek}</title>
   <style>
-    @page { size: A4; margin: 1cm; }
+    @page { size: A4 landscape; margin: 0.5cm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
     body { font-family: system-ui, sans-serif; background: white; }
     .page {
-      width: 19cm;
-      height: 27.7cm;
+      width: 29.7cm;
+      height: 21cm;
       page-break-after: always;
-      display: flex;
-      flex-direction: column;
+      page-break-inside: avoid;
       padding: 0.5cm;
+      display: block;
     }
     .page:last-child { page-break-after: auto; }
     .card {
       background: ${currentBorderColor};
       border-radius: 1cm;
       padding: 0.8cm;
-      flex: 1;
+      width: 100%;
+      height: 100%;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
     .image-area {
       background: white;
       border-radius: 0.8cm;
-      flex: 1;
+      flex: 2;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 0.8cm;
+      margin-right: 0.8cm;
     }
-    .image-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .image-area img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: contain;
+    }
     .label-area {
       background: white;
       border-radius: 0.8cm;
-      height: 3.5cm;
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -383,9 +389,12 @@ const VocabularyFlashcardGenerator = () => {
       font-size: 72pt;
       font-weight: bold;
       text-transform: capitalize;
+      writing-mode: horizontal-tb;
     }
     @media print {
+      html, body { width: 29.7cm; height: 21cm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page { break-after: page; break-inside: avoid; }
     }
     @media screen {
       body { padding: 20px; background: #f0f0f0; }
@@ -397,16 +406,7 @@ const VocabularyFlashcardGenerator = () => {
 `;
 
       for (const card of cardsWithImages) {
-        html += `
-          <div class="page">
-            <div class="card">
-              <div class="image-area">
-                <img src="${card.image}" alt="${card.word}">
-              </div>
-              <div class="label-area">${card.word}</div>
-            </div>
-          </div>
-        `;
+        html += `<div class="page"><div class="card"><div class="image-area"><img src="${card.image}" alt="${card.word}"></div><div class="label-area">${card.word}</div></div></div>`;
       }
 
       html += `
