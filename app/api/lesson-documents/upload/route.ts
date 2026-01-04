@@ -1,28 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdmin } from '@/lib/supabase';
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
+// Configure for larger files
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+const BUCKET_NAME = 'lesson-documents';
 
 const ALLOWED_TYPES = [
-  // Documents
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-powerpoint',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  // Images
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
-  // Text
   'text/plain',
-  // Videos
   'video/mp4',
   'video/webm',
   'video/quicktime',
@@ -30,12 +25,11 @@ const ALLOWED_TYPES = [
   'video/x-matroska',
 ];
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB for videos
-const BUCKET_NAME = 'lesson-documents';
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase();
+    const supabase = createSupabaseAdmin();
     const formData = await request.formData();
     
     const file = formData.get('file') as File;
@@ -51,30 +45,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid week number' }, { status: 400 });
     }
 
-    // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json({ 
-        error: 'Invalid file type. Allowed: PDF, Word, PowerPoint, images, videos' 
+        error: 'Invalid file type' 
       }, { status: 400 });
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ 
-        error: `File too large. Maximum size: ${MAX_FILE_SIZE / (1024 * 1024)}MB` 
+        error: 'File too large. Max 100MB' 
       }, { status: 400 });
     }
 
-    // Generate unique filename
     const timestamp = Date.now();
-    const ext = file.name.split('.').pop() || 'bin';
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const filename = `${timestamp}-${safeName}`;
     const storagePath = `week-${weekNumber}-${year}/${filename}`;
 
-    // Upload to Supabase Storage
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
@@ -91,12 +80,10 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(storagePath);
 
-    // Save metadata to database
     const { data: doc, error: dbError } = await supabase
       .from('lesson_documents')
       .insert({
@@ -115,7 +102,6 @@ export async function POST(request: NextRequest) {
 
     if (dbError) {
       console.error('Database error:', dbError);
-      // Try to clean up uploaded file
       await supabase.storage.from(BUCKET_NAME).remove([storagePath]);
       return NextResponse.json({ 
         error: 'Failed to save document metadata', 

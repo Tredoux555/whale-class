@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
+import { createSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid week number' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
+    const supabase = createSupabaseAdmin();
 
     const { data: documents, error } = await supabase
       .from('lesson_documents')
