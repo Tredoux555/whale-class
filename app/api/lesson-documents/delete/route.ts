@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
+import { createSupabaseAdmin } from '@/lib/supabase';
 
 const BUCKET_NAME = 'lesson-documents';
 
@@ -19,7 +12,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Document ID required' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
+    const supabase = createSupabaseAdmin();
 
     // Get document to find storage path
     const { data: doc, error: fetchError } = await supabase
