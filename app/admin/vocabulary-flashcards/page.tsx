@@ -25,6 +25,66 @@ const VocabularyFlashcardGenerator = () => {
   const plan = CIRCLE_TIME_CURRICULUM.find(p => p.week === selectedWeek);
   const vocabulary = plan?.vocabulary || [];
 
+  // Match filename to vocabulary word
+  const matchFilenameToWord = (filename: string): string | null => {
+    const wordFromFile = filename
+      .replace(/\.[^/.]+$/, '') // Remove extension
+      .replace(/[-_]/g, ' ')    // Replace dashes/underscores with spaces
+      .replace(/\d+/g, '')      // Remove numbers
+      .trim()
+      .toLowerCase();
+
+    return vocabulary.find(v => {
+      const vocabLower = v.toLowerCase();
+      const fileLower = wordFromFile.toLowerCase();
+      return vocabLower === fileLower || 
+             vocabLower.includes(fileLower) || 
+             fileLower.includes(vocabLower);
+    }) || null;
+  };
+
+  // Process multiple image files (from folder or file input)
+  const processImageFiles = async (files: File[]) => {
+    setProcessingZip(true);
+    try {
+      const newCards: FlashCard[] = [];
+      const imageFiles = files.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name));
+
+      for (const file of imageFiles) {
+        const imageData = await blobToBase64(file);
+        const matchedWord = matchFilenameToWord(file.name);
+
+        if (matchedWord) {
+          newCards.push({
+            id: Date.now() + Math.random(),
+            image: imageData,
+            word: matchedWord
+          });
+        }
+      }
+
+      // Merge with existing cards (new ones override)
+      setCards(prev => {
+        const existingWords = new Set(newCards.map(c => c.word));
+        const kept = prev.filter(c => !existingWords.has(c.word));
+        return [...kept, ...newCards];
+      });
+
+      const matched = newCards.length;
+      const total = imageFiles.length;
+      if (matched === 0 && total > 0) {
+        alert(`No matches found. Make sure image filenames match vocabulary words.\n\nExample: winter.jpg → "winter"`);
+      } else if (matched < total) {
+        alert(`Matched ${matched} of ${total} images to vocabulary words.`);
+      }
+    } catch (err) {
+      console.error('Error processing files:', err);
+      alert('Error processing files.');
+    } finally {
+      setProcessingZip(false);
+    }
+  };
+
   // Process ZIP file - match images to vocabulary words
   const processZipFile = async (file: File) => {
     setProcessingZip(true);
@@ -44,24 +104,8 @@ const VocabularyFlashcardGenerator = () => {
       for (const { name, file: zipEntry } of imageFiles) {
         const blob = await zipEntry.async('blob');
         const imageData = await blobToBase64(blob);
-        
-        // Extract word from filename (remove path, extension, numbers)
         const filename = name.split('/').pop() || name;
-        const wordFromFile = filename
-          .replace(/\.[^/.]+$/, '') // Remove extension
-          .replace(/[-_]/g, ' ')    // Replace dashes/underscores with spaces
-          .replace(/\d+/g, '')      // Remove numbers
-          .trim()
-          .toLowerCase();
-
-        // Find matching vocabulary word
-        const matchedWord = vocabulary.find(v => {
-          const vocabLower = v.toLowerCase();
-          const fileLower = wordFromFile.toLowerCase();
-          return vocabLower === fileLower || 
-                 vocabLower.includes(fileLower) || 
-                 fileLower.includes(vocabLower);
-        });
+        const matchedWord = matchFilenameToWord(filename);
 
         if (matchedWord) {
           newCards.push({
@@ -90,6 +134,39 @@ const VocabularyFlashcardGenerator = () => {
     } finally {
       setProcessingZip(false);
     }
+  };
+
+  // Read all files from a dropped folder
+  const readFolderEntries = async (entry: FileSystemDirectoryEntry): Promise<File[]> => {
+    const files: File[] = [];
+    const reader = entry.createReader();
+    
+    const readEntries = (): Promise<FileSystemEntry[]> => {
+      return new Promise((resolve, reject) => {
+        reader.readEntries(resolve, reject);
+      });
+    };
+
+    const getFile = (fileEntry: FileSystemFileEntry): Promise<File> => {
+      return new Promise((resolve, reject) => {
+        fileEntry.file(resolve, reject);
+      });
+    };
+
+    let entries = await readEntries();
+    while (entries.length > 0) {
+      for (const e of entries) {
+        if (e.isFile) {
+          const file = await getFile(e as FileSystemFileEntry);
+          files.push(file);
+        } else if (e.isDirectory) {
+          const subFiles = await readFolderEntries(e as FileSystemDirectoryEntry);
+          files.push(...subFiles);
+        }
+      }
+      entries = await readEntries();
+    }
+    return files;
   };
 
   const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -138,22 +215,55 @@ const VocabularyFlashcardGenerator = () => {
     reader.readAsDataURL(file);
   }, []);
 
-  // Handle ZIP drop on the main zone
-  const handleZoneDrop = useCallback((e: React.DragEvent) => {
+  // Handle folder or ZIP drop on the main zone
+  const handleZoneDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragOverZone(false);
     
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
+    const items = e.dataTransfer.items;
+    const files = e.dataTransfer.files;
 
-    if (file.name.endsWith('.zip')) {
-      processZipFile(file);
-    } else if (file.type.startsWith('image/')) {
-      // Single image dropped on zone - ignore, they should drop on specific word
-      alert('Drop images on specific vocabulary words, or drop a ZIP file here to auto-match all.');
+    // Check if it's a folder drop (using webkitGetAsEntry)
+    if (items && items.length > 0) {
+      const firstItem = items[0];
+      const entry = firstItem.webkitGetAsEntry?.();
+      
+      if (entry?.isDirectory) {
+        // It's a folder!
+        setProcessingZip(true);
+        try {
+          const folderFiles = await readFolderEntries(entry as FileSystemDirectoryEntry);
+          await processImageFiles(folderFiles);
+        } catch (err) {
+          console.error('Error reading folder:', err);
+          alert('Error reading folder. Try using the Choose Folder button instead.');
+          setProcessingZip(false);
+        }
+        return;
+      }
+    }
+
+    // Check for ZIP or multiple files
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.name.endsWith('.zip')) {
+        processZipFile(file);
+      } else if (files.length > 1 || file.type.startsWith('image/')) {
+        // Multiple files or single image
+        const fileArray = Array.from(files);
+        await processImageFiles(fileArray);
+      }
     }
   }, [vocabulary]);
+
+  // Handle folder selection via input
+  const handleFolderSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    await processImageFiles(Array.from(files));
+    e.target.value = '';
+  };
 
   const removeCard = (word: string) => {
     setCards(prev => prev.filter(c => c.word !== word));
@@ -396,7 +506,7 @@ const VocabularyFlashcardGenerator = () => {
           <p className="text-xs text-gray-400 mt-2">Click a word → paste into Google Images → copy image → click card below → ⌘V</p>
         </div>
 
-        {/* ZIP Drop Zone */}
+        {/* Folder/ZIP Drop Zone */}
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOverZone(true); }}
           onDragLeave={() => setDragOverZone(false)}
@@ -410,17 +520,29 @@ const VocabularyFlashcardGenerator = () => {
           {processingZip ? (
             <div className="flex items-center justify-center gap-3">
               <div className="animate-spin text-2xl">⏳</div>
-              <span className="text-gray-600">Processing ZIP file...</span>
+              <span className="text-gray-600">Processing images...</span>
             </div>
           ) : (
             <>
-              <div className="text-4xl mb-2">📦</div>
-              <p className="font-semibold text-gray-700">Drop ZIP file here</p>
+              <div className="text-4xl mb-2">📁</div>
+              <p className="font-semibold text-gray-700">Drop a folder with images here</p>
               <p className="text-sm text-gray-500 mt-1">
-                Images named like vocabulary words will auto-match (e.g., winter.jpg → "winter")
+                Name images like vocabulary words (e.g., winter.jpg → "winter")
               </p>
+              <label className="inline-block mt-3 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg cursor-pointer font-medium">
+                📂 Choose Folder
+                <input
+                  type="file"
+                  /* @ts-ignore */
+                  webkitdirectory="true"
+                  directory="true"
+                  multiple
+                  className="hidden"
+                  onChange={handleFolderSelect}
+                />
+              </label>
               <p className="text-xs text-gray-400 mt-2">
-                Ask Claude: "Get me pictures for Week {selectedWeek} vocabulary"
+                Also accepts ZIP files or multiple images
               </p>
             </>
           )}
