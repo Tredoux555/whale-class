@@ -29,6 +29,7 @@
     "jose": "^5.10.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.556.0",
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",

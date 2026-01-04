@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
+import JSZip from 'jszip';
 import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 
 interface FlashCard {
@@ -17,10 +18,89 @@ const VocabularyFlashcardGenerator = () => {
   const [fontFamily, setFontFamily] = useState('Comic Sans MS');
   const [generating, setGenerating] = useState(false);
   const [dragOverWord, setDragOverWord] = useState<string | null>(null);
+  const [dragOverZone, setDragOverZone] = useState(false);
+  const [processingZip, setProcessingZip] = useState(false);
 
   const plan = CIRCLE_TIME_CURRICULUM.find(p => p.week === selectedWeek);
   const vocabulary = plan?.vocabulary || [];
 
+  // Process ZIP file - match images to vocabulary words
+  const processZipFile = async (file: File) => {
+    setProcessingZip(true);
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const newCards: FlashCard[] = [];
+      
+      // Get all image files from zip
+      const imageFiles: { name: string; file: JSZip.JSZipObject }[] = [];
+      zip.forEach((relativePath, zipEntry) => {
+        if (!zipEntry.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(relativePath)) {
+          imageFiles.push({ name: relativePath, file: zipEntry });
+        }
+      });
+
+      // Process each image
+      for (const { name, file: zipEntry } of imageFiles) {
+        const blob = await zipEntry.async('blob');
+        const imageData = await blobToBase64(blob);
+        
+        // Extract word from filename (remove path, extension, numbers)
+        const filename = name.split('/').pop() || name;
+        const wordFromFile = filename
+          .replace(/\.[^/.]+$/, '') // Remove extension
+          .replace(/[-_]/g, ' ')    // Replace dashes/underscores with spaces
+          .replace(/\d+/g, '')      // Remove numbers
+          .trim()
+          .toLowerCase();
+
+        // Find matching vocabulary word
+        const matchedWord = vocabulary.find(v => {
+          const vocabLower = v.toLowerCase();
+          const fileLower = wordFromFile.toLowerCase();
+          return vocabLower === fileLower || 
+                 vocabLower.includes(fileLower) || 
+                 fileLower.includes(vocabLower);
+        });
+
+        if (matchedWord) {
+          newCards.push({
+            id: Date.now() + Math.random(),
+            image: imageData,
+            word: matchedWord
+          });
+        }
+      }
+
+      // Merge with existing cards (new ones override)
+      setCards(prev => {
+        const existingWords = new Set(newCards.map(c => c.word));
+        const kept = prev.filter(c => !existingWords.has(c.word));
+        return [...kept, ...newCards];
+      });
+
+      const matched = newCards.length;
+      const total = imageFiles.length;
+      if (matched < total) {
+        alert(`Matched ${matched} of ${total} images to vocabulary words.\n\nUnmatched files may have different names than the vocabulary words.`);
+      }
+    } catch (err) {
+      console.error('Error processing zip:', err);
+      alert('Error processing zip file. Make sure it contains images.');
+    } finally {
+      setProcessingZip(false);
+    }
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  // Handle file upload for a specific word
   const handleFileUpload = (word: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
@@ -37,6 +117,7 @@ const VocabularyFlashcardGenerator = () => {
     e.target.value = '';
   };
 
+  // Handle drag and drop for individual word
   const handleDrop = useCallback((word: string, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,6 +136,23 @@ const VocabularyFlashcardGenerator = () => {
     };
     reader.readAsDataURL(file);
   }, []);
+
+  // Handle ZIP drop on the main zone
+  const handleZoneDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverZone(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    if (file.name.endsWith('.zip')) {
+      processZipFile(file);
+    } else if (file.type.startsWith('image/')) {
+      // Single image dropped on zone - ignore, they should drop on specific word
+      alert('Drop images on specific vocabulary words, or drop a ZIP file here to auto-match all.');
+    }
+  }, [vocabulary]);
 
   const removeCard = (word: string) => {
     setCards(prev => prev.filter(c => c.word !== word));
@@ -202,7 +300,7 @@ const VocabularyFlashcardGenerator = () => {
       <div className="bg-white border-b border-cyan-200 px-6 py-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin/circle-planner" className="text-cyan-600 hover:text-cyan-800">
+            <Link href="/admin" className="text-cyan-600 hover:text-cyan-800">
               ← Back
             </Link>
             <h1 className="text-2xl font-bold text-gray-800">🃏 Vocabulary Flashcard Maker</h1>
@@ -220,6 +318,7 @@ const VocabularyFlashcardGenerator = () => {
       </div>
 
       <div className="max-w-6xl mx-auto p-6">
+        {/* Week Selector */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">📅 Select Week</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
@@ -238,6 +337,7 @@ const VocabularyFlashcardGenerator = () => {
           </div>
         </div>
 
+        {/* Theme Display */}
         {plan && (
           <div className="rounded-xl p-4 mb-6 text-white" style={{ backgroundColor: plan.color }}>
             <div className="flex items-center gap-3">
@@ -250,6 +350,37 @@ const VocabularyFlashcardGenerator = () => {
           </div>
         )}
 
+        {/* ZIP Drop Zone */}
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOverZone(true); }}
+          onDragLeave={() => setDragOverZone(false)}
+          onDrop={handleZoneDrop}
+          className={`mb-6 border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+            dragOverZone 
+              ? 'border-cyan-500 bg-cyan-50' 
+              : 'border-gray-300 bg-white hover:border-cyan-300'
+          }`}
+        >
+          {processingZip ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="animate-spin text-2xl">⏳</div>
+              <span className="text-gray-600">Processing ZIP file...</span>
+            </div>
+          ) : (
+            <>
+              <div className="text-4xl mb-2">📦</div>
+              <p className="font-semibold text-gray-700">Drop ZIP file here</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Images named like vocabulary words will auto-match (e.g., winter.jpg → "winter")
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Ask Claude: "Get me pictures for Week {selectedWeek} vocabulary"
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* Settings */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">⚙️ Card Style</h2>
           <div className="flex flex-wrap gap-4">
@@ -281,13 +412,16 @@ const VocabularyFlashcardGenerator = () => {
           </div>
         </div>
 
+        {/* Vocabulary Grid */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">📇 Vocabulary Words</h2>
             <span className="text-sm text-gray-500">{readyCount} of {vocabulary.length} ready</span>
           </div>
           
-          <p className="text-gray-600 text-sm mb-4">Drag and drop an image onto each word, or click to upload</p>
+          <p className="text-gray-600 text-sm mb-4">
+            Drop a ZIP above to auto-fill, or drag images onto individual words
+          </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {vocabulary.map((word) => {
@@ -340,6 +474,7 @@ const VocabularyFlashcardGenerator = () => {
           </div>
         </div>
 
+        {/* Generate Button */}
         {readyCount > 0 && (
           <div className="mt-6 flex justify-center">
             <button
