@@ -589,8 +589,8 @@ const ENGLISH_GUIDE = [
           'Build words with moveable alphabet including phonogram tiles'
         ],
         materials: [
-          { name: 'Green Phonogram Box - ai/ay', link: null },
-          { name: 'Green Series materials', link: '/admin/material-generator' }
+          { name: 'Green Phonogram Box - ai/ay', link: null, tip: 'Objects/pictures: rain, train, snail, tail (ai) + play, day, hay, tray (ay). Rule: ai middle, ay end.' },
+          { name: 'Green Series materials', link: '/admin/material-generator', tip: 'Phonogram highlighted in green on word cards. Same progression: objects → pictures → words.' }
         ],
         donts: [
           'Teaching all long A spellings at once',
@@ -607,7 +607,7 @@ const ENGLISH_GUIDE = [
           'Introduce as "family" - different spellings, same sound'
         ],
         materials: [
-          { name: 'Green Phonogram Box - ee/ea', link: null }
+          { name: 'Green Phonogram Box - ee/ea', link: null, tip: 'Objects: tree, bee, feet, sheep (ee) + beach, leaf, bead, seal (ea). Both say long E sound.' }
         ],
         donts: [
           'Teaching ea before child knows ee is solid'
@@ -623,7 +623,7 @@ const ENGLISH_GUIDE = [
           'Teach oa first as its consistent'
         ],
         materials: [
-          { name: 'Green Phonogram Box - oa/ow', link: null }
+          { name: 'Green Phonogram Box - oa/ow', link: null, tip: 'For long O sound: boat, goat, coat, road (oa) + snow, bow, grow, slow (ow). Start with oa - more consistent.' }
         ],
         donts: [
           'Introducing both sounds of ow at once - confusing'
@@ -639,7 +639,7 @@ const ENGLISH_GUIDE = [
           'Use context and practice'
         ],
         materials: [
-          { name: 'Green Phonogram Box - ou/ow (diphthong)', link: null }
+          { name: 'Green Phonogram Box - ou/ow (diphthong)', link: null, tip: 'For "ow" as in ouch: cloud, house, mouse (ou) + cow, owl, brown, crown (ow). Different from long O!' }
         ],
         donts: [
           'Mixing /ō/ ow words and /ow/ ow words in same lesson'
@@ -655,7 +655,7 @@ const ENGLISH_GUIDE = [
           'er/ir/ur together - all say same sound: her, bird, fur'
         ],
         materials: [
-          { name: 'Green Phonogram Boxes - R-controlled', link: null }
+          { name: 'Green Phonogram Boxes - R-controlled', link: null, tip: '3 boxes: ar (car, star, farm), or (corn, fork, horse), er-ir-ur (her, bird, fur - same sound!). Bossy R changes vowel.' }
         ],
         donts: [
           'Teaching er, ir, ur as different sounds - theyre the same',
