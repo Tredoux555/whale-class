@@ -214,8 +214,8 @@ const ENGLISH_GUIDE = [
           'Trace 3 times, then child traces while you watch'
         ],
         materials: [
-          { name: 'Sandpaper letters (consonants pink, vowels blue)', link: null },
-          { name: 'Salt/sand tray for practice after tracing', link: null }
+          { name: 'Sandpaper letters (consonants pink, vowels blue)', link: null, tip: 'Taobao: 砂纸字母. DIY: cut sandpaper, glue to painted wood tiles 10x12cm. Pink for consonants, blue for vowels.' },
+          { name: 'Salt/sand tray for practice after tracing', link: null, tip: 'Shallow wooden tray with 1cm fine sand or salt. Child traces letter in sand after sandpaper. Shake to erase.' }
         ],
         donts: [
           'Allowing incorrect tracing direction - creates wrong muscle memory',
@@ -233,7 +233,7 @@ const ENGLISH_GUIDE = [
           'Child traces and generates their own words'
         ],
         materials: [
-          { name: 'Small objects starting with each letter sound', link: null }
+          { name: 'Small objects starting with each letter sound', link: null, tip: 'One small object per letter sound. Store in compartment box. /s/=sun, /m/=monkey, /a/=apple, etc.' }
         ],
         donts: [
           'Separating tracing from sound production',
@@ -250,7 +250,7 @@ const ENGLISH_GUIDE = [
           'Use Three-Period Lesson: name, recognize, recall'
         ],
         materials: [
-          { name: 'Full set of lowercase sandpaper letters', link: null }
+          { name: 'Full set of lowercase sandpaper letters', link: null, tip: 'Buy complete set or DIY. Teaching order: s,m,a,t → p,i,n → c,o,d → b,f,g → h,j,k,l → r,u,v,w → x,y,z,q.' }
         ],
         donts: [
           'Teaching all consonants before any vowels',
@@ -267,8 +267,8 @@ const ENGLISH_GUIDE = [
           'Vowels are tricky - spend more time here'
         ],
         materials: [
-          { name: 'Vowel sandpaper letters on blue background', link: null },
-          { name: 'Vowel sound picture cards', link: null }
+          { name: 'Vowel sandpaper letters on blue background', link: null, tip: 'Make vowels stand out - blue tiles are essential. Larger size helps distinguish from consonants.' },
+          { name: 'Vowel sound picture cards', link: null, tip: 'Key pictures: a=apple, e=egg, i=igloo, o=octopus, u=umbrella. Same picture every time for consistency.' }
         ],
         donts: [
           'Teaching long vowels before short vowels are solid',
@@ -285,8 +285,8 @@ const ENGLISH_GUIDE = [
           'Explain: "When these two letters are together, they make ONE new sound"'
         ],
         materials: [
-          { name: 'Phonogram sandpaper letters on green', link: null },
-          { name: 'Phonogram reference chart', link: null }
+          { name: 'Phonogram sandpaper letters on green', link: null, tip: 'Green tiles for digraphs. Start with: sh, ch, th, ck. Both letters on ONE tile - they make ONE sound.' },
+          { name: 'Phonogram reference chart', link: null, tip: 'Wall chart showing all phonograms with key picture. Child can reference during word building.' }
         ],
         donts: [
           'Introducing phonograms before single letters are mastered',
@@ -314,9 +314,9 @@ const ENGLISH_GUIDE = [
           '"What sound is next?" (/a/) "Last sound?" (/t/) Point: "c-a-t... cat!"'
         ],
         materials: [
-          { name: 'Large moveable alphabet (consonants red, vowels blue)', link: null },
-          { name: 'CVC miniature objects (20-30)', link: null },
-          { name: 'CVC picture cards', link: null }
+          { name: 'Large moveable alphabet (consonants red, vowels blue)', link: null, tip: 'Taobao: 蒙氏字母. Get LARGE size 5cm+ letters. Multiple sets of vowels needed - you use a,e,i,o,u constantly.' },
+          { name: 'CVC miniature objects (20-30)', link: null, tip: 'Tiny objects for each CVC word: cat, dog, pen, cup, etc. Dollar store miniatures work great.' },
+          { name: 'CVC picture cards', link: null, tip: 'Real photos on cards. Use after objects. Keep word on back for control of error.' }
         ],
         donts: [
           'Asking child to READ what they just spelled - keep writing and reading separate',
@@ -334,7 +334,7 @@ const ENGLISH_GUIDE = [
           'Build 3-5 words per session, keep it short (10-15 min)'
         ],
         materials: [
-          { name: 'CVC object baskets sorted by vowel sound', link: null }
+          { name: 'CVC object baskets sorted by vowel sound', link: null, tip: '5 baskets labeled: short-a, short-e, etc. Each basket has 5-8 tiny objects with that vowel sound.' }
         ],
         donts: [
           'Skipping the object stage - concrete before abstract',
@@ -351,8 +351,8 @@ const ENGLISH_GUIDE = [
           'Use control cards on back for self-checking'
         ],
         materials: [
-          { name: 'CVC picture cards with control', link: null },
-          { name: 'Picture cards by vowel family', link: '/admin/material-generator' }
+          { name: 'CVC picture cards with control', link: null, tip: 'Picture on front, word on back. Child builds word, flips to check. Self-correcting builds independence.' },
+          { name: 'Picture cards by vowel family', link: '/admin/material-generator', tip: 'Generate cards grouped by vowel. Start with short-a family: cat, hat, bat, map, etc.' }
         ],
         donts: [
           'Jumping to pictures before objects are solid',
@@ -369,7 +369,7 @@ const ENGLISH_GUIDE = [
           'Use moveable alphabet to build 2-3 word phrases'
         ],
         materials: [
-          { name: 'Phrase cards with CVC words', link: null }
+          { name: 'Phrase cards with CVC words', link: null, tip: 'Simple 2-3 word phrases: "the cat", "a red hat", "big dog". All decodable words only.' }
         ],
         donts: [
           'Adding phrases before single words are automatic',
@@ -386,8 +386,8 @@ const ENGLISH_GUIDE = [
           'Child builds, you write on paper for reference'
         ],
         materials: [
-          { name: 'Sentence cards with CVC words', link: null },
-          { name: 'Capital letter set', link: null }
+          { name: 'Sentence cards with CVC words', link: null, tip: 'Full sentences using only CVC words: "The cat sat on the mat." Keep sight words minimal (the, on, is).' },
+          { name: 'Capital letter set', link: null, tip: 'Separate capitals in same red/blue colors. Teach: sentence start + names get capitals.' }
         ],
         donts: [
           'Rushing to sentences before phrases are comfortable',
