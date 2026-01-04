@@ -20,6 +20,7 @@ const VocabularyFlashcardGenerator = () => {
   const [dragOverWord, setDragOverWord] = useState<string | null>(null);
   const [dragOverZone, setDragOverZone] = useState(false);
   const [processingZip, setProcessingZip] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const plan = CIRCLE_TIME_CURRICULUM.find(p => p.week === selectedWeek);
   const vocabulary = plan?.vocabulary || [];
@@ -157,6 +158,47 @@ const VocabularyFlashcardGenerator = () => {
   const removeCard = (word: string) => {
     setCards(prev => prev.filter(c => c.word !== word));
   };
+
+  // Handle paste from clipboard
+  const handlePaste = useCallback(async (word: string) => {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+        // Check for image types
+        const imageType = item.types.find(type => type.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imageData = event.target?.result as string;
+            setCards(prev => {
+              const filtered = prev.filter(c => c.word !== word);
+              return [...filtered, { id: Date.now(), image: imageData, word }];
+            });
+          };
+          reader.readAsDataURL(blob);
+          return;
+        }
+      }
+      // No image found in clipboard
+      alert('No image found in clipboard. Copy an image first!');
+    } catch (err) {
+      console.error('Paste error:', err);
+      alert('Could not paste. Make sure you copied an image (not just the URL).');
+    }
+  }, []);
+
+  // Global keyboard listener for paste
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'v' && selectedWord) {
+        e.preventDefault();
+        handlePaste(selectedWord);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedWord, handlePaste]);
 
   const getCardForWord = (word: string) => cards.find(c => c.word === word);
 
@@ -420,7 +462,7 @@ const VocabularyFlashcardGenerator = () => {
           </div>
           
           <p className="text-gray-600 text-sm mb-4">
-            Drop a ZIP above to auto-fill, or drag images onto individual words
+            Drop a ZIP above to auto-fill, or <strong>click a card → copy image from web → ⌘V to paste</strong>
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -431,10 +473,13 @@ const VocabularyFlashcardGenerator = () => {
               return (
                 <div
                   key={word}
-                  className={`relative rounded-xl overflow-hidden transition-all ${
-                    card ? 'ring-2 ring-green-500' : isDragOver ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'ring-1 ring-gray-200 hover:ring-cyan-300'
+                  tabIndex={0}
+                  className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ${
+                    card ? 'ring-2 ring-green-500' : selectedWord === word ? 'ring-2 ring-blue-500 bg-blue-50' : isDragOver ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'ring-1 ring-gray-200 hover:ring-cyan-300'
                   }`}
                   style={{ aspectRatio: '1' }}
+                  onClick={() => setSelectedWord(word)}
+                  onFocus={() => setSelectedWord(word)}
                   onDragOver={(e) => { e.preventDefault(); setDragOverWord(word); }}
                   onDragLeave={() => setDragOverWord(null)}
                   onDrop={(e) => handleDrop(word, e)}
@@ -443,23 +488,26 @@ const VocabularyFlashcardGenerator = () => {
                     <>
                       <img src={card.image} alt={word} className="w-full h-full object-cover" />
                       <button
-                        onClick={() => removeCard(word)}
+                        onClick={(e) => { e.stopPropagation(); removeCard(word); }}
                         className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
                       >
                         ✕
                       </button>
                     </>
                   ) : (
-                    <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-cyan-50">
-                      <span className="text-3xl mb-1">📷</span>
-                      <span className="text-xs text-gray-500">Drop image</span>
+                    <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-blue-50' : 'bg-gray-50 hover:bg-cyan-50'}`}>
+                      <span className="text-3xl mb-1">{selectedWord === word ? '📋' : '📷'}</span>
+                      <span className="text-xs text-gray-500 text-center px-2">
+                        {selectedWord === word ? 'Press ⌘V to paste' : 'Click then paste'}
+                      </span>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
+                        id={`file-${word}`}
                         onChange={(e) => handleFileUpload(word, e)}
                       />
-                    </label>
+                    </div>
                   )}
                   
                   <div 
