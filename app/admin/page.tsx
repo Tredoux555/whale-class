@@ -78,6 +78,13 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     color: 'bg-blue-500 hover:bg-blue-600',
   },
   {
+    title: 'English Guide',
+    description: 'How to teach each skill',
+    href: '/admin/english-guide',
+    icon: '📖',
+    color: 'bg-indigo-500 hover:bg-indigo-600',
+  },
+  {
     title: 'Circle Time',
     description: 'Plan circle activities',
     href: '/admin/circle-planner',
