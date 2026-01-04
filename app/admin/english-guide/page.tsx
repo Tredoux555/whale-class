@@ -25,9 +25,9 @@ const ENGLISH_GUIDE = [
           'Period 3 (only when certain): Point and ask "What is this?"'
         ],
         materials: [
-          { name: 'Vocabulary baskets (4-6 real objects per theme)', link: null },
-          { name: 'Safari Ltd TOOBS / Schleich animals', link: null },
-          { name: '3-Part Cards for vocabulary', link: '/admin/card-generator' }
+          { name: 'Vocabulary baskets (4-6 real objects per theme)', link: null, tip: 'Use small wicker baskets from Daiso/Miniso. Label each basket. Start with: Animals, Food, Classroom, Home.' },
+          { name: 'Safari Ltd TOOBS / Schleich animals', link: null, tip: 'Taobao search: 仿真动物模型. Get farm animals first, then wild animals, then ocean.' },
+          { name: '3-Part Cards for vocabulary', link: '/admin/card-generator', tip: 'Print matching cards for objects you have. Use for Period 2 practice at home.' }
         ],
         donts: [
           'Using too many words - say "Apple" not "This is a beautiful red apple"',
@@ -45,8 +45,8 @@ const ENGLISH_GUIDE = [
           'Make it a game - Simon Says works perfectly'
         ],
         materials: [
-          { name: 'Action cards with pictures', link: null },
-          { name: 'Circle Time activities', link: '/admin/circle-planner' }
+          { name: 'Action cards with pictures', link: null, tip: 'Make simple cards: stick figure doing action + word. Laminate for durability. 20 cards is enough.' },
+          { name: 'Circle Time activities', link: '/admin/circle-planner', tip: 'Use Simon Says daily. Start with body parts: touch head, clap hands, stamp feet.' }
         ],
         donts: [
           'Giving complex multi-step instructions too early',
@@ -64,9 +64,9 @@ const ENGLISH_GUIDE = [
           'Label the environment - put word cards on real objects'
         ],
         materials: [
-          { name: 'Vocabulary baskets with real objects', link: null },
-          { name: 'Vocabulary Flashcards', link: '/admin/vocabulary-flashcards' },
-          { name: '3-Part Cards', link: '/admin/card-generator' }
+          { name: 'Vocabulary baskets with real objects', link: null, tip: 'Real > toy. Use actual spoon, cup, sock. Children learn better from authentic items.' },
+          { name: 'Vocabulary Flashcards', link: '/admin/vocabulary-flashcards', tip: 'Use real photos, not cartoons. Match flashcard to actual object in basket.' },
+          { name: '3-Part Cards', link: '/admin/card-generator', tip: 'Print on cardstock 200gsm+. Cut precisely. Store in small envelopes by category.' }
         ],
         donts: [
           'Teaching abstract words before concrete nouns',
@@ -84,8 +84,8 @@ const ENGLISH_GUIDE = [
           'Repeat same songs daily for weeks - repetition builds confidence'
         ],
         materials: [
-          { name: 'Song Flashcards from YouTube', link: '/admin/flashcard-maker' },
-          { name: 'Circle Time song list', link: '/admin/circle-planner' }
+          { name: 'Song Flashcards from YouTube', link: '/admin/flashcard-maker', tip: 'Screenshot key moments from Super Simple Songs. Print A5 size for circle time.' },
+          { name: 'Circle Time song list', link: '/admin/circle-planner', tip: 'Start with 5 songs only. Add one new song per week. Repetition is key.' }
         ],
         donts: [
           'Introducing too many new songs at once',
@@ -114,8 +114,8 @@ const ENGLISH_GUIDE = [
           'When child points: "Yes! Mop begins with /m/. /m/-/m/-mop!"'
         ],
         materials: [
-          { name: 'I Spy basket with 40+ small objects', link: null },
-          { name: 'Objects sorted by initial sound in containers', link: null }
+          { name: 'I Spy basket with 40+ small objects', link: null, tip: 'Collect miniatures: eraser, clip, coin, shell, rock, button, key, ring. Taobao: 微型小物件. Sort by initial sound into ziplock bags.' },
+          { name: 'Objects sorted by initial sound in containers', link: null, tip: 'Use small containers or bags. Label with the SOUND not letter. Start with: /s/, /m/, /a/, /t/, /p/.' }
         ],
         donts: [
           'Showing any letters - this stage is purely auditory',
@@ -133,7 +133,7 @@ const ENGLISH_GUIDE = [
           'Then combine: "I spy something that begins with /c/ and ends with /t/"'
         ],
         materials: [
-          { name: 'Same I Spy objects, now sorted by ending sound', link: null }
+          { name: 'Same I Spy objects, now sorted by ending sound', link: null, tip: 'Re-sort your existing objects by END sound. Group: things ending in /t/, /p/, /n/, etc.' }
         ],
         donts: [
           'Starting ending sounds before beginning sounds are solid',
@@ -150,7 +150,7 @@ const ENGLISH_GUIDE = [
           'Stretch the vowel sound dramatically'
         ],
         materials: [
-          { name: 'CVC picture cards sorted by vowel sound', link: null }
+          { name: 'CVC picture cards sorted by vowel sound', link: null, tip: 'Make 5 piles: short-a words, short-e, short-i, short-o, short-u. Use real photos or simple drawings.' }
         ],
         donts: [
           'Using words with digraphs or blends',
@@ -167,8 +167,8 @@ const ENGLISH_GUIDE = [
           'Start with continuous sounds (s, m, f) before stops (t, p, k)'
         ],
         materials: [
-          { name: 'Picture cards for blending games', link: null },
-          { name: 'Phonics activities', link: '/admin/phonics-planner' }
+          { name: 'Picture cards for blending games', link: null, tip: 'Print CVC word pictures. Show picture face-down, say sounds slowly, child guesses before reveal.' },
+          { name: 'Phonics activities', link: '/admin/phonics-planner', tip: 'Daily 5-min blending practice. Use puppet to speak in "robot voice" - children love it.' }
         ],
         donts: [
           'Pausing too long between sounds - keep it flowing',
@@ -185,8 +185,8 @@ const ENGLISH_GUIDE = [
           'Child says whole word, then breaks it apart'
         ],
         materials: [
-          { name: 'Elkonin box mats (2-3-4 connected boxes)', link: null },
-          { name: 'Chips or counters', link: null }
+          { name: 'Elkonin box mats (2-3-4 connected boxes)', link: null, tip: 'Print on A4, laminate. Draw 3 connected boxes. Child pushes chip into each box per sound.' },
+          { name: 'Chips or counters', link: null, tip: 'Use anything: buttons, coins, pom-poms, small erasers. Get 10-20 identical items per child.' }
         ],
         donts: [
           'Using words with more than 3 sounds initially',
