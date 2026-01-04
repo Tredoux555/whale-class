@@ -98,13 +98,14 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     icon: '🔤',
     color: 'bg-red-500 hover:bg-red-600',
   },
-  {
-    title: 'English Materials',
-    description: 'Procurement checklist',
-    href: '/admin/english-procurement',
-    icon: '🛒',
-    color: 'bg-teal-500 hover:bg-teal-600',
-  },
+  // HIDDEN: English Guide is better
+  // {
+  //   title: 'English Materials',
+  //   description: 'Procurement checklist',
+  //   href: '/admin/english-procurement',
+  //   icon: '🛒',
+  //   color: 'bg-teal-500 hover:bg-teal-600',
+  // },
   
   // Utilities
   {
