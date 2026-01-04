@@ -1,11 +1,11 @@
 // app/api/english-progress/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase';
 
 // GET - Fetch all children with their English progress
 export async function GET() {
   try {
-    const supabase = await createSupabaseClient();
+    const supabase = createSupabaseAdmin();
     
     // Get all children
     const { data: children, error: childrenError } = await supabase
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'child_id is required' }, { status: 400 });
     }
     
-    const supabase = await createSupabaseClient();
+    const supabase = createSupabaseAdmin();
     
     // Check if progress record exists
     const { data: existing } = await supabase
