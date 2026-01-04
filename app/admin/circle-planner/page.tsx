@@ -64,12 +64,20 @@ export default function CircleTimePage() {
               </h1>
             </div>
             {selectedWeek && (
-              <button
-                onClick={handlePrint}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-              >
-                🖨️ Print Week
-              </button>
+              <div className="flex gap-2">
+                <Link
+                  href={`/admin/vocabulary-flashcards`}
+                  className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+                >
+                  🃏 Flashcards
+                </Link>
+                <button
+                  onClick={handlePrint}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                >
+                  🖨️ Print Week
+                </button>
+              </div>
             )}
           </div>
         </div>
