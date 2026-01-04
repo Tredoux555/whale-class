@@ -683,8 +683,8 @@ const ENGLISH_GUIDE = [
           'Triangle is solid like a pyramid - stable, foundational'
         ],
         materials: [
-          { name: 'Grammar symbol set (black triangle for nouns)', link: null },
-          { name: 'Small objects for labeling', link: null }
+          { name: 'Grammar symbol set (black triangle for nouns)', link: null, tip: 'Buy Montessori grammar symbols set on Taobao (蒙氏语法符号). Or DIY: cut colored cardstock - black triangle 5cm.' },
+          { name: 'Small objects for labeling', link: null, tip: 'Use objects from your vocabulary baskets. Child writes label, places black triangle above.' }
         ],
         donts: [
           'Starting with abstract nouns - use concrete objects first',
@@ -701,8 +701,8 @@ const ENGLISH_GUIDE = [
           'Red circle: "ACTION words are VERBS - round like sun, full of energy!"'
         ],
         materials: [
-          { name: 'Red verb circles', link: null },
-          { name: 'Action word cards', link: null }
+          { name: 'Red verb circles', link: null, tip: 'Cut red circles 5cm diameter. Or use red poker chips/counters. Need 10-20 for sentence work.' },
+          { name: 'Action word cards', link: null, tip: 'Write verbs on cards: run, jump, clap, sit, eat, drink, wash, sleep. Use lowercase. 20+ cards.' }
         ],
         donts: [
           'Teaching verbs before nouns are solid',
@@ -719,8 +719,8 @@ const ENGLISH_GUIDE = [
           'Add "red pencil". Explain: "Red DESCRIBES which pencil - ADJECTIVE"'
         ],
         materials: [
-          { name: 'Dark blue triangle for adjectives', link: null },
-          { name: 'Sets of objects varying in color/size', link: null }
+          { name: 'Dark blue triangle for adjectives', link: null, tip: 'Medium dark blue triangle, smaller than noun triangle. Represents how adjectives "depend on" nouns.' },
+          { name: 'Sets of objects varying in color/size', link: null, tip: 'Get 3 pencils (red/blue/green), 3 balls (big/small/medium), 3 cups (tall/short/wide). For detective game.' }
         ],
         donts: [
           'Introducing adjectives before nouns and verbs',
@@ -737,7 +737,7 @@ const ENGLISH_GUIDE = [
           'Farm Game: "the brown cow" vs "a cow"'
         ],
         materials: [
-          { name: 'Light blue small triangle for articles', link: null }
+          { name: 'Light blue small triangle for articles', link: null, tip: 'Smallest triangle, light blue. Represents articles as tiny helpers that go with nouns.' }
         ],
         donts: [
           'Overexplaining a vs an rules early - focus on usage'
@@ -753,8 +753,8 @@ const ENGLISH_GUIDE = [
           'Introduce subject + verb + object structure'
         ],
         materials: [
-          { name: 'Farm game set with animals and word cards', link: null },
-          { name: 'Complete grammar symbol set', link: null }
+          { name: 'Farm game set with animals and word cards', link: null, tip: 'Taobao: Montessori Farm Game (蒙氏农场游戏). Or DIY: toy farm animals + handwritten command cards.' },
+          { name: 'Complete grammar symbol set', link: null, tip: 'Full set: black triangle (noun), red circle (verb), blue triangles (adj/article), orange crescent (prep). Buy or DIY from cardstock.' }
         ],
         donts: [
           'Making it worksheet-based - grammar is hands-on with movement',
@@ -1181,16 +1181,20 @@ export default function EnglishGuidePage() {
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-amber-600">
                 <span className="text-2xl">📦</span> Materials Needed
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {skill.materials.map((mat, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="text-amber-500">•</span>
-                    {mat.link ? (
-                      <Link href={mat.link} className="text-blue-600 hover:underline font-medium">
-                        {mat.name} →
-                      </Link>
-                    ) : (
-                      <span className="text-gray-700">{mat.name}</span>
+                  <li key={idx} className="border-l-4 border-amber-200 pl-3 py-1">
+                    <div className="flex items-center gap-2">
+                      {mat.link ? (
+                        <Link href={mat.link} className="text-blue-600 hover:underline font-medium">
+                          {mat.name} →
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-gray-800">{mat.name}</span>
+                      )}
+                    </div>
+                    {mat.tip && (
+                      <p className="text-sm text-gray-600 mt-1">💡 {mat.tip}</p>
                     )}
                   </li>
                 ))}
