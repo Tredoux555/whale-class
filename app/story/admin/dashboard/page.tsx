@@ -375,25 +375,8 @@ const formatTime = (dateString: string) => {
   if (!dateString) return '—';
   
   try {
-    // Normalize the timestamp for reliable parsing
-    let timestamp = dateString.trim();
-    
-    // Replace space with T if needed (Supabase sometimes returns "2026-01-01 15:30:00")
-    if (timestamp.includes(' ') && !timestamp.includes('T')) {
-      timestamp = timestamp.replace(' ', 'T');
-    }
-    
-    // Check if timestamp already has timezone info
-    const hasTimezone = timestamp.endsWith('Z') || 
-                        /[+-]\d{2}:\d{2}$/.test(timestamp) || 
-                        /[+-]\d{2}$/.test(timestamp);
-    
-    // If no timezone, assume UTC (Supabase TIMESTAMPTZ stores in UTC)
-    if (!hasTimezone) {
-      timestamp = timestamp + 'Z';
-    }
-    
-    const date = new Date(timestamp);
+    // Parse the timestamp - Supabase TIMESTAMPTZ returns ISO format
+    const date = new Date(dateString);
     
     // Check for invalid date
     if (isNaN(date.getTime())) {

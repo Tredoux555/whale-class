@@ -109,6 +109,22 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const supabase = getSupabase();
+      
+      // Mark the session as logged out
+      await supabase
+        .from('story_login_logs')
+        .update({ logout_at: new Date().toISOString() })
+        .eq('session_token', token.substring(0, 50))
+        .is('logout_at', null);
+    }
+  } catch (e) {
+    console.error('[Auth] Logout tracking failed:', e);
+  }
   return NextResponse.json({ success: true });
 }

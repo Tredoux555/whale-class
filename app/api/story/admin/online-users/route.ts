@@ -26,13 +26,8 @@ export async function GET(req: NextRequest) {
     const userMap = new Map<string, { username: string; lastLogin: string; secondsAgo: number }>();
     (rows || []).forEach(row => {
       if (!userMap.has(row.username)) {
-        // Parse the timestamp - ensure UTC interpretation
-        // If the timestamp doesn't end with Z, add it for correct UTC parsing
-        let loginTime = row.login_at;
-        if (loginTime && !loginTime.endsWith('Z') && !loginTime.includes('+')) {
-          loginTime = loginTime + 'Z';
-        }
-        const loginTimestamp = new Date(loginTime).getTime();
+        // Parse timestamp - with TIMESTAMPTZ, Supabase returns ISO format
+        const loginTimestamp = new Date(row.login_at).getTime();
         const secondsAgo = Math.max(0, Math.floor((now - loginTimestamp) / 1000));
         
         userMap.set(row.username, {
