@@ -359,29 +359,29 @@ const VocabularyFlashcardGenerator = () => {
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
     .image-area {
       background: white;
       border-radius: 0.8cm;
-      flex: 2;
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-right: 0.8cm;
+      margin-bottom: 0.8cm;
     }
     .image-area img { 
-      width: 100%; 
-      height: 100%; 
+      max-width: 100%; 
+      max-height: 100%; 
       object-fit: contain;
     }
     .label-area {
       background: white;
       border-radius: 0.8cm;
-      flex: 1;
+      height: 4cm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -389,7 +389,6 @@ const VocabularyFlashcardGenerator = () => {
       font-size: 72pt;
       font-weight: bold;
       text-transform: capitalize;
-      writing-mode: horizontal-tb;
     }
     @media print {
       html, body { width: 29.7cm; height: 21cm; }
