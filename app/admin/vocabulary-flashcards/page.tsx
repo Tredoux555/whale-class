@@ -533,7 +533,7 @@ const VocabularyFlashcardGenerator = () => {
                 📂 Choose Folder
                 <input
                   type="file"
-                  /* @ts-ignore */
+                  // @ts-expect-error - webkitdirectory is valid but not in React types
                   webkitdirectory="true"
                   directory="true"
                   multiple
