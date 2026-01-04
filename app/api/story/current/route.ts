@@ -40,13 +40,14 @@ async function verifyToken(authHeader: string | null): Promise<string | null> {
 function getDefaultStory() {
   return {
     theme: 'Weekly Learning',
-    title: 'The Little Prince',
+    title: 'Classroom Activities',
     content: {
       paragraphs: [
-        '"You are beautiful, but you are empty," he went on.',
-        '"One could not die for you. To be sure, an ordinary passerby would think that my rose looked just like you--the rose that belongs to me."',
-        '"But in herself alone she is more important than all the hundreds of you other roses: because it is she that I have watered; because it is she that I have put under the glass globe; because it is she that I have sheltered behind the screen; because it is for her that I have killed the caterpillars (except the two or three that we saved to become butterflies); because it is she that I have listened to, when she grumbled, or boasted, or ever sometimes when she said nothing."',
-        '"Because she is my rose."'
+        'Today we learned about counting and colors.',
+        'The children practiced their letters.',
+        'Everyone had fun during circle time.',
+        'We read a wonderful story together.',
+        'Looking forward to more learning tomorrow.'
       ]
     }
   };
