@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { CIRCLE_TIME_CURRICULUM, CircleTimePlan, DayPlan } from '@/lib/circle-time/curriculum-data';
+import LessonDocuments from '@/components/circle-time/LessonDocuments';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 const DAY_LABELS = {
@@ -142,6 +143,11 @@ export default function CircleTimePage() {
               <h3 className="font-bold text-gray-700 mb-2">🎵 Theme Song</h3>
               <p className="font-medium">{plan.song.title}</p>
               <p className="text-sm text-gray-600">Actions: {plan.song.actions}</p>
+            </div>
+
+            {/* Lesson Documents */}
+            <div className="mb-4">
+              <LessonDocuments weekNumber={plan.week} />
             </div>
 
             {/* Day Tabs */}

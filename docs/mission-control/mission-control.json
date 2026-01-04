@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "lastUpdated": "2026-01-04",
+    "project": "Whale Class",
+    "repo": "Tredoux555/whale-class",
+    "url": "https://teacherpotato.xyz",
+    "version": "1.0.0"
+  },
+
+  "overview": {
+    "description": "Comprehensive Montessori curriculum tracking system for Beijing International School kindergarten",
+    "techStack": "Next.js 16 + Supabase + Railway",
+    "users": "Teachers, Parents, Admin"
+  },
+
+  "features": {
+    "weeklyPlanning": {
+      "status": "complete",
+      "description": "Upload Chinese docx → Claude parses → Classroom grid → Print A4",
+      "files": [
+        "/admin/weekly-planning/page.tsx",
+        "/admin/classroom/page.tsx",
+        "/admin/classroom/print/page.tsx"
+      ]
+    },
+    "curriculumTracking": {
+      "status": "complete",
+      "activities": 195,
+      "description": "Track child progress through Montessori works"
+    },
+    "parentDashboard": {
+      "status": "working",
+      "description": "Parents view child progress and reports"
+    },
+    "teacherDashboard": {
+      "status": "working",
+      "description": "Teacher manages class, tracks progress"
+    },
+    "storyVault": {
+      "status": "working",
+      "description": "Encrypted message/story system"
+    },
+    "montree": {
+      "status": "in_progress",
+      "description": "Visual curriculum tree - Step 2 complete at /admin/montree",
+      "note": "DB has 74 works, needs migration to 268"
+    }
+  },
+
+  "knownIssues": [
+    "PDF generation sometimes fails",
+    "React state bugs (occasional refresh issues)",
+    "Some curriculum video links broken"
+  ],
+
+  "database": {
+    "tables": {
+      "children": "22 children in Whale Class",
+      "weekly_plans": "Uploaded planning documents",
+      "weekly_assignments": "Child-work assignments by week",
+      "curriculum_roadmap": "195 Montessori activities"
+    },
+    "criticalNote": "Use week_number + year for queries, NOT weekly_plan_id"
+  },
+
+  "dailyLog": [
+    {
+      "date": "2026-01-04",
+      "entries": [
+        {
+          "action": "Created Mission Control system for Whale",
+          "impact": "high"
+        }
+      ]
+    },
+    {
+      "date": "2025-12-30",
+      "entries": [
+        {
+          "action": "Weekly Planning system completed",
+          "impact": "critical"
+        },
+        {
+          "action": "Classroom grid with progress tracking",
+          "impact": "high"
+        },
+        {
+          "action": "A4 print layout for teachers",
+          "impact": "high"
+        }
+      ]
+    }
+  ],
+
+  "actionQueue": [
+    {
+      "id": "w-1",
+      "task": "Migrate curriculum_roadmap from 74 to 268 works",
+      "priority": 2,
+      "status": "pending"
+    },
+    {
+      "id": "w-2",
+      "task": "Fix broken video links in curriculum",
+      "priority": 3,
+      "status": "pending"
+    },
+    {
+      "id": "w-3",
+      "task": "Improve PDF export reliability",
+      "priority": 3,
+      "status": "pending"
+    }
+  ]
+}
