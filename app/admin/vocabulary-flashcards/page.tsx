@@ -221,12 +221,6 @@ const VocabularyFlashcardGenerator = () => {
 
       const currentBorderColor = borderColor;
       const currentFontFamily = fontFamily;
-      const CARD_WIDTH_CM = 9;
-      const CARD_HEIGHT_CM = 9;
-      const MARGIN_CM = 1.5;
-      const GAP_CM = 0.5;
-      const BORDER_RADIUS_CM = 0.5;
-      const PADDING_CM = 0.4;
 
       let html = `
 <!DOCTYPE html>
@@ -235,23 +229,23 @@ const VocabularyFlashcardGenerator = () => {
   <meta charset="UTF-8">
   <title>Vocabulary Flashcards - Week ${selectedWeek}</title>
   <style>
-    @page { size: A4; margin: ${MARGIN_CM}cm; }
+    @page { size: A4; margin: 1cm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, sans-serif; background: white; }
     .page {
+      width: 19cm;
+      height: 27.7cm;
       page-break-after: always;
-      display: grid;
-      grid-template-columns: repeat(2, ${CARD_WIDTH_CM}cm);
-      grid-template-rows: repeat(3, ${CARD_HEIGHT_CM}cm);
-      gap: ${GAP_CM}cm;
-      justify-content: center;
-      padding-top: 0.5cm;
+      display: flex;
+      flex-direction: column;
+      padding: 0.5cm;
     }
     .page:last-child { page-break-after: auto; }
     .card {
       background: ${currentBorderColor};
-      border-radius: ${BORDER_RADIUS_CM}cm;
-      padding: ${PADDING_CM}cm;
+      border-radius: 1cm;
+      padding: 0.8cm;
+      flex: 1;
       display: flex;
       flex-direction: column;
       -webkit-print-color-adjust: exact;
@@ -259,62 +253,48 @@ const VocabularyFlashcardGenerator = () => {
     }
     .image-area {
       background: white;
-      border-radius: ${BORDER_RADIUS_CM - 0.1}cm;
+      border-radius: 0.8cm;
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: ${PADDING_CM}cm;
+      margin-bottom: 0.8cm;
     }
     .image-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .label-area {
       background: white;
-      border-radius: ${BORDER_RADIUS_CM - 0.1}cm;
-      height: 1.8cm;
+      border-radius: 0.8cm;
+      height: 3.5cm;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: "${currentFontFamily}", cursive;
-      font-size: 22pt;
+      font-size: 72pt;
       font-weight: bold;
       text-transform: capitalize;
     }
-    .page-title {
-      grid-column: span 2;
-      text-align: center;
-      font-size: 10pt;
-      color: #999;
-      height: 0.8cm;
-    }
     @media print {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .page-title { display: none; }
     }
     @media screen {
       body { padding: 20px; background: #f0f0f0; }
-      .page { background: white; margin: 0 auto 20px; padding: 1cm; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+      .page { background: white; margin: 0 auto 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     }
   </style>
 </head>
 <body>
 `;
 
-      for (let i = 0; i < cardsWithImages.length; i += 6) {
-        const pageCards = cardsWithImages.slice(i, i + 6);
-        const pageNum = Math.floor(i / 6) + 1;
-        
+      for (const card of cardsWithImages) {
         html += `
           <div class="page">
-            <div class="page-title">Week ${selectedWeek}: ${plan?.theme || ''} - Page ${pageNum}</div>
-            ${pageCards.map(card => `
-              <div class="card">
-                <div class="image-area">
-                  <img src="${card.image}" alt="${card.word}">
-                </div>
-                <div class="label-area">${card.word}</div>
+            <div class="card">
+              <div class="image-area">
+                <img src="${card.image}" alt="${card.word}">
               </div>
-            `).join('')}
+              <div class="label-area">${card.word}</div>
+            </div>
           </div>
         `;
       }
@@ -391,6 +371,30 @@ const VocabularyFlashcardGenerator = () => {
             </div>
           </div>
         )}
+
+        {/* Copyable Word List */}
+        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">📝 Word List (click to copy)</h2>
+          <div className="flex flex-wrap gap-2">
+            {vocabulary.map((word) => (
+              <button
+                key={word}
+                onClick={() => {
+                  navigator.clipboard.writeText(word);
+                  const el = document.getElementById(`word-${word}`);
+                  if (el) {
+                    el.textContent = '✓ copied';
+                    setTimeout(() => { el.textContent = word; }, 1000);
+                  }
+                }}
+                className="px-3 py-1 bg-gray-100 hover:bg-cyan-100 rounded-lg text-sm font-medium text-gray-700 transition-all"
+              >
+                <span id={`word-${word}`}>{word}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-2">Click a word → paste into Google Images → copy image → click card below → ⌘V</p>
+        </div>
 
         {/* ZIP Drop Zone */}
         <div
