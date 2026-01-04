@@ -415,8 +415,8 @@ const ENGLISH_GUIDE = [
           'Child matches remaining word cards to objects'
         ],
         materials: [
-          { name: 'Pink Object Box - Short A', link: null },
-          { name: 'Pink Series materials', link: '/admin/material-generator' }
+          { name: 'Pink Object Box - Short A', link: null, tip: 'Small box with 8+ miniatures for short-a: cat, hat, bat, rat, map, bag, van, pan, can, jam.' },
+          { name: 'Pink Series materials', link: '/admin/material-generator', tip: 'Print: object cards, word cards, picture-word matching. Laminate everything - these get heavy use.' }
         ],
         donts: [
           'Mixing vowel sounds - master one before adding another',
@@ -433,8 +433,8 @@ const ENGLISH_GUIDE = [
           'Word family sorting: -et, -en, -ed'
         ],
         materials: [
-          { name: 'Pink Object Box - Short E', link: null },
-          { name: 'Short E word lists', link: '/admin/material-generator' }
+          { name: 'Pink Object Box - Short E', link: null, tip: 'Short-e miniatures: bed, pen, hen, jet, net, web, leg, peg, egg (toy), red (object).' },
+          { name: 'Short E word lists', link: '/admin/material-generator', tip: 'Word families: -et (pet, wet, jet), -en (pen, hen, ten), -ed (bed, red, led).' }
         ],
         donts: [
           'Confusing short E and short I - they sound similar',
@@ -451,7 +451,7 @@ const ENGLISH_GUIDE = [
           'Compare to short E frequently'
         ],
         materials: [
-          { name: 'Pink Object Box - Short I', link: null }
+          { name: 'Pink Object Box - Short I', link: null, tip: 'Short-i miniatures: pig, wig, bib, pin, bin, fin, lip, zip, kit, sit (figure). -ig, -in, -ip families.' }
         ],
         donts: [
           'Blending short E and I words in same lesson initially'
@@ -467,7 +467,7 @@ const ENGLISH_GUIDE = [
           'This is usually an easier vowel'
         ],
         materials: [
-          { name: 'Pink Object Box - Short O', link: null }
+          { name: 'Pink Object Box - Short O', link: null, tip: 'Short-o miniatures: dog, log, frog, pot, cot, dot, mop, top, hop, fox, box, sock. Most distinct vowel.' }
         ],
         donts: [
           'Confusing short O with short U'
@@ -483,7 +483,7 @@ const ENGLISH_GUIDE = [
           'Often confused with short O - compare directly'
         ],
         materials: [
-          { name: 'Pink Object Box - Short U', link: null }
+          { name: 'Pink Object Box - Short U', link: null, tip: 'Short-u miniatures: cup, mug, jug, bug, rug, tub, bus, sun, bun, nut, hut. Tricky vowel - practice more.' }
         ],
         donts: [
           'Rushing to Blue Series before all 5 vowels are solid'
@@ -510,8 +510,8 @@ const ENGLISH_GUIDE = [
           'Build words: black, blue, blink, blend'
         ],
         materials: [
-          { name: 'Blend cards showing individual blends', link: null },
-          { name: 'Blue Series materials', link: '/admin/material-generator' }
+          { name: 'Blend cards showing individual blends', link: null, tip: 'Cards with blend + key picture: bl-black, br-brown, cl-clap, cr-crab, st-stop, etc. 15-20 blends total.' },
+          { name: 'Blue Series materials', link: '/admin/material-generator', tip: 'Same format as Pink: objects → pictures → word cards. Now with 4-letter words.' }
         ],
         donts: [
           'Starting Blue before Pink is mastered',
@@ -529,7 +529,7 @@ const ENGLISH_GUIDE = [
           'Practice both beginning AND ending blends'
         ],
         materials: [
-          { name: 'Blue Object Box - Ending Blends', link: null }
+          { name: 'Blue Object Box - Ending Blends', link: null, tip: 'Miniatures for: -nd (hand, sand), -mp (lamp, camp), -lk (milk, silk), -nt (ant, tent), -nk (sink, pink).' }
         ],
         donts: [
           'Focusing only on beginning blends',
@@ -546,7 +546,7 @@ const ENGLISH_GUIDE = [
           'Use moveable alphabet to build before reading'
         ],
         materials: [
-          { name: 'CCVC word cards and objects', link: null }
+          { name: 'CCVC word cards and objects', link: null, tip: 'Objects: frog, crab, drum, flag, plum, step, clip, sled. Word starts with blend: CCVC pattern.' }
         ],
         donts: [
           'Mixing CCVC and CVCC in same lesson initially'
@@ -562,7 +562,7 @@ const ENGLISH_GUIDE = [
           'Focus on articulating the final cluster clearly'
         ],
         materials: [
-          { name: 'CVCC word cards and objects', link: null }
+          { name: 'CVCC word cards and objects', link: null, tip: 'Objects: hand, lamp, belt, desk, milk, nest, tent, gift. Word ends with blend: CVCC pattern.' }
         ],
         donts: [
           'Letting final consonants disappear in pronunciation'
