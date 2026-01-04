@@ -61,6 +61,13 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     icon: '🎵',
     color: 'bg-indigo-500 hover:bg-indigo-600',
   },
+  {
+    title: 'Vocab Flashcards',
+    description: 'Weekly vocabulary cards',
+    href: '/admin/vocabulary-flashcards',
+    icon: '📇',
+    color: 'bg-cyan-500 hover:bg-cyan-600',
+  },
   
   // Teaching Tools
   {
