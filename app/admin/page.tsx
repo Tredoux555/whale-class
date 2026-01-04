@@ -71,6 +71,13 @@ const DASHBOARD_CARDS: DashboardCard[] = [
   
   // Teaching Tools
   {
+    title: 'English Progress',
+    description: 'Parent reports & tracking',
+    href: '/admin/english-progress',
+    icon: '📚',
+    color: 'bg-blue-500 hover:bg-blue-600',
+  },
+  {
     title: 'Circle Time',
     description: 'Plan circle activities',
     href: '/admin/circle-planner',
@@ -85,11 +92,11 @@ const DASHBOARD_CARDS: DashboardCard[] = [
     color: 'bg-red-500 hover:bg-red-600',
   },
   {
-    title: 'English Area',
+    title: 'English Materials',
     description: 'Procurement checklist',
     href: '/admin/english-procurement',
-    icon: '📚',
-    color: 'bg-blue-500 hover:bg-blue-600',
+    icon: '🛒',
+    color: 'bg-teal-500 hover:bg-teal-600',
   },
   
   // Utilities
