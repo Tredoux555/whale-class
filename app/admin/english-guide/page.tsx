@@ -1052,6 +1052,119 @@ const VOCABULARY_BASKETS = [
 ];
 
 // ============================================
+// SOUND OBJECTS - I SPY MATERIALS
+// ============================================
+
+// ESL Teaching Order: Start with sounds that exist in Chinese, progress to harder sounds
+const ESL_SOUND_ORDER = {
+  phase1_easy: ['s', 'm', 'f', 'n', 'p', 't', 'k', 'h'],  // Exist in Mandarin
+  phase2_medium: ['b', 'd', 'g', 'j', 'w', 'y'],           // Need practice
+  phase3_hard: ['v', 'th', 'r', 'l', 'z', 'sh', 'ch'],    // Don't exist in Mandarin - teach last
+  vowels: ['a', 'e', 'i', 'o', 'u']                        // Short vowels
+};
+
+// Beginning Sound Objects - 6 per sound (practical for sourcing)
+const BEGINNING_SOUND_OBJECTS = [
+  // Phase 1: Easy sounds (exist in Mandarin)
+  { sound: 's', phase: 1, objects: ['sun', 'sock', 'soap', 'spoon', 'star', 'snake'], taobao: '迷你太阳/袜子' },
+  { sound: 'm', phase: 1, objects: ['mop', 'moon', 'mouse', 'map', 'mug', 'mat'], taobao: '迷你拖把/月亮' },
+  { sound: 'f', phase: 1, objects: ['fan', 'fish', 'fork', 'frog', 'fox', 'feather'], taobao: '迷你风扇/鱼' },
+  { sound: 'n', phase: 1, objects: ['net', 'nut', 'nail', 'nest', 'nose', 'necklace'], taobao: '迷你网/坚果' },
+  { sound: 'p', phase: 1, objects: ['pen', 'pig', 'pot', 'pin', 'pear', 'pan'], taobao: '迷你笔/猪' },
+  { sound: 't', phase: 1, objects: ['top', 'tent', 'tiger', 'tape', 'tooth', 'toy'], taobao: '迷你帐篷/老虎' },
+  { sound: 'k', phase: 1, objects: ['cup', 'cat', 'car', 'cap', 'can', 'key'], taobao: '迷你杯子/猫' },
+  { sound: 'h', phase: 1, objects: ['hat', 'hen', 'horse', 'house', 'hammer', 'hand'], taobao: '迷你帽子/马' },
+  // Phase 2: Medium difficulty
+  { sound: 'b', phase: 2, objects: ['ball', 'bat', 'bed', 'bus', 'bug', 'box'], taobao: '迷你球/床' },
+  { sound: 'd', phase: 2, objects: ['dog', 'doll', 'duck', 'door', 'drum', 'dish'], taobao: '迷你狗/鸭' },
+  { sound: 'g', phase: 2, objects: ['goat', 'gift', 'glass', 'grape', 'guitar', 'gold'], taobao: '迷你山羊/礼物' },
+  { sound: 'j', phase: 2, objects: ['jet', 'jam', 'jug', 'jar', 'jeep', 'jump rope'], taobao: '迷你飞机/果酱' },
+  { sound: 'w', phase: 2, objects: ['wig', 'web', 'watch', 'worm', 'wagon', 'wolf'], taobao: '迷你假发/手表' },
+  // Phase 3: Hard sounds (don't exist in Mandarin)
+  { sound: 'v', phase: 3, objects: ['van', 'vest', 'vase', 'violin', 'vine', 'vet'], taobao: '迷你货车/花瓶', eslNote: 'Teeth on lip! Chinese speakers say /w/' },
+  { sound: 'r', phase: 3, objects: ['ring', 'rug', 'rat', 'rain', 'rabbit', 'rocket'], taobao: '迷你戒指/兔子', eslNote: 'Tongue curled back, NOT /l/' },
+  { sound: 'l', phase: 3, objects: ['leg', 'lamp', 'lid', 'log', 'leaf', 'lemon'], taobao: '迷你台灯/叶子', eslNote: 'Tongue touches roof' },
+  { sound: 'z', phase: 3, objects: ['zip', 'zoo', 'zebra', 'zero', 'zigzag', 'zipper'], taobao: '迷你拉链/斑马', eslNote: 'Voice the /s/ sound' },
+  // Vowels (short sounds)
+  { sound: 'a', phase: 'vowel', objects: ['ant', 'apple', 'ax', 'alligator', 'astronaut', 'anchor'], taobao: '迷你蚂蚁/苹果', keyPicture: '🍎 apple' },
+  { sound: 'e', phase: 'vowel', objects: ['egg', 'elf', 'elephant', 'elbow', 'envelope', 'engine'], taobao: '迷你鸡蛋/大象', keyPicture: '🥚 egg' },
+  { sound: 'i', phase: 'vowel', objects: ['igloo', 'insect', 'ink', 'iguana', 'inch', 'infant'], taobao: '迷你冰屋/昆虫', keyPicture: '🏠 igloo' },
+  { sound: 'o', phase: 'vowel', objects: ['octopus', 'ox', 'olive', 'otter', 'ostrich', 'orange'], taobao: '迷你章鱼/橙子', keyPicture: '🐙 octopus' },
+  { sound: 'u', phase: 'vowel', objects: ['umbrella', 'umpire', 'unicorn', 'up arrow', 'under', 'utensil'], taobao: '迷你雨伞', keyPicture: '☂️ umbrella' },
+];
+
+// Ending Sound Objects - 5 per sound
+const ENDING_SOUND_OBJECTS = [
+  { sound: 't', objects: ['cat', 'hat', 'bat', 'pot', 'net'], note: 'Most common CVC ending' },
+  { sound: 'p', objects: ['cup', 'cap', 'mop', 'map', 'top'], note: 'Clear stop sound' },
+  { sound: 'n', objects: ['sun', 'pan', 'can', 'fan', 'pen'], note: 'Continuous - easy to hear' },
+  { sound: 'g', objects: ['dog', 'pig', 'bag', 'rug', 'bug'], note: 'Voiced stop' },
+  { sound: 'd', objects: ['bed', 'red', 'lid', 'mud', 'bud'], note: 'Voiced - harder than /t/' },
+  { sound: 'x', objects: ['box', 'fox', 'six', 'wax', 'mix'], note: 'Actually /ks/ blend' },
+  { sound: 'm', objects: ['ham', 'jam', 'gum', 'drum', 'swim'], note: 'Nasal - lips together' },
+  { sound: 'b', objects: ['crab', 'web', 'tub', 'cab', 'cub'], note: 'Voiced stop' },
+];
+
+// CVC Objects by Vowel - 8 words per vowel for middle sound work
+const CVC_BY_VOWEL = [
+  { 
+    vowel: 'a', 
+    keyPicture: '🍎',
+    mouthPosition: 'Jaw drops open',
+    words: ['cat', 'hat', 'bat', 'map', 'bag', 'pan', 'can', 'jam'],
+    objects: ['cat', 'hat', 'bat', 'map', 'bag', 'pan', 'can', 'jam jar']
+  },
+  { 
+    vowel: 'e', 
+    keyPicture: '🥚',
+    mouthPosition: 'Smile slightly, tongue mid-front',
+    words: ['bed', 'pen', 'hen', 'net', 'web', 'leg', 'red', 'pet'],
+    objects: ['bed', 'pen', 'hen', 'net', 'web', 'leg model', 'red item', 'pet toy']
+  },
+  { 
+    vowel: 'i', 
+    keyPicture: '🏠',
+    mouthPosition: 'Big smile, tongue high',
+    words: ['pig', 'pin', 'bib', 'lip', 'wig', 'fin', 'kit', 'bin'],
+    objects: ['pig', 'pin', 'bib', 'lip model', 'wig', 'fin', 'kit', 'bin']
+  },
+  { 
+    vowel: 'o', 
+    keyPicture: '🐙',
+    mouthPosition: 'Round lips, tongue low-back',
+    words: ['dog', 'pot', 'mop', 'box', 'fox', 'log', 'top', 'cot'],
+    objects: ['dog', 'pot', 'mop', 'box', 'fox', 'log', 'top', 'cot']
+  },
+  { 
+    vowel: 'u', 
+    keyPicture: '☂️',
+    mouthPosition: 'Relaxed, jaw slightly dropped',
+    words: ['cup', 'bug', 'rug', 'sun', 'bus', 'mug', 'jug', 'nut'],
+    objects: ['cup', 'bug', 'rug', 'sun', 'bus', 'mug', 'jug', 'nut']
+  },
+];
+
+// Shopping summary for sound objects
+const SOUND_OBJECTS_SHOPPING = {
+  totalObjects: '~100 miniatures',
+  estimatedBudget: '¥200-300',
+  taobaoSearches: [
+    '仿真小动物模型套装 (realistic mini animal set)',
+    '迷你家具配件 (mini furniture accessories)',
+    '过家家小物件 (pretend play small items)',
+    '微型仿真食物 (miniature realistic food)',
+    '蒙氏教具语言区 (Montessori language materials)'
+  ],
+  recommendedSets: [
+    'Safari Ltd TOOBS - Animals, insects (¥40-60 each)',
+    'Dollhouse accessories set (¥30-50)',
+    'Wooden play food set (¥40-60)',
+    'Miniature school supplies (¥20-30)'
+  ],
+  eslWarning: 'Chinese words don\'t end in consonants (except /n/ and /ng/). Children will naturally DROP final sounds. Practice ending sounds extensively!'
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 

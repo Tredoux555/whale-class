@@ -409,10 +409,12 @@ const MontessoriCardGenerator = () => {
       const A4_HEIGHT_CM = 29.7;
       
       // Card dimensions - fixed sizes for Montessori three-part cards
+      // KEY PRINCIPLE: Picture + Label = Control (when placed on mat)
+      // Optimized to fit 3 rows of control cards on A4 (29.7cm height)
       const PICTURE_CARD_SIZE_CM = 7.5; // 7.5cm × 7.5cm for picture cards
-      const LABEL_HEIGHT_CM = 2; // 2cm for label area (standard Montessori proportion)
-      const CONTROL_CARD_HEIGHT_CM = PICTURE_CARD_SIZE_CM + LABEL_HEIGHT_CM; // ~9.5cm total
-      const LABEL_CARD_HEIGHT_CM = 3.5; // Smaller height for label-only cards (maintains proportion)
+      const LABEL_INTERNAL_CM = 1.8; // 1.8cm internal label area 
+      const LABEL_CARD_HEIGHT_CM = 2.4; // Standalone label: matches control card label portion
+      const CONTROL_CARD_HEIGHT_CM = PICTURE_CARD_SIZE_CM + LABEL_CARD_HEIGHT_CM; // 9.9cm = 7.5 + 2.4 (fits 3 rows on A4)
       
       // Zero margins to allow cutting lines to reach page edges
       const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
@@ -430,8 +432,8 @@ const MontessoriCardGenerator = () => {
       // For 3 rows of control cards (~9.5cm each): 3 × 9.5 = 28.5cm, leaving 1.2cm total margin
       const controlGridMarginTop = (A4_HEIGHT_CM - (CONTROL_CARD_HEIGHT_CM * 3)) / 2;
       
-      // For label cards: 2 columns × 4 rows layout
-      const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 4)) / 2;
+      // For label cards: 2 columns × 8 rows layout (labels are 2.4cm each)
+      const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 8)) / 2;
       
       // Build HTML for print
       let html = `
@@ -562,7 +564,7 @@ const MontessoriCardGenerator = () => {
       background: white;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      height: ${LABEL_HEIGHT_CM}cm;
+      height: ${LABEL_INTERNAL_CM}cm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -681,18 +683,18 @@ const MontessoriCardGenerator = () => {
         `;
       }
 
-      // Generate Label Cards pages (8 per page in 2x4 grid)
+      // Generate Label Cards pages (16 per page in 2x8 grid - labels are 2.4cm tall)
       const labelCards = cards.map(card => createCardHTML(card, 'label'));
       const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-      for (let i = 0; i < labelCards.length; i += 8) {
-        const pageCards = labelCards.slice(i, i + 8);
-        const pageNum = Math.floor(i / 8) + 1;
+      for (let i = 0; i < labelCards.length; i += 16) {
+        const pageCards = labelCards.slice(i, i + 16);
+        const pageNum = Math.floor(i / 16) + 1;
         html += `
           <div class="page">
             <div class="page-title">Label Cards - Page ${pageNum}</div>
-            <div class="grid" style="grid-template-rows: repeat(4, ${LABEL_CARD_HEIGHT_CM}cm); grid-auto-rows: ${LABEL_CARD_HEIGHT_CM}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
+            <div class="grid" style="grid-template-rows: repeat(8, ${LABEL_CARD_HEIGHT_CM}cm); grid-auto-rows: ${LABEL_CARD_HEIGHT_CM}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
               ${pageCards.join('')}
-              ${pageCards.length < 8 ? '<div></div>'.repeat(8 - pageCards.length) : ''}
+              ${pageCards.length < 16 ? '<div></div>'.repeat(16 - pageCards.length) : ''}
             </div>
           </div>
         `;
