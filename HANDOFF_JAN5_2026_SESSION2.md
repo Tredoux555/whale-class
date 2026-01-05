@@ -1,16 +1,9 @@
-# WHALE HANDOFF - January 5, 2026 - Session 2
+# WHALE HANDOFF - January 5, 2026 - Session 2 (FINAL)
 
 ## What We Built This Session
 
 ### 1. Multi-User Authentication System
 Complete role-based auth for Montree standalone app.
-
-**Files Created:**
-- `lib/auth-multi.ts` - Multi-role auth with permissions
-- `migrations/002_multi_user_schema.sql` - Database tables for users/schools/classrooms
-- `app/api/auth/login/route.ts` - Login API
-- `app/api/auth/logout/route.ts` - Logout API
-- `app/api/auth/users/route.ts` - User management API (create/list users)
 
 **User Roles:**
 | Role | Access |
@@ -20,169 +13,183 @@ Complete role-based auth for Montree standalone app.
 | teacher | Use tools, track progress, view curriculum (read-only) |
 | parent | View their children's progress only |
 
-### 2. Teacher Portal
-Teacher login and dashboard for your colleagues.
+### 2. Teacher Montree Progress Tracking (TABLET-READY)
+Teachers can use Montree directly on a tablet to track student progress.
 
-**Files Created:**
-- `app/teacher/login/page.tsx` - Beautiful login page
-- `app/teacher/page.tsx` - Teacher dashboard with quick actions
-- `app/teacher/layout.tsx` - Layout with auth check
-- `app/teacher/components/TeacherNav.tsx` - Navigation with restricted menu
-
-**Teacher can access:**
-- Dashboard with quick actions
-- Classroom management
-- Progress tracking
-- All tools (Label Maker, Flashcard Maker, AI Planner, etc.)
-- Curriculum view (read-only)
-- Parent reports
-
-**Teacher CANNOT access:**
-- Montree edit mode
-- User management
-- System settings
-
-### 3. Admin User Management
-Page for you to create teacher accounts.
-
-**File:** `app/admin/users/page.tsx`
+**The Flow:**
+1. Teacher logs in at `/teacher/login`
+2. Goes to `/teacher/progress`
+3. Selects a child
+4. Selects an area (Practical Life, Sensorial, Math, etc.)
+5. **Taps on any work to cycle status:**
+   - Not Started → Presented → Practicing → Mastered → Not Started
 
 **Features:**
-- List all users
-- Create new teacher/admin/parent accounts
-- Show role badges and last login
-- Simple form with temporary password
+- One-tap status updates (touch-friendly)
+- Color-coded status (gray/yellow/blue/green)
+- Grouped by category
+- Progress history tracked (audit trail)
+- Works on tablets and phones
 
-### 4. Architecture Documentation
-Full plan for standalone Montree app.
-
-**File:** `docs/MONTREE_STANDALONE_ARCHITECTURE.md`
-
----
-
-## TO DEPLOY THIS
-
-### Step 1: Run Database Migration
-Go to Supabase SQL Editor and run:
-```sql
--- Copy contents of: migrations/002_multi_user_schema.sql
-```
-
-### Step 2: Create Your Super Admin Account
-After running migration, in Supabase SQL Editor:
-```sql
--- First, generate a password hash (or use the app)
--- For now, use this temporary approach:
-
-INSERT INTO users (email, password_hash, name, role)
-VALUES (
-  'tredoux@teacherpotato.xyz',
-  '$2b$10$placeholder', -- We'll set this via API
-  'Tredoux',
-  'super_admin'
-);
-```
-
-Or create via API after deployment:
-```bash
-curl -X POST https://teacherpotato.xyz/api/auth/users \
-  -H "Content-Type: application/json" \
-  -d '{"email":"tredoux@teacherpotato.xyz","password":"your-password","name":"Tredoux","role":"super_admin"}'
-```
-
-### Step 3: Deploy to Railway
-```bash
-cd ~/Desktop/whale
-git add -A
-git commit -m "Add multi-user auth system and teacher portal"
-git push origin main
-```
-
-### Step 4: Add Teacher Accounts
-1. Go to: `teacherpotato.xyz/admin/users`
-2. Click "Add User"
-3. Enter teacher details
-4. Share login URL: `teacherpotato.xyz/teacher/login`
-
----
-
-## URLs After Deployment
+### 3. Teacher Portal Pages
 
 | URL | Purpose |
 |-----|---------|
-| `/teacher/login` | Teacher login page |
-| `/teacher` | Teacher dashboard |
-| `/admin/users` | Add/manage users |
-| `/admin` | Full admin (super_admin only) |
+| `/teacher/login` | Teacher login |
+| `/teacher` | Dashboard with quick actions |
+| `/teacher/classroom` | View students with progress stats |
+| `/teacher/progress` | **MAIN** - Track Montree progress |
+| `/teacher/tools` | Access all tools |
+| `/teacher/curriculum` | Browse curriculum (read-only) |
+
+### 4. Admin User Management
+- `/admin/users` - Create teacher accounts
 
 ---
 
-## What's Next (Phase 2)
+## DATABASE MIGRATIONS TO RUN
 
-1. **Teacher Classroom Page** - `/teacher/classroom`
-   - List students assigned to this teacher
-   - Add/remove students
+**Run these in Supabase SQL Editor IN ORDER:**
 
-2. **Teacher Progress Page** - `/teacher/progress`
-   - Mark works as presented/practicing/mastered
-   - Quick progress entry interface
+### Migration 1: Multi-user schema
+```sql
+-- File: migrations/002_multi_user_schema.sql
+-- Creates: schools, users, classrooms, classroom_children, parent_children
+```
 
-3. **Teacher Curriculum View** - `/teacher/curriculum`
-   - Read-only Montree view
-   - Click to see work details
-
-4. **Parent Portal** - `/parent`
-   - Parent login
-   - Child progress view
+### Migration 2: Montree progress tracking
+```sql
+-- File: migrations/003_montree_progress_tracking.sql
+-- Creates: child_work_progress, progress_history, teacher_classrooms
+-- Creates: Views and functions for progress tracking
+```
 
 ---
 
-## Previous Session Work (Still Valid)
+## HOW TO SET UP FOR YOUR SCHOOL FRIENDS
+
+### Step 1: Run Migrations
+Copy each migration file into Supabase SQL Editor and run.
+
+### Step 2: Create Your Admin Account
+Go to `/admin/users` and create yourself as super_admin.
+(Or insert directly via Supabase)
+
+### Step 3: Add Teacher Accounts
+1. Go to `/admin/users`
+2. Click "Add User"
+3. Enter: name, email, temporary password, role=teacher
+4. Share with friend:
+   - URL: `teacherpotato.xyz/teacher/login`
+   - Email & password you set
+
+### Step 4: Teachers Use It!
+Teachers log in and can:
+- Track student progress on Montree (tablet-friendly!)
+- Use all tools (Label Maker, AI Planner, etc.)
+- View curriculum
+- See their classroom
+
+---
+
+## FILES CREATED THIS SESSION
+
+```
+# Auth System
+lib/auth-multi.ts
+migrations/002_multi_user_schema.sql
+app/api/auth/login/route.ts
+app/api/auth/logout/route.ts
+app/api/auth/users/route.ts
+
+# Teacher Portal
+app/teacher/login/page.tsx
+app/teacher/page.tsx
+app/teacher/layout.tsx
+app/teacher/components/TeacherNav.tsx
+app/teacher/classroom/page.tsx
+app/teacher/progress/page.tsx          # MAIN PROGRESS TRACKING
+app/teacher/tools/page.tsx
+app/teacher/curriculum/page.tsx
+
+# Progress Tracking
+migrations/003_montree_progress_tracking.sql
+app/api/teacher/progress/route.ts
+app/api/teacher/classroom/route.ts
+
+# Admin
+app/admin/users/page.tsx
+docs/MONTREE_STANDALONE_ARCHITECTURE.md
+```
+
+---
+
+## PROGRESS STATUS SYSTEM
+
+| Status | Value | Color | Meaning |
+|--------|-------|-------|---------|
+| Not Started | 0 | Gray | Work not yet introduced |
+| Presented | 1 | Yellow | Teacher has presented |
+| Practicing | 2 | Blue | Child is practicing |
+| Mastered | 3 | Green | Child has mastered |
+
+**Dates Auto-Recorded:**
+- `presented_date` - When first marked as presented
+- `practicing_date` - When first marked as practicing
+- `mastered_date` - When first marked as mastered
+
+---
+
+## QUICK TEST AFTER DEPLOYMENT
+
+1. Run both migrations in Supabase
+2. Go to `/admin/users` 
+3. Create a test teacher account
+4. Login at `/teacher/login`
+5. Go to `/teacher/progress`
+6. Select a child → Select an area → Tap works to update status
+7. Check Supabase `child_work_progress` table to see data
+
+---
+
+## NEXT STEPS FOR STANDALONE APP
+
+### Phase 2: Polish
+- [ ] Teacher password reset
+- [ ] Parent portal (view-only)
+- [ ] Progress reports (PDF)
+
+### Phase 3: Onboarding
+- [ ] New teacher signup flow
+- [ ] Import students via CSV
+- [ ] "Starting point selector" - bulk mark where child is
+
+### Phase 4: App Store
+- [ ] PWA optimization
+- [ ] Offline support
+- [ ] Push notifications
+
+---
+
+## PREVIOUS SESSION WORK (STILL VALID)
 
 ### 3-Part Cards - FIXED
-- Picture: 7.5cm height
-- Label: 2.4cm height  
-- Control: 9.9cm total (7.5 + 2.4)
-- Cards align perfectly on mat
+- Picture: 7.5cm, Label: 2.4cm, Control: 9.9cm
 
 ### Label Maker
-- Located at `/admin/label-maker`
-- Uses same 2.4cm label style as 3-part cards
+- `/admin/label-maker` - Matches 3-part card style
 
-### English Guide Sound Objects
-- Data in `/admin/english-guide/page.tsx`
-- BEGINNING_SOUND_OBJECTS, ENDING_SOUND_OBJECTS, CVC_BY_VOWEL
-- ~100 miniatures, ¥200-300 budget
+### English Guide
+- Sound objects data in `/admin/english-guide`
 
 ### Flashcard Maker
-- Health endpoint: `/api/admin/flashcard-maker/health`
-- Needs deployment to work on live site
-- Uses yt-dlp + ffmpeg (installed via Dockerfile)
+- Health endpoint at `/api/admin/flashcard-maker/health`
+- Uses yt-dlp + ffmpeg
 
 ---
 
-## Files Changed This Session
-
-```
-lib/auth-multi.ts                           # NEW - Multi-role auth
-migrations/002_multi_user_schema.sql        # NEW - DB schema
-app/api/auth/login/route.ts                 # NEW - Login API
-app/api/auth/logout/route.ts                # NEW - Logout API
-app/api/auth/users/route.ts                 # NEW - User management
-app/teacher/login/page.tsx                  # NEW - Teacher login
-app/teacher/page.tsx                        # NEW - Teacher dashboard
-app/teacher/layout.tsx                      # NEW - Teacher layout
-app/teacher/components/TeacherNav.tsx       # NEW - Teacher nav
-app/admin/users/page.tsx                    # NEW - User management page
-docs/MONTREE_STANDALONE_ARCHITECTURE.md     # NEW - Full architecture plan
-```
-
----
-
-## Quick Start Next Session
+## START NEXT SESSION
 
 ```
 Continue Whale development. Read HANDOFF_JAN5_2026_SESSION2.md first.
-
-Focus: Deploy multi-user system, test teacher login, build teacher classroom page.
 ```
