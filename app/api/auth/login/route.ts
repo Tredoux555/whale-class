@@ -1,69 +1,126 @@
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { createAdminToken } from "@/lib/auth";
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { verifyPassword, createUserToken, setUserCookie, UserSession, User } from '@/lib/auth-multi';
 
-// Force Node.js runtime for this route (not Edge)
-export const runtime = 'nodejs';
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "Tredoux";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "870602";
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-  console.log('[LOGIN] 1. Request received at', new Date().toISOString());
-  
   try {
-    console.log('[LOGIN] 2. Parsing request body');
-    const { username, password } = await request.json();
-    console.log('[LOGIN] 3. Body parsed, checking credentials');
+    const { email, password } = await request.json();
 
-    // Simple username and password check (in production, use proper hashing)
-    const isValid = username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
-    console.log('[LOGIN] 4. Credentials valid:', isValid);
-
-    if (!isValid) {
-      console.log('[LOGIN] 5. Returning 401 - invalid credentials');
+    if (!email || !password) {
       return NextResponse.json(
-        { error: "Invalid username or password" },
+        { error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Find user by email
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    console.log('[LOGIN] 6. Creating admin token (using jose)');
-    const token = await createAdminToken();
-    console.log('[LOGIN] 7. Token created successfully');
+    // Check if user is active
+    if (!user.is_active) {
+      return NextResponse.json(
+        { error: 'Account is deactivated. Please contact administrator.' },
+        { status: 403 }
+      );
+    }
 
-    const response = NextResponse.json({ 
+    // Verify password
+    const isValid = await verifyPassword(password, user.password_hash);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Get classroom if teacher
+    let classroomId: string | null = null;
+    if (user.role === 'teacher') {
+      const { data: classroom } = await supabase
+        .from('classrooms')
+        .select('id')
+        .eq('teacher_id', user.id)
+        .single();
+      classroomId = classroom?.id || null;
+    }
+
+    // Create session
+    const session: UserSession = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      schoolId: user.school_id,
+      classroomId,
+    };
+
+    // Create token
+    const token = await createUserToken(session);
+
+    // Update last login
+    await supabase
+      .from('users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', user.id);
+
+    // Create response with cookie
+    const response = NextResponse.json({
       success: true,
-      timing: `${Date.now() - startTime}ms`,
-      method: 'jose'
-    });
-    
-    console.log('[LOGIN] 8. Setting cookie');
-    response.cookies.set("admin-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        schoolId: user.school_id,
+      },
+      redirect: getRedirectUrl(user.role),
     });
 
-    console.log('[LOGIN] 9. Returning response');
+    // Set cookie
+    response.cookies.set('user-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
     return response;
   } catch (error) {
-    console.error('[LOGIN] ERROR at step:', error);
-    console.error('[LOGIN] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown',
-      stack: error instanceof Error ? error.stack : undefined,
-      timing: `${Date.now() - startTime}ms`
-    });
+    console.error('Login error:', error);
     return NextResponse.json(
-      { 
-        error: "Login failed",
-        details: error instanceof Error ? error.message : 'Unknown error',
-        timing: `${Date.now() - startTime}ms`
-      },
+      { error: 'An error occurred during login' },
       { status: 500 }
     );
   }
 }
 
+function getRedirectUrl(role: string): string {
+  switch (role) {
+    case 'super_admin':
+    case 'school_admin':
+      return '/admin';
+    case 'teacher':
+      return '/teacher';
+    case 'parent':
+      return '/parent';
+    default:
+      return '/';
+  }
+}

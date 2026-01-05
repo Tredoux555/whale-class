@@ -65,11 +65,14 @@ export async function GET(request: NextRequest) {
       console.error('Assignments error:', assignError);
     }
 
-    // Get video URLs and Chinese names for matched works
+    // Get work IDs for video lookup
     const workIds = assignments?.map(a => a.work_id).filter(Boolean) || [];
+    
+    // Initialize video/chinese map
     let videoMap = new Map<string, { url?: string; chinese?: string }>();
 
     if (workIds.length > 0) {
+      // Step 1: Get basic info from curriculum_roadmap (chinese_name, direct video_url)
       const { data: curriculumWorks } = await supabase
         .from('curriculum_roadmap')
         .select('id, video_url, chinese_name')
@@ -77,9 +80,34 @@ export async function GET(request: NextRequest) {
 
       if (curriculumWorks) {
         videoMap = new Map(curriculumWorks.map(w => [w.id, { 
-          url: w.video_url, 
+          url: w.video_url || undefined, 
           chinese: w.chinese_name 
         }]));
+      }
+
+      // Step 2: Check curriculum_videos table for approved videos (overrides direct video_url)
+      const { data: curriculumVideos } = await supabase
+        .from('curriculum_videos')
+        .select('work_id, youtube_url')
+        .in('work_id', workIds)
+        .eq('is_approved', true)
+        .eq('is_active', true)
+        .order('relevance_score', { ascending: false });
+
+      // Build a map of best video per work (first one is highest relevance)
+      if (curriculumVideos && curriculumVideos.length > 0) {
+        const bestVideos = new Map<string, string>();
+        for (const video of curriculumVideos) {
+          if (!bestVideos.has(video.work_id)) {
+            bestVideos.set(video.work_id, video.youtube_url);
+          }
+        }
+        
+        // Override videoMap with curriculum_videos URLs
+        for (const [workId, youtubeUrl] of bestVideos) {
+          const existing = videoMap.get(workId) || {};
+          videoMap.set(workId, { ...existing, url: youtubeUrl });
+        }
       }
     }
 
