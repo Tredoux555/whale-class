@@ -537,6 +537,16 @@ function ClassroomView() {
                               )
                             })));
                           }}
+                          onNotesChanged={(assignmentId, notes) => {
+                            setChildren(prev => prev.map(c => ({
+                              ...c,
+                              assignments: c.assignments.map(a => 
+                                a.id === assignmentId 
+                                  ? { ...a, notes }
+                                  : a
+                              )
+                            })));
+                          }}
                         />
                       );
                     })}
