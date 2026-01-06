@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import SwipeableWorkRow from './SwipeableWorkRow';
 
 interface WorkAssignment {
   id: string;
@@ -119,6 +120,9 @@ function ClassroomView() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Track which swipeable row is open (only one at a time)
+  const [openSwipeRowId, setOpenSwipeRowId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchools();
@@ -338,7 +342,7 @@ function ClassroomView() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100" style={{ overscrollBehaviorX: 'none' }}>
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
@@ -507,7 +511,7 @@ function ClassroomView() {
                   </div>
 
                   {/* Works List */}
-                  <div className="divide-y">
+                  <div className="divide-y" style={{ overscrollBehavior: 'contain' }}>
                     {[...child.assignments].sort((a, b) => {
                       const aIndex = AREA_ORDER.indexOf(a.area);
                       const bIndex = AREA_ORDER.indexOf(b.area);
@@ -517,44 +521,17 @@ function ClassroomView() {
                       const status = STATUS_CONFIG[assignment.progress_status];
                       
                       return (
-                        <div key={assignment.id} className="flex items-center gap-2 px-3 py-2">
-                          {/* Area Badge */}
-                          <span className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center shrink-0 ${area.color}`}>
-                            {area.letter}
-                          </span>
-                          
-                          {/* Status Button */}
-                          <button
-                            onClick={(e) => handleStatusTap(e, assignment)}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0
-                              ${status.color} active:scale-95 transition-transform`}
-                          >
-                            {status.label}
-                          </button>
-                          
-                          {/* Work Name */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{assignment.work_name}</p>
-                          </div>
-                          
-                          {/* Capture Button */}
-                          <button
-                            onClick={() => handleCapture(assignment, child)}
-                            className="w-9 h-9 rounded-lg bg-green-100 text-green-700 flex items-center justify-center hover:bg-green-200 active:scale-95 transition-all shrink-0"
-                            title="Take photo or video"
-                          >
-                            📷
-                          </button>
-                          
-                          {/* Watch Video Button */}
-                          <button
-                            onClick={() => handleWatchVideo(assignment)}
-                            className="w-9 h-9 rounded-lg bg-red-100 text-red-700 flex items-center justify-center hover:bg-red-200 active:scale-95 transition-all shrink-0"
-                            title="Watch presentation video"
-                          >
-                            ▶️
-                          </button>
-                        </div>
+                        <SwipeableWorkRow
+                          key={assignment.id}
+                          assignment={assignment}
+                          areaConfig={area}
+                          statusConfig={status}
+                          onStatusTap={(e) => handleStatusTap(e, assignment)}
+                          onCapture={() => handleCapture(assignment, child)}
+                          onWatchVideo={() => handleWatchVideo(assignment)}
+                          isOpen={openSwipeRowId === assignment.id}
+                          onSwipeOpen={setOpenSwipeRowId}
+                        />
                       );
                     })}
                   </div>
