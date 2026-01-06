@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import SwipeableWorkCarousel from './SwipeableWorkCarousel';
+import SwipeableWorkRow from './SwipeableWorkRow';
 
 interface WorkAssignment {
   id: string;
@@ -507,22 +507,40 @@ function ClassroomView() {
                     </div>
                   </div>
 
-                  {/* Works Carousel - swipe left/right to cycle */}
-                  <SwipeableWorkCarousel
-                    assignments={[...child.assignments].sort((a, b) => {
+                  {/* Works List - swipe left/right on each row to change work in that area */}
+                  <div className="divide-y" style={{ overscrollBehavior: 'contain' }}>
+                    {[...child.assignments].sort((a, b) => {
                       const aIndex = AREA_ORDER.indexOf(a.area);
                       const bIndex = AREA_ORDER.indexOf(b.area);
                       return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+                    }).map(assignment => {
+                      const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'bg-gray-100 text-gray-600' };
+                      const status = STATUS_CONFIG[assignment.progress_status];
+                      
+                      return (
+                        <SwipeableWorkRow
+                          key={assignment.id}
+                          assignment={assignment}
+                          childId={child.id}
+                          areaConfig={area}
+                          statusConfig={status}
+                          onStatusTap={(e) => handleStatusTap(e, assignment)}
+                          onCapture={() => handleCapture(assignment, child)}
+                          onWatchVideo={() => handleWatchVideo(assignment)}
+                          onWorkChanged={(assignmentId, newWorkId, newWorkName) => {
+                            setChildren(prev => prev.map(c => ({
+                              ...c,
+                              assignments: c.assignments.map(a => 
+                                a.id === assignmentId 
+                                  ? { ...a, work_id: newWorkId, work_name: newWorkName }
+                                  : a
+                              )
+                            })));
+                          }}
+                        />
+                      );
                     })}
-                    areaConfig={AREA_CONFIG}
-                    statusConfig={STATUS_CONFIG}
-                    onStatusTap={(assignment) => {
-                      const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
-                      updateProgress(assignment.id, nextStatus);
-                    }}
-                    onCapture={(assignment) => handleCapture(assignment, child)}
-                    onWatchVideo={(assignment) => handleWatchVideo(assignment)}
-                  />
+                  </div>
 
                   {/* Footer */}
                   <div className="px-3 py-2 bg-gray-50 flex justify-between text-xs">
