@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import WorkDescription from './WorkDescription';
 
 interface WorkAssignment {
   id: string;
@@ -18,6 +19,25 @@ interface CurriculumWork {
   name: string;
   name_chinese?: string;
   area: string;
+}
+
+interface WorkLevel {
+  level: number;
+  name: string;
+  description: string;
+}
+
+interface WorkDescriptionData {
+  id: string;
+  name: string;
+  description: string;
+  chineseName?: string;
+  materials: string[];
+  directAims: string[];
+  indirectAims: string[];
+  controlOfError: string;
+  levels: WorkLevel[];
+  ageRange?: string;
 }
 
 interface SwipeableWorkRowProps {
@@ -59,6 +79,14 @@ export default function SwipeableWorkRow({
   // Panel state - simple toggle, no gesture needed
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   
+  // Work description state
+  const [workDescription, setWorkDescription] = useState<WorkDescriptionData | null>(null);
+  const [descriptionArea, setDescriptionArea] = useState<string>('');
+  const [descriptionCategory, setDescriptionCategory] = useState<string>('');
+  const [loadingDescription, setLoadingDescription] = useState(false);
+  const [descriptionError, setDescriptionError] = useState<string>('');
+  const hasFetchedDescription = useRef(false);
+  
   // Touch tracking
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -74,6 +102,13 @@ export default function SwipeableWorkRow({
   useEffect(() => {
     setNotes(assignment.notes || '');
   }, [assignment.id, assignment.notes]);
+
+  // Reset description fetch flag when work changes
+  useEffect(() => {
+    hasFetchedDescription.current = false;
+    setWorkDescription(null);
+    setDescriptionError('');
+  }, [assignment.work_name]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -99,6 +134,33 @@ export default function SwipeableWorkRow({
       }
     } catch (err) {
       console.error('Failed to fetch curriculum:', err);
+    }
+  };
+
+  // Fetch work description when panel opens
+  const fetchWorkDescription = async () => {
+    if (hasFetchedDescription.current) return;
+    hasFetchedDescription.current = true;
+    
+    setLoadingDescription(true);
+    setDescriptionError('');
+    
+    try {
+      const res = await fetch(`/api/curriculum/work-description?name=${encodeURIComponent(assignment.work_name)}`);
+      const data = await res.json();
+      
+      if (data.found && data.work) {
+        setWorkDescription(data.work);
+        setDescriptionArea(data.area || '');
+        setDescriptionCategory(data.category || '');
+      } else {
+        setDescriptionError('No activity guide available for this work yet');
+      }
+    } catch (err) {
+      console.error('Failed to fetch work description:', err);
+      setDescriptionError('Could not load activity guide');
+    } finally {
+      setLoadingDescription(false);
     }
   };
 
@@ -198,6 +260,9 @@ export default function SwipeableWorkRow({
         setCurrentWorkIndex(currentWorkIndex + 1);
         setTranslateX(0);
         setIsAnimating(false);
+        // Reset description for new work
+        hasFetchedDescription.current = false;
+        setWorkDescription(null);
       }, 150);
       
     } else if (swipedRight && currentWorkIndex > 0) {
@@ -211,6 +276,9 @@ export default function SwipeableWorkRow({
         setCurrentWorkIndex(currentWorkIndex - 1);
         setTranslateX(0);
         setIsAnimating(false);
+        // Reset description for new work
+        hasFetchedDescription.current = false;
+        setWorkDescription(null);
       }, 150);
       
     } else {
@@ -241,7 +309,13 @@ export default function SwipeableWorkRow({
   // Toggle panel - simple click handler
   const togglePanel = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsPanelOpen(prev => !prev);
+    const willOpen = !isPanelOpen;
+    setIsPanelOpen(willOpen);
+    
+    // Fetch description when opening panel
+    if (willOpen) {
+      fetchWorkDescription();
+    }
   };
 
   const closePanel = () => setIsPanelOpen(false);
@@ -314,7 +388,7 @@ export default function SwipeableWorkRow({
 
       {/* Action Panel - animates open/closed */}
       <div 
-        className={`overflow-hidden transition-all duration-200 ease-out ${isPanelOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
+        className={`overflow-hidden transition-all duration-200 ease-out ${isPanelOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <div className="bg-gray-50 border-t border-gray-100 px-3 py-3 space-y-3">
           {/* Notes */}
@@ -354,6 +428,15 @@ export default function SwipeableWorkRow({
             </button>
           </div>
         </div>
+        
+        {/* Work Description / Activity Guide */}
+        <WorkDescription 
+          data={workDescription}
+          area={descriptionArea}
+          category={descriptionCategory}
+          loading={loadingDescription}
+          error={descriptionError}
+        />
       </div>
     </div>
   );

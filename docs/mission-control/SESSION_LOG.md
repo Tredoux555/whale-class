@@ -7,6 +7,60 @@ This is the brain. New thoughts get added here.
 
 ---
 
+## 2026-01-07 Session 3
+
+### Context
+User requested Activity Guide feature - when tapping a work in classroom view dropdown, show a comprehensive description/guide for that activity similar to the English Guide format.
+
+### What We Built
+
+1. **Work Description API** (`/app/api/curriculum/work-description/route.ts`)
+   - Searches all 5 curriculum JSON files for work by name
+   - Returns rich data: description, chineseName, materials, directAims, indirectAims, controlOfError, levels
+   - Fuzzy matching to handle slight naming variations
+
+2. **WorkDescription Component** (`/app/admin/classroom/WorkDescription.tsx`)
+   - Beautiful display component for activity guides
+   - Shows: header with name/Chinese, quick stats, aims (direct/indirect), materials, control of error, progression levels
+   - Loading and error states
+   - Color-coded sections (green for direct aims, purple for indirect, amber for materials, red for control of error, blue for levels)
+
+3. **Updated SwipeableWorkRow** (`/app/admin/classroom/SwipeableWorkRow.tsx`)
+   - Added activity guide section below notes and action buttons
+   - Fetches description when dropdown opens (lazy load)
+   - Increased max-height to 600px to accommodate guide content
+   - Resets description when work changes via swipe
+
+### How It Works
+1. Teacher taps work in `/admin/classroom`
+2. Dropdown opens with Notes, Photo/Video/Demo buttons
+3. Activity Guide loads below with full teaching reference
+4. Guide shows description, aims, materials, control of error, and progression levels
+
+### Files Created
+- `/app/api/curriculum/work-description/route.ts` - API endpoint
+- `/app/admin/classroom/WorkDescription.tsx` - Display component
+- `/HANDOFF_JAN7_2026_SESSION2.md` - Handoff document
+
+### Files Modified
+- `/app/admin/classroom/SwipeableWorkRow.tsx` - Integrated activity guide
+
+### Data Source
+Curriculum data from `/lib/curriculum/data/*.json`:
+- practical-life.json (5 categories, 50+ works)
+- sensorial.json (7 categories, 40+ works)
+- math.json (full math curriculum)
+- language.json (oral, writing, reading, grammar)
+- cultural.json (geography, science, art, music)
+
+### Testing
+1. Go to `/admin/classroom`
+2. Select week with assignments
+3. Tap any work (e.g., "Spooning", "Pink Tower", "Sound Games")
+4. Scroll down in dropdown to see Activity Guide
+
+---
+
 ## 2026-01-07 Session 2
 
 ### Context
