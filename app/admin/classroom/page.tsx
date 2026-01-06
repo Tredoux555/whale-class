@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import SwipeableWorkRow from './SwipeableWorkRow';
+import SwipeableWorkCarousel from './SwipeableWorkCarousel';
 
 interface WorkAssignment {
   id: string;
@@ -120,9 +120,6 @@ function ClassroomView() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Track which swipeable row is open (only one at a time)
-  const [openSwipeRowId, setOpenSwipeRowId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchools();
@@ -510,31 +507,22 @@ function ClassroomView() {
                     </div>
                   </div>
 
-                  {/* Works List */}
-                  <div className="divide-y" style={{ overscrollBehavior: 'contain' }}>
-                    {[...child.assignments].sort((a, b) => {
+                  {/* Works Carousel - swipe left/right to cycle */}
+                  <SwipeableWorkCarousel
+                    assignments={[...child.assignments].sort((a, b) => {
                       const aIndex = AREA_ORDER.indexOf(a.area);
                       const bIndex = AREA_ORDER.indexOf(b.area);
                       return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-                    }).map(assignment => {
-                      const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'bg-gray-100 text-gray-600' };
-                      const status = STATUS_CONFIG[assignment.progress_status];
-                      
-                      return (
-                        <SwipeableWorkRow
-                          key={assignment.id}
-                          assignment={assignment}
-                          areaConfig={area}
-                          statusConfig={status}
-                          onStatusTap={(e) => handleStatusTap(e, assignment)}
-                          onCapture={() => handleCapture(assignment, child)}
-                          onWatchVideo={() => handleWatchVideo(assignment)}
-                          isOpen={openSwipeRowId === assignment.id}
-                          onSwipeOpen={setOpenSwipeRowId}
-                        />
-                      );
                     })}
-                  </div>
+                    areaConfig={AREA_CONFIG}
+                    statusConfig={STATUS_CONFIG}
+                    onStatusTap={(assignment) => {
+                      const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
+                      updateProgress(assignment.id, nextStatus);
+                    }}
+                    onCapture={(assignment) => handleCapture(assignment, child)}
+                    onWatchVideo={(assignment) => handleWatchVideo(assignment)}
+                  />
 
                   {/* Footer */}
                   <div className="px-3 py-2 bg-gray-50 flex justify-between text-xs">

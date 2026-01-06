@@ -36,7 +36,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
   },
   {
     id: 'classroom',
-    title: 'Classroom View',
+    title: 'Classroom',
     description: 'iPad-friendly progress tracking',
     href: '/admin/classroom',
     icon: '🎯',
