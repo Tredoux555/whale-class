@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: Request,
   { params }: { params: { schoolId: string } }
 ) {
+  const supabase = createSupabaseAdmin();
+  
   try {
     const { schoolId } = params;
 

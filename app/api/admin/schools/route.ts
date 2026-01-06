@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
+  const supabase = createSupabaseAdmin();
+  
   try {
     // Get all schools with counts
     const { data: schools, error: schoolsError } = await supabase

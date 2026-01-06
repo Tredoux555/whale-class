@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase';
 import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic();
 
 export async function POST(request: Request) {
+  const supabase = createSupabaseAdmin();
+  
   try {
     const { childId } = await request.json();
 
