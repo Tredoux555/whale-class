@@ -17,24 +17,6 @@ interface DashboardCard {
 }
 
 const DEFAULT_CARDS: DashboardCard[] = [
-  // School Management
-  {
-    id: 'schools',
-    title: 'Schools',
-    description: 'Manage schools, classrooms, teachers',
-    href: '/admin/schools',
-    icon: '🏫',
-    color: 'bg-slate-600 hover:bg-slate-700',
-  },
-  {
-    id: 'classroom-view',
-    title: 'Classroom View',
-    description: 'Standalone app - reports & photos',
-    href: '/classroom-view/00000000-0000-0000-0000-000000000001',
-    icon: '📱',
-    color: 'bg-violet-500 hover:bg-violet-600',
-  },
-  
   // Core System
   {
     id: 'montree',
