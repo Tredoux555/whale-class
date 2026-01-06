@@ -11,15 +11,18 @@ This is the brain. New thoughts get added here.
 
 ### Priority Tasks
 1. **Record audio for sound games** - Tredoux records phonics sounds
-2. **Double-check Montree/Classroom system** - Verify everything works after cleanup
+2. **Test Sound Games** - All 5 games now deployed:
+   - `/games/sound-games` - Hub page
+   - `/games/sound-games/beginning` - I Spy Beginning Sounds
+   - `/games/sound-games/ending` - I Spy Ending Sounds
+   - `/games/sound-games/middle` - Middle Sound Match
+   - `/games/sound-games/blending` - Sound Blending
+   - `/games/sound-games/segmenting` - Sound Segmenting
+3. **Double-check Montree/Classroom system** - Verify everything works after cleanup
    - Test `/admin/classroom` with week selector
    - Test `/admin/montree` curriculum tree
    - Test `/teacher/progress` tablet view
    - Confirm area ordering is correct everywhere
-
-### Nice to Have
-- Push the sound games files (already in lib/sound-games/)
-- Test multi-school selector (only shows with 2+ schools with children)
 
 ---
 
@@ -60,6 +63,7 @@ This is the brain. New thoughts get added here.
 - `5a0a9d6` - cleanup: remove over-engineered school/classroom hierarchy  
 - `38c2fc1` - feat: add multi-school support (4 schools)
 - `e377bea` - feat: create mission-control brain for Whale
+- `957293f` - feat: add Sound Games (purely auditory phonics)
 
 ### Key Decisions
 - NO nested hierarchy (schools → classrooms → children)
@@ -73,6 +77,7 @@ This is the brain. New thoughts get added here.
 - `/teacher/progress` - Tablet tracking ✅
 - Multi-school filtering ✅
 - Mission control brain ✅
+- Sound Games added ✅ (5 games, purely auditory)
 
 ---
 
