@@ -1105,42 +1105,43 @@ const ENDING_SOUND_OBJECTS = [
   { sound: 'b', objects: ['crab', 'web', 'tub', 'cab', 'cub'], note: 'Voiced stop' },
 ];
 
-// CVC Objects by Vowel - 8 words per vowel for middle sound work
+// CVC Objects by Vowel - 6 words per vowel for middle sound work
+// ALIGNED with master-words.ts and game data
 const CVC_BY_VOWEL = [
   { 
     vowel: 'a', 
     keyPicture: '🍎',
     mouthPosition: 'Jaw drops open',
-    words: ['cat', 'hat', 'bat', 'map', 'bag', 'pan', 'can', 'jam'],
-    objects: ['cat', 'hat', 'bat', 'map', 'bag', 'pan', 'can', 'jam jar']
+    words: ['cat', 'hat', 'bat', 'map', 'pan', 'bag'],
+    objects: ['cat', 'hat', 'bat', 'map', 'pan', 'bag']
   },
   { 
     vowel: 'e', 
     keyPicture: '🥚',
     mouthPosition: 'Smile slightly, tongue mid-front',
-    words: ['bed', 'pen', 'hen', 'net', 'web', 'leg', 'red', 'pet'],
-    objects: ['bed', 'pen', 'hen', 'net', 'web', 'leg model', 'red item', 'pet toy']
+    words: ['bed', 'pen', 'hen', 'net', 'leg', 'web'],
+    objects: ['bed', 'pen', 'hen', 'net', 'leg model', 'web']
   },
   { 
     vowel: 'i', 
     keyPicture: '🏠',
     mouthPosition: 'Big smile, tongue high',
-    words: ['pig', 'pin', 'bib', 'lip', 'wig', 'fin', 'kit', 'bin'],
-    objects: ['pig', 'pin', 'bib', 'lip model', 'wig', 'fin', 'kit', 'bin']
+    words: ['pig', 'pin', 'bin', 'lip', 'wig', 'fin'],
+    objects: ['pig', 'pin', 'bin', 'lip model', 'wig', 'fin']
   },
   { 
     vowel: 'o', 
     keyPicture: '🐙',
     mouthPosition: 'Round lips, tongue low-back',
-    words: ['dog', 'pot', 'mop', 'box', 'fox', 'log', 'top', 'cot'],
-    objects: ['dog', 'pot', 'mop', 'box', 'fox', 'log', 'top', 'cot']
+    words: ['dog', 'pot', 'mop', 'box', 'fox', 'log'],
+    objects: ['dog', 'pot', 'mop', 'box', 'fox', 'log']
   },
   { 
     vowel: 'u', 
     keyPicture: '☂️',
     mouthPosition: 'Relaxed, jaw slightly dropped',
-    words: ['cup', 'bug', 'rug', 'sun', 'bus', 'mug', 'jug', 'nut'],
-    objects: ['cup', 'bug', 'rug', 'sun', 'bus', 'mug', 'jug', 'nut']
+    words: ['cup', 'bug', 'rug', 'sun', 'bus', 'nut'],
+    objects: ['cup', 'bug', 'rug', 'sun', 'bus', 'nut']
   },
 ];
 
