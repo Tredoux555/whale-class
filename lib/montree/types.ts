@@ -103,6 +103,9 @@ export const STATUS_COLORS = {
 } as const;
 
 // Area colors (distinct from status colors)
+// Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
+export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
+
 export const AREA_COLORS = {
   practical_life: {
     primary: '#22c55e',   // green-500

@@ -36,11 +36,14 @@ const STATUS_CONFIG = {
   mastered: { label: 'M', color: 'bg-green-200 text-green-800', next: 'not_started' },
 };
 
+// Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
+const AREA_ORDER = ['practical_life', 'sensorial', 'math', 'mathematics', 'language', 'culture'];
+
 const AREA_CONFIG: Record<string, { letter: string; color: string }> = {
   practical_life: { letter: 'P', color: 'bg-amber-100 text-amber-700' },
   sensorial: { letter: 'S', color: 'bg-pink-100 text-pink-700' },
-  mathematics: { letter: 'M', color: 'bg-blue-100 text-blue-700' },
   math: { letter: 'M', color: 'bg-blue-100 text-blue-700' },
+  mathematics: { letter: 'M', color: 'bg-blue-100 text-blue-700' },
   language: { letter: 'L', color: 'bg-green-100 text-green-700' },
   culture: { letter: 'C', color: 'bg-purple-100 text-purple-700' },
 };
@@ -458,7 +461,11 @@ function ClassroomView() {
 
                   {/* Works List */}
                   <div className="divide-y">
-                    {child.assignments.map(assignment => {
+                    {[...child.assignments].sort((a, b) => {
+                      const aIndex = AREA_ORDER.indexOf(a.area);
+                      const bIndex = AREA_ORDER.indexOf(b.area);
+                      return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+                    }).map(assignment => {
                       const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'bg-gray-100 text-gray-600' };
                       const status = STATUS_CONFIG[assignment.progress_status];
                       

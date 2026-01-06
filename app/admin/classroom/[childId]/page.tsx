@@ -48,11 +48,14 @@ const STATUS_CONFIG = {
   mastered: { label: 'M', fullLabel: 'Mastered', color: 'bg-green-200 text-green-800', next: 'not_started' },
 };
 
+// Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
+const AREA_ORDER = ['practical_life', 'sensorial', 'math', 'mathematics', 'language', 'culture'];
+
 const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   practical_life: { label: 'Practical Life', color: 'text-amber-800', bgColor: 'bg-amber-50 border-amber-200' },
   sensorial: { label: 'Sensorial', color: 'text-pink-800', bgColor: 'bg-pink-50 border-pink-200' },
-  mathematics: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
   math: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
+  mathematics: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
   language: { label: 'Language', color: 'text-green-800', bgColor: 'bg-green-50 border-green-200' },
   culture: { label: 'Culture', color: 'text-purple-800', bgColor: 'bg-purple-50 border-purple-200' },
 };
@@ -506,7 +509,9 @@ function ChildDetailContent() {
         <h2 className="text-lg font-bold text-gray-800 mb-4">This Week's Works</h2>
         
         {/* Works by Area */}
-        {Object.entries(AREA_CONFIG).map(([areaKey, areaConfig]) => {
+        {AREA_ORDER.map(areaKey => {
+          const areaConfig = AREA_CONFIG[areaKey];
+          if (!areaConfig) return null;
           const areaAssignments = assignmentsByArea[areaKey] || [];
           if (areaAssignments.length === 0) return null;
 

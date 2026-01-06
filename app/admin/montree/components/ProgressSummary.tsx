@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { ChildOverallProgress, STATUS_COLORS, AREA_COLORS } from '@/lib/montree/types';
+import { ChildOverallProgress, STATUS_COLORS, AREA_COLORS, AREA_ORDER } from '@/lib/montree/types';
 
 interface Props {
   progress: ChildOverallProgress | null;
@@ -68,7 +68,11 @@ export default function ProgressSummary({ progress, childName }: Props) {
       {/* Area Progress */}
       <h3 className="text-sm font-bold text-slate-700 mb-3">By Area</h3>
       <div className="space-y-3">
-        {(progress.areaProgress || []).map((area) => {
+        {[...(progress.areaProgress || [])].sort((a, b) => {
+          const aIndex = AREA_ORDER.indexOf(a.areaId as typeof AREA_ORDER[number]);
+          const bIndex = AREA_ORDER.indexOf(b.areaId as typeof AREA_ORDER[number]);
+          return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+        }).map((area) => {
           const areaColor = AREA_COLORS[area.areaId as keyof typeof AREA_COLORS];
           return (
             <div key={area.areaId}>
