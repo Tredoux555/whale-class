@@ -37,14 +37,22 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
 
 3. **Updated classroom page** to pass `onNotesChanged` callback to SwipeableWorkRow
 
+4. **Comprehensive Audit** - Created `/docs/mission-control/AUDIT_REPORT_JAN7.md`
+   - Fixed SwipeableWorkRow: removed dead code, added cleanup, added notes sync
+   - Fixed Sound Games: corrected audio paths from `/audio/` to `/audio/ui/`
+   - All 5 sound games verified working with speech synthesis fallback
+   - Audio files documented: UI sounds exist, phonemes need recording
+
 ### UI Change Summary
 **Before:** Each work row had permanent 📷 and ▶️ buttons
 **After:** Clean rows with swipe-down to reveal notes input + action buttons
 
 ### Files Changed
-- `/app/admin/classroom/SwipeableWorkRow.tsx` - Complete rewrite with swipe-down panel
+- `/app/admin/classroom/SwipeableWorkRow.tsx` - Fixed dead code, added cleanup, added notes sync, added onRecordVideo prop
 - `/app/admin/classroom/page.tsx` - Added onNotesChanged prop
+- `/lib/sound-games/sound-utils.ts` - Fixed audio paths to `/audio/ui/`
 - `/docs/mission-control/CURRICULUM_AUDIT.md` - New file
+- `/docs/mission-control/AUDIT_REPORT_JAN7.md` - New comprehensive audit
 
 ---
 
