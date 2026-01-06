@@ -27,17 +27,16 @@ interface SwipeableWorkRowProps {
   statusConfig: { label: string; color: string; next: string };
   onStatusTap: (e: React.MouseEvent) => void;
   onCapture: () => void;
-  onRecordVideo?: () => void; // Separate handler for video recording
+  onRecordVideo?: () => void;
   onWatchVideo: () => void;
   onWorkChanged: (assignmentId: string, newWorkId: string, newWorkName: string) => void;
   onNotesChanged?: (assignmentId: string, notes: string) => void;
 }
 
-const SWIPE_THRESHOLD_X = 50;
+const SWIPE_THRESHOLD = 50;
 
 export default function SwipeableWorkRow({
   assignment,
-  childId,
   areaConfig,
   statusConfig,
   onStatusTap,
@@ -47,21 +46,24 @@ export default function SwipeableWorkRow({
   onWorkChanged,
   onNotesChanged,
 }: SwipeableWorkRowProps) {
-  // Horizontal swipe state (changing works)
+  // Swipe state
   const [translateX, setTranslateX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Curriculum navigation
   const [curriculumWorks, setCurriculumWorks] = useState<CurriculumWork[]>([]);
   const [currentWorkIndex, setCurrentWorkIndex] = useState(-1);
+  const hasFetchedCurriculum = useRef(false);
   
-  // Vertical swipe state (action panel)
+  // Panel state - simple toggle, no gesture needed
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   
   // Touch tracking
-  const [isDragging, setIsDragging] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
-  const swipeDirection = useRef<'horizontal' | 'vertical' | null>(null);
-  const hasFetchedCurriculum = useRef(false);
+  const isHorizontalSwipe = useRef(false);
+  const rowRef = useRef<HTMLDivElement>(null);
   
   // Notes state
   const [notes, setNotes] = useState(assignment.notes || '');
@@ -73,16 +75,14 @@ export default function SwipeableWorkRow({
     setNotes(assignment.notes || '');
   }, [assignment.id, assignment.notes]);
 
-  // Cleanup debounce timeout on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (notesTimeoutRef.current) {
-        clearTimeout(notesTimeoutRef.current);
-      }
+      if (notesTimeoutRef.current) clearTimeout(notesTimeoutRef.current);
     };
   }, []);
 
-  // Fetch curriculum works for this area on first swipe attempt
+  // Fetch curriculum works
   const fetchCurriculumWorks = async () => {
     if (hasFetchedCurriculum.current) return;
     hasFetchedCurriculum.current = true;
@@ -98,7 +98,7 @@ export default function SwipeableWorkRow({
         setCurrentWorkIndex(idx >= 0 ? idx : 0);
       }
     } catch (err) {
-      console.error('Failed to fetch curriculum works:', err);
+      console.error('Failed to fetch curriculum:', err);
     }
   };
 
@@ -122,21 +122,17 @@ export default function SwipeableWorkRow({
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newNotes = e.target.value;
     setNotes(newNotes);
-    
-    // Debounce save
-    if (notesTimeoutRef.current) {
-      clearTimeout(notesTimeoutRef.current);
-    }
-    notesTimeoutRef.current = setTimeout(() => {
-      saveNotes(newNotes);
-    }, 800);
+    if (notesTimeoutRef.current) clearTimeout(notesTimeoutRef.current);
+    notesTimeoutRef.current = setTimeout(() => saveNotes(newNotes), 800);
   };
 
+  // Touch handlers for horizontal swipe only
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isAnimating) return;
+    
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
-    swipeDirection.current = null;
+    isHorizontalSwipe.current = false;
     setIsDragging(true);
     fetchCurriculumWorks();
   };
@@ -149,25 +145,22 @@ export default function SwipeableWorkRow({
     const diffX = currentX - touchStartX.current;
     const diffY = currentY - touchStartY.current;
 
-    // Determine swipe direction on first significant movement
-    if (swipeDirection.current === null) {
-      if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
-        if (Math.abs(diffY) > Math.abs(diffX) && diffY > 0) {
-          // Swiping down
-          swipeDirection.current = 'vertical';
-        } else if (Math.abs(diffX) > Math.abs(diffY)) {
-          // Swiping horizontally
-          swipeDirection.current = 'horizontal';
-        } else {
-          // Swiping up or unclear - cancel
-          setIsDragging(false);
-          return;
-        }
+    // Determine if this is a horizontal swipe (only on first significant movement)
+    if (!isHorizontalSwipe.current && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
+      // If mostly horizontal, lock to horizontal swipe
+      if (Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        isHorizontalSwipe.current = true;
+      } else {
+        // Vertical scroll - let browser handle it
+        setIsDragging(false);
+        return;
       }
     }
 
-    if (swipeDirection.current === 'horizontal') {
+    if (isHorizontalSwipe.current) {
+      // Prevent page scroll during horizontal swipe
       e.preventDefault();
+      e.stopPropagation();
       
       // Add resistance at edges
       const canGoNext = currentWorkIndex < curriculumWorks.length - 1;
@@ -175,64 +168,57 @@ export default function SwipeableWorkRow({
       
       let resistance = 1;
       if ((diffX > 0 && !canGoPrev) || (diffX < 0 && !canGoNext)) {
-        resistance = 0.15;
+        resistance = 0.2;
       }
       
       setTranslateX(diffX * resistance);
-    } else if (swipeDirection.current === 'vertical') {
-      // For vertical, we just track if it's a valid downward swipe
-      e.preventDefault();
     }
   };
 
-  const handleTouchEnd = async () => {
-    if (!isDragging || isAnimating) return;
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
     setIsDragging(false);
 
-    const endX = translateX;
+    if (!isHorizontalSwipe.current) {
+      setTranslateX(0);
+      return;
+    }
 
-    if (swipeDirection.current === 'horizontal') {
-      const swipedLeft = endX < -SWIPE_THRESHOLD_X;
-      const swipedRight = endX > SWIPE_THRESHOLD_X;
+    const swipedLeft = translateX < -SWIPE_THRESHOLD;
+    const swipedRight = translateX > SWIPE_THRESHOLD;
+    
+    if (swipedLeft && currentWorkIndex < curriculumWorks.length - 1) {
+      // Animate out to left, then snap to new work
+      setIsAnimating(true);
+      setTranslateX(-300);
       
-      if (swipedLeft && currentWorkIndex < curriculumWorks.length - 1) {
-        // Go to next work
-        setIsAnimating(true);
-        setTranslateX(-280);
-        
-        const nextWork = curriculumWorks[currentWorkIndex + 1];
-        
-        setTimeout(async () => {
-          await updateAssignment(nextWork);
-          setCurrentWorkIndex(currentWorkIndex + 1);
-          setTranslateX(0);
-          setIsAnimating(false);
-        }, 180);
-        
-      } else if (swipedRight && currentWorkIndex > 0) {
-        // Go to previous work
-        setIsAnimating(true);
-        setTranslateX(280);
-        
-        const prevWork = curriculumWorks[currentWorkIndex - 1];
-        
-        setTimeout(async () => {
-          await updateAssignment(prevWork);
-          setCurrentWorkIndex(currentWorkIndex - 1);
-          setTranslateX(0);
-          setIsAnimating(false);
-        }, 180);
-        
-      } else {
-        // Snap back with spring effect
+      const nextWork = curriculumWorks[currentWorkIndex + 1];
+      setTimeout(async () => {
+        await updateAssignment(nextWork);
+        setCurrentWorkIndex(currentWorkIndex + 1);
         setTranslateX(0);
-      }
-    } else if (swipeDirection.current === 'vertical') {
-      // Toggle panel
-      setIsPanelOpen(prev => !prev);
+        setIsAnimating(false);
+      }, 150);
+      
+    } else if (swipedRight && currentWorkIndex > 0) {
+      // Animate out to right, then snap to new work
+      setIsAnimating(true);
+      setTranslateX(300);
+      
+      const prevWork = curriculumWorks[currentWorkIndex - 1];
+      setTimeout(async () => {
+        await updateAssignment(prevWork);
+        setCurrentWorkIndex(currentWorkIndex - 1);
+        setTranslateX(0);
+        setIsAnimating(false);
+      }, 150);
+      
+    } else {
+      // Snap back
+      setTranslateX(0);
     }
     
-    swipeDirection.current = null;
+    isHorizontalSwipe.current = false;
   };
 
   const updateAssignment = async (newWork: CurriculumWork) => {
@@ -252,36 +238,36 @@ export default function SwipeableWorkRow({
     }
   };
 
-  const closePanel = () => {
-    setIsPanelOpen(false);
+  // Toggle panel - simple click handler
+  const togglePanel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsPanelOpen(prev => !prev);
   };
 
-  // Handle video capture - use separate handler if provided, otherwise fall back to photo capture
+  const closePanel = () => setIsPanelOpen(false);
+
   const handleRecordVideo = () => {
-    if (onRecordVideo) {
-      onRecordVideo();
-    } else {
-      onCapture(); // Fallback to same handler
-    }
+    if (onRecordVideo) onRecordVideo();
+    else onCapture();
     closePanel();
   };
 
-  // Show position indicator if we have curriculum data
   const showPosition = curriculumWorks.length > 0 && currentWorkIndex >= 0;
   const hasNotes = notes && notes.trim().length > 0;
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Main row content */}
+    <div className="relative overflow-hidden bg-white">
+      {/* Main swipeable row */}
       <div
+        ref={rowRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`flex items-center gap-2 px-3 py-2.5 bg-white cursor-grab active:cursor-grabbing
-          ${isDragging && swipeDirection.current === 'horizontal' ? '' : 'transition-transform duration-200 ease-out'}`}
+        className="flex items-center gap-2 px-3 py-2.5"
         style={{ 
           transform: `translateX(${translateX}px)`,
-          willChange: isDragging ? 'transform' : 'auto',
+          transition: isDragging ? 'none' : 'transform 150ms ease-out',
+          touchAction: 'pan-y', // Allow vertical scroll, we handle horizontal
         }}
       >
         {/* Area Badge */}
@@ -292,54 +278,56 @@ export default function SwipeableWorkRow({
         {/* Status Button */}
         <button
           onClick={onStatusTap}
-          className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
-            ${statusConfig.color} active:scale-90 transition-transform duration-100`}
+          className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${statusConfig.color} active:scale-90 transition-transform`}
         >
           {statusConfig.label}
         </button>
         
-        {/* Work Name */}
-        <div className="flex-1 min-w-0">
+        {/* Work Name - tap to toggle panel */}
+        <div 
+          className="flex-1 min-w-0 cursor-pointer active:bg-gray-50 rounded px-1 -mx-1"
+          onClick={togglePanel}
+        >
           <p className="text-sm font-medium truncate">{assignment.work_name}</p>
-          <div className="flex items-center gap-2">
-            {showPosition && (
-              <p className="text-[10px] text-gray-400">{currentWorkIndex + 1}/{curriculumWorks.length}</p>
-            )}
-            {hasNotes && (
-              <span className="text-[10px] text-blue-500">📝</span>
-            )}
+          <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            {showPosition && <span>{currentWorkIndex + 1}/{curriculumWorks.length}</span>}
+            {hasNotes && <span className="text-blue-500">📝</span>}
+            <span className="text-gray-300">← swipe →</span>
           </div>
         </div>
         
-        {/* Swipe down indicator */}
-        <div className="w-6 h-6 flex items-center justify-center text-gray-300">
+        {/* Expand/Collapse Button */}
+        <button
+          onClick={togglePanel}
+          className="w-8 h-8 flex items-center justify-center text-gray-400 active:bg-gray-100 rounded-full"
+        >
           <svg 
-            className={`w-4 h-4 transition-transform duration-200 ${isPanelOpen ? 'rotate-180' : ''}`} 
+            className={`w-5 h-5 transition-transform duration-200 ${isPanelOpen ? 'rotate-180' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        </div>
+        </button>
       </div>
 
-      {/* Swipe-down Action Panel */}
+      {/* Action Panel - animates open/closed */}
       <div 
-        className={`overflow-hidden transition-all duration-300 ease-out ${isPanelOpen ? 'max-h-64' : 'max-h-0'}`}
+        className={`overflow-hidden transition-all duration-200 ease-out ${isPanelOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <div className="bg-gray-50 border-t border-gray-100 px-3 py-3 space-y-3">
-          {/* Notes Input */}
+          {/* Notes */}
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1">
-              📝 Notes
-              {isSavingNotes && <span className="text-blue-500 text-[10px]">saving...</span>}
-            </label>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-medium text-gray-500">📝 Notes</span>
+              {isSavingNotes && <span className="text-[10px] text-blue-500">saving...</span>}
+            </div>
             <textarea
               value={notes}
               onChange={handleNotesChange}
-              placeholder="Add observation notes for this work..."
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              placeholder="Add observation notes..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
               rows={2}
             />
           </div>
@@ -348,19 +336,19 @@ export default function SwipeableWorkRow({
           <div className="flex gap-2">
             <button
               onClick={() => { onCapture(); closePanel(); }}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 active:scale-95 transition-all text-sm font-medium"
+              className="flex-1 py-2.5 bg-green-100 text-green-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
             >
               📷 Photo
             </button>
             <button
               onClick={handleRecordVideo}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:scale-95 transition-all text-sm font-medium"
+              className="flex-1 py-2.5 bg-purple-100 text-purple-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
             >
               🎥 Video
             </button>
             <button
               onClick={() => { onWatchVideo(); closePanel(); }}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 active:scale-95 transition-all text-sm font-medium"
+              className="flex-1 py-2.5 bg-red-100 text-red-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
             >
               ▶️ Demo
             </button>
