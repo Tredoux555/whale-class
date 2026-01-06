@@ -33,6 +33,13 @@ interface School {
   id: string;
   name: string;
   slug: string;
+  settings?: { owner?: boolean };
+}
+
+interface School {
+  id: string;
+  name: string;
+  slug: string;
   settings?: { owner?: boolean; placeholder?: boolean };
 }
 
