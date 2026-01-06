@@ -7,7 +7,23 @@ This is the brain. New thoughts get added here.
 
 ---
 
-## 2026-01-06 Session 3
+## TOMORROW'S GAMEPLAN (Jan 7, 2026)
+
+### Priority Tasks
+1. **Record audio for sound games** - Tredoux records phonics sounds
+2. **Double-check Montree/Classroom system** - Verify everything works after cleanup
+   - Test `/admin/classroom` with week selector
+   - Test `/admin/montree` curriculum tree
+   - Test `/teacher/progress` tablet view
+   - Confirm area ordering is correct everywhere
+
+### Nice to Have
+- Push the sound games files (already in lib/sound-games/)
+- Test multi-school selector (only shows with 2+ schools with children)
+
+---
+
+## 2026-01-06 Session 3 (COMPLETE)
 
 ### Context
 - Railway build was failing
@@ -16,13 +32,34 @@ This is the brain. New thoughts get added here.
 
 ### What We Did
 1. **Fixed Railway build** - Supabase client was initializing at module level (build time = no env vars)
-2. **Standardized area order** - PL → Sensorial → Math → Language → Culture everywhere
+   - Fixed `/api/admin/students/[studentId]/route.ts`
+   - Fixed `/api/admin/students/[studentId]/report/route.ts`
+   
+2. **Standardized area order** - PL → Sensorial → Math → Language → Culture
+   - `/app/admin/classroom/[childId]/page.tsx`
+   - `/app/admin/classroom/page.tsx`
+   - `/lib/montree/types.ts` (AREA_ORDER constant)
+   - `/app/admin/montree/components/ProgressSummary.tsx`
+
 3. **MAJOR CLEANUP** - Deleted 1,864 lines of broken code:
-   - /classroom-view/* (broken standalone)
-   - /admin/schools/* (unused)
-   - /admin/classrooms/* (unused)
-   - /admin/students/* (orphaned)
+   - `/classroom-view/*` (broken standalone)
+   - `/admin/schools/*` (unused)
+   - `/admin/classrooms/*` (unused)
+   - `/admin/students/*` (orphaned)
+   - Related API routes
+
 4. **Simple multi-school** - Added school_id to children, 4 school slots ready
+   - Created `/api/schools` endpoint
+   - Added school selector to `/admin/classroom`
+   - Ran migration `004_simple_schools.sql` - 22 children linked to Beijing Intl
+
+5. **Created mission-control brain** - This file + mission-control.json + MASTER_PLAN.md
+
+### Commits (all pushed)
+- `d234744` - feat: standardize area display order
+- `5a0a9d6` - cleanup: remove over-engineered school/classroom hierarchy  
+- `38c2fc1` - feat: add multi-school support (4 schools)
+- `e377bea` - feat: create mission-control brain for Whale
 
 ### Key Decisions
 - NO nested hierarchy (schools → classrooms → children)
@@ -30,15 +67,12 @@ This is the brain. New thoughts get added here.
 - School selector only shows when >1 school has children
 
 ### What's Working
-- /admin/classroom - Weekly planning + progress ✅
-- /admin/montree - Curriculum tree ✅
-- /admin/weekly-planning - Upload Chinese docs ✅
-- /teacher/progress - Tablet tracking ✅
+- `/admin/classroom` - Weekly planning + progress ✅
+- `/admin/montree` - Curriculum tree ✅
+- `/admin/weekly-planning` - Upload Chinese docs ✅
+- `/teacher/progress` - Tablet tracking ✅
 - Multi-school filtering ✅
-
-### Next Up
-- Sound games (auditory phonics)
-- Tredoux has one more task tonight
+- Mission control brain ✅
 
 ---
 
