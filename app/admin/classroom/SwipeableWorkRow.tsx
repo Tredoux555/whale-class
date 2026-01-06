@@ -27,13 +27,13 @@ interface SwipeableWorkRowProps {
   statusConfig: { label: string; color: string; next: string };
   onStatusTap: (e: React.MouseEvent) => void;
   onCapture: () => void;
+  onRecordVideo?: () => void; // Separate handler for video recording
   onWatchVideo: () => void;
   onWorkChanged: (assignmentId: string, newWorkId: string, newWorkName: string) => void;
   onNotesChanged?: (assignmentId: string, notes: string) => void;
 }
 
 const SWIPE_THRESHOLD_X = 50;
-const SWIPE_THRESHOLD_Y = 40;
 
 export default function SwipeableWorkRow({
   assignment,
@@ -42,6 +42,7 @@ export default function SwipeableWorkRow({
   statusConfig,
   onStatusTap,
   onCapture,
+  onRecordVideo,
   onWatchVideo,
   onWorkChanged,
   onNotesChanged,
@@ -53,7 +54,6 @@ export default function SwipeableWorkRow({
   
   // Vertical swipe state (action panel)
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [panelHeight, setPanelHeight] = useState(0);
   
   // Touch tracking
   const [isDragging, setIsDragging] = useState(false);
@@ -67,6 +67,20 @@ export default function SwipeableWorkRow({
   const [notes, setNotes] = useState(assignment.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const notesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync notes when assignment changes
+  useEffect(() => {
+    setNotes(assignment.notes || '');
+  }, [assignment.id, assignment.notes]);
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (notesTimeoutRef.current) {
+        clearTimeout(notesTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fetch curriculum works for this area on first swipe attempt
   const fetchCurriculumWorks = async () => {
@@ -176,7 +190,6 @@ export default function SwipeableWorkRow({
     setIsDragging(false);
 
     const endX = translateX;
-    const endY = touchStartY.current; // We didn't track vertical translate
 
     if (swipeDirection.current === 'horizontal') {
       const swipedLeft = endX < -SWIPE_THRESHOLD_X;
@@ -241,6 +254,16 @@ export default function SwipeableWorkRow({
 
   const closePanel = () => {
     setIsPanelOpen(false);
+  };
+
+  // Handle video capture - use separate handler if provided, otherwise fall back to photo capture
+  const handleRecordVideo = () => {
+    if (onRecordVideo) {
+      onRecordVideo();
+    } else {
+      onCapture(); // Fallback to same handler
+    }
+    closePanel();
   };
 
   // Show position indicator if we have curriculum data
@@ -330,7 +353,7 @@ export default function SwipeableWorkRow({
               📷 Photo
             </button>
             <button
-              onClick={() => { onCapture(); closePanel(); }}
+              onClick={handleRecordVideo}
               className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:scale-95 transition-all text-sm font-medium"
             >
               🎥 Video

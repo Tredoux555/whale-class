@@ -129,7 +129,7 @@ class SoundGameAudio {
 
   // Play celebration sound
   async playCelebration(): Promise<void> {
-    const celebrationPath = '/audio/celebration.mp3';
+    const celebrationPath = '/audio/ui/celebration.mp3';
     try {
       let audio = this.audioCache.get(celebrationPath);
       if (!audio) {
@@ -145,7 +145,7 @@ class SoundGameAudio {
 
   // Play correct sound
   async playCorrect(): Promise<void> {
-    const correctPath = '/audio/correct.mp3';
+    const correctPath = '/audio/ui/correct.mp3';
     try {
       let audio = this.audioCache.get(correctPath);
       if (!audio) {
@@ -161,7 +161,7 @@ class SoundGameAudio {
 
   // Play wrong sound
   async playWrong(): Promise<void> {
-    const wrongPath = '/audio/wrong.mp3';
+    const wrongPath = '/audio/ui/wrong.mp3';
     try {
       let audio = this.audioCache.get(wrongPath);
       if (!audio) {
