@@ -29,9 +29,11 @@ interface SwipeableWorkRowProps {
   onCapture: () => void;
   onWatchVideo: () => void;
   onWorkChanged: (assignmentId: string, newWorkId: string, newWorkName: string) => void;
+  onNotesChanged?: (assignmentId: string, notes: string) => void;
 }
 
-const SWIPE_THRESHOLD = 60;
+const SWIPE_THRESHOLD_X = 50;
+const SWIPE_THRESHOLD_Y = 40;
 
 export default function SwipeableWorkRow({
   assignment,
@@ -42,17 +44,29 @@ export default function SwipeableWorkRow({
   onCapture,
   onWatchVideo,
   onWorkChanged,
+  onNotesChanged,
 }: SwipeableWorkRowProps) {
+  // Horizontal swipe state (changing works)
   const [translateX, setTranslateX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [curriculumWorks, setCurriculumWorks] = useState<CurriculumWork[]>([]);
   const [currentWorkIndex, setCurrentWorkIndex] = useState(-1);
   
+  // Vertical swipe state (action panel)
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [panelHeight, setPanelHeight] = useState(0);
+  
+  // Touch tracking
+  const [isDragging, setIsDragging] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
-  const isHorizontalSwipe = useRef<boolean | null>(null);
+  const swipeDirection = useRef<'horizontal' | 'vertical' | null>(null);
   const hasFetchedCurriculum = useRef(false);
+  
+  // Notes state
+  const [notes, setNotes] = useState(assignment.notes || '');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const notesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch curriculum works for this area on first swipe attempt
   const fetchCurriculumWorks = async () => {
@@ -64,7 +78,6 @@ export default function SwipeableWorkRow({
       const data = await res.json();
       if (data.works) {
         setCurriculumWorks(data.works);
-        // Find current work's position
         const idx = data.works.findIndex((w: CurriculumWork) => 
           w.name === assignment.work_name || w.id === assignment.work_id
         );
@@ -75,14 +88,42 @@ export default function SwipeableWorkRow({
     }
   };
 
+  // Save notes with debounce
+  const saveNotes = async (newNotes: string) => {
+    setIsSavingNotes(true);
+    try {
+      await fetch(`/api/weekly-planning/assignments/${assignment.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: newNotes }),
+      });
+      onNotesChanged?.(assignment.id, newNotes);
+    } catch (err) {
+      console.error('Failed to save notes:', err);
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newNotes = e.target.value;
+    setNotes(newNotes);
+    
+    // Debounce save
+    if (notesTimeoutRef.current) {
+      clearTimeout(notesTimeoutRef.current);
+    }
+    notesTimeoutRef.current = setTimeout(() => {
+      saveNotes(newNotes);
+    }, 800);
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isAnimating) return;
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
-    isHorizontalSwipe.current = null;
+    swipeDirection.current = null;
     setIsDragging(true);
-    
-    // Pre-fetch curriculum on touch start
     fetchCurriculumWorks();
   };
 
@@ -94,18 +135,24 @@ export default function SwipeableWorkRow({
     const diffX = currentX - touchStartX.current;
     const diffY = currentY - touchStartY.current;
 
-    if (isHorizontalSwipe.current === null) {
-      if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
-        isHorizontalSwipe.current = Math.abs(diffX) > Math.abs(diffY);
+    // Determine swipe direction on first significant movement
+    if (swipeDirection.current === null) {
+      if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+        if (Math.abs(diffY) > Math.abs(diffX) && diffY > 0) {
+          // Swiping down
+          swipeDirection.current = 'vertical';
+        } else if (Math.abs(diffX) > Math.abs(diffY)) {
+          // Swiping horizontally
+          swipeDirection.current = 'horizontal';
+        } else {
+          // Swiping up or unclear - cancel
+          setIsDragging(false);
+          return;
+        }
       }
     }
 
-    if (isHorizontalSwipe.current === false) {
-      setIsDragging(false);
-      return;
-    }
-
-    if (isHorizontalSwipe.current === true) {
+    if (swipeDirection.current === 'horizontal') {
       e.preventDefault();
       
       // Add resistance at edges
@@ -114,10 +161,13 @@ export default function SwipeableWorkRow({
       
       let resistance = 1;
       if ((diffX > 0 && !canGoPrev) || (diffX < 0 && !canGoNext)) {
-        resistance = 0.2;
+        resistance = 0.15;
       }
       
       setTranslateX(diffX * resistance);
+    } else if (swipeDirection.current === 'vertical') {
+      // For vertical, we just track if it's a valid downward swipe
+      e.preventDefault();
     }
   };
 
@@ -125,44 +175,51 @@ export default function SwipeableWorkRow({
     if (!isDragging || isAnimating) return;
     setIsDragging(false);
 
-    const swipedLeft = translateX < -SWIPE_THRESHOLD;
-    const swipedRight = translateX > SWIPE_THRESHOLD;
-    
-    if (swipedLeft && currentWorkIndex < curriculumWorks.length - 1) {
-      // Go to next work in curriculum
-      setIsAnimating(true);
-      setTranslateX(-300);
+    const endX = translateX;
+    const endY = touchStartY.current; // We didn't track vertical translate
+
+    if (swipeDirection.current === 'horizontal') {
+      const swipedLeft = endX < -SWIPE_THRESHOLD_X;
+      const swipedRight = endX > SWIPE_THRESHOLD_X;
       
-      const nextWork = curriculumWorks[currentWorkIndex + 1];
-      
-      setTimeout(async () => {
-        // Update the assignment
-        await updateAssignment(nextWork);
-        setCurrentWorkIndex(currentWorkIndex + 1);
+      if (swipedLeft && currentWorkIndex < curriculumWorks.length - 1) {
+        // Go to next work
+        setIsAnimating(true);
+        setTranslateX(-280);
+        
+        const nextWork = curriculumWorks[currentWorkIndex + 1];
+        
+        setTimeout(async () => {
+          await updateAssignment(nextWork);
+          setCurrentWorkIndex(currentWorkIndex + 1);
+          setTranslateX(0);
+          setIsAnimating(false);
+        }, 180);
+        
+      } else if (swipedRight && currentWorkIndex > 0) {
+        // Go to previous work
+        setIsAnimating(true);
+        setTranslateX(280);
+        
+        const prevWork = curriculumWorks[currentWorkIndex - 1];
+        
+        setTimeout(async () => {
+          await updateAssignment(prevWork);
+          setCurrentWorkIndex(currentWorkIndex - 1);
+          setTranslateX(0);
+          setIsAnimating(false);
+        }, 180);
+        
+      } else {
+        // Snap back with spring effect
         setTranslateX(0);
-        setIsAnimating(false);
-      }, 150);
-      
-    } else if (swipedRight && currentWorkIndex > 0) {
-      // Go to previous work in curriculum
-      setIsAnimating(true);
-      setTranslateX(300);
-      
-      const prevWork = curriculumWorks[currentWorkIndex - 1];
-      
-      setTimeout(async () => {
-        await updateAssignment(prevWork);
-        setCurrentWorkIndex(currentWorkIndex - 1);
-        setTranslateX(0);
-        setIsAnimating(false);
-      }, 150);
-      
-    } else {
-      // Snap back
-      setTranslateX(0);
+      }
+    } else if (swipeDirection.current === 'vertical') {
+      // Toggle panel
+      setIsPanelOpen(prev => !prev);
     }
     
-    isHorizontalSwipe.current = null;
+    swipeDirection.current = null;
   };
 
   const updateAssignment = async (newWork: CurriculumWork) => {
@@ -182,22 +239,27 @@ export default function SwipeableWorkRow({
     }
   };
 
+  const closePanel = () => {
+    setIsPanelOpen(false);
+  };
+
   // Show position indicator if we have curriculum data
   const showPosition = curriculumWorks.length > 0 && currentWorkIndex >= 0;
+  const hasNotes = notes && notes.trim().length > 0;
 
   return (
-    <div 
-      className="relative overflow-hidden"
-      style={{ touchAction: 'pan-y' }}
-    >
+    <div className="relative overflow-hidden">
       {/* Main row content */}
       <div
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`flex items-center gap-2 px-3 py-2 bg-white
-          ${isDragging ? '' : 'transition-transform duration-150 ease-out'}`}
-        style={{ transform: `translateX(${translateX}px)` }}
+        className={`flex items-center gap-2 px-3 py-2.5 bg-white cursor-grab active:cursor-grabbing
+          ${isDragging && swipeDirection.current === 'horizontal' ? '' : 'transition-transform duration-200 ease-out'}`}
+        style={{ 
+          transform: `translateX(${translateX}px)`,
+          willChange: isDragging ? 'transform' : 'auto',
+        }}
       >
         {/* Area Badge */}
         <span className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center shrink-0 ${areaConfig.color}`}>
@@ -207,8 +269,8 @@ export default function SwipeableWorkRow({
         {/* Status Button */}
         <button
           onClick={onStatusTap}
-          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0
-            ${statusConfig.color} active:scale-95 transition-transform`}
+          className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
+            ${statusConfig.color} active:scale-90 transition-transform duration-100`}
         >
           {statusConfig.label}
         </button>
@@ -216,28 +278,71 @@ export default function SwipeableWorkRow({
         {/* Work Name */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{assignment.work_name}</p>
-          {showPosition && (
-            <p className="text-xs text-gray-400">{currentWorkIndex + 1}/{curriculumWorks.length} in {assignment.area.replace('_', ' ')}</p>
-          )}
+          <div className="flex items-center gap-2">
+            {showPosition && (
+              <p className="text-[10px] text-gray-400">{currentWorkIndex + 1}/{curriculumWorks.length}</p>
+            )}
+            {hasNotes && (
+              <span className="text-[10px] text-blue-500">📝</span>
+            )}
+          </div>
         </div>
         
-        {/* Capture Button */}
-        <button
-          onClick={onCapture}
-          className="w-9 h-9 rounded-lg bg-green-100 text-green-700 flex items-center justify-center hover:bg-green-200 active:scale-95 transition-all shrink-0"
-          title="Take photo or video"
-        >
-          📷
-        </button>
-        
-        {/* Watch Video Button */}
-        <button
-          onClick={onWatchVideo}
-          className="w-9 h-9 rounded-lg bg-red-100 text-red-700 flex items-center justify-center hover:bg-red-200 active:scale-95 transition-all shrink-0"
-          title="Watch presentation video"
-        >
-          ▶️
-        </button>
+        {/* Swipe down indicator */}
+        <div className="w-6 h-6 flex items-center justify-center text-gray-300">
+          <svg 
+            className={`w-4 h-4 transition-transform duration-200 ${isPanelOpen ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Swipe-down Action Panel */}
+      <div 
+        className={`overflow-hidden transition-all duration-300 ease-out ${isPanelOpen ? 'max-h-64' : 'max-h-0'}`}
+      >
+        <div className="bg-gray-50 border-t border-gray-100 px-3 py-3 space-y-3">
+          {/* Notes Input */}
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1">
+              📝 Notes
+              {isSavingNotes && <span className="text-blue-500 text-[10px]">saving...</span>}
+            </label>
+            <textarea
+              value={notes}
+              onChange={handleNotesChange}
+              placeholder="Add observation notes for this work..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              rows={2}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { onCapture(); closePanel(); }}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 active:scale-95 transition-all text-sm font-medium"
+            >
+              📷 Photo
+            </button>
+            <button
+              onClick={() => { onCapture(); closePanel(); }}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:scale-95 transition-all text-sm font-medium"
+            >
+              🎥 Video
+            </button>
+            <button
+              onClick={() => { onWatchVideo(); closePanel(); }}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 active:scale-95 transition-all text-sm font-medium"
+            >
+              ▶️ Demo
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

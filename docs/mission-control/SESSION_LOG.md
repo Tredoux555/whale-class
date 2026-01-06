@@ -7,6 +7,47 @@ This is the brain. New thoughts get added here.
 
 ---
 
+## 2026-01-07 Session 1
+
+### Context
+Classroom page UI improvements requested - swipe gestures and notes functionality
+
+### What We Did
+
+1. **Updated SwipeableWorkRow component** (`/app/admin/classroom/SwipeableWorkRow.tsx`)
+   - Removed permanent 📷 and ▶️ buttons from each row
+   - Added **swipe-down gesture** to reveal action panel with:
+     - 📝 Notes text input (auto-saves to database with debounce)
+     - 📷 Photo button
+     - 🎥 Video button 
+     - ▶️ Demo button
+   - Kept swipe-left/right for changing works in curriculum sequence
+   - Added 📝 indicator on row when notes exist
+   - Notes save to `weekly_assignments.notes` column (already exists in DB)
+
+2. **Curriculum Audit** - Created `/docs/mission-control/CURRICULUM_AUDIT.md`
+   - Reviewed all 5 curriculum JSON files against montree structure
+   - **RESULT: All curriculum data is correctly structured**
+   - Practical Life: 8 categories, ~80 works ✅
+   - Sensorial: 8 categories, ~45 works ✅
+   - Math: 9 categories, ~70 works ✅
+   - Language: 5 categories, ~60 works ✅ (aligned with English Guide stages)
+   - Culture: 7 categories, ~70 works ✅
+   - If order appears wrong in UI, issue is display logic not data
+
+3. **Updated classroom page** to pass `onNotesChanged` callback to SwipeableWorkRow
+
+### UI Change Summary
+**Before:** Each work row had permanent 📷 and ▶️ buttons
+**After:** Clean rows with swipe-down to reveal notes input + action buttons
+
+### Files Changed
+- `/app/admin/classroom/SwipeableWorkRow.tsx` - Complete rewrite with swipe-down panel
+- `/app/admin/classroom/page.tsx` - Added onNotesChanged prop
+- `/docs/mission-control/CURRICULUM_AUDIT.md` - New file
+
+---
+
 ## TOMORROW'S GAMEPLAN (Jan 7, 2026)
 
 ### Priority Tasks
