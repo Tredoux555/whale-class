@@ -81,7 +81,6 @@ export default function SwipeableWorkRow({
   
   // Work description state
   const [workDescription, setWorkDescription] = useState<WorkDescriptionData | null>(null);
-  const [descriptionArea, setDescriptionArea] = useState<string>('');
   const [descriptionCategory, setDescriptionCategory] = useState<string>('');
   const [loadingDescription, setLoadingDescription] = useState(false);
   const [descriptionError, setDescriptionError] = useState<string>('');
@@ -151,7 +150,6 @@ export default function SwipeableWorkRow({
       
       if (data.found && data.work) {
         setWorkDescription(data.work);
-        setDescriptionArea(data.area || '');
         setDescriptionCategory(data.category || '');
       } else {
         setDescriptionError('No activity guide available for this work yet');
@@ -432,7 +430,6 @@ export default function SwipeableWorkRow({
         {/* Work Description / Activity Guide */}
         <WorkDescription 
           data={workDescription}
-          area={descriptionArea}
           category={descriptionCategory}
           loading={loadingDescription}
           error={descriptionError}

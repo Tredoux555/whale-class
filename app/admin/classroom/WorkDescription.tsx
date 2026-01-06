@@ -21,13 +21,12 @@ interface WorkDescriptionData {
 
 interface Props {
   data: WorkDescriptionData | null;
-  area?: string;
   category?: string;
   loading?: boolean;
   error?: string;
 }
 
-export default function WorkDescription({ data, area, category, loading, error }: Props) {
+export default function WorkDescription({ data, category, loading, error }: Props) {
   if (loading) {
     return (
       <div className="py-3 px-4 bg-blue-50 border-t border-blue-100">
