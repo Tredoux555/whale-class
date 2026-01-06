@@ -3,8 +3,8 @@
   "url": "teacherpotato.xyz",
   "repo": "Tredoux555/whale-class",
   "hosting": "Railway",
-  "lastUpdated": "2026-01-06T21:30:00Z",
-  "currentPhase": "Multi-School Foundation",
+  "lastUpdated": "2026-01-07T15:00:00Z",
+  "currentPhase": "Production Polish",
   
   "vision": {
     "core": "Montessori education platform that scales from one classroom to many schools",
@@ -21,14 +21,15 @@
   
   "coreFeatures": {
     "weeklyPlanning": { "status": "COMPLETE", "notes": "Upload Chinese docx → Claude parses → grid view" },
-    "classroomView": { "status": "COMPLETE", "notes": "iPad progress tracking, photo/video capture" },
+    "classroomView": { "status": "COMPLETE", "notes": "Swipeable rows, tap for panel, notes auto-save" },
     "montree": { "status": "COMPLETE", "notes": "Full Montessori curriculum tree" },
     "teacherProgress": { "status": "COMPLETE", "notes": "Tap-to-track tablet interface" },
-    "multiSchool": { "status": "COMPLETE", "notes": "4 school slots, school_id filtering" }
+    "multiSchool": { "status": "COMPLETE", "notes": "4 school slots, school_id filtering" },
+    "soundGames": { "status": "COMPLETE", "notes": "5 games: Beginning, Ending, Middle, Blending, Segmenting" }
   },
   
   "pendingFeatures": {
-    "soundGames": { "priority": "HIGH", "notes": "Auditory phonics - I Spy, Blending, Segmenting" },
+    "phonemeAudio": { "priority": "CONTENT", "notes": "Record consonant/vowel sounds for sound games" },
     "parentReports": { "priority": "MEDIUM", "notes": "AI-generated progress reports" },
     "parentPortal": { "priority": "LOW", "notes": "Parents view child progress" }
   },
@@ -40,7 +41,34 @@
     "migrations": ["001_base", "002_multi_user", "003_teachers", "004_simple_schools"]
   },
   
+  "curriculumAlignment": {
+    "englishGuide": "/app/admin/english-guide/page.tsx",
+    "languageJson": "/lib/curriculum/data/language.json",
+    "soundGames": "/app/games/sound-games/",
+    "status": "ALIGNED",
+    "soundGameLevels": [
+      "1. Initial Sounds - Objects",
+      "2. Initial Sounds - Environment", 
+      "3. Ending Sounds",
+      "4. Middle Sounds",
+      "5. Sound Blending (robot talk)",
+      "6. Sound Segmenting (Elkonin boxes)",
+      "7. Sound Boxes (sorting)"
+    ]
+  },
+  
   "dailyLog": [
+    {
+      "date": "2026-01-07",
+      "sessions": 2,
+      "highlights": [
+        "Fixed SwipeableWorkRow - native feel with touch-action: pan-y",
+        "Changed dropdown from swipe gesture to tap toggle (more reliable)",
+        "Comprehensive audit of code and curriculum",
+        "Aligned language.json with English Guide - added Blending & Segmenting levels",
+        "Sound Games curriculum now has 7 levels matching all 5 games"
+      ]
+    },
     {
       "date": "2026-01-06",
       "sessions": 3,

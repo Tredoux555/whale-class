@@ -7,6 +7,53 @@ This is the brain. New thoughts get added here.
 
 ---
 
+## 2026-01-07 Session 2
+
+### Context
+User reported SwipeableWorkRow issues:
+1. Horizontal swipe was moving the whole page (not native feel)
+2. Dropdown panel (swipe-down gesture) wasn't working reliably
+
+Also requested English Guide alignment check.
+
+### What We Fixed
+
+1. **SwipeableWorkRow Native Feel** (`/app/admin/classroom/SwipeableWorkRow.tsx`)
+   - Added `touch-action: pan-y` - tells browser "you handle vertical scroll, I handle horizontal"
+   - Changed dropdown from swipe-down gesture to **tap toggle** (much more reliable)
+   - Tap the work name OR the chevron arrow to open/close panel
+   - Added hint text "← swipe →" so users know they can swipe works
+   - Better swipe detection (1.5x horizontal ratio threshold)
+   - Cleaner 150ms transitions
+
+2. **Language Curriculum Alignment** (`/lib/curriculum/data/language.json`)
+   - Compared English Guide (8 stages, 37 skills) with language.json
+   - Found gap: Sound Blending and Sound Segmenting were in English Guide but NOT in curriculum
+   - **Fixed:** Added Level 5 (Sound Blending) and Level 6 (Sound Segmenting) to la_sound_games
+   - Added Elkonin boxes and counters/chips to materials list
+   - Sound Games now has 7 levels matching all skills
+
+### Alignment Summary
+
+| English Guide Skill | Curriculum Level | Status |
+|---------------------|------------------|--------|
+| Beginning sounds | Level 1-2 | ✅ |
+| Ending sounds | Level 3 | ✅ |
+| Middle sounds | Level 4 | ✅ |
+| Sound blending | Level 5 | ✅ ADDED |
+| Sound segmenting | Level 6 | ✅ ADDED |
+| Sound boxes | Level 7 | ✅ |
+
+### Commits
+- `17c3f6b` - fix: SwipeableWorkRow - native feel with touch-action, tap to toggle panel
+- `e2bb103` - fix: add Sound Blending and Segmenting to language curriculum (align with English Guide)
+
+### Files Changed
+- `/app/admin/classroom/SwipeableWorkRow.tsx` - Native touch handling, tap-to-toggle
+- `/lib/curriculum/data/language.json` - Added blending/segmenting levels
+
+---
+
 ## 2026-01-07 Session 1
 
 ### Context
@@ -56,22 +103,34 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
 
 ---
 
-## TOMORROW'S GAMEPLAN (Jan 7, 2026)
+## CURRENT STATE (Jan 7, 2026)
 
-### Priority Tasks
-1. **Record audio for sound games** - Tredoux records phonics sounds
-2. **Test Sound Games** - All 5 games now deployed:
-   - `/games/sound-games` - Hub page
-   - `/games/sound-games/beginning` - I Spy Beginning Sounds
-   - `/games/sound-games/ending` - I Spy Ending Sounds
-   - `/games/sound-games/middle` - Middle Sound Match
-   - `/games/sound-games/blending` - Sound Blending
-   - `/games/sound-games/segmenting` - Sound Segmenting
-3. **Double-check Montree/Classroom system** - Verify everything works after cleanup
-   - Test `/admin/classroom` with week selector
-   - Test `/admin/montree` curriculum tree
-   - Test `/teacher/progress` tablet view
-   - Confirm area ordering is correct everywhere
+### What's Working
+- `/admin/classroom` - Weekly planning + progress ✅
+  - Swipe left/right to change works
+  - Tap to open notes/photo/video panel
+  - Notes auto-save with debounce
+- `/admin/montree` - Curriculum tree ✅
+- `/admin/weekly-planning` - Upload Chinese docs ✅
+- `/teacher/progress` - Tablet tracking ✅
+- `/games/sound-games/*` - All 5 games working ✅
+- Multi-school filtering ✅
+- English Guide aligned with curriculum ✅
+
+### Content Tasks (not code)
+- Record phoneme audio files for sound games
+  - Priority 1: Phase 1 consonants (s, m, f, n, p, t, k, h)
+  - Priority 2: Phase 2 consonants (b, d, g, j, w, y)
+  - Priority 3: ESL consonants (v, th, r, l, z, sh, ch)
+  - Priority 4: Short vowels (a, e, i, o, u)
+
+### Sound Games URLs
+- `/games/sound-games` - Hub page
+- `/games/sound-games/beginning` - I Spy Beginning Sounds (4 phases)
+- `/games/sound-games/ending` - I Spy Ending Sounds
+- `/games/sound-games/middle` - Middle Sound Match (color-coded vowels)
+- `/games/sound-games/blending` - Sound Blending (visual animation)
+- `/games/sound-games/segmenting` - Sound Segmenting (tap counting)
 
 ---
 
@@ -118,15 +177,6 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
 - NO nested hierarchy (schools → classrooms → children)
 - YES simple flat structure (schools → children directly)
 - School selector only shows when >1 school has children
-
-### What's Working
-- `/admin/classroom` - Weekly planning + progress ✅
-- `/admin/montree` - Curriculum tree ✅
-- `/admin/weekly-planning` - Upload Chinese docs ✅
-- `/teacher/progress` - Tablet tracking ✅
-- Multi-school filtering ✅
-- Mission control brain ✅
-- Sound Games added ✅ (5 games, purely auditory)
 
 ---
 
