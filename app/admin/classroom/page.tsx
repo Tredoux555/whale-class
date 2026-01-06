@@ -29,6 +29,13 @@ interface WeeklyPlan {
   year: number;
 }
 
+interface School {
+  id: string;
+  name: string;
+  slug: string;
+  settings?: { owner?: boolean; placeholder?: boolean };
+}
+
 const STATUS_CONFIG = {
   not_started: { label: '○', color: 'bg-gray-200 text-gray-600', next: 'presented' },
   presented: { label: 'P', color: 'bg-amber-200 text-amber-800', next: 'practicing' },
@@ -92,6 +99,10 @@ function ClassroomView() {
   const [filterArea, setFilterArea] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   
+  // School selector
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('00000000-0000-0000-0000-000000000001');
+  
   // Video modal
   const [videoModal, setVideoModal] = useState<{ url: string; title: string } | null>(null);
   
@@ -103,6 +114,7 @@ function ClassroomView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    fetchSchools();
     fetchWeeklyPlans();
   }, []);
 
@@ -125,11 +137,21 @@ function ClassroomView() {
     if (selectedPlanId) {
       fetchAssignments(selectedPlanId);
     }
-  }, [selectedPlanId]);
+  }, [selectedPlanId, selectedSchoolId]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
   };
+
+  async function fetchSchools() {
+    try {
+      const res = await fetch('/api/schools');
+      const data = await res.json();
+      setSchools(data.schools || []);
+    } catch (err) {
+      console.error('Failed to fetch schools:', err);
+    }
+  }
 
   async function fetchWeeklyPlans() {
     try {
@@ -157,6 +179,9 @@ function ClassroomView() {
         params.set('year', selectedYear.toString());
       } else {
         params.set('planId', planId);
+      }
+      if (selectedSchoolId) {
+        params.set('schoolId', selectedSchoolId);
       }
       const res = await fetch(`/api/weekly-planning/by-plan?${params}`);
       const data = await res.json();
@@ -365,6 +390,21 @@ function ClassroomView() {
               </option>
             ))}
           </select>
+
+          {/* School Selector */}
+          {schools.length > 1 && (
+            <select
+              value={selectedSchoolId}
+              onChange={(e) => setSelectedSchoolId(e.target.value)}
+              className="px-4 py-2 border rounded-lg font-medium bg-emerald-50"
+            >
+              {schools.filter(s => !s.settings?.placeholder).map(school => (
+                <option key={school.id} value={school.id}>
+                  🏫 {school.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <div className="flex gap-1">
             {[
