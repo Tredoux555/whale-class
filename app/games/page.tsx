@@ -8,6 +8,14 @@ import Link from 'next/link';
 
 const GAMES = [
   {
+    id: 'sound-games',
+    name: 'Sound Games',
+    description: 'Train your ears - purely auditory!',
+    icon: '👂',
+    color: '#f59e0b',
+    minAge: 2,
+  },
+  {
     id: 'letter-sound',
     name: 'Letter Sounds',
     description: 'Hear a sound, find the letter!',
