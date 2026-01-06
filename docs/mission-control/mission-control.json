@@ -3,7 +3,7 @@
   "url": "teacherpotato.xyz",
   "repo": "Tredoux555/whale-class",
   "hosting": "Railway",
-  "lastUpdated": "2026-01-07T15:00:00Z",
+  "lastUpdated": "2026-01-07T18:00:00Z",
   "currentPhase": "Production Polish",
   
   "vision": {
@@ -21,7 +21,8 @@
   
   "coreFeatures": {
     "weeklyPlanning": { "status": "COMPLETE", "notes": "Upload Chinese docx → Claude parses → grid view" },
-    "classroomView": { "status": "COMPLETE", "notes": "Swipeable rows, tap for panel, notes auto-save" },
+    "classroomView": { "status": "COMPLETE", "notes": "Swipeable rows, tap for panel, notes + activity guide" },
+    "activityGuides": { "status": "COMPLETE", "notes": "Work descriptions with aims, materials, levels in dropdown" },
     "montree": { "status": "COMPLETE", "notes": "Full Montessori curriculum tree" },
     "teacherProgress": { "status": "COMPLETE", "notes": "Tap-to-track tablet interface" },
     "multiSchool": { "status": "COMPLETE", "notes": "4 school slots, school_id filtering" },
@@ -60,13 +61,14 @@
   "dailyLog": [
     {
       "date": "2026-01-07",
-      "sessions": 2,
+      "sessions": 3,
       "highlights": [
-        "Fixed SwipeableWorkRow - native feel with touch-action: pan-y",
+        "Session 3: Activity Guide feature - work descriptions in classroom dropdown",
+        "Created /api/curriculum/work-description API endpoint",
+        "Created WorkDescription.tsx component with aims, materials, levels",
+        "Session 2: Fixed SwipeableWorkRow - native feel with touch-action: pan-y",
         "Changed dropdown from swipe gesture to tap toggle (more reliable)",
-        "Comprehensive audit of code and curriculum",
-        "Aligned language.json with English Guide - added Blending & Segmenting levels",
-        "Sound Games curriculum now has 7 levels matching all 5 games"
+        "Aligned language.json with English Guide - added Blending & Segmenting levels"
       ]
     },
     {
