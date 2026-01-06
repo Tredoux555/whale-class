@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const planId = url.searchParams.get('planId');
     const week = url.searchParams.get('week');
     const year = url.searchParams.get('year');
+    const schoolId = url.searchParams.get('schoolId');
 
     // Get week/year from plan if planId provided
     let weekNumber = week ? parseInt(week) : 0;
@@ -37,8 +38,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'week required' }, { status: 400 });
     }
 
-    // Get all assignments for this week/year (NOT weekly_plan_id!)
-    const { data: assignments, error } = await supabase
+    // If schoolId provided, get children IDs for this school
+    let schoolChildIds: string[] | null = null;
+    if (schoolId) {
+      const { data: schoolChildren } = await supabase
+        .from('children')
+        .select('id')
+        .eq('school_id', schoolId);
+      schoolChildIds = schoolChildren?.map(c => c.id) || [];
+    }
+
+    // Build assignments query
+    let query = supabase
       .from('weekly_assignments')
       .select(`
         id,
@@ -49,11 +60,26 @@ export async function GET(request: NextRequest) {
         status,
         progress_status,
         notes,
-        children(id, name, avatar_emoji)
+        children(id, name, avatar_emoji, school_id)
       `)
       .eq('week_number', weekNumber)
-      .eq('year', yearNumber)
-      .order('area');
+      .eq('year', yearNumber);
+
+    // Filter by school's children if specified
+    if (schoolChildIds !== null) {
+      if (schoolChildIds.length === 0) {
+        // No children for this school yet
+        return NextResponse.json({ 
+          children: [],
+          week: weekNumber,
+          year: yearNumber,
+          totalAssignments: 0
+        });
+      }
+      query = query.in('child_id', schoolChildIds);
+    }
+
+    const { data: assignments, error } = await query.order('area');
 
     if (error) {
       console.error('Assignments query error:', error);
