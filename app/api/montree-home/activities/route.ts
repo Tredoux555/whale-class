@@ -1,178 +1,142 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
-// GET /api/montree-home/activities - Get recommended activities for a child
 export async function GET(request: NextRequest) {
+  const supabase = getSupabase();
+  const { searchParams } = new URL(request.url);
+  const childId = searchParams.get('child_id');
+  const count = parseInt(searchParams.get('count') || '3');
+
+  if (!childId) {
+    return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const childId = searchParams.get('childId');
-    const count = parseInt(searchParams.get('count') || '3');
-
-    if (!childId) {
-      return NextResponse.json({ error: 'Child ID is required' }, { status: 400 });
-    }
-
-    // Get child's family ID
-    const { data: child, error: childError } = await supabase
-      .from('home_children')
-      .select('family_id')
-      .eq('id', childId)
-      .single();
-
-    if (childError || !child) {
-      return NextResponse.json({ error: 'Child not found' }, { status: 404 });
-    }
-
-    // Get recommended activities using the database function
-    const { data: activities, error } = await supabase.rpc('get_home_today_activities', {
+    const { data, error } = await supabase.rpc('get_home_today_activities', {
       p_child_id: childId,
       p_count: count
     });
 
-    if (error) {
-      // If function doesn't exist, fallback to direct query
-      if (error.code === '42883') {
-        const { data: fallbackActivities, error: fallbackError } = await supabase
-          .from('home_curriculum')
-          .select(`
-            id, name, area, category, description, video_url, sequence
-          `)
-          .eq('family_id', child.family_id)
-          .eq('is_active', true)
-          .order('area_sequence')
-          .order('sequence')
-          .limit(count);
+    if (error) throw error;
 
-        if (fallbackError) {
-          return NextResponse.json({ error: fallbackError.message }, { status: 500 });
-        }
-
-        // Add status 0 to fallback activities
-        const withStatus = (fallbackActivities || []).map(a => ({ ...a, status: 0 }));
-        return NextResponse.json({ activities: withStatus });
-      }
-
-      console.error('Error fetching activities:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ activities: activities || [] });
-  } catch (error) {
-    console.error('Activities GET error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ activities: data || [] });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching activities:', error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-
-// POST /api/montree-home/activities - Update activity progress
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
   try {
-    const { childId, activityId, action, status, notes } = await request.json();
+    const body = await request.json();
+    const { child_id, curriculum_work_id, action, status } = body;
 
-    if (!childId || !activityId) {
-      return NextResponse.json({ error: 'Child ID and Activity ID are required' }, { status: 400 });
+    if (!child_id || !curriculum_work_id) {
+      return NextResponse.json(
+        { error: 'child_id and curriculum_work_id required' },
+        { status: 400 }
+      );
     }
 
-    // Get child's family for logging
     const { data: child } = await supabase
       .from('home_children')
       .select('family_id')
-      .eq('id', childId)
+      .eq('id', child_id)
       .single();
 
-    // Handle different actions
     if (action === 'mark_done') {
-      // Mark activity as mastered
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('home_child_progress')
         .upsert({
-          child_id: childId,
-          curriculum_work_id: activityId,
-          status: 3, // mastered
+          child_id,
+          curriculum_work_id,
+          status: 3,
           mastered_date: new Date().toISOString().split('T')[0],
-          last_practiced: new Date().toISOString().split('T')[0],
-          times_practiced: 1,
-          updated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }, {
           onConflict: 'child_id,curriculum_work_id'
-        })
-        .select()
-        .single();
+        });
 
-      if (error) {
-        console.error('Error marking done:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
+      if (error) throw error;
 
-      // Log activity
-      if (child) {
+      if (child?.family_id) {
         await supabase.from('home_activity_log').insert({
           family_id: child.family_id,
-          child_id: childId,
+          child_id,
           activity_type: 'work_completed',
-          activity_data: { activity_id: activityId },
+          activity_data: { curriculum_work_id }
         });
       }
 
-      return NextResponse.json({ success: true, progress: data });
+      return NextResponse.json({ success: true });
     }
 
-    // Update status
     if (status !== undefined) {
-      const updateData: Record<string, unknown> = {
+      const updates: Record<string, unknown> = {
+        child_id,
+        curriculum_work_id,
         status,
-        last_practiced: new Date().toISOString().split('T')[0],
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      // Set appropriate date
-      const today = new Date().toISOString().split('T')[0];
-      if (status === 1) updateData.presented_date = today;
-      if (status === 2) updateData.practicing_date = today;
-      if (status === 3) updateData.mastered_date = today;
+      if (status === 1) updates.presented_date = new Date().toISOString().split('T')[0];
+      if (status === 2) updates.practicing_date = new Date().toISOString().split('T')[0];
+      if (status === 3) updates.mastered_date = new Date().toISOString().split('T')[0];
 
-      if (notes !== undefined) {
-        updateData.notes = notes;
-      }
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('home_child_progress')
-        .upsert({
-          child_id: childId,
-          curriculum_work_id: activityId,
-          ...updateData,
-        }, {
+        .upsert(updates, {
           onConflict: 'child_id,curriculum_work_id'
-        })
-        .select()
-        .single();
+        });
 
-      if (error) {
-        console.error('Error updating status:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
+      if (error) throw error;
 
-      // Log activity
-      if (child) {
+      if (child?.family_id) {
         await supabase.from('home_activity_log').insert({
           family_id: child.family_id,
-          child_id: childId,
-          activity_type: 'progress_updated',
-          activity_data: { activity_id: activityId, status },
+          child_id,
+          activity_type: 'status_updated',
+          activity_data: { curriculum_work_id, new_status: status }
         });
       }
 
-      return NextResponse.json({ success: true, progress: data });
+      return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ error: 'No valid action provided' }, { status: 400 });
-  } catch (error) {
-    console.error('Activities POST error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const { data: existing } = await supabase
+      .from('home_child_progress')
+      .select('times_practiced')
+      .eq('child_id', child_id)
+      .eq('curriculum_work_id', curriculum_work_id)
+      .single();
+
+    const { error } = await supabase
+      .from('home_child_progress')
+      .upsert({
+        child_id,
+        curriculum_work_id,
+        times_practiced: (existing?.times_practiced || 0) + 1,
+        last_practiced: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'child_id,curriculum_work_id'
+      });
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating activity:', error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
