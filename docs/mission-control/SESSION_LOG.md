@@ -7,46 +7,97 @@ This is the brain. New thoughts get added here.
 
 ---
 
-## 2026-01-08 Session 1 (PER-CLASSROOM CURRICULUM)
+## 2026-01-08 Session 2 (PER-SCHOOL CURRICULUM - DEPLOYED)
 
 ### Context
-Continued from previous session where we designed the per-classroom curriculum system.
-Each classroom should get its own editable copy of the curriculum so teachers can customize what's on their shelves.
+Pivoted from per-classroom to **per-school** curriculum because:
+- No `classrooms` table exists in database
+- Children link directly to `schools` via `school_id`
+- Simpler architecture for current needs
 
-### What We Built
+### Database Changes (APPLIED TO PRODUCTION)
 
-**1. Database Migration** (`migrations/022_classroom_curriculum.sql`)
-- `classroom_curriculum` table - each classroom gets copy of curriculum
-- `clone_curriculum_to_classroom()` function - copies master to classroom
-- Auto-clone trigger on classroom creation
-- `quick_place_student()` function for bulk progress updates
-- RLS policies for access control
+**1. Created `school_curriculum` table**
+```sql
+- id, school_id (FK), master_work_id
+- area_id, category_id, name, chinese_name, description, sequence
+- materials (JSONB), direct_aims, indirect_aims, control_of_error, levels
+- is_active (soft delete), materials_on_shelf (teacher toggle)
+- custom_notes, is_custom
+- UNIQUE(school_id, master_work_id)
+```
 
-**2. API Routes**
-- `app/api/classroom/[classroomId]/curriculum/route.ts`
-  - GET: Fetch classroom curriculum (grouped by area)
-  - PATCH: Update work (toggle on_shelf, add notes, rename)
-  - POST: Add custom work
+**2. Created clone function & cloned data**
+```sql
+SELECT clone_curriculum_to_school('00000000-0000-0000-0000-000000000001');
+-- Result: 342 works cloned to Beijing International School
+```
+
+**3. Added column to child_work_completion**
+```sql
+ALTER TABLE child_work_completion ADD COLUMN school_work_id UUID;
+ALTER TABLE child_work_completion ADD CONSTRAINT unique_child_school_work 
+  UNIQUE (child_id, school_work_id);
+```
+
+### API Routes Created
+- `app/api/school/[schoolId]/curriculum/route.ts`
+  - GET: Fetch school curriculum (filter by area, active status)
+  - PATCH: Update work (toggle materials_on_shelf, is_active, notes)
+  
 - `app/api/students/[studentId]/quick-place/route.ts`
-  - GET: Get current positions + curriculum dropdown options
-  - POST: Set positions (marks previous as mastered)
+  - GET: Get current positions + curriculum dropdown options per area
+  - POST: Set positions (marks previous as mastered, selected as practicing)
 
-**3. Page Components**
+### Pages Created
 - `app/teacher/curriculum/page.tsx` - Teacher curriculum editor
-  - 5 area tabs
+  - 5 area tabs (Practical Life, Sensorial, Math, Language, Cultural)
   - Toggle "On Shelf" / "Not Available" per work
-  - Search works
-  - Hide inactive works
+  - Search works, hide inactive
+  
 - `app/teacher/students/[studentId]/quick-place/page.tsx`
   - 5 dropdowns (one per area)
-  - Select current work → previous marked mastered
+  - Select current work → all previous = Mastered
   - Visual feedback on changes
 
-### Files Created
+### Build Fix
+Supabase client was initialized at module level, causing Railway build failure.
+Fixed with lazy initialization:
+```typescript
+function getSupabase() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 ```
-migrations/022_classroom_curriculum.sql
-app/api/classroom/[classroomId]/curriculum/route.ts
-app/api/students/[studentId]/quick-place/route.ts
+
+### Commits
+- `9ab64e8` - feat: per-school curriculum system with quick placement
+- `895f63f` - feat: add quick-place page  
+- `e847a11` - fix: lazy init supabase client to fix build
+
+### Test URLs
+- `/teacher/curriculum` - Teacher toggles materials
+- `/teacher/students/795aa63d-2f73-4843-addb-35457436334a/quick-place` - Quick place Marina
+
+### Status: DEPLOYED ✅
+
+---
+
+## 2026-01-08 Session 1 (PER-CLASSROOM CURRICULUM - DESIGN ONLY)
+
+### Context
+Initial design session for per-classroom curriculum system.
+This was later pivoted to per-school in Session 2.
+
+### What Was Designed (NOT DEPLOYED)
+- `classroom_curriculum` table concept
+- `clone_curriculum_to_classroom()` function concept
+- API routes designed but not implemented
+
+### Files Created (LOCAL ONLY)
+```
+migrations/022_classroom_curriculum.sql (not applied)
+app/api/classroom/[classroomId]/curriculum/route.ts (replaced)
+app/api/students/[studentId]/quick-place/route.ts (updated)
 app/teacher/curriculum/page.tsx
 app/teacher/students/[studentId]/quick-place/page.tsx
 HANDOFF_JAN8_2026.md
@@ -318,21 +369,19 @@ All 10 games (including Sound Games) now polished and production-ready.
 
 ---
 
-## CURRENT STATE (Jan 7, 2026)
+## CURRENT STATE (Jan 8, 2026)
 
 ### What's Working
 - `/admin/classroom` - Weekly planning + progress ✅
-  - Swipe left/right to change works
-  - Tap to open notes/photo/video panel
-  - Notes auto-save with debounce
-  - Activity Guide in dropdown ✅ NEW
 - `/admin/montree` - Curriculum tree ✅
 - `/admin/weekly-planning` - Upload Chinese docs ✅
 - `/teacher/progress` - Tablet tracking ✅
-- `/games/sound-games/*` - All 5 games working ✅ ElevenLabs audio ✅
-- `/games/` - All other games ✅ ElevenLabs audio ✅
+- `/teacher/curriculum` - Per-school curriculum editor ✅ NEW
+- `/teacher/students/[id]/quick-place` - Bulk placement ✅ NEW
+- `/games/sound-games/*` - All 5 games working ✅
+- `/games/` - All other games ✅
 - Multi-school filtering ✅
-- English Guide aligned with curriculum ✅
+- Per-school curriculum (342 works cloned to Beijing) ✅ NEW
 
 ### Audio Status
 - ✅ ALL games using ElevenLabs pre-recorded audio
