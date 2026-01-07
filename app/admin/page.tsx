@@ -27,6 +27,14 @@ const DEFAULT_CARDS: DashboardCard[] = [
     color: 'bg-green-500 hover:bg-green-600',
   },
   {
+    id: 'montree-home',
+    title: 'Montree Home',
+    description: 'Homeschool platform management',
+    href: '/admin/montree-home',
+    icon: '🏠',
+    color: 'bg-emerald-500 hover:bg-emerald-600',
+  },
+  {
     id: 'weekly-planning',
     title: 'Weekly Planning',
     description: 'Upload plans, track progress',
