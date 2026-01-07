@@ -2,16 +2,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { schoolId: string } }
 ) {
   try {
+    const supabase = getSupabase();
     const { schoolId } = params;
     const url = new URL(request.url);
     const areaFilter = url.searchParams.get('area');
@@ -36,7 +39,7 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ curriculum: data, total: data?.length || 0 });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 500 });
   }
 }
@@ -46,6 +49,7 @@ export async function PATCH(
   { params }: { params: { schoolId: string } }
 ) {
   try {
+    const supabase = getSupabase();
     const { schoolId } = params;
     const body = await request.json();
     const { workId, updates } = body;
@@ -75,7 +79,7 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ success: true, work: data });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
   }
 }

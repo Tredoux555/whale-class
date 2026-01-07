@@ -2,16 +2,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { studentId: string } }
 ) {
   try {
+    const supabase = getSupabase();
     const { studentId } = params;
 
     const { data: child, error: childError } = await supabase
@@ -56,7 +59,7 @@ export async function GET(
     }, {} as Record<string, Array<{ id: string; name: string; sequence: number }>>);
 
     return NextResponse.json({ child, currentPositions, curriculum: groupedCurriculum });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Failed to fetch positions' }, { status: 500 });
   }
 }
@@ -66,6 +69,7 @@ export async function POST(
   { params }: { params: { studentId: string } }
 ) {
   try {
+    const supabase = getSupabase();
     const { studentId } = params;
     const body = await request.json();
     const { placements } = body;
@@ -130,7 +134,7 @@ export async function POST(
     }
 
     return NextResponse.json({ success: true, message: 'Positions updated' });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Failed to update positions' }, { status: 500 });
   }
 }
