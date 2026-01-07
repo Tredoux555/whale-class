@@ -3,83 +3,57 @@
   "url": "teacherpotato.xyz",
   "repo": "Tredoux555/whale-class",
   "hosting": "Railway",
-  "lastUpdated": "2026-01-07T18:00:00Z",
-  "currentPhase": "Production Polish",
-  
-  "vision": {
-    "core": "Montessori education platform that scales from one classroom to many schools",
-    "mission": "Give teachers superpowers - tracking, planning, reporting in one place",
-    "bigPicture": "Foundation for Jeffy Schools - every graduate school uses this system"
-  },
+  "lastUpdated": "2026-01-08T12:00:00Z",
+  "currentPhase": "Per-School Curriculum - DEPLOYED",
   
   "schools": {
-    "slot1": { "id": "...001", "name": "Beijing International School", "status": "ACTIVE", "children": 22 },
-    "slot2": { "id": "...002", "name": "Available", "status": "PLACEHOLDER" },
-    "slot3": { "id": "...003", "name": "Available", "status": "PLACEHOLDER" },
-    "slot4": { "id": "...004", "name": "Available", "status": "PLACEHOLDER" }
+    "slot1": { "id": "00000000-0000-0000-0000-000000000001", "name": "Beijing International School", "status": "ACTIVE", "works": 342 }
   },
   
   "coreFeatures": {
-    "weeklyPlanning": { "status": "COMPLETE", "notes": "Upload Chinese docx → Claude parses → grid view" },
-    "classroomView": { "status": "COMPLETE", "notes": "Swipeable rows, tap for panel, notes + activity guide" },
-    "activityGuides": { "status": "COMPLETE", "notes": "Work descriptions with aims, materials, levels in dropdown" },
-    "montree": { "status": "COMPLETE", "notes": "Full Montessori curriculum tree" },
-    "teacherProgress": { "status": "COMPLETE", "notes": "Tap-to-track tablet interface" },
-    "multiSchool": { "status": "COMPLETE", "notes": "4 school slots, school_id filtering" },
-    "soundGames": { "status": "COMPLETE", "notes": "5 games: Beginning, Ending, Middle, Blending, Segmenting" }
+    "weeklyPlanning": { "status": "COMPLETE" },
+    "classroomView": { "status": "COMPLETE" },
+    "activityGuides": { "status": "COMPLETE" },
+    "montree": { "status": "COMPLETE" },
+    "teacherProgress": { "status": "COMPLETE" },
+    "multiSchool": { "status": "COMPLETE" },
+    "soundGames": { "status": "COMPLETE" },
+    "englishGames": { "status": "POLISHED" },
+    "perSchoolCurriculum": { "status": "DEPLOYED", "notes": "342 works cloned to Beijing, teacher can toggle on/off" }
   },
   
-  "pendingFeatures": {
-    "phonemeAudio": { "priority": "CONTENT", "notes": "Record consonant/vowel sounds for sound games" },
-    "parentReports": { "priority": "MEDIUM", "notes": "AI-generated progress reports" },
-    "parentPortal": { "priority": "LOW", "notes": "Parents view child progress" }
-  },
-  
-  "technicalState": {
-    "database": "Supabase",
-    "framework": "Next.js 14",
-    "tables": ["children", "schools", "weekly_plans", "weekly_assignments", "child_work_progress", "montree_roadmap"],
-    "migrations": ["001_base", "002_multi_user", "003_teachers", "004_simple_schools"]
-  },
-  
-  "curriculumAlignment": {
-    "englishGuide": "/app/admin/english-guide/page.tsx",
-    "languageJson": "/lib/curriculum/data/language.json",
-    "soundGames": "/app/games/sound-games/",
-    "status": "ALIGNED",
-    "soundGameLevels": [
-      "1. Initial Sounds - Objects",
-      "2. Initial Sounds - Environment", 
-      "3. Ending Sounds",
-      "4. Middle Sounds",
-      "5. Sound Blending (robot talk)",
-      "6. Sound Segmenting (Elkonin boxes)",
-      "7. Sound Boxes (sorting)"
+  "perSchoolCurriculum": {
+    "status": "DEPLOYED",
+    "table": "school_curriculum",
+    "works": 342,
+    "apiRoutes": [
+      "app/api/school/[schoolId]/curriculum/route.ts",
+      "app/api/students/[studentId]/quick-place/route.ts"
+    ],
+    "pages": [
+      "app/teacher/curriculum/page.tsx",
+      "app/teacher/students/[studentId]/quick-place/page.tsx"
+    ],
+    "features": [
+      "Toggle materials_on_shelf per work",
+      "Hide works with is_active toggle",
+      "Quick Placement sets student position"
     ]
   },
   
   "dailyLog": [
     {
-      "date": "2026-01-07",
-      "sessions": 3,
+      "date": "2026-01-08",
+      "sessions": 1,
+      "summary": "Per-School Curriculum DEPLOYED",
       "highlights": [
-        "Session 3: Activity Guide feature - work descriptions in classroom dropdown",
-        "Created /api/curriculum/work-description API endpoint",
-        "Created WorkDescription.tsx component with aims, materials, levels",
-        "Session 2: Fixed SwipeableWorkRow - native feel with touch-action: pan-y",
-        "Changed dropdown from swipe gesture to tap toggle (more reliable)",
-        "Aligned language.json with English Guide - added Blending & Segmenting levels"
-      ]
-    },
-    {
-      "date": "2026-01-06",
-      "sessions": 3,
-      "highlights": [
-        "Fixed Railway build errors (Supabase client initialization)",
-        "Standardized area display order across app",
-        "CLEANUP: Removed 1,864 lines of over-engineered school/classroom code",
-        "Added simple multi-school support (4 slots)",
-        "Created mission-control system"
+        "Created school_curriculum table (342 works)",
+        "Cloned curriculum to Beijing International School",
+        "Created /api/school/[schoolId]/curriculum API",
+        "Created /api/students/[studentId]/quick-place API",
+        "Created /teacher/curriculum page",
+        "Created /teacher/students/[id]/quick-place page",
+        "Added school_work_id to child_work_completion"
       ]
     }
   ]
