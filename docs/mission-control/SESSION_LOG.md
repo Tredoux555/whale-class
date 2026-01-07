@@ -7,6 +7,77 @@ This is the brain. New thoughts get added here.
 
 ---
 
+## 2026-01-07 Session 4 (AUDIO FIX SESSION)
+
+### Context
+User reported horrible mixed audio in games - robot voice, their voice, and AI voice all playing together. The ElevenLabs audio was generated but not properly integrated into all game files.
+
+### Root Cause Found
+There were TWO different sound-utils files:
+- `/lib/games/sound-utils.ts` - OLD file using browser speechSynthesis
+- `/lib/sound-games/sound-utils.ts` - Fixed file using ElevenLabs
+
+GameWrapper.tsx, LetterTracer.tsx, and other components were importing from the OLD file.
+
+### What We Fixed
+
+**Phase 1: Core Audio Utilities**
+1. `lib/games/sound-utils.ts` - COMPLETE REWRITE to use GameAudio
+2. `lib/sound-games/sound-utils.ts` - Already fixed from previous session
+
+**Phase 2: Sound Games (5 games)** - All now use ElevenLabs
+3. `app/games/sound-games/beginning/page.tsx`
+4. `app/games/sound-games/ending/page.tsx`
+5. `app/games/sound-games/middle/page.tsx`
+6. `app/games/sound-games/blending/page.tsx`
+7. `app/games/sound-games/segmenting/page.tsx` (+ fixed wrong answer bug)
+
+**Phase 3: Other Game Components (4 games)** - All now use ElevenLabs
+8. `components/07-LetterSoundMatchingGame.tsx` (+ fixed shake animation)
+9. `components/08-WordBuildingGame.tsx` (+ fixed 5-letter distractors)
+10. `components/09-SentenceMatchingGame.tsx`
+11. `components/10-SentenceBuilderGame.tsx`
+
+**Phase 4: Remaining Components**
+12. `components/04-LetterTracer.tsx` - Fixed playAudio()
+13. `components/12-BigToSmallLetterMatchingGame.tsx` - Fixed playLetterSound()
+
+### Verification
+```bash
+# Zero speechSynthesis remaining
+grep -r "speechSynthesis" --include="*.tsx" --include="*.ts" . | grep -v node_modules
+# Returns: NOTHING (all removed)
+```
+
+### Commits Made
+- `d23e7c8` - Initial sound games fix (earlier in session)
+- `0153ea7` - Fix: Remove ALL remaining speech synthesis
+- `c773d54` - docs: Final audio fix checkpoint
+
+### Key Changes
+- **ALL** games now use `GameAudio` class from `/lib/games/audio-paths.ts`
+- **ZERO** browser speechSynthesis anywhere in codebase
+- All audio from `/audio-new/` directory (ElevenLabs Rachel voice)
+
+### Audio Files Available
+- `/audio-new/letters/` - 26 phonetic letter sounds (a-z)
+- `/audio-new/words/pink/` - 223 CVC words
+- `/audio-new/words/blue/` - 50 blend words
+- `/audio-new/words/green/` - 41 digraph words
+- `/audio-new/sight-words/` - 61 high-frequency words
+- `/audio-new/ui/` - correct, wrong, celebration, complete sounds
+
+### Bug Fixes Applied
+1. ✅ Segmenting game - proper wrong answer handling
+2. ✅ Letter Sound game - shake animation + wrong sound
+3. ✅ Word Builder - distractor letters for 5-letter words
+4. ✅ All games - removed speechSynthesis
+
+### Files Changed (13 total)
+See `/docs/GAME_AUDIO_FIX_CHECKPOINT.md` for complete list.
+
+---
+
 ## 2026-01-07 Session 3
 
 ### Context
@@ -164,19 +235,19 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
   - Swipe left/right to change works
   - Tap to open notes/photo/video panel
   - Notes auto-save with debounce
+  - Activity Guide in dropdown ✅ NEW
 - `/admin/montree` - Curriculum tree ✅
 - `/admin/weekly-planning` - Upload Chinese docs ✅
 - `/teacher/progress` - Tablet tracking ✅
-- `/games/sound-games/*` - All 5 games working ✅
+- `/games/sound-games/*` - All 5 games working ✅ ElevenLabs audio ✅
+- `/games/` - All other games ✅ ElevenLabs audio ✅
 - Multi-school filtering ✅
 - English Guide aligned with curriculum ✅
 
-### Content Tasks (not code)
-- Record phoneme audio files for sound games
-  - Priority 1: Phase 1 consonants (s, m, f, n, p, t, k, h)
-  - Priority 2: Phase 2 consonants (b, d, g, j, w, y)
-  - Priority 3: ESL consonants (v, th, r, l, z, sh, ch)
-  - Priority 4: Short vowels (a, e, i, o, u)
+### Audio Status
+- ✅ ALL games using ElevenLabs pre-recorded audio
+- ✅ ZERO speech synthesis in codebase
+- ✅ 423 audio files generated and deployed
 
 ### Sound Games URLs
 - `/games/sound-games` - Hub page
@@ -185,70 +256,6 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
 - `/games/sound-games/middle` - Middle Sound Match (color-coded vowels)
 - `/games/sound-games/blending` - Sound Blending (visual animation)
 - `/games/sound-games/segmenting` - Sound Segmenting (tap counting)
-
----
-
-## 2026-01-06 Session 3 (COMPLETE)
-
-### Context
-- Railway build was failing
-- Area ordering inconsistent across pages
-- Over-engineered school/classroom system wasn't working
-
-### What We Did
-1. **Fixed Railway build** - Supabase client was initializing at module level (build time = no env vars)
-   - Fixed `/api/admin/students/[studentId]/route.ts`
-   - Fixed `/api/admin/students/[studentId]/report/route.ts`
-   
-2. **Standardized area order** - PL → Sensorial → Math → Language → Culture
-   - `/app/admin/classroom/[childId]/page.tsx`
-   - `/app/admin/classroom/page.tsx`
-   - `/lib/montree/types.ts` (AREA_ORDER constant)
-   - `/app/admin/montree/components/ProgressSummary.tsx`
-
-3. **MAJOR CLEANUP** - Deleted 1,864 lines of broken code:
-   - `/classroom-view/*` (broken standalone)
-   - `/admin/schools/*` (unused)
-   - `/admin/classrooms/*` (unused)
-   - `/admin/students/*` (orphaned)
-   - Related API routes
-
-4. **Simple multi-school** - Added school_id to children, 4 school slots ready
-   - Created `/api/schools` endpoint
-   - Added school selector to `/admin/classroom`
-   - Ran migration `004_simple_schools.sql` - 22 children linked to Beijing Intl
-
-5. **Created mission-control brain** - This file + mission-control.json + MASTER_PLAN.md
-
-### Commits (all pushed)
-- `d234744` - feat: standardize area display order
-- `5a0a9d6` - cleanup: remove over-engineered school/classroom hierarchy  
-- `38c2fc1` - feat: add multi-school support (4 schools)
-- `e377bea` - feat: create mission-control brain for Whale
-- `957293f` - feat: add Sound Games (purely auditory phonics)
-
-### Key Decisions
-- NO nested hierarchy (schools → classrooms → children)
-- YES simple flat structure (schools → children directly)
-- School selector only shows when >1 school has children
-
----
-
-## 2026-01-05 Session 2
-
-### What We Did
-- Fixed 3-part cards sizing (Picture 7.5cm + Label 2.4cm = Control 9.9cm)
-- Label Maker created at /admin/label-maker
-- Various UI fixes
-
----
-
-## 2026-01-05 Session 1
-
-### What We Did
-- Weekly planning system debugging
-- Area mapping fixes (math vs mathematics)
-- Print view improvements
 
 ---
 
