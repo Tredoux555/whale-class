@@ -1,9 +1,12 @@
-// components/BigToSmallLetterMatchingGame.tsx
+// components/12-BigToSmallLetterMatchingGame.tsx
+// Big to Small Letter Matching - Enhanced with hints, score, and consistent design
 
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import Link from 'next/link';
+import { GAME_FONTS, GAME_ANIMATIONS, getRandomCelebration } from '@/lib/games/design-system';
 
 interface LetterPair {
   smallLetter: string;
@@ -48,7 +51,10 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
   const [draggedLetter, setDraggedLetter] = useState<LetterPair | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showAlphabetComplete, setShowAlphabetComplete] = useState(false);
-  const [stars, setStars] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [wrongAttempt, setWrongAttempt] = useState<string | null>(null);
+  const [tries, setTries] = useState(0);
+  const [score, setScore] = useState(0);
+  const [celebration, setCelebration] = useState('');
 
   useEffect(() => {
     generateNewSet();
@@ -65,11 +71,11 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
     setMatchedPairs(new Set());
     setDraggedLetter(null);
     setShowCelebration(false);
-    setStars([]);
+    setWrongAttempt(null);
+    setTries(0);
   };
 
   const playLetterSound = async (letter: LetterPair) => {
-    // Use ElevenLabs pre-recorded audio
     const { GameAudio } = await import('@/lib/games/audio-paths');
     GameAudio.playLetterNow(letter.smallLetter.toLowerCase());
   };
@@ -84,29 +90,51 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDropOnBigLetter = (e: React.DragEvent<HTMLDivElement>, bigLetter: LetterPair) => {
+  const handleDropOnBigLetter = async (e: React.DragEvent<HTMLDivElement>, bigLetter: LetterPair) => {
     e.preventDefault();
-
     if (!draggedLetter) return;
+    await handleMatch(draggedLetter, bigLetter);
+    setDraggedLetter(null);
+  };
 
-    if (draggedLetter.bigLetter === bigLetter.bigLetter) {
-      const pairKey = `${draggedLetter.smallLetter}-${bigLetter.bigLetter}`;
+  // Click to select then click to match
+  const [selectedSmall, setSelectedSmall] = useState<LetterPair | null>(null);
+
+  const handleSmallLetterClick = (letter: LetterPair) => {
+    const pairKey = `${letter.smallLetter}-${letter.bigLetter}`;
+    if (matchedPairs.has(pairKey)) return;
+    
+    playLetterSound(letter);
+    setSelectedSmall(letter);
+  };
+
+  const handleBigLetterClick = async (bigLetter: LetterPair) => {
+    if (!selectedSmall) {
+      playLetterSound(bigLetter);
+      return;
+    }
+    await handleMatch(selectedSmall, bigLetter);
+    setSelectedSmall(null);
+  };
+
+  const handleMatch = async (small: LetterPair, big: LetterPair) => {
+    const { GameAudio } = await import('@/lib/games/audio-paths');
+
+    if (small.bigLetter === big.bigLetter) {
+      // CORRECT MATCH
+      const pairKey = `${small.smallLetter}-${big.bigLetter}`;
       const newMatched = new Set(matchedPairs);
       newMatched.add(pairKey);
       setMatchedPairs(newMatched);
 
-      playLetterSound(draggedLetter);
-      
-      const burstStars = Array.from({ length: 12 }, (_, i) => ({
-        id: i,
-        x: Math.cos((i / 12) * Math.PI * 2) * 150,
-        y: Math.sin((i / 12) * Math.PI * 2) * 150,
-      }));
-      setStars(burstStars);
+      await GameAudio.playCorrect();
+      playLetterSound(small);
 
       if (newMatched.size === 5) {
+        setScore(prev => prev + 1);
+        setCelebration(getRandomCelebration('correct'));
         setShowCelebration(true);
-        setTimeout(() => setStars([]), 600);
+        await GameAudio.playCelebration();
 
         setTimeout(() => {
           if (currentSetIndex < 5) {
@@ -115,302 +143,220 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
             setShowAlphabetComplete(true);
           }
         }, 2500);
-      } else {
-        setTimeout(() => setStars([]), 600);
       }
-
-      setDraggedLetter(null);
+    } else {
+      // WRONG MATCH
+      setTries(prev => prev + 1);
+      setWrongAttempt(big.bigLetter);
+      await GameAudio.playWrong();
+      setTimeout(() => setWrongAttempt(null), 800);
     }
   };
 
   const goToPrevious = () => {
-    if (currentSetIndex > 0) {
-      setCurrentSetIndex(currentSetIndex - 1);
-    }
+    if (currentSetIndex > 0) setCurrentSetIndex(currentSetIndex - 1);
   };
 
   const goToNext = () => {
-    if (currentSetIndex < 5) {
-      setCurrentSetIndex(currentSetIndex + 1);
-    }
+    if (currentSetIndex < 5) setCurrentSetIndex(currentSetIndex + 1);
   };
 
   const resetSet = () => {
     generateNewSet();
+    setSelectedSmall(null);
   };
 
-  const alphabetStars = Array.from({ length: 50 }, (_, i) => ({
-    id: i,
-    x: (Math.random() - 0.5) * 600,
-    y: (Math.random() - 0.5) * 600,
-    delay: Math.random() * 0.3,
-  }));
+  // Get unmatched letters for hint
+  const getUnmatchedPairs = () => {
+    return smallLetters.filter(l => !matchedPairs.has(`${l.smallLetter}-${l.bigLetter}`));
+  };
 
+  // Alphabet complete screen
   if (showAlphabetComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <div className="fixed inset-0 pointer-events-none">
-          {alphabetStars.map((star) => (
-            <div
-              key={star.id}
-              className="absolute text-6xl animate-bounce"
-              style={{
-                left: `calc(50% + ${star.x}px)`,
-                top: `calc(50% + ${star.y}px)`,
-                animation: `bounce 0.6s cubic-bezier(0, 0, 0.2, 1) infinite`,
-                animationDelay: `${star.delay}s`,
-                opacity: Math.random() * 0.8 + 0.2,
-              }}
-            >
-              ⭐
-            </div>
-          ))}
-        </div>
-
-        <div className="relative z-10 text-center">
-          <div className="mb-8 animate-pulse">
-            <p className="text-9xl mb-4">🎉</p>
+      <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 flex flex-col items-center justify-center p-4"
+        style={{ fontFamily: GAME_FONTS.display }}>
+        <style>{GAME_ANIMATIONS}</style>
+        
+        <div className="bg-white rounded-3xl p-8 max-w-lg text-center shadow-2xl animate-pop">
+          <div className="text-8xl mb-4">🏆</div>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Alphabet Master!</h1>
+          <p className="text-xl text-gray-600 mb-4">You matched all 26 letters!</p>
+          
+          <div className="text-3xl mb-4 leading-relaxed">
+            A B C D E F G H I J K L M<br/>
+            N O P Q R S T U V W X Y Z
           </div>
           
-          <h1 className="text-7xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            Congratulations!
-          </h1>
-          
-          <p className="text-5xl text-yellow-200 mb-8" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            You Completed the Alphabet!
-          </p>
-
-          <div className="text-6xl mb-8 animate-spin" style={{ animationDuration: '3s' }}>
-            🌟 ✨ 🌟
+          <div className="flex justify-center gap-4 mb-6">
+            {[1, 2, 3].map((star) => (
+              <span key={star} className="text-5xl animate-pulse">⭐</span>
+            ))}
           </div>
 
-          <p className="text-4xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            All 26 Letters Mastered!
-          </p>
-
-          <div className="text-5xl mb-8">
-            A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+          <div className="space-y-3">
+            <button onClick={() => { setCurrentSetIndex(0); setShowAlphabetComplete(false); setScore(0); }}
+              className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-xl transition-colors shadow-lg">
+              🔄 Play Again
+            </button>
+            <Link href="/games" 
+              className="block w-full py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl font-bold text-xl transition-colors">
+              ← All Games
+            </Link>
           </div>
-
-          <div className="text-5xl mb-8">
-            a b c d e f g h i j k l m n o p q r s t u v w x y z
-          </div>
-
-          <p className="text-3xl text-white font-bold mb-8" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            You are a READING SUPERSTAR! ⭐⭐⭐
-          </p>
-
-          <button
-            onClick={() => window.location.href = '/'}
-            className="bg-yellow-400 hover:bg-yellow-500 text-purple-700 font-bold py-4 px-8 rounded-2xl text-2xl transition-all hover:scale-110"
-            style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}
-          >
-            Play Again or Go Home 🏠
-          </button>
         </div>
-
-        <style>{`
-          @keyframes bounce {
-            0%, 100% {
-              transform: translateY(0) scale(1);
-              opacity: 1;
-            }
-            50% {
-              transform: translateY(-50px) scale(1.2);
-              opacity: 0.5;
-            }
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100 p-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-6xl mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={goToPrevious}
-            disabled={currentSetIndex === 0}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"
-          >
-            <ChevronLeft size={20} />
-            Previous
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 p-4"
+      style={{ fontFamily: GAME_FONTS.display }}>
+      <style>{GAME_ANIMATIONS}</style>
 
-          <div className="text-center">
-            <p className="text-gray-600 text-sm mb-1">Challenge Progress</p>
-            <p className="text-gray-800 font-semibold">
-              Set {currentSetIndex + 1} of 6
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Match 5 pairs: {matchedPairs.size} of 5 matched
-            </p>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/games" 
+            className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors">
+            ← Back
+          </Link>
+          <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
+            ⭐ {score}
           </div>
-
-          <button
-            onClick={goToNext}
-            disabled={currentSetIndex === 5}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"
-          >
-            Next
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      </div>
-
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <p className="text-gray-700 font-semibold mb-4 text-2xl" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            Match All 5 Pairs!
-          </p>
-          <p className="text-gray-500 text-sm">Click letters to hear the name, then drag small letters to big letters</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-4 border-blue-300">
-            <p className="text-center font-bold text-blue-700 mb-6" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-              Small Letters (Drag from here)
-            </p>
-            <div className="space-y-6">
-              {smallLetters.map((letter, idx) => {
-                const isMatched = matchedPairs.has(`${letter.smallLetter}-${letter.bigLetter}`);
-                return (
-                  <div
-                    key={idx}
-                    draggable={!isMatched}
-                    onDragStart={(e) => handleDragStart(e, letter)}
-                    onClick={() => playLetterSound(letter)}
-                    className={`p-6 rounded-xl text-center text-6xl font-bold transition-all cursor-grab active:cursor-grabbing ${
-                      isMatched
-                        ? 'bg-green-500 text-white opacity-50 cursor-not-allowed'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-lg hover:scale-105'
-                    }`}
-                    style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}
-                  >
-                    {letter.smallLetter}
-                    {isMatched && ' ✓'}
-                  </div>
-                );
-              })}
+        {/* Progress */}
+        <div className="bg-white/20 rounded-2xl p-3 mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <button onClick={goToPrevious} disabled={currentSetIndex === 0}
+              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-colors">
+              <ChevronLeft size={18} />
+            </button>
+            <div className="text-white font-bold text-center">
+              <div>Set {currentSetIndex + 1} of 6</div>
+              <div className="text-xs opacity-80">{matchedPairs.size}/5 matched</div>
             </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl border-4 border-yellow-300">
-            <p className="text-center font-bold text-yellow-700 mb-6" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-              Big Letters (Drag to here)
-            </p>
-            <div className="space-y-6">
-              {bigLetters.map((letter, idx) => {
-                const isMatched = matchedPairs.has(`${smallLetters.find(l => l.bigLetter === letter.bigLetter)?.smallLetter}-${letter.bigLetter}`);
-                return (
-                  <div
-                    key={idx}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDropOnBigLetter(e, letter)}
-                    onClick={() => playLetterSound(letter)}
-                    className={`p-6 rounded-xl text-center text-6xl font-bold transition-all ${
-                      isMatched
-                        ? 'bg-green-500 text-white opacity-50 border-4 border-green-600'
-                        : 'bg-yellow-500 text-white border-4 border-dashed border-yellow-600'
-                    }`}
-                    style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}
-                  >
-                    {letter.bigLetter}
-                    {isMatched && ' ✓'}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center mb-8 p-6 bg-blue-50 rounded-xl border-2 border-blue-200">
-          <p className="text-gray-700 font-bold text-lg" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-            💡 Find and drag each small letter to match its big letter! ({matchedPairs.size}/5 matched)
-          </p>
-        </div>
-
-        {stars.length > 0 && (
-          <div className="fixed inset-0 pointer-events-none flex items-center justify-center">
-            {stars.map((star) => (
-              <div
-                key={star.id}
-                className="absolute text-5xl animate-ping"
-                style={{
-                  left: `calc(50% + ${star.x}px)`,
-                  top: `calc(50% + ${star.y}px)`,
-                  animation: `ping 0.6s cubic-bezier(0, 0, 0.2, 1)`,
-                }}
-              >
-                ⭐
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showCelebration && (
-          <div className="text-center mb-8 animate-bounce">
-            <p className="text-6xl mb-4">🎉</p>
-            <p className="text-3xl font-bold text-green-600 mb-2" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-              All Matched!
-            </p>
-            <p className="text-2xl text-purple-600" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-              Excellent! You matched all 5 pairs! ✨
-            </p>
-            <p className="text-lg mt-4 text-gray-600">Moving to next set...</p>
-          </div>
-        )}
-
-        {!showCelebration && (
-          <div className="text-center">
-            <button
-              onClick={resetSet}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2 mx-auto transition"
-            >
-              <RotateCcw size={20} />
-              Reset Set
+            <button onClick={goToNext} disabled={currentSetIndex === 5}
+              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-colors">
+              <ChevronRight size={18} />
             </button>
           </div>
-        )}
-      </div>
+          <div className="h-3 bg-white/30 rounded-full overflow-hidden">
+            <div className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+              style={{ width: `${((currentSetIndex * 5 + matchedPairs.size) / 30) * 100}%` }} />
+          </div>
+        </div>
 
-      <div className="w-full max-w-6xl mt-8 bg-white rounded-xl shadow-lg p-6 border-2 border-purple-200">
-        <p className="font-bold text-gray-800 mb-3" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-          📢 How to Play:
-        </p>
-        <ol className="text-sm text-gray-700 space-y-2" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-          <li>1️⃣ You see 5 small letters on the LEFT and 5 big letters on the RIGHT</li>
-          <li>2️⃣ Click any letter to hear its name</li>
-          <li>3️⃣ Drag a small letter to match it with the same big letter</li>
-          <li>4️⃣ When they match, both turn GREEN with a checkmark ✓</li>
-          <li>5️⃣ Match all 5 pairs to see the stars! 🌟 Congratulations!</li>
-          <li>6️⃣ Complete 6 sets to master all 26 letters!</li>
-        </ol>
-      </div>
+        {/* Game Card */}
+        <div className="bg-white rounded-3xl shadow-2xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Match Small to Big!</h2>
+            <p className="text-gray-500">Tap a small letter, then tap its matching big letter</p>
+          </div>
 
-      <div className="w-full max-w-6xl mt-8 bg-yellow-50 rounded-xl shadow-lg p-6 border-2 border-yellow-300">
-        <p className="font-bold text-yellow-800 mb-2" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-          💪 Tips for Success:
-        </p>
-        <ul className="text-sm text-yellow-900 space-y-1" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-          <li>• Listen to the letter name by clicking it multiple times</li>
-          <li>• Small letters (a, b, c) are on the LEFT</li>
-          <li>• Big letters (A, B, C) are on the RIGHT</li>
-          <li>• Each set has 5 different randomized letters to match</li>
-          <li>• Once matched, letters turn green and stop accepting drags</li>
-          <li>• Complete all 6 sets to learn all 26 letters!</li>
-        </ul>
-      </div>
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {/* Small Letters */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl">
+              <p className="text-center font-bold text-blue-700 mb-4">Small Letters</p>
+              <div className="space-y-3">
+                {smallLetters.map((letter, idx) => {
+                  const isMatched = matchedPairs.has(`${letter.smallLetter}-${letter.bigLetter}`);
+                  const isSelected = selectedSmall?.smallLetter === letter.smallLetter;
+                  return (
+                    <div key={idx}
+                      draggable={!isMatched}
+                      onDragStart={(e) => handleDragStart(e, letter)}
+                      onClick={() => handleSmallLetterClick(letter)}
+                      className={`
+                        p-4 rounded-xl text-center text-5xl font-bold transition-all cursor-pointer
+                        ${isMatched ? 'bg-green-500 text-white opacity-60' : 
+                          isSelected ? 'bg-indigo-600 text-white ring-4 ring-yellow-400 scale-105' :
+                          'bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 active:scale-95'}
+                      `}>
+                      {letter.smallLetter}
+                      {isMatched && ' ✓'}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-      <style>{`
-        @keyframes ping {
-          75%, 100% {
-            transform: scale(2);
-            opacity: 0;
-          }
-        }
-      `}</style>
+            {/* Big Letters */}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-100 p-4 rounded-2xl">
+              <p className="text-center font-bold text-orange-700 mb-4">Big Letters</p>
+              <div className="space-y-3">
+                {bigLetters.map((letter, idx) => {
+                  const matchingSmall = smallLetters.find(l => l.bigLetter === letter.bigLetter);
+                  const isMatched = matchingSmall && matchedPairs.has(`${matchingSmall.smallLetter}-${letter.bigLetter}`);
+                  const isWrong = wrongAttempt === letter.bigLetter;
+                  return (
+                    <div key={idx}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDropOnBigLetter(e, letter)}
+                      onClick={() => handleBigLetterClick(letter)}
+                      className={`
+                        p-4 rounded-xl text-center text-5xl font-bold transition-all cursor-pointer
+                        ${isMatched ? 'bg-green-500 text-white opacity-60' : 
+                          isWrong ? 'bg-red-500 text-white animate-shake' :
+                          'bg-orange-500 hover:bg-orange-600 text-white border-4 border-dashed border-orange-600 hover:scale-105 active:scale-95'}
+                      `}>
+                      {letter.bigLetter}
+                      {isMatched && ' ✓'}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Selection indicator */}
+          {selectedSmall && !showCelebration && (
+            <div className="bg-indigo-100 border-2 border-indigo-400 rounded-xl p-3 mb-4 text-center">
+              <p className="text-indigo-800 font-bold">
+                Now tap the big letter that matches: <span className="text-3xl">{selectedSmall.smallLetter}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Hint after 2 wrong tries */}
+          {tries >= 2 && !showCelebration && getUnmatchedPairs().length > 0 && (
+            <div className="bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 mb-4 text-center animate-float">
+              <p className="text-yellow-800 font-bold">
+                💡 Hint: <span className="text-2xl">{getUnmatchedPairs()[0].smallLetter}</span> matches with <span className="text-2xl">{getUnmatchedPairs()[0].bigLetter}</span>
+              </p>
+            </div>
+          )}
+
+          {tries >= 1 && tries < 2 && !showCelebration && (
+            <p className="text-orange-500 text-center text-sm mb-4 animate-pulse">
+              💡 One more try for a hint!
+            </p>
+          )}
+
+          {/* Celebration Overlay */}
+          {showCelebration && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+              <div className="bg-white rounded-3xl p-8 text-center shadow-2xl animate-pop max-w-md mx-4">
+                <div className="text-7xl mb-4 animate-bounce">🎉</div>
+                <p className="text-3xl font-bold text-green-600 mb-2">{celebration}</p>
+                <p className="text-xl text-gray-600">All 5 pairs matched!</p>
+                <p className="text-gray-500 mt-2">Moving to next set...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Reset */}
+          {!showCelebration && (
+            <div className="text-center">
+              <button onClick={resetSet} 
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 mx-auto transition-colors shadow-lg">
+                <RotateCcw size={20} /> Reset
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,13 +1,13 @@
 // components/07-LetterSoundMatchingGame.tsx
-// Letter Sound Matching Game - ElevenLabs audio only
-// BUG FIX: Added shake animation and wrong sound feedback
+// Letter Sound Matching Game - Enhanced with hints, stars, and consistent design
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Volume2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { GameAudio } from '@/lib/games/audio-paths';
+import { GAME_FONTS, GAME_ANIMATIONS, getRandomCelebration } from '@/lib/games/design-system';
 
 interface Word {
   word: string;
@@ -57,9 +57,14 @@ const LetterSoundMatchingGame: React.FC = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationWord, setCelebrationWord] = useState<Word | null>(null);
   const [shakeCard, setShakeCard] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [tries, setTries] = useState(0);
+  const [score, setScore] = useState(0);
+  const [celebration, setCelebration] = useState('');
 
   const currentLetter = letterSequence[currentLetterIndex];
+  const correctWord = currentLetter.words.find(w => 
+    w.word.toLowerCase().startsWith(currentLetter.letter.toLowerCase())
+  );
 
   useEffect(() => {
     const shuffled = [...currentLetter.words].sort(() => Math.random() - 0.5);
@@ -67,107 +72,54 @@ const LetterSoundMatchingGame: React.FC = () => {
     setCorrectMatch(null);
     setShowCelebration(false);
     setShakeCard(null);
-    setFeedback(null);
+    setTries(0);
   }, [currentLetterIndex]);
 
-  // Play letter sound using ElevenLabs
   const playLetterSound = async () => {
     await GameAudio.playLetter(currentLetter.letter.toLowerCase());
   };
 
-  // Play word sound using ElevenLabs
   const playWordSound = async (word: string) => {
     try {
       await GameAudio.playWord(word.toLowerCase(), 'pink');
     } catch {
-      // Some words might not be in pink, try as sight word
       try {
         await GameAudio.playSightWord(word.toLowerCase());
       } catch {
-        console.warn(`Word "${word}" not found in audio library`);
+        console.warn(`Word "${word}" not found`);
       }
     }
   };
 
-  // Handle drag start
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  // Handle drag over
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  // Handle drop
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, word: Word) => {
-    e.preventDefault();
-
-    if (word.word.toLowerCase().startsWith(currentLetter.letter.toLowerCase())) {
-      // CORRECT
-      setCorrectMatch(word.word);
-      setCelebrationWord(word);
-      setShowCelebration(true);
-      setFeedback('✓ Correct!');
-      await GameAudio.playCorrect();
-      
-      // Play the word
-      setTimeout(() => {
-        playWordSound(word.word);
-      }, 500);
-
-      setTimeout(() => {
-        if (currentLetterIndex < letterSequence.length - 1) {
-          setCurrentLetterIndex(currentLetterIndex + 1);
-        } else {
-          setCurrentLetterIndex(0);
-        }
-      }, 2000);
-    } else {
-      // WRONG - BUG FIX: Now shows shake and plays wrong sound
-      setShakeCard(word.word);
-      setFeedback('❌ Try again!');
-      await GameAudio.playWrong();
-      
-      setTimeout(() => {
-        setShakeCard(null);
-        setFeedback(null);
-      }, 1000);
-    }
-  };
-
-  // Handle click on picture (alternative to drag)
   const handlePictureClick = async (word: Word) => {
+    if (correctMatch) return;
+
     if (word.word.toLowerCase().startsWith(currentLetter.letter.toLowerCase())) {
       // CORRECT
+      setScore(prev => prev + 1);
       setCorrectMatch(word.word);
       setCelebrationWord(word);
       setShowCelebration(true);
-      setFeedback('✓ Correct!');
+      setCelebration(getRandomCelebration('correct'));
       await GameAudio.playCorrect();
       
-      setTimeout(() => {
-        playWordSound(word.word);
-      }, 500);
+      setTimeout(() => playWordSound(word.word), 500);
 
       setTimeout(() => {
         if (currentLetterIndex < letterSequence.length - 1) {
           setCurrentLetterIndex(currentLetterIndex + 1);
         } else {
           setCurrentLetterIndex(0);
+          setScore(0);
         }
-      }, 2000);
+      }, 2500);
     } else {
       // WRONG
+      setTries(prev => prev + 1);
       setShakeCard(word.word);
-      setFeedback('❌ Try again!');
       await GameAudio.playWrong();
       
-      setTimeout(() => {
-        setShakeCard(null);
-        setFeedback(null);
-      }, 1000);
+      setTimeout(() => setShakeCard(null), 800);
     }
   };
 
@@ -183,135 +135,129 @@ const LetterSoundMatchingGame: React.FC = () => {
     setCorrectMatch(null);
     setShowCelebration(false);
     setShakeCard(null);
-    setFeedback(null);
+    setTries(0);
     const shuffled = [...currentLetter.words].sort(() => Math.random() - 0.5);
     setShuffledWords(shuffled);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4 flex flex-col items-center justify-center">
-      {/* Back button */}
-      <div className="w-full max-w-4xl mb-4">
-        <Link href="/games" className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
-          <span className="text-xl">←</span>
-          <span>Back to Games</span>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 p-4"
+      style={{ fontFamily: GAME_FONTS.display }}>
+      <style>{GAME_ANIMATIONS}</style>
 
-      {/* Header */}
-      <div className="w-full max-w-4xl mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <button onClick={goToPrevious} disabled={currentLetterIndex === 0} className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-            <ChevronLeft size={20} /> Previous
-          </button>
-
-          <div className="text-center">
-            <p className="text-gray-600 text-sm mb-1">Letter Progress</p>
-            <p className="text-gray-800 font-semibold">{currentLetterIndex + 1} of {letterSequence.length}</p>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/games" 
+            className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors flex items-center gap-2">
+            ← Back
+          </Link>
+          <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
+            ⭐ {score}
           </div>
-
-          <button onClick={goToNext} disabled={currentLetterIndex === letterSequence.length - 1} className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-            Next <ChevronRight size={20} />
-          </button>
         </div>
 
-        <div className="text-center">
-          <p className="text-gray-600 text-lg mb-2">Tap the letter to hear its sound, then tap the matching picture!</p>
-        </div>
-      </div>
-
-      {/* Main game */}
-      <div className="w-full max-w-4xl">
-        {/* Letter display */}
-        <div className="mb-12 text-center">
-          <div
-            draggable
-            onDragStart={handleDragStart}
-            onClick={playLetterSound}
-            className="inline-block bg-white rounded-2xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-shadow active:scale-95"
-          >
-            <p className="text-8xl font-bold text-indigo-600 mb-4" style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive' }}>
-              {currentLetter.letter.toLowerCase()}
-            </p>
-            <button onClick={playLetterSound} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 mx-auto transition">
-              <Volume2 size={24} /> Play Sound
+        {/* Progress */}
+        <div className="bg-white/20 rounded-2xl p-3 mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <button onClick={goToPrevious} disabled={currentLetterIndex === 0} 
+              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-1 transition-colors">
+              <ChevronLeft size={20} /> Prev
+            </button>
+            <div className="text-white font-bold">
+              Letter {currentLetterIndex + 1} of {letterSequence.length}
+            </div>
+            <button onClick={goToNext} disabled={currentLetterIndex === letterSequence.length - 1}
+              className="bg-white/30 hover:bg-white/40 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-1 transition-colors">
+              Next <ChevronRight size={20} />
             </button>
           </div>
-          <p className="text-gray-600 mt-4 text-sm">📌 Tap this letter to hear the sound, then tap the matching picture</p>
+          <div className="h-3 bg-white/30 rounded-full overflow-hidden">
+            <div className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+              style={{ width: `${((currentLetterIndex + 1) / letterSequence.length) * 100}%` }} />
+          </div>
+        </div>
+
+        {/* Letter Display */}
+        <div className="text-center mb-8">
+          <div onClick={playLetterSound}
+            className="inline-block bg-white rounded-3xl shadow-2xl p-8 cursor-pointer hover:scale-105 active:scale-95 transition-transform">
+            <p className="text-9xl font-bold text-indigo-600 mb-4">
+              {currentLetter.letter.toLowerCase()}
+            </p>
+            <button onClick={playLetterSound} 
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 mx-auto transition-colors shadow-lg">
+              <Volume2 size={24} /> Hear Sound
+            </button>
+          </div>
+          <p className="text-white/90 mt-4">Tap the letter to hear its sound, then find the matching picture!</p>
         </div>
 
         {/* Pictures */}
-        <div className="grid grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-3 gap-6 mb-8">
           {shuffledWords.map((word, index) => {
             const isCorrect = correctMatch === word.word;
             const isShaking = shakeCard === word.word;
 
             return (
-              <div
-                key={index}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, word)}
+              <div key={index}
                 onClick={() => handlePictureClick(word)}
                 className={`
-                  bg-white rounded-2xl shadow-lg p-8 text-center cursor-pointer
-                  transition-all duration-300 hover:shadow-xl hover:scale-105
-                  ${isCorrect ? 'ring-4 ring-green-500 scale-110' : ''}
+                  bg-white rounded-2xl shadow-xl p-6 text-center cursor-pointer
+                  transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95
+                  ${isCorrect ? 'ring-4 ring-green-500 scale-110 bg-green-50' : ''}
                   ${isShaking ? 'animate-shake ring-4 ring-red-500' : ''}
-                `}
-              >
-                <div className="text-8xl mb-4 inline-block" onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}>
-                  {word.picture}
-                </div>
-                <p className="text-gray-600 font-semibold text-lg mb-3 capitalize">{word.word}</p>
-                <button
-                  onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 mx-auto transition"
-                >
-                  <Volume2 size={18} /> Say Name
+                  min-h-[180px] flex flex-col items-center justify-center
+                `}>
+                <div className="text-7xl mb-3">{word.picture}</div>
+                <p className="text-gray-700 font-bold text-lg capitalize mb-2">{word.word}</p>
+                <button onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors text-sm">
+                  <Volume2 size={16} /> Say
                 </button>
               </div>
             );
           })}
         </div>
 
-        {/* Feedback */}
-        {feedback && (
-          <div className={`text-center mb-4 px-6 py-3 rounded-lg font-semibold text-lg inline-block w-full ${
-            feedback.includes('✓') ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
-          }`}>
-            {feedback}
+        {/* Hint after 2 tries */}
+        {tries >= 2 && !correctMatch && correctWord && (
+          <div className="bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 mb-6 text-center animate-float">
+            <p className="text-yellow-800 font-bold text-lg">
+              💡 Hint: Look for <span className="text-2xl">{correctWord.picture}</span> ({correctWord.word})!
+            </p>
           </div>
         )}
 
-        {/* Celebration */}
-        {showCelebration && (
-          <div className="text-center mb-8 animate-bounce">
-            <p className="text-6xl mb-4">🎉</p>
-            <p className="text-3xl font-bold text-green-600 mb-2">Excellent!</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {celebrationWord?.picture} {celebrationWord?.word.toUpperCase()} starts with {currentLetter.letter.toLowerCase()}!
-            </p>
+        {/* Try again hint */}
+        {tries >= 1 && tries < 2 && !correctMatch && (
+          <div className="text-center mb-4">
+            <p className="text-white/80 animate-pulse">💡 One more try for a hint!</p>
+          </div>
+        )}
+
+        {/* Celebration Overlay */}
+        {showCelebration && celebrationWord && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+            <div className="bg-white rounded-3xl p-8 text-center shadow-2xl animate-pop max-w-md mx-4">
+              <div className="text-7xl mb-4 animate-bounce">🎉</div>
+              <p className="text-3xl font-bold text-green-600 mb-2">{celebration}</p>
+              <div className="text-6xl mb-2">{celebrationWord.picture}</div>
+              <p className="text-2xl font-bold text-indigo-600">
+                {celebrationWord.word.toUpperCase()} starts with {currentLetter.letter.toLowerCase()}!
+              </p>
+            </div>
           </div>
         )}
 
         {/* Reset */}
         <div className="text-center">
-          <button onClick={resetCurrent} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2 mx-auto transition">
-            <RotateCcw size={20} /> Reset This Letter
+          <button onClick={resetCurrent} 
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 mx-auto transition-colors shadow-lg">
+            <RotateCcw size={20} /> Reset
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-          20%, 40%, 60%, 80% { transform: translateX(8px); }
-        }
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };

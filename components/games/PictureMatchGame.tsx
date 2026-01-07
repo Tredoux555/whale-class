@@ -1,5 +1,5 @@
 // components/games/PictureMatchGame.tsx
-// Match pictures to words with audio
+// Match pictures to words - Enhanced with hints, stars, and better feedback
 
 'use client';
 
@@ -9,6 +9,7 @@ import { WordData } from '@/lib/games/game-data';
 import { getPictureMatchLevel } from '@/lib/games/picture-match-data';
 import { GameAudio } from '@/lib/games/audio-paths';
 import Confetti from './Confetti';
+import { GAME_FONTS, GAME_ANIMATIONS, getRandomCelebration, calculateStars } from '@/lib/games/design-system';
 
 interface Props {
   phase?: string;
@@ -22,23 +23,25 @@ export default function PictureMatchGame({ phase }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [options, setOptions] = useState<WordData[]>([]);
   const [score, setScore] = useState(0);
+  const [tries, setTries] = useState(0);
   const [showCorrect, setShowCorrect] = useState(false);
   const [showWrong, setShowWrong] = useState(false);
   const [levelComplete, setLevelComplete] = useState(false);
   const [allLevelsComplete, setAllLevelsComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [celebration, setCelebration] = useState('');
 
   const wordsPerLevel = 8;
   const totalLevels = 8;
 
-  // Start game
   const startGame = () => {
     setCurrentLevel(1);
     const levelWords = getPictureMatchLevel(1);
     setWords(levelWords);
     setCurrentIndex(0);
     setScore(0);
+    setTries(0);
     setLevelComplete(false);
     setAllLevelsComplete(false);
     setGameStarted(true);
@@ -49,28 +52,23 @@ export default function PictureMatchGame({ phase }: Props) {
     if (words.length === 0 || currentIndex >= words.length) return;
     
     const current = words[currentIndex];
-    // Get wrong options from current level words
     const others = words
       .filter(w => w.word !== current.word)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
     
     setOptions([current, ...others].sort(() => Math.random() - 0.5));
+    setTries(0);
   }, [currentIndex, words]);
 
-  // Play audio for option
   const playOptionAudio = (word: WordData) => {
     GameAudio.play(word.audioUrl).catch(console.error);
   };
 
-  // Cleanup: Stop audio when component unmounts
   useEffect(() => {
-    return () => {
-      GameAudio.stop();
-    };
+    return () => { GameAudio.stop(); };
   }, []);
 
-  // Handle selection
   const handleSelect = (selected: WordData) => {
     if (showCorrect || showWrong) return;
     
@@ -78,25 +76,24 @@ export default function PictureMatchGame({ phase }: Props) {
       setScore(prev => prev + 1);
       setShowCorrect(true);
       setShowConfetti(true);
+      setCelebration(getRandomCelebration('correct'));
       GameAudio.playCorrect().catch(console.error);
       setTimeout(() => setShowConfetti(false), 2000);
     } else {
+      setTries(prev => prev + 1);
       setShowWrong(true);
       GameAudio.playWrong().catch(console.error);
     }
   };
 
-  // Next question
   const handleNext = useCallback(() => {
     setShowCorrect(false);
     setShowWrong(false);
     
     if (currentIndex + 1 >= wordsPerLevel) {
-      // Level complete!
       setLevelComplete(true);
-      GameAudio.playUI('complete').catch(console.error);
+      GameAudio.playCelebration().catch(console.error);
       
-      // Check if all levels done
       if (currentLevel >= totalLevels) {
         setAllLevelsComplete(true);
       }
@@ -111,43 +108,45 @@ export default function PictureMatchGame({ phase }: Props) {
       const levelWords = getPictureMatchLevel(currentLevel + 1);
       setWords(levelWords);
       setCurrentIndex(0);
+      setScore(0);
       setLevelComplete(false);
     }
   };
 
-  // Auto-advance
   useEffect(() => {
     if (showCorrect || showWrong) {
-      const timer = setTimeout(handleNext, showCorrect ? 1500 : 2000);
+      const delay = showCorrect ? 1500 : (tries >= 2 ? 2500 : 1500);
+      const timer = setTimeout(handleNext, delay);
       return () => clearTimeout(timer);
     }
-  }, [showCorrect, showWrong, handleNext]);
+  }, [showCorrect, showWrong, handleNext, tries]);
 
-  // ==========================================
-  // RENDER: Start Screen
-  // ==========================================
+  // Difficulty colors based on level
+  const getDifficultyColors = () => {
+    if (currentLevel <= 2) return 'from-green-400 via-emerald-400 to-teal-400';
+    if (currentLevel <= 4) return 'from-blue-400 via-indigo-400 to-purple-400';
+    if (currentLevel <= 6) return 'from-purple-400 via-pink-400 to-rose-400';
+    return 'from-rose-400 via-orange-400 to-amber-400';
+  };
+
+  // Start Screen
   if (!gameStarted) {
     return (
-      <div 
-        className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 p-4 flex items-center justify-center"
-        style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 p-4 flex items-center justify-center"
+        style={{ fontFamily: GAME_FONTS.display }}>
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
           <div className="text-8xl mb-4">🖼️</div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Picture Match</h1>
-          <p className="text-gray-600 mb-6">Look at the picture and find the matching word!</p>
+          <p className="text-gray-600 mb-2">Look at the picture and find the matching word!</p>
+          <p className="text-gray-500 text-sm mb-6">8 levels • 64 words total</p>
           
-          <button
-            onClick={startGame}
-            className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-2xl font-bold text-xl hover:opacity-90"
-          >
+          <button onClick={startGame}
+            className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-lg">
             🎮 Start Game
           </button>
           
-          <button
-            onClick={() => router.push('/games')}
-            className="mt-4 w-full py-3 bg-gray-200 text-gray-700 rounded-xl font-bold"
-          >
+          <button onClick={() => router.push('/games')}
+            className="mt-4 w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-colors">
             ← Back to Games
           </button>
         </div>
@@ -155,37 +154,45 @@ export default function PictureMatchGame({ phase }: Props) {
     );
   }
 
-  // ==========================================
-  // RENDER: Level Complete
-  // ==========================================
+  // Level Complete
   if (levelComplete && !allLevelsComplete) {
+    const stars = calculateStars(score, wordsPerLevel);
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
-        style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-      >
-        {score >= 6 && <Confetti />}
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
+        style={{ fontFamily: GAME_FONTS.display }}>
+        <style>{GAME_ANIMATIONS}</style>
+        {stars >= 2 && <Confetti />}
         
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
-          <div className="text-6xl mb-4">{score >= 6 ? '🎉' : '💪'}</div>
+          <div className="text-6xl mb-4">{stars >= 2 ? '🎉' : '💪'}</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
             Level {currentLevel} Complete!
           </h2>
-          <p className="text-gray-600 text-xl mb-6">
+          <p className="text-gray-600 text-xl mb-4">
             You matched {score} out of {wordsPerLevel}!
           </p>
 
+          {/* Stars */}
+          <div className="flex justify-center gap-3 mb-6">
+            {[1, 2, 3].map((star) => (
+              <span key={star} 
+                className={`text-5xl transition-all ${star <= stars ? 'animate-pulse' : 'opacity-30 grayscale'}`}>
+                ⭐
+              </span>
+            ))}
+          </div>
+
           <div className="space-y-3">
-            <button
-              onClick={handleNextLevel}
-              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl"
-            >
-              {currentLevel < totalLevels ? `→ Level ${currentLevel + 1}` : '🎉 All Done!'}
+            <button onClick={handleNextLevel}
+              className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-xl transition-colors shadow-lg">
+              → Level {currentLevel + 1}
             </button>
-            <button
-              onClick={() => router.push('/games')}
-              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl"
-            >
+            <button onClick={() => { setLevelComplete(false); setScore(0); setCurrentIndex(0); }}
+              className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-colors">
+              🔄 Replay Level
+            </button>
+            <button onClick={() => router.push('/games')}
+              className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-colors">
               ← Back to Games
             </button>
           </div>
@@ -194,35 +201,28 @@ export default function PictureMatchGame({ phase }: Props) {
     );
   }
   
-  // All levels complete
+  // All Levels Complete
   if (allLevelsComplete) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
-        style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-      >
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400"
+        style={{ fontFamily: GAME_FONTS.display }}>
         <Confetti />
         
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
-          <div className="text-6xl mb-4">🏆</div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            All Levels Complete!
-          </h2>
-          <p className="text-gray-600 text-xl mb-6">
-            You finished all {totalLevels} levels!
+          <div className="text-8xl mb-4">🏆</div>
+          <h2 className="text-4xl font-bold text-gray-800 mb-2">Champion!</h2>
+          <p className="text-gray-600 text-xl mb-2">You finished all {totalLevels} levels!</p>
+          <p className="text-green-600 text-lg font-bold mb-6">
+            {getRandomCelebration('allComplete')}
           </p>
 
           <div className="space-y-3">
-            <button
-              onClick={startGame}
-              className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl"
-            >
+            <button onClick={startGame}
+              className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-xl transition-colors shadow-lg">
               🔄 Play Again
             </button>
-            <button
-              onClick={() => router.push('/games')}
-              className="w-full py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold text-xl"
-            >
+            <button onClick={() => router.push('/games')}
+              className="w-full py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-2xl font-bold text-xl transition-colors">
               ← Back to Games
             </button>
           </div>
@@ -231,63 +231,85 @@ export default function PictureMatchGame({ phase }: Props) {
     );
   }
 
-  // ==========================================
-  // RENDER: Game Play
-  // ==========================================
+  // Game Play
   const currentWord = words[currentIndex];
 
   return (
-    <div 
-      className="min-h-screen p-4 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
-    >
+    <div className={`min-h-screen p-4 bg-gradient-to-br ${getDifficultyColors()}`}
+      style={{ fontFamily: GAME_FONTS.display }}>
+      <style>{GAME_ANIMATIONS}</style>
       {showConfetti && <Confetti />}
 
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => router.push('/games')} className="text-white font-bold">
+          <button onClick={() => router.push('/games')} 
+            className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl hover:bg-white/30 transition-colors">
             ← Back
           </button>
-          <div className="text-white font-bold">
-            Level {currentLevel} - {currentIndex + 1} / {wordsPerLevel}
+          <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
+            Level {currentLevel}
           </div>
-          <div className="text-white font-bold">⭐ {score}</div>
+          <div className="text-white font-bold bg-white/20 px-4 py-2 rounded-xl">
+            ⭐ {score}
+          </div>
         </div>
 
         {/* Progress */}
-        <div className="h-3 bg-white/30 rounded-full overflow-hidden mb-6">
-          <div 
-            className="h-full bg-white rounded-full transition-all"
-            style={{ width: `${((currentIndex + 1) / wordsPerLevel) * 100}%` }}
-          />
+        <div className="bg-white/20 rounded-2xl p-3 mb-6">
+          <div className="flex justify-between text-white/90 text-sm mb-2">
+            <span>Question {currentIndex + 1} of {wordsPerLevel}</span>
+            <span>{Math.round(((currentIndex + 1) / wordsPerLevel) * 100)}%</span>
+          </div>
+          <div className="h-4 bg-white/30 rounded-full overflow-hidden">
+            <div className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+              style={{ width: `${((currentIndex + 1) / wordsPerLevel) * 100}%` }} />
+          </div>
         </div>
 
         {/* Game Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-6 relative overflow-hidden">
-          {/* Feedback */}
+          {/* Correct Overlay */}
           {showCorrect && (
-            <div className="absolute inset-0 flex items-center justify-center bg-green-500/90 rounded-3xl z-10">
+            <div className="absolute inset-0 flex items-center justify-center bg-green-500/95 rounded-3xl z-10 animate-pop">
               <div className="text-center">
                 <div className="text-8xl mb-4 animate-bounce">✅</div>
-                <p className="text-white text-3xl font-bold">Correct!</p>
+                <p className="text-white text-3xl font-bold mb-2">{celebration}</p>
+                <p className="text-white/90 text-2xl font-bold bg-white/20 px-6 py-2 rounded-xl inline-block">
+                  {currentWord.word}
+                </p>
               </div>
             </div>
           )}
           
+          {/* Wrong Overlay */}
           {showWrong && (
-            <div className="absolute inset-0 flex items-center justify-center bg-orange-500/90 rounded-3xl z-10">
-              <div className="text-center">
-                <div className="text-6xl mb-4">❌</div>
-                <p className="text-white text-2xl font-bold">The answer was: {currentWord.word}</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-orange-500/95 rounded-3xl z-10">
+              <div className="text-center animate-shake">
+                <div className="text-7xl mb-4">🤔</div>
+                {tries >= 2 ? (
+                  <>
+                    <p className="text-white text-2xl font-bold mb-2">Here's the answer!</p>
+                    <div className="bg-white/20 px-6 py-3 rounded-xl animate-float">
+                      <p className="text-white text-3xl font-bold">💡 {currentWord.word}</p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-white text-2xl font-bold">Try again!</p>
+                )}
               </div>
             </div>
           )}
 
           {/* Picture */}
           <div className="text-center mb-6">
-            <div className="text-9xl mb-2">{currentWord.image}</div>
-            <p className="text-gray-500">Find the word for this picture!</p>
+            <div className="text-9xl mb-4">{currentWord.image}</div>
+            <p className="text-gray-500 text-lg">Find the word for this picture!</p>
+            {tries >= 1 && tries < 2 && (
+              <p className="text-orange-500 text-sm mt-2 animate-pulse">
+                💡 One more try for a hint!
+              </p>
+            )}
           </div>
 
           {/* Options */}
@@ -298,8 +320,16 @@ export default function PictureMatchGame({ phase }: Props) {
                 onClick={() => handleSelect(option)}
                 onMouseEnter={() => playOptionAudio(option)}
                 disabled={showCorrect || showWrong}
-                className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl text-2xl font-bold text-gray-800 shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-              >
+                className={`
+                  p-5 rounded-2xl text-2xl font-bold shadow-lg 
+                  transition-all duration-200 
+                  hover:scale-105 active:scale-95
+                  disabled:opacity-50 disabled:pointer-events-none
+                  bg-gradient-to-br from-blue-100 to-purple-100 
+                  hover:from-blue-200 hover:to-purple-200
+                  text-gray-800
+                  min-h-[72px]
+                `}>
                 {option.word}
               </button>
             ))}

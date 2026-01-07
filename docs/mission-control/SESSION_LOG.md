@@ -7,6 +7,65 @@ This is the brain. New thoughts get added here.
 
 ---
 
+## 2026-01-08 Session 1 (PER-CLASSROOM CURRICULUM)
+
+### Context
+Continued from previous session where we designed the per-classroom curriculum system.
+Each classroom should get its own editable copy of the curriculum so teachers can customize what's on their shelves.
+
+### What We Built
+
+**1. Database Migration** (`migrations/022_classroom_curriculum.sql`)
+- `classroom_curriculum` table - each classroom gets copy of curriculum
+- `clone_curriculum_to_classroom()` function - copies master to classroom
+- Auto-clone trigger on classroom creation
+- `quick_place_student()` function for bulk progress updates
+- RLS policies for access control
+
+**2. API Routes**
+- `app/api/classroom/[classroomId]/curriculum/route.ts`
+  - GET: Fetch classroom curriculum (grouped by area)
+  - PATCH: Update work (toggle on_shelf, add notes, rename)
+  - POST: Add custom work
+- `app/api/students/[studentId]/quick-place/route.ts`
+  - GET: Get current positions + curriculum dropdown options
+  - POST: Set positions (marks previous as mastered)
+
+**3. Page Components**
+- `app/teacher/curriculum/page.tsx` - Teacher curriculum editor
+  - 5 area tabs
+  - Toggle "On Shelf" / "Not Available" per work
+  - Search works
+  - Hide inactive works
+- `app/teacher/students/[studentId]/quick-place/page.tsx`
+  - 5 dropdowns (one per area)
+  - Select current work → previous marked mastered
+  - Visual feedback on changes
+
+### Files Created
+```
+migrations/022_classroom_curriculum.sql
+app/api/classroom/[classroomId]/curriculum/route.ts
+app/api/students/[studentId]/quick-place/route.ts
+app/teacher/curriculum/page.tsx
+app/teacher/students/[studentId]/quick-place/page.tsx
+HANDOFF_JAN8_2026.md
+```
+
+### NEXT STEP: Run Migration in Supabase
+
+1. Go to Supabase SQL Editor
+2. Copy contents of `migrations/022_classroom_curriculum.sql`
+3. Run
+4. Verify: `SELECT COUNT(*) FROM classroom_curriculum;`
+
+### After Migration
+- Test `/teacher/curriculum`
+- Test `/teacher/students/[id]/quick-place`
+- Add links from teacher dashboard
+
+---
+
 ## 2026-01-07 Session 4 (AUDIO FIX SESSION)
 
 ### Context
@@ -225,6 +284,37 @@ Classroom page UI improvements requested - swipe gestures and notes functionalit
 - `/lib/sound-games/sound-utils.ts` - Fixed audio paths to `/audio/ui/`
 - `/docs/mission-control/CURRICULUM_AUDIT.md` - New file
 - `/docs/mission-control/AUDIT_REPORT_JAN7.md` - New comprehensive audit
+
+---
+
+## Session 6: Games Phase 2 - Visual Polish (Jan 7, 2026 Evening)
+
+### Summary
+Polished ALL 8 English games with consistent design system, hint systems, and UX improvements.
+
+### Created
+- `lib/games/design-system.ts` - Colors, fonts, animations, celebrations
+- `components/games/GameShell.tsx` - Reusable wrapper with overlays
+
+### Enhanced Games (8 total)
+1. **MissingLetterGame** - Hints after 2 tries, stars, shake animation
+2. **SightFlashGame** - Hints, timer bar, stars
+3. **PictureMatchGame** - Hints, stars, random celebrations
+4. **07-LetterSoundMatchingGame** - Hints, score, overlay celebration
+5. **08-WordBuildingGame** - Hints (next letter), click-to-place mobile support
+6. **09-SentenceMatchingGame** - Hints, score, celebrations
+7. **10-SentenceBuilderGame** - Hints (next word), score
+8. **12-BigToSmallLetterMatchingGame** - Click-to-match, hints, score
+
+### Design System Features
+- **Hint Pattern**: After 2 wrong tries, show helpful hint
+- **Star Ratings**: 3 stars (90%+), 2 (70%+), 1 (50%+)
+- **Animations**: shake, pop, float, bounce
+- **Touch Targets**: 72px minimum
+- **Difficulty Gradients**: Easy→Hard color progression
+
+### Status: COMPLETE ✅
+All 10 games (including Sound Games) now polished and production-ready.
 
 ---
 

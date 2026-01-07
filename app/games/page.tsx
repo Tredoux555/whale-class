@@ -1,5 +1,5 @@
 // app/games/page.tsx
-// Main games hub page
+// Main games hub page - All English reading games
 
 'use client';
 
@@ -7,6 +7,7 @@ import React from 'react';
 import Link from 'next/link';
 
 const GAMES = [
+  // Sound Games (ElevenLabs audio) - links to dedicated page
   {
     id: 'sound-games',
     name: 'Sound Games',
@@ -15,6 +16,7 @@ const GAMES = [
     color: '#f59e0b',
     minAge: 2,
   },
+  // Letter recognition games
   {
     id: 'letter-sound',
     name: 'Letter Sounds',
@@ -31,6 +33,15 @@ const GAMES = [
     color: '#f97316',
     minAge: 2,
   },
+  {
+    id: 'letter-match',
+    name: 'Big to Small',
+    description: 'Match uppercase to lowercase!',
+    icon: '🔠',
+    color: '#06b6d4',
+    minAge: 3,
+  },
+  // Word building games
   {
     id: 'word-building',
     name: 'Word Building',
@@ -55,6 +66,7 @@ const GAMES = [
     color: '#3b82f6',
     minAge: 4,
   },
+  // Fluency games
   {
     id: 'sight-flash',
     name: 'Sight Flash',
@@ -64,11 +76,19 @@ const GAMES = [
     minAge: 4,
   },
   {
+    id: 'sentence-match',
+    name: 'Sentence Match',
+    description: 'Match sentences to pictures!',
+    icon: '🎯',
+    color: '#ec4899',
+    minAge: 4,
+  },
+  {
     id: 'sentence-build',
     name: 'Sentence Build',
     description: 'Put words in order!',
     icon: '📝',
-    color: '#ec4899',
+    color: '#a855f7',
     minAge: 5,
   },
 ];
