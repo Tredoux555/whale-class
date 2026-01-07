@@ -35,15 +35,25 @@ export default function MiddleSoundGame() {
   }, []);
 
   // Play the word then emphasize the middle sound
-  const playWordStretched = async (word: CVCWord) => {
+  const playWordStretched = async (word: CVCWord, includeInstruction: boolean = true) => {
     setIsPlaying(true);
 
-    // Play the word first
-    await soundGameAudio.playWord(word.word);
-    await new Promise((r) => setTimeout(r, 400));
-    
-    // Then play the middle vowel sound
-    await GameAudio.playLetter(word.middleSound);
+    try {
+      if (includeInstruction) {
+        // Play instruction first
+        await GameAudio.play('/audio-new/instructions/i-spy-middle.mp3');
+        await new Promise((r) => setTimeout(r, 300));
+      }
+
+      // Play the word
+      await soundGameAudio.playWord(word.word);
+      await new Promise((r) => setTimeout(r, 400));
+      
+      // Then play the middle vowel sound
+      await GameAudio.playLetter(word.middleSound);
+    } catch (err) {
+      console.error('Error playing audio:', err);
+    }
 
     setIsPlaying(false);
   };
@@ -100,14 +110,14 @@ export default function MiddleSoundGame() {
 
       setTimeout(() => {
         setFeedback(null);
-        playWordStretched(currentWord);
+        playWordStretched(currentWord, false);
       }, 2000);
     }
   };
 
   const handleReplay = () => {
     if (currentWord && !isPlaying) {
-      playWordStretched(currentWord);
+      playWordStretched(currentWord, false);
     }
   };
 
