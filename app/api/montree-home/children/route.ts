@@ -31,25 +31,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ children: children || [] });
     }
 
-    const childrenWithProgress = await Promise.all(
-      (children || []).map(async (child) => {
-        const { data: summary } = await supabase.rpc('get_home_child_progress_summary', {
-          p_child_id: child.id
-        });
+    // Get total curriculum count
+    const { count: totalWorks } = await supabase
+      .from('home_curriculum_master')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
 
-        return {
-          ...child,
-          progress_summary: summary || {
-            total_works: 0,
-            mastered: 0,
-            practicing: 0,
-            presented: 0,
-            overall_percent: 0,
-            by_area: {}
-          }
+    // Get all progress records for these children
+    const childIds = (children || []).map(c => c.id);
+    const { data: allProgress } = await supabase
+      .from('home_child_progress')
+      .select('*')
+      .in('child_id', childIds);
+
+    // Get curriculum areas for grouping
+    const { data: curriculum } = await supabase
+      .from('home_curriculum_master')
+      .select('id, area')
+      .eq('is_active', true);
+
+    const curriculumMap = new Map((curriculum || []).map(c => [c.id, c.area]));
+
+    // Calculate progress for each child
+    const childrenWithProgress = (children || []).map((child) => {
+      const childProgress = (allProgress || []).filter(p => p.child_id === child.id);
+      
+      const mastered = childProgress.filter(p => p.status === 3).length;
+      const practicing = childProgress.filter(p => p.status === 2).length;
+      const presented = childProgress.filter(p => p.status === 1).length;
+
+      // Group by area
+      const byArea: Record<string, { total: number; mastered: number; practicing: number; presented: number }> = {};
+      
+      const areas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      areas.forEach(area => {
+        const areaItems = (curriculum || []).filter(c => c.area === area);
+        const areaProgress = childProgress.filter(p => curriculumMap.get(p.curriculum_work_id) === area);
+        
+        byArea[area] = {
+          total: areaItems.length,
+          mastered: areaProgress.filter(p => p.status === 3).length,
+          practicing: areaProgress.filter(p => p.status === 2).length,
+          presented: areaProgress.filter(p => p.status === 1).length
         };
-      })
-    );
+      });
+
+      return {
+        ...child,
+        progress_summary: {
+          total_works: totalWorks || 250,
+          mastered,
+          practicing,
+          presented,
+          overall_percent: totalWorks ? Math.round((mastered / totalWorks) * 100) : 0,
+          by_area: byArea
+        }
+      };
+    });
 
     return NextResponse.json({ children: childrenWithProgress });
   } catch (error: unknown) {
