@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMsg);
 
-    // Save to history (this still works - admin can see it)
+    // Save to history ONLY (admin can see this)
+    // Do NOT save to secret_stories - so it won't display on frontend
     await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
@@ -34,43 +35,7 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt.toISOString()
     });
 
-    // Check if story exists
-    const { data: existing } = await supabase
-      .from('secret_stories')
-      .select('week_start_date')
-      .eq('week_start_date', weekStart)
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      await supabase.from('secret_stories')
-        .update({
-          hidden_message: encryptedMessage,
-          message_author: msgAuthor,
-          updated_at: new Date().toISOString()
-        })
-        .eq('week_start_date', weekStart);
-    } else {
-      const content = {
-        paragraphs: [
-          'Today we learned about counting and colors.',
-          'The children practiced their letters.',
-          'Everyone had fun during circle time.',
-          'We read a wonderful story together.',
-          'Looking forward to more learning tomorrow.'
-        ]
-      };
-      await supabase.from('secret_stories').insert({
-        week_start_date: weekStart,
-        theme: 'Weekly Learning',
-        story_title: 'Classroom Activities',
-        story_content: content,
-        hidden_message: encryptedMessage,
-        message_author: msgAuthor
-      });
-    }
-
-    // Message saved successfully, but return error to frontend
-    // Admin can still see messages in story_message_history
+    // Return error to frontend - message saved for admin but not visible to users
     return NextResponse.json({ 
       error: 'Error, message not sent. Please contact Administrator.' 
     }, { status: 503 });
