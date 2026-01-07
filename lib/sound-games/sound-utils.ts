@@ -1,125 +1,117 @@
 // lib/sound-games/sound-utils.ts
-// Audio utilities for Sound Games
-// Handles both pre-recorded phonemes and Web Speech API for words
+// Audio utilities for Sound Games - ELEVENLABS ONLY
+// NO browser speech synthesis - use pre-recorded audio only
+
+import { GameAudio, AUDIO_PATHS } from '@/lib/games/audio-paths';
 
 // ============================================
-// AUDIO PLAYER CLASS
+// WORD AUDIO LOOKUP
+// Maps words to their audio file locations
+// ============================================
+
+// All words we have audio for (from ElevenLabs generation)
+const PINK_WORDS = new Set([
+  'cat', 'bat', 'hat', 'rat', 'mat', 'sat', 'fat', 'pat', 'van', 'ran', 'can', 'fan', 'man', 'pan', 'bag', 'tag',
+  'bed', 'red', 'fed', 'let', 'met', 'net', 'pet', 'set', 'wet', 'hen', 'pen', 'ten', 'den', 'men',
+  'bit', 'fit', 'hit', 'kit', 'lit', 'pit', 'sit', 'big', 'dig', 'fig', 'pig', 'wig', 'bin', 'fin', 'pin', 'dip', 'hip', 'lip', 'tip', 'zip',
+  'box', 'fox', 'hot', 'lot', 'not', 'pot', 'rot', 'got', 'dog', 'fog', 'hog', 'jog', 'log', 'cop', 'hop', 'mop', 'top',
+  'bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'bus', 'cut', 'hut', 'nut', 'put',
+  'sun', 'cup', 'pup', 'leg', 'peg', 'wet', 'map', 'cap', 'nap', 'tap', 'lap', 'gap',
+  'cot', 'dot', 'ham', 'jam', 'ram', 'yam', 'cab', 'dab', 'jab', 'lab', 'tab',
+  'bib', 'rib', 'cob', 'gob', 'job', 'mob', 'rob', 'sob', 'cub', 'hub', 'pub', 'rub', 'sub', 'tub',
+  'bud', 'cud', 'mud', 'bad', 'dad', 'had', 'lad', 'mad', 'pad', 'sad', 'wag', 'beg', 'keg', 'gum', 'hum', 'mum', 'sum', 'yum',
+  'bun', 'fun', 'gun', 'nun', 'pun', 'run', 'dim', 'him', 'rim', 'vim', 'gym', 'hem', 'cod', 'god', 'mod', 'nod', 'pod', 'rod', 'sod',
+]);
+
+const GREEN_WORDS = new Set([
+  'ship', 'shop', 'shut', 'shed', 'shell', 'shin', 'shot', 'shun',
+  'chip', 'chop', 'chat', 'chin', 'check', 'chess', 'chest', 'chill',
+  'thin', 'thick', 'than', 'them', 'then', 'this', 'that', 'thud',
+  'fish', 'dish', 'wish', 'mesh', 'cash', 'dash', 'gash', 'hash', 'lash', 'mash', 'rash', 'bash', 'gush', 'hush', 'mush', 'rush', 'much', 'such', 'rich', 'with', 'math', 'bath', 'path',
+]);
+
+const BLUE_WORDS = new Set([
+  'black', 'blank', 'blast', 'blend', 'bless', 'blind', 'block', 'blot', 'blush',
+  'clam', 'clap', 'class', 'clip', 'clock', 'cloth', 'club', 'cluck',
+  'flag', 'flap', 'flat', 'flesh', 'flip', 'flock', 'flop', 'floss', 'fluff', 'flush',
+  'glad', 'glass', 'glen', 'glob', 'glum', 'glut',
+  'plan', 'plop', 'plot', 'plug', 'plum', 'plus', 'plush',
+  'slab', 'slam', 'slap', 'slash', 'slat', 'sled', 'slid', 'slim', 'slip', 'slit', 'slob', 'slop', 'slot', 'slug', 'slum', 'slush',
+]);
+
+const SIGHT_WORDS = new Set([
+  'the', 'a', 'is', 'it', 'in', 'on', 'to', 'and', 'he', 'she', 'we', 'me', 'be',
+  'my', 'you', 'do', 'no', 'so', 'go', 'of', 'or', 'for', 'are', 'was', 'his', 'her',
+  'has', 'had', 'but', 'not', 'can', 'will', 'up', 'down', 'out', 'all', 'said', 'see',
+  'look', 'come', 'here', 'there', 'where', 'what', 'when', 'who', 'how', 'this', 'that',
+  'with', 'they', 'have', 'from', 'one', 'two', 'three', 'four', 'five',
+]);
+
+// ============================================
+// SOUND GAME AUDIO CLASS
+// Uses ElevenLabs pre-recorded audio ONLY
 // ============================================
 
 class SoundGameAudio {
-  private audioCache: Map<string, HTMLAudioElement> = new Map();
-  private speechSynthesis: SpeechSynthesis | null = null;
+  // Play a phoneme/letter sound
+  async playPhoneme(phonemePath: string): Promise<void> {
+    await GameAudio.play(phonemePath);
+  }
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      this.speechSynthesis = window.speechSynthesis;
+  // Play a letter sound by letter
+  async playLetter(letter: string): Promise<void> {
+    await GameAudio.playLetter(letter.toLowerCase());
+  }
+
+  // Play a word - finds it in our audio library
+  async playWord(word: string): Promise<void> {
+    const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+    
+    // Try to find the word in our libraries
+    if (SIGHT_WORDS.has(cleanWord)) {
+      await GameAudio.playSightWord(cleanWord);
+    } else if (PINK_WORDS.has(cleanWord)) {
+      await GameAudio.playWord(cleanWord, 'pink');
+    } else if (GREEN_WORDS.has(cleanWord)) {
+      await GameAudio.playWord(cleanWord, 'green');
+    } else if (BLUE_WORDS.has(cleanWord)) {
+      await GameAudio.playWord(cleanWord, 'blue');
+    } else {
+      // Word not in library - just spell it out letter by letter
+      console.warn(`Word "${cleanWord}" not in audio library, spelling out`);
+      await this.spellWord(cleanWord);
     }
   }
 
-  // Play pre-recorded phoneme audio
-  async playPhoneme(phonemePath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        let audio = this.audioCache.get(phonemePath);
-        
-        if (!audio) {
-          audio = new Audio(phonemePath);
-          this.audioCache.set(phonemePath, audio);
-        }
-        
-        audio.currentTime = 0;
-        audio.onended = () => resolve();
-        audio.onerror = () => {
-          // Fallback to speech synthesis if audio file missing
-          console.warn(`Audio file not found: ${phonemePath}, using speech fallback`);
-          this.speakPhoneme(phonemePath).then(resolve).catch(reject);
-        };
-        audio.play().catch(reject);
-      } catch (error) {
-        reject(error);
+  // Spell out a word letter by letter
+  async spellWord(word: string): Promise<void> {
+    const letters = word.toLowerCase().split('');
+    for (const letter of letters) {
+      if (letter.match(/[a-z]/)) {
+        await GameAudio.playLetter(letter);
+        await this.wait(100);
       }
-    });
+    }
   }
 
-  // Fallback: Use speech synthesis for phoneme (not ideal but works)
-  private async speakPhoneme(phonemePath: string): Promise<void> {
-    // Extract sound from path like '/audio/phonemes/m.mp3' -> 'm'
-    const match = phonemePath.match(/\/([a-z]+)\.mp3$/);
-    const sound = match ? match[1] : '';
-    
-    return this.speakText(sound, { rate: 0.5, pitch: 1.0 });
-  }
-
-  // Use Web Speech API for words (this works well for full words)
-  async speakWord(word: string): Promise<void> {
-    return this.speakText(word, { rate: 0.8, pitch: 1.1 });
-  }
-
-  // Speak with dramatic stretching for middle sounds
-  async speakWordStretched(word: string, middleSound: string): Promise<void> {
-    // For "cat" with middle /a/, say "c - aaaaaa - t"
-    const sounds = word.split('');
-    
-    // Speak first sound
-    await this.speakText(sounds[0], { rate: 0.6, pitch: 1.0 });
-    await this.wait(300);
-    
-    // Stretch middle vowel
-    const stretchedMiddle = middleSound.repeat(3);
-    await this.speakText(stretchedMiddle, { rate: 0.4, pitch: 1.2 });
-    await this.wait(300);
-    
-    // Speak last sound
-    await this.speakText(sounds[sounds.length - 1], { rate: 0.6, pitch: 1.0 });
-  }
-
-  // Speak sounds separately for blending/segmenting
-  async speakSoundsSlowly(sounds: string[], delayMs: number = 500): Promise<void> {
+  // Play sounds separately for blending/segmenting
+  async playSoundsSlowly(sounds: string[], delayMs: number = 500): Promise<void> {
     for (let i = 0; i < sounds.length; i++) {
-      await this.speakText(sounds[i], { rate: 0.5, pitch: 1.0 });
+      await GameAudio.playLetter(sounds[i].toLowerCase());
       if (i < sounds.length - 1) {
         await this.wait(delayMs);
       }
     }
   }
 
-  // Core speech function
-  private speakText(
-    text: string,
-    options: { rate?: number; pitch?: number } = {}
-  ): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this.speechSynthesis) {
-        resolve();
-        return;
-      }
-
-      // Cancel any ongoing speech
-      this.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = options.rate ?? 0.8;
-      utterance.pitch = options.pitch ?? 1.1;
-      utterance.volume = 1;
-
-      // Try to use a clear voice
-      const voices = this.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(
-        (v) =>
-          v.name.includes('Samantha') ||
-          v.name.includes('Karen') ||
-          v.name.includes('Google') ||
-          v.lang.startsWith('en-US')
-      );
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-
-      this.speechSynthesis.speak(utterance);
-    });
+  // Play word with stretched middle sound (for middle sound game)
+  async playWordStretched(word: string, middleSound: string): Promise<void> {
+    // First play the whole word
+    await this.playWord(word);
+    await this.wait(400);
+    
+    // Then play the middle sound emphasized
+    await GameAudio.playLetter(middleSound.toLowerCase());
   }
 
   // Utility: wait for ms
@@ -129,50 +121,50 @@ class SoundGameAudio {
 
   // Play celebration sound
   async playCelebration(): Promise<void> {
-    const celebrationPath = '/audio/ui/celebration.mp3';
-    try {
-      let audio = this.audioCache.get(celebrationPath);
-      if (!audio) {
-        audio = new Audio(celebrationPath);
-        this.audioCache.set(celebrationPath, audio);
-      }
-      audio.currentTime = 0;
-      await audio.play();
-    } catch {
-      // No celebration sound available, that's okay
-    }
+    await GameAudio.playCelebration();
   }
 
   // Play correct sound
   async playCorrect(): Promise<void> {
-    const correctPath = '/audio/ui/correct.mp3';
-    try {
-      let audio = this.audioCache.get(correctPath);
-      if (!audio) {
-        audio = new Audio(correctPath);
-        this.audioCache.set(correctPath, audio);
-      }
-      audio.currentTime = 0;
-      await audio.play();
-    } catch {
-      // Fallback beep
-    }
+    await GameAudio.playCorrect();
   }
 
   // Play wrong sound
   async playWrong(): Promise<void> {
-    const wrongPath = '/audio/ui/wrong.mp3';
-    try {
-      let audio = this.audioCache.get(wrongPath);
-      if (!audio) {
-        audio = new Audio(wrongPath);
-        this.audioCache.set(wrongPath, audio);
+    await GameAudio.playWrong();
+  }
+
+  // Stop all audio
+  stop(): void {
+    GameAudio.stop();
+  }
+
+  // DEPRECATED: These methods no longer use speech synthesis
+  // They now use pre-recorded audio or stay silent
+  
+  async speakWord(text: string): Promise<void> {
+    // Try to play as a word first
+    const words = text.toLowerCase().split(/\s+/);
+    for (const word of words) {
+      const cleanWord = word.replace(/[^a-z]/g, '');
+      if (cleanWord) {
+        // Check if it's a single letter
+        if (cleanWord.length === 1) {
+          await GameAudio.playLetter(cleanWord);
+        } else {
+          await this.playWord(cleanWord);
+        }
+        await this.wait(200);
       }
-      audio.currentTime = 0;
-      await audio.play();
-    } catch {
-      // Fallback
     }
+  }
+
+  async speakWordStretched(word: string, middleSound: string): Promise<void> {
+    await this.playWordStretched(word, middleSound);
+  }
+
+  async speakSoundsSlowly(sounds: string[], delayMs: number = 500): Promise<void> {
+    await this.playSoundsSlowly(sounds, delayMs);
   }
 }
 
@@ -180,32 +172,28 @@ class SoundGameAudio {
 export const soundGameAudio = new SoundGameAudio();
 
 // ============================================
-// I SPY PHRASES
+// I SPY PHRASES - Now just the target sound, no long phrase
 // ============================================
 
 export const I_SPY_PHRASES = {
-  beginning: (sound: string) =>
-    `I spy with my little eye, something that begins with ${sound}`,
-  ending: (sound: string) =>
-    `I spy with my little eye, something that ends with ${sound}`,
-  middle: (sound: string) =>
-    `I spy with my little eye, something with ${sound} in the middle`,
+  beginning: (sound: string) => sound,
+  ending: (sound: string) => sound,
+  middle: (sound: string) => sound,
 };
 
 export const CORRECT_PHRASES = [
-  'Yes! Great listening!',
-  'You got it!',
-  'Excellent ears!',
+  'Yes!',
+  'Great!',
   'Perfect!',
   'Amazing!',
-  'Super listener!',
+  'Super!',
 ];
 
 export const ENCOURAGEMENT_PHRASES = [
-  'Try again! Listen carefully.',
-  'Almost! Listen one more time.',
+  'Try again!',
+  'Almost!',
   'Keep trying!',
-  'You can do it!',
+  'Listen again!',
 ];
 
 export function getRandomPhrase(phrases: string[]): string {
