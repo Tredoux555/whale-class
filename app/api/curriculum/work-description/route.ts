@@ -47,40 +47,14 @@ const allAreas: AreaData[] = [
   culturalData as AreaData,
 ];
 
-// Search for work by name (fuzzy match)
-function findWork(searchName: string): { work: CurriculumWork | null; area: string; category: string } {
-  const normalizedSearch = searchName.toLowerCase().trim();
+// Search for work by exact ID
+function findWorkById(workId: string): { work: CurriculumWork | null; area: string; category: string } {
+  const normalizedId = workId.toLowerCase().trim();
   
   for (const area of allAreas) {
     for (const category of area.categories) {
       for (const work of category.works) {
-        // Exact match
-        if (work.name.toLowerCase() === normalizedSearch) {
-          return { work, area: area.name, category: category.name };
-        }
-        // Contains match
-        if (work.name.toLowerCase().includes(normalizedSearch) || 
-            normalizedSearch.includes(work.name.toLowerCase())) {
-          return { work, area: area.name, category: category.name };
-        }
-        // Chinese name match
-        if (work.chineseName && work.chineseName.includes(normalizedSearch)) {
-          return { work, area: area.name, category: category.name };
-        }
-      }
-    }
-  }
-  
-  // Fuzzy search - word matching
-  for (const area of allAreas) {
-    for (const category of area.categories) {
-      for (const work of category.works) {
-        const searchWords = normalizedSearch.split(/\s+/);
-        const workWords = work.name.toLowerCase().split(/\s+/);
-        const matchCount = searchWords.filter(sw => 
-          workWords.some(ww => ww.includes(sw) || sw.includes(ww))
-        ).length;
-        if (matchCount >= Math.max(1, searchWords.length / 2)) {
+        if (work.id.toLowerCase() === normalizedId) {
           return { work, area: area.name, category: category.name };
         }
       }
@@ -88,6 +62,115 @@ function findWork(searchName: string): { work: CurriculumWork | null; area: stri
   }
   
   return { work: null, area: '', category: '' };
+}
+
+// Search for work by name with improved matching
+function findWorkByName(searchName: string): { work: CurriculumWork | null; area: string; category: string } {
+  const normalizedSearch = searchName.toLowerCase().trim();
+  
+  // 1. Try exact match first
+  for (const area of allAreas) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        if (work.name.toLowerCase() === normalizedSearch) {
+          return { work, area: area.name, category: category.name };
+        }
+      }
+    }
+  }
+  
+  // 2. Try Chinese name exact match
+  for (const area of allAreas) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        if (work.chineseName && work.chineseName === searchName) {
+          return { work, area: area.name, category: category.name };
+        }
+      }
+    }
+  }
+  
+  // 3. Try "starts with" match (e.g., "Pink Tower" matches "Pink Tower")
+  for (const area of allAreas) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        if (work.name.toLowerCase().startsWith(normalizedSearch) || 
+            normalizedSearch.startsWith(work.name.toLowerCase())) {
+          return { work, area: area.name, category: category.name };
+        }
+      }
+    }
+  }
+  
+  // 4. Try word-based matching (all search words must be in work name)
+  const searchWords = normalizedSearch.split(/\s+/).filter(w => w.length > 2);
+  if (searchWords.length > 0) {
+    for (const area of allAreas) {
+      for (const category of area.categories) {
+        for (const work of category.works) {
+          const workLower = work.name.toLowerCase();
+          const allWordsMatch = searchWords.every(sw => workLower.includes(sw));
+          if (allWordsMatch) {
+            return { work, area: area.name, category: category.name };
+          }
+        }
+      }
+    }
+  }
+  
+  // 5. Try partial match - work name contains search or vice versa (but require significant overlap)
+  for (const area of allAreas) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        const workLower = work.name.toLowerCase();
+        // Require at least 60% character overlap
+        const minLength = Math.min(workLower.length, normalizedSearch.length);
+        if (minLength >= 4) {
+          if (workLower.includes(normalizedSearch) || normalizedSearch.includes(workLower)) {
+            return { work, area: area.name, category: category.name };
+          }
+        }
+      }
+    }
+  }
+  
+  // 6. Levenshtein-like fuzzy match for close names (typos, slight variations)
+  let bestMatch: { work: CurriculumWork; area: string; category: string; score: number } | null = null;
+  
+  for (const area of allAreas) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        const workLower = work.name.toLowerCase();
+        const score = similarityScore(normalizedSearch, workLower);
+        if (score > 0.7 && (!bestMatch || score > bestMatch.score)) {
+          bestMatch = { work, area: area.name, category: category.name, score };
+        }
+      }
+    }
+  }
+  
+  if (bestMatch) {
+    return { work: bestMatch.work, area: bestMatch.area, category: bestMatch.category };
+  }
+  
+  return { work: null, area: '', category: '' };
+}
+
+// Simple similarity score (0-1) based on common characters
+function similarityScore(a: string, b: string): number {
+  if (a === b) return 1;
+  if (a.length === 0 || b.length === 0) return 0;
+  
+  const setA = new Set(a.split(''));
+  const setB = new Set(b.split(''));
+  const intersection = [...setA].filter(c => setB.has(c)).length;
+  const union = new Set([...setA, ...setB]).size;
+  
+  // Jaccard similarity + length penalty
+  const jaccardSim = intersection / union;
+  const lengthRatio = Math.min(a.length, b.length) / Math.max(a.length, b.length);
+  
+  return (jaccardSim * 0.6) + (lengthRatio * 0.4);
 }
 
 export async function GET(request: NextRequest) {
@@ -99,14 +182,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing name or id parameter' }, { status: 400 });
   }
   
-  const searchTerm = workName || workId || '';
-  const { work, area, category } = findWork(searchTerm);
+  let result: { work: CurriculumWork | null; area: string; category: string };
+  
+  // If ID is provided, try ID lookup first
+  if (workId) {
+    result = findWorkById(workId);
+    // If ID lookup fails, try name-based search on the ID (might be a name stored as ID)
+    if (!result.work) {
+      result = findWorkByName(workId);
+    }
+  } else {
+    result = findWorkByName(workName || '');
+  }
+  
+  const { work, area, category } = result;
   
   if (!work) {
     return NextResponse.json({ 
       found: false,
       message: 'No description found for this work',
-      searchTerm 
+      searchTerm: workId || workName
     });
   }
   
