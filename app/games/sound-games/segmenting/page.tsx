@@ -1,10 +1,10 @@
 // app/games/sound-games/segmenting/page.tsx
 // Sound Segmenting Game - ElevenLabs audio only
-// BUG FIX: Added proper wrong answer handling
+// FIXED: Better audio handling and immediate playback
 
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
@@ -21,10 +21,50 @@ export default function SoundSegmentingGame() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const getRandomWord = useCallback((): CVCWord => {
     return CVC_WORDS[Math.floor(Math.random() * CVC_WORDS.length)];
   }, []);
+
+  // Simple audio play function
+  const playAudio = async (path: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        
+        audio.onended = () => resolve();
+        audio.onerror = (e) => {
+          console.warn('Audio error:', path, e);
+          resolve();
+        };
+        
+        audio.play().catch((err) => {
+          console.warn('Audio play failed:', path, err);
+          resolve();
+        });
+      } catch (e) {
+        console.warn('Audio exception:', e);
+        resolve();
+      }
+    });
+  };
+
+  // Play sounds slowly
+  const playSoundsSlowly = async (sounds: string[], delayMs: number = 400) => {
+    for (let i = 0; i < sounds.length; i++) {
+      await playAudio(`/audio-new/letters/${sounds[i].toLowerCase()}.mp3`);
+      if (i < sounds.length - 1) {
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+    }
+  };
 
   const playWord = async (word: CVCWord) => {
     setIsPlaying(true);
@@ -32,19 +72,18 @@ export default function SoundSegmentingGame() {
     setIsPlaying(false);
   };
 
-  const startGame = () => {
+  const startGame = async () => {
+    const firstWord = getRandomWord();
+    
     setGameState('playing');
     setScore(0);
     setRoundsPlayed(0);
-
-    const firstWord = getRandomWord();
     setCurrentWord(firstWord);
     setTappedSounds([]);
     setShowHint(false);
 
-    setTimeout(() => {
-      playWord(firstWord);
-    }, 500);
+    // Play immediately on user click
+    await playWord(firstWord);
   };
 
   // Handle circle tap - play the sound for that position
@@ -59,7 +98,7 @@ export default function SoundSegmentingGame() {
     setIsPlaying(true);
     const soundIndex = newTapped.length - 1;
     if (soundIndex < currentWord.sounds.length) {
-      await soundGameAudio.playLetter(currentWord.sounds[soundIndex]);
+      await playAudio(`/audio-new/letters/${currentWord.sounds[soundIndex].toLowerCase()}.mp3`);
     } else {
       // Extra tap beyond the word length
       await soundGameAudio.playWrong();
@@ -81,12 +120,12 @@ export default function SoundSegmentingGame() {
 
       // Play the segmented sounds
       setTimeout(async () => {
-        await soundGameAudio.playSoundsSlowly(currentWord.sounds, 400);
+        await playSoundsSlowly(currentWord.sounds, 400);
       }, 500);
 
       setGameState('feedback');
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const newRoundsPlayed = roundsPlayed + 1;
         setRoundsPlayed(newRoundsPlayed);
 
@@ -100,13 +139,11 @@ export default function SoundSegmentingGame() {
           setShowHint(false);
           const nextWord = getRandomWord();
           setCurrentWord(nextWord);
-          setTimeout(() => {
-            playWord(nextWord);
-          }, 500);
+          await playWord(nextWord);
         }
       }, 2500);
     } else {
-      // WRONG ANSWER - BUG FIX: Now properly handles wrong answers
+      // WRONG ANSWER
       setFeedback({ 
         correct: false, 
         message: `${getRandomPhrase(ENCOURAGEMENT_PHRASES)} This word has ${correctCount} sounds.`
@@ -115,44 +152,26 @@ export default function SoundSegmentingGame() {
 
       // Show the correct segmentation
       setTimeout(async () => {
-        await soundGameAudio.playSoundsSlowly(currentWord.sounds, 400);
+        await playSoundsSlowly(currentWord.sounds, 400);
       }, 1000);
 
-      // Reset and let them try again
+      // Reset after showing correct
       setTimeout(() => {
         setFeedback(null);
         setTappedSounds([]);
-        playWord(currentWord);
+        setShowHint(true);
       }, 3000);
     }
   };
 
-  const handleSubmit = () => {
-    if (currentWord && tappedSounds.length > 0) {
-      checkAnswer(tappedSounds.length);
-    }
-  };
-
-  const handleReset = () => {
-    setTappedSounds([]);
-    setFeedback(null);
-  };
-
-  // Show hint after 10 seconds
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const hintTimer = setTimeout(() => {
-      setShowHint(true);
-    }, 10000);
-
-    return () => clearTimeout(hintTimer);
-  }, [gameState, tappedSounds]);
-
-  const handleReplay = () => {
+  const handleReplay = async () => {
     if (currentWord && !isPlaying) {
-      playWord(currentWord);
+      await playWord(currentWord);
     }
+  };
+
+  const resetTaps = () => {
+    setTappedSounds([]);
   };
 
   // Intro Screen
@@ -162,16 +181,10 @@ export default function SoundSegmentingGame() {
         <div className="text-center p-8 max-w-md">
           <div className="text-8xl mb-6">✂️</div>
           <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Sound Segmenting</h1>
-          <p className="text-xl text-white/90 mb-6">Break words into their sounds! Tap a circle for each sound you hear.</p>
+          <p className="text-xl text-white/90 mb-6">Break words into their sounds! Tap once for each sound you hear.</p>
 
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-8">
-            <p className="text-white mb-3"><strong>Example:</strong> 🐱 cat</p>
-            <div className="flex justify-center gap-3">
-              <div className="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center">👆</div>
-              <div className="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center">👆</div>
-              <div className="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center">👆</div>
-            </div>
-            <p className="text-white/80 text-sm mt-2">3 taps for 3 sounds: /c/ /a/ /t/</p>
+            <p className="text-white"><strong>Example:</strong><br />"cat" → tap tap tap (3 sounds: /c/ /a/ /t/)</p>
           </div>
 
           <button onClick={startGame} className="w-full p-4 bg-white text-rose-600 rounded-2xl font-bold text-xl" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
@@ -193,7 +206,7 @@ export default function SoundSegmentingGame() {
       <div className="min-h-screen bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Sound Segmenter!</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Sound Slicer!</h1>
           <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
 
           <div className="space-y-4">
@@ -217,65 +230,74 @@ export default function SoundSegmentingGame() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>How many sounds do you hear?</p>
+          <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            How many sounds in this word?
+          </p>
 
           <div className="text-9xl mb-4">{currentWord?.image}</div>
 
           <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
-            {isPlaying ? '🔊 Listening...' : '🔊 Hear Word'}
+            {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
           </button>
-
-          {showHint && currentWord && (
-            <p className="mt-4 text-white/70 text-sm">💡 Hint: This word has {currentWord.sounds.length} sounds</p>
+          
+          {/* Debug info */}
+          {currentWord && (
+            <p className="text-white/50 text-xs mt-2">
+              Word: {currentWord.word} | Sounds: {currentWord.sounds.length}
+            </p>
           )}
         </div>
 
-        <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-6 mb-6">
-          <p className="text-center text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Tap a circle for each sound:</p>
+        {/* Hint after wrong answer */}
+        {showHint && currentWord && (
+          <div className="bg-yellow-400 text-yellow-900 rounded-xl p-3 mb-4 text-center">
+            <span className="font-bold">💡 Hint:</span> "{currentWord.word}" has {currentWord.sounds.length} sounds!
+          </div>
+        )}
 
-          <div className="flex justify-center gap-3 mb-4">
+        {/* Tapping circles */}
+        <div className="bg-white/10 rounded-2xl p-6 mb-6">
+          <p className="text-white text-center mb-4">Tap a circle for each sound you hear:</p>
+          <div className="flex justify-center gap-3 flex-wrap">
             {[0, 1, 2, 3, 4].map((index) => (
               <button
                 key={index}
                 onClick={() => handleCircleTap(index)}
-                disabled={tappedSounds.includes(index) || isPlaying}
+                disabled={tappedSounds.includes(index) || gameState !== 'playing'}
                 className={`
-                  w-16 h-16 rounded-full border-4 transition-all transform flex items-center justify-center text-2xl
-                  ${tappedSounds.includes(index)
-                    ? 'bg-green-400 border-green-300 scale-90'
-                    : 'bg-white/30 border-white/50 hover:scale-110 hover:bg-white/50'
-                  }
+                  w-16 h-16 rounded-full border-4 transition-all transform
+                  ${tappedSounds.includes(index) 
+                    ? 'bg-yellow-400 border-yellow-300 scale-90' 
+                    : 'bg-white/30 border-white/50 hover:scale-110 hover:bg-white/50'}
                 `}
               >
-                {tappedSounds.includes(index) ? '✓' : '○'}
+                {tappedSounds.includes(index) && <span className="text-2xl">✓</span>}
               </button>
             ))}
           </div>
-
-          <p className="text-center text-white text-2xl font-bold">
-            {tappedSounds.length} sound{tappedSounds.length !== 1 ? 's' : ''} tapped
-          </p>
+          <p className="text-white/70 text-center mt-4">Tapped: {tappedSounds.length} sounds</p>
         </div>
 
-        <div className="flex gap-4">
+        {/* Check button */}
+        <div className="flex justify-center gap-4 mb-6">
           <button
-            onClick={handleReset}
-            disabled={tappedSounds.length === 0 || isPlaying}
-            className="flex-1 p-4 bg-white/20 text-white rounded-2xl font-bold text-lg disabled:opacity-50"
+            onClick={resetTaps}
+            disabled={tappedSounds.length === 0 || gameState !== 'playing'}
+            className="px-6 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 disabled:opacity-50"
           >
-            Reset ↺
+            ↩️ Reset
           </button>
           <button
-            onClick={handleSubmit}
-            disabled={tappedSounds.length === 0 || isPlaying}
-            className="flex-1 p-4 bg-white text-rose-600 rounded-2xl font-bold text-lg disabled:opacity-50"
+            onClick={() => checkAnswer(tappedSounds.length)}
+            disabled={tappedSounds.length === 0 || gameState !== 'playing'}
+            className="px-8 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 disabled:opacity-50"
           >
-            Check! ✓
+            ✓ Check Answer
           </button>
         </div>
 
         {feedback && (
-          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <div className={`p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             {feedback.message}
           </div>
         )}

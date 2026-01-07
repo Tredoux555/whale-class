@@ -1,13 +1,13 @@
 // app/games/sound-games/ending/page.tsx
 // I Spy Ending Sounds Game - ElevenLabs audio only
+// FIXED: Better audio handling and immediate playback on user click
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { ENDING_SOUNDS, PHONEME_AUDIO, type EndingSoundGroup, type SoundWord } from '@/lib/sound-games/sound-games-data';
+import { ENDING_SOUNDS, PHONEME_AUDIO, type SoundWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { GameAudio } from '@/lib/games/audio-paths';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -25,6 +25,7 @@ export default function ISpyEndingGame() {
   const [totalRounds] = useState(10);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const generateRound = useCallback((): GameRound => {
     const soundGroup = ENDING_SOUNDS[Math.floor(Math.random() * ENDING_SOUNDS.length)];
@@ -39,34 +40,74 @@ export default function ISpyEndingGame() {
     return { targetSound: soundGroup.sound, targetWord, options: allOptions };
   }, []);
 
+  // Simple audio play function that handles errors gracefully
+  const playAudio = async (path: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        // Stop any current audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        
+        audio.onended = () => resolve();
+        audio.onerror = (e) => {
+          console.warn('Audio error:', path, e);
+          resolve();
+        };
+        
+        audio.play().catch((err) => {
+          console.warn('Audio play failed:', path, err);
+          resolve();
+        });
+      } catch (e) {
+        console.warn('Audio exception:', e);
+        resolve();
+      }
+    });
+  };
+
+  // Play instruction + phoneme sound
   const playTargetSound = async (sound: string, includeInstruction: boolean = true) => {
     setIsPlaying(true);
+    
     try {
       if (includeInstruction) {
-        await GameAudio.play('/audio-new/instructions/i-spy-ending.mp3');
-        await new Promise(r => setTimeout(r, 300));
+        await playAudio('/audio-new/instructions/i-spy-ending.mp3');
+        await new Promise(r => setTimeout(r, 400));
       }
+      
+      // Get the phoneme path
       const phonemePath = PHONEME_AUDIO[sound];
+      console.log('Playing phoneme:', sound, phonemePath);
+      
       if (phonemePath) {
-        await GameAudio.play(phonemePath);
+        await playAudio(phonemePath);
+      } else {
+        // Fallback: try to play from letters folder directly
+        await playAudio(`/audio-new/letters/${sound}.mp3`);
       }
     } catch (err) {
-      console.error('Error playing audio:', err);
+      console.error('Error in playTargetSound:', err);
     }
+    
     setIsPlaying(false);
   };
 
-  const startGame = () => {
+  // Start game - IMMEDIATELY play audio on user click
+  const startGame = async () => {
+    const firstRound = generateRound();
+    
     setGameState('playing');
     setScore(0);
     setRoundsPlayed(0);
-
-    const firstRound = generateRound();
     setCurrentRound(firstRound);
-
-    setTimeout(() => {
-      playTargetSound(firstRound.targetSound);
-    }, 500);
+    
+    // Play immediately - don't use setTimeout (browser blocks delayed audio)
+    await playTargetSound(firstRound.targetSound);
   };
 
   const handleOptionSelect = async (selected: SoundWord) => {
@@ -79,13 +120,14 @@ export default function ISpyEndingGame() {
       setFeedback({ correct: true, message: getRandomPhrase(CORRECT_PHRASES) });
       await soundGameAudio.playCorrect();
 
+      // Play the word
       setTimeout(async () => {
         await soundGameAudio.playWord(selected.word);
       }, 500);
 
       setGameState('feedback');
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const newRoundsPlayed = roundsPlayed + 1;
         setRoundsPlayed(newRoundsPlayed);
 
@@ -97,25 +139,24 @@ export default function ISpyEndingGame() {
           setGameState('playing');
           const nextRound = generateRound();
           setCurrentRound(nextRound);
-          setTimeout(() => {
-            playTargetSound(nextRound.targetSound);
-          }, 500);
+          // Small delay then play (within user interaction window)
+          await playTargetSound(nextRound.targetSound);
         }
       }, 2000);
     } else {
       setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES) });
       await soundGameAudio.playWrong();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         setFeedback(null);
-        playTargetSound(currentRound!.targetSound, false);
+        await playTargetSound(currentRound!.targetSound, false);
       }, 1500);
     }
   };
 
-  const handleReplay = () => {
+  const handleReplay = async () => {
     if (currentRound && !isPlaying) {
-      playTargetSound(currentRound.targetSound, false);
+      await playTargetSound(currentRound.targetSound, false);
     }
   };
 
@@ -189,11 +230,24 @@ export default function ISpyEndingGame() {
             I spy something that <span className="font-bold">ENDS</span> with...
           </p>
 
-          <button onClick={handleReplay} disabled={isPlaying} className={`text-9xl transition-transform ${isPlaying ? 'animate-pulse' : 'hover:scale-110'}`}>
+          <button 
+            onClick={handleReplay} 
+            disabled={isPlaying} 
+            className={`text-9xl transition-transform ${isPlaying ? 'animate-pulse' : 'hover:scale-110'}`}
+          >
             👂
           </button>
 
-          <p className="text-white/70 mt-4">{isPlaying ? 'Listening...' : 'Tap to hear again'}</p>
+          <p className="text-white/70 mt-4">
+            {isPlaying ? '🔊 Listening...' : 'Tap to hear again'}
+          </p>
+          
+          {/* Debug info - remove in production */}
+          {currentRound && (
+            <p className="text-white/50 text-xs mt-2">
+              Sound: /{currentRound.targetSound}/
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -1,13 +1,13 @@
 // app/games/sound-games/middle/page.tsx
 // Middle Sound Match Game - ElevenLabs audio only
+// FIXED: Better audio handling and immediate playback
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, VOWEL_COLORS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { GameAudio } from '@/lib/games/audio-paths';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -29,10 +29,40 @@ export default function MiddleSoundGame() {
   const [totalRounds] = useState(10);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string; correctVowel?: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const getRandomWord = useCallback((): CVCWord => {
     return CVC_WORDS[Math.floor(Math.random() * CVC_WORDS.length)];
   }, []);
+
+  // Simple audio play function
+  const playAudio = async (path: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        
+        audio.onended = () => resolve();
+        audio.onerror = (e) => {
+          console.warn('Audio error:', path, e);
+          resolve();
+        };
+        
+        audio.play().catch((err) => {
+          console.warn('Audio play failed:', path, err);
+          resolve();
+        });
+      } catch (e) {
+        console.warn('Audio exception:', e);
+        resolve();
+      }
+    });
+  };
 
   // Play the word then emphasize the middle sound
   const playWordStretched = async (word: CVCWord, includeInstruction: boolean = true) => {
@@ -40,8 +70,7 @@ export default function MiddleSoundGame() {
 
     try {
       if (includeInstruction) {
-        // Play instruction first
-        await GameAudio.play('/audio-new/instructions/i-spy-middle.mp3');
+        await playAudio('/audio-new/instructions/listen-carefully.mp3');
         await new Promise((r) => setTimeout(r, 300));
       }
 
@@ -50,7 +79,8 @@ export default function MiddleSoundGame() {
       await new Promise((r) => setTimeout(r, 400));
       
       // Then play the middle vowel sound
-      await GameAudio.playLetter(word.middleSound);
+      console.log('Playing middle sound:', word.middleSound);
+      await playAudio(`/audio-new/letters/${word.middleSound}.mp3`);
     } catch (err) {
       console.error('Error playing audio:', err);
     }
@@ -58,17 +88,16 @@ export default function MiddleSoundGame() {
     setIsPlaying(false);
   };
 
-  const startGame = () => {
+  const startGame = async () => {
+    const firstWord = getRandomWord();
+    
     setGameState('playing');
     setScore(0);
     setRoundsPlayed(0);
-
-    const firstWord = getRandomWord();
     setCurrentWord(firstWord);
 
-    setTimeout(() => {
-      playWordStretched(firstWord);
-    }, 500);
+    // Play immediately on user click
+    await playWordStretched(firstWord);
   };
 
   const handleVowelSelect = async (selectedVowel: string) => {
@@ -87,7 +116,7 @@ export default function MiddleSoundGame() {
 
       setGameState('feedback');
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const newRoundsPlayed = roundsPlayed + 1;
         setRoundsPlayed(newRoundsPlayed);
 
@@ -99,25 +128,23 @@ export default function MiddleSoundGame() {
           setGameState('playing');
           const nextWord = getRandomWord();
           setCurrentWord(nextWord);
-          setTimeout(() => {
-            playWordStretched(nextWord);
-          }, 500);
+          await playWordStretched(nextWord);
         }
       }, 2000);
     } else {
       setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES), correctVowel: currentWord.middleSound });
       await soundGameAudio.playWrong();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         setFeedback(null);
-        playWordStretched(currentWord, false);
+        await playWordStretched(currentWord, false);
       }, 2000);
     }
   };
 
-  const handleReplay = () => {
+  const handleReplay = async () => {
     if (currentWord && !isPlaying) {
-      playWordStretched(currentWord, false);
+      await playWordStretched(currentWord, false);
     }
   };
 
@@ -193,6 +220,13 @@ export default function MiddleSoundGame() {
           <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
             {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
           </button>
+          
+          {/* Debug info */}
+          {currentWord && (
+            <p className="text-white/50 text-xs mt-2">
+              Word: {currentWord.word} | Middle: /{currentWord.middleSound}/
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-5 gap-3">

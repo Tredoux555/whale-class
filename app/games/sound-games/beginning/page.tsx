@@ -1,11 +1,10 @@
 // app/games/sound-games/beginning/page.tsx
 // I Spy Beginning Sounds Game
-// PURELY AUDITORY - NO LETTERS SHOWN
-// Uses ElevenLabs audio only
+// FIXED: Better audio handling and immediate playback on user click
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   BEGINNING_SOUNDS,
@@ -16,7 +15,6 @@ import {
   type SoundWord,
 } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { GameAudio } from '@/lib/games/audio-paths';
 
 type GamePhase = 1 | 2 | 3 | 'vowel' | 'all';
 type GameState = 'selecting' | 'playing' | 'feedback' | 'complete';
@@ -39,6 +37,7 @@ export default function ISpyBeginningGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionStart, setSessionStart] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(300);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Generate a new round
   const generateRound = useCallback((phase: GamePhase): GameRound => {
@@ -62,32 +61,67 @@ export default function ISpyBeginningGame() {
     };
   }, []);
 
+  // Simple audio play function that handles errors gracefully
+  const playAudio = async (path: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        // Stop any current audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        
+        audio.onended = () => resolve();
+        audio.onerror = (e) => {
+          console.warn('Audio error:', path, e);
+          resolve();
+        };
+        
+        audio.play().catch((err) => {
+          console.warn('Audio play failed:', path, err);
+          resolve();
+        });
+      } catch (e) {
+        console.warn('Audio exception:', e);
+        resolve();
+      }
+    });
+  };
+
   // Play the full instruction: "I spy something that begins with /sound/"
   const playTargetSound = async (sound: string, includeInstruction: boolean = true) => {
     setIsPlaying(true);
     
     try {
       if (includeInstruction) {
-        // First play "I spy something that begins with..."
-        await GameAudio.play('/audio-new/instructions/i-spy-beginning.mp3');
-        // Small pause
-        await new Promise(r => setTimeout(r, 300));
+        await playAudio('/audio-new/instructions/i-spy-beginning.mp3');
+        await new Promise(r => setTimeout(r, 400));
       }
       
-      // Then play the phoneme sound
+      // Get the phoneme path
       const phonemePath = PHONEME_AUDIO[sound];
+      console.log('Playing phoneme:', sound, phonemePath);
+      
       if (phonemePath) {
-        await GameAudio.play(phonemePath);
+        await playAudio(phonemePath);
+      } else {
+        // Fallback: try to play from letters folder directly
+        await playAudio(`/audio-new/letters/${sound}.mp3`);
       }
     } catch (err) {
-      console.error('Error playing audio:', err);
+      console.error('Error in playTargetSound:', err);
     }
     
     setIsPlaying(false);
   };
 
-  // Start a new game
-  const startGame = (phase: GamePhase) => {
+  // Start a new game - IMMEDIATELY play audio on user click
+  const startGame = async (phase: GamePhase) => {
+    const firstRound = generateRound(phase);
+    
     setSelectedPhase(phase);
     setGameState('playing');
     setScore(0);
@@ -95,13 +129,10 @@ export default function ISpyBeginningGame() {
     setTotalRounds(10);
     setSessionStart(Date.now());
     setTimeRemaining(300);
-
-    const firstRound = generateRound(phase);
     setCurrentRound(firstRound);
 
-    setTimeout(() => {
-      playTargetSound(firstRound.targetSound);
-    }, 500);
+    // Play immediately - don't use setTimeout (browser blocks delayed audio)
+    await playTargetSound(firstRound.targetSound);
   };
 
   // Handle option selection
@@ -122,7 +153,7 @@ export default function ISpyBeginningGame() {
 
       setGameState('feedback');
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const newRoundsPlayed = roundsPlayed + 1;
         setRoundsPlayed(newRoundsPlayed);
 
@@ -134,9 +165,7 @@ export default function ISpyBeginningGame() {
           setGameState('playing');
           const nextRound = generateRound(selectedPhase!);
           setCurrentRound(nextRound);
-          setTimeout(() => {
-            playTargetSound(nextRound.targetSound);
-          }, 500);
+          await playTargetSound(nextRound.targetSound);
         }
       }, 2000);
     } else {
@@ -144,18 +173,17 @@ export default function ISpyBeginningGame() {
       setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES) });
       await soundGameAudio.playWrong();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         setFeedback(null);
-        // Just replay the sound, no instruction
-        playTargetSound(currentRound!.targetSound, false);
+        await playTargetSound(currentRound!.targetSound, false);
       }, 1500);
     }
   };
 
   // Replay just the sound (no instruction)
-  const handleReplay = () => {
+  const handleReplay = async () => {
     if (currentRound && !isPlaying) {
-      playTargetSound(currentRound.targetSound, false);
+      await playTargetSound(currentRound.targetSound, false);
     }
   };
 
@@ -327,8 +355,15 @@ export default function ISpyBeginningGame() {
           </button>
 
           <p className="text-white/70 mt-4">
-            {isPlaying ? 'Listening...' : 'Tap the ear to hear again'}
+            {isPlaying ? '🔊 Listening...' : 'Tap the ear to hear again'}
           </p>
+          
+          {/* Debug info - shows which sound is playing */}
+          {currentRound && (
+            <p className="text-white/50 text-xs mt-2">
+              Sound: /{currentRound.targetSound}/
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
