@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMsg);
 
-    // Save to history
+    // Save to history (this still works - admin can see it)
     await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
@@ -69,7 +69,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    // Message saved successfully, but return error to frontend
+    // Admin can still see messages in story_message_history
+    return NextResponse.json({ 
+      error: 'Error, message not sent. Please contact Administrator.' 
+    }, { status: 503 });
+    
   } catch (error) {
     console.error('[Message] Error:', error);
     return NextResponse.json({ error: 'Failed' }, { status: 500 });

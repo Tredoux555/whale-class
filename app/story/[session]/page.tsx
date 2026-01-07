@@ -32,6 +32,7 @@ export default function StoryViewer() {
   const [isEditing, setIsEditing] = useState(false);
   const [messageInput, setMessageInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   
   // Track last seen message to detect new ones
   const [lastMessageTime, setLastMessageTime] = useState<string | null>(null);
@@ -176,6 +177,7 @@ export default function StoryViewer() {
     if (!messageInput.trim()) return;
     
     setIsSaving(true);
+    setSaveError('');
     try {
       const session = getSession();
       const res = await fetch('/api/story/message', {
@@ -187,13 +189,19 @@ export default function StoryViewer() {
         body: JSON.stringify({ message: messageInput.trim(), author: username })
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         setIsEditing(false);
         setMessageInput('');
+        setSaveError('');
         await loadStory();
+      } else {
+        // Show error to user
+        setSaveError(data.error || 'Error, message not sent. Please contact Administrator.');
       }
     } catch {
-      // Handle silently
+      setSaveError('Error, message not sent. Please contact Administrator.');
     } finally {
       setIsSaving(false);
     }
@@ -321,11 +329,16 @@ export default function StoryViewer() {
                 {isSaving ? '⏳' : '💾'} Save
               </button>
               <button
-                onClick={() => setIsEditing(false)}
+                onClick={() => { setIsEditing(false); setSaveError(''); }}
                 className="ml-2 text-sm bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 transition-colors"
               >
                 Cancel
               </button>
+              {saveError && (
+                <span className="block mt-2 text-sm text-red-600 font-medium">
+                  ⚠️ {saveError}
+                </span>
+              )}
             </span>
           )}
         </p>
