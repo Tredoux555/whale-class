@@ -145,12 +145,10 @@ export default function SwipeableWorkRow({
     setDescriptionError('');
     
     try {
-      // Use work_id if available (more accurate), otherwise fall back to name
-      const searchParam = assignment.work_id 
-        ? `id=${encodeURIComponent(assignment.work_id)}`
-        : `name=${encodeURIComponent(assignment.work_name)}`;
-      
-      const res = await fetch(`/api/curriculum/work-description?${searchParam}`);
+      // Always search by work_name - it's the common link between
+      // weekly_assignments.work_name and curriculum JSON work.name
+      // Note: work_id is a UUID from curriculum_roadmap, NOT the JSON id
+      const res = await fetch(`/api/curriculum/work-description?name=${encodeURIComponent(assignment.work_name)}`);
       const data = await res.json();
       
       if (data.found && data.work) {
