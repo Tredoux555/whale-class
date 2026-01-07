@@ -1,87 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// GET /api/montree-home/curriculum - Get master curriculum
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const familyId = searchParams.get('familyId');
-    const area = searchParams.get('area');
-
-    // If familyId provided, get family's curriculum
-    // Otherwise get master curriculum template
-    let query;
-    
-    if (familyId) {
-      query = supabase
-        .from('home_curriculum')
-        .select('*')
-        .eq('family_id', familyId)
-        .eq('is_active', true);
-    } else {
-      // Get from master template or first family as template
-      query = supabase
-        .from('home_curriculum_master')
-        .select('*')
-        .eq('is_active', true);
-    }
-
-    if (area) {
-      query = query.eq('area', area);
-    }
-
-    query = query
-      .order('area_sequence')
-      .order('category_sequence')
-      .order('sequence');
-
-    const { data: curriculum, error } = await query;
-
-    if (error) {
-      // If master table doesn't exist, return empty array
-      if (error.code === '42P01') {
-        return NextResponse.json({ curriculum: [] });
-      }
-      console.error('Error fetching curriculum:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ curriculum: curriculum || [] });
-  } catch (error) {
-    console.error('Curriculum GET error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
 
-// POST /api/montree-home/curriculum - Update curriculum item
-export async function POST(request: NextRequest) {
-  try {
-    const { id, updates } = await request.json();
+export async function GET(request: NextRequest) {
+  const supabase = getSupabase();
+  const { searchParams } = new URL(request.url);
+  const familyId = searchParams.get('family_id');
+  const master = searchParams.get('master') === 'true';
 
-    if (!id) {
-      return NextResponse.json({ error: 'Curriculum item ID is required' }, { status: 400 });
+  try {
+    if (master) {
+      const { data, error } = await supabase
+        .from('home_curriculum_master')
+        .select('*')
+        .eq('is_active', true)
+        .order('area_sequence')
+        .order('category_sequence')
+        .order('sequence');
+
+      if (error) throw error;
+      return NextResponse.json({ curriculum: data || [] });
+    }
+
+    if (!familyId) {
+      return NextResponse.json({ error: 'family_id required' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('home_curriculum')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+      .select('*')
+      .eq('family_id', familyId)
+      .eq('is_active', true)
+      .order('area_sequence')
+      .order('category_sequence')
+      .order('sequence');
 
-    if (error) {
-      console.error('Error updating curriculum:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) throw error;
+    return NextResponse.json({ curriculum: data || [] });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching curriculum:', error);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
+  try {
+    const body = await request.json();
+    const { id, family_id, materials_owned, notes, is_active } = body;
+
+    if (!id || !family_id) {
+      return NextResponse.json(
+        { error: 'id and family_id required' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true, curriculum: data });
-  } catch (error) {
-    console.error('Curriculum POST error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (materials_owned !== undefined) updates.materials_owned = materials_owned;
+    if (notes !== undefined) updates.notes = notes;
+    if (is_active !== undefined) updates.is_active = is_active;
+
+    const { error } = await supabase
+      .from('home_curriculum')
+      .update(updates)
+      .eq('id', id)
+      .eq('family_id', family_id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating curriculum:', error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
