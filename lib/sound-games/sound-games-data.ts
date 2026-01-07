@@ -38,38 +38,38 @@ export interface CVCWord {
 // ============================================
 
 export const PHONEME_AUDIO: Record<string, string> = {
-  // Consonants - using /audio/letters/ folder
-  's': '/audio/letters/s.mp3',
-  'm': '/audio/letters/m.mp3',
-  'f': '/audio/letters/f.mp3',
-  'n': '/audio/letters/n.mp3',
-  'p': '/audio/letters/p.mp3',
-  't': '/audio/letters/t.mp3',
-  'k': '/audio/letters/k.mp3', // for 'c' sound
-  'c': '/audio/letters/c.mp3',
-  'h': '/audio/letters/h.mp3',
-  'b': '/audio/letters/b.mp3',
-  'd': '/audio/letters/d.mp3',
-  'g': '/audio/letters/g.mp3',
-  'j': '/audio/letters/j.mp3',
-  'w': '/audio/letters/w.mp3',
-  'v': '/audio/letters/v.mp3',
-  'r': '/audio/letters/r.mp3',
-  'l': '/audio/letters/l.mp3',
-  'z': '/audio/letters/z.mp3',
-  'y': '/audio/letters/y.mp3',
-  'x': '/audio/letters/x.mp3',
-  'q': '/audio/letters/q.mp3',
-  // Digraphs - these may need recording if missing
-  'sh': '/audio/letters/sh.mp3',
-  'ch': '/audio/letters/ch.mp3',
-  'th': '/audio/letters/th.mp3',
+  // Consonants - using /audio-new/letters/ folder
+  's': '/audio-new/letters/s.mp3',
+  'm': '/audio-new/letters/m.mp3',
+  'f': '/audio-new/letters/f.mp3',
+  'n': '/audio-new/letters/n.mp3',
+  'p': '/audio-new/letters/p.mp3',
+  't': '/audio-new/letters/t.mp3',
+  'k': '/audio-new/letters/k.mp3', // for 'c' sound
+  'c': '/audio-new/letters/c.mp3',
+  'h': '/audio-new/letters/h.mp3',
+  'b': '/audio-new/letters/b.mp3',
+  'd': '/audio-new/letters/d.mp3',
+  'g': '/audio-new/letters/g.mp3',
+  'j': '/audio-new/letters/j.mp3',
+  'w': '/audio-new/letters/w.mp3',
+  'v': '/audio-new/letters/v.mp3',
+  'r': '/audio-new/letters/r.mp3',
+  'l': '/audio-new/letters/l.mp3',
+  'z': '/audio-new/letters/z.mp3',
+  'y': '/audio-new/letters/y.mp3',
+  'x': '/audio-new/letters/x.mp3',
+  'q': '/audio-new/letters/q.mp3',
+  // Digraphs
+  'sh': '/audio-new/phonemes/sh.mp3',
+  'ch': '/audio-new/phonemes/ch.mp3',
+  'th': '/audio-new/phonemes/th.mp3',
   // Short vowels
-  'a': '/audio/letters/a.mp3',
-  'e': '/audio/letters/e.mp3',
-  'i': '/audio/letters/i.mp3',
-  'o': '/audio/letters/o.mp3',
-  'u': '/audio/letters/u.mp3',
+  'a': '/audio-new/letters/a.mp3',
+  'e': '/audio-new/letters/e.mp3',
+  'i': '/audio-new/letters/i.mp3',
+  'o': '/audio-new/letters/o.mp3',
+  'u': '/audio-new/letters/u.mp3',
 };
 
 // ============================================

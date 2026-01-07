@@ -3,21 +3,21 @@
 
 export const AUDIO_PATHS = {
   ui: {
-    correct: '/audio/ui/correct.mp3',
-    wrong: '/audio/ui/wrong.mp3',
-    celebration: '/audio/ui/celebration.mp3',
-    complete: '/audio/ui/complete.mp3',
-    unlock: '/audio/ui/unlock.mp3',
-    click: '/audio/ui/click.mp3',
-    whoosh: '/audio/ui/whoosh.mp3',
-    countdown: '/audio/ui/countdown.mp3',
-    instructions: '/audio/ui/instructions.mp3',
+    correct: '/audio-new/ui/correct.mp3',
+    wrong: '/audio-new/ui/wrong.mp3',
+    celebration: '/audio-new/ui/celebration.mp3',
+    complete: '/audio-new/ui/complete.mp3',
+    unlock: '/audio-new/ui/unlock.mp3',
+    click: '/audio-new/ui/click.mp3',
+    whoosh: '/audio-new/ui/whoosh.mp3',
+    countdown: '/audio-new/ui/countdown.mp3',
+    instructions: '/audio-new/ui/instructions.mp3',
   },
-  getLetter: (letter: string) => `/audio/letters/${letter.toLowerCase()}.mp3`,
+  getLetter: (letter: string) => `/audio-new/letters/${letter.toLowerCase()}.mp3`,
   getWord: (word: string, series: 'pink' | 'blue' | 'green' = 'pink') => 
-    `/audio/words/${series}/${word.toLowerCase()}.mp3`,
-  getSightWord: (word: string) => `/audio/sight-words/${word.toLowerCase()}.mp3`,
-  getSentence: (num: number) => `/audio/sentences/sentence-${num.toString().padStart(2, '0')}.mp3`,
+    `/audio-new/words/${series}/${word.toLowerCase()}.mp3`,
+  getSightWord: (word: string) => `/audio-new/sight-words/${word.toLowerCase()}.mp3`,
+  getSentence: (num: number) => `/audio-new/sentences/sentence-${num.toString().padStart(2, '0')}.mp3`,
 };
 
 /**

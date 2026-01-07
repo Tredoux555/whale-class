@@ -1,0 +1,538 @@
+# ELEVENLABS BATCH RECORDING SCRIPTS
+# Copy and paste each section into ElevenLabs Text-to-Speech
+
+================================
+## RECOMMENDED VOICE SETTINGS
+================================
+Voice: "Rachel" or any warm female voice
+Stability: 0.50
+Similarity Boost: 0.75
+Style Exaggeration: 0.00
+
+================================
+## BATCH 1: LETTER SOUNDS (26)
+================================
+Folder: /audio-new/letters/
+Save as: a.mp3, b.mp3, c.mp3, etc.
+
+Record each as PURE PHONETIC SOUND (not letter name):
+
+ah
+buh
+kuh
+duh
+eh
+fff
+guh
+huh
+ih
+juh
+kuh
+lll
+mmm
+nnn
+oh
+puh
+kwuh
+rrr
+sss
+tuh
+uh
+vvv
+wuh
+ks
+yuh
+zzz
+
+================================
+## BATCH 2: DIGRAPHS (3)
+================================
+Folder: /audio-new/phonemes/
+Save as: sh.mp3, ch.mp3, th.mp3
+
+shhhh
+chuh
+thhhh
+
+================================
+## BATCH 3: UI SOUNDS (9)
+================================
+Folder: /audio-new/ui/
+
+correct.mp3: Yes!
+wrong.mp3: Try again!
+celebration.mp3: Yay! Great job!
+complete.mp3: Well done! You finished!
+unlock.mp3: Level unlocked!
+click.mp3: (short click - or skip)
+whoosh.mp3: (whoosh - or skip)
+countdown.mp3: Three, two, one, go!
+instructions.mp3: Listen carefully!
+
+================================
+## BATCH 4: PINK WORDS - CVC (100)
+================================
+Folder: /audio-new/words/pink/
+
+bag
+bat
+bed
+big
+bin
+bit
+box
+bud
+bug
+bun
+bus
+can
+cap
+cat
+cop
+cot
+cup
+cut
+dad
+den
+dig
+dip
+dog
+dot
+dug
+fan
+fat
+fed
+fig
+fin
+fit
+fog
+fox
+fun
+get
+got
+gum
+ham
+hat
+hen
+hip
+hit
+hog
+hop
+hot
+hug
+hut
+jam
+jet
+job
+jog
+jug
+kid
+kit
+leg
+let
+lid
+lip
+lit
+log
+lot
+man
+map
+mat
+men
+met
+mix
+mom
+mop
+mud
+mug
+net
+not
+nut
+pan
+pat
+peg
+pen
+pet
+pig
+pin
+pit
+pop
+pot
+pup
+put
+ran
+rat
+red
+rot
+rug
+run
+sad
+sat
+set
+sit
+six
+sun
+tag
+ten
+tip
+top
+tub
+tug
+van
+web
+wet
+wig
+win
+yes
+zip
+
+================================
+## BATCH 5: GREEN WORDS (41)
+================================
+Folder: /audio-new/words/green/
+
+bath
+beach
+bee
+boat
+book
+chair
+cheese
+chip
+coat
+day
+eat
+feet
+fish
+food
+goat
+leaf
+lunch
+mail
+moon
+rain
+road
+say
+sea
+shell
+ship
+shoe
+shop
+snail
+soap
+spoon
+tail
+tea
+teeth
+the
+thin
+this
+three
+trail
+tray
+way
+zoo
+
+================================
+## BATCH 6: BLUE WORDS (50)
+================================
+Folder: /audio-new/words/blue/
+
+black
+block
+blue
+bread
+brick
+brush
+clap
+clock
+cloud
+crab
+crown
+cry
+dress
+drink
+drum
+flag
+flower
+fly
+friend
+frog
+fruit
+glass
+globe
+glue
+grapes
+grass
+green
+plant
+plate
+play
+sleep
+slide
+slow
+small
+smell
+snake
+snow
+spider
+spill
+spin
+star
+still
+stone
+stop
+sweet
+swim
+swing
+train
+tree
+truck
+
+================================
+## BATCH 7: SIGHT WORDS (64)
+================================
+Folder: /audio-new/sight-words/
+
+a
+about
+all
+and
+are
+at
+be
+but
+by
+can
+do
+down
+each
+for
+from
+has
+have
+he
+her
+him
+how
+I
+if
+in
+into
+is
+it
+like
+look
+make
+many
+me
+more
+my
+not
+on
+other
+out
+said
+see
+she
+so
+some
+that
+them
+then
+there
+these
+this
+time
+to
+two
+up
+very
+was
+we
+were
+what
+when
+which
+will
+with
+would
+you
+
+================================
+## BATCH 8: ADDITIONAL WORDS
+================================
+(For sound games - add to words folder)
+
+sock
+soap
+star
+snake
+spoon
+moon
+mouse
+milk
+fork
+frog
+foot
+nose
+nest
+nine
+nurse
+pear
+pink
+tent
+tiger
+toy
+cow
+cake
+car
+horse
+house
+hand
+heart
+ball
+book
+doll
+duck
+door
+dish
+gift
+girl
+grape
+jar
+jump
+jeans
+juice
+watch
+worm
+wolf
+water
+wing
+yak
+yam
+yarn
+yell
+yellow
+yo-yo
+vest
+vase
+vet
+vine
+violin
+thumb
+thick
+think
+throw
+ring
+rabbit
+lamp
+lemon
+zebra
+zero
+zigzag
+zone
+sheep
+shirt
+chicken
+cherry
+chin
+ant
+apple
+alligator
+ax
+add
+arrow
+egg
+elephant
+elbow
+envelope
+elf
+end
+igloo
+insect
+ink
+itch
+ill
+octopus
+orange
+ostrich
+olive
+ox
+umbrella
+under
+us
+uncle
+umpire
+bell
+sell
+hill
+call
+fall
+bill
+fill
+pill
+pull
+bull
+stall
+
+================================
+## BATCH 9: SENTENCES (15)
+================================
+Folder: /audio-new/sentences/
+(Read naturally, slightly slower)
+
+sentence-01: The cat sat.
+sentence-02: The bat is big.
+sentence-03: The man ran.
+sentence-04: The van is red.
+sentence-05: The cat is big.
+sentence-06: The dog is red.
+sentence-07: The hen sat down.
+sentence-08: The pig is hot.
+sentence-09: The fish is blue.
+sentence-10: The fox is bad.
+sentence-11: The cat sat on the mat.
+sentence-12: The dog is in the box.
+sentence-13: I can see the cat.
+sentence-14: The ball is very big.
+sentence-15: The cat will sit down.
+
+================================
+## BATCH 10: INSTRUCTION PHRASES (17)
+================================
+Folder: /audio-new/instructions/
+
+i-spy-beginning: I spy with my little eye, something that begins with...
+i-spy-ending: I spy with my little eye, something that ends with...
+i-spy-middle: I spy with my little eye, something with, in the middle
+listen-carefully: Listen carefully!
+tap-to-hear: Tap to hear the sound again
+drag-to-match: Drag the letter to match the picture
+build-the-word: Build the word!
+great-listening: Great listening!
+try-again: Try again! Listen carefully.
+almost: Almost! Listen one more time.
+keep-trying: Keep trying! You can do it!
+you-got-it: You got it!
+excellent-ears: Excellent ears!
+perfect: Perfect!
+amazing: Amazing!
+super-listener: Super listener!
+yes-begins-with: Yes! That begins with...
+
+================================
+## QUICK TIP FOR ELEVENLABS
+================================
+
+1. Go to ElevenLabs.io
+2. Select Voice: Pick a warm, clear female voice like "Rachel"
+3. Settings: Stability 0.5, Similarity 0.75
+4. Copy each word/phrase, generate
+5. Download as MP3
+6. Rename file and save to correct folder
+
+For batch processing, you can use their API or
+process one batch at a time manually.
+
+Total files: ~330+
