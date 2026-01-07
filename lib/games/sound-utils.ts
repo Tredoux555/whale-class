@@ -1,186 +1,78 @@
 // lib/games/sound-utils.ts
-// Audio utilities with CORRECT Montessori letter sounds
+// Audio utilities - ELEVENLABS ONLY - NO SPEECH SYNTHESIS
+// Migrated to use pre-recorded audio files
+
+import { GameAudio, AUDIO_PATHS } from '@/lib/games/audio-paths';
 
 // ============================================
-// CORRECT LETTER SOUNDS (Montessori phonics)
+// LETTER SOUNDS - Using ElevenLabs pre-recorded audio
 // ============================================
 
-// These are the SHORT, PURE sounds - not letter names!
-// Critical for teaching reading - must be accurate
 const LETTER_SOUNDS: Record<string, string> = {
-  // VOWELS - Short sounds only (for beginning readers)
-  'a': 'a',      // as in "apple" - short /æ/ - mouth open, tongue low
-  'e': 'e',      // as in "egg" - short /ɛ/ - mouth slightly open
-  'i': 'i',      // as in "igloo" - short /ɪ/ - mouth barely open
-  'o': 'o',      // as in "octopus" - short /ɒ/ - mouth round
-  'u': 'u',      // as in "up" - short /ʌ/ - mouth relaxed
-  
-  // CONSONANTS - Pure sounds without "uh" at the end
-  'b': 'b',      // lips together, quick release - NOT "buh"
-  'c': 'k',      // hard c sound - back of throat
-  'd': 'd',      // tongue behind teeth, quick release - NOT "duh"
-  'f': 'fff',    // continuous - teeth on lip, blow air
-  'g': 'g',      // hard g - back of throat - NOT "guh"
-  'h': 'h',      // breathy exhale - just air
-  'j': 'j',      // like "jump" - NOT "jay"
-  'k': 'k',      // same as hard c - back of throat
-  'l': 'lll',    // continuous - tongue behind teeth
-  'm': 'mmm',    // continuous - lips together, hum
-  'n': 'nnn',    // continuous - tongue behind teeth, hum through nose
-  'p': 'p',      // lips together, quick puff - NOT "puh"
-  'q': 'kw',     // always followed by u, makes "kw"
-  'r': 'rrr',    // continuous - tongue curled back
-  's': 'sss',    // continuous - hissing snake sound
-  't': 't',      // tongue behind teeth, quick release - NOT "tuh"
-  'v': 'vvv',    // continuous - teeth on lip, vibrate
-  'w': 'w',      // lips rounded - NOT "wuh"
-  'x': 'ks',     // combination sound
-  'y': 'y',      // like "yes" - NOT "yuh"
-  'z': 'zzz',    // continuous - buzzing bee sound
+  'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g',
+  'h': 'h', 'i': 'i', 'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n',
+  'o': 'o', 'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't', 'u': 'u',
+  'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y', 'z': 'z',
 };
 
-// Words to demonstrate each letter sound
 const SOUND_EXAMPLE_WORDS: Record<string, string> = {
-  'a': 'apple',
-  'b': 'ball',
-  'c': 'cat',
-  'd': 'dog',
-  'e': 'egg',
-  'f': 'fish',
-  'g': 'go',
-  'h': 'hat',
-  'i': 'it',
-  'j': 'jump',
-  'k': 'kite',
-  'l': 'lamp',
-  'm': 'man',
-  'n': 'net',
-  'o': 'on',
-  'p': 'pig',
-  'q': 'queen',
-  'r': 'run',
-  's': 'sun',
-  't': 'top',
-  'u': 'up',
-  'v': 'van',
-  'w': 'wet',
-  'x': 'box',
-  'y': 'yes',
-  'z': 'zip',
+  'a': 'apple', 'b': 'ball', 'c': 'cat', 'd': 'dog', 'e': 'egg',
+  'f': 'fish', 'g': 'goat', 'h': 'hat', 'i': 'insect', 'j': 'jam',
+  'k': 'kite', 'l': 'lamp', 'm': 'mop', 'n': 'net', 'o': 'octopus',
+  'p': 'pig', 'q': 'queen', 'r': 'rat', 's': 'sun', 't': 'top',
+  'u': 'umbrella', 'v': 'van', 'w': 'web', 'x': 'box', 'y': 'yak', 'z': 'zebra',
 };
 
-// ============================================
-// SPEECH SYNTHESIS CONFIGURATION
-// ============================================
+// Word sets for audio lookup
+const PINK_WORDS = new Set([
+  'cat', 'bat', 'hat', 'rat', 'mat', 'sat', 'fat', 'pat', 'van', 'ran', 'can', 'fan', 'man', 'pan', 'bag', 'tag',
+  'bed', 'red', 'fed', 'let', 'met', 'net', 'pet', 'set', 'wet', 'hen', 'pen', 'ten', 'den', 'men',
+  'bit', 'fit', 'hit', 'kit', 'lit', 'pit', 'sit', 'big', 'dig', 'fig', 'pig', 'wig', 'bin', 'fin', 'pin', 'dip', 'hip', 'lip', 'tip', 'zip',
+  'box', 'fox', 'hot', 'lot', 'not', 'pot', 'rot', 'got', 'dog', 'fog', 'hog', 'jog', 'log', 'cop', 'hop', 'mop', 'top',
+  'bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'bus', 'cut', 'hut', 'nut', 'put', 'sun', 'cup', 'pup', 'leg', 'peg',
+  'map', 'cap', 'nap', 'tap', 'lap', 'gap', 'cot', 'dot', 'ham', 'jam', 'ram', 'yam', 'cab', 'dab', 'jab', 'lab', 'tab',
+  'bib', 'rib', 'cob', 'gob', 'job', 'mob', 'rob', 'sob', 'cub', 'hub', 'pub', 'rub', 'sub', 'tub',
+  'bud', 'cud', 'mud', 'bad', 'dad', 'had', 'lad', 'mad', 'pad', 'sad', 'wag', 'beg', 'keg', 'gum', 'hum', 'mum', 'sum', 'yum',
+  'bun', 'fun', 'gun', 'nun', 'pun', 'run', 'dim', 'him', 'rim', 'vim', 'gym', 'hem', 'cod', 'god', 'mod', 'nod', 'pod', 'rod', 'sod',
+  'apple', 'ball', 'egg', 'fish', 'goat', 'kite', 'lamp', 'queen', 'umbrella', 'web', 'yak', 'zebra', 'insect', 'octopus',
+]);
 
-let speechSynthesis: SpeechSynthesis | null = null;
-let voices: SpeechSynthesisVoice[] = [];
-
-// Initialize speech synthesis
-function initSpeech(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  speechSynthesis = window.speechSynthesis;
-  voices = speechSynthesis.getVoices();
-  
-  // Voices may load async
-  if (voices.length === 0) {
-    speechSynthesis.onvoiceschanged = () => {
-      voices = speechSynthesis!.getVoices();
-    };
-  }
-  
-  return true;
-}
-
-// Get best voice for children's content
-function getChildFriendlyVoice(): SpeechSynthesisVoice | null {
-  if (voices.length === 0) return null;
-  
-  // Prefer these voices (clearer for phonics)
-  const preferredVoices = [
-    'Samantha',      // macOS - clear female
-    'Karen',         // macOS Australian
-    'Daniel',        // macOS British
-    'Google US English',
-    'Microsoft Zira', // Windows
-    'Microsoft David', // Windows
-  ];
-  
-  for (const name of preferredVoices) {
-    const voice = voices.find(v => v.name.includes(name));
-    if (voice) return voice;
-  }
-  
-  // Fallback to first English voice
-  return voices.find(v => v.lang.startsWith('en')) || voices[0];
-}
+const SIGHT_WORDS = new Set([
+  'the', 'a', 'is', 'it', 'in', 'on', 'to', 'and', 'he', 'she', 'we', 'me', 'be',
+  'my', 'you', 'do', 'no', 'so', 'go', 'of', 'or', 'for', 'are', 'was', 'his', 'her',
+  'has', 'had', 'but', 'not', 'can', 'will', 'up', 'down', 'out', 'all', 'said', 'see',
+  'look', 'come', 'here', 'there', 'where', 'what', 'when', 'who', 'how', 'this', 'that',
+  'with', 'they', 'have', 'from', 'one', 'two', 'three', 'four', 'five',
+]);
 
 // ============================================
-// LETTER SOUND FUNCTIONS
+// LETTER SOUND FUNCTIONS - Using ElevenLabs
 // ============================================
 
 /**
- * Speak a letter's SOUND (not its name)
- * This is the most important function for phonics teaching
+ * Speak a letter's SOUND using ElevenLabs pre-recorded audio
  */
 export function speakLetterSound(letter: string): void {
-  if (!initSpeech() || !speechSynthesis) return;
-  
-  // Cancel any ongoing speech
-  speechSynthesis.cancel();
-  
   const lowerLetter = letter.toLowerCase();
-  const soundText = LETTER_SOUNDS[lowerLetter] || letter;
-  
-  const utterance = new SpeechSynthesisUtterance(soundText);
-  
-  // Configure for clear, slow pronunciation
-  utterance.rate = 0.6;        // Slower for clarity
-  utterance.pitch = 1.0;       // Natural pitch
-  utterance.volume = 1.0;      // Full volume
-  
-  const voice = getChildFriendlyVoice();
-  if (voice) utterance.voice = voice;
-  
-  speechSynthesis.speak(utterance);
+  GameAudio.playLetterNow(lowerLetter);
 }
 
 /**
  * Speak a letter sound followed by an example word
- * e.g., "a... apple" or "sss... sun"
  */
-export function speakLetterWithExample(letter: string): void {
-  if (!initSpeech() || !speechSynthesis) return;
-  
-  speechSynthesis.cancel();
-  
+export async function speakLetterWithExample(letter: string): Promise<void> {
   const lowerLetter = letter.toLowerCase();
-  const soundText = LETTER_SOUNDS[lowerLetter] || letter;
-  const exampleWord = SOUND_EXAMPLE_WORDS[lowerLetter] || '';
   
-  // First speak the sound
-  const soundUtterance = new SpeechSynthesisUtterance(soundText);
-  soundUtterance.rate = 0.5;
-  soundUtterance.pitch = 1.0;
+  // Play letter sound
+  await GameAudio.playLetter(lowerLetter);
   
-  const voice = getChildFriendlyVoice();
-  if (voice) soundUtterance.voice = voice;
+  // Wait then play example word
+  await new Promise(r => setTimeout(r, 300));
   
-  // Then speak the example word
-  soundUtterance.onend = () => {
-    if (exampleWord) {
-      setTimeout(() => {
-        const wordUtterance = new SpeechSynthesisUtterance(exampleWord);
-        wordUtterance.rate = 0.7;
-        wordUtterance.pitch = 1.0;
-        if (voice) wordUtterance.voice = voice;
-        speechSynthesis!.speak(wordUtterance);
-      }, 300);
-    }
-  };
-  
-  speechSynthesis.speak(soundUtterance);
+  const exampleWord = SOUND_EXAMPLE_WORDS[lowerLetter];
+  if (exampleWord) {
+    await playWordAudio(exampleWord);
+  }
 }
 
 /**
@@ -191,156 +83,99 @@ export function speakLetter(letter: string): void {
 }
 
 // ============================================
-// WORD FUNCTIONS
+// WORD FUNCTIONS - Using ElevenLabs
 // ============================================
 
 /**
- * Speak a word clearly
+ * Play a word using pre-recorded audio
+ */
+async function playWordAudio(word: string): Promise<void> {
+  const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+  
+  if (SIGHT_WORDS.has(cleanWord)) {
+    await GameAudio.playSightWord(cleanWord);
+  } else if (PINK_WORDS.has(cleanWord)) {
+    await GameAudio.playWord(cleanWord, 'pink');
+  } else {
+    // Try pink first, fall back silently
+    try {
+      await GameAudio.playWord(cleanWord, 'pink');
+    } catch {
+      console.warn(`Word "${cleanWord}" not in audio library`);
+    }
+  }
+}
+
+/**
+ * Speak a word clearly using ElevenLabs
  */
 export function speakWord(word: string): void {
-  if (!initSpeech() || !speechSynthesis) return;
-  
-  speechSynthesis.cancel();
-  
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.rate = 0.65;       // Slow and clear
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  
-  const voice = getChildFriendlyVoice();
-  if (voice) utterance.voice = voice;
-  
-  speechSynthesis.speak(utterance);
+  playWordAudio(word);
 }
 
 /**
  * Sound out a word letter by letter, then say the whole word
- * e.g., "c... a... t... cat!"
  */
-export function soundOutWord(word: string): void {
-  if (!initSpeech() || !speechSynthesis) return;
-  
-  speechSynthesis.cancel();
-  
+export async function soundOutWord(word: string): Promise<void> {
   const letters = word.toLowerCase().split('');
-  let index = 0;
   
-  const speakNextLetter = () => {
-    if (index < letters.length) {
-      const letter = letters[index];
-      const soundText = LETTER_SOUNDS[letter] || letter;
-      
-      const utterance = new SpeechSynthesisUtterance(soundText);
-      utterance.rate = 0.5;
-      utterance.pitch = 1.0;
-      
-      const voice = getChildFriendlyVoice();
-      if (voice) utterance.voice = voice;
-      
-      utterance.onend = () => {
-        index++;
-        setTimeout(speakNextLetter, 400);
-      };
-      
-      speechSynthesis!.speak(utterance);
-    } else {
-      // After all letters, say the whole word
-      setTimeout(() => {
-        const wordUtterance = new SpeechSynthesisUtterance(word);
-        wordUtterance.rate = 0.7;
-        wordUtterance.pitch = 1.1; // Slightly higher for emphasis
-        
-        const voice = getChildFriendlyVoice();
-        if (voice) wordUtterance.voice = voice;
-        
-        speechSynthesis!.speak(wordUtterance);
-      }, 500);
+  for (const letter of letters) {
+    if (letter.match(/[a-z]/)) {
+      await GameAudio.playLetter(letter);
+      await new Promise(r => setTimeout(r, 400));
     }
-  };
+  }
   
-  speakNextLetter();
+  // Say the whole word
+  await new Promise(r => setTimeout(r, 500));
+  await playWordAudio(word);
 }
 
 /**
- * Speak a sentence slowly and clearly
+ * Speak a sentence word by word
  */
-export function speakSentence(sentence: string): void {
-  if (!initSpeech() || !speechSynthesis) return;
+export async function speakSentence(sentence: string): Promise<void> {
+  const words = sentence.toLowerCase().split(/\s+/);
   
-  speechSynthesis.cancel();
-  
-  const utterance = new SpeechSynthesisUtterance(sentence);
-  utterance.rate = 0.55;       // Very slow for sentences
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  
-  const voice = getChildFriendlyVoice();
-  if (voice) utterance.voice = voice;
-  
-  speechSynthesis.speak(utterance);
+  for (const word of words) {
+    const cleanWord = word.replace(/[^a-z]/g, '');
+    if (cleanWord) {
+      await playWordAudio(cleanWord);
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
 }
 
 // ============================================
-// GAME FEEDBACK SOUNDS
+// GAME FEEDBACK SOUNDS - Using ElevenLabs UI sounds
 // ============================================
 
 /**
- * Play a happy sound for correct answers
+ * Play correct answer sound
  */
 export function playCorrectSound(): void {
-  playTone(523.25, 0.1);  // C5
-  setTimeout(() => playTone(659.25, 0.1), 100);  // E5
-  setTimeout(() => playTone(783.99, 0.15), 200); // G5
+  GameAudio.playCorrect();
 }
 
 /**
- * Play a gentle "try again" sound
+ * Play wrong answer sound
  */
 export function playWrongSound(): void {
-  playTone(300, 0.15);
-  setTimeout(() => playTone(250, 0.2), 150);
+  GameAudio.playWrong();
 }
 
 /**
- * Play a click/tap sound
+ * Play click sound
  */
 export function playClickSound(): void {
-  playTone(440, 0.05);
+  GameAudio.playUI('click');
 }
 
 /**
- * Play a celebration fanfare
+ * Play celebration sound
  */
 export function playCelebrationSound(): void {
-  const notes = [523, 587, 659, 698, 784, 880, 988, 1047]; // C major scale
-  notes.forEach((freq, i) => {
-    setTimeout(() => playTone(freq, 0.1), i * 100);
-  });
-}
-
-// Simple tone generator using Web Audio API
-function playTone(frequency: number, duration: number): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-  } catch (e) {
-    // Audio not supported - fail silently
-  }
+  GameAudio.playCelebration();
 }
 
 // ============================================
