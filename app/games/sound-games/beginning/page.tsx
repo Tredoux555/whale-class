@@ -62,13 +62,25 @@ export default function ISpyBeginningGame() {
     };
   }, []);
 
-  // Play the target sound using ElevenLabs audio
-  const playTargetSound = async (sound: string) => {
+  // Play the full instruction: "I spy something that begins with /sound/"
+  const playTargetSound = async (sound: string, includeInstruction: boolean = true) => {
     setIsPlaying(true);
     
-    const phonemePath = PHONEME_AUDIO[sound];
-    if (phonemePath) {
-      await GameAudio.play(phonemePath);
+    try {
+      if (includeInstruction) {
+        // First play "I spy something that begins with..."
+        await GameAudio.play('/audio-new/instructions/i-spy-beginning.mp3');
+        // Small pause
+        await new Promise(r => setTimeout(r, 300));
+      }
+      
+      // Then play the phoneme sound
+      const phonemePath = PHONEME_AUDIO[sound];
+      if (phonemePath) {
+        await GameAudio.play(phonemePath);
+      }
+    } catch (err) {
+      console.error('Error playing audio:', err);
     }
     
     setIsPlaying(false);
@@ -134,15 +146,16 @@ export default function ISpyBeginningGame() {
 
       setTimeout(() => {
         setFeedback(null);
-        playTargetSound(currentRound!.targetSound);
+        // Just replay the sound, no instruction
+        playTargetSound(currentRound!.targetSound, false);
       }, 1500);
     }
   };
 
-  // Replay the sound
+  // Replay just the sound (no instruction)
   const handleReplay = () => {
     if (currentRound && !isPlaying) {
-      playTargetSound(currentRound.targetSound);
+      playTargetSound(currentRound.targetSound, false);
     }
   };
 

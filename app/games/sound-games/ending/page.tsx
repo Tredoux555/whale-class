@@ -39,11 +39,19 @@ export default function ISpyEndingGame() {
     return { targetSound: soundGroup.sound, targetWord, options: allOptions };
   }, []);
 
-  const playTargetSound = async (sound: string) => {
+  const playTargetSound = async (sound: string, includeInstruction: boolean = true) => {
     setIsPlaying(true);
-    const phonemePath = PHONEME_AUDIO[sound];
-    if (phonemePath) {
-      await GameAudio.play(phonemePath);
+    try {
+      if (includeInstruction) {
+        await GameAudio.play('/audio-new/instructions/i-spy-ending.mp3');
+        await new Promise(r => setTimeout(r, 300));
+      }
+      const phonemePath = PHONEME_AUDIO[sound];
+      if (phonemePath) {
+        await GameAudio.play(phonemePath);
+      }
+    } catch (err) {
+      console.error('Error playing audio:', err);
     }
     setIsPlaying(false);
   };
@@ -100,14 +108,14 @@ export default function ISpyEndingGame() {
 
       setTimeout(() => {
         setFeedback(null);
-        playTargetSound(currentRound!.targetSound);
+        playTargetSound(currentRound!.targetSound, false);
       }, 1500);
     }
   };
 
   const handleReplay = () => {
     if (currentRound && !isPlaying) {
-      playTargetSound(currentRound.targetSound);
+      playTargetSound(currentRound.targetSound, false);
     }
   };
 
