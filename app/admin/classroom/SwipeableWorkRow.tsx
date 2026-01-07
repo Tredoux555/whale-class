@@ -331,20 +331,21 @@ export default function SwipeableWorkRow({
   const hasNotes = notes && notes.trim().length > 0;
 
   return (
-    <div className="relative overflow-hidden bg-white">
-      {/* Main swipeable row */}
-      <div
-        ref={rowRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="flex items-center gap-2 px-3 py-2.5"
-        style={{ 
-          transform: `translateX(${translateX}px)`,
-          transition: isDragging ? 'none' : 'transform 150ms ease-out',
-          touchAction: 'pan-y', // Allow vertical scroll, we handle horizontal
-        }}
-      >
+    <div className="relative bg-white">
+      {/* Main swipeable row - overflow-hidden only here for swipe clipping */}
+      <div className="overflow-hidden">
+        <div
+          ref={rowRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex items-center gap-2 px-3 py-2.5"
+          style={{ 
+            transform: `translateX(${translateX}px)`,
+            transition: isDragging ? 'none' : 'transform 150ms ease-out',
+            touchAction: 'pan-y', // Allow vertical scroll, we handle horizontal
+          }}
+        >
         {/* Area Badge */}
         <span className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center shrink-0 ${areaConfig.color}`}>
           {areaConfig.letter}
@@ -385,6 +386,7 @@ export default function SwipeableWorkRow({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+      </div>
       </div>
 
       {/* Action Panel - animates open/closed */}
