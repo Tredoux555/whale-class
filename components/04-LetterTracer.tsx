@@ -524,10 +524,10 @@ const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
     setAccuracyScore(0);
   };
 
-  const playAudio = () => {
-    const utterance = new SpeechSynthesisUtterance(currentLetter);
-    utterance.rate = 0.8;
-    speechSynthesis.speak(utterance);
+  const playAudio = async () => {
+    // Use ElevenLabs pre-recorded audio
+    const { GameAudio } = await import('@/lib/games/audio-paths');
+    GameAudio.playLetterNow(currentLetter.toLowerCase());
   };
 
 

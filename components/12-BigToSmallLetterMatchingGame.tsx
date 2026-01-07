@@ -68,10 +68,10 @@ const BigToSmallLetterMatchingGame: React.FC = () => {
     setStars([]);
   };
 
-  const playLetterSound = (letter: LetterPair) => {
-    const utterance = new SpeechSynthesisUtterance(letter.name);
-    utterance.rate = 0.8;
-    speechSynthesis.speak(utterance);
+  const playLetterSound = async (letter: LetterPair) => {
+    // Use ElevenLabs pre-recorded audio
+    const { GameAudio } = await import('@/lib/games/audio-paths');
+    GameAudio.playLetterNow(letter.smallLetter.toLowerCase());
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, letter: LetterPair) => {
