@@ -21,23 +21,10 @@ interface CurriculumWork {
   area: string;
 }
 
-interface WorkLevel {
-  level: number;
-  name: string;
-  description: string;
-}
-
 interface WorkDescriptionData {
-  id: string;
   name: string;
-  description: string;
-  chineseName?: string;
-  materials: string[];
-  directAims: string[];
-  indirectAims: string[];
-  controlOfError: string;
-  levels: WorkLevel[];
-  ageRange?: string;
+  line1: string;
+  line2: string;
 }
 
 interface SwipeableWorkRowProps {
@@ -81,7 +68,6 @@ export default function SwipeableWorkRow({
   
   // Work description state
   const [workDescription, setWorkDescription] = useState<WorkDescriptionData | null>(null);
-  const [descriptionCategory, setDescriptionCategory] = useState<string>('');
   const [loadingDescription, setLoadingDescription] = useState(false);
   const [descriptionError, setDescriptionError] = useState<string>('');
   const hasFetchedDescription = useRef(false);
@@ -145,21 +131,17 @@ export default function SwipeableWorkRow({
     setDescriptionError('');
     
     try {
-      // Always search by work_name - it's the common link between
-      // weekly_assignments.work_name and curriculum JSON work.name
-      // Note: work_id is a UUID from curriculum_roadmap, NOT the JSON id
       const res = await fetch(`/api/curriculum/work-description?name=${encodeURIComponent(assignment.work_name)}`);
       const data = await res.json();
       
       if (data.found && data.work) {
         setWorkDescription(data.work);
-        setDescriptionCategory(data.category || '');
       } else {
-        setDescriptionError('No activity guide available for this work yet');
+        setDescriptionError('No guide available for this work yet');
       }
     } catch (err) {
       console.error('Failed to fetch work description:', err);
-      setDescriptionError('Could not load activity guide');
+      setDescriptionError('Could not load guide');
     } finally {
       setLoadingDescription(false);
     }
@@ -436,7 +418,6 @@ export default function SwipeableWorkRow({
           {/* Work Description / Activity Guide */}
           <WorkDescription 
             data={workDescription}
-            category={descriptionCategory}
             loading={loadingDescription}
             error={descriptionError}
           />
