@@ -145,7 +145,12 @@ export default function SwipeableWorkRow({
     setDescriptionError('');
     
     try {
-      const res = await fetch(`/api/curriculum/work-description?name=${encodeURIComponent(assignment.work_name)}`);
+      // Use work_id if available (more accurate), otherwise fall back to name
+      const searchParam = assignment.work_id 
+        ? `id=${encodeURIComponent(assignment.work_id)}`
+        : `name=${encodeURIComponent(assignment.work_name)}`;
+      
+      const res = await fetch(`/api/curriculum/work-description?${searchParam}`);
       const data = await res.json();
       
       if (data.found && data.work) {
@@ -386,54 +391,56 @@ export default function SwipeableWorkRow({
 
       {/* Action Panel - animates open/closed */}
       <div 
-        className={`overflow-hidden transition-all duration-200 ease-out ${isPanelOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}
+        className={`transition-all duration-200 ease-out ${isPanelOpen ? 'max-h-[70vh] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
       >
-        <div className="bg-gray-50 border-t border-gray-100 px-3 py-3 space-y-3">
-          {/* Notes */}
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-gray-500">📝 Notes</span>
-              {isSavingNotes && <span className="text-[10px] text-blue-500">saving...</span>}
+        <div className={`${isPanelOpen ? 'overflow-y-auto max-h-[70vh]' : ''}`}>
+          <div className="bg-gray-50 border-t border-gray-100 px-3 py-3 space-y-3">
+            {/* Notes */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-medium text-gray-500">📝 Notes</span>
+                {isSavingNotes && <span className="text-[10px] text-blue-500">saving...</span>}
+              </div>
+              <textarea
+                value={notes}
+                onChange={handleNotesChange}
+                placeholder="Add observation notes..."
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
+                rows={2}
+              />
             </div>
-            <textarea
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder="Add observation notes..."
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-              rows={2}
-            />
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => { onCapture(); closePanel(); }}
-              className="flex-1 py-2.5 bg-green-100 text-green-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
-            >
-              📷 Photo
-            </button>
-            <button
-              onClick={handleRecordVideo}
-              className="flex-1 py-2.5 bg-purple-100 text-purple-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
-            >
-              🎥 Video
-            </button>
-            <button
-              onClick={() => { onWatchVideo(); closePanel(); }}
-              className="flex-1 py-2.5 bg-red-100 text-red-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
-            >
-              ▶️ Demo
-            </button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onCapture(); closePanel(); }}
+                className="flex-1 py-2.5 bg-green-100 text-green-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
+              >
+                📷 Photo
+              </button>
+              <button
+                onClick={handleRecordVideo}
+                className="flex-1 py-2.5 bg-purple-100 text-purple-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
+              >
+                🎥 Video
+              </button>
+              <button
+                onClick={() => { onWatchVideo(); closePanel(); }}
+                className="flex-1 py-2.5 bg-red-100 text-red-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
+              >
+                ▶️ Demo
+              </button>
+            </div>
           </div>
+          
+          {/* Work Description / Activity Guide */}
+          <WorkDescription 
+            data={workDescription}
+            category={descriptionCategory}
+            loading={loadingDescription}
+            error={descriptionError}
+          />
         </div>
-        
-        {/* Work Description / Activity Guide */}
-        <WorkDescription 
-          data={workDescription}
-          category={descriptionCategory}
-          loading={loadingDescription}
-          error={descriptionError}
-        />
       </div>
     </div>
   );
