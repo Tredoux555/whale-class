@@ -38,38 +38,38 @@ export interface CVCWord {
 // ============================================
 
 export const PHONEME_AUDIO: Record<string, string> = {
-  // Consonants
-  's': '/audio/phonemes/s.mp3',
-  'm': '/audio/phonemes/m.mp3',
-  'f': '/audio/phonemes/f.mp3',
-  'n': '/audio/phonemes/n.mp3',
-  'p': '/audio/phonemes/p.mp3',
-  't': '/audio/phonemes/t.mp3',
-  'k': '/audio/phonemes/k.mp3', // for 'c' sound
-  'c': '/audio/phonemes/k.mp3', // same as k
-  'h': '/audio/phonemes/h.mp3',
-  'b': '/audio/phonemes/b.mp3',
-  'd': '/audio/phonemes/d.mp3',
-  'g': '/audio/phonemes/g.mp3',
-  'j': '/audio/phonemes/j.mp3',
-  'w': '/audio/phonemes/w.mp3',
-  'v': '/audio/phonemes/v.mp3',
-  'r': '/audio/phonemes/r.mp3',
-  'l': '/audio/phonemes/l.mp3',
-  'z': '/audio/phonemes/z.mp3',
-  'y': '/audio/phonemes/y.mp3',
-  'x': '/audio/phonemes/ks.mp3', // /ks/ sound
-  'q': '/audio/phonemes/kw.mp3', // /kw/ sound
-  // Digraphs
-  'sh': '/audio/phonemes/sh.mp3',
-  'ch': '/audio/phonemes/ch.mp3',
-  'th': '/audio/phonemes/th.mp3',
+  // Consonants - using /audio/letters/ folder
+  's': '/audio/letters/s.mp3',
+  'm': '/audio/letters/m.mp3',
+  'f': '/audio/letters/f.mp3',
+  'n': '/audio/letters/n.mp3',
+  'p': '/audio/letters/p.mp3',
+  't': '/audio/letters/t.mp3',
+  'k': '/audio/letters/k.mp3', // for 'c' sound
+  'c': '/audio/letters/c.mp3',
+  'h': '/audio/letters/h.mp3',
+  'b': '/audio/letters/b.mp3',
+  'd': '/audio/letters/d.mp3',
+  'g': '/audio/letters/g.mp3',
+  'j': '/audio/letters/j.mp3',
+  'w': '/audio/letters/w.mp3',
+  'v': '/audio/letters/v.mp3',
+  'r': '/audio/letters/r.mp3',
+  'l': '/audio/letters/l.mp3',
+  'z': '/audio/letters/z.mp3',
+  'y': '/audio/letters/y.mp3',
+  'x': '/audio/letters/x.mp3',
+  'q': '/audio/letters/q.mp3',
+  // Digraphs - these may need recording if missing
+  'sh': '/audio/letters/sh.mp3',
+  'ch': '/audio/letters/ch.mp3',
+  'th': '/audio/letters/th.mp3',
   // Short vowels
-  'a': '/audio/phonemes/short-a.mp3',
-  'e': '/audio/phonemes/short-e.mp3',
-  'i': '/audio/phonemes/short-i.mp3',
-  'o': '/audio/phonemes/short-o.mp3',
-  'u': '/audio/phonemes/short-u.mp3',
+  'a': '/audio/letters/a.mp3',
+  'e': '/audio/letters/e.mp3',
+  'i': '/audio/letters/i.mp3',
+  'o': '/audio/letters/o.mp3',
+  'u': '/audio/letters/u.mp3',
 };
 
 // ============================================
