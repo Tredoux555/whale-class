@@ -8,16 +8,33 @@ function getSupabase() {
   );
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = getSupabase();
+  const { searchParams } = new URL(request.url);
+  const email = searchParams.get('email');
+  const id = searchParams.get('id');
+
   try {
-    const { data: families, error } = await supabase
+    let query = supabase
       .from('home_families')
       .select(`
         *,
         home_children (id, name, birth_date, color)
-      `)
-      .order('created_at', { ascending: false });
+      `);
+
+    // Filter by email for parent login
+    if (email) {
+      query = query.ilike('email', email);
+    }
+
+    // Filter by id for single family fetch
+    if (id) {
+      query = query.eq('id', id);
+    }
+
+    query = query.order('created_at', { ascending: false });
+
+    const { data: families, error } = await query;
 
     if (error) throw error;
 
