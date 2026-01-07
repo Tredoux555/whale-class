@@ -1,13 +1,13 @@
 // app/games/sound-games/blending/page.tsx
 // Sound Blending Game - ElevenLabs audio only
+// FIXED: Better audio handling and immediate playback
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { GameAudio } from '@/lib/games/audio-paths';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -25,6 +25,7 @@ export default function SoundBlendingGame() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [blendStep, setBlendStep] = useState<'slow' | 'fast' | 'done'>('slow');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const generateRound = useCallback((): GameRound => {
     const targetWord = CVC_WORDS[Math.floor(Math.random() * CVC_WORDS.length)];
@@ -36,19 +37,58 @@ export default function SoundBlendingGame() {
     return { targetWord, options: allOptions };
   }, []);
 
+  // Simple audio play function
+  const playAudio = async (path: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        
+        const audio = new Audio(path);
+        audioRef.current = audio;
+        
+        audio.onended = () => resolve();
+        audio.onerror = (e) => {
+          console.warn('Audio error:', path, e);
+          resolve();
+        };
+        
+        audio.play().catch((err) => {
+          console.warn('Audio play failed:', path, err);
+          resolve();
+        });
+      } catch (e) {
+        console.warn('Audio exception:', e);
+        resolve();
+      }
+    });
+  };
+
   // Play sounds slowly then blend faster
   const playBlendingSequence = async (word: CVCWord) => {
     setIsPlaying(true);
     setBlendStep('slow');
 
     // Play each sound slowly with pauses
-    await soundGameAudio.playSoundsSlowly(word.sounds, 600);
+    for (let i = 0; i < word.sounds.length; i++) {
+      await playAudio(`/audio-new/letters/${word.sounds[i].toLowerCase()}.mp3`);
+      if (i < word.sounds.length - 1) {
+        await new Promise((r) => setTimeout(r, 600));
+      }
+    }
 
     await new Promise((r) => setTimeout(r, 600));
     setBlendStep('fast');
 
     // Faster blending
-    await soundGameAudio.playSoundsSlowly(word.sounds, 200);
+    for (let i = 0; i < word.sounds.length; i++) {
+      await playAudio(`/audio-new/letters/${word.sounds[i].toLowerCase()}.mp3`);
+      if (i < word.sounds.length - 1) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    }
 
     await new Promise((r) => setTimeout(r, 400));
     setBlendStep('done');
@@ -56,17 +96,16 @@ export default function SoundBlendingGame() {
     setIsPlaying(false);
   };
 
-  const startGame = () => {
+  const startGame = async () => {
+    const firstRound = generateRound();
+    
     setGameState('playing');
     setScore(0);
     setRoundsPlayed(0);
-
-    const firstRound = generateRound();
     setCurrentRound(firstRound);
 
-    setTimeout(() => {
-      playBlendingSequence(firstRound.targetWord);
-    }, 500);
+    // Play immediately on user click
+    await playBlendingSequence(firstRound.targetWord);
   };
 
   const handleOptionSelect = async (selected: CVCWord) => {
@@ -85,7 +124,7 @@ export default function SoundBlendingGame() {
 
       setGameState('feedback');
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const newRoundsPlayed = roundsPlayed + 1;
         setRoundsPlayed(newRoundsPlayed);
 
@@ -97,25 +136,23 @@ export default function SoundBlendingGame() {
           setGameState('playing');
           const nextRound = generateRound();
           setCurrentRound(nextRound);
-          setTimeout(() => {
-            playBlendingSequence(nextRound.targetWord);
-          }, 500);
+          await playBlendingSequence(nextRound.targetWord);
         }
       }, 2000);
     } else {
       setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES) });
       await soundGameAudio.playWrong();
 
-      setTimeout(() => {
+      setTimeout(async () => {
         setFeedback(null);
-        playBlendingSequence(currentRound!.targetWord);
+        await playBlendingSequence(currentRound!.targetWord);
       }, 1500);
     }
   };
 
-  const handleReplay = () => {
+  const handleReplay = async () => {
     if (currentRound && !isPlaying) {
-      playBlendingSequence(currentRound.targetWord);
+      await playBlendingSequence(currentRound.targetWord);
     }
   };
 
@@ -178,7 +215,7 @@ export default function SoundBlendingGame() {
           <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Blend the sounds together!</p>
 
           <div className="flex justify-center gap-4 mb-6">
-            {currentRound?.targetWord.sounds.map((_, index) => (
+            {currentRound?.targetWord.sounds.map((sound, index) => (
               <div
                 key={index}
                 className={`
@@ -196,6 +233,13 @@ export default function SoundBlendingGame() {
           <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
             {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
           </button>
+          
+          {/* Debug info */}
+          {currentRound && (
+            <p className="text-white/50 text-xs mt-2">
+              Sounds: /{currentRound.targetWord.sounds.join('/ /')}/
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
