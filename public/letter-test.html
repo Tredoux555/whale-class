@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Letter Audio Test</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 600px; }
+    button { padding: 20px; font-size: 24px; cursor: pointer; border: 2px solid #333; border-radius: 8px; }
+    button:hover { background: #eee; }
+    h1 { margin-bottom: 20px; }
+    p { color: #666; margin-bottom: 20px; }
+    .note { background: #fffde7; padding: 15px; border-radius: 8px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🔊 Letter Audio Test</h1>
+  <p>Click each letter and write down what sound you HEAR. We'll figure out the shift.</p>
+  
+  <div class="grid">
+    <button onclick="play('a')">A</button>
+    <button onclick="play('b')">B</button>
+    <button onclick="play('c')">C</button>
+    <button onclick="play('d')">D</button>
+    <button onclick="play('e')">E</button>
+    <button onclick="play('f')">F</button>
+    <button onclick="play('g')">G</button>
+    <button onclick="play('h')">H</button>
+    <button onclick="play('i')">I</button>
+    <button onclick="play('j')">J</button>
+    <button onclick="play('k')">K</button>
+    <button onclick="play('l')">L</button>
+    <button onclick="play('m')">M</button>
+    <button onclick="play('n')">N</button>
+    <button onclick="play('o')">O</button>
+    <button onclick="play('p')">P</button>
+    <button onclick="play('q')">Q</button>
+    <button onclick="play('r')">R</button>
+    <button onclick="play('s')">S</button>
+    <button onclick="play('t')">T</button>
+    <button onclick="play('u')">U</button>
+    <button onclick="play('v')">V</button>
+    <button onclick="play('w')">W</button>
+    <button onclick="play('x')">X</button>
+    <button onclick="play('y')">Y</button>
+    <button onclick="play('z')">Z</button>
+  </div>
+  
+  <div class="note">
+    <strong>Instructions:</strong><br>
+    1. Click A - what sound do you hear?<br>
+    2. Click B - what sound do you hear?<br>
+    3. Tell me the pattern (e.g. "A plays B sound, B plays C sound" = shifted by 1)
+  </div>
+
+  <script>
+    let audio = null;
+    function play(letter) {
+      if (audio) { audio.pause(); }
+      audio = new Audio('/audio-new/letters/' + letter + '.mp3');
+      audio.play();
+    }
+  </script>
+</body>
+</html>
