@@ -3,84 +3,92 @@
   "url": "teacherpotato.xyz",
   "repo": "Tredoux555/whale-class",
   "hosting": "Railway",
-  "lastUpdated": "2026-01-08T19:30:00Z",
-  "currentPhase": "SOUND GAMES - FULLY FIXED & DEPLOYED",
+  "lastUpdated": "2026-01-08T23:15:00Z",
+  "currentPhase": "CURRICULUM-GAMES INTEGRATION",
   
   "vision": {
     "core": "Montessori education platform that scales from one classroom to many schools",
     "mission": "Give teachers superpowers - tracking, planning, reporting in one place",
-    "bigPicture": "Foundation for Jeffy Schools - every graduate school uses this system"
+    "bigPicture": "Foundation for Jeffy Schools - every graduate school uses this system",
+    "gameVision": "When teacher logs work → Parents automatically get game recommendations → Child reviews at home what they learned in class"
+  },
+  
+  "PRIORITY_TODO": [
+    "1. FIX: Daily Summary page (activity_photos.uploaded_at column issue)",
+    "2. REBUILD: Word audio files - one sound per day, properly verified",
+    "3. BUILD: Curriculum-to-Games mapping system",
+    "4. BUILD: 3-part cards for each curriculum step",
+    "5. BUILD: Parent notification system for game recommendations"
+  ],
+
+  "GAMES_CURRICULUM_INTEGRATION": {
+    "concept": "Games MUST exactly match English curriculum progression",
+    "workflow": [
+      "1. Teacher records child did Activity X",
+      "2. System looks up which games reinforce Activity X", 
+      "3. Parent receives: 'Leo practiced S sounds today. Play I Spy Beginning (Phase 1) to review!'",
+      "4. Parent plays game with child at home",
+      "5. Progress tracked across classroom + home"
+    ],
+    "requirements": [
+      "Map every English Guide activity to corresponding game(s)",
+      "Create 3-part cards for each curriculum step",
+      "Build missing games for any gaps",
+      "Games difficulty must match curriculum progression exactly"
+    ],
+    "tables_needed": [
+      "curriculum_game_mapping (activity_id → game_id, game_phase)",
+      "parent_recommendations (child_id, activity_id, game_id, sent_at, completed_at)",
+      "three_part_cards (activity_id, word, image_url, category)"
+    ]
   },
   
   "soundGamesStatus": {
-    "status": "✅ COMPLETE",
-    "audioStatus": "✅ 234 audio files - all verified",
-    "imageStatus": "✅ 182 words have images - all verified",
-    "bugFixes": "✅ Race conditions fixed, stale state fixed",
-    "uiDesign": "✅ Image sizing improved",
-    "lastHandoff": "/docs/HANDOFF_JAN8_2026_SESSION5.md"
+    "status": "⚠️ PARTIALLY WORKING",
+    "letterAudio": "✅ 26 letters - fresh recordings, working",
+    "wordAudio": "❌ 245 files - ALL BROKEN, need complete rebuild",
+    "instructionAudio": "❌ Too long (11 sec), disabled",
+    "images": "✅ Supabase images verified working",
+    "rebuildPlan": "One sound per day, verify each file manually"
   },
   
   "audioDeployed": {
-    "total": 234,
-    "letters": { "count": 26, "path": "/audio-new/letters/" },
-    "phonemes": { "count": 3, "path": "/audio-new/phonemes/" },
-    "words": { "count": 182, "path": "/audio-new/words/pink/" },
-    "feedback": { "count": 6, "path": "/audio-new/feedback/" },
-    "instructions": { "count": 17, "path": "/audio-new/instructions/" }
+    "letters": { "count": 26, "status": "✅ WORKING", "path": "/audio-new/letters/" },
+    "words": { "count": 245, "status": "❌ BROKEN", "path": "/audio-new/words/pink/" },
+    "phonemes": { "count": 3, "status": "⚠️ NEEDS VERIFY", "path": "/audio-new/phonemes/" },
+    "feedback": { "count": 6, "status": "⚠️ NEEDS VERIFY", "path": "/audio-new/feedback/" },
+    "instructions": { "count": 17, "status": "❌ TOO LONG", "path": "/audio-new/instructions/" }
   },
   
   "schools": {
-    "slot1": { "id": "00000000-0000-0000-0000-000000000001", "name": "Beijing International School", "status": "ACTIVE", "curriculumWorks": 342 }
+    "slot1": { "id": "00000000-0000-0000-0000-000000000001", "name": "Beijing International School", "status": "ACTIVE" }
   },
   
   "coreFeatures": {
-    "weeklyPlanning": { "status": "COMPLETE" },
-    "classroomView": { "status": "COMPLETE" },
-    "activityGuides": { "status": "COMPLETE" },
-    "montree": { "status": "COMPLETE" },
-    "teacherProgress": { "status": "COMPLETE" },
-    "soundGames": { "status": "✅ COMPLETE - Audio, Images, Bugs Fixed" },
-    "englishGames": { "status": "COMPLETE" },
-    "perSchoolCurriculum": { "status": "COMPLETE" }
-  },
-  
-  "technicalState": {
-    "database": "Supabase",
-    "framework": "Next.js 15",
-    "imageStorage": "Supabase images/sound-objects/"
+    "weeklyPlanning": "COMPLETE",
+    "classroomView": "COMPLETE",
+    "activityGuides": "COMPLETE",
+    "montree": "COMPLETE",
+    "teacherProgress": "COMPLETE",
+    "soundGames": "⚠️ Letters work, words broken",
+    "dailySummary": "❌ API column errors, needs fix",
+    "parentGameRecommendations": "🔜 TO BUILD"
   },
   
   "dailyLog": [
     {
-      "date": "2026-01-08-session5",
-      "summary": "Sound Games DEEP AUDIT & FIX COMPLETE",
+      "date": "2026-01-08-session6",
+      "summary": "Audio crisis day - letters fixed, words still broken",
       "highlights": [
-        "Fixed audio race conditions (setTimeout refs, functional state updates)",
-        "Verified all 182 game words have audio files",
-        "Verified all 182 game words have Supabase images",
-        "Improved UI: object-cover, aspect-square cards, larger images",
-        "Created /debug/audio-test page for letter verification",
-        "Commits: fab852c, b4428de"
-      ]
-    },
-    {
-      "date": "2026-01-08-session4",
-      "summary": "Sound Games images generated and uploaded",
-      "highlights": [
-        "Generated 60 DALL-E images",
-        "Uploaded all to Supabase",
-        "Identified audio bugs in I Spy game",
-        "Created audio-test.html for debugging"
-      ]
-    },
-    {
-      "date": "2026-01-08-session3",
-      "summary": "Sound Games AUDIO 100% COMPLETE",
-      "highlights": [
-        "Recorded + split 234 audio files with Tredoux voice",
-        "Deployed to /public/audio-new/"
-      ]
+        "ElevenLabs audio was in Downloads, deployed but files were wrong/shifted",
+        "Re-recorded 26 letters, properly split and deployed - WORKING",
+        "Word audio (245 files) all broken - need complete rebuild",
+        "Story messaging restored",
+        "Daily Summary page created but API has column errors",
+        "Teacher login redirect loop - middleware issue",
+        "DECISION: Rebuild word audio one sound per day"
+      ],
+      "commits": ["df30f35", "ab27bdc", "9d9ef69", "6eb088f", "01ae2fb", "5d77b47", "96375e6", "582c846"]
     }
   ]
 }

@@ -1,277 +1,71 @@
+# SESSION LOG - Whale Platform
 
 ---
 
-## SESSION: Jan 8, 2026 - SOUND GAMES CRITICAL FIX
+## SESSION 6: January 8, 2026 (Evening) - AUDIO CRISIS & RECOVERY
 
-### Issue Identified
-Parents viewing games today - Sound Games have major issues:
-1. **38% of words broken** - showing placeholder 🖼️ icons
-2. **Audio out of sync** - words being spelled letter-by-letter instead of spoken
-3. **Root cause:** Data mismatch between game words, image files, and audio files
+### Summary
+Long frustrating day. ElevenLabs audio was wrong, manual recordings failed multiple times. Finally got letter sounds working. Word audio needs complete rebuild.
 
-### Complete Audit Performed
-- Total words in games: 162
-- Words working (both audio + image): 100 (62%)
-- Words needing images: 45
-- Words needing audio: 7  
-- Words needing both: 15
+### What Got Fixed
+1. **Letter sounds (a-z)** - Fresh recording, properly split, DEPLOYED & WORKING
+2. **Story messaging** - Restored from intentionally disabled state
+3. **Sound Games code** - Plays letter sounds directly now (no 11-sec instruction delay)
 
-### Master Fix Plan Created
-**Document:** `/docs/SOUND_GAMES_MASTER_FIX.md`
+### What's Still Broken
+1. **Word audio (245 files)** - All mismatched/garbled, need complete rebuild
+2. **Daily Summary page** - API has column errors (activity_photos.uploaded_at)
+3. **Teacher login** - Redirect loop in middleware
+4. **Instruction audio** - 11 seconds too long, disabled
 
-7 Phases:
-1. Replace 15 "NEEDS BOTH" words with working alternatives
-2. Generate 45 missing DALL-E images (~$2)
-3. Generate 7 missing ElevenLabs audio (~$0.50)
-4. Update word-images.ts registry
-5. Update sound-utils.ts audio lookup
-6. Full QA testing
-7. Deploy and verify production
-
-### Next Steps
-- Execute Phase 1 immediately
-- Refresh Claude context after each phase
-- Document progress in master fix doc
-
-### Status
-⚠️ SOUND GAMES BROKEN - Fix in progress
-
----
-
-
-
----
-
-## SESSION: Jan 8, 2026 - Session 3: Audio Recording Complete
-
-### Completed
-1. **Master Audio Recording 1** (217 items)
-   - Recorded all letter sounds, phonemes, words, feedback
-   - Split using ffmpeg silence detection
-   - Deployed to `/public/audio-new/`
-
-2. **Master Audio Recording 2** (17 items)
-   - Recorded all instruction phrases
-   - "I spy with my little eye..." etc.
-   - Deployed to `/public/audio-new/instructions/`
-
-### Audio Files Created (234 total)
-- `/audio-new/letters/` - 26 files
-- `/audio-new/phonemes/` - 3 files
-- `/audio-new/words/pink/` - 182 files (moved from /words/)
-- `/audio-new/feedback/` - 6 files
-- `/audio-new/instructions/` - 17 files
-
-### Remaining Work
-- **60 DALL-E images needed** (see HANDOFF_JAN8_2026_SESSION3.md)
-- Update word-images.ts registry
-- QA testing
-- Deploy
-
-### Status
-✅ AUDIO 100% COMPLETE - All Tredoux's voice
-⏳ IMAGES PENDING - 60 needed for DALL-E
-
----
-
-
-## Session 4 - January 8, 2026, ~7:00 PM Beijing
-
-### Task: DALL-E Image Prompt Creation
-
-### Completed
-1. **60 Detailed DALL-E Prompts Created**
-   - Each prompt thoughtfully crafted for child-friendly art
-   - Consistent style: soft pastels, white background, no text
-   - Target age: 3-5 year old Montessori students
-
-2. **Files Created**
-   - `/docs/DALLE_IMAGE_PROMPTS.md` - Full detailed prompts (380 lines)
-   - `/docs/DALLE_BATCH_GENERATION.md` - Copy-paste ready batches
-   - `/docs/word-images-template.ts` - Ready-to-use after upload
-
-3. **Organization**
-   - 15 batches of 4 words each
-   - Style guide for consistency
-   - Quality checklist
-   - Upload instructions
-
-### Prompt Highlights
-- **ADD:** Colorful wooden blocks with apples showing 2+3
-- **ARROW:** Fairy tale quality with golden tip, green shaft
-- **BOOK:** Open storybook with pages fanning, ruby red cover
-- **CAKE:** Pink frosting swirls, rainbow sprinkles, 3 candles
-- (etc... all 60 crafted with care)
-
-### Next Steps
-1. Generate images in ChatGPT (15 batches × 4 images)
-2. Download and rename: `sound-{word}.png`
-3. Upload to Supabase: `images/sound-objects/`
-4. Update `lib/sound-games/word-images.ts` using template
-5. QA test all Sound Games
-6. Deploy to production
-
-### Cost Estimate
-- DALL-E 3: $0.04 × 60 = $2.40 (+ ~$0.60 regenerations)
-- Total: ~$3.00
-
-### Status
-✅ AUDIO 100% COMPLETE  
-✅ IMAGE PROMPTS 100% COMPLETE  
-⏳ IMAGE GENERATION READY - User to execute  
-⏳ IMAGE UPLOAD PENDING  
-⏳ QA TESTING PENDING  
-
----
-
-
-## Session 4 CONTINUED - January 8, 2026, ~7:30 PM Beijing
-
-### Task: DALL-E Image Generation & Upload - COMPLETE! 🎉
-
-### What Was Done
-1. **Generated 60 DALL-E images** via OpenAI API
-   - All detailed prompts executed
-   - Quality: High-quality children's book illustrations
-   - Cost: ~$4.60 (more than expected due to safety retries)
-
-2. **Uploaded all 60 images to Supabase**
-   - Location: `images/sound-objects/sound-{word}.png`
-   - All 60 uploaded successfully (60/60)
-   - Verified: URLs returning 200 OK
-
-3. **Updated word-images.ts**
-   - Added SOUND_IMAGES set with all 60 new words
-   - getWordImageUrl() now checks both original and sound images
-   - Total available images: 120+ (original + new)
-
-### Files Modified
-- `/lib/sound-games/word-images.ts` - Updated with new images
-- `/docs/mission-control/mission-control.json` - Status updated
-- `/scripts/upload-to-supabase.js` - Created for upload
-
-### Image URL Format
-```
-https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/sound-{word}.png
-```
-
-### Status
-✅ AUDIO 100% COMPLETE (234 files)
-✅ IMAGES 100% COMPLETE (60 files)
-✅ word-images.ts UPDATED
-⏳ QA TESTING - NEXT
-⏳ DEPLOY - FINAL
-
-### Next Steps
-1. Test Sound Games in browser
-2. Verify all images display correctly
-3. Deploy to production
-
----
-
-
-## Session 4 Part 3 - January 8, 2026, ~7:30 PM Beijing
-
-### Task: Audio Bug Investigation & Deep Dive
-
-### Problem Reported
-User tested the I Spy game and found:
-- Letter sounds playing over each other
-- Wrong letter sounds playing for some consonants
-- Audio "really messed up"
-
-### Deep Dive Analysis Completed
-
-**BUG 1: Audio Overlap (PARTIALLY FIXED)**
-- Two competing audio systems: local `playAudio()` + global `soundGameAudio`
-- Added `GameAudio.stop()` calls but needs full consolidation
-
-**BUG 2: setTimeout Race Conditions (NOT FIXED)**
-- Multiple nested setTimeout without cleanup
-- Fast clicks cause old timeouts to fire wrong sounds
-
-**BUG 3: Stale State in setTimeout (NOT FIXED)**
-- `roundsPlayed` uses stale closure values inside setTimeout
-
-**BUG 4: Potential Wrong Audio Files (UNVERIFIED)**
-- May have split master recording incorrectly
-- Need manual verification of all 26 letters
-
-### Files Created
-- `/docs/HANDOFF_JAN8_2026_SESSION4.md` - Full handoff with fix instructions
-- `/public/audio-test.html` - Static letter sound tester
-
-### Partial Fixes Applied
-- Added GameAudio.stop() to beginning/page.tsx
-- Added GameAudio.stop() to ending/page.tsx
-- Pushed to GitHub (commit ed9093c)
-
-### Status
-✅ AUDIO FILES EXIST (234 files)
-✅ IMAGES COMPLETE (60 files)
-🐛 AUDIO BUGS IDENTIFIED
-⏳ AUDIO BUGS NEED FIXING
-⏳ LETTER VERIFICATION NEEDED
-
-### Next Session Tasks
-1. Create debug page for letter testing
-2. Fix all setTimeout race conditions
-3. Consolidate to single audio system
-4. Verify all 26 letter sounds are correct
-5. Full QA test
-
----
-## Session 5 - January 8, 2026 - Sound Games Deep Audit & Fix
-
-### Task: Deep audit of all audio/images + UI improvements
-
-### What Was Done
-
-**1. Audio Race Condition Fixes (COMPLETE)**
-- Added timeout refs to track/cancel all setTimeout calls
-- Used functional state updates to fix stale closure values
-- Consolidated to single GameAudio system (removed local playAudio)
-- Added cleanup on unmount
-- Created `/app/debug/audio-test/page.tsx` for letter verification
-
-**2. Deep Audit of All Assets (COMPLETE)**
-- Verified all 182 game words have audio in `/audio-new/words/pink/`
-- Verified all 26 letter sounds exist
-- Verified all 3 phonemes (sh, ch, th) exist
-- Verified all 182 game words have Supabase images
-- All image URLs return HTTP 200
-
-**3. UI/Design Improvements (COMPLETE)**
-- Changed `object-contain` → `object-cover` (images fill cards)
-- Made cards square with `aspect-square`
-- Increased image size (112px → 140px)
-- Reduced card padding for larger images
-- Added shadows, rounded corners, loading spinner
-- Better hover effects with ring glow
-
-### Files Modified
-- `app/games/sound-games/beginning/page.tsx`
-- `app/games/sound-games/ending/page.tsx`
-- `components/sound-games/WordImage.tsx`
-- `app/debug/audio-test/page.tsx` (NEW)
-- `docs/SOUND_GAMES_DEEP_AUDIT.md` (NEW)
-- `docs/HANDOFF_JAN8_2026_SESSION5.md` (NEW)
+### Key Decisions Made
+- **STOP bulk recording** - Failed twice. Do ONE sound per day, verify manually.
+- **Games-curriculum integration** - Big vision: teacher logs work → parent gets game notification
+- **3-part cards** - Need to build for every curriculum step
 
 ### Commits
-- `fab852c` - fix: audio race conditions + stale state in I Spy games
-- `b4428de` - fix: improve image display in Sound Games
+- `df30f35` - Restore Sound Games with ElevenLabs (failed)
+- `ab27bdc` - Restore Tredoux recordings (also failed)  
+- `6eb088f` - Fresh letter recordings (WORKING)
+- `01ae2fb` - Sound Games status doc
+- `5d77b47` - Play letters directly, disable broken word audio
+- `96375e6` - Daily summary page (has bugs)
+- `582c846` - Middleware fix attempt
 
-### Status
-✅ AUDIO 100% COMPLETE (verified)
-✅ IMAGES 100% COMPLETE (verified)
-✅ RACE CONDITIONS FIXED
-✅ UI DESIGN IMPROVED
-⏳ DEPLOY - Railway auto-deploying
-
-### Test URLs
-- https://www.teacherpotato.xyz/games/sound-games/beginning
-- https://www.teacherpotato.xyz/games/sound-games/ending
-- https://www.teacherpotato.xyz/debug/audio-test
+### Tomorrow's Priority
+1. Fix Daily Summary API (activity_photos column)
+2. Fix teacher login redirect
+3. Start word audio rebuild (S sound first)
+4. Begin curriculum-game mapping design
 
 ---
 
+## SESSION 5: January 8, 2026 - Sound Games Deep Audit
+
+### Summary
+Fixed audio race conditions, verified all assets exist, improved UI.
+
+### Completed
+- Audio race conditions fixed (setTimeout refs)
+- All 182 words verified to have audio + images
+- UI improved (object-cover, aspect-square)
+- Debug page created at /debug/audio-test
+
+---
+
+## SESSION 4: January 8, 2026 - DALL-E Images
+
+### Summary  
+Generated 60 images, uploaded to Supabase, identified audio bugs.
+
+---
+
+## SESSION 3: January 8, 2026 - Audio Recording
+
+### Summary
+Recorded 234 audio files with Tredoux voice, deployed to /public/audio-new/
+
+---
+
+## Previous Sessions
+See older handoff docs in /docs/ folder.
