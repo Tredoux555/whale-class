@@ -69,8 +69,9 @@ export async function middleware(req: NextRequest) {
     '/auth/signup',
     '/auth/reset-password',
     '/auth/student-login', // Student login page
+    '/auth/teacher',  // Teacher login page (moved here to avoid layout issues)
     '/admin/login', // Admin login page
-    '/teacher/login', // Teacher login page
+    '/teacher/login', // Keep for backwards compat, redirects to /auth/teacher
   ];
   
   // Check if pathname matches exactly or starts with a public path
