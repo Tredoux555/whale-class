@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import { getUserSession } from '@/lib/auth-multi';
 import TeacherNav from './components/TeacherNav';
 
@@ -8,15 +7,6 @@ export default async function TeacherLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Get current path to skip auth check on login page
-  const headersList = headers();
-  const pathname = headersList.get('x-pathname') || '';
-  
-  // Skip auth check for login page
-  if (pathname === '/teacher/login' || pathname.startsWith('/teacher/login')) {
-    return <>{children}</>;
-  }
-  
   const session = await getUserSession();
   
   // Redirect to login if not authenticated
