@@ -1,6 +1,6 @@
 // components/sound-games/WordImage.tsx
-// Displays DALL-E image with emoji fallback
-// Created: Jan 8, 2026 - Fixed to use correct export name
+// Displays DALL-E image with professional styling
+// Updated: Jan 8, 2026 - Improved sizing and visual design
 
 'use client';
 
@@ -15,7 +15,7 @@ interface WordImageProps {
   className?: string;
 }
 
-// Simple version - just shows image (no emoji prop needed)
+// Simple version - professional image display for games
 export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordImageProps, 'emoji'>) {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +26,7 @@ export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordI
   if (!imageUrl || imageError) {
     return (
       <div 
-        className={`flex items-center justify-center bg-gray-100 rounded-xl ${className}`}
+        className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-inner ${className}`}
         style={{ width: size, height: size }}
       >
         <span className="text-gray-400 text-4xl">🖼️</span>
@@ -36,14 +36,14 @@ export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordI
   
   return (
     <div 
-      className={`relative flex items-center justify-center ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-white shadow-md ${className}`}
       style={{ width: size, height: size }}
     >
       {isLoading && (
         <div 
-          className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-xl animate-pulse"
+          className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 animate-pulse"
         >
-          <span className="text-gray-300 text-4xl">🖼️</span>
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-400 rounded-full animate-spin" />
         </div>
       )}
       <Image
@@ -51,20 +51,66 @@ export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordI
         alt={word}
         width={size}
         height={size}
-        className={`object-contain rounded-xl transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        className={`w-full h-full object-cover transition-all duration-300 ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           console.error(`Failed to load image for word: ${word}`);
           setImageError(true);
           setIsLoading(false);
         }}
-        unoptimized // Supabase URLs don't need Next.js optimization
+        unoptimized
       />
     </div>
   );
 }
 
-// Full version with emoji fallback
+// Game card version - for 2x2 option grids
+export function WordImageCard({ word, size = 140, className = '' }: Omit<WordImageProps, 'emoji'>) {
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const imageUrl = getWordImageUrl(word);
+  
+  // If no image URL or image failed to load, show placeholder
+  if (!imageUrl || imageError) {
+    return (
+      <div 
+        className={`flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl ${className}`}
+        style={{ width: size, height: size }}
+      >
+        <span className="text-slate-300" style={{ fontSize: size * 0.4 }}>🖼️</span>
+      </div>
+    );
+  }
+  
+  return (
+    <div 
+      className={`relative overflow-hidden rounded-xl ${className}`}
+      style={{ width: size, height: size }}
+    >
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100 animate-pulse">
+          <div className="w-6 h-6 border-3 border-slate-200 border-t-blue-400 rounded-full animate-spin" />
+        </div>
+      )}
+      <Image
+        src={imageUrl}
+        alt={word}
+        width={size}
+        height={size}
+        className={`w-full h-full object-cover transition-opacity duration-200 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setImageError(true);
+          setIsLoading(false);
+        }}
+        unoptimized
+      />
+    </div>
+  );
+}
+
+// Full version with emoji fallback (legacy support)
 export function WordImage({ word, emoji = '🖼️', size = 120, className = '' }: WordImageProps) {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,12 +133,12 @@ export function WordImage({ word, emoji = '🖼️', size = 120, className = '' 
   
   return (
     <div 
-      className={`relative flex items-center justify-center ${className}`}
+      className={`relative overflow-hidden rounded-2xl ${className}`}
       style={{ width: size, height: size }}
     >
       {isLoading && (
         <span 
-          className="absolute flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center bg-gray-50"
           style={{ fontSize: `${size * 0.5}px` }}
         >
           {emoji}
@@ -103,7 +149,7 @@ export function WordImage({ word, emoji = '🖼️', size = 120, className = '' 
         alt={word}
         width={size}
         height={size}
-        className={`object-contain rounded-xl transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setImageError(true);
