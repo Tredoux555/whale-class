@@ -1,6 +1,6 @@
 // app/games/sound-games/beginning/page.tsx
 // I Spy Beginning Sounds Game
-// FIXED: Better audio handling and immediate playback on user click
+// FIXED: Race conditions, stale state, single audio system
 
 'use client';
 
@@ -14,7 +14,7 @@ import {
   type SoundGroup,
   type SoundWord,
 } from '@/lib/sound-games/sound-games-data';
-import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
+import { getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
 import { GameAudio } from '@/lib/games/audio-paths';
 import { WordImageSimple } from '@/components/sound-games/WordImage';
 
@@ -39,7 +39,35 @@ export default function ISpyBeginningGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionStart, setSessionStart] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(300);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // TIMEOUT REFS - Track all timeouts to prevent race conditions
+  const wordTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const advanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear ALL pending timeouts - call before any new action
+  const clearAllTimeouts = useCallback(() => {
+    if (wordTimeoutRef.current) {
+      clearTimeout(wordTimeoutRef.current);
+      wordTimeoutRef.current = null;
+    }
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+      GameAudio.stop();
+    };
+  }, [clearAllTimeouts]);
 
   // Generate a new round
   const generateRound = useCallback((phase: GamePhase): GameRound => {
@@ -63,44 +91,15 @@ export default function ISpyBeginningGame() {
     };
   }, []);
 
-  // Simple audio play function that handles errors gracefully
-  const playAudio = async (path: string): Promise<void> => {
-    return new Promise((resolve) => {
-      try {
-        // CRITICAL: Stop ALL audio first - both our ref and the global GameAudio
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        }
-        GameAudio.stop(); // Stop any global audio too
-        
-        const audio = new Audio(path);
-        audioRef.current = audio;
-        
-        audio.onended = () => resolve();
-        audio.onerror = (e) => {
-          console.warn('Audio error:', path, e);
-          resolve();
-        };
-        
-        audio.play().catch((err) => {
-          console.warn('Audio play failed:', path, err);
-          resolve();
-        });
-      } catch (e) {
-        console.warn('Audio exception:', e);
-        resolve();
-      }
-    });
-  };
-
   // Play the full instruction: "I spy something that begins with /sound/"
-  const playTargetSound = async (sound: string, includeInstruction: boolean = true) => {
+  const playTargetSound = useCallback(async (sound: string, includeInstruction: boolean = true) => {
+    // Stop all audio first
+    GameAudio.stop();
     setIsPlaying(true);
     
     try {
       if (includeInstruction) {
-        await playAudio('/audio-new/instructions/i-spy-beginning.mp3');
+        await GameAudio.play('/audio-new/instructions/i-spy-beginning.mp3');
         await new Promise(r => setTimeout(r, 400));
       }
       
@@ -109,20 +108,23 @@ export default function ISpyBeginningGame() {
       console.log('Playing phoneme:', sound, phonemePath);
       
       if (phonemePath) {
-        await playAudio(phonemePath);
+        await GameAudio.play(phonemePath);
       } else {
         // Fallback: try to play from letters folder directly
-        await playAudio(`/audio-new/letters/${sound}.mp3`);
+        await GameAudio.play(`/audio-new/letters/${sound}.mp3`);
       }
     } catch (err) {
       console.error('Error in playTargetSound:', err);
     }
     
     setIsPlaying(false);
-  };
+  }, []);
 
   // Start a new game - IMMEDIATELY play audio on user click
   const startGame = async (phase: GamePhase) => {
+    clearAllTimeouts();
+    GameAudio.stop();
+    
     const firstRound = generateRound(phase);
     
     setSelectedPhase(phase);
@@ -133,57 +135,62 @@ export default function ISpyBeginningGame() {
     setSessionStart(Date.now());
     setTimeRemaining(300);
     setCurrentRound(firstRound);
+    setFeedback(null);
 
     // Play immediately - don't use setTimeout (browser blocks delayed audio)
     await playTargetSound(firstRound.targetSound);
   };
 
-  // Handle option selection
+  // Handle option selection - FIXED race conditions
   const handleOptionSelect = async (selected: SoundWord) => {
     if (gameState !== 'playing' || isPlaying) return;
 
-    // Stop any playing audio first
+    // CRITICAL: Clear all pending timeouts before ANY new action
+    clearAllTimeouts();
     GameAudio.stop();
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
 
     const isCorrect = selected.word === currentRound?.targetWord.word;
 
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      // Use functional update to ensure we get latest score
+      setScore(prev => prev + 1);
       setFeedback({ correct: true, message: getRandomPhrase(CORRECT_PHRASES) });
-      await soundGameAudio.playCorrect();
       
-      // Play the word they got correct
-      setTimeout(async () => {
-        await soundGameAudio.playWord(selected.word);
+      await GameAudio.playCorrect();
+      
+      // Play the word after a delay - track the timeout
+      wordTimeoutRef.current = setTimeout(async () => {
+        await GameAudio.playWord(selected.word, 'pink');
       }, 500);
 
       setGameState('feedback');
 
-      setTimeout(async () => {
-        const newRoundsPlayed = roundsPlayed + 1;
-        setRoundsPlayed(newRoundsPlayed);
-
-        if (newRoundsPlayed >= totalRounds) {
-          setGameState('complete');
-          soundGameAudio.playCelebration();
-        } else {
-          setFeedback(null);
-          setGameState('playing');
-          const nextRound = generateRound(selectedPhase!);
-          setCurrentRound(nextRound);
-          await playTargetSound(nextRound.targetSound);
-        }
+      // Use functional update to get CURRENT roundsPlayed value
+      advanceTimeoutRef.current = setTimeout(() => {
+        setRoundsPlayed(prev => {
+          const newRoundsPlayed = prev + 1;
+          
+          if (newRoundsPlayed >= totalRounds) {
+            setGameState('complete');
+            GameAudio.playCelebration();
+          } else {
+            setFeedback(null);
+            setGameState('playing');
+            const nextRound = generateRound(selectedPhase!);
+            setCurrentRound(nextRound);
+            playTargetSound(nextRound.targetSound);
+          }
+          
+          return newRoundsPlayed;
+        });
       }, 2000);
+
     } else {
       // Wrong answer
       setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES) });
-      await soundGameAudio.playWrong();
+      await GameAudio.playWrong();
 
-      setTimeout(async () => {
+      retryTimeoutRef.current = setTimeout(async () => {
         setFeedback(null);
         await playTargetSound(currentRound!.targetSound, false);
       }, 1500);
@@ -193,6 +200,7 @@ export default function ISpyBeginningGame() {
   // Replay just the sound (no instruction)
   const handleReplay = async () => {
     if (currentRound && !isPlaying) {
+      clearAllTimeouts(); // Clear any pending actions when user wants to hear again
       await playTargetSound(currentRound.targetSound, false);
     }
   };
@@ -207,12 +215,13 @@ export default function ISpyBeginningGame() {
       setTimeRemaining(remaining);
 
       if (remaining === 0) {
+        clearAllTimeouts();
         setGameState('complete');
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [gameState, sessionStart]);
+  }, [gameState, sessionStart, clearAllTimeouts]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -368,7 +377,7 @@ export default function ISpyBeginningGame() {
             {isPlaying ? '🔊 Listening...' : 'Tap the ear to hear again'}
           </p>
           
-          {/* Debug info - shows which sound is playing */}
+          {/* Debug info */}
           {currentRound && (
             <p className="text-white/50 text-xs mt-2">
               Sound: /{currentRound.targetSound}/
