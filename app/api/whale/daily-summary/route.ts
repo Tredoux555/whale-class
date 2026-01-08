@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
         *,
         child:children(id, name, avatar_emoji)
       `)
-      .gte('created_at', `${date}T00:00:00`)
-      .lt('created_at', `${date}T23:59:59`)
-      .order('created_at', { ascending: false });
+      .gte('uploaded_at', `${date}T00:00:00`)
+      .lt('uploaded_at', `${date}T23:59:59`)
+      .order('uploaded_at', { ascending: false });
 
     if (photoError) throw photoError;
 
