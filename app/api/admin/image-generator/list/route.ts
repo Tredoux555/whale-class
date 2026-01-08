@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ images: [], error: 'Missing Supabase config' }, { status: 500 });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // List all files in the sound-objects folder
     const { data: files, error } = await supabase.storage
       .from('images')
@@ -38,8 +44,8 @@ export async function GET() {
     });
 
     return NextResponse.json({ 
-      images, // Just the word list for quick checks
-      imagesWithUrls, // Full data with URLs
+      images,
+      imagesWithUrls,
       count: images.length,
     });
 
