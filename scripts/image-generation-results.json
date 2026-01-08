@@ -1,0 +1,236 @@
+{
+  "success": [
+    {
+      "word": "add",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/add.png"
+    },
+    {
+      "word": "arrow",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/arrow.png"
+    },
+    {
+      "word": "bin",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/bin.png"
+    },
+    {
+      "word": "book",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/book.png"
+    },
+    {
+      "word": "cake",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/cake.png"
+    },
+    {
+      "word": "cherry",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/cherry.png"
+    },
+    {
+      "word": "chicken",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/chicken.png"
+    },
+    {
+      "word": "chin",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/chin.png"
+    },
+    {
+      "word": "cow",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/cow.png"
+    },
+    {
+      "word": "dig",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/dig.png"
+    },
+    {
+      "word": "end",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/end.png"
+    },
+    {
+      "word": "foot",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/foot.png"
+    },
+    {
+      "word": "girl",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/girl.png"
+    },
+    {
+      "word": "heart",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/heart.png"
+    },
+    {
+      "word": "hop",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/hop.png"
+    },
+    {
+      "word": "hut",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/hut.png"
+    },
+    {
+      "word": "ill",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/ill.png"
+    },
+    {
+      "word": "itch",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/itch.png"
+    },
+    {
+      "word": "jeans",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/jeans.png"
+    },
+    {
+      "word": "juice",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/juice.png"
+    },
+    {
+      "word": "jump",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/jump.png"
+    },
+    {
+      "word": "milk",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/milk.png"
+    },
+    {
+      "word": "nine",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/nine.png"
+    },
+    {
+      "word": "nurse",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/nurse.png"
+    },
+    {
+      "word": "peg",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/peg.png"
+    },
+    {
+      "word": "pink",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/pink.png"
+    },
+    {
+      "word": "run",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/run.png"
+    },
+    {
+      "word": "sad",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/sad.png"
+    },
+    {
+      "word": "sheep",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/sheep.png"
+    },
+    {
+      "word": "shirt",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/shirt.png"
+    },
+    {
+      "word": "thick",
+      "success": true,
+      "url": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-objects/thick.png"
+    }
+  ],
+  "failed": [
+    {
+      "word": "think",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "throw",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "uncle",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "under",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "us",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "water",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "wet",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "wing",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yak",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yam",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yarn",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yell",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yellow",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "yo-yo",
+      "success": false,
+      "error": "Generation failed"
+    },
+    {
+      "word": "zone",
+      "success": false,
+      "error": "Generation failed"
+    }
+  ]
+}

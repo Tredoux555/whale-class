@@ -1,13 +1,13 @@
 // lib/sound-games/word-images.ts
 // Maps words to Supabase storage URLs for DALL-E generated images
-// Generated: Jan 8, 2026
+// Updated: Jan 8, 2026 - Added 60 new Sound Games images
 
 const SUPABASE_URL = 'https://dmfncjjtsoxrnvcdnvjq.supabase.co';
 const BUCKET = 'images';
 const FOLDER = 'sound-objects';
 
-// All available images in Supabase storage
-const AVAILABLE_IMAGES = new Set([
+// Original images (filename matches word)
+const ORIGINAL_IMAGES = new Set([
   'alligator', 'anchor', 'ant', 'apple', 'astronaut', 'ax',
   'bag', 'ball', 'bat', 'bed', 'bib', 'big', 'box', 'bud', 'bug', 'bus',
   'cab', 'can', 'cap', 'car', 'cat', 'crab', 'cub', 'cup',
@@ -33,6 +33,18 @@ const AVAILABLE_IMAGES = new Set([
   'zebra', 'zero', 'zigzag', 'zip', 'zipper', 'zoo'
 ]);
 
+// New Sound Games images (filename is sound-{word}.png)
+const SOUND_IMAGES = new Set([
+  'add', 'arrow', 'bin', 'book', 'cake', 'chair', 'cheese', 'cherry',
+  'chicken', 'chin', 'chip', 'cow', 'dig', 'end', 'foot', 'girl',
+  'green', 'heart', 'hop', 'hut', 'ill', 'in', 'itch', 'jeans',
+  'juice', 'jump', 'milk', 'nine', 'nurse', 'on', 'peg', 'pink',
+  'run', 'sad', 'sheep', 'shell', 'ship', 'shirt', 'shoe', 'shop',
+  'thick', 'thin', 'think', 'throw', 'tree', 'two', 'uncle', 'under',
+  'up', 'us', 'water', 'wet', 'wing', 'yak', 'yam', 'yarn',
+  'yell', 'yellow', 'yo-yo', 'zone'
+]);
+
 /**
  * Get the Supabase storage URL for a word's image
  * @param word - The word to get image for (lowercase)
@@ -41,11 +53,17 @@ const AVAILABLE_IMAGES = new Set([
 export function getWordImageUrl(word: string): string | null {
   const normalizedWord = word.toLowerCase().trim();
   
-  if (!AVAILABLE_IMAGES.has(normalizedWord)) {
-    return null;
+  // Check new sound images first (sound-{word}.png format)
+  if (SOUND_IMAGES.has(normalizedWord)) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${FOLDER}/sound-${normalizedWord}.png`;
   }
   
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${FOLDER}/${normalizedWord}.png`;
+  // Check original images ({word}.png format)
+  if (ORIGINAL_IMAGES.has(normalizedWord)) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${FOLDER}/${normalizedWord}.png`;
+  }
+  
+  return null;
 }
 
 /**
@@ -53,12 +71,24 @@ export function getWordImageUrl(word: string): string | null {
  * @param word - The word to check
  */
 export function hasWordImage(word: string): boolean {
-  return AVAILABLE_IMAGES.has(word.toLowerCase().trim());
+  const normalizedWord = word.toLowerCase().trim();
+  return SOUND_IMAGES.has(normalizedWord) || ORIGINAL_IMAGES.has(normalizedWord);
 }
 
 /**
  * Get all available words with images
  */
 export function getAvailableImageWords(): string[] {
-  return Array.from(AVAILABLE_IMAGES);
+  return [...Array.from(ORIGINAL_IMAGES), ...Array.from(SOUND_IMAGES)];
+}
+
+/**
+ * Get count of all available images
+ */
+export function getImageCount(): { original: number; sound: number; total: number } {
+  return {
+    original: ORIGINAL_IMAGES.size,
+    sound: SOUND_IMAGES.size,
+    total: ORIGINAL_IMAGES.size + SOUND_IMAGES.size
+  };
 }
