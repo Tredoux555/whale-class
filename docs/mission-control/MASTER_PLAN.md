@@ -24,136 +24,168 @@ Tredoux uses this daily with his kindergarten class. Real usage, real feedback, 
 
 ---
 
-## Phase 1: Perfect for One (NOW)
+## 🚨 PRIORITY TODO (Jan 9, 2026)
 
-- [x] Weekly planning (Chinese docs → Claude → Grid view)
-- [x] Classroom progress tracking
-- [x] Montree curriculum tree
-- [x] Teacher tablet interface
-- [x] Photo/video capture per child
-- [x] Sound games (auditory phonics) - LIVE with emojis, being upgraded
-- [ ] Parent reports (AI-generated)
-- [ ] Parent view portal
+1. **FIX**: Daily Summary page API (activity_photos.uploaded_at column error)
+2. **REBUILD**: Word audio files - one sound per day, verify each manually
+3. **BUILD**: Curriculum-to-Games mapping system
+4. **BUILD**: 3-part cards for each curriculum step  
+5. **BUILD**: Parent game recommendation notifications
 
 ---
 
-## Sound Games Curriculum Build (Jan 2026)
+## 🎮 GAMES-CURRICULUM INTEGRATION (THE BIG VISION)
 
-**Strategy: Ship working NOW, perfect ONE SOUND PER DAY**
-
-Games are LIVE with emoji placeholders. Each day we upgrade one sound with:
-1. Curated real images (not AI-generated)
-2. Clean ElevenLabs audio (properly trimmed)
-3. Three-part cards PDF (for classroom)
-4. Game logic review & tweaks
-
-**Why this approach:**
-- Parents have something usable TODAY
-- Classroom materials match digital games exactly
-- Homework can link directly to games
-- Sustainable pace - one sound done RIGHT each day
-- 27 sounds = ~1 month to complete curriculum
-
-**Curriculum Framework:**
+### The Flow
 ```
-curriculum/
-├── assets/images/phonics/beginning-sounds/{s,m,f,...}/
-├── assets/audio/phonics/
-├── three-part-cards/generated/
-└── manifest.json (tracks completion)
+Teacher logs work → System maps to games → Parent gets notification → Child reviews at home
 ```
 
-**Phase 1 Sounds (Easy - exist in Mandarin):**
-| Sound | Words | Status |
-|-------|-------|--------|
-| s | sun, sock, soap, star, snake, spoon | 🔄 In Progress |
-| m | mop, moon, mouse, mat, mug, milk | ⏳ Pending |
-| f | fan, fish, fork, frog, fox, foot | ⏳ Pending |
-| n | net, nut, nose, nest, nine, nurse | ⏳ Pending |
-| p | pen, pig, pot, pan, pear, pink | ⏳ Pending |
-| t | top, tent, tiger, toy, tree, two | ⏳ Pending |
-| c | cup, cat, car, cap, cow, cake | ⏳ Pending |
-| h | hat, hen, horse, house, hand, heart | ⏳ Pending |
+### How It Works
 
-**Phase 2 Sounds (Medium):**
-| Sound | Words | Status |
-|-------|-------|--------|
-| b | ball, bat, bed, bus, bug, book | ⏳ Pending |
-| d | dog, doll, duck, door, dish, drum | ⏳ Pending |
-| g | goat, gift, girl, grape, green, gum | ⏳ Pending |
-| j | jet, jam, jar, jump, jeans, juice | ⏳ Pending |
-| w | web, watch, worm, wolf, water, wing | ⏳ Pending |
-| y | yak, yam, yarn, yell, yellow, yo-yo | ⏳ Pending |
+1. **Teacher records**: "Leo practiced S sounds today" (with photo)
+2. **System looks up**: Activity X → Game Y (Phase Z)
+3. **Parent receives**: "Leo learned S sounds! Play 'I Spy Beginning' (Phase 1) at home to practice"
+4. **Child plays**: Game at home with parent
+5. **Progress syncs**: Both classroom + home progress in one view
 
-**Phase 3 Sounds (Hard - ESL focus):**
-| Sound | Words | Status |
-|-------|-------|--------|
-| v | van, vest, vase, vet, vine, violin | ⏳ Pending |
-| th | thumb, three, thick, thin, think, throw | ⏳ Pending |
-| r | ring, rug, rat, rain, rabbit, red | ⏳ Pending |
-| l | leg, lamp, leaf, log, lip, lemon | ⏳ Pending |
-| z | zip, zoo, zebra, zero, zigzag, zone | ⏳ Pending |
-| sh | ship, shell, shoe, sheep, shirt, shop | ⏳ Pending |
-| ch | chair, cheese, chicken, chip, cherry, chin | ⏳ Pending |
+### Requirements
 
-**Vowels (Short sounds):**
-| Sound | Words | Status |
-|-------|-------|--------|
-| a | ant, apple, alligator, ax, add, arrow | ⏳ Pending |
-| e | egg, elephant, elbow, envelope, elf, end | ⏳ Pending |
-| i | igloo, insect, ink, itch, in, ill | ⏳ Pending |
-| o | octopus, orange, ostrich, olive, on, ox | ⏳ Pending |
-| u | umbrella, up, under, us, uncle, umpire | ⏳ Pending |
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| Games match curriculum EXACTLY | Every game phase = curriculum step | 🔜 TO BUILD |
+| 3-part cards for each step | Physical + digital materials match | 🔜 TO BUILD |
+| Missing games built | If curriculum step has no game, build it | 🔜 TO BUILD |
+| Parent notification system | Auto-push game recommendations | 🔜 TO BUILD |
+| Progress tracking | Combined classroom + home view | 🔜 TO BUILD |
+
+### Database Tables Needed
+
+```sql
+-- Maps curriculum activities to games
+curriculum_game_mapping (
+  activity_id UUID REFERENCES activities(id),
+  game_type TEXT,  -- 'sound-games-beginning', 'sound-games-ending', etc
+  game_phase TEXT, -- 'phase1', 'phase2', 'vowel', etc
+  game_url TEXT
+)
+
+-- Tracks recommendations sent to parents
+parent_game_recommendations (
+  id UUID PRIMARY KEY,
+  child_id UUID REFERENCES children(id),
+  activity_id UUID,
+  game_type TEXT,
+  game_url TEXT,
+  sent_at TIMESTAMP,
+  opened_at TIMESTAMP,
+  completed_at TIMESTAMP
+)
+
+-- 3-part card materials for each activity
+three_part_cards (
+  id UUID PRIMARY KEY,
+  activity_id UUID REFERENCES activities(id),
+  word TEXT,
+  image_url TEXT,
+  audio_url TEXT,
+  category TEXT
+)
+```
+
+### English Curriculum → Game Mapping
+
+The games MUST match the English Guide progression exactly:
+
+| Curriculum Step | Game | Phase |
+|-----------------|------|-------|
+| Introduction to sounds | I Spy Beginning | 1 |
+| Beginning sound isolation | I Spy Beginning | 1-3 |
+| Ending sound isolation | I Spy Ending | 1-3 |
+| Middle sound (vowels) | Middle Sound Match | vowel |
+| Sound blending | Sound Blending | - |
+| Sound segmenting | Sound Segmenting | - |
+| Pink series reading | Pink Reading Games | - |
+| Sight words | Sight Word Games | - |
+
+---
+
+## Sound Games Status (Jan 8, 2026)
+
+### What Works
+- ✅ Letter sounds (a-z) - Fresh recordings, properly split
+- ✅ Game logic - Race conditions fixed
+- ✅ Images on Supabase - All verified
+
+### What's Broken  
+- ❌ Word audio (245 files) - ALL mismatched/garbled
+- ❌ Instruction audio - 11 seconds too long, disabled
+- ❌ Phonemes (sh, ch, th) - Need verification
+
+### Rebuild Plan: One Sound Per Day
+
+**Why daily?** Bulk recording + splitting failed TWICE. Do it right.
 
 **Daily Workflow:**
-1. Find 6 real images for the sound
-2. Upload to Claude → resize + fit to square
-3. Generate three-part cards PDF
-4. Record/verify audio for 6 words
-5. Upload to Supabase
-6. Update manifest.json
-7. Test game with new assets
-8. Mark sound COMPLETE
+1. Pick ONE sound (start with S)
+2. Record 6 words clearly with 2-sec gaps
+3. Split carefully, VERIFY each file manually
+4. Create 3-part cards PDF
+5. Deploy and test in actual game
+6. Mark complete, move to next
+
+**Phase Order:**
+```
+Phase 1 (Easy):  s, m, f, n, p, t, c, h  (8 days)
+Phase 2 (Medium): b, d, g, j, w, y       (6 days)
+Phase 3 (Hard):  v, th, r, l, z, sh, ch  (7 days)
+Vowels:          a, e, i, o, u           (5 days)
+                                    TOTAL: 26 days
+```
+
+---
+
+## Phase 1: Perfect for One (NOW)
+
+- [x] Weekly planning
+- [x] Classroom progress tracking  
+- [x] Montree curriculum tree
+- [x] Teacher tablet interface
+- [x] Photo/video capture per child
+- [x] Sound games (letters working, words rebuilding)
+- [ ] Daily Summary view (API needs fix)
+- [ ] Parent reports (AI-generated)
+- [ ] Parent view portal
+- [ ] Curriculum-game mapping
+- [ ] Parent game notifications
 
 ---
 
 ## Phase 2: Scale to Four (Q1 2026)
 
-4 school slots ready. When Tredoux moves to Qingdao or onboards another school:
-- Update placeholder to real school
-- Add children with new school_id
-- School selector appears automatically
-
-No code changes needed. Just data.
+4 school slots ready. No code changes needed, just data.
 
 ---
 
 ## Phase 3: Franchise Model (Future)
 
-- Each school gets their own slug: `teacherpotato.xyz/beijing`, `teacherpotato.xyz/qingdao`
-- School admins manage their own teachers/children
-- Super admin (Tredoux) sees everything
-- Curriculum stays centralized (Montree)
+School slugs, admin hierarchy, centralized curriculum.
 
 ---
 
 ## Phase 4: Jeffy Schools Integration (Future)
 
-When Jeffy Commerce funds the first school:
-- Whale becomes the official LMS
-- Progress data feeds into community reporting
-- Parents see child growth via app
-- Transparent education outcomes
+Whale = official LMS for all Jeffy-funded schools.
 
 ---
 
 ## Design Principles
 
 1. **Teacher-first** - If it doesn't help the teacher, delete it
-2. **Works offline** - Classrooms have bad wifi (PWA support)
-3. **One tap** - Progress tracking = one tap, not three screens
+2. **Works offline** - PWA support for bad wifi
+3. **One tap** - Progress tracking = one tap
 4. **Montessori native** - Not adapted from traditional ed-tech
-5. **Simple > Clever** - We just deleted 1,864 lines of "clever" code
+5. **Games match curriculum** - Digital + physical materials identical
 
 ---
 
@@ -164,21 +196,11 @@ When Jeffy Commerce funds the first school:
 - Supabase for data
 - Railway for hosting
 - Handoff files for continuity
-
----
-
-## Success Metrics
-
-- Tredoux uses it daily without bugs
-- Second school onboards in < 1 hour
-- Parents understand their child's progress
-- Teachers say "this saves me time"
+- VERIFY before deploy (learned the hard way)
 
 ---
 
 ## The Long Game
-
-Whale proves that technology can serve education without corporate bloat.
 
 When Jeffy Schools opens, students learn on a platform built by a teacher who used it himself.
 
