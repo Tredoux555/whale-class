@@ -25,8 +25,7 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMsg);
 
-    // Save to history ONLY (admin can see this)
-    // Do NOT save to secret_stories - so it won't display on frontend
+    // Save to history for admin
     await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
@@ -35,10 +34,22 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt.toISOString()
     });
 
-    // Return error to frontend - message saved for admin but not visible to users
-    return NextResponse.json({ 
-      error: 'Error, message not sent. Please contact Administrator.' 
-    }, { status: 503 });
+    // Update secret_stories so message displays to users
+    const { error: updateError } = await supabase
+      .from('secret_stories')
+      .update({
+        hidden_message: encryptedMessage,
+        message_author: msgAuthor,
+        updated_at: new Date().toISOString()
+      })
+      .eq('week_start_date', weekStart);
+
+    if (updateError) {
+      console.error('[Message] Update error:', updateError);
+      return NextResponse.json({ error: 'Failed to save message' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
     
   } catch (error) {
     console.error('[Message] Error:', error);
