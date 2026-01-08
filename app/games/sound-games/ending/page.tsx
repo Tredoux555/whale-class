@@ -8,7 +8,6 @@ import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { ENDING_SOUNDS, PHONEME_AUDIO, type SoundWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -265,7 +264,7 @@ export default function ISpyEndingGame() {
                 }
               `}
             >
-              <WordImageSimple word={option.word} size={100} />
+              <span className="text-7xl block">{option.image}</span>
             </button>
           ))}
         </div>
