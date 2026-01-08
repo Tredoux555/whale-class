@@ -61,6 +61,7 @@ export async function middleware(req: NextRequest) {
     '/auth/reset-password',
     '/auth/student-login', // Student login page
     '/admin/login', // Admin login page
+    '/teacher/login', // Teacher login page
   ];
   
   // Check if pathname matches exactly or starts with a public path
@@ -213,16 +214,15 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Teacher routes - removed, redirect to admin or home
+    // Teacher routes - allow access for teachers, admins, and super_admins
     if (pathname.startsWith('/teacher')) {
-      // Teacher dashboard removed, redirect based on role
-      if (roles.includes('admin') || roles.includes('super_admin')) {
-        return NextResponse.redirect(new URL('/admin', req.url));
+      const hasTeacherAccess = roles.some(role => 
+        role === 'admin' || role === 'super_admin' || role === 'teacher'
+      );
+      
+      if (!hasTeacherAccess) {
+        return NextResponse.redirect(new URL('/', req.url));
       }
-      if (roles.includes('parent')) {
-        return NextResponse.redirect(new URL('/parent/dashboard', req.url));
-      }
-      return NextResponse.redirect(new URL('/', req.url));
     }
   }
 
