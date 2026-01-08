@@ -8,6 +8,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, VOWEL_COLORS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
+import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -215,7 +216,9 @@ export default function MiddleSoundGame() {
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
           <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>What sound is in the MIDDLE?</p>
 
-          <div className="text-9xl mb-4">{currentWord?.image}</div>
+          <div className="flex justify-center mb-4">
+            {currentWord && <WordImageSimple word={currentWord.word} size={120} />}
+          </div>
 
           <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
             {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}

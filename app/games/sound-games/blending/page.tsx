@@ -8,6 +8,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
+import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -256,7 +257,7 @@ export default function SoundBlendingGame() {
                 }
               `}
             >
-              <span className="text-7xl block">{option.image}</span>
+              <WordImageSimple word={option.word} size={100} />
             </button>
           ))}
         </div>
