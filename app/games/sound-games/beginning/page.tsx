@@ -91,28 +91,15 @@ export default function ISpyBeginningGame() {
     };
   }, []);
 
-  // Play the full instruction: "I spy something that begins with /sound/"
+  // Play the letter sound directly (instruction audio disabled - too long)
   const playTargetSound = useCallback(async (sound: string, includeInstruction: boolean = true) => {
     // Stop all audio first
     GameAudio.stop();
     setIsPlaying(true);
     
     try {
-      if (includeInstruction) {
-        await GameAudio.play('/audio-new/instructions/i-spy-beginning.mp3');
-        await new Promise(r => setTimeout(r, 400));
-      }
-      
-      // Get the phoneme path
-      const phonemePath = PHONEME_AUDIO[sound];
-      console.log('Playing phoneme:', sound, phonemePath);
-      
-      if (phonemePath) {
-        await GameAudio.play(phonemePath);
-      } else {
-        // Fallback: try to play from letters folder directly
-        await GameAudio.play(`/audio-new/letters/${sound}.mp3`);
-      }
+      // Play letter sound directly from letters folder
+      await GameAudio.play(`/audio-new/letters/${sound}.mp3`);
     } catch (err) {
       console.error('Error in playTargetSound:', err);
     }
@@ -158,10 +145,10 @@ export default function ISpyBeginningGame() {
       
       await GameAudio.playCorrect();
       
-      // Play the word after a delay - track the timeout
-      wordTimeoutRef.current = setTimeout(async () => {
-        await GameAudio.playWord(selected.word, 'pink');
-      }, 500);
+      // Word audio disabled - files are broken, will rebuild daily
+      // wordTimeoutRef.current = setTimeout(async () => {
+      //   await GameAudio.playWord(selected.word, 'pink');
+      // }, 500);
 
       setGameState('feedback');
 
