@@ -168,3 +168,56 @@ https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/sound-o
 3. Deploy to production
 
 ---
+
+
+## Session 4 Part 3 - January 8, 2026, ~7:30 PM Beijing
+
+### Task: Audio Bug Investigation & Deep Dive
+
+### Problem Reported
+User tested the I Spy game and found:
+- Letter sounds playing over each other
+- Wrong letter sounds playing for some consonants
+- Audio "really messed up"
+
+### Deep Dive Analysis Completed
+
+**BUG 1: Audio Overlap (PARTIALLY FIXED)**
+- Two competing audio systems: local `playAudio()` + global `soundGameAudio`
+- Added `GameAudio.stop()` calls but needs full consolidation
+
+**BUG 2: setTimeout Race Conditions (NOT FIXED)**
+- Multiple nested setTimeout without cleanup
+- Fast clicks cause old timeouts to fire wrong sounds
+
+**BUG 3: Stale State in setTimeout (NOT FIXED)**
+- `roundsPlayed` uses stale closure values inside setTimeout
+
+**BUG 4: Potential Wrong Audio Files (UNVERIFIED)**
+- May have split master recording incorrectly
+- Need manual verification of all 26 letters
+
+### Files Created
+- `/docs/HANDOFF_JAN8_2026_SESSION4.md` - Full handoff with fix instructions
+- `/public/audio-test.html` - Static letter sound tester
+
+### Partial Fixes Applied
+- Added GameAudio.stop() to beginning/page.tsx
+- Added GameAudio.stop() to ending/page.tsx
+- Pushed to GitHub (commit ed9093c)
+
+### Status
+✅ AUDIO FILES EXIST (234 files)
+✅ IMAGES COMPLETE (60 files)
+🐛 AUDIO BUGS IDENTIFIED
+⏳ AUDIO BUGS NEED FIXING
+⏳ LETTER VERIFICATION NEEDED
+
+### Next Session Tasks
+1. Create debug page for letter testing
+2. Fix all setTimeout race conditions
+3. Consolidate to single audio system
+4. Verify all 26 letter sounds are correct
+5. Full QA test
+
+---
