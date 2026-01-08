@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         child:children(id, name, avatar_emoji),
-        activity:activities(id, name, area, sub_area)
+        activity:activities(id, name, area)
       `)
       .eq('assigned_date', date)
       .order('created_at', { ascending: false });
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         child:children(id, name, avatar_emoji),
-        activity:activities(id, name, area, sub_area)
+        activity:activities(id, name, area)
       `)
       .gte('last_presented', `${date}T00:00:00`)
       .lt('last_presented', `${date}T23:59:59`)
