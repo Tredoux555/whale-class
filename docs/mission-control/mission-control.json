@@ -3,8 +3,8 @@
   "url": "teacherpotato.xyz",
   "repo": "Tredoux555/whale-class",
   "hosting": "Railway",
-  "lastUpdated": "2026-01-08T12:30:00Z",
-  "currentPhase": "Per-School Curriculum - DEPLOYED",
+  "lastUpdated": "2026-01-08T17:45:00Z",
+  "currentPhase": "SOUND GAMES FIX - IMAGES COMPLETE",
   
   "vision": {
     "core": "Montessori education platform that scales from one classroom to many schools",
@@ -12,87 +12,89 @@
     "bigPicture": "Foundation for Jeffy Schools - every graduate school uses this system"
   },
   
-  "schools": {
-    "slot1": { "id": "00000000-0000-0000-0000-000000000001", "name": "Beijing International School", "status": "ACTIVE", "curriculumWorks": 342 },
-    "slot2": { "id": "00000000-0000-0000-0000-000000000002", "name": "School 2 (Available)", "status": "PLACEHOLDER" },
-    "slot3": { "id": "00000000-0000-0000-0000-000000000003", "name": "School 3 (Available)", "status": "PLACEHOLDER" },
-    "slot4": { "id": "00000000-0000-0000-0000-000000000004", "name": "School 4 (Available)", "status": "PLACEHOLDER" }
-  },
-  
-  "coreFeatures": {
-    "weeklyPlanning": { "status": "COMPLETE", "notes": "Upload Chinese docx → Claude parses → grid view" },
-    "classroomView": { "status": "COMPLETE", "notes": "Swipeable rows, tap for panel, notes + activity guide" },
-    "activityGuides": { "status": "COMPLETE", "notes": "Work descriptions with aims, materials, levels" },
-    "montree": { "status": "COMPLETE", "notes": "Full Montessori curriculum tree" },
-    "teacherProgress": { "status": "COMPLETE", "notes": "Tap-to-track tablet interface" },
-    "multiSchool": { "status": "COMPLETE", "notes": "4 school slots, school_id filtering" },
-    "soundGames": { "status": "COMPLETE", "notes": "5 games with ElevenLabs audio" },
-    "englishGames": { "status": "POLISHED", "notes": "All 10 games with hints, scores, stars" },
-    "perSchoolCurriculum": { "status": "DEPLOYED", "notes": "342 works cloned, teacher toggles, quick placement" }
-  },
-  
-  "perSchoolCurriculum": {
-    "status": "DEPLOYED",
-    "table": "school_curriculum",
-    "worksCloned": 342,
-    "schoolId": "00000000-0000-0000-0000-000000000001",
-    "apiRoutes": [
-      "/api/school/[schoolId]/curriculum",
-      "/api/students/[studentId]/quick-place"
-    ],
-    "pages": [
-      "/teacher/curriculum",
-      "/teacher/students/[studentId]/quick-place"
-    ],
-    "features": [
-      "Each school gets copy of curriculum",
-      "Toggle materials_on_shelf per work",
-      "Hide works with is_active toggle",
-      "Quick Placement sets student position in all areas",
-      "Auto-marks previous works as mastered"
+  "urgentFix": {
+    "issue": "Sound Games - Images Missing",
+    "status": "AUDIO COMPLETE - IMAGES PENDING",
+    "symptoms": ["60 words show placeholder emoji instead of real images"],
+    "audioStatus": "✅ 234 audio files recorded with Tredoux voice",
+    "imageStatus": "✅ 60 IMAGES UPLOADED TO SUPABASE",
+    "masterPlan": "/docs/SOUND_GAMES_MASTER_FIX.md",
+    "handoff": "/docs/HANDOFF_JAN8_2026_SESSION3.md",
+    "phases": {
+      "audio_letters": { "task": "26 letter sounds", "status": "DONE" },
+      "audio_phonemes": { "task": "3 phonemes (sh, ch, th)", "status": "DONE" },
+      "audio_words": { "task": "182 word recordings", "status": "DONE" },
+      "audio_feedback": { "task": "6 feedback sounds", "status": "DONE" },
+      "audio_instructions": { "task": "17 instruction phrases", "status": "DONE" },
+      "images": { "task": "Generate 60 DALL-E images", "status": "DONE" },
+      "registry": { "task": "Update word-images.ts", "status": "DONE" },
+      "testing": { "task": "QA all games", "status": "PENDING" },
+      "deploy": { "task": "Push to production", "status": "PENDING" }
+    },
+    "imagesNeeded": [
+      "add", "arrow", "bin", "book", "cake", "chair", "cheese", "cherry",
+      "chicken", "chin", "chip", "cow", "dig", "end", "foot", "girl",
+      "green", "heart", "hop", "hut", "ill", "in", "itch", "jeans",
+      "juice", "jump", "milk", "nine", "nurse", "on", "peg", "pink",
+      "run", "sad", "sheep", "shell", "ship", "shirt", "shoe", "shop",
+      "thick", "thin", "think", "throw", "tree", "two", "uncle", "under",
+      "up", "us", "water", "wet", "wing", "yak", "yam", "yarn",
+      "yell", "yellow", "yo-yo", "zone"
     ]
   },
   
-  "pendingFeatures": {
-    "navigationLinks": { "priority": "HIGH", "notes": "Add links from teacher dashboard to curriculum/quick-place" },
-    "dataNormalization": { "priority": "MEDIUM", "notes": "Merge math/mathematics area_ids" },
-    "gameProgress": { "priority": "MEDIUM", "notes": "localStorage persistence, level unlocks" },
-    "parentReports": { "priority": "LOW", "notes": "AI-generated progress reports" }
+  "audioDeployed": {
+    "total": 234,
+    "letters": { "count": 26, "path": "/audio-new/letters/" },
+    "phonemes": { "count": 3, "path": "/audio-new/phonemes/" },
+    "words": { "count": 182, "path": "/audio-new/words/pink/" },
+    "feedback": { "count": 6, "path": "/audio-new/feedback/" },
+    "instructions": { "count": 17, "path": "/audio-new/instructions/" }
+  },
+  
+  "schools": {
+    "slot1": { "id": "00000000-0000-0000-0000-000000000001", "name": "Beijing International School", "status": "ACTIVE", "curriculumWorks": 342 }
+  },
+  
+  "coreFeatures": {
+    "weeklyPlanning": { "status": "COMPLETE" },
+    "classroomView": { "status": "COMPLETE" },
+    "activityGuides": { "status": "COMPLETE" },
+    "montree": { "status": "COMPLETE" },
+    "teacherProgress": { "status": "COMPLETE" },
+    "soundGames": { "status": "✅ AUDIO + IMAGES COMPLETE - QA PENDING" },
+    "englishGames": { "status": "COMPLETE" },
+    "perSchoolCurriculum": { "status": "COMPLETE" }
   },
   
   "technicalState": {
     "database": "Supabase",
     "framework": "Next.js 15",
-    "newTables": ["school_curriculum"],
-    "newColumns": ["child_work_completion.school_work_id"],
-    "buildFix": "Lazy Supabase init with getSupabase() function"
-  },
-  
-  "testUrls": {
-    "teacherCurriculum": "/teacher/curriculum",
-    "quickPlace": "/teacher/students/795aa63d-2f73-4843-addb-35457436334a/quick-place"
+    "imageStorage": "Supabase images/sound-objects/"
   },
   
   "dailyLog": [
     {
-      "date": "2026-01-08",
-      "sessions": 1,
-      "summary": "Per-School Curriculum System DEPLOYED",
-      "commits": ["9ab64e8", "895f63f", "e847a11"],
+      "date": "2026-01-08-session4",
+      "summary": "Sound Games IMAGE PROMPTS 100% COMPLETE",
       "highlights": [
-        "Created school_curriculum table",
-        "Cloned 342 works to Beijing International School",
-        "Built /api/school/[schoolId]/curriculum API",
-        "Built /api/students/[studentId]/quick-place API",
-        "Created /teacher/curriculum page",
-        "Created /teacher/students/[id]/quick-place page",
-        "Fixed build: lazy Supabase initialization"
+        "Created 60 detailed DALL-E prompts for Sound Games images",
+        "Organized into 15 batches of 4 for efficient generation",
+        "Files: DALLE_IMAGE_PROMPTS.md, DALLE_BATCH_GENERATION.md",
+        "Template ready: word-images-template.ts",
+        "NEXT: Generate images in ChatGPT, upload to Supabase"
       ]
     },
     {
-      "date": "2026-01-07",
-      "sessions": 6,
-      "summary": "Major Games Polish Day - All 10 games production-ready"
+      "date": "2026-01-08-session3",
+      "summary": "Sound Games AUDIO 100% COMPLETE",
+      "highlights": [
+        "Recorded + split 217 audio files (letters, phonemes, words, feedback)",
+        "Recorded + split 17 instruction phrases",
+        "Total: 234 audio files with Tredoux voice",
+        "Deployed to /public/audio-new/",
+        "NEXT: 60 DALL-E images"
+      ]
     }
   ]
 }
