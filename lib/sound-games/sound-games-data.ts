@@ -1,6 +1,11 @@
 // lib/sound-games/sound-games-data.ts
 // Complete data for Sound Games - PURELY AUDITORY (no letters shown)
 // All words verified for 3-4 year old familiarity
+// 
+// PHASE 1 FIX (Jan 8, 2026): Removed 15 "NEEDS BOTH" words
+// - Words with neither image NOR audio have been removed
+// - Words with audio but no image are KEPT (will show emoji until Phase 2)
+// - See /docs/SOUND_GAMES_MASTER_FIX.md for full plan
 
 // ============================================
 // TYPES
@@ -102,7 +107,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'mouse', image: '🐭' },
       { word: 'mat', image: '🟫' },
       { word: 'mug', image: '☕' },
-      { word: 'milk', image: '🥛' },
+      { word: 'milk', image: '🥛' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -110,11 +115,11 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     phase: 1,
     words: [
       { word: 'fan', image: '🪭' },
-      { word: 'fish', image: '🐟' },
+      { word: 'fish', image: '🐟' },  // NEEDS AUDIO - has image
       { word: 'fork', image: '🍴' },
       { word: 'frog', image: '🐸' },
       { word: 'fox', image: '🦊' },
-      { word: 'foot', image: '🦶' },
+      { word: 'foot', image: '🦶' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -125,8 +130,8 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'nut', image: '🥜' },
       { word: 'nose', image: '👃' },
       { word: 'nest', image: '🪺' },
-      { word: 'nine', image: '9️⃣' },
-      { word: 'nurse', image: '👩‍⚕️' },
+      { word: 'nine', image: '9️⃣' },  // NEEDS IMAGE - has audio
+      { word: 'nurse', image: '👩‍⚕️' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -138,7 +143,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'pot', image: '🍯' },
       { word: 'pan', image: '🍳' },
       { word: 'pear', image: '🍐' },
-      { word: 'pink', image: '💗' },
+      { word: 'pink', image: '💗' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -149,8 +154,8 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'tent', image: '⛺' },
       { word: 'tiger', image: '🐯' },
       { word: 'toy', image: '🧸' },
-      { word: 'tree', image: '🌳' },
-      { word: 'two', image: '2️⃣' },
+      // REMOVED: tree (NEEDS BOTH)
+      // REMOVED: two (NEEDS BOTH)
     ],
   },
   {
@@ -161,8 +166,8 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'cat', image: '🐱' },
       { word: 'car', image: '🚗' },
       { word: 'cap', image: '🧢' },
-      { word: 'cow', image: '🐄' },
-      { word: 'cake', image: '🎂' },
+      { word: 'cow', image: '🐄' },  // NEEDS IMAGE - has audio
+      { word: 'cake', image: '🎂' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -174,7 +179,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'horse', image: '🐴' },
       { word: 'house', image: '🏠' },
       { word: 'hand', image: '✋' },
-      { word: 'heart', image: '❤️' },
+      { word: 'heart', image: '❤️' },  // NEEDS IMAGE - has audio
     ],
   },
 
@@ -188,7 +193,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'bed', image: '🛏️' },
       { word: 'bus', image: '🚌' },
       { word: 'bug', image: '🐛' },
-      { word: 'book', image: '📖' },
+      { word: 'book', image: '📖' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -207,12 +212,12 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     sound: 'g',
     phase: 2,
     words: [
-      { word: 'goat', image: '🐐' },
+      { word: 'goat', image: '🐐' },  // NEEDS AUDIO - has image
       { word: 'gift', image: '🎁' },
-      { word: 'girl', image: '👧' },
+      { word: 'girl', image: '👧' },  // NEEDS IMAGE - has audio
       { word: 'grape', image: '🍇' },
-      { word: 'green', image: '💚' },
       { word: 'gum', image: '🫧' },
+      // REMOVED: green (NEEDS BOTH)
     ],
   },
   {
@@ -222,9 +227,9 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'jet', image: '✈️' },
       { word: 'jam', image: '🫙' },
       { word: 'jar', image: '🏺' },
-      { word: 'jump', image: '🦘' },
-      { word: 'jeans', image: '👖' },
-      { word: 'juice', image: '🧃' },
+      { word: 'jump', image: '🦘' },  // NEEDS IMAGE - has audio
+      { word: 'jeans', image: '👖' },  // NEEDS IMAGE - has audio
+      { word: 'juice', image: '🧃' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -235,20 +240,20 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'watch', image: '⌚' },
       { word: 'worm', image: '🪱' },
       { word: 'wolf', image: '🐺' },
-      { word: 'water', image: '💧' },
-      { word: 'wing', image: '🪽' },
+      { word: 'water', image: '💧' },  // NEEDS IMAGE - has audio
+      { word: 'wing', image: '🪽' },  // NEEDS IMAGE - has audio
     ],
   },
   {
     sound: 'y',
     phase: 2,
     words: [
-      { word: 'yak', image: '🦬' },
-      { word: 'yam', image: '🍠' },
-      { word: 'yarn', image: '🧶' },
-      { word: 'yell', image: '🗣️' },
-      { word: 'yellow', image: '💛' },
-      { word: 'yo-yo', image: '🪀' },
+      { word: 'yak', image: '🦬' },  // NEEDS IMAGE - has audio
+      { word: 'yam', image: '🍠' },  // NEEDS IMAGE - has audio
+      { word: 'yarn', image: '🧶' },  // NEEDS IMAGE - has audio
+      { word: 'yell', image: '🗣️' },  // NEEDS IMAGE - has audio
+      { word: 'yellow', image: '💛' },  // NEEDS IMAGE - has audio
+      { word: 'yo-yo', image: '🪀' },  // NEEDS IMAGE - has audio
     ],
   },
 
@@ -271,13 +276,12 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     phase: 3,
     words: [
       { word: 'thumb', image: '👍' },
-      { word: 'three', image: '3️⃣' },
-      { word: 'thick', image: '📦' },
-      { word: 'thin', image: '📄' },
-      { word: 'think', image: '🤔' },
-      { word: 'throw', image: '🤾' },
+      { word: 'three', image: '3️⃣' },  // NEEDS AUDIO - has image
+      { word: 'thick', image: '📦' },  // NEEDS IMAGE - has audio
+      { word: 'think', image: '🤔' },  // NEEDS IMAGE - has audio
+      { word: 'throw', image: '🤾' },  // NEEDS IMAGE - has audio
+      // REMOVED: thin (NEEDS BOTH)
     ],
-    eslNote: 'Tongue between teeth! Stick it out!',
   },
   {
     sound: 'r',
@@ -286,7 +290,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'ring', image: '💍' },
       { word: 'rug', image: '🟫' },
       { word: 'rat', image: '🐀' },
-      { word: 'rain', image: '🌧️' },
+      { word: 'rain', image: '🌧️' },  // NEEDS AUDIO - has image
       { word: 'rabbit', image: '🐰' },
       { word: 'red', image: '❤️' },
     ],
@@ -298,7 +302,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     words: [
       { word: 'leg', image: '🦵' },
       { word: 'lamp', image: '💡' },
-      { word: 'leaf', image: '🍃' },
+      { word: 'leaf', image: '🍃' },  // NEEDS AUDIO - has image
       { word: 'log', image: '🪵' },
       { word: 'lip', image: '👄' },
       { word: 'lemon', image: '🍋' },
@@ -310,11 +314,11 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     phase: 3,
     words: [
       { word: 'zip', image: '🤐' },
-      { word: 'zoo', image: '🦁' },
+      { word: 'zoo', image: '🦁' },  // NEEDS AUDIO - has image
       { word: 'zebra', image: '🦓' },
       { word: 'zero', image: '0️⃣' },
       { word: 'zigzag', image: '⚡' },
-      { word: 'zone', image: '🚧' },
+      { word: 'zone', image: '🚧' },  // NEEDS IMAGE - has audio
     ],
     eslNote: 'Buzzy /s/ sound! Voice it!',
   },
@@ -322,12 +326,13 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     sound: 'sh',
     phase: 3,
     words: [
-      { word: 'ship', image: '🚢' },
-      { word: 'shell', image: '🐚' },
-      { word: 'shoe', image: '👟' },
-      { word: 'sheep', image: '🐑' },
-      { word: 'shirt', image: '👕' },
-      { word: 'shop', image: '🏪' },
+      // KEPT: Words with audio (need images in Phase 2)
+      { word: 'sheep', image: '🐑' },  // NEEDS IMAGE - has audio
+      { word: 'shirt', image: '👕' },  // NEEDS IMAGE - has audio
+      // REMOVED: shell (NEEDS BOTH)
+      // REMOVED: ship (NEEDS BOTH)
+      // REMOVED: shoe (NEEDS BOTH)
+      // REMOVED: shop (NEEDS BOTH)
     ],
     eslNote: 'Lips rounded! Shhhhh!',
   },
@@ -335,12 +340,13 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     sound: 'ch',
     phase: 3,
     words: [
-      { word: 'chair', image: '🪑' },
-      { word: 'cheese', image: '🧀' },
-      { word: 'chicken', image: '🐔' },
-      { word: 'chip', image: '🍟' },
-      { word: 'cherry', image: '🍒' },
-      { word: 'chin', image: '😊' },
+      // KEPT: Words with audio (need images in Phase 2)
+      { word: 'chicken', image: '🐔' },  // NEEDS IMAGE - has audio
+      { word: 'cherry', image: '🍒' },  // NEEDS IMAGE - has audio
+      { word: 'chin', image: '😊' },  // NEEDS IMAGE - has audio
+      // REMOVED: chair (NEEDS BOTH)
+      // REMOVED: cheese (NEEDS BOTH)
+      // REMOVED: chip (NEEDS BOTH)
     ],
     eslNote: 'Like /t/ + /sh/ together! Choo choo!',
   },
@@ -354,8 +360,8 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'apple', image: '🍎' },
       { word: 'alligator', image: '🐊' },
       { word: 'ax', image: '🪓' },
-      { word: 'add', image: '➕' },
-      { word: 'arrow', image: '➡️' },
+      { word: 'add', image: '➕' },  // NEEDS IMAGE - has audio
+      { word: 'arrow', image: '➡️' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -367,7 +373,7 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'elbow', image: '💪' },
       { word: 'envelope', image: '✉️' },
       { word: 'elf', image: '🧝' },
-      { word: 'end', image: '🔚' },
+      { word: 'end', image: '🔚' },  // NEEDS IMAGE - has audio
     ],
   },
   {
@@ -377,9 +383,9 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'igloo', image: '🏠' },
       { word: 'insect', image: '🐛' },
       { word: 'ink', image: '🖋️' },
-      { word: 'itch', image: '😖' },
-      { word: 'in', image: '📥' },
-      { word: 'ill', image: '🤒' },
+      { word: 'itch', image: '😖' },  // NEEDS IMAGE - has audio
+      { word: 'ill', image: '🤒' },  // NEEDS IMAGE - has audio
+      // REMOVED: in (NEEDS BOTH)
     ],
   },
   {
@@ -390,8 +396,8 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
       { word: 'orange', image: '🍊' },
       { word: 'ostrich', image: '🦩' },
       { word: 'olive', image: '🫒' },
-      { word: 'on', image: '🔛' },
       { word: 'ox', image: '🐂' },
+      // REMOVED: on (NEEDS BOTH)
     ],
   },
   {
@@ -399,11 +405,11 @@ export const BEGINNING_SOUNDS: SoundGroup[] = [
     phase: 'vowel',
     words: [
       { word: 'umbrella', image: '☂️' },
-      { word: 'up', image: '⬆️' },
-      { word: 'under', image: '⬇️' },
-      { word: 'us', image: '👥' },
-      { word: 'uncle', image: '👨' },
+      { word: 'under', image: '⬇️' },  // NEEDS IMAGE - has audio
+      { word: 'us', image: '👥' },  // NEEDS IMAGE - has audio
+      { word: 'uncle', image: '👨' },  // NEEDS IMAGE - has audio
       { word: 'umpire', image: '🧑‍⚖️' },
+      // REMOVED: up (NEEDS BOTH)
     ],
   },
 ];
@@ -433,7 +439,7 @@ export const ENDING_SOUNDS: EndingSoundGroup[] = [
       { word: 'mop', image: '🧹' },
       { word: 'map', image: '🗺️' },
       { word: 'top', image: '🔝' },
-      { word: 'hop', image: '🐰' },
+      { word: 'hop', image: '🐰' },  // NEEDS IMAGE - has audio
     ],
     note: 'Clear stop sound',
   },
@@ -445,7 +451,7 @@ export const ENDING_SOUNDS: EndingSoundGroup[] = [
       { word: 'can', image: '🥫' },
       { word: 'fan', image: '🪭' },
       { word: 'pen', image: '🖊️' },
-      { word: 'run', image: '🏃' },
+      { word: 'run', image: '🏃' },  // NEEDS IMAGE - has audio
     ],
     note: 'Continuous sound - easy to hear',
   },
@@ -469,7 +475,7 @@ export const ENDING_SOUNDS: EndingSoundGroup[] = [
       { word: 'lid', image: '🫙' },
       { word: 'mud', image: '🟤' },
       { word: 'bud', image: '🌸' },
-      { word: 'sad', image: '😢' },
+      { word: 'sad', image: '😢' },  // NEEDS IMAGE - has audio
     ],
     note: 'Voiced - harder than /t/',
   },
@@ -479,7 +485,7 @@ export const ENDING_SOUNDS: EndingSoundGroup[] = [
       { word: 'box', image: '📦' },
       { word: 'fox', image: '🦊' },
       { word: 'six', image: '6️⃣' },
-      { word: 'wax', image: '🕯️' },
+      { word: 'wax', image: '🕯️' },  // NEEDS AUDIO - has image
       { word: 'mix', image: '🥣' },
       { word: 'ax', image: '🪓' },
     ],
@@ -508,17 +514,17 @@ export const CVC_WORDS: CVCWord[] = [
   { word: 'pen', image: '🖊️', middleSound: 'e', sounds: ['p', 'e', 'n'] },
   { word: 'hen', image: '🐔', middleSound: 'e', sounds: ['h', 'e', 'n'] },
   { word: 'net', image: '🥅', middleSound: 'e', sounds: ['n', 'e', 't'] },
-  { word: 'wet', image: '💧', middleSound: 'e', sounds: ['w', 'e', 't'] },
+  { word: 'wet', image: '💧', middleSound: 'e', sounds: ['w', 'e', 't'] },  // NEEDS IMAGE - has audio
   { word: 'leg', image: '🦵', middleSound: 'e', sounds: ['l', 'e', 'g'] },
-  { word: 'peg', image: '📌', middleSound: 'e', sounds: ['p', 'e', 'g'] },
+  { word: 'peg', image: '📌', middleSound: 'e', sounds: ['p', 'e', 'g'] },  // NEEDS IMAGE - has audio
 
   // Short I
   { word: 'pig', image: '🐷', middleSound: 'i', sounds: ['p', 'i', 'g'] },
   { word: 'wig', image: '💇', middleSound: 'i', sounds: ['w', 'i', 'g'] },
   { word: 'big', image: '🐘', middleSound: 'i', sounds: ['b', 'i', 'g'] },
-  { word: 'dig', image: '⛏️', middleSound: 'i', sounds: ['d', 'i', 'g'] },
+  { word: 'dig', image: '⛏️', middleSound: 'i', sounds: ['d', 'i', 'g'] },  // NEEDS IMAGE - has audio
   { word: 'pin', image: '📍', middleSound: 'i', sounds: ['p', 'i', 'n'] },
-  { word: 'bin', image: '🗑️', middleSound: 'i', sounds: ['b', 'i', 'n'] },
+  { word: 'bin', image: '🗑️', middleSound: 'i', sounds: ['b', 'i', 'n'] },  // NEEDS IMAGE - has audio
   { word: 'sit', image: '🪑', middleSound: 'i', sounds: ['s', 'i', 't'] },
   { word: 'hit', image: '👊', middleSound: 'i', sounds: ['h', 'i', 't'] },
 
@@ -537,7 +543,7 @@ export const CVC_WORDS: CVCWord[] = [
   { word: 'pup', image: '🐕', middleSound: 'u', sounds: ['p', 'u', 'p'] },
   { word: 'bus', image: '🚌', middleSound: 'u', sounds: ['b', 'u', 's'] },
   { word: 'nut', image: '🥜', middleSound: 'u', sounds: ['n', 'u', 't'] },
-  { word: 'hut', image: '🛖', middleSound: 'u', sounds: ['h', 'u', 't'] },
+  { word: 'hut', image: '🛖', middleSound: 'u', sounds: ['h', 'u', 't'] },  // NEEDS IMAGE - has audio
   { word: 'bug', image: '🐛', middleSound: 'u', sounds: ['b', 'u', 'g'] },
   { word: 'rug', image: '🟫', middleSound: 'u', sounds: ['r', 'u', 'g'] },
   { word: 'sun', image: '☀️', middleSound: 'u', sounds: ['s', 'u', 'n'] },
