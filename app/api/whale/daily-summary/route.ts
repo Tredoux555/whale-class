@@ -42,12 +42,10 @@ export async function GET(request: NextRequest) {
       .from('child_progress')
       .select(`
         *,
-        child:children(id, name, avatar_emoji),
-        activity:activities(id, name, area)
+        child:children(id, name, avatar_emoji)
       `)
-      .gte('last_presented', `${date}T00:00:00`)
-      .lt('last_presented', `${date}T23:59:59`)
-      .order('last_presented', { ascending: false });
+      .eq('date_updated', date)
+      .order('updated_at', { ascending: false });
 
     if (compError) throw compError;
 
