@@ -15,6 +15,7 @@ import {
   type SoundWord,
 } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
+import { GameAudio } from '@/lib/games/audio-paths';
 import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GamePhase = 1 | 2 | 3 | 'vowel' | 'all';
@@ -66,11 +67,12 @@ export default function ISpyBeginningGame() {
   const playAudio = async (path: string): Promise<void> => {
     return new Promise((resolve) => {
       try {
-        // Stop any current audio
+        // CRITICAL: Stop ALL audio first - both our ref and the global GameAudio
         if (audioRef.current) {
           audioRef.current.pause();
           audioRef.current.currentTime = 0;
         }
+        GameAudio.stop(); // Stop any global audio too
         
         const audio = new Audio(path);
         audioRef.current = audio;
@@ -139,6 +141,13 @@ export default function ISpyBeginningGame() {
   // Handle option selection
   const handleOptionSelect = async (selected: SoundWord) => {
     if (gameState !== 'playing' || isPlaying) return;
+
+    // Stop any playing audio first
+    GameAudio.stop();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
 
     const isCorrect = selected.word === currentRound?.targetWord.word;
 

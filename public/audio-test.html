@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Letter Sound Checker</title>
+  <style>
+    body { font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; }
+    h1 { text-align: center; }
+    .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 20px; }
+    button { 
+      padding: 20px; 
+      font-size: 24px; 
+      cursor: pointer; 
+      border: 2px solid #333;
+      border-radius: 10px;
+      background: #f0f0f0;
+    }
+    button:hover { background: #ddd; }
+    button.playing { background: #90EE90; }
+    button.error { background: #FFB6C1; }
+    .status { margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px; }
+    .phonemes { margin-top: 30px; }
+    .phonemes button { background: #E6E6FA; }
+    h2 { margin-top: 30px; }
+    .instructions { background: #fffacd; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🔊 Letter Sound Checker</h1>
+  
+  <div class="instructions">
+    <strong>Instructions:</strong> Click each letter to hear the sound. 
+    <ul>
+      <li>✅ <strong>Green</strong> = Playing</li>
+      <li>❌ <strong>Red</strong> = Error/Missing</li>
+    </ul>
+    <p>Check that each button plays the CORRECT sound for that letter!</p>
+  </div>
+
+  <h2>Consonants & Vowels</h2>
+  <div class="grid" id="letters"></div>
+  
+  <h2>Phonemes (sh, ch, th)</h2>
+  <div class="phonemes" id="phonemes"></div>
+  
+  <div class="status" id="status">Click a letter to test</div>
+
+  <script>
+    const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const phonemes = ['sh', 'ch', 'th'];
+    let currentAudio = null;
+    
+    function playSound(sound, button, path) {
+      // Stop any playing audio
+      if (currentAudio) {
+        currentAudio.pause();
+        document.querySelectorAll('button').forEach(b => b.classList.remove('playing', 'error'));
+      }
+      
+      const audio = new Audio(path);
+      currentAudio = audio;
+      
+      button.classList.add('playing');
+      document.getElementById('status').textContent = `Playing: ${sound} (${path})`;
+      
+      audio.onended = () => {
+        button.classList.remove('playing');
+        document.getElementById('status').textContent = `Finished: ${sound} ✓`;
+      };
+      
+      audio.onerror = () => {
+        button.classList.remove('playing');
+        button.classList.add('error');
+        document.getElementById('status').textContent = `ERROR: ${sound} - File not found or cannot play`;
+      };
+      
+      audio.play().catch(err => {
+        button.classList.remove('playing');
+        button.classList.add('error');
+        document.getElementById('status').textContent = `ERROR: ${sound} - ${err.message}`;
+      });
+    }
+    
+    // Create letter buttons
+    const lettersDiv = document.getElementById('letters');
+    letters.forEach(letter => {
+      const btn = document.createElement('button');
+      btn.textContent = letter.toUpperCase();
+      btn.onclick = () => playSound(letter, btn, `/audio-new/letters/${letter}.mp3`);
+      lettersDiv.appendChild(btn);
+    });
+    
+    // Create phoneme buttons
+    const phonemesDiv = document.getElementById('phonemes');
+    phonemes.forEach(phoneme => {
+      const btn = document.createElement('button');
+      btn.textContent = phoneme.toUpperCase();
+      btn.onclick = () => playSound(phoneme, btn, `/audio-new/phonemes/${phoneme}.mp3`);
+      phonemesDiv.appendChild(btn);
+    });
+  </script>
+</body>
+</html>
