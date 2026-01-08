@@ -1,0 +1,368 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-01-08",
+  "supabaseBasePath": "https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/images/curriculum/",
+  
+  "beginningSounds": {
+    "phase1": {
+      "s": {
+        "words": ["sun", "sock", "soap", "star", "snake", "spoon"],
+        "assets": {
+          "sun": { "status": "missing", "image": null, "audio": null },
+          "sock": { "status": "missing", "image": null, "audio": null },
+          "soap": { "status": "missing", "image": null, "audio": null },
+          "star": { "status": "missing", "image": null, "audio": null },
+          "snake": { "status": "missing", "image": null, "audio": null },
+          "spoon": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "m": {
+        "words": ["mop", "moon", "mouse", "mat", "mug", "milk"],
+        "assets": {
+          "mop": { "status": "missing", "image": null, "audio": null },
+          "moon": { "status": "missing", "image": null, "audio": null },
+          "mouse": { "status": "missing", "image": null, "audio": null },
+          "mat": { "status": "missing", "image": null, "audio": null },
+          "mug": { "status": "missing", "image": null, "audio": null },
+          "milk": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "f": {
+        "words": ["fan", "fish", "fork", "frog", "fox", "foot"],
+        "assets": {
+          "fan": { "status": "missing", "image": null, "audio": null },
+          "fish": { "status": "missing", "image": null, "audio": null },
+          "fork": { "status": "missing", "image": null, "audio": null },
+          "frog": { "status": "missing", "image": null, "audio": null },
+          "fox": { "status": "missing", "image": null, "audio": null },
+          "foot": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "n": {
+        "words": ["net", "nut", "nose", "nest", "nine", "nurse"],
+        "assets": {
+          "net": { "status": "missing", "image": null, "audio": null },
+          "nut": { "status": "missing", "image": null, "audio": null },
+          "nose": { "status": "missing", "image": null, "audio": null },
+          "nest": { "status": "missing", "image": null, "audio": null },
+          "nine": { "status": "missing", "image": null, "audio": null },
+          "nurse": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "p": {
+        "words": ["pen", "pig", "pot", "pan", "pear", "pink"],
+        "assets": {
+          "pen": { "status": "missing", "image": null, "audio": null },
+          "pig": { "status": "missing", "image": null, "audio": null },
+          "pot": { "status": "missing", "image": null, "audio": null },
+          "pan": { "status": "missing", "image": null, "audio": null },
+          "pear": { "status": "missing", "image": null, "audio": null },
+          "pink": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "t": {
+        "words": ["top", "tent", "tiger", "toy", "tree", "two"],
+        "assets": {
+          "top": { "status": "missing", "image": null, "audio": null },
+          "tent": { "status": "missing", "image": null, "audio": null },
+          "tiger": { "status": "missing", "image": null, "audio": null },
+          "toy": { "status": "missing", "image": null, "audio": null },
+          "tree": { "status": "missing", "image": null, "audio": null },
+          "two": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "c": {
+        "words": ["cup", "cat", "car", "cap", "cow", "cake"],
+        "assets": {
+          "cup": { "status": "missing", "image": null, "audio": null },
+          "cat": { "status": "missing", "image": null, "audio": null },
+          "car": { "status": "missing", "image": null, "audio": null },
+          "cap": { "status": "missing", "image": null, "audio": null },
+          "cow": { "status": "missing", "image": null, "audio": null },
+          "cake": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "h": {
+        "words": ["hat", "hen", "horse", "house", "hand", "heart"],
+        "assets": {
+          "hat": { "status": "missing", "image": null, "audio": null },
+          "hen": { "status": "missing", "image": null, "audio": null },
+          "horse": { "status": "missing", "image": null, "audio": null },
+          "house": { "status": "missing", "image": null, "audio": null },
+          "hand": { "status": "missing", "image": null, "audio": null },
+          "heart": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      }
+    },
+    "phase2": {
+      "b": {
+        "words": ["ball", "bat", "bed", "bus", "bug", "book"],
+        "assets": {
+          "ball": { "status": "missing", "image": null, "audio": null },
+          "bat": { "status": "missing", "image": null, "audio": null },
+          "bed": { "status": "missing", "image": null, "audio": null },
+          "bus": { "status": "missing", "image": null, "audio": null },
+          "bug": { "status": "missing", "image": null, "audio": null },
+          "book": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "d": {
+        "words": ["dog", "doll", "duck", "door", "dish", "drum"],
+        "assets": {
+          "dog": { "status": "missing", "image": null, "audio": null },
+          "doll": { "status": "missing", "image": null, "audio": null },
+          "duck": { "status": "missing", "image": null, "audio": null },
+          "door": { "status": "missing", "image": null, "audio": null },
+          "dish": { "status": "missing", "image": null, "audio": null },
+          "drum": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "g": {
+        "words": ["goat", "gift", "girl", "grape", "green", "gum"],
+        "assets": {
+          "goat": { "status": "missing", "image": null, "audio": null },
+          "gift": { "status": "missing", "image": null, "audio": null },
+          "girl": { "status": "missing", "image": null, "audio": null },
+          "grape": { "status": "missing", "image": null, "audio": null },
+          "green": { "status": "missing", "image": null, "audio": null },
+          "gum": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "j": {
+        "words": ["jet", "jam", "jar", "jump", "jeans", "juice"],
+        "assets": {
+          "jet": { "status": "missing", "image": null, "audio": null },
+          "jam": { "status": "missing", "image": null, "audio": null },
+          "jar": { "status": "missing", "image": null, "audio": null },
+          "jump": { "status": "missing", "image": null, "audio": null },
+          "jeans": { "status": "missing", "image": null, "audio": null },
+          "juice": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "w": {
+        "words": ["web", "watch", "worm", "wolf", "water", "wing"],
+        "assets": {
+          "web": { "status": "missing", "image": null, "audio": null },
+          "watch": { "status": "missing", "image": null, "audio": null },
+          "worm": { "status": "missing", "image": null, "audio": null },
+          "wolf": { "status": "missing", "image": null, "audio": null },
+          "water": { "status": "missing", "image": null, "audio": null },
+          "wing": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "y": {
+        "words": ["yak", "yam", "yarn", "yell", "yellow", "yo-yo"],
+        "assets": {
+          "yak": { "status": "missing", "image": null, "audio": null },
+          "yam": { "status": "missing", "image": null, "audio": null },
+          "yarn": { "status": "missing", "image": null, "audio": null },
+          "yell": { "status": "missing", "image": null, "audio": null },
+          "yellow": { "status": "missing", "image": null, "audio": null },
+          "yo-yo": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      }
+    },
+    "phase3": {
+      "v": {
+        "words": ["van", "vest", "vase", "vet", "vine", "violin"],
+        "eslNote": "Teeth on bottom lip! Different from /w/!",
+        "assets": {
+          "van": { "status": "missing", "image": null, "audio": null },
+          "vest": { "status": "missing", "image": null, "audio": null },
+          "vase": { "status": "missing", "image": null, "audio": null },
+          "vet": { "status": "missing", "image": null, "audio": null },
+          "vine": { "status": "missing", "image": null, "audio": null },
+          "violin": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "th": {
+        "words": ["thumb", "three", "thick", "thin", "think", "throw"],
+        "eslNote": "Tongue between teeth!",
+        "assets": {
+          "thumb": { "status": "missing", "image": null, "audio": null },
+          "three": { "status": "missing", "image": null, "audio": null },
+          "thick": { "status": "missing", "image": null, "audio": null },
+          "thin": { "status": "missing", "image": null, "audio": null },
+          "think": { "status": "missing", "image": null, "audio": null },
+          "throw": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "r": {
+        "words": ["ring", "rug", "rat", "rain", "rabbit", "red"],
+        "eslNote": "Tongue curled BACK!",
+        "assets": {
+          "ring": { "status": "missing", "image": null, "audio": null },
+          "rug": { "status": "missing", "image": null, "audio": null },
+          "rat": { "status": "missing", "image": null, "audio": null },
+          "rain": { "status": "missing", "image": null, "audio": null },
+          "rabbit": { "status": "missing", "image": null, "audio": null },
+          "red": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "l": {
+        "words": ["leg", "lamp", "leaf", "log", "lip", "lemon"],
+        "eslNote": "Tongue touches roof!",
+        "assets": {
+          "leg": { "status": "missing", "image": null, "audio": null },
+          "lamp": { "status": "missing", "image": null, "audio": null },
+          "leaf": { "status": "missing", "image": null, "audio": null },
+          "log": { "status": "missing", "image": null, "audio": null },
+          "lip": { "status": "missing", "image": null, "audio": null },
+          "lemon": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "z": {
+        "words": ["zip", "zoo", "zebra", "zero", "zigzag", "zone"],
+        "eslNote": "Buzzy /s/ sound!",
+        "assets": {
+          "zip": { "status": "missing", "image": null, "audio": null },
+          "zoo": { "status": "missing", "image": null, "audio": null },
+          "zebra": { "status": "missing", "image": null, "audio": null },
+          "zero": { "status": "missing", "image": null, "audio": null },
+          "zigzag": { "status": "missing", "image": null, "audio": null },
+          "zone": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "sh": {
+        "words": ["ship", "shell", "shoe", "sheep", "shirt", "shop"],
+        "eslNote": "Lips rounded! Shhhhh!",
+        "assets": {
+          "ship": { "status": "missing", "image": null, "audio": null },
+          "shell": { "status": "missing", "image": null, "audio": null },
+          "shoe": { "status": "missing", "image": null, "audio": null },
+          "sheep": { "status": "missing", "image": null, "audio": null },
+          "shirt": { "status": "missing", "image": null, "audio": null },
+          "shop": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "ch": {
+        "words": ["chair", "cheese", "chicken", "chip", "cherry", "chin"],
+        "eslNote": "Like /t/ + /sh/ together!",
+        "assets": {
+          "chair": { "status": "missing", "image": null, "audio": null },
+          "cheese": { "status": "missing", "image": null, "audio": null },
+          "chicken": { "status": "missing", "image": null, "audio": null },
+          "chip": { "status": "missing", "image": null, "audio": null },
+          "cherry": { "status": "missing", "image": null, "audio": null },
+          "chin": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      }
+    },
+    "vowels": {
+      "a": {
+        "words": ["ant", "apple", "alligator", "ax", "add", "arrow"],
+        "assets": {
+          "ant": { "status": "missing", "image": null, "audio": null },
+          "apple": { "status": "missing", "image": null, "audio": null },
+          "alligator": { "status": "missing", "image": null, "audio": null },
+          "ax": { "status": "missing", "image": null, "audio": null },
+          "add": { "status": "missing", "image": null, "audio": null },
+          "arrow": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "e": {
+        "words": ["egg", "elephant", "elbow", "envelope", "elf", "end"],
+        "assets": {
+          "egg": { "status": "missing", "image": null, "audio": null },
+          "elephant": { "status": "missing", "image": null, "audio": null },
+          "elbow": { "status": "missing", "image": null, "audio": null },
+          "envelope": { "status": "missing", "image": null, "audio": null },
+          "elf": { "status": "missing", "image": null, "audio": null },
+          "end": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "i": {
+        "words": ["igloo", "insect", "ink", "itch", "in", "ill"],
+        "assets": {
+          "igloo": { "status": "missing", "image": null, "audio": null },
+          "insect": { "status": "missing", "image": null, "audio": null },
+          "ink": { "status": "missing", "image": null, "audio": null },
+          "itch": { "status": "missing", "image": null, "audio": null },
+          "in": { "status": "missing", "image": null, "audio": null },
+          "ill": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "o": {
+        "words": ["octopus", "orange", "ostrich", "olive", "on", "ox"],
+        "assets": {
+          "octopus": { "status": "missing", "image": null, "audio": null },
+          "orange": { "status": "missing", "image": null, "audio": null },
+          "ostrich": { "status": "missing", "image": null, "audio": null },
+          "olive": { "status": "missing", "image": null, "audio": null },
+          "on": { "status": "missing", "image": null, "audio": null },
+          "ox": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      },
+      "u": {
+        "words": ["umbrella", "up", "under", "us", "uncle", "umpire"],
+        "assets": {
+          "umbrella": { "status": "missing", "image": null, "audio": null },
+          "up": { "status": "missing", "image": null, "audio": null },
+          "under": { "status": "missing", "image": null, "audio": null },
+          "us": { "status": "missing", "image": null, "audio": null },
+          "uncle": { "status": "missing", "image": null, "audio": null },
+          "umpire": { "status": "missing", "image": null, "audio": null }
+        },
+        "threePartCards": null,
+        "complete": false
+      }
+    }
+  },
+  
+  "stats": {
+    "totalWords": 162,
+    "imagesComplete": 0,
+    "audioComplete": 0,
+    "threePartCardsGenerated": 0
+  }
+}
