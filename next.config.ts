@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Allow external images from Supabase storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dmfncjjtsoxrnvcdnvjq.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
   // Transpile server-only modules (bcryptjs v3 is ESM-only)
   transpilePackages: ['jose', 'bcryptjs'],
   // Empty turbopack config to silence Next.js 16 warning
