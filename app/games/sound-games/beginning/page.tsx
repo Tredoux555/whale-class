@@ -385,22 +385,25 @@ export default function ISpyBeginningGame() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {currentRound?.options.map((option, index) => (
             <button
               key={`${option.word}-${index}`}
               onClick={() => handleOptionSelect(option)}
               disabled={gameState !== 'playing' || isPlaying}
               className={`
-                p-6 rounded-3xl border-4 transition-all transform
+                aspect-square rounded-2xl sm:rounded-3xl border-4 transition-all transform overflow-hidden
+                shadow-lg hover:shadow-xl
                 ${feedback?.correct && option.word === currentRound.targetWord.word
-                  ? 'bg-green-400 border-green-300 scale-110'
-                  : 'bg-white/90 border-white hover:scale-105 hover:bg-white'
+                  ? 'bg-green-400 border-green-300 scale-105 ring-4 ring-green-300/50'
+                  : 'bg-white border-white/80 hover:scale-[1.02] hover:border-white'
                 }
-                ${gameState !== 'playing' || isPlaying ? 'opacity-70' : ''}
+                ${gameState !== 'playing' || isPlaying ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >
-              <WordImageSimple word={option.word} size={112} className="mx-auto mb-2" />
+              <div className="w-full h-full p-2 sm:p-3 flex items-center justify-center">
+                <WordImageSimple word={option.word} size={140} className="w-full h-full max-w-[140px] max-h-[140px]" />
+              </div>
             </button>
           ))}
         </div>
