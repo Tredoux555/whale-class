@@ -15,7 +15,6 @@ import {
   type SoundWord,
 } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GamePhase = 1 | 2 | 3 | 'vowel' | 'all';
 type GameState = 'selecting' | 'playing' | 'feedback' | 'complete';
@@ -382,7 +381,7 @@ export default function ISpyBeginningGame() {
                 ${gameState !== 'playing' || isPlaying ? 'opacity-70' : ''}
               `}
             >
-              <WordImageSimple word={option.word} size={100} />
+              <span className="text-7xl block mb-2">{option.image}</span>
             </button>
           ))}
         </div>
