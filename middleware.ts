@@ -27,7 +27,16 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  const res = NextResponse.next();
+  
+  // Create response with pathname header for layouts to read
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-pathname', pathname);
+  
+  const res = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   
   // ============================================
   // ALWAYS ALLOW THESE ROUTES (no auth, no redirects)
