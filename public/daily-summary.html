@@ -100,10 +100,10 @@
         photos.forEach(p => {
           html += `
             <div class="photo-card">
-              <img src="${p.photo_url}" alt="${p.activity?.name || 'Photo'}">
+              <img src="${p.photo_url}" alt="Photo">
               <div class="photo-info">
                 <div class="name">${p.child?.avatar_emoji || '👶'} ${p.child?.name || 'Unknown'}</div>
-                <div class="activity">${p.activity?.name || 'Activity'}</div>
+                <div class="activity">${p.notes || 'Photo'}</div>
               </div>
             </div>
           `;

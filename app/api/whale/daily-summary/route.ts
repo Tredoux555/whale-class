@@ -24,13 +24,12 @@ export async function GET(request: NextRequest) {
 
     if (assignError) throw assignError;
 
-    // Get all photos for the date
+    // Get all photos for the date (no activity join - photos link via assignment_id)
     const { data: photos, error: photoError } = await supabase
       .from('activity_photos')
       .select(`
         *,
-        child:children(id, name, avatar_emoji),
-        activity:activities(id, name, area)
+        child:children(id, name, avatar_emoji)
       `)
       .gte('created_at', `${date}T00:00:00`)
       .lt('created_at', `${date}T23:59:59`)
