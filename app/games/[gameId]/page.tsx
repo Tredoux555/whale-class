@@ -18,6 +18,7 @@ import BigToSmallLetterMatchingGame from '@/components/12-BigToSmallLetterMatchi
 import PictureMatchGame from '@/components/games/PictureMatchGame';
 import MissingLetterGame from '@/components/games/MissingLetterGame';
 import SightFlashGame from '@/components/games/SightFlashGame';
+import VocabularyBuilderGame from '@/components/games/VocabularyBuilderGame';
 
 const GAME_COMPONENTS: Record<string, React.ComponentType<any>> = {
   // Numbered components with ElevenLabs
@@ -32,6 +33,7 @@ const GAME_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'picture-match': PictureMatchGame,
   'missing-letter': MissingLetterGame,
   'sight-flash': SightFlashGame,
+  'vocabulary-builder': VocabularyBuilderGame,
 };
 
 export default function GamePage() {
