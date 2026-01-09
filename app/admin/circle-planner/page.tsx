@@ -76,6 +76,12 @@ export default function CircleTimePage() {
               >
                 🎴 3-Part Cards
               </Link>
+              <Link
+                href="/admin/flashcard-maker"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                🎵 Video Cards
+              </Link>
               {selectedWeek && (
                 <button
                   onClick={handlePrint}
