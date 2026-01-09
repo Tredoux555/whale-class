@@ -47,16 +47,19 @@ export async function POST(request: NextRequest) {
     if (needsDownload) {
       console.log('[Download] Downloading from YouTube...');
       
-      // Use smaller format for faster download: 360p or 480p max
-      // This speeds up download significantly
+      // Use robust format selection with fallbacks
       const ytdlpCommand = `yt-dlp \
-        -f "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]/best" \
-        --merge-output-format mp4 \
+        -f "best[height<=480]/best" \
+        --no-playlist \
+        --no-warnings \
+        --no-check-certificates \
+        --geo-bypass \
+        --socket-timeout 60 \
+        --retries 5 \
+        --fragment-retries 5 \
         --write-auto-sub \
         --sub-lang en \
         --convert-subs vtt \
-        --no-playlist \
-        --socket-timeout 30 \
         -o "${outputPath}" \
         "https://www.youtube.com/watch?v=${videoId}" 2>&1`;
 
