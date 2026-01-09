@@ -295,14 +295,20 @@ const MontessoriCardGenerator = () => {
         const img = new Image();
         img.onload = () => {
           try {
-            // Calculate aspect ratio fit
-            const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
+            // Calculate aspect ratio fill (cover)
+            const scale = Math.max(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
             const scaledWidth = img.width * scale;
             const scaledHeight = img.height * scale;
             const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
             const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
             
+            // Clip to image area
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
+            ctx.clip();
             ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            ctx.restore();
             
             // Draw label with optimal font size
             ctx.fillStyle = '#000000';
@@ -334,13 +340,20 @@ const MontessoriCardGenerator = () => {
         const img = new Image();
         img.onload = () => {
           try {
-            const scale = Math.min(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
+            // Calculate aspect ratio fill (cover)
+            const scale = Math.max(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
             const scaledWidth = img.width * scale;
             const scaledHeight = img.height * scale;
             const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
             const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
             
+            // Clip to image area
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
+            ctx.clip();
             ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            ctx.restore();
             resolve(canvas);
           } catch (error) {
             reject(error);
@@ -555,9 +568,9 @@ const MontessoriCardGenerator = () => {
     }
     
     .image-area img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     
     .label-area {
@@ -852,9 +865,9 @@ const MontessoriCardGenerator = () => {
     }
     
     .image-inner img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     
     @media print {
@@ -1129,9 +1142,9 @@ const MontessoriCardGenerator = () => {
                 src={card.croppedImage}
                 alt={card.label}
                 style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain'
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
                 }}
               />
             </div>

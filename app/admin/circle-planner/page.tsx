@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { CIRCLE_TIME_CURRICULUM, CircleTimePlan, DayPlan } from '@/lib/circle-time/curriculum-data';
 import LessonDocuments from '@/components/circle-time/LessonDocuments';
+import TeacherNotes from '@/components/circle-time/TeacherNotes';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 const DAY_LABELS = {
@@ -293,6 +294,11 @@ export default function CircleTimePage() {
             {/* Lesson Documents */}
             <div className="mb-4">
               <LessonDocuments weekNumber={plan.week} />
+            </div>
+
+            {/* Teacher Notes Board */}
+            <div className="mb-4">
+              <TeacherNotes weekNumber={plan.week} currentTeacher="Admin" />
             </div>
 
             {/* Day Tabs */}
