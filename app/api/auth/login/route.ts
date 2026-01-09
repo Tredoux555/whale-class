@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createUserToken, UserSession } from '@/lib/auth-multi';
 
-// Lazy initialization to avoid build-time errors
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,9 +50,21 @@ export async function POST(request: NextRequest) {
       .eq('user_id', authData.user.id)
       .single();
 
-    const role = roleData?.role_name || 'parent';
+    const role = roleData?.role_name || 'teacher';
 
-    // Create response with redirect
+    // Create session for our auth system
+    const session: UserSession = {
+      userId: authData.user.id,
+      email: authData.user.email || email,
+      name: authData.user.user_metadata?.name || email.split('@')[0],
+      role: role as any,
+      schoolId: '00000000-0000-0000-0000-000000000001', // Default to Beijing school for now
+    };
+
+    // Create our JWT token
+    const token = await createUserToken(session);
+
+    // Create response
     const response = NextResponse.json({
       success: true,
       user: {
@@ -63,20 +75,22 @@ export async function POST(request: NextRequest) {
       redirect: getRedirectUrl(role),
     });
 
-    // Set Supabase auth cookies
+    // Set our user-token cookie (this is what getUserSession looks for)
+    response.cookies.set('user-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    // Also set Supabase tokens for any direct Supabase calls
     if (authData.session) {
       response.cookies.set('sb-access-token', authData.session.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/',
-      });
-      response.cookies.set('sb-refresh-token', authData.session.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 7,
         path: '/',
       });
     }
