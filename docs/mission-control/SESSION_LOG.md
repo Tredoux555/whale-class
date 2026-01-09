@@ -1,57 +1,71 @@
 # Whale Session Log - January 9, 2026 (Session 2)
 
-## Current Task: Multi-School Onboarding Architecture
+## ✅ MULTI-SCHOOL ONBOARDING - COMPLETE
 
-### Progress Tracker
-- [x] **Chunk 1:** Schools management page `/admin/schools` + POST API
-- [x] **Chunk 2:** School detail page `/admin/schools/[id]` + classrooms API
-- [x] **Chunk 3:** Classroom detail page `/admin/schools/[id]/classrooms/[id]`
-- [x] **Chunk 4:** Teacher setup page `/teacher/setup` + add students API
-- [ ] **Chunk 5:** Link existing 22 kids to Whale classroom
-- [ ] **Chunk 6:** Test full flow end-to-end
-
----
-
-## What's Built
-
-### Pages Created
-| Route | Purpose | Status |
-|-------|---------|--------|
-| `/admin/schools` | Master admin - manage all schools | ✅ |
-| `/admin/schools/[id]` | School detail - list/add classrooms | ✅ |
-| `/admin/schools/[id]/classrooms/[id]` | Classroom detail - see students | ✅ |
-| `/teacher/setup?classroom=X` | Add students to classroom | ✅ |
-
-### APIs Created
-| Endpoint | Methods | Purpose |
-|----------|---------|---------|
-| `/api/admin/schools` | GET, POST | List/create schools |
-| `/api/admin/classrooms` | GET, POST | List/create classrooms |
-| `/api/admin/classrooms/[id]` | GET, PATCH | Get/update classroom |
-| `/api/admin/classrooms/[id]/students` | POST | Add student to classroom |
+### All Chunks Done
+- [x] Chunk 1: Schools management page `/admin/schools`
+- [x] Chunk 2: School detail page `/admin/schools/[id]`
+- [x] Chunk 3: Classroom detail `/admin/schools/[id]/classrooms/[id]`
+- [x] Chunk 4: Teacher setup `/teacher/setup`
+- [x] Chunk 5: Seed script + link 22 kids to Whale classroom
+- [x] Chunk 6: All API tests passing
 
 ---
 
-## Git Commits This Session
+## Live URLs
+
+| Page | URL |
+|------|-----|
+| Schools | `www.teacherpotato.xyz/admin/schools` |
+| Beijing School | `www.teacherpotato.xyz/admin/schools/00000000-0000-0000-0000-000000000001` |
+| Whale Classroom | `.../classrooms/c53ac2a1-3525-42fa-a1d9-b46546a6ea3c` |
+| Teacher Setup | `www.teacherpotato.xyz/teacher/setup?classroom=c53ac2a1-3525-42fa-a1d9-b46546a6ea3c` |
+
+---
+
+## Database Created
+
+| Table | Purpose |
+|-------|---------|
+| schools | Multi-tenant schools |
+| classrooms | Classes per school |
+| classroom_children | Links children to classrooms |
+
+---
+
+## Git Commits
+
 ```
-fa2b36a - feat: teacher setup page - add students with progress levels
-1403d41 - feat: add student to classroom API endpoint
-0df86e0 - feat: classroom detail page with students list + API
+93ed7f0 - fix: remove users table join from classrooms API
+c0286d8 - feat: seed script to link Beijing School + Whale classroom
+fa2b36a - feat: teacher setup page
+1403d41 - feat: add student to classroom API
+0df86e0 - feat: classroom detail page + API
 173526d - feat: school detail page + classrooms API
 26e7c17 - feat: schools management UI page
-7ff4fd3 - feat: schools management page + POST API
-c8f7510 - fix: classroom API now queries 3 progress tables
-ca2e715 - fix: remove Vercel warning from flashcard-maker
-a7d7292 - feat: expand generic materials to specific searchable items
-761b6b4 - feat: add Video Cards link to circle planner toolbar
 ```
 
 ---
 
-## Next: Chunk 5
-Link Beijing International School + Whale classroom + 22 existing children
+## Architecture Flow
 
-Need to:
-1. Create/verify Beijing International School exists
-2. Create Whale classroom under that school
-3. Link existing 22 children to Whale classroom
+```
+MASTER ADMIN (you)
+  └── /admin/schools - Add/manage schools
+        └── Beijing International School
+              └── 🐋 Whale (22 kids linked)
+
+NEW SCHOOL ONBOARDING:
+1. Master Admin creates school
+2. Principal adds classrooms
+3. Principal assigns teachers  
+4. Teachers add students via /teacher/setup
+```
+
+---
+
+## Next Steps (Future)
+- [ ] Principal dashboard with auth
+- [ ] Teacher assignment flow
+- [ ] Photo upload in teacher setup
+- [ ] Progress level dots in UI
