@@ -270,7 +270,7 @@ export default function TeacherProgressPage() {
                   )}
                 </div>
                 <h3 className="font-medium text-gray-900">{child.name}</h3>
-                <p className="text-xs text-gray-500 mt-1">Age {child.age.toFixed(1)}</p>
+                <p className="text-xs text-gray-500 mt-1">Age {child.age?.toFixed(1) || '?'}</p>
                 <div className="flex justify-center gap-1 mt-2">
                   <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
                     {child.progress.presented}
@@ -313,7 +313,7 @@ export default function TeacherProgressPage() {
               </div>
               <div>
                 <h2 className="font-bold text-gray-900">{selectedChild.name}</h2>
-                <p className="text-sm text-gray-500">Age {selectedChild.age.toFixed(1)}</p>
+                <p className="text-sm text-gray-500">Age {selectedChild.age?.toFixed(1) || '?'}</p>
               </div>
             </div>
           </div>
