@@ -146,6 +146,42 @@ export default function CircleTimePage() {
               </div>
             </div>
 
+            {/* Books */}
+            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <h3 className="font-bold text-gray-700 mb-2">📚 Books</h3>
+              <div className="space-y-2">
+                {plan.books.map((book, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-lg">📖</span>
+                    <div>
+                      <span className="font-medium">{book.title}</span>
+                      <span className="text-gray-500 text-sm"> by {book.author}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Materials for the week */}
+            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+              <h3 className="font-bold text-gray-700 mb-2">🧰 Materials Needed This Week</h3>
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  const allMaterials = new Set<string>();
+                  DAYS.forEach(day => {
+                    const dayPlan = plan[`${day}Plan` as keyof CircleTimePlan] as DayPlan | undefined;
+                    dayPlan?.materials?.forEach(m => allMaterials.add(m));
+                  });
+                  plan.books.forEach(book => allMaterials.add(`Book: ${book.title}`));
+                  return Array.from(allMaterials).map((material, i) => (
+                    <span key={i} className="px-3 py-1 bg-gray-100 border rounded-full text-sm">
+                      {material}
+                    </span>
+                  ));
+                })()}
+              </div>
+            </div>
+
             {/* Song */}
             <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
               <h3 className="font-bold text-gray-700 mb-2">🎵 Theme Song</h3>
