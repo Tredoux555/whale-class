@@ -292,6 +292,13 @@ export default function Home() {
                 🎮 Games
               </Link>
               <Link 
+                href="/teacher"
+                prefetch={false}
+                className="text-sm bg-cyan-500 hover:bg-cyan-600 px-3 py-1.5 rounded-lg transition-colors font-medium"
+              >
+                👩‍🏫 Teacher
+              </Link>
+              <Link 
                 href="/admin/login"
                 prefetch={false}
                 className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
