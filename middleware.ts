@@ -64,6 +64,7 @@ export async function middleware(req: NextRequest) {
   const publicPaths = [
     '/',           // Home page - MUST be accessible
     '/games',      // Games hub and all game routes
+    '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
     '/auth/login',
     '/auth/signup',
@@ -255,6 +256,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

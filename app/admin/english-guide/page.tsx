@@ -935,6 +935,8 @@ const VOCABULARY_BASKETS = [
     color: '#10B981',
     budget: '¥50-80',
     whereToBuy: 'Taobao: Safari Ltd TOOBS, or local toy store',
+    taobaoLink: 'https://s.taobao.com/search?q=仿真动物模型套装+农场动物',
+    taobaoSearch: '仿真动物模型套装 农场动物',
     items: [
       'cat (plastic figurine)',
       'dog',
@@ -947,7 +949,7 @@ const VOCABULARY_BASKETS = [
       'bird',
       'ant (or bug set)',
     ],
-    tip: 'Safari Ltd TOOBS are perfect - realistic, durable, and right size for little hands.'
+    tip: 'Safari Ltd TOOBS are perfect - realistic, durable, and right size for little hands. Search: Safari TOOBS 动物'
   },
   {
     name: 'Kitchen Basket',
@@ -955,6 +957,8 @@ const VOCABULARY_BASKETS = [
     color: '#F59E0B',
     budget: '¥30-50',
     whereToBuy: 'Daiso/Miniso toy section, or real mini items',
+    taobaoLink: 'https://s.taobao.com/search?q=迷你厨房餐具套装+过家家',
+    taobaoSearch: '迷你厨房餐具套装 过家家',
     items: [
       'pot (mini)',
       'pan',
@@ -967,14 +971,16 @@ const VOCABULARY_BASKETS = [
       'bowl',
       'lid',
     ],
-    tip: 'Real miniature items work better than toys. Check kitchen section for tiny measuring cups, etc.'
+    tip: 'Real miniature items work better than toys. Stainless steel 25-piece set ¥48 is excellent quality.'
   },
   {
     name: 'Classroom Basket',
     icon: '✏️',
     color: '#3B82F6',
     budget: '¥20-40',
-    whereToBuy: 'Already in your classroom! Collect extras.',
+    whereToBuy: 'Mini stationery sets on Taobao',
+    taobaoLink: 'https://s.taobao.com/search?q=迷你文具套装+玩具',
+    taobaoSearch: '迷你文具套装 玩具',
     items: [
       'pen',
       'pencil',
@@ -987,14 +993,16 @@ const VOCABULARY_BASKETS = [
       'tape',
       'ruler',
     ],
-    tip: 'Use real objects from your classroom. More authentic than toys.'
+    tip: 'Best value: 迷你学习课桌椅微缩仿真文具套装 ¥6.71 (5000+ sold) - complete mini desk set!'
   },
   {
     name: 'Clothing Basket',
     icon: '👕',
     color: '#8B5CF6',
     budget: '¥30-60',
-    whereToBuy: 'Doll clothes section, or baby/toddler socks',
+    whereToBuy: 'Doll clothes section on Taobao',
+    taobaoLink: 'https://s.taobao.com/search?q=娃娃衣服配件+ob11',
+    taobaoSearch: '娃娃衣服配件 ob11',
     items: [
       'hat (doll size)',
       'cap',
@@ -1007,7 +1015,7 @@ const VOCABULARY_BASKETS = [
       'pants (doll)',
       'shirt (doll)',
     ],
-    tip: 'Doll clothes from Taobao work great. Get variety of colors for adjective work later.'
+    tip: 'OB11 doll clothes are perfect size. Mix and match from ¥1.50-3.50 per piece.'
   },
   {
     name: 'Home Items Basket',
@@ -1015,6 +1023,8 @@ const VOCABULARY_BASKETS = [
     color: '#EC4899',
     budget: '¥40-70',
     whereToBuy: 'Dollhouse furniture sets on Taobao',
+    taobaoLink: 'https://s.taobao.com/search?q=迷你家具套装+娃娃屋',
+    taobaoSearch: '迷你家具套装 娃娃屋',
     items: [
       'bed (dollhouse)',
       'tub/bath',
@@ -1027,14 +1037,16 @@ const VOCABULARY_BASKETS = [
       'sofa',
       'clock',
     ],
-    tip: 'Dollhouse furniture sets are goldmine. One ¥50 set covers 20+ vocabulary words.'
+    tip: 'Best value: 日式迷你家居餐桌椅子书柜微缩场景 ¥1.58 (1000+ sold) - amazing quality!'
   },
   {
     name: 'Food Basket',
     icon: '🍎',
     color: '#EF4444',
     budget: '¥40-60',
-    whereToBuy: 'Taobao: wooden play food sets',
+    whereToBuy: 'Wooden play food sets on Taobao',
+    taobaoLink: 'https://s.taobao.com/search?q=木制过家家食物+蔬菜水果',
+    taobaoSearch: '木制过家家食物 蔬菜水果',
     items: [
       'apple',
       'egg (wooden)',
@@ -1047,7 +1059,7 @@ const VOCABULARY_BASKETS = [
       'pie',
       'jam jar (mini)',
     ],
-    tip: 'Wooden play food is durable and beautiful. Melissa & Doug style sets available cheap on Taobao.'
+    tip: 'Best value: 过家家切切乐宝宝切水果木质磁力 ¥26.20 (2000+ sold) - magnetic wooden food!'
   }
 ];
 
@@ -1450,6 +1462,16 @@ export default function EnglishGuidePage() {
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">{basket.whereToBuy}</p>
+                        {basket.taobaoLink && (
+                          <a 
+                            href={basket.taobaoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-orange-500 text-white text-xs font-medium rounded-full hover:bg-orange-600 transition"
+                          >
+                            📍 Search Taobao
+                          </a>
+                        )}
                       </div>
                       <div className="p-4">
                         <div className="grid grid-cols-2 gap-1 text-sm">
