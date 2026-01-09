@@ -63,22 +63,28 @@ export default function CircleTimePage() {
                 🌅 Circle Time Planner
               </h1>
             </div>
-            {selectedWeek && (
-              <div className="flex gap-2">
-                <Link
-                  href={`/admin/vocabulary-flashcards`}
-                  className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
-                >
-                  🃏 Flashcards
-                </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/admin/vocabulary-flashcards"
+                className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+              >
+                🃏 Flashcards
+              </Link>
+              <Link
+                href="/admin/card-generator"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                🎴 3-Part Cards
+              </Link>
+              {selectedWeek && (
                 <button
                   onClick={handlePrint}
                   className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
                 >
                   🖨️ Print Week
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </header>
