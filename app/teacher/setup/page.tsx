@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface Student {
@@ -10,7 +10,7 @@ interface Student {
   photo_url: string | null;
 }
 
-export default function TeacherSetupPage() {
+function TeacherSetupContent() {
   const searchParams = useSearchParams();
   const classroomId = searchParams.get('classroom');
   
@@ -140,14 +140,14 @@ export default function TeacherSetupPage() {
         {students.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed">
             <div className="text-5xl mb-4">👶</div>
-            <p className="text-gray-500">No students yet. Click "Add Student" to begin.</p>
+            <p className="text-gray-500">No students yet. Click &quot;Add Student&quot; to begin.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {students.map((s) => (
               <div key={s.id} className="bg-white rounded-xl p-4 border text-center">
                 <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-emerald-100 flex items-center justify-center text-2xl overflow-hidden">
-                  {s.photo_url ? <img src={s.photo_url} className="w-full h-full object-cover" /> : s.name.charAt(0)}
+                  {s.photo_url ? <img src={s.photo_url} alt={s.name} className="w-full h-full object-cover" /> : s.name.charAt(0)}
                 </div>
                 <p className="font-medium text-sm truncate">{s.name}</p>
               </div>
@@ -156,5 +156,21 @@ export default function TeacherSetupPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+    </div>
+  );
+}
+
+export default function TeacherSetupPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <TeacherSetupContent />
+    </Suspense>
   );
 }
