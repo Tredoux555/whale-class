@@ -3,6 +3,7 @@
 // =====================================================
 // Location: middleware.ts (root level)
 // Purpose: Protect routes based on user roles and permissions
+// UPDATED: 2026-01-10 00:30 - Force teacher simple login
 // =====================================================
 
 import { createClient } from '@supabase/supabase-js';
@@ -27,6 +28,12 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+  
+  // EXPLICIT: /teacher routes use simple localStorage auth, not Montree
+  // Return immediately - no redirects, no auth checks
+  if (pathname === '/teacher' || pathname.startsWith('/teacher/')) {
+    return NextResponse.next();
+  }
   
   // Create response with pathname header for layouts to read
   const requestHeaders = new Headers(req.headers);
