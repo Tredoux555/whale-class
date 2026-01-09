@@ -1,71 +1,121 @@
-# SESSION LOG - Whale Platform
+# Whale Session Log - January 9, 2026
+
+## Session Summary
+Teacher portal fixes, flashcard generator improvements, circle time planner enhancements.
 
 ---
 
-## SESSION 6: January 8, 2026 (Evening) - AUDIO CRISIS & RECOVERY
+## ✅ COMPLETED
 
-### Summary
-Long frustrating day. ElevenLabs audio was wrong, manual recordings failed multiple times. Finally got letter sounds working. Word audio needs complete rebuild.
+### 1. Daily Summary API Fixed
+- **File:** `app/api/whale/daily-summary/route.ts`
+- **Issue:** Column `last_presented` didn't exist
+- **Fix:** Changed to `date_updated`
+- **Status:** Working at `www.teacherpotato.xyz/api/whale/daily-summary?date=YYYY-MM-DD`
 
-### What Got Fixed
-1. **Letter sounds (a-z)** - Fresh recording, properly split, DEPLOYED & WORKING
-2. **Story messaging** - Restored from intentionally disabled state
-3. **Sound Games code** - Plays letter sounds directly now (no 11-sec instruction delay)
+### 2. Teacher Login System Fixed
+- **Problem:** Login page at `/teacher/login` triggered auth-protected layout causing infinite redirect
+- **Solution:** Moved login to `/auth/teacher` (outside teacher folder)
+- **Files:**
+  - `app/auth/teacher/page.tsx` - Login form
+  - `app/teacher/layout.tsx` - Redirects to `/auth/teacher` when no session
+  - `middleware.ts` - Added `/auth/teacher` to public paths + redirect logic
+  - `app/api/auth/login/route.ts` - Uses Supabase Auth, sets BOTH `user-token` and `sb-access-token` cookies
 
-### What's Still Broken
-1. **Word audio (245 files)** - All mismatched/garbled, need complete rebuild
-2. **Daily Summary page** - API has column errors (activity_photos.uploaded_at)
-3. **Teacher login** - Redirect loop in middleware
-4. **Instruction audio** - 11 seconds too long, disabled
+### 3. Flashcard Generator Fixed
+- **File:** `app/admin/vocabulary-flashcards/page.tsx`
+- **Fixes:**
+  - ✅ Blank pages removed (proper page-break CSS)
+  - ✅ Images fill frame (`object-fit: cover`)
+  - ✅ Lowercase words (Montessori style)
 
-### Key Decisions Made
-- **STOP bulk recording** - Failed twice. Do ONE sound per day, verify manually.
-- **Games-curriculum integration** - Big vision: teacher logs work → parent gets game notification
-- **3-part cards** - Need to build for every curriculum step
-
-### Commits
-- `df30f35` - Restore Sound Games with ElevenLabs (failed)
-- `ab27bdc` - Restore Tredoux recordings (also failed)  
-- `6eb088f` - Fresh letter recordings (WORKING)
-- `01ae2fb` - Sound Games status doc
-- `5d77b47` - Play letters directly, disable broken word audio
-- `96375e6` - Daily summary page (has bugs)
-- `582c846` - Middleware fix attempt
-
-### Tomorrow's Priority
-1. Fix Daily Summary API (activity_photos column)
-2. Fix teacher login redirect
-3. Start word audio rebuild (S sound first)
-4. Begin curriculum-game mapping design
+### 4. Circle Time Planner Enhanced
+- **File:** `app/admin/circle-planner/page.tsx`
+- **Added "Week Prep Checklist" showing:**
+  - 🎵 Theme Song with YouTube search link
+  - 📇 Vocabulary words
+  - 📚 Books with "Read Aloud" YouTube links
+  - 🧰 All materials needed for the week
 
 ---
 
-## SESSION 5: January 8, 2026 - Sound Games Deep Audit
+## ❌ BROKEN - NEEDS FIX NEXT SESSION
 
-### Summary
-Fixed audio race conditions, verified all assets exist, improved UI.
+### 1. /teacher/classroom - Crashes
+- **Error:** `Cannot read properties of undefined (reading 'mastered')`
+- **Cause:** API returns children without `progress` object, or progress object missing `mastered` property
+- **File to check:** `app/teacher/classroom/page.tsx` and `app/api/teacher/classroom/route.ts`
 
-### Completed
-- Audio race conditions fixed (setTimeout refs)
-- All 182 words verified to have audio + images
-- UI improved (object-cover, aspect-square)
-- Debug page created at /debug/audio-test
+### 2. /teacher/progress - Crashes  
+- **Error:** `Cannot read properties of undefined (reading 'presented')`
+- **Cause:** Same issue - progress data undefined
+- **File to check:** `app/teacher/progress/page.tsx` and related API
 
----
-
-## SESSION 4: January 8, 2026 - DALL-E Images
-
-### Summary  
-Generated 60 images, uploaded to Supabase, identified audio bugs.
+### 3. /teacher/daily-summary - Console errors
+- **Shows page but has errors** (still functional)
+- **Same undefined progress properties**
 
 ---
 
-## SESSION 3: January 8, 2026 - Audio Recording
+## DUAL AUTH SYSTEM NOTE
 
-### Summary
-Recorded 234 audio files with Tredoux voice, deployed to /public/audio-new/
+The system uses TWO authentication mechanisms in parallel:
+1. **Middleware:** Checks Supabase session via `sb-access-token` cookie
+2. **Layout:** Checks auth-multi via `user-token` cookie
+
+Login API sets BOTH cookies. If issues persist, check both are being set correctly.
 
 ---
 
-## Previous Sessions
-See older handoff docs in /docs/ folder.
+## TEST CREDENTIALS
+- **URL:** `www.teacherpotato.xyz/auth/teacher`
+- **Email:** `test@test.com`
+- **Password:** `test1234`
+
+**IMPORTANT:** Must use `www.` prefix - `teacherpotato.xyz` returns 404
+
+---
+
+## QUICK FIX FOR NEXT SESSION
+
+The classroom/progress crashes need defensive coding. Find all places that access `child.progress.mastered`, `child.progress.presented`, etc. and add optional chaining:
+
+```javascript
+// Before (crashes)
+child.progress.mastered
+
+// After (safe)
+child.progress?.mastered || 0
+```
+
+Files to fix:
+- `app/teacher/classroom/page.tsx`
+- `app/teacher/progress/page.tsx`
+- `app/teacher/daily-summary/page.tsx`
+
+Also check the API routes to ensure they return proper progress objects.
+
+---
+
+## GIT COMMITS THIS SESSION
+```
+f04ee84 feat: week prep checklist with YouTube links for song and book read-alouds
+04dfde1 feat: circle planner shows books and materials for the week
+dd7e2b3 fix: flashcard PDF - use mm units, zero page margin, explicit page breaks
+366787c fix: remove page-break rules causing blank pages in flashcard PDF
+4bd334f fix: flashcard generator - no blank pages, fill-frame images, lowercase words
+936e6d7 fix: middleware redirects /teacher/* to /auth/teacher when not authenticated
+f70e1da fix: handle undefined age in classroom/progress pages
+60f4ebd fix: reports link to daily-summary, clean manifest.json
+e17f528 fix: set user-token cookie on login for auth-multi compatibility
+89bf65d fix: use Supabase Auth for teacher login instead of custom users table
+a65b8f6 fix: daily summary uses correct child_progress columns
+```
+
+---
+
+## NEXT PRIORITIES
+1. Fix teacher/classroom and teacher/progress crashes (defensive coding)
+2. S sound rebuild (6 words: sun, sock, soap, star, snake, spoon)
+3. 3-part cards for S sound
+4. Map curriculum to games
