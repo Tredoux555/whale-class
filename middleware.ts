@@ -162,7 +162,11 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
-    // Otherwise redirect to home page (protected routes removed)
+    // If trying to access teacher route, redirect to teacher login
+    if (pathname.startsWith('/teacher')) {
+      return NextResponse.redirect(new URL('/auth/teacher', req.url));
+    }
+    // Otherwise redirect to home page
     return NextResponse.redirect(new URL('/', req.url));
   }
 
