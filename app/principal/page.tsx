@@ -15,12 +15,13 @@ interface School {
   id: string;
   name: string;
   slug: string;
+  classroom_count?: number;
+  student_count?: number;
 }
 
 export default function PrincipalDashboard() {
-  // TODO: Get school_id from auth session. For now using Beijing International
-  const schoolId = '00000000-0000-0000-0000-000000000001';
-  
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
   const [school, setSchool] = useState<School | null>(null);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,34 +29,63 @@ export default function PrincipalDashboard() {
   const [newClass, setNewClass] = useState({ name: '', age_group: '3-6' });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchData(); }, []);
+  // Load schools on mount
+  useEffect(() => {
+    const loadSchools = async () => {
+      try {
+        const res = await fetch('/api/admin/schools');
+        const data = await res.json();
+        const allSchools = data.schools || [];
+        setSchools(allSchools);
+        
+        // Check localStorage for saved school, otherwise use first
+        const saved = localStorage.getItem('principal_school_id');
+        if (saved && allSchools.find((s: School) => s.id === saved)) {
+          setSelectedSchoolId(saved);
+        } else if (allSchools.length > 0) {
+          setSelectedSchoolId(allSchools[0].id);
+        }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    };
+    loadSchools();
+  }, []);
 
-  const fetchData = async () => {
-    try {
-      // Get school info
-      const schoolRes = await fetch('/api/admin/schools');
-      const schoolData = await schoolRes.json();
-      const s = (schoolData.schools || []).find((x: any) => x.id === schoolId);
-      setSchool(s);
-
-      // Get classrooms
-      const classRes = await fetch(`/api/admin/classrooms?school_id=${schoolId}`);
-      const classData = await classRes.json();
-      setClassrooms(classData.classrooms || []);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  };
+  // Load classrooms when school changes
+  useEffect(() => {
+    if (!selectedSchoolId) return;
+    localStorage.setItem('principal_school_id', selectedSchoolId);
+    
+    const s = schools.find(x => x.id === selectedSchoolId);
+    setSchool(s || null);
+    
+    const loadClassrooms = async () => {
+      try {
+        const res = await fetch(`/api/admin/classrooms?school_id=${selectedSchoolId}`);
+        const data = await res.json();
+        setClassrooms(data.classrooms || []);
+      } catch (e) { console.error(e); }
+    };
+    loadClassrooms();
+  }, [selectedSchoolId, schools]);
 
   const handleAddClass = async () => {
-    if (!newClass.name.trim()) return;
+    if (!newClass.name.trim() || !selectedSchoolId) return;
     setSaving(true);
     try {
       const res = await fetch('/api/admin/classrooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ school_id: schoolId, ...newClass })
+        body: JSON.stringify({ school_id: selectedSchoolId, ...newClass })
       });
-      if (res.ok) { setShowAddModal(false); setNewClass({ name: '', age_group: '3-6' }); fetchData(); }
+      if (res.ok) {
+        setShowAddModal(false);
+        setNewClass({ name: '', age_group: '3-6' });
+        // Refresh classrooms
+        const classRes = await fetch(`/api/admin/classrooms?school_id=${selectedSchoolId}`);
+        const classData = await classRes.json();
+        setClassrooms(classData.classrooms || []);
+      }
     } catch (e) { console.error(e); }
     finally { setSaving(false); }
   };
@@ -70,8 +100,22 @@ export default function PrincipalDashboard() {
       {/* Header */}
       <header className="bg-indigo-600 text-white px-6 py-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-indigo-200 text-sm">Principal Portal</p>
-          <h1 className="text-2xl font-bold">{school?.name || 'My School'}</h1>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-indigo-200 text-sm">Principal Portal</p>
+              <h1 className="text-2xl font-bold">{school?.name || 'Select School'}</h1>
+            </div>
+            {/* School Selector */}
+            <select
+              value={selectedSchoolId}
+              onChange={(e) => setSelectedSchoolId(e.target.value)}
+              className="bg-indigo-700 text-white px-4 py-2 rounded-lg border border-indigo-500 focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              {schools.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </header>
 
@@ -123,11 +167,9 @@ export default function PrincipalDashboard() {
                   <Link href={`/principal/classrooms/${c.id}`} className="flex-1 text-center py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200">
                     Manage
                   </Link>
-                  {!c.teacher_id && (
-                    <Link href={`/principal/classrooms/${c.id}/assign`} className="flex-1 text-center py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200">
-                      Assign Teacher
-                    </Link>
-                  )}
+                  <Link href={`/teacher/setup?classroom=${c.id}`} className="flex-1 text-center py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-200">
+                    + Students
+                  </Link>
                 </div>
               </div>
             ))}
@@ -140,7 +182,7 @@ export default function PrincipalDashboard() {
           <div className="flex flex-wrap gap-3">
             <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200">+ Add Classroom</button>
             <Link href="/principal/teachers" className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm hover:bg-emerald-200">👩‍🏫 Manage Teachers</Link>
-            <Link href="/principal/reports" className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm hover:bg-purple-200">📊 View Reports</Link>
+            <Link href="/admin/schools" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">🏫 Master Admin</Link>
           </div>
         </div>
       </main>
@@ -149,7 +191,7 @@ export default function PrincipalDashboard() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Add Classroom</h2>
+            <h2 className="text-xl font-bold mb-4">Add Classroom to {school?.name}</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Classroom Name *</label>
