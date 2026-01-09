@@ -46,7 +46,7 @@ export default function TeacherClassroomPage() {
   const getProgressPercentage = (child: Child) => {
     // Assuming ~268 total works
     const totalWorks = 268;
-    return Math.round((child.progress.mastered / totalWorks) * 100);
+    return Math.round(((child.progress?.mastered || 0) / totalWorks) * 100);
   };
 
   if (loading) {
@@ -125,15 +125,15 @@ export default function TeacherClassroomPage() {
                 <div className="h-full flex">
                   <div
                     className="bg-green-500 transition-all"
-                    style={{ width: `${(child.progress.mastered / 268) * 100}%` }}
+                    style={{ width: `${((child.progress?.mastered || 0) / 268) * 100}%` }}
                   />
                   <div
                     className="bg-blue-500 transition-all"
-                    style={{ width: `${(child.progress.practicing / 268) * 100}%` }}
+                    style={{ width: `${((child.progress?.practicing || 0) / 268) * 100}%` }}
                   />
                   <div
                     className="bg-yellow-500 transition-all"
-                    style={{ width: `${(child.progress.presented / 268) * 100}%` }}
+                    style={{ width: `${((child.progress?.presented || 0) / 268) * 100}%` }}
                   />
                 </div>
               </div>
@@ -143,15 +143,15 @@ export default function TeacherClassroomPage() {
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
               <div className="flex justify-between text-xs">
                 <div className="text-center">
-                  <div className="font-semibold text-yellow-600">{child.progress.presented}</div>
+                  <div className="font-semibold text-yellow-600">{child.progress?.presented || 0}</div>
                   <div className="text-gray-500">Presented</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-blue-600">{child.progress.practicing}</div>
+                  <div className="font-semibold text-blue-600">{child.progress?.practicing || 0}</div>
                   <div className="text-gray-500">Practicing</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-green-600">{child.progress.mastered}</div>
+                  <div className="font-semibold text-green-600">{child.progress?.mastered || 0}</div>
                   <div className="text-gray-500">Mastered</div>
                 </div>
               </div>
