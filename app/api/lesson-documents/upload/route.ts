@@ -28,9 +28,13 @@ const ALLOWED_TYPES = [
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  console.log('=== LESSON DOCUMENT UPLOAD START ===');
+  
   try {
     const supabase = createSupabaseAdmin();
     const formData = await request.formData();
+    
+    console.log('FormData received');
     
     const file = formData.get('file') as File;
     const weekNumber = parseInt(formData.get('weekNumber') as string);
@@ -65,6 +69,8 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    console.log('Attempting upload to bucket:', BUCKET_NAME, 'path:', storagePath);
+    
     const { error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(storagePath, buffer, {
@@ -73,12 +79,16 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('Storage upload error:', JSON.stringify(uploadError));
+      console.error('Bucket:', BUCKET_NAME, 'Path:', storagePath);
       return NextResponse.json({ 
         error: 'Failed to upload file', 
-        details: uploadError.message 
+        details: uploadError.message,
+        bucket: BUCKET_NAME
       }, { status: 500 });
     }
+    
+    console.log('Upload successful');
 
     const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
