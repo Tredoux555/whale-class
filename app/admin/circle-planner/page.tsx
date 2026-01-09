@@ -211,11 +211,80 @@ export default function CircleTimePage() {
                       const dayPlan = plan[`${day}Plan` as keyof CircleTimePlan] as DayPlan | undefined;
                       dayPlan?.materials?.forEach(m => allMaterials.add(m));
                     });
-                    return Array.from(allMaterials).map((material, i) => (
-                      <span key={i} className="px-3 py-1 bg-gray-100 border rounded-full text-sm">
-                        {material}
-                      </span>
-                    ));
+                    
+                    // Expand generic materials to specific items
+                    const expandMaterial = (material: string): string[] => {
+                      const lower = material.toLowerCase();
+                      
+                      // Vocabulary flashcards - use actual vocabulary
+                      if (lower.includes('vocabulary') || lower.includes('flashcard')) {
+                        return plan.vocabulary;
+                      }
+                      
+                      // Weather-related cards - use vocabulary if weather theme
+                      if ((lower.includes('weather') && (lower.includes('card') || lower.includes('picture') || lower.includes('symbol')))) {
+                        if (plan.theme.toLowerCase().includes('weather')) {
+                          return plan.vocabulary;
+                        }
+                        return ['sun', 'cloud', 'rain', 'snow', 'wind', 'storm', 'rainbow'];
+                      }
+                      
+                      // Clothing cards - common clothing items
+                      if (lower.includes('clothing') && lower.includes('card')) {
+                        return ['t-shirt', 'shorts', 'jacket', 'raincoat', 'umbrella', 'boots', 'hat', 'scarf', 'mittens', 'sunglasses'];
+                      }
+                      
+                      // Letter cards - extract letters from the Friday plan
+                      if (lower.includes('letter') && lower.includes('card')) {
+                        const fridayPlan = plan.fridayPlan;
+                        const letterMatch = fridayPlan?.main?.match(/Focus letters?:?\s*([A-Z](?:\s*\([^)]+\))?,?\s*)+/i);
+                        if (letterMatch) {
+                          const letters = fridayPlan.main.match(/\b([A-Z])\s*\(/g)?.map(m => m[0]) || [];
+                          return letters.length > 0 ? letters.map(l => `Letter ${l}`) : [material];
+                        }
+                        return [material];
+                      }
+                      
+                      // Keep as-is for non-expandable items
+                      return [material];
+                    };
+                    
+                    // Group: generic items vs expanded items
+                    const genericItems: string[] = [];
+                    const expandedItems: string[] = [];
+                    
+                    Array.from(allMaterials).forEach(material => {
+                      const expanded = expandMaterial(material);
+                      if (expanded.length === 1 && expanded[0] === material) {
+                        genericItems.push(material);
+                      } else {
+                        expandedItems.push(...expanded);
+                      }
+                    });
+                    
+                    // Remove duplicates from expanded
+                    const uniqueExpanded = [...new Set(expandedItems)];
+                    
+                    return (
+                      <>
+                        {/* Generic materials */}
+                        {genericItems.map((material, i) => (
+                          <span key={`g-${i}`} className="px-3 py-1 bg-gray-100 border rounded-full text-sm">
+                            {material}
+                          </span>
+                        ))}
+                        {/* Expanded materials - different color to show these are searchable */}
+                        {uniqueExpanded.length > 0 && (
+                          <>
+                            {uniqueExpanded.map((item, i) => (
+                              <span key={`e-${i}`} className="px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-full text-sm text-cyan-700">
+                                📷 {item}
+                              </span>
+                            ))}
+                          </>
+                        )}
+                      </>
+                    );
                   })()}
                 </div>
               </div>
