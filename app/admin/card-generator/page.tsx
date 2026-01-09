@@ -1132,7 +1132,8 @@ const MontessoriCardGenerator = () => {
           }}>
             <div style={{
               backgroundColor: '#fff',
-              aspectRatio: '1',
+              width: '92px',
+              height: '92px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1178,7 +1179,8 @@ const MontessoriCardGenerator = () => {
           }}>
             <div style={{
               backgroundColor: '#fff',
-              aspectRatio: '1',
+              width: '92px',
+              height: '92px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1188,9 +1190,9 @@ const MontessoriCardGenerator = () => {
                 src={card.croppedImage}
                 alt={card.label}
                 style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain'
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
                 }}
               />
             </div>
