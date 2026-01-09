@@ -30,7 +30,7 @@ export default async function TeacherDashboard() {
       title: 'Parent Reports',
       description: 'Generate progress reports',
       icon: '📄',
-      href: '/teacher/reports',
+      href: '/teacher/daily-summary',
       color: 'bg-orange-500',
     },
   ];
