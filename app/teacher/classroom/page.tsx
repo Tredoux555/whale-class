@@ -110,7 +110,7 @@ export default function TeacherClassroomPage() {
               <div className="min-w-0">
                 <h3 className="font-semibold text-gray-900 truncate">{child.name}</h3>
                 <p className="text-sm text-gray-500">
-                  Age {child.age.toFixed(1)} • {child.age_group}
+                  Age {child.age?.toFixed(1) || '?'} • {child.age_group || 'Unknown'}
                 </p>
               </div>
             </div>
