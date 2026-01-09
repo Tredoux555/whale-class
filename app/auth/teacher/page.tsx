@@ -115,6 +115,21 @@ export default function TeacherLoginPage() {
               <span className="text-emerald-600">Contact your administrator</span>
             </p>
           </div>
+
+          {/* Test credentials - REMOVE IN PRODUCTION */}
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-800 font-medium mb-2">🧪 Test Mode</p>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('teacher@test.whale');
+                setPassword('test1234');
+              }}
+              className="text-xs text-amber-700 hover:text-amber-900 underline"
+            >
+              Use test account: teacher@test.whale / test1234
+            </button>
+          </div>
         </div>
 
         {/* Footer */}
