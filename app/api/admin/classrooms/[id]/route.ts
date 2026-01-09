@@ -9,10 +9,10 @@ export async function GET(
   const supabase = createSupabaseAdmin();
 
   try {
-    // Get classroom with teacher
+    // Get classroom with school
     const { data: classroom, error: classError } = await supabase
       .from('classrooms')
-      .select('*, teacher:users(id, name, email), school:schools(id, name)')
+      .select('*, school:schools(id, name)')
       .eq('id', id)
       .single();
 

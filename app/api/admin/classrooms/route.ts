@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     let query = supabase
       .from('classrooms')
-      .select('*, teacher:users(id, name, email)')
+      .select('*')
       .eq('is_active', true)
       .order('name');
 
