@@ -134,59 +134,79 @@ export default function CircleTimePage() {
               </div>
             </div>
 
-            {/* Vocabulary */}
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
-              <h3 className="font-bold text-gray-700 mb-2">📇 Vocabulary Words</h3>
-              <div className="flex flex-wrap gap-2">
-                {plan.vocabulary.map((word, i) => (
-                  <span key={i} className="px-3 py-1 bg-amber-100 rounded-full text-sm">
-                    {word}
-                  </span>
-                ))}
+            {/* Week At A Glance - Prep Summary */}
+            <div className="bg-white rounded-xl p-5 mb-4 shadow-sm border-2 border-dashed border-amber-300">
+              <h3 className="font-bold text-gray-800 text-lg mb-4">📋 Week {plan.week} Prep Checklist</h3>
+              
+              {/* Song */}
+              <div className="mb-4">
+                <h4 className="font-bold text-gray-700 mb-2">🎵 Theme Song</h4>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium">{plan.song.title}</span>
+                  <a 
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(plan.song.title + ' kids song')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 bg-red-500 text-white text-sm rounded-full hover:bg-red-600 inline-flex items-center gap-1"
+                  >
+                    ▶️ YouTube
+                  </a>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Actions: {plan.song.actions}</p>
               </div>
-            </div>
 
-            {/* Books */}
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
-              <h3 className="font-bold text-gray-700 mb-2">📚 Books</h3>
-              <div className="space-y-2">
-                {plan.books.map((book, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="text-lg">📖</span>
-                    <div>
-                      <span className="font-medium">{book.title}</span>
-                      <span className="text-gray-500 text-sm"> by {book.author}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Materials for the week */}
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
-              <h3 className="font-bold text-gray-700 mb-2">🧰 Materials Needed This Week</h3>
-              <div className="flex flex-wrap gap-2">
-                {(() => {
-                  const allMaterials = new Set<string>();
-                  DAYS.forEach(day => {
-                    const dayPlan = plan[`${day}Plan` as keyof CircleTimePlan] as DayPlan | undefined;
-                    dayPlan?.materials?.forEach(m => allMaterials.add(m));
-                  });
-                  plan.books.forEach(book => allMaterials.add(`Book: ${book.title}`));
-                  return Array.from(allMaterials).map((material, i) => (
-                    <span key={i} className="px-3 py-1 bg-gray-100 border rounded-full text-sm">
-                      {material}
+              {/* Vocabulary */}
+              <div className="mb-4">
+                <h4 className="font-bold text-gray-700 mb-2">📇 Vocabulary ({plan.vocabulary.length} words)</h4>
+                <div className="flex flex-wrap gap-2">
+                  {plan.vocabulary.map((word, i) => (
+                    <span key={i} className="px-3 py-1 bg-amber-100 rounded-full text-sm">
+                      {word}
                     </span>
-                  ));
-                })()}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Song */}
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
-              <h3 className="font-bold text-gray-700 mb-2">🎵 Theme Song</h3>
-              <p className="font-medium">{plan.song.title}</p>
-              <p className="text-sm text-gray-600">Actions: {plan.song.actions}</p>
+              {/* Books */}
+              <div className="mb-4">
+                <h4 className="font-bold text-gray-700 mb-2">📚 Books</h4>
+                <div className="space-y-2">
+                  {plan.books.map((book, i) => (
+                    <div key={i} className="flex items-center gap-2 flex-wrap">
+                      <span>📖</span>
+                      <span className="font-medium">{book.title}</span>
+                      <span className="text-gray-500 text-sm">by {book.author}</span>
+                      <a 
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(book.title + ' read aloud')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full hover:bg-red-200"
+                      >
+                        ▶️ Read Aloud
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <h4 className="font-bold text-gray-700 mb-2">🧰 Materials Needed</h4>
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    const allMaterials = new Set<string>();
+                    DAYS.forEach(day => {
+                      const dayPlan = plan[`${day}Plan` as keyof CircleTimePlan] as DayPlan | undefined;
+                      dayPlan?.materials?.forEach(m => allMaterials.add(m));
+                    });
+                    return Array.from(allMaterials).map((material, i) => (
+                      <span key={i} className="px-3 py-1 bg-gray-100 border rounded-full text-sm">
+                        {material}
+                      </span>
+                    ));
+                  })()}
+                </div>
+              </div>
             </div>
 
             {/* Lesson Documents */}
