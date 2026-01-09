@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createUserToken, UserSession } from '@/lib/auth-multi';
+import { createUserToken } from '@/lib/auth-multi';
 
 function getSupabase() {
   return createClient(
@@ -52,19 +52,16 @@ export async function POST(request: NextRequest) {
 
     const role = roleData?.role_name || 'teacher';
 
-    // Create session for our auth system
-    const session: UserSession = {
+    // Create user-token for our auth system
+    const userToken = await createUserToken({
       userId: authData.user.id,
-      email: authData.user.email || email,
-      name: authData.user.user_metadata?.name || email.split('@')[0],
+      email: authData.user.email!,
+      name: authData.user.email!.split('@')[0],
       role: role as any,
-      schoolId: '00000000-0000-0000-0000-000000000001', // Default to Beijing school for now
-    };
+      schoolId: null,
+    });
 
-    // Create our JWT token
-    const token = await createUserToken(session);
-
-    // Create response
+    // Create response with redirect
     const response = NextResponse.json({
       success: true,
       user: {
@@ -75,8 +72,8 @@ export async function POST(request: NextRequest) {
       redirect: getRedirectUrl(role),
     });
 
-    // Set our user-token cookie (this is what getUserSession looks for)
-    response.cookies.set('user-token', token, {
+    // Set user-token cookie (for our auth system)
+    response.cookies.set('user-token', userToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    // Also set Supabase tokens for any direct Supabase calls
+    // Also set Supabase tokens
     if (authData.session) {
       response.cookies.set('sb-access-token', authData.session.access_token, {
         httpOnly: true,
