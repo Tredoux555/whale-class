@@ -234,6 +234,32 @@ export const BLUE_SERIES: Record<string, WordData[]> = {
     { word: 'swing', image: '🎠', audioUrl: '/audio/words/blue/swing.mp3' },
     { word: 'sweet', image: '🍬', audioUrl: '/audio/words/blue/sweet.mp3' },
   ],
+  // Ending blends
+  'nd': [
+    { word: 'hand', image: '✋', audioUrl: '/audio/words/blue/hand.mp3' },
+    { word: 'sand', image: '🏖️', audioUrl: '/audio/words/blue/sand.mp3' },
+    { word: 'pond', image: '💧', audioUrl: '/audio/words/blue/pond.mp3' },
+  ],
+  'nt': [
+    { word: 'ant', image: '🐜', audioUrl: '/audio/words/blue/ant.mp3' },
+    { word: 'tent', image: '⛺', audioUrl: '/audio/words/blue/tent.mp3' },
+    { word: 'plant', image: '🌱', audioUrl: '/audio/words/blue/plant.mp3' },
+  ],
+  'mp': [
+    { word: 'lamp', image: '💡', audioUrl: '/audio/words/blue/lamp.mp3' },
+    { word: 'jump', image: '🦘', audioUrl: '/audio/words/blue/jump.mp3' },
+    { word: 'stamp', image: '📮', audioUrl: '/audio/words/blue/stamp.mp3' },
+  ],
+  'nk': [
+    { word: 'pink', image: '💗', audioUrl: '/audio/words/blue/pink.mp3' },
+    { word: 'sink', image: '🚰', audioUrl: '/audio/words/blue/sink.mp3' },
+    { word: 'think', image: '🧠', audioUrl: '/audio/words/blue/think.mp3' },
+  ],
+  'lk': [
+    { word: 'milk', image: '🥛', audioUrl: '/audio/words/blue/milk.mp3' },
+    { word: 'walk', image: '🚶', audioUrl: '/audio/words/blue/walk.mp3' },
+    { word: 'talk', image: '🗣️', audioUrl: '/audio/words/blue/talk.mp3' },
+  ],
 };
 
 export const ALL_BLUE_WORDS: WordData[] = Object.values(BLUE_SERIES).flat();
@@ -287,6 +313,41 @@ export const GREEN_SERIES: Record<string, WordData[]> = {
     { word: 'thin', image: '📏', audioUrl: '/audio/words/green/thin.mp3' },
     { word: 'this', image: '👉', audioUrl: '/audio/words/green/this.mp3' },
     { word: 'bath', image: '🛁', audioUrl: '/audio/words/green/bath.mp3' },
+  ],
+  'ou': [
+    { word: 'cloud', image: '☁️', audioUrl: '/audio/words/green/cloud.mp3' },
+    { word: 'house', image: '🏠', audioUrl: '/audio/words/green/house.mp3' },
+    { word: 'mouse', image: '🐭', audioUrl: '/audio/words/green/mouse.mp3' },
+  ],
+  'ow': [
+    { word: 'cow', image: '🐄', audioUrl: '/audio/words/green/cow.mp3' },
+    { word: 'owl', image: '🦉', audioUrl: '/audio/words/green/owl.mp3' },
+    { word: 'brown', image: '🟤', audioUrl: '/audio/words/green/brown.mp3' },
+  ],
+  'ar': [
+    { word: 'car', image: '🚗', audioUrl: '/audio/words/green/car.mp3' },
+    { word: 'star', image: '⭐', audioUrl: '/audio/words/green/star.mp3' },
+    { word: 'farm', image: '🏡', audioUrl: '/audio/words/green/farm.mp3' },
+  ],
+  'or': [
+    { word: 'corn', image: '🌽', audioUrl: '/audio/words/green/corn.mp3' },
+    { word: 'horse', image: '🐴', audioUrl: '/audio/words/green/horse.mp3' },
+    { word: 'fork', image: '🍴', audioUrl: '/audio/words/green/fork.mp3' },
+  ],
+  'er': [
+    { word: 'her', image: '👧', audioUrl: '/audio/words/green/her.mp3' },
+    { word: 'water', image: '💧', audioUrl: '/audio/words/green/water.mp3' },
+    { word: 'tiger', image: '🐯', audioUrl: '/audio/words/green/tiger.mp3' },
+  ],
+  'ir': [
+    { word: 'bird', image: '🐦', audioUrl: '/audio/words/green/bird.mp3' },
+    { word: 'girl', image: '👧', audioUrl: '/audio/words/green/girl.mp3' },
+    { word: 'shirt', image: '👕', audioUrl: '/audio/words/green/shirt.mp3' },
+  ],
+  'ur': [
+    { word: 'fur', image: '🧸', audioUrl: '/audio/words/green/fur.mp3' },
+    { word: 'turtle', image: '🐢', audioUrl: '/audio/words/green/turtle.mp3' },
+    { word: 'purple', image: '🟣', audioUrl: '/audio/words/green/purple.mp3' },
   ],
 };
 
