@@ -339,22 +339,22 @@ const VocabularyFlashcardGenerator = () => {
   <meta charset="UTF-8">
   <title>Vocabulary Flashcards - Week ${selectedWeek}</title>
   <style>
-    @page { size: A4 landscape; margin: 0.5cm; }
+    @page { size: A4 landscape; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; }
     body { font-family: system-ui, sans-serif; background: white; }
     .page {
-      width: 29.7cm;
-      height: 21cm;
-      padding: 0.5cm;
-      display: block;
+      width: 297mm;
+      height: 210mm;
+      padding: 5mm;
+      page-break-after: always;
       page-break-inside: avoid;
-      break-inside: avoid;
     }
+    .page:last-child { page-break-after: auto; }
     .card {
       background: ${currentBorderColor};
-      border-radius: 1cm;
-      padding: 0.8cm;
+      border-radius: 10mm;
+      padding: 8mm;
       width: 100%;
       height: 100%;
       display: flex;
@@ -364,13 +364,13 @@ const VocabularyFlashcardGenerator = () => {
     }
     .image-area {
       background: white;
-      border-radius: 0.8cm;
+      border-radius: 8mm;
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 0.8cm;
+      margin-bottom: 8mm;
     }
     .image-area img { 
       width: 100%; 
@@ -379,8 +379,8 @@ const VocabularyFlashcardGenerator = () => {
     }
     .label-area {
       background: white;
-      border-radius: 0.8cm;
-      height: 4cm;
+      border-radius: 8mm;
+      height: 40mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -389,9 +389,7 @@ const VocabularyFlashcardGenerator = () => {
       font-weight: bold;
     }
     @media print {
-      html, body { width: 29.7cm; height: 21cm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .page { break-inside: avoid; }
     }
     @media screen {
       body { padding: 20px; background: #f0f0f0; }
