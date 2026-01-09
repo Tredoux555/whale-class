@@ -72,7 +72,7 @@ export async function middleware(req: NextRequest) {
     '/auth/student-login', // Student login page
     '/auth/teacher',  // Teacher login page (moved here to avoid layout issues)
     '/admin/login', // Admin login page
-    '/teacher/login', // Keep for backwards compat, redirects to /auth/teacher
+    '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
   ];
   
   // Check if pathname matches exactly or starts with a public path
@@ -162,10 +162,6 @@ export async function middleware(req: NextRequest) {
     // If trying to access admin route, redirect to admin login
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
-    }
-    // If trying to access teacher route, redirect to teacher login
-    if (pathname.startsWith('/teacher')) {
-      return NextResponse.redirect(new URL('/auth/teacher', req.url));
     }
     // Otherwise redirect to home page
     return NextResponse.redirect(new URL('/', req.url));
