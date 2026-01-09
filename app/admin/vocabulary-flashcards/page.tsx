@@ -348,9 +348,9 @@ const VocabularyFlashcardGenerator = () => {
       height: 21cm;
       padding: 0.5cm;
       display: block;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-    .page:nth-child(odd) { page-break-after: always; }
-    .page:last-child { page-break-after: auto; }
     .card {
       background: ${currentBorderColor};
       border-radius: 1cm;
@@ -391,7 +391,7 @@ const VocabularyFlashcardGenerator = () => {
     @media print {
       html, body { width: 29.7cm; height: 21cm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .page { break-after: page; break-inside: avoid; }
+      .page { break-inside: avoid; }
     }
     @media screen {
       body { padding: 20px; background: #f0f0f0; }
