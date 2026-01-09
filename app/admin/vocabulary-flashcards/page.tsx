@@ -346,11 +346,10 @@ const VocabularyFlashcardGenerator = () => {
     .page {
       width: 29.7cm;
       height: 21cm;
-      page-break-after: always;
-      page-break-inside: avoid;
       padding: 0.5cm;
       display: block;
     }
+    .page:nth-child(odd) { page-break-after: always; }
     .page:last-child { page-break-after: auto; }
     .card {
       background: ${currentBorderColor};
@@ -374,9 +373,9 @@ const VocabularyFlashcardGenerator = () => {
       margin-bottom: 0.8cm;
     }
     .image-area img { 
-      max-width: 100%; 
-      max-height: 100%; 
-      object-fit: contain;
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover;
     }
     .label-area {
       background: white;
@@ -388,7 +387,6 @@ const VocabularyFlashcardGenerator = () => {
       font-family: "${currentFontFamily}", cursive;
       font-size: 72pt;
       font-weight: bold;
-      text-transform: capitalize;
     }
     @media print {
       html, body { width: 29.7cm; height: 21cm; }
@@ -405,7 +403,7 @@ const VocabularyFlashcardGenerator = () => {
 `;
 
       for (const card of cardsWithImages) {
-        html += `<div class="page"><div class="card"><div class="image-area"><img src="${card.image}" alt="${card.word}"></div><div class="label-area">${card.word}</div></div></div>`;
+        html += `<div class="page"><div class="card"><div class="image-area"><img src="${card.image}" alt="${card.word}"></div><div class="label-area">${card.word.toLowerCase()}</div></div></div>`;
       }
 
       html += `
@@ -636,7 +634,7 @@ const VocabularyFlashcardGenerator = () => {
                   )}
                   
                   <div 
-                    className="absolute bottom-0 left-0 right-0 py-2 text-center font-bold text-white text-sm capitalize"
+                    className="absolute bottom-0 left-0 right-0 py-2 text-center font-bold text-white text-sm lowercase"
                     style={{ backgroundColor: borderColor }}
                   >
                     {word}
