@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { verifyPassword, createUserToken, UserSession } from '@/lib/auth-multi';
 
 // Lazy initialization to avoid build-time errors
 function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -13,6 +19,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+    const supabaseAdmin = getSupabaseAdmin();
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -22,88 +29,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase().trim())
+    // Sign in with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase().trim(),
+      password,
+    });
+
+    if (authError || !authData.user) {
+      console.error('Auth error:', authError);
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Get user role from user_roles table
+    const { data: roleData } = await supabaseAdmin
+      .from('user_roles')
+      .select('role_name')
+      .eq('user_id', authData.user.id)
       .single();
 
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
+    const role = roleData?.role_name || 'parent';
 
-    // Check if user is active
-    if (!user.is_active) {
-      return NextResponse.json(
-        { error: 'Account is deactivated. Please contact administrator.' },
-        { status: 403 }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password, user.password_hash);
-    if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Get classroom if teacher
-    let classroomId: string | null = null;
-    if (user.role === 'teacher') {
-      const { data: classroom } = await supabase
-        .from('classrooms')
-        .select('id')
-        .eq('teacher_id', user.id)
-        .single();
-      classroomId = classroom?.id || null;
-    }
-
-    // Create session
-    const session: UserSession = {
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      schoolId: user.school_id,
-      classroomId,
-    };
-
-    // Create token
-    const token = await createUserToken(session);
-
-    // Update last login
-    await supabase
-      .from('users')
-      .update({ last_login: new Date().toISOString() })
-      .eq('id', user.id);
-
-    // Create response with cookie
+    // Create response with redirect
     const response = NextResponse.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        schoolId: user.school_id,
+        id: authData.user.id,
+        email: authData.user.email,
+        role,
       },
-      redirect: getRedirectUrl(user.role),
+      redirect: getRedirectUrl(role),
     });
 
-    // Set cookie
-    response.cookies.set('user-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
+    // Set Supabase auth cookies
+    if (authData.session) {
+      response.cookies.set('sb-access-token', authData.session.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+      response.cookies.set('sb-refresh-token', authData.session.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+    }
 
     return response;
   } catch (error) {
