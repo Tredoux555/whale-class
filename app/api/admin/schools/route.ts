@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
   const supabase = createSupabaseAdmin();
   
   try {
-    // Get all schools with counts
     const { data: schools, error: schoolsError } = await supabase
       .from('schools')
       .select('id, name, slug, logo_url, is_active')
@@ -14,17 +13,14 @@ export async function GET() {
 
     if (schoolsError) throw schoolsError;
 
-    // Enrich with counts
     const enrichedSchools = await Promise.all(
       (schools || []).map(async (school) => {
-        // Classroom count
         const { count: classroomCount } = await supabase
           .from('classrooms')
           .select('*', { count: 'exact', head: true })
           .eq('school_id', school.id)
           .eq('is_active', true);
 
-        // Teacher count
         const { count: teacherCount } = await supabase
           .from('users')
           .select('*', { count: 'exact', head: true })
@@ -32,7 +28,6 @@ export async function GET() {
           .eq('role', 'teacher')
           .eq('is_active', true);
 
-        // Student count (children in school)
         const { count: studentCount } = await supabase
           .from('children')
           .select('*', { count: 'exact', head: true })
@@ -51,5 +46,30 @@ export async function GET() {
   } catch (error) {
     console.error('Failed to fetch schools:', error);
     return NextResponse.json({ error: 'Failed to fetch schools' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const supabase = createSupabaseAdmin();
+  
+  try {
+    const { name, slug } = await request.json();
+    
+    if (!name || !slug) {
+      return NextResponse.json({ error: 'Name and slug required' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('schools')
+      .insert({ name, slug, is_active: true })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ school: data });
+  } catch (error: any) {
+    console.error('Failed to create school:', error);
+    return NextResponse.json({ error: error.message || 'Failed to create school' }, { status: 500 });
   }
 }
