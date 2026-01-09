@@ -4,58 +4,54 @@
 
 ### Progress Tracker
 - [x] **Chunk 1:** Schools management page `/admin/schools` + POST API
-- [ ] **Chunk 2:** School detail page with classrooms `/admin/schools/[id]`
-- [ ] **Chunk 3:** Classrooms management `/admin/schools/[id]/classrooms`
-- [ ] **Chunk 4:** Teacher class setup `/teacher/setup`
+- [x] **Chunk 2:** School detail page `/admin/schools/[id]` + classrooms API
+- [x] **Chunk 3:** Classroom detail page `/admin/schools/[id]/classrooms/[id]`
+- [x] **Chunk 4:** Teacher setup page `/teacher/setup` + add students API
 - [ ] **Chunk 5:** Link existing 22 kids to Whale classroom
+- [ ] **Chunk 6:** Test full flow end-to-end
 
 ---
 
-## Architecture
+## What's Built
 
+### Pages Created
+| Route | Purpose | Status |
+|-------|---------|--------|
+| `/admin/schools` | Master admin - manage all schools | ✅ |
+| `/admin/schools/[id]` | School detail - list/add classrooms | ✅ |
+| `/admin/schools/[id]/classrooms/[id]` | Classroom detail - see students | ✅ |
+| `/teacher/setup?classroom=X` | Add students to classroom | ✅ |
+
+### APIs Created
+| Endpoint | Methods | Purpose |
+|----------|---------|---------|
+| `/api/admin/schools` | GET, POST | List/create schools |
+| `/api/admin/classrooms` | GET, POST | List/create classrooms |
+| `/api/admin/classrooms/[id]` | GET, PATCH | Get/update classroom |
+| `/api/admin/classrooms/[id]/students` | POST | Add student to classroom |
+
+---
+
+## Git Commits This Session
 ```
-MASTER ADMIN (Tredoux)
-  └── /admin/schools - Manage all schools
-        └── /admin/schools/[id] - School detail
-              └── /admin/schools/[id]/classrooms - Manage classes
-
-PRINCIPAL (per school)
-  └── /principal - Dashboard, add classes, assign teachers
-
-TEACHER (per classroom)
-  └── /teacher/setup - Add students, photos, progress levels
-  └── /teacher/classroom - Daily use
+fa2b36a - feat: teacher setup page - add students with progress levels
+1403d41 - feat: add student to classroom API endpoint
+0df86e0 - feat: classroom detail page with students list + API
+173526d - feat: school detail page + classrooms API
+26e7c17 - feat: schools management UI page
+7ff4fd3 - feat: schools management page + POST API
+c8f7510 - fix: classroom API now queries 3 progress tables
+ca2e715 - fix: remove Vercel warning from flashcard-maker
+a7d7292 - feat: expand generic materials to specific searchable items
+761b6b4 - feat: add Video Cards link to circle planner toolbar
 ```
 
-## Database (Already Exists)
-- schools ✅
-- classrooms ✅
-- classroom_children ✅
-- users (with roles) ✅
-
 ---
 
-## Commits This Session
-- `26e7c17` - feat: schools management UI page
-- `7ff4fd3` - feat: schools management page + POST API for multi-school onboarding
-- `c8f7510` - fix: classroom API now queries 3 progress tables
-- `ca2e715` - fix: remove Vercel warning from flashcard-maker
-- `a7d7292` - feat: expand generic materials to specific searchable items
-- `761b6b4` - feat: add Video Cards link to circle planner toolbar
-- `5fbbf3e` - feat: add 3-Part Cards link to circle planner
-- `8cf2210` - fix: add optional chaining to prevent crashes
+## Next: Chunk 5
+Link Beijing International School + Whale classroom + 22 existing children
 
----
-
-## Earlier Session Fixes
-- Teacher classroom/progress pages crash fix (optional chaining)
-- Circle planner tool links (Flashcards, 3-Part Cards, Video Cards)
-- Materials expansion (generic → specific searchable items)
-
----
-
-## Next: Chunk 2
-Create `/admin/schools/[id]` - School detail page showing:
-- School info
-- List of classrooms
-- Add classroom button
+Need to:
+1. Create/verify Beijing International School exists
+2. Create Whale classroom under that school
+3. Link existing 22 children to Whale classroom
