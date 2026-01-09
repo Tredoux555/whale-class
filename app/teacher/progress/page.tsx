@@ -273,13 +273,13 @@ export default function TeacherProgressPage() {
                 <p className="text-xs text-gray-500 mt-1">Age {child.age?.toFixed(1) || '?'}</p>
                 <div className="flex justify-center gap-1 mt-2">
                   <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">
-                    {child.progress.presented}
+                    {child.progress?.presented || 0}
                   </span>
                   <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                    {child.progress.practicing}
+                    {child.progress?.practicing || 0}
                   </span>
                   <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
-                    {child.progress.mastered}
+                    {child.progress?.mastered || 0}
                   </span>
                 </div>
               </button>
