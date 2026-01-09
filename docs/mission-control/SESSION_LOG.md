@@ -1,71 +1,92 @@
 # Whale Session Log - January 9, 2026 (Session 2)
 
-## ✅ MULTI-SCHOOL ONBOARDING - COMPLETE
+## ✅ MULTI-SCHOOL + PRINCIPAL PORTAL - COMPLETE
 
-### All Chunks Done
-- [x] Chunk 1: Schools management page `/admin/schools`
-- [x] Chunk 2: School detail page `/admin/schools/[id]`
-- [x] Chunk 3: Classroom detail `/admin/schools/[id]/classrooms/[id]`
-- [x] Chunk 4: Teacher setup `/teacher/setup`
-- [x] Chunk 5: Seed script + link 22 kids to Whale classroom
-- [x] Chunk 6: All API tests passing
+### All Built Today
+- [x] Schools management `/admin/schools`
+- [x] School detail `/admin/schools/[id]`
+- [x] Classroom detail `/admin/schools/[id]/classrooms/[id]`
+- [x] Teacher setup `/teacher/setup`
+- [x] Seed script + linked 22 kids
+- [x] **Principal dashboard** `/principal`
+- [x] **Principal classroom view** `/principal/classrooms/[id]`
+- [x] **Principal teachers page** `/principal/teachers`
 
 ---
 
-## Live URLs
+## 🚪 ALL PORTALS
 
+### Master Admin (You)
 | Page | URL |
 |------|-----|
-| Schools | `www.teacherpotato.xyz/admin/schools` |
-| Beijing School | `www.teacherpotato.xyz/admin/schools/00000000-0000-0000-0000-000000000001` |
-| Whale Classroom | `.../classrooms/c53ac2a1-3525-42fa-a1d9-b46546a6ea3c` |
-| Teacher Setup | `www.teacherpotato.xyz/teacher/setup?classroom=c53ac2a1-3525-42fa-a1d9-b46546a6ea3c` |
+| Schools | `/admin/schools` |
+| Circle Planner | `/admin/circle-planner` |
+| Flashcards | `/admin/vocabulary-flashcards` |
+| 3-Part Cards | `/admin/card-generator` |
+| Video Cards | `/admin/flashcard-maker` |
+
+### Principal
+| Page | URL |
+|------|-----|
+| **Dashboard** | `/principal` |
+| **Classroom** | `/principal/classrooms/[id]` |
+| **Teachers** | `/principal/teachers` |
+
+### Teacher
+| Page | URL |
+|------|-----|
+| Login | `/auth/teacher` |
+| Classroom | `/teacher/classroom` |
+| Progress | `/teacher/progress` |
+| Setup | `/teacher/setup?classroom=X` |
+
+### Parent
+| Page | URL |
+|------|-----|
+| Home | `/montree-home` |
 
 ---
 
-## Database Created
+## Test URLs (Live Now)
 
-| Table | Purpose |
-|-------|---------|
-| schools | Multi-tenant schools |
-| classrooms | Classes per school |
-| classroom_children | Links children to classrooms |
+```
+www.teacherpotato.xyz/principal                    → Principal dashboard
+www.teacherpotato.xyz/principal/classrooms/c53... → Whale classroom
+www.teacherpotato.xyz/principal/teachers          → Teachers list
+www.teacherpotato.xyz/admin/schools               → Master admin
+```
 
 ---
 
 ## Git Commits
 
 ```
-93ed7f0 - fix: remove users table join from classrooms API
-c0286d8 - feat: seed script to link Beijing School + Whale classroom
+d1ca04d - feat: principal teachers management page
+02fb0b3 - feat: principal classroom detail page
+98ccd31 - feat: principal dashboard
+93ed7f0 - fix: remove users table join
+c0286d8 - feat: seed script
 fa2b36a - feat: teacher setup page
-1403d41 - feat: add student to classroom API
-0df86e0 - feat: classroom detail page + API
-173526d - feat: school detail page + classrooms API
-26e7c17 - feat: schools management UI page
+0df86e0 - feat: classroom detail + API
+173526d - feat: school detail + classrooms API
+26e7c17 - feat: schools management UI
 ```
 
 ---
 
-## Architecture Flow
+## Architecture Complete
 
 ```
-MASTER ADMIN (you)
-  └── /admin/schools - Add/manage schools
-        └── Beijing International School
-              └── 🐋 Whale (22 kids linked)
+MASTER ADMIN
+  └── /admin/schools → Add/manage ALL schools
 
-NEW SCHOOL ONBOARDING:
-1. Master Admin creates school
-2. Principal adds classrooms
-3. Principal assigns teachers  
-4. Teachers add students via /teacher/setup
+PRINCIPAL (per school)
+  └── /principal → Dashboard (scoped to their school)
+        ├── Classrooms list + Add
+        ├── Teachers list + Invite
+        └── /classrooms/[id] → Manage classroom
+
+TEACHER (per classroom)  
+  └── /teacher/setup → Add students
+  └── /teacher/classroom → Daily use
 ```
-
----
-
-## Next Steps (Future)
-- [ ] Principal dashboard with auth
-- [ ] Teacher assignment flow
-- [ ] Photo upload in teacher setup
-- [ ] Progress level dots in UI
