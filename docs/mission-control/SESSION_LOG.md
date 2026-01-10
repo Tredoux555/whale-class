@@ -176,6 +176,14 @@
 
 **Next:** Weekly planning test, demo data, visual polish
 
+### CHECKPOINT 11 - 22:55 Beijing Time
+**DEMO DATA CREATED FOR AMY!**
+- 5 Mastered (Dusting, Carrying Mat, Hand Washing, Cylinder Block 1, Sound Games)
+- 5 Practicing (Sweeping, Velcro Frame, Pink Tower, Number Rods, Sandpaper Letters)
+- 5 Presented (Mopping, Threading Beads, Brown Stair, Sandpaper Numbers, Moveable Alphabet)
+
+**Presentation ready!**
+
 ---
 
 ## SESSION 7 PREP - January 10, 2026 (Evening)
