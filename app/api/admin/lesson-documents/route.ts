@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy client creation to avoid build-time errors
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET - Fetch lesson documents (optionally filtered by week)
 export async function GET(request: NextRequest) {
@@ -13,7 +16,7 @@ export async function GET(request: NextRequest) {
     const week = searchParams.get('week');
     const year = searchParams.get('year') || new Date().getFullYear().toString();
 
-    let query = supabase
+    let query = getSupabase()
       .from('lesson_documents')
       .select('*')
       .order('created_at', { ascending: false });
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
     const storagePath = `${year}/week${weekNumber}/${filename}`;
 
     // Upload to Supabase Storage
+    const supabase = getSupabase();
     const buffer = Buffer.from(await file.arrayBuffer());
     const { error: uploadError } = await supabase.storage
       .from('lesson-documents')
@@ -119,6 +123,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get document to find storage path
+    const supabase = getSupabase();
     const { data: doc, error: fetchError } = await supabase
       .from('lesson_documents')
       .select('storage_path')
