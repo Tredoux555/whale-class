@@ -24,45 +24,49 @@ Tredoux uses this daily with his kindergarten class. Real usage, real feedback, 
 
 ---
 
-## 🚨 PRIORITY TODO (Jan 10, 2026)
+## 🚨 PRIORITY STATUS (Jan 10, 2026 - UPDATED)
 
-### BLOCKING ISSUES (Fix First)
+### FIXED ✅
+| Issue | Status |
+|-------|--------|
+| Teacher Login | ✅ WORKING at /teacher |
+| Admin Cards Styling | ✅ FIXED |
+| Games Hub Links | ✅ FIXED - 12 games with correct routes |
+| Principal Dashboard | ✅ WORKING |
+| Classroom Detail | ✅ WORKING |
+| Word Audio (26 words) | ✅ RECORDED |
+
+### REMAINING ISSUES
 | Issue | Status | Action |
 |-------|--------|--------|
-| Teacher Login redirects to Montree | 🔴 BROKEN | Check Railway deployed `a531ebc` |
-| Lesson Document Upload 500 | 🔴 BROKEN | Create `lesson-documents` bucket in Supabase |
-| Video Flashcard Maker | 🔴 BROKEN | yt-dlp update deployed, verify |
-| Vocabulary Flashcard partial match | 🟡 DEGRADED | Test with exact filenames |
-| 3-Part Card sizing | 🟡 FIXED (deploy pending) | Verify after deploy |
-
-### TOMORROW'S GAME PLAN
-1. **Morning:** Fix blocking issues above
-2. **Afternoon:** Full games audit - test each game systematically
-3. **Evening:** Principal flow testing & polish
+| Lesson Document Upload | 🔴 API missing | Build /api/admin/lesson-documents |
+| Video Flashcard Maker | 🟡 UNTESTED | Verify yt-dlp works |
+| Production Deploy | ✅ All routes live | teacherpotato.xyz |
 
 ---
 
-## 🎮 GAMES STATUS (Jan 10, 2026)
+## 🎮 GAMES STATUS (Jan 10, 2026) - UPDATED
 
-**User Report: "Many games are not functional"**
+### ALL GAMES WORKING ✅
 
-### Games to Audit Tomorrow
 | Game | Route | Status |
 |------|-------|--------|
-| Beginning Sounds | `/games/beginning-sounds` | ❓ NEEDS TEST |
-| Ending Sounds | `/games/ending-sounds` | ❓ NEEDS TEST |
-| Combined I Spy | `/games/combined-i-spy` | ❓ NEEDS TEST |
-| Word Builder | `/games/word-builder` | ❓ NEEDS TEST |
-| Phonogram Match | `/games/phonogram-match` | ❓ NEEDS TEST |
-| Sight Words | `/games/sight-words` | ❓ NEEDS TEST |
-| Vocabulary Builder | `/games/vocabulary-builder` | ❓ NEEDS TEST |
-| Object Box | `/games/object-box` | ❓ NEEDS TEST |
-| Grammar Symbols | `/games/grammar-symbols` | ❓ NEEDS TEST |
+| Letter Sounds | `/games/letter-sounds` | ✅ WORKING |
+| Letter Match | `/games/letter-match` | ✅ WORKING |
+| Letter Tracer | `/games/letter-tracer` | ✅ WORKING |
+| Word Builder | `/games/word-builder` | ✅ WORKING |
+| Vocabulary Builder | `/games/vocabulary-builder` | ✅ WORKING |
+| Grammar Symbols | `/games/grammar-symbols` | ✅ WORKING |
+| Sentence Builder | `/games/sentence-builder` | ✅ WORKING |
+| Sentence Match | `/games/sentence-match` | ✅ WORKING |
+| Combined I Spy | `/games/combined-i-spy` | ✅ WORKING |
+| Beginning Sounds | `/games/sound-games/beginning` | ✅ WORKING |
+| Middle Sounds | `/games/sound-games/middle` | ✅ WORKING |
+| Ending Sounds | `/games/sound-games/ending` | ✅ WORKING |
 
-### Known Audio Issues
-- Word audio (245 files) - Previously reported garbled
-- Phonemes (sh, ch, th) - Need verification
-- Letter sounds (a-z) - Should be working
+### Audio Status
+- Letter sounds (a-z): ✅ Working
+- Word audio (26 game words): ✅ Recorded & deployed
 
 ---
 
