@@ -1,58 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
-const BUCKET_NAME = 'lesson-documents';
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const docId = searchParams.get('id');
+    const id = searchParams.get('id');
 
-    if (!docId) {
-      return NextResponse.json({ error: 'Document ID required' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'ID required' });
     }
-
-    const supabase = createSupabaseAdmin();
 
     // Get document to find storage path
     const { data: doc, error: fetchError } = await supabase
       .from('lesson_documents')
       .select('storage_path')
-      .eq('id', docId)
+      .eq('id', id)
       .single();
 
     if (fetchError || !doc) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Document not found' });
     }
 
     // Delete from storage
-    const { error: storageError } = await supabase.storage
-      .from(BUCKET_NAME)
+    await supabase.storage
+      .from('lesson-documents')
       .remove([doc.storage_path]);
-
-    if (storageError) {
-      console.error('Storage delete error:', storageError);
-      // Continue anyway to delete metadata
-    }
 
     // Delete from database
     const { error: dbError } = await supabase
       .from('lesson_documents')
       .delete()
-      .eq('id', docId);
+      .eq('id', id);
 
     if (dbError) {
-      console.error('Database delete error:', dbError);
-      return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 });
+      return NextResponse.json({ success: false, error: dbError.message });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Document deleted'
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
-    return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Delete failed' });
   }
 }
