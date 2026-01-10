@@ -98,6 +98,28 @@
 
 **Fixing:** Curriculum works seeding
 
+### CHECKPOINT 6 - 22:20 Beijing Time
+**Root cause found:** 
+- `/api/teacher/progress` returns `progress` data but NOT curriculum works
+- The page expects `works` array with curriculum items to display
+- Need to either: seed curriculum_roadmap table OR fix API to join works
+
+**API Analysis:**
+- `/api/teacher/classroom/route.ts` - Returns children with aggregated progress ✅
+- `/api/teacher/progress/route.ts` - Returns child_work_progress only, NOT curriculum works ❌
+
+**Fix needed:** Update `/api/teacher/progress` to:
+1. Fetch curriculum works from `curriculum_roadmap` table
+2. Join with `child_work_progress` for status
+3. Return combined `works` array
+
+**Status:**
+- Production LIVE ✅
+- 12 games working ✅
+- Admin cards beautiful ✅
+- Children showing ✅
+- Works NOT showing (API needs fix)
+
 ---
 
 ## SESSION 7 PREP - January 10, 2026 (Evening)
