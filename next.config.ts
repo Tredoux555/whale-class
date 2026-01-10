@@ -19,9 +19,9 @@ const nextConfig: NextConfig = {
   },
   // Transpile server-only modules (bcryptjs v3 is ESM-only)
   transpilePackages: ['jose', 'bcryptjs'],
-  // Explicitly disable turbopack to use webpack (PostCSS needs webpack)
-  // turbopack: {},
-  // Use webpack instead of Turbopack for PWA compatibility
+  // Enable Turbopack (Next.js 16 default) - silences webpack config warning
+  turbopack: {},
+  // Keep webpack config for PWA compatibility (runs in build only)
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Only externalize optional native dependencies
