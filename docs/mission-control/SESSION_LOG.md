@@ -2,6 +2,43 @@
 
 ---
 
+# January 10, 2026 (Session 6)
+
+## ✅ WORD AUDIO RECORDED & SPLIT
+
+**Problem:** Letter Sounds game said "ant" when showing "apple" - audio files were mismatched from bad bulk recording.
+
+**Solution:**
+1. User recorded 26 words in order (apple → zebra)
+2. Claude used ffmpeg silence detection to split
+3. Created 26 individual .mp3 files
+4. Packaged as word-audio.zip
+
+**Files Created:**
+- apple.mp3, bat.mp3, box.mp3, cat.mp3, dog.mp3, egg.mp3, fish.mp3, goat.mp3, hat.mp3, insect.mp3, jam.mp3, kite.mp3, leg.mp3, mop.mp3, net.mp3, octopus.mp3, pig.mp3, queen.mp3, rat.mp3, sun.mp3, top.mp3, umbrella.mp3, van.mp3, web.mp3, yak.mp3, zebra.mp3
+
+**ACTION NEEDED:** Copy files to `~/Desktop/whale/public/audio-new/words/pink/`
+
+## ✅ DEV SERVER RUNNING
+
+- Port: **3002** (3000/3001 were occupied)
+- Had to remove `.next/dev/lock` file
+- Letter sounds game tested and working
+
+## ✅ JEFFY 1688 BROWSER
+
+- Electron app running on port 3688
+- User logged in as `tb6260870276`
+- 148 product URLs ready in `jeffy_1688_bulk_import_FINAL.json`
+
+## ✅ ZONE PARTNER MARKETING
+
+- Gave user social media posts to share
+- Zone Partner link: https://jeffy.co.za/zone-partner
+- User is sharing to SA network
+
+---
+
 # January 10, 2026 (Session 5) - COMPLETE ✅
 
 ## ✅ TAILWIND V4 + TURBOPACK FIXED (4:15 PM)
