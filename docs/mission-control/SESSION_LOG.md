@@ -4,25 +4,26 @@
 
 ## SESSION 8 - January 11, 2026
 
-### CHECKPOINT 1 - 09:XX
+### CHECKPOINT 1 - Production Fix
 **Issue:** Production 404s - build failing on Railway
-**Root cause:** `/api/admin/lesson-documents/route.ts` was creating Supabase client at module level (line 4-7), which fails during build when env vars aren't available.
+**Root cause:** Multiple route files creating Supabase client at module level
 
-**Fix applied:**
-- Changed from `const supabase = createClient(...)` at module level
-- To lazy `function getSupabase() { return createClient(...) }`
-- Each function now calls `getSupabase()` instead
+**Files fixed:**
+1. `/app/api/admin/lesson-documents/route.ts` ✅
+2. `/app/api/lesson-documents/delete/route.ts` ✅
+3. `/app/api/lesson-documents/list/route.ts` ✅
+4. `/app/api/lesson-documents/upload/route.ts` ✅
 
-**Result:**
+**Fix pattern:** Changed from module-level `const supabase = createClient(...)` to lazy `function getSupabase() { return createClient(...) }`
+
+**Commits:**
+- `ebd5bab` - First fix (admin/lesson-documents)
+- `5a25486` - Remaining 3 files
+
+**Status:**
 - ✅ Local build passed (229 pages)
-- ✅ Committed: `ebd5bab`
 - ✅ Pushed to Railway
-- ⏳ Waiting for Railway build...
-
-**Next:**
-- Verify Railway build succeeds
-- Test teacherpotato.xyz/games returns 200
-- If still 404, check Railway logs
+- ⏳ Waiting for Railway deploy...
 
 ---
 
