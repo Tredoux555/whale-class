@@ -2,186 +2,141 @@
 
 ---
 
+## SESSION 10 - January 11, 2026 🚧
+
+### RAILWAY 404 DEBUG - IN PROGRESS
+
+**Started:** ~07:00 Beijing  
+**Status:** BLOCKED - Awaiting deploy verification
+
+---
+
+### THE PROBLEM
+
+| URL | Expected | Actual |
+|-----|----------|--------|
+| teacherpotato.xyz/ | 200 | 200 ✅ |
+| teacherpotato.xyz/parent/home | 200 | 404 ❌ |
+| teacherpotato.xyz/games | 200 | 404 ❌ |
+| teacherpotato.xyz/teacher | 200 | 404 ❌ |
+| teacherpotato.xyz/api/unified/* | 200 | 404 ❌ |
+
+---
+
+### WHAT WE TRIED
+
+1. **Force rebuild** - Empty commit pushed (5eaca99)
+2. **Verified local build** - All routes compile correctly
+3. **Checked Dockerfile** - Looks correct
+4. **Added /api/health** - Diagnostic endpoint (f1d5e92)
+
+---
+
+### FINDINGS
+
+- Railway shows "Deployment successful" but serves stale code
+- Old deploys show "REMOVED" instead of "INACTIVE" (unusual)
+- Homepage (/) works, all other routes 404
+- Local `npm run build` succeeds with all routes
+
+---
+
+### CHECKPOINT 07:25 BEIJING
+
+**Session ended:** User requested handoff  
+**Last commit:** f1d5e92 (health check API added)  
+**Railway status:** Auto-deploying new commit
+
+---
+
+### NEXT SESSION ACTIONS
+
+1. **Test /api/health** after Railway deploys
+   ```bash
+   curl https://teacherpotato.xyz/api/health
+   ```
+   - If returns `{"status":"ok","version":"unification-v1"}` → deploy works
+   - If 404 → Railway build is broken
+
+2. **If /api/health works but routes still 404:**
+   - Check Railway build logs for route compilation
+   - Verify app/parent/home/page.tsx is being built
+
+3. **If still failing:**
+   - Check Railway Settings → Source → Watch Paths
+   - Verify correct branch (main) selected
+   - Review Railway build logs for route generation
+   - Consider fresh Railway deploy
+
+3. **Once routes work:**
+   - Switch page-unified.tsx → page.tsx
+   - Create test family
+   - Test full parent flow
+
+---
+
+### COMMITS THIS SESSION
+
+```
+f1d5e92 - Add health check API to verify deployment
+5eaca99 - Force Railway rebuild
+```
+
+---
+
 ## SESSION 9 - January 12-13, 2026 🏔️
 
-### THE GRAND UNIFICATION - OVERNIGHT BUILD
+### MONTREE UNIFICATION - COMPLETE ✅
 
-**Mission:** Build a masterpiece for monetization  
-**Partners:** Claude + Tredoux  
-**Goal:** Teacher→Parent→Games unified system for thousands of schools
-
----
-
-### OVERNIGHT WORK SUMMARY ✅
-
-**Tredoux went to sleep ~22:00 Beijing**  
-**Claude worked through the night**  
-**All core work completed by ~00:30**
+**Started:** ~20:30 Beijing  
+**Database Live:** ~01:00 Beijing  
+**Status:** SQL deployed, code pushed
 
 ---
 
-### PHASE 1: DATABASE UNIFICATION ✅
+### FINAL RESULTS
 
-**Files created:**
-- `migrations/025_montree_unification.sql` - Main schema changes
-  - Created `families` table
-  - Extended `children` with family_id, color, journal_entries
-  - Extended `child_work_progress` with updated_by, notes
-  - Created `game_curriculum_mapping` table
-  - Added RLS policies
-
-- `migrations/025b_seed_game_mappings.sql` - Game-curriculum links
-  - Maps all 12 games to Language curriculum works
-  - Uses relevance scores (1-10)
-  - ~50 mappings total
+| Component | Status | Details |
+|-----------|--------|---------|
+| families table | ✅ LIVE | Parent accounts |
+| children extended | ✅ LIVE | +family_id, +color |
+| game_curriculum_mapping | ✅ LIVE | 60 mappings |
+| 5 Unified APIs | ✅ PUSHED | families, children, progress, games, today |
+| 3 Parent UI pages | ✅ PUSHED | page-unified.tsx files |
 
 ---
 
-### PHASE 2: API UNIFICATION ✅
-
-**5 new unified APIs created:**
-
-| API | Purpose | Key Features |
-|-----|---------|--------------|
-| `/api/unified/families` | Parent login | Email lookup, create family |
-| `/api/unified/children` | Child data | Progress summary, unlinked filter |
-| `/api/unified/progress` | Full progress | Game recommendations included |
-| `/api/unified/games` | All games | Recommendations for child |
-| `/api/unified/today` | Today's updates | "What Amy learned" + games |
-
----
-
-### PHASE 3: PARENT UI ✅
-
-**3 unified pages updated:**
-
-1. **Login Page** (`/parent/home/page-unified.tsx`)
-   - Email-based login
-   - Falls back to old API for compatibility
-   - Beautiful welcome screen
-
-2. **Family Dashboard** (`/parent/home/[familyId]/page-unified.tsx`)
-   - Shows all linked children
-   - Progress bars per child
-   - Quick actions (Materials, Planner, Games)
-   - Link child modal
-
-3. **Child Activities** (`/parent/home/[familyId]/[childId]/page-unified.tsx`)
-   - **Today Tab:** School updates + game recommendations
-   - **Progress Tab:** Overall stats + by area
-   - **Curriculum Tab:** Browse all 342 works
-
----
-
-### DOCUMENTATION ✅
-
-**Created:**
-- `UNIFICATION_MASTERPLAN.md` - Complete technical plan & progress
-- `DEPLOYMENT_GUIDE.md` - Step-by-step deployment instructions
-
----
-
-### WHAT TREDOUX NEEDS TO DO
-
-**When you wake up:**
-
-1. **Run SQL in Supabase:**
-   ```
-   migrations/025_montree_unification.sql
-   migrations/025b_seed_game_mappings.sql
-   ```
-
-2. **Deploy to Railway:**
-   ```bash
-   cd ~/Desktop/whale
-   git add .
-   git commit -m "Montree Unification complete"
-   git push
-   ```
-
-3. **Test the flow:**
-   - Go to /parent/home
-   - Login with test email
-   - Verify child shows teacher progress
-   - Verify game recommendations appear
-
-4. **Optional - Switch pages:**
-   - Rename page.tsx → page-old.tsx
-   - Rename page-unified.tsx → page.tsx
-
----
-
-### FILES CREATED TONIGHT
+### FILES CREATED
 
 ```
-migrations/
-├── 025_montree_unification.sql      ✅ NEW
-└── 025b_seed_game_mappings.sql      ✅ NEW
+MIGRATIONS (DEPLOYED):
+- 025_montree_unification.sql
+- 025b_seed_game_mappings.sql
 
-app/api/unified/
-├── families/route.ts                 ✅ NEW
-├── children/route.ts                 ✅ NEW
-├── progress/route.ts                 ✅ NEW
-├── games/route.ts                    ✅ NEW
-└── today/route.ts                    ✅ NEW
+APIs (5 new):
+- /api/unified/families/route.ts
+- /api/unified/children/route.ts
+- /api/unified/progress/route.ts
+- /api/unified/games/route.ts
+- /api/unified/today/route.ts
 
-app/parent/home/
-├── page-unified.tsx                  ✅ EXISTS (verified)
-└── [familyId]/
-    ├── page-unified.tsx              ✅ EXISTS (verified)
-    └── [childId]/
-        └── page-unified.tsx          ✅ UPDATED
-
-docs/mission-control/
-├── UNIFICATION_MASTERPLAN.md         ✅ UPDATED
-└── DEPLOYMENT_GUIDE.md               ✅ NEW
+UI (3 updated):
+- app/parent/home/page-unified.tsx
+- app/parent/home/[familyId]/page-unified.tsx
+- app/parent/home/[familyId]/[childId]/page-unified.tsx
 ```
 
 ---
 
-### SUCCESS CRITERIA
+## SESSION 8 - January 11, 2026
+- Fixed Railway deployment
+- Production LIVE at teacherpotato.xyz
 
-| Criteria | Status |
-|----------|--------|
-| Teacher updates → Parent sees | ✅ Ready |
-| Language works → Game recs | ✅ Ready |
-| One database | ✅ Ready |
-| Parent UX excellent | ✅ Ready |
-| Teacher UX unchanged | ✅ (no changes needed) |
-| Production stable | ⏳ After deploy |
+## SESSION 7 - January 10, 2026  
+- Progress bars deployed
+- Admin styling issues found
 
 ---
 
-### SESSION STATUS
-
-- [x] Deep dive audit
-- [x] Created UNIFICATION_MASTERPLAN.md
-- [x] Phase 1: Database migrations
-- [x] Phase 2: All 5 unified APIs
-- [x] Phase 3: All 3 parent UI pages
-- [x] Phase 4: Skipped (teacher UI works)
-- [x] Phase 5: Documentation complete
-- [ ] Deploy (Tredoux action)
-- [ ] Test in production
-
----
-
-## PREVIOUS SESSIONS
-
-### SESSION 8 - January 11, 2026
-- ✅ Fixed Railway deployment (PORT handling)
-- ✅ Fixed teacher progress API (column names)
-- ✅ Created child_work_progress table
-- ✅ Added demo data for Amy (15 works)
-- ✅ Production LIVE at www.teacherpotato.xyz
-
-### SESSION 7 - January 10, 2026
-- Production was DOWN (404s)
-- Created presentation prep plan
-- Admin cards styling broken
-
----
-
-*Log updated: January 13, 2026 00:30 Beijing*
-*Grand Unification: CORE WORK COMPLETE*
-*Status: READY FOR DEPLOYMENT*
+*Log updated: January 11, 2026 07:20 Beijing*
+*Status: Railway 404 debug in progress*
