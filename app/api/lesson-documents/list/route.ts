@@ -1,39 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const weekNumber = parseInt(searchParams.get('weekNumber') || '0');
-    const year = parseInt(searchParams.get('year') || '') || new Date().getFullYear();
+    const weekNumber = searchParams.get('weekNumber');
+    const year = searchParams.get('year') || new Date().getFullYear().toString();
 
-    if (!weekNumber || weekNumber < 1 || weekNumber > 52) {
-      return NextResponse.json({ error: 'Invalid week number' }, { status: 400 });
+    if (!weekNumber) {
+      return NextResponse.json({ success: false, error: 'weekNumber required' });
     }
 
-    const supabase = createSupabaseAdmin();
-
-    const { data: documents, error } = await supabase
+    const { data, error } = await supabase
       .from('lesson_documents')
       .select('*')
-      .eq('week_number', weekNumber)
-      .eq('year', year)
+      .eq('week_number', parseInt(weekNumber))
+      .eq('year', parseInt(year))
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
-    }
+    if (error) throw error;
 
-    return NextResponse.json({
-      success: true,
-      documents: documents || [],
-      weekNumber,
-      year
-    });
-
+    return NextResponse.json({ success: true, documents: data || [] });
   } catch (error) {
-    console.error('List error:', error);
-    return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
+    console.error('Error fetching documents:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch documents' });
   }
 }
