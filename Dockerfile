@@ -33,12 +33,12 @@ COPY . .
 # Build Next.js app
 RUN npm run build
 
-# Expose port (Railway will override with $PORT)
+# Expose port
 EXPOSE 3000
 
 # Set environment to production
 ENV NODE_ENV=production
-ENV PORT=3000
 
-# Start the application on the correct port
-CMD ["sh", "-c", "npm start -- -p ${PORT:-3000}"]
+# Make start script executable and start
+RUN chmod +x start.sh
+CMD ["./start.sh"]

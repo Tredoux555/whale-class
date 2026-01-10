@@ -12,21 +12,64 @@ export async function GET(request: NextRequest) {
   const supabase = getSupabase();
   const { searchParams } = new URL(request.url);
   const childId = searchParams.get('childId');
+  const area = searchParams.get('area');
 
   if (!childId) {
     return NextResponse.json({ error: 'childId required' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from('child_work_progress')
-    .select('*')
-    .eq('child_id', childId);
+  // Fetch curriculum works for the area
+  let worksQuery = supabase
+    .from('curriculum_roadmap')
+    .select('id, name, area, category, subcategory, sequence_order')
+    .order('sequence_order', { ascending: true });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (area) {
+    worksQuery = worksQuery.eq('area', area);
   }
 
-  return NextResponse.json({ progress: data });
+  const { data: curriculumWorks, error: worksError } = await worksQuery;
+
+  if (worksError) {
+    console.error('Error fetching curriculum works:', worksError);
+    return NextResponse.json({ error: worksError.message }, { status: 500 });
+  }
+
+  // Fetch child's progress for these works
+  const { data: childProgress, error: progressError } = await supabase
+    .from('child_work_progress')
+    .select('work_id, status, presented_date, practicing_date, mastered_date')
+    .eq('child_id', childId);
+
+  if (progressError) {
+    console.error('Error fetching child progress:', progressError);
+    // Continue without progress data
+  }
+
+  // Create a map of work_id -> progress
+  const progressMap = new Map();
+  (childProgress || []).forEach(p => {
+    progressMap.set(p.work_id, p);
+  });
+
+  // Combine works with progress
+  const works = (curriculumWorks || []).map(work => {
+    const progress = progressMap.get(work.id);
+    return {
+      id: work.id,
+      name: work.name,
+      area: work.area,
+      category: work.category,
+      subcategory: work.subcategory,
+      sequence_order: work.sequence_order,
+      status: progress?.status || 0,
+      presented_date: progress?.presented_date || null,
+      practicing_date: progress?.practicing_date || null,
+      mastered_date: progress?.mastered_date || null,
+    };
+  });
+
+  return NextResponse.json({ works });
 }
 
 export async function POST(request: NextRequest) {
@@ -38,13 +81,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'childId and workId required' }, { status: 400 });
   }
 
+  // Determine which date field to update based on status
+  const dateFields: Record<string, string | null> = {};
+  const now = new Date().toISOString();
+  
+  if (status === 1) dateFields.presented_date = now;
+  if (status === 2) dateFields.practicing_date = now;
+  if (status === 3) dateFields.mastered_date = now;
+
   const { data, error } = await supabase
     .from('child_work_progress')
     .upsert({
       child_id: childId,
       work_id: workId,
       status: status || 0,
-      updated_at: new Date().toISOString()
+      updated_at: now,
+      ...dateFields
     }, { onConflict: 'child_id,work_id' })
     .select()
     .single();

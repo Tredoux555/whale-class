@@ -120,6 +120,18 @@
 - Children showing ✅
 - Works NOT showing (API needs fix)
 
+### CHECKPOINT 7 - 22:25 Beijing Time
+**Database fixed:**
+- ✅ child_work_progress table created
+- ✅ 342 curriculum works exist in database
+
+**New issue:** Railway healthcheck failing after our code push
+- Build succeeds (229 pages)
+- Container starts but healthcheck times out
+- Likely issue: Dockerfile CMD change broke startup
+
+**Fix needed:** Revert Dockerfile to simpler CMD
+
 ---
 
 ## SESSION 7 PREP - January 10, 2026 (Evening)
