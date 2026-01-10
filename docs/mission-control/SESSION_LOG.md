@@ -2,85 +2,130 @@
 
 ---
 
-## SESSION 10 - January 11, 2026 🚧
+## SESSION 11 - January 11, 2026 ✅
 
-### RAILWAY 404 DEBUG - IN PROGRESS
+### TEACHER→PARENT→GAMES FLOW FIXED!
+
+**Started:** ~07:40 Beijing  
+**Status:** COMPLETE ✅
+
+---
+
+### KEY DISCOVERIES
+
+1. **Railway 404 Solved** - Use `www.teacherpotato.xyz` (not bare domain)
+2. **Root Cause Found** - Demo data used wrong work_id prefixes
+3. **Flow Now Working** - Teacher updates → Parent sees → Games recommended
+
+---
+
+### THE PROBLEM (SOLVED)
+
+Demo data was seeded with wrong prefixes:
+| Area | Wrong Prefix | Correct Prefix |
+|------|--------------|----------------|
+| Language | `lang_*` | `la_*` |
+| Sensorial | `sen_*` | `se_*` |
+| Math | `math_*` | `ma_*` |
+
+This caused:
+- Works showing as "Unknown Work"
+- Area detected as "unknown" instead of "language"
+- Game recommendations returning empty []
+
+---
+
+### THE FIX
+
+Used teacher progress API to insert correct work_ids for Amy:
+
+**Language (triggers game recommendations):**
+- `la_sound_games` → Mastered ⭐
+- `la_sandpaper_letters` → Practicing 🔄
+- `la_moveable_alphabet` → Presented 📖
+- `la_pink_series` → Practicing 🔄
+
+**Sensorial:**
+- `se_cylinder_block_1` → Mastered
+- `se_pink_tower` → Practicing
+- `se_brown_stair` → Presented
+
+**Math:**
+- `ma_number_rods` → Practicing
+- `ma_sandpaper_numerals` → Presented
+
+---
+
+### VERIFIED RESULTS
+
+```
+/api/unified/today?child_id=amy
+
+Language works updated today: 4
+  📚 Sound Games (I Spy) - ⭐ Mastered
+  📚 Sandpaper Letters - 🔄 Practicing
+  📚 Moveable Alphabet - 📖 Presented
+  📚 Pink Series (CVC Words) - 🔄 Practicing
+
+🎮 Recommended Games:
+  → Letter Sounds (/games/letter-sounds)
+  → Beginning Sounds (/games/sound-games/beginning)
+  → Middle Sounds (/games/sound-games/middle)
+```
+
+---
+
+### PLATFORM AUDIT (41/41 routes working)
+
+| Section | Score |
+|---------|-------|
+| Main Pages | 7/7 ✅ |
+| Games | 15/15 ✅ |
+| Teacher Pages | 7/7 ✅ |
+| Parent Pages | 3/3 ✅ |
+| Unified APIs | 5/5 ✅ |
+| Admin APIs | 4/4 ✅ |
+
+---
+
+### COMMITS
+
+- `3c75805` - Fix Teacher→Parent→Games flow: correct work_id prefixes
+
+---
+
+### CLEANUP NEEDED (Optional)
+
+Run in Supabase to remove old wrong-prefix entries:
+```sql
+-- migrations/026b_cleanup_amy_bad_data.sql
+DELETE FROM child_work_progress 
+WHERE child_id = 'afbed794-4eee-4eb5-8262-30ab67638ec7'
+  AND work_id IN ('lang_sound_games', 'lang_sandpaper_letters', 
+    'lang_moveable_alphabet', 'sen_cylinder_block_1', 'sen_pink_tower',
+    'sen_brown_stair', 'math_number_rods', 'math_sandpaper_numbers');
+```
+
+---
+
+### NEXT STEPS
+
+1. ✅ ~~Fix Railway 404~~ → Use www.teacherpotato.xyz
+2. ✅ ~~Fix Teacher→Parent→Games flow~~
+3. ⏳ Switch unified pages to default (swap page-unified.tsx → page.tsx)
+4. ⏳ Create test family and link Amy
+5. ⏳ DNS fix for bare domain redirect
+
+---
+
+## SESSION 10 - January 11, 2026 
+
+### RAILWAY 404 DEBUG
 
 **Started:** ~07:00 Beijing  
-**Status:** BLOCKED - Awaiting deploy verification
+**Status:** RESOLVED - Use www subdomain
 
----
-
-### THE PROBLEM
-
-| URL | Expected | Actual |
-|-----|----------|--------|
-| teacherpotato.xyz/ | 200 | 200 ✅ |
-| teacherpotato.xyz/parent/home | 200 | 404 ❌ |
-| teacherpotato.xyz/games | 200 | 404 ❌ |
-| teacherpotato.xyz/teacher | 200 | 404 ❌ |
-| teacherpotato.xyz/api/unified/* | 200 | 404 ❌ |
-
----
-
-### WHAT WE TRIED
-
-1. **Force rebuild** - Empty commit pushed (5eaca99)
-2. **Verified local build** - All routes compile correctly
-3. **Checked Dockerfile** - Looks correct
-4. **Added /api/health** - Diagnostic endpoint (f1d5e92)
-
----
-
-### FINDINGS
-
-- Railway shows "Deployment successful" but serves stale code
-- Old deploys show "REMOVED" instead of "INACTIVE" (unusual)
-- Homepage (/) works, all other routes 404
-- Local `npm run build` succeeds with all routes
-
----
-
-### CHECKPOINT 07:25 BEIJING
-
-**Session ended:** User requested handoff  
-**Last commit:** f1d5e92 (health check API added)  
-**Railway status:** Auto-deploying new commit
-
----
-
-### NEXT SESSION ACTIONS
-
-1. **Test /api/health** after Railway deploys
-   ```bash
-   curl https://teacherpotato.xyz/api/health
-   ```
-   - If returns `{"status":"ok","version":"unification-v1"}` → deploy works
-   - If 404 → Railway build is broken
-
-2. **If /api/health works but routes still 404:**
-   - Check Railway build logs for route compilation
-   - Verify app/parent/home/page.tsx is being built
-
-3. **If still failing:**
-   - Check Railway Settings → Source → Watch Paths
-   - Verify correct branch (main) selected
-   - Review Railway build logs for route generation
-   - Consider fresh Railway deploy
-
-3. **Once routes work:**
-   - Switch page-unified.tsx → page.tsx
-   - Create test family
-   - Test full parent flow
-
----
-
-### COMMITS THIS SESSION
-
-```
-f1d5e92 - Add health check API to verify deployment
-5eaca99 - Force Railway rebuild
-```
+*Discovery: Non-www domain has broken redirect, www works perfectly.*
 
 ---
 
@@ -106,28 +151,6 @@ f1d5e92 - Add health check API to verify deployment
 
 ---
 
-### FILES CREATED
-
-```
-MIGRATIONS (DEPLOYED):
-- 025_montree_unification.sql
-- 025b_seed_game_mappings.sql
-
-APIs (5 new):
-- /api/unified/families/route.ts
-- /api/unified/children/route.ts
-- /api/unified/progress/route.ts
-- /api/unified/games/route.ts
-- /api/unified/today/route.ts
-
-UI (3 updated):
-- app/parent/home/page-unified.tsx
-- app/parent/home/[familyId]/page-unified.tsx
-- app/parent/home/[familyId]/[childId]/page-unified.tsx
-```
-
----
-
 ## SESSION 8 - January 11, 2026
 - Fixed Railway deployment
 - Production LIVE at teacherpotato.xyz
@@ -138,5 +161,5 @@ UI (3 updated):
 
 ---
 
-*Log updated: January 11, 2026 07:20 Beijing*
-*Status: Railway 404 debug in progress*
+*Log updated: January 11, 2026 08:15 Beijing*
+*Status: Teacher→Parent→Games flow WORKING ✅*
