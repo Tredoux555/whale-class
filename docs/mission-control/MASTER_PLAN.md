@@ -1,158 +1,148 @@
-# WHALE MASTER PLAN
+# WHALE MASTER PLAN - January 2026
 
-## The Vision
-
-Whale is not just a classroom tool. It's the education backbone for the Jeffy Schools mission.
-
-**Every school funded by Jeffy Commerce will run on Whale.**
-
-When a merit-selected student walks into a Jeffy School on Tredoux's family farm, their teacher uses Whale to:
-- Track their Montessori progress
-- Plan their week
-- Report to their family
-- Document their journey
-
-This is the system that proves education done right.
+## 🚨 CURRENT PRIORITY: MONTESSORI PRESENTATION
+**Date: Thursday, January 16, 2026**
+**Days remaining: 6**
 
 ---
 
-## Current Reality (Jan 2026)
+## WHY WHALE MATTERS MOST RIGHT NOW
 
-**1 school, 22 kids, Beijing International**
+> "Montree might get me to financial freedom faster than Jeffy. This system improves my life TODAY."
 
-Tredoux uses this daily with his kindergarten class. Real usage, real feedback, real iteration.
-
----
-
-## 🚨 PRIORITY STATUS (Jan 10, 2026 - UPDATED)
-
-### FIXED ✅
-| Issue | Status |
-|-------|--------|
-| Teacher Login | ✅ WORKING at /teacher |
-| Admin Cards Styling | ✅ FIXED |
-| Games Hub Links | ✅ FIXED - 12 games with correct routes |
-| Principal Dashboard | ✅ WORKING |
-| Classroom Detail | ✅ WORKING |
-| Word Audio (26 words) | ✅ RECORDED |
-
-### REMAINING ISSUES
-| Issue | Status | Action |
-|-------|--------|--------|
-| Lesson Document Upload | 🔴 API missing | Build /api/admin/lesson-documents |
-| Video Flashcard Maker | 🟡 UNTESTED | Verify yt-dlp works |
-| Production Deploy | ✅ All routes live | teacherpotato.xyz |
+Whale/Montree is:
+1. **Immediate value** - Used daily in classroom
+2. **Presentation deadline** - Jan 16 final
+3. **Career credential** - Montessori certification
+4. **Scalable product** - Other teachers will want this
 
 ---
 
-## 🎮 GAMES STATUS (Jan 10, 2026) - UPDATED
+## 🎯 PHASE BREAKDOWN
 
-### ALL GAMES WORKING ✅
+### PHASE 1: PRODUCTION FIX ⚡ (First 30 min)
+**Status:** 🔴 BLOCKED - teacherpotato.xyz returning 404s
 
-| Game | Route | Status |
-|------|-------|--------|
-| Letter Sounds | `/games/letter-sounds` | ✅ WORKING |
-| Letter Match | `/games/letter-match` | ✅ WORKING |
-| Letter Tracer | `/games/letter-tracer` | ✅ WORKING |
-| Word Builder | `/games/word-builder` | ✅ WORKING |
-| Vocabulary Builder | `/games/vocabulary-builder` | ✅ WORKING |
-| Grammar Symbols | `/games/grammar-symbols` | ✅ WORKING |
-| Sentence Builder | `/games/sentence-builder` | ✅ WORKING |
-| Sentence Match | `/games/sentence-match` | ✅ WORKING |
-| Combined I Spy | `/games/combined-i-spy` | ✅ WORKING |
-| Beginning Sounds | `/games/sound-games/beginning` | ✅ WORKING |
-| Middle Sounds | `/games/sound-games/middle` | ✅ WORKING |
-| Ending Sounds | `/games/sound-games/ending` | ✅ WORKING |
+- [ ] Check Railway deployment logs
+- [ ] Identify build/deploy issue
+- [ ] Redeploy
+- [ ] Verify: /games, /admin, /teacher, /principal all load
 
-### Audio Status
-- Letter sounds (a-z): ✅ Working
-- Word audio (26 game words): ✅ Recorded & deployed
+### PHASE 2: CORE FEATURES ✅ (2-3 hours)
+**Status:** 🟡 Localhost works, need production
 
----
+| Feature | Status | Test |
+|---------|--------|------|
+| Games Hub (12 games) | ✅ Local | teacherpotato.xyz/games |
+| Letter Sounds | ✅ Local | Audio plays? |
+| Teacher Login | ⚠️ Test | /teacher/login |
+| Teacher Progress | ⚠️ Test | Tap to cycle status |
+| Admin Dashboard | 🔴 Broken | Cards need styling |
 
-## 👩‍🏫 TEACHER PORTAL (NEW - Jan 9)
+### PHASE 3: DEMO READY (2-3 hours)
+**Status:** 🟡 Needs work
 
-### Features Built
-- Simple login (Jasmine, Ivan, John, Richard, Liza, Michael, Tredoux)
-- Password: `123`
-- Dashboard with quick links
-- Circle Time Planner (teacher view)
-- English Guide access
-- Teacher Notes Board (collaborative, per-week)
+- [ ] Weekly Planning - Full workflow
+- [ ] Circle Planner - Add activities
+- [ ] Progress data for 3 demo students
+- [ ] Parent portal SQL migration
 
-### Shared Database
-- All teachers see all lesson documents
-- All teachers see all notes
-- Color-coded by teacher name
-- Only author can delete their notes
+### PHASE 4: POLISH (2 hours)
+**Status:** ⬜ Not started
 
-### Current Issue
-Middleware redirecting `/teacher` to `/auth/teacher` (Montree login)
-Fix deployed: `a531ebc` - explicit early return for /teacher routes
+- [ ] Consistent styling
+- [ ] Mobile/tablet check
+- [ ] Print layouts
+- [ ] Loading/error states
 
 ---
 
-## 👔 PRINCIPAL FLOW (NEEDS TESTING)
+## 📋 DAILY TARGETS
 
-| Feature | Route | Status |
-|---------|-------|--------|
-| Principal Dashboard | `/admin/principal` | ❓ |
-| Classroom Overview | `/admin/principal` | ❓ |
-| Add Classroom | `/admin/principal/add-classroom` | ❓ |
-| Classroom Detail | `/admin/principal/classroom/[id]` | ❓ |
-| Student List | `/admin/principal/classroom/[id]` | ❓ |
-| Teachers Management | `/admin/principal/classroom/[id]/teachers` | ❓ |
-| Invite Teachers | Modal | ❓ |
-| Role Switching | "Become Teacher" | ❓ |
+| Day | Must Complete | Nice to Have |
+|-----|---------------|--------------|
+| **Sun Jan 11** | Production live, games working | Admin cards fixed |
+| **Mon Jan 12** | Teacher login + progress | Weekly planning |
+| **Tue Jan 13** | Demo students + data | Parent portal |
+| **Wed Jan 14** | Full walkthrough test | Visual polish |
+| **Thu Jan 15** | Rehearse presentation | Fix any bugs |
+| **Fri Jan 16** | 🎓 PRESENTATION | - |
 
 ---
 
-## 🏫 MULTI-SCHOOL ARCHITECTURE
+## 🔧 SESSION PROTOCOL
 
-**Current Setup:**
-- 4 school slots in system
-- Beijing International linked to Whale classroom
-- 22 kids seeded
-
-**Needs Testing:**
-- School picker flow
-- Classroom → school relationships
-- Role-based access
-
----
-
-## Design Principles
-
-1. **Teacher-first** - If it doesn't help the teacher, delete it
-2. **Works offline** - PWA support for bad wifi
-3. **One tap** - Progress tracking = one tap
-4. **Montessori native** - Not adapted from traditional ed-tech
-5. **Games match curriculum** - Digital + physical materials identical
-
----
-
-## Technical Philosophy
-
-- Claude writes ALL code
-- Cursor copies, never generates
-- Supabase for data
-- Railway for hosting
-- Handoff files for continuity
-- VERIFY before deploy (learned the hard way)
-
----
-
-## Key Files for Next Session
-
+### START:
 ```
-HANDOFF.md                 - Detailed session handoff
-middleware.ts              - Route protection (teacher bypass)
-app/teacher/page.tsx       - Simple teacher login
-app/games/*/page.tsx       - All game routes
-app/admin/principal/*      - Principal flow pages
+1. Read HANDOFF_JAN10_PRESENTATION_PREP.md
+2. Read SESSION_LOG.md (last entry)
+3. Identify current phase
+4. Pick MAX 3 tasks
+```
+
+### DURING:
+```
+1. One task at a time
+2. Test after each change
+3. Commit after each feature works
+4. Update SESSION_LOG every 30-60 min (CHECKPOINT)
+```
+
+### END:
+```
+1. Update SESSION_LOG.md
+2. Commit and push
+3. Note next tasks in log
+```
+
+### CHECKPOINT PROTOCOL (Anti-glitch):
+```
+Every 30-60 minutes OR after completing a feature:
+1. Save all files
+2. Git commit with descriptive message
+3. Update SESSION_LOG.md with:
+   - What was completed
+   - What's working
+   - What's next
+4. This creates recovery points if context glitches
 ```
 
 ---
 
-*Updated: January 10, 2026 00:40*
-*Next Session: Games Audit + Principal Flow Testing*
+## 📁 READ THESE FIRST EVERY SESSION
+
+1. `~/Desktop/whale/docs/mission-control/HANDOFF_JAN10_PRESENTATION_PREP.md`
+2. `~/Desktop/whale/docs/mission-control/SESSION_LOG.md`
+3. This file
+
+---
+
+## 🎯 MINIMUM VIABLE PRESENTATION
+
+Must have:
+- [ ] Games working on production (12 games)
+- [ ] Teacher login functional
+- [ ] Progress tracking demo
+- [ ] 1 complete student profile
+
+Nice to have:
+- [ ] Parent portal
+- [ ] Principal dashboard
+- [ ] Print layouts
+- [ ] Weekly planning
+
+---
+
+## 💡 PRESENTATION FLOW
+
+1. **Open with Games Hub** - Visual, engaging, kids love it
+2. **Show Letter Sounds** - Phonics foundation
+3. **Demo Progress Tracking** - Teacher tablet workflow
+4. **Show Student Profile** - What we track
+5. **Weekly Planning** - Curriculum organization
+6. **Parent Portal** - Home extension (if ready)
+
+---
+
+*Last updated: January 10, 2026*
+*Priority: WHALE > JEFFY until Jan 16*
