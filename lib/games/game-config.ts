@@ -5,7 +5,7 @@ import { GameConfig, GamePhase } from './types';
 
 export const GAMES: GameConfig[] = [
   {
-    id: 'letter-sound',
+    id: 'letter-sounds',
     name: 'Letter Sounds',
     description: 'Hear a sound, find the letter!',
     icon: '🔊',
@@ -14,7 +14,7 @@ export const GAMES: GameConfig[] = [
     color: '#ef4444', // red
   },
   {
-    id: 'letter-trace',
+    id: 'letter-tracer',
     name: 'Letter Tracing',
     description: 'Trace letters with your finger!',
     icon: '✏️',
@@ -23,7 +23,7 @@ export const GAMES: GameConfig[] = [
     color: '#f97316', // orange
   },
   {
-    id: 'word-building',
+    id: 'word-builder',
     name: 'Word Builder',
     description: 'Drag letters to build words!',
     icon: '🔤',
@@ -68,7 +68,7 @@ export const GAMES: GameConfig[] = [
     color: '#eab308', // yellow
   },
   {
-    id: 'sentence-build',
+    id: 'sentence-builder',
     name: 'Sentence Builder',
     description: 'Build sentences with words!',
     icon: '📝',
