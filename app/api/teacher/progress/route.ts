@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Fetch curriculum works for the area
+  // Using correct column names: id, name, area, category_id, sequence_order
   let worksQuery = supabase
     .from('curriculum_roadmap')
-    .select('id, name, area, category, subcategory, sequence_order')
+    .select('id, name, area, category_id, sequence_order')
     .order('sequence_order', { ascending: true });
 
   if (area) {
@@ -59,8 +60,8 @@ export async function GET(request: NextRequest) {
       id: work.id,
       name: work.name,
       area: work.area,
-      category: work.category,
-      subcategory: work.subcategory,
+      category: work.category_id || 'General',
+      subcategory: null,
       sequence_order: work.sequence_order,
       status: progress?.status || 0,
       presented_date: progress?.presented_date || null,
