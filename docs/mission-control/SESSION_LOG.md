@@ -34,15 +34,34 @@
 **Commits:**
 - `e30981e` - chore: bump version to trigger redeploy
 
-**Still 404** - Railway deploy may still be building
+### CHECKPOINT 3 - 22:00 Beijing Time
+# 🎉 PRODUCTION IS LIVE!
 
-**Next steps:**
-1. Wait 2-3 min for Railway build
-2. Check Railway dashboard for build logs/errors
-3. Verify Railway has all env vars configured
-4. If still failing, check Railway build logs for specific error
+**Discovery:** www.teacherpotato.xyz works! Non-www doesn't.
 
-**Suspect:** Railway may be missing environment variables or build failing silently
+**Fix applied:** Updated Dockerfile and railway.json to use `$PORT` env var
+
+**Commits:**
+- `0663e48` - fix: use PORT env var for Railway deployment
+
+**All routes tested on www.teacherpotato.xyz:**
+- ✅ `/` = 200
+- ✅ `/games` = 200
+- ✅ `/admin` = 200
+- ✅ `/teacher` = 200
+- ✅ `/teacher/dashboard` = 200
+- ✅ `/teacher/progress` = 200
+- ✅ `/principal` = 200
+
+**Note:** No `/teacher/login` route exists - teacher auth works differently
+
+**For presentation:** Use **www.teacherpotato.xyz**
+
+**Next tasks:**
+1. Fix non-www domain in Railway (nice to have)
+2. Test all 12 games on production
+3. Fix admin cards styling
+4. Test teacher progress tracking
 
 ---
 
