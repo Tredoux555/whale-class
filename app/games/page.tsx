@@ -23,12 +23,28 @@ interface GameCategory {
 // Game Data
 const SOUND_GAMES: Game[] = [
   {
+    id: 'letter-sounds',
+    name: 'Letter Sounds',
+    description: 'Match letters to their sounds',
+    icon: '🔤',
+    route: '/games/letter-sounds',
+    color: 'cyan',
+  },
+  {
     id: 'beginning-sounds',
     name: 'Beginning Sounds',
     description: 'I spy something that begins with...',
     icon: '👂',
     route: '/games/sound-games/beginning',
     color: 'blue',
+  },
+  {
+    id: 'middle-sounds',
+    name: 'Middle Sounds',
+    description: 'I spy something with the middle sound...',
+    icon: '🎯',
+    route: '/games/sound-games/middle',
+    color: 'green',
   },
   {
     id: 'ending-sounds',
@@ -42,36 +58,35 @@ const SOUND_GAMES: Game[] = [
     id: 'combined-sounds',
     name: 'Combined I Spy',
     description: 'Find words by beginning AND ending sounds',
-    icon: '🎯',
+    icon: '🔍',
     route: '/games/combined-i-spy',
     color: 'orange',
-    isNew: true,
   },
 ];
 
 const READING_GAMES: Game[] = [
+  {
+    id: 'letter-match',
+    name: 'Letter Match',
+    description: 'Match uppercase to lowercase letters',
+    icon: '🔡',
+    route: '/games/letter-match',
+    color: 'green',
+  },
+  {
+    id: 'letter-tracer',
+    name: 'Letter Tracer',
+    description: 'Practice writing letters',
+    icon: '✏️',
+    route: '/games/letter-tracer',
+    color: 'teal',
+  },
   {
     id: 'word-builder',
     name: 'Word Builder',
     description: 'Build words letter by letter',
     icon: '🔤',
     route: '/games/word-builder',
-    color: 'green',
-  },
-  {
-    id: 'phonogram-match',
-    name: 'Phonogram Match',
-    description: 'Match sounds to spelling patterns',
-    icon: '🎴',
-    route: '/games/phonogram-match',
-    color: 'teal',
-  },
-  {
-    id: 'sight-words',
-    name: 'Sight Words',
-    description: 'Practice high-frequency words',
-    icon: '👁️',
-    route: '/games/sight-words',
     color: 'indigo',
   },
 ];
@@ -84,15 +99,6 @@ const VOCABULARY_GAMES: Game[] = [
     icon: '📚',
     route: '/games/vocabulary-builder',
     color: 'pink',
-    isNew: true,
-  },
-  {
-    id: 'object-box',
-    name: 'Object Box',
-    description: 'Match objects to words',
-    icon: '📦',
-    route: '/games/object-box',
-    color: 'amber',
   },
 ];
 
@@ -104,7 +110,22 @@ const GRAMMAR_GAMES: Game[] = [
     icon: '▲',
     route: '/games/grammar-symbols',
     color: 'red',
-    isNew: true,
+  },
+  {
+    id: 'sentence-builder',
+    name: 'Sentence Builder',
+    description: 'Build sentences with word cards',
+    icon: '📝',
+    route: '/games/sentence-builder',
+    color: 'amber',
+  },
+  {
+    id: 'sentence-match',
+    name: 'Sentence Match',
+    description: 'Match sentences to pictures',
+    icon: '🖼️',
+    route: '/games/sentence-match',
+    color: 'emerald',
   },
 ];
 
@@ -182,6 +203,16 @@ const colorClasses: Record<string, { border: string; bg: string; hover: string }
     border: 'border-l-red-500',
     bg: 'bg-red-50',
     hover: 'hover:bg-red-100',
+  },
+  cyan: {
+    border: 'border-l-cyan-500',
+    bg: 'bg-cyan-50',
+    hover: 'hover:bg-cyan-100',
+  },
+  emerald: {
+    border: 'border-l-emerald-500',
+    bg: 'bg-emerald-50',
+    hover: 'hover:bg-emerald-100',
   },
 };
 
