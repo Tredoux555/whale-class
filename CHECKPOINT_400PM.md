@@ -1,80 +1,69 @@
 # CHECKPOINT - January 10, 2026 ~4:00 PM
 
-## CURRENT STATUS: Tailwind Still Broken - Root Cause Found
+## 🔴 CURRENT BLOCKER: Next.js 15.5 uses Turbopack by default
 
----
+**Root Cause Discovered:**
+- Next.js 15.5+ uses Turbopack (not Webpack) by default
+- Turbopack uses Lightning CSS instead of PostCSS
+- Lightning CSS does NOT support `@tailwind` directives
+- That's why `@tailwind base` fails with "Unexpected character '@'"
 
-## ROOT CAUSE IDENTIFIED
+**What I've Tried:**
+1. ✅ npm install --include=dev (installed tailwind)
+2. ❌ --webpack flag doesn't exist in Next.js 15.5
+3. ❌ Downgrading Next.js has security vulnerabilities
 
-**Next.js 15.5+ uses Turbopack by default, which uses Lightning CSS instead of PostCSS.**
+**Potential Solutions (NOT YET TRIED):**
 
-Lightning CSS does NOT support `@tailwind` directives - that's a PostCSS/Tailwind-specific syntax.
-
-**The error:**
+### Option A: Upgrade to Tailwind v4
+Tailwind v4 uses CSS imports instead of @tailwind directives:
+```css
+@import "tailwindcss";
 ```
-Module parse failed: Unexpected character '@' (1:0)
-> @tailwind base;
-```
+
+### Option B: Force Webpack in next.config.ts
+According to docs, having a webpack config should force webpack mode.
+But it's not working - maybe need explicit turbopack: false?
+
+### Option C: Use postcss-import
+Pre-process Tailwind before Next.js sees it.
 
 ---
 
-## WHAT I'VE TRIED (All Failed)
+## FILES INVOLVED
 
-| Attempt | Result |
-|---------|--------|
-| `npm install --include=dev` | Tailwind installed but still fails |
-| `rm -rf node_modules && npm install` | Same error |
-| `npx next dev --webpack` | Flag doesn't exist in 15.5 |
-| Downgrade to Next 15.3 | Has security vulnerability |
-| Downgrade to Next 15.4.3 | Has security vulnerability |
-
----
-
-## POTENTIAL SOLUTIONS (Not Yet Tried)
-
-### Option 1: Convert globals.css to Tailwind v4 syntax
-Tailwind v4 doesn't use `@tailwind` directives - it uses `@import "tailwindcss"`
-
-### Option 2: Force webpack in next.config.ts
-May need specific config to disable Turbopack
-
-### Option 3: Use CSS imports instead of directives
-Replace `@tailwind base` with actual CSS imports
-
-### Option 4: Downgrade Next.js to 14.x
-Webpack was default in Next 14
-
----
-
-## FILES STATUS
-
-| File | Content |
+| File | Purpose |
 |------|---------|
-| next.config.ts | Has webpack config but Turbopack still runs |
-| postcss.config.js | Correct v3 format |
-| tailwind.config.ts | Correct v3 format |
-| globals.css | Uses `@tailwind` directives (the problem) |
-| package.json | next@15.5.9, tailwindcss@3.4.0 |
+| app/globals.css | Has @tailwind directives (broken) |
+| postcss.config.js | PostCSS config (not being used by Turbopack) |
+| tailwind.config.ts | Tailwind v3 config |
+| next.config.ts | Has webpack config but Turbopack ignores it |
 
 ---
 
-## NEXT STEP TO TRY
+## CURRENT STATE
 
-Convert to Tailwind v4 syntax OR find way to force webpack.
+- Next.js version: 15.5.9 (latest)
+- Tailwind version: 3.4.0
+- Server starts but routes fail with CSS parse error
+- Need to either upgrade Tailwind to v4 OR force webpack
 
 ---
 
-## COMMANDS TO RESUME
+## RECOMMENDED NEXT STEP
 
+**Try Tailwind v4 first** (simpler):
 ```bash
-cd ~/Desktop/whale
-# Server is NOT running
-# Try Tailwind v4 approach:
-npm install tailwindcss@4 --save-dev
-# Then update globals.css to use @import "tailwindcss"
+npm install tailwindcss@4 @tailwindcss/postcss
+```
+
+Then change globals.css:
+```css
+@import "tailwindcss";
 ```
 
 ---
 
-*Checkpoint: 4:00 PM*
-*Issue: Turbopack + Tailwind v3 incompatibility*
+*Saved: 4:00 PM*
+*Problem: Turbopack + Tailwind v3 incompatible*
+*Solution: Upgrade to Tailwind v4*
