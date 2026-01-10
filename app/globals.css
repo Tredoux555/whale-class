@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #E8F4F8;
@@ -7,12 +9,6 @@
   --whale-dark: #2C5F7C;
   --whale-light: #B8E0F0;
   --accent: #FFB84D;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
 }
 
 body {

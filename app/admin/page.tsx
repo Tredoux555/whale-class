@@ -13,10 +13,47 @@ interface DashboardCard {
   description: string;
   href: string;
   icon: string;
-  color: string;
+  colorKey: CardColor;
 }
 
+type CardColor = 'slate' | 'amber' | 'green' | 'emerald' | 'cyan' | 'pink' | 'purple' | 'indigo' | 'blue' | 'yellow' | 'red' | 'teal' | 'orange';
+
+// Inline styles map - works with Tailwind v4 (bypasses purging)
+const COLOR_STYLES: Record<CardColor, { bg: string; hover: string }> = {
+  slate:   { bg: '#475569', hover: '#334155' },
+  amber:   { bg: '#f59e0b', hover: '#d97706' },
+  green:   { bg: '#22c55e', hover: '#16a34a' },
+  emerald: { bg: '#10b981', hover: '#059669' },
+  cyan:    { bg: '#06b6d4', hover: '#0891b2' },
+  pink:    { bg: '#ec4899', hover: '#db2777' },
+  purple:  { bg: '#a855f7', hover: '#9333ea' },
+  indigo:  { bg: '#6366f1', hover: '#4f46e5' },
+  blue:    { bg: '#3b82f6', hover: '#2563eb' },
+  yellow:  { bg: '#eab308', hover: '#ca8a04' },
+  red:     { bg: '#ef4444', hover: '#dc2626' },
+  teal:    { bg: '#14b8a6', hover: '#0d9488' },
+  orange:  { bg: '#f97316', hover: '#ea580c' },
+};
+
 const DEFAULT_CARDS: DashboardCard[] = [
+  // Role Portals
+  {
+    id: 'principal',
+    title: 'Principal',
+    description: 'School & classroom overview',
+    href: '/principal',
+    icon: '🏫',
+    colorKey: 'slate',
+  },
+  {
+    id: 'teacher',
+    title: 'Teacher Portal',
+    description: 'Progress tracking & tools',
+    href: '/teacher/dashboard',
+    icon: '👩‍🏫',
+    colorKey: 'amber',
+  },
+  
   // Core System
   {
     id: 'montree',
@@ -24,7 +61,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Curriculum tracking & progress',
     href: '/admin/montree',
     icon: '🌳',
-    color: 'bg-green-500 hover:bg-green-600',
+    colorKey: 'green',
   },
   {
     id: 'montree-home',
@@ -32,7 +69,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Homeschool platform management',
     href: '/admin/montree-home',
     icon: '🏠',
-    color: 'bg-emerald-500 hover:bg-emerald-600',
+    colorKey: 'emerald',
   },
   {
     id: 'weekly-planning',
@@ -40,7 +77,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Upload plans, track progress',
     href: '/admin/weekly-planning',
     icon: '📅',
-    color: 'bg-cyan-500 hover:bg-cyan-600',
+    colorKey: 'cyan',
   },
   {
     id: 'classroom',
@@ -48,7 +85,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'iPad-friendly progress tracking',
     href: '/admin/classroom',
     icon: '🎯',
-    color: 'bg-emerald-500 hover:bg-emerald-600',
+    colorKey: 'emerald',
   },
   
   // Material Generators
@@ -58,7 +95,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Print Pink/Blue/Green series',
     href: '/admin/material-generator',
     icon: '🖨️',
-    color: 'bg-pink-500 hover:bg-pink-600',
+    colorKey: 'pink',
   },
   {
     id: 'card-generator',
@@ -66,7 +103,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Montessori card maker',
     href: '/admin/card-generator',
     icon: '🃏',
-    color: 'bg-purple-500 hover:bg-purple-600',
+    colorKey: 'purple',
   },
   {
     id: 'flashcard-maker',
@@ -74,7 +111,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'YouTube to flashcard PDFs',
     href: '/admin/flashcard-maker',
     icon: '🎵',
-    color: 'bg-indigo-500 hover:bg-indigo-600',
+    colorKey: 'indigo',
   },
   {
     id: 'vocabulary-flashcards',
@@ -82,7 +119,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Weekly vocabulary cards',
     href: '/admin/vocabulary-flashcards',
     icon: '📇',
-    color: 'bg-cyan-500 hover:bg-cyan-600',
+    colorKey: 'cyan',
   },
   
   // Teaching Tools
@@ -92,7 +129,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Parent reports & tracking',
     href: '/admin/english-progress',
     icon: '📚',
-    color: 'bg-blue-500 hover:bg-blue-600',
+    colorKey: 'blue',
   },
   {
     id: 'english-guide',
@@ -100,7 +137,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'How to teach each skill',
     href: '/admin/english-guide',
     icon: '📖',
-    color: 'bg-indigo-500 hover:bg-indigo-600',
+    colorKey: 'indigo',
   },
   {
     id: 'circle-planner',
@@ -108,7 +145,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Plan circle activities',
     href: '/admin/circle-planner',
     icon: '⭕',
-    color: 'bg-yellow-500 hover:bg-yellow-600',
+    colorKey: 'yellow',
   },
   {
     id: 'phonics-planner',
@@ -116,7 +153,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Phonics lessons',
     href: '/admin/phonics-planner',
     icon: '🔤',
-    color: 'bg-red-500 hover:bg-red-600',
+    colorKey: 'red',
   },
   
   // Utilities
@@ -126,7 +163,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'Test site & generate reports',
     href: '/admin/site-tester',
     icon: '🔍',
-    color: 'bg-teal-500 hover:bg-teal-600',
+    colorKey: 'teal',
   },
   {
     id: 'progress-reports',
@@ -134,11 +171,77 @@ const DEFAULT_CARDS: DashboardCard[] = [
     description: 'View student progress',
     href: '/admin/montessori/reports',
     icon: '📊',
-    color: 'bg-orange-500 hover:bg-orange-600',
+    colorKey: 'orange',
   },
 ];
 
 const STORAGE_KEY = 'whale_admin_card_order';
+
+// Card component with hover state
+function DashboardCardItem({ 
+  card, 
+  editMode, 
+  isDragging, 
+  isDropTarget 
+}: { 
+  card: DashboardCard; 
+  editMode: boolean; 
+  isDragging: boolean; 
+  isDropTarget: boolean;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const colors = COLOR_STYLES[card.colorKey];
+  
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: isHovered ? colors.hover : colors.bg,
+    borderRadius: '0.75rem',
+    padding: '1.5rem',
+    color: 'white',
+    transition: 'all 0.2s',
+    transform: isDragging ? 'scale(0.95)' : isHovered ? 'scale(1.02)' : 'scale(1)',
+    opacity: isDragging ? 0.5 : 1,
+    boxShadow: isHovered ? '0 20px 25px -5px rgb(0 0 0 / 0.3)' : 'none',
+    display: 'block',
+  };
+
+  const content = (
+    <>
+      {editMode && (
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>
+          <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="currentColor" viewBox="0 0 20 20">
+            <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+          </svg>
+        </div>
+      )}
+      <div style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>{card.icon}</div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>{card.title}</h2>
+      <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem' }}>{card.description}</p>
+    </>
+  );
+
+  if (editMode) {
+    return (
+      <div 
+        style={cardStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={card.href}
+      style={cardStyle}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {content}
+    </Link>
+  );
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -157,13 +260,11 @@ export default function AdminDashboard() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const savedOrder: string[] = JSON.parse(saved);
-        // Reorder cards based on saved order, keeping any new cards at the end
         const orderedCards: DashboardCard[] = [];
         savedOrder.forEach(id => {
           const card = DEFAULT_CARDS.find(c => c.id === id);
           if (card) orderedCards.push(card);
         });
-        // Add any new cards not in saved order
         DEFAULT_CARDS.forEach(card => {
           if (!orderedCards.find(c => c.id === card.id)) {
             orderedCards.push(card);
@@ -257,40 +358,63 @@ export default function AdminDashboard() {
 
   return (
     <div 
-      className="min-h-screen bg-slate-900"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      className="min-h-screen"
+      style={{ 
+        fontFamily: "'Comic Sans MS', 'Comic Sans', cursive",
+        backgroundColor: '#0f172a'
+      }}
     >
       {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🐋</span>
+      <header style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '1rem 1.5rem' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.875rem' }}>🐋</span>
             <div>
-              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-slate-400 text-sm">Whale Montessori</p>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>Admin Dashboard</h1>
+              <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Whale Montessori</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button
               onClick={() => setEditMode(!editMode)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                editMode 
-                  ? 'bg-yellow-500 hover:bg-yellow-600 text-black' 
-                  : 'bg-slate-700 hover:bg-slate-600 text-white'
-              }`}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+                backgroundColor: editMode ? '#eab308' : '#334155',
+                color: editMode ? 'black' : 'white',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               {editMode ? '✓ Done' : '⚙️ Edit'}
             </button>
             <Link
               href="/"
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#334155',
+                color: 'white',
+                borderRadius: '0.5rem',
+                fontWeight: '500',
+                textDecoration: 'none'
+              }}
             >
               View Site
             </Link>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                borderRadius: '0.5rem',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               Logout
             </button>
@@ -300,14 +424,22 @@ export default function AdminDashboard() {
 
       {/* Edit Mode Banner */}
       {editMode && (
-        <div className="bg-yellow-500 text-black px-6 py-3">
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <p className="font-medium">
-              ✋ Drag cards to reorder them. Click "Done" when finished.
+        <div style={{ backgroundColor: '#eab308', color: 'black', padding: '0.75rem 1.5rem' }}>
+          <div style={{ maxWidth: '72rem', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ fontWeight: '500' }}>
+              ✋ Drag cards to reorder them. Click &quot;Done&quot; when finished.
             </p>
             <button
               onClick={resetOrder}
-              className="px-3 py-1 bg-black/20 hover:bg-black/30 rounded text-sm font-medium"
+              style={{
+                padding: '0.25rem 0.75rem',
+                backgroundColor: 'rgba(0,0,0,0.2)',
+                borderRadius: '0.25rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               Reset to Default
             </button>
@@ -316,9 +448,13 @@ export default function AdminDashboard() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6">
+      <main style={{ maxWidth: '72rem', margin: '0 auto', padding: '1.5rem' }}>
         {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+          gap: '1rem' 
+        }}>
           {cards.map((card) => (
             <div
               key={card.id}
@@ -328,38 +464,29 @@ export default function AdminDashboard() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, card.id)}
               onDragEnd={handleDragEnd}
-              className={`relative ${editMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
+              style={{ 
+                position: 'relative',
+                cursor: editMode ? 'grab' : 'pointer'
+              }}
             >
               {/* Drop indicator */}
               {dragOverCard === card.id && draggedCard !== card.id && (
-                <div className="absolute inset-0 border-4 border-yellow-400 rounded-xl pointer-events-none z-10" />
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  border: '4px solid #facc15',
+                  borderRadius: '0.75rem',
+                  pointerEvents: 'none',
+                  zIndex: 10
+                }} />
               )}
               
-              {editMode ? (
-                <div
-                  className={`${card.color} rounded-xl p-6 text-white transition-all ${
-                    draggedCard === card.id ? 'opacity-50 scale-95' : 'hover:scale-[1.02]'
-                  }`}
-                >
-                  <div className="absolute top-2 right-2 text-white/50">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
-                    </svg>
-                  </div>
-                  <div className="text-4xl mb-3">{card.icon}</div>
-                  <h2 className="text-xl font-bold mb-1">{card.title}</h2>
-                  <p className="text-white/80 text-sm">{card.description}</p>
-                </div>
-              ) : (
-                <Link
-                  href={card.href}
-                  className={`${card.color} rounded-xl p-6 text-white transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] block`}
-                >
-                  <div className="text-4xl mb-3">{card.icon}</div>
-                  <h2 className="text-xl font-bold mb-1">{card.title}</h2>
-                  <p className="text-white/80 text-sm">{card.description}</p>
-                </Link>
-              )}
+              <DashboardCardItem 
+                card={card}
+                editMode={editMode}
+                isDragging={draggedCard === card.id}
+                isDropTarget={dragOverCard === card.id}
+              />
             </div>
           ))}
         </div>
