@@ -85,6 +85,19 @@
 
 **Next: Test teacher progress tap interface**
 
+### CHECKPOINT 5 - 22:15 Beijing Time
+**Issue found:** Teacher progress shows children but "No works found for this area"
+**Cause:** curriculum_roadmap table not seeded with works
+**Action:** Running seed-curriculum-v2.ts to populate 268 Montessori works
+
+**Working:**
+- Production LIVE at www.teacherpotato.xyz
+- All 12 games ✅
+- Admin cards beautiful ✅
+- Children showing in progress ✅
+
+**Fixing:** Curriculum works seeding
+
 ---
 
 ## SESSION 7 PREP - January 10, 2026 (Evening)
