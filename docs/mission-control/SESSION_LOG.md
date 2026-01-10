@@ -4,18 +4,22 @@
 
 # January 10, 2026 (Session 5) - CURRENT
 
-## ✅ TAILWIND FIXED (3:45 PM)
+## 🔴 TAILWIND ISSUE - Root Cause Found (4:00 PM)
 
-**Problem:** `@tailwind base` not parsing - devDependencies not installing
+**Problem:** Next.js 15.5+ uses Turbopack by default → Turbopack uses Lightning CSS → Lightning CSS doesn't support `@tailwind` directives
 
-**Solution:**
-```bash
-npm install --include=dev
-```
+**Tried:**
+- npm install --include=dev ✅ (tailwind installed)
+- rm node_modules + reinstall ❌
+- --webpack flag ❌ (doesn't exist)
+- Downgrade Next 15.3/15.4 ❌ (security vuln)
 
-**Root cause:** `npm install` wasn't including devDependencies. The `--include=dev` flag fixed it.
+**Next to try:**
+- Tailwind v4 syntax (`@import "tailwindcss"`)
+- Or force webpack somehow
+- Or downgrade to Next 14.x
 
-**Current status:** Dev server running on port 3001, testing routes now
+**Dev server:** NOT RUNNING
 
 ---
 
