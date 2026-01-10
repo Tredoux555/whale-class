@@ -4,7 +4,7 @@
 
 ## SESSION 8 - January 11, 2026
 
-### CHECKPOINT 1 - Production Fix
+### CHECKPOINT 1 - Production Fix (Earlier)
 **Issue:** Production 404s - build failing on Railway
 **Root cause:** Multiple route files creating Supabase client at module level
 
@@ -20,10 +20,29 @@
 - `ebd5bab` - First fix (admin/lesson-documents)
 - `5a25486` - Remaining 3 files
 
-**Status:**
-- ✅ Local build passed (229 pages)
-- ✅ Pushed to Railway
-- ⏳ Waiting for Railway deploy...
+### CHECKPOINT 2 - 21:45 Beijing Time
+**Continuing production debug**
+
+**Verified:**
+- ✅ Local build passes (229 pages, 11.5s)
+- ✅ Dockerfile correct (node:20-slim, npm ci, npm run build, npm start)
+- ✅ railway.json correct (DOCKERFILE builder)
+- ✅ DNS resolves (3.33.251.168, 15.197.225.128)
+- ✅ .env.local has all required vars
+- ✅ Bumped version to 0.1.4 and pushed to trigger redeploy
+
+**Commits:**
+- `e30981e` - chore: bump version to trigger redeploy
+
+**Still 404** - Railway deploy may still be building
+
+**Next steps:**
+1. Wait 2-3 min for Railway build
+2. Check Railway dashboard for build logs/errors
+3. Verify Railway has all env vars configured
+4. If still failing, check Railway build logs for specific error
+
+**Suspect:** Railway may be missing environment variables or build failing silently
 
 ---
 
