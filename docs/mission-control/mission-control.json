@@ -1,63 +1,59 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-09T19:15:00Z",
-  "currentPhase": "Multi-School SaaS Architecture",
-  "status": "Principal portal built, testing in progress",
+  "lastUpdated": "2026-01-11T07:25:00+08:00",
+  "currentPhase": "Railway Deployment Debugging",
+  "status": "BLOCKED - Production routes returning 404",
   
-  "completedToday": [
-    "Schools management page /admin/schools",
-    "School detail page /admin/schools/[id]",
-    "Classroom detail /admin/schools/[id]/classrooms/[id]",
-    "Teacher setup page /teacher/setup",
-    "Principal dashboard /principal",
-    "Principal classroom view /principal/classrooms/[id]",
-    "Principal teachers page /principal/teachers",
-    "Seed script - Beijing School + Whale + 20 kids",
-    "Remove children API"
+  "criticalIssue": {
+    "problem": "All routes except / return 404 on teacherpotato.xyz",
+    "worksLocally": true,
+    "railwayShowsSuccess": true,
+    "suspectedCause": "Railway not building/deploying latest code properly",
+    "diagnosticAdded": "/api/health endpoint to verify code deployed",
+    "lastCommit": "f1d5e92 - Add health check API"
+  },
+  
+  "unificationStatus": {
+    "database": "DEPLOYED - 60 game mappings live",
+    "apis": "CODE PUSHED - 5 unified APIs",
+    "parentUI": "CODE PUSHED - 3 page-unified.tsx files",
+    "production": "BLOCKED by 404 issue"
+  },
+  
+  "recentCommits": [
+    "f1d5e92 - Add health check API to verify deployment",
+    "5eaca99 - Force Railway rebuild",
+    "ebb84c5 - 🐋 Montree Unification: Teacher-Parent sync",
+    "299a097 - 🏔️ Session 9: Grand Unification begins"
   ],
   
-  "architecture": {
-    "masterAdmin": "/admin/schools - All schools",
-    "principal": "/principal - One school scoped",
-    "teacher": "/teacher/* - One classroom scoped"
+  "testUrls": {
+    "shouldWork": [
+      "https://teacherpotato.xyz/ (200 ✓)",
+      "https://teacherpotato.xyz/api/health (TEST THIS FIRST)"
+    ],
+    "returning404": [
+      "https://teacherpotato.xyz/parent/home",
+      "https://teacherpotato.xyz/games", 
+      "https://teacherpotato.xyz/teacher",
+      "https://teacherpotato.xyz/api/unified/games"
+    ]
   },
   
-  "database": {
-    "schools": "Multi-tenant schools table",
-    "classrooms": "Classes per school with teacher_id",
-    "classroom_children": "Links children to classrooms",
-    "children.school_id": "Added for school scoping"
-  },
-  
-  "liveData": {
-    "school": "Beijing International School",
-    "schoolId": "00000000-0000-0000-0000-000000000001",
-    "classroom": "🐋 Whale",
-    "classroomId": "c53ac2a1-3525-42fa-a1d9-b46546a6ea3c",
-    "students": 20
-  },
-  
-  "nextPriorities": [
-    "Test current flow end-to-end",
-    "Principal login/auth system",
-    "Teacher invite email flow",
-    "Assign teacher to classroom"
-  ],
-  
-  "testUrls": [
-    "www.teacherpotato.xyz/principal",
-    "www.teacherpotato.xyz/principal/classrooms/c53ac2a1-3525-42fa-a1d9-b46546a6ea3c",
-    "www.teacherpotato.xyz/principal/teachers",
-    "www.teacherpotato.xyz/teacher/setup?classroom=c53ac2a1-3525-42fa-a1d9-b46546a6ea3c",
-    "www.teacherpotato.xyz/admin/schools"
+  "nextActions": [
+    "1. Wait for Railway to deploy f1d5e92",
+    "2. Test /api/health - if 200+json, deploy works",
+    "3. If /api/health works but routes 404, check app/parent/home/page.tsx exists",
+    "4. If /api/health also 404, Railway build broken - check logs"
   ],
   
   "dailyLog": [
     {
-      "date": "2026-01-09",
-      "summary": "Built multi-school SaaS + principal portal",
-      "commits": 9,
-      "status": "Testing"
+      "date": "2026-01-11",
+      "session": "Railway 404 Debug",
+      "time": "07:00-07:25 Beijing",
+      "summary": "All prod routes 404 except homepage. Local build works. Added health check API (f1d5e92). Awaiting Railway deploy to diagnose.",
+      "status": "Blocked - awaiting deploy"
     }
   ]
 }

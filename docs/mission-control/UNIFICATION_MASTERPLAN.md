@@ -1,132 +1,178 @@
 # 🏔️ MONTREE UNIFICATION MASTERPLAN
-## A Masterpiece of Synchronized Simplicity
+## The Brain - Read This First Every Session
 
-**Created:** January 12, 2026  
-**Author:** Claude (Mission Partner)  
-**Vision:** One child, one journey - visible to everyone who matters
-
----
-
-## 📊 PROGRESS TRACKER
-
-### Current Phase: 5 - Documentation & Testing
-### Last Checkpoint: Jan 13, 2026 - 00:00 Beijing Time
-
-| Phase | Status | Started | Completed |
-|-------|--------|---------|-----------|
-| 1. Database Unification | ✅ COMPLETE | Jan 12 | Jan 12 |
-| 2. API Unification | ✅ COMPLETE | Jan 12 | Jan 12 |
-| 3. Parent UI Enhancement | ✅ COMPLETE | Jan 12 | Jan 12 |
-| 4. Teacher UI Polish | ⏭️ SKIPPED | - | - |
-| 5. Documentation | 🟡 In Progress | Jan 12 | |
-
-**Note:** Phase 4 (Teacher UI) skipped - existing teacher UI already works with unified tables. Only parent UI needed updates.
+**Last Updated:** January 13, 2026 01:00 Beijing  
+**Status:** DATABASE LIVE ✅ | CODE READY TO PUSH ⏳
 
 ---
 
-## ✅ ALL PHASES COMPLETE
+## 🚨 CHECKPOINT PROTOCOL (MANDATORY)
 
-### Phase 1: Database
-- [x] 025_montree_unification.sql
-- [x] 025b_seed_game_mappings.sql
+### Every 5 Minutes OR After Every Task:
+```
+1. SAVE work to disk (write files)
+2. UPDATE this file's "Current Status" section
+3. UPDATE SESSION_LOG.md with what was done
+4. COMMIT to yourself: "Next I will do X"
+5. CONTINUE working
+```
 
-### Phase 2: APIs  
-- [x] /api/unified/families
-- [x] /api/unified/children (with unlinked support)
-- [x] /api/unified/progress
-- [x] /api/unified/games
-- [x] /api/unified/today
+### After Major Milestones:
+```
+1. Write HANDOFF_[DATE]_[TOPIC].md
+2. Update memory edits if needed
+3. Git commit with clear message
+```
 
-### Phase 3: Parent UI
-- [x] Login page (page-unified.tsx)
-- [x] Family dashboard (page-unified.tsx)
-- [x] Child activities page with game recs
-
-### Phase 5: Documentation
-- [x] DEPLOYMENT_GUIDE.md (creating now)
-
----
-
-## 🔄 OVERNIGHT WORK LOG
-
-**22:00** - Session start
-**22:25** - Phase 1 complete (migrations)
-**23:00** - Phase 2 complete (5 APIs)
-**23:30** - Phase 3 complete (3 UI pages)
-**00:00** - Phase 5 starting (docs)
+### If Interrupted/Context Lost:
+```
+1. READ this file first
+2. READ SESSION_LOG.md
+3. READ latest HANDOFF_*.md
+4. Continue from "NEXT ACTIONS" below
+```
 
 ---
 
-## 📁 FILES CREATED
+## 📊 CURRENT STATUS
+
+### Completed ✅
+- [x] Database: families, game_curriculum_mapping tables
+- [x] Database: children extended (family_id, color, journal_entries)
+- [x] Database: 60 game mappings seeded
+- [x] API: /api/unified/families
+- [x] API: /api/unified/children
+- [x] API: /api/unified/progress
+- [x] API: /api/unified/games
+- [x] API: /api/unified/today
+- [x] UI: page-unified.tsx for all 3 parent pages
+- [x] Docs: HANDOFF_JAN13_UNIFICATION.md
+
+### In Progress ⏳
+- [ ] Git push (Tredoux doing)
+- [ ] Production test
+
+### Next Up 🎯
+- [ ] Switch unified pages to default
+- [ ] Create test family data
+- [ ] Verify game recommendations work
+
+---
+
+## 🎯 NEXT ACTIONS (in order)
+
+### 1. After Git Push - Test Production
+```
+1. Go to teacherpotato.xyz/parent/home
+2. Check page loads without errors
+3. Try to login with test email
+```
+
+### 2. Create Test Data
+```sql
+-- Run in Supabase
+INSERT INTO families (name, email) VALUES ('Demo Family', 'demo@test.com');
+UPDATE children SET family_id = (SELECT id FROM families WHERE email = 'demo@test.com') WHERE name = 'Amy';
+```
+
+### 3. Switch to Unified Pages
+```bash
+cd ~/Desktop/whale/app/parent/home
+mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
+cd [familyId]
+mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
+cd [childId]  
+mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
+```
+
+### 4. Future Work
+- Teacher UI to assign families
+- Journal entry from parent
+- Game play tracking
+- Principal family overview
+
+---
+
+## 📁 FILE MAP
 
 ```
+docs/mission-control/
+├── UNIFICATION_MASTERPLAN.md    ← THE BRAIN (this file)
+├── SESSION_LOG.md               ← Session history
+├── HANDOFF_JAN13_UNIFICATION.md ← Latest handoff
+└── DEPLOYMENT_GUIDE.md          ← Step-by-step deploy
+
 migrations/
-├── 025_montree_unification.sql           ✅
-└── 025b_seed_game_mappings.sql           ✅
+├── 025_montree_unification.sql      ← Schema (DEPLOYED)
+└── 025b_seed_game_mappings.sql      ← Game maps (DEPLOYED)
 
 app/api/unified/
-├── families/route.ts                      ✅
-├── children/route.ts                      ✅
-├── progress/route.ts                      ✅
-├── games/route.ts                         ✅
-└── today/route.ts                         ✅
+├── families/route.ts    ← Parent login
+├── children/route.ts    ← Kids + progress
+├── progress/route.ts    ← Progress + game recs
+├── games/route.ts       ← All games
+└── today/route.ts       ← Daily updates
 
 app/parent/home/
-├── page-unified.tsx                       ✅ (login)
+├── page-unified.tsx                    ← Login (NEW)
 └── [familyId]/
-    ├── page-unified.tsx                   ✅ (dashboard)
+    ├── page-unified.tsx                ← Dashboard (NEW)
     └── [childId]/
-        └── page-unified.tsx               ✅ (child view)
-
-docs/mission-control/
-├── UNIFICATION_MASTERPLAN.md              ✅
-└── DEPLOYMENT_GUIDE.md                    🔄 (creating)
+        └── page-unified.tsx            ← Child view (NEW)
 ```
 
 ---
 
-## 🎯 SUCCESS CRITERIA STATUS
+## 🧠 ARCHITECTURE
 
-1. ✅ Teacher updates progress → Parent sees it (via unified API)
-2. ✅ Language works → Show game recommendations
-3. ✅ One database → Unified families + children tables
-4. ✅ Parent UX → Beautiful 3-tab interface
-5. ✅ Teacher UX → No changes needed (already works)
-6. ⬜ Principal UX → Future enhancement
-7. ✅ Games → Linked to curriculum via mapping table
-8. ⬜ Production → Needs deployment (Tredoux action)
-
----
-
-## 🚀 TREDOUX ACTION ITEMS
-
-When you wake up:
-
-1. **Run SQL migrations in Supabase:**
-   - Open Supabase SQL Editor
-   - Run `migrations/025_montree_unification.sql`
-   - Run `migrations/025b_seed_game_mappings.sql`
-   - Verify: `SELECT COUNT(*) FROM game_curriculum_mapping;`
-
-2. **Deploy to production:**
-   ```bash
-   cd ~/Desktop/whale
-   git add .
-   git commit -m "Montree Unification: Teacher-Parent sync with game recommendations"
-   git push
-   ```
-
-3. **Test the flow:**
-   - Go to teacherpotato.xyz/parent/home
-   - Login with test email
-   - Check child's progress shows teacher updates
-   - Verify game recommendations appear
-
-4. **Switch to unified pages (optional):**
-   - Rename page.tsx → page-old.tsx
-   - Rename page-unified.tsx → page.tsx
-   - In all three parent directories
+```
+Teacher taps "Presented" on Sandpaper Letters
+              ↓
+child_work_progress updated (status=1)
+              ↓
+Parent opens app → calls /api/unified/today
+              ↓
+API reads child_work_progress + game_curriculum_mapping
+              ↓
+Parent sees: "Amy learned Sandpaper Letters today!"
+           + "Play Letter Sounds game to practice!"
+```
 
 ---
 
-*Overnight work complete. Ready for morning deployment.*
+## 💡 KEY DECISIONS MADE
+
+1. **TEXT work_id** - curriculum_roadmap.id is TEXT like "la_sandpaper_letters"
+2. **Unified tables** - Extend existing teacher tables, don't rebuild
+3. **60 game mappings** - All 12 games mapped to Language works
+4. **page-unified.tsx** - New pages alongside old for safe rollout
+
+---
+
+## 🔧 TROUBLESHOOTING
+
+### "No children found"
+- Children need family_id set
+- Run: `UPDATE children SET family_id = 'xxx' WHERE name = 'Amy'`
+
+### "No game recommendations"
+- Child needs Language works with status >= 1
+- Check: `SELECT * FROM child_work_progress WHERE child_id = 'xxx'`
+
+### "API 500 error"
+- Check Railway logs
+- Usually missing table or column
+
+---
+
+## 📞 CONTEXT FOR CLAUDE
+
+When starting a new session:
+1. User is Tredoux, Montessori teacher in Beijing
+2. Building Whale platform (teacherpotato.xyz)
+3. Just completed Montree Unification
+4. Goal: Teacher→Parent→Games sync for thousands of schools
+
+---
+
+*This is the brain. Keep it updated. Read it first.*
