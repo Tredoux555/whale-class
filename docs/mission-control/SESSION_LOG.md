@@ -132,6 +132,36 @@
 
 **Fix needed:** Revert Dockerfile to simpler CMD
 
+### CHECKPOINT 8 - 22:40 Beijing Time
+**API column mismatch fixed:**
+- Table has `category_id` not `category`
+- Table has no `subcategory` column
+- Fixed API to use correct column names
+
+**Commits:**
+- `8105a94` - fix: proper PORT handling for Railway
+- `a1c852f` - fix: use correct column names in teacher progress API
+
+**Waiting:** Railway rebuild (~3 min)
+
+### CHECKPOINT 9 - 22:45 Beijing Time
+# 🎉 TEACHER PROGRESS WORKING!
+
+**API returning 101 Practical Life works!**
+- Dusting, Threading Beads, Carrying a Mat, Velcro Frame...
+- All categories: pl_care_environment, pl_sewing, pl_preliminary, etc.
+- Progress tracking ready (status 0-3)
+
+**Session 8 Summary:**
+- ✅ Production LIVE at www.teacherpotato.xyz
+- ✅ All 12 games working
+- ✅ Admin cards beautiful  
+- ✅ Teacher progress returning curriculum works
+- ✅ 342 total works in database
+- ✅ child_work_progress table created
+
+**Ready for presentation testing!**
+
 ---
 
 ## SESSION 7 PREP - January 10, 2026 (Evening)
