@@ -1,33 +1,70 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T11:55:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Phase 3 COMPLETE",
-  "status": "✅ Video search terms implemented",
-  
+  "lastUpdated": "2026-01-11T12:05:00+08:00",
+  "currentStatus": "✅ Independent Montree Phases 1-4 COMPLETE",
   "productionUrl": "https://www.teacherpotato.xyz",
-  "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
-
-  "completedPhases": {
-    "phase1": "✅ Database schema",
-    "phase2": "✅ API isolation + admin assignment tool",
-    "phase3": "✅ Video search terms - YouTube search instead of direct URLs"
+  
+  "criticalDate": {
+    "date": "Jan 16, 2026",
+    "event": "Whale launch - must be ready",
+    "daysRemaining": 5
   },
 
-  "phase3Changes": {
-    "api": "/api/school/[schoolId]/curriculum - now returns video_search_term",
-    "teacherCurriculum": "Always shows 'Find Video on YouTube' button with search term",
-    "adminClassroom": "Demo button opens YouTube search, no more broken direct links"
+  "session15Summary": {
+    "completed": [
+      "Phase 1: Database schema (simple_teachers, teacher_children, video_search_term)",
+      "Phase 2: API isolation + 3 bug fixes + admin assignment tool",
+      "Phase 3: Video search terms (YouTube search replaces brittle URLs)",
+      "Phase 4: Circle Planner assessed - already at parity"
+    ],
+    "commits": ["fc0f006", "44b5298", "fa24cb6", "c9b87e6", "41b2b57"],
+    "newFeatures": [
+      "/admin/teacher-students - Assign students to teachers",
+      "Teacher data isolation - each teacher sees only their students",
+      "Video search system - reliable YouTube search for all curriculum"
+    ]
   },
 
-  "remainingPhases": {
-    "phase4": "⏳ Circle Planner feature parity",
-    "phase5": "⏳ Parent portal integration",
-    "phase6": "⏳ App packaging (PWA, multi-school)"
+  "nextSessionOptions": {
+    "optionA": {
+      "name": "Whale Admin Styling",
+      "time": "30 min",
+      "description": "Fix broken admin cards/buttons styling"
+    },
+    "optionB": {
+      "name": "Parent Portal Link",
+      "time": "1 hr",
+      "description": "Teachers generate parent access links for students"
+    },
+    "optionC": {
+      "name": "Switch to Jeffy",
+      "time": "Variable",
+      "description": "Start 1688 pipeline or Zone Partner onboarding"
+    }
+  },
+
+  "whalePlan": {
+    "done": ["Multi-tenant isolation", "Admin assignment tool", "Video reliability"],
+    "todo": ["Admin styling fixes", "Parent portal polish"],
+    "future": ["PWA packaging", "Multi-school support"]
+  },
+
+  "jeffyPlan": {
+    "status": "Production-ready, 62/62 tests passing",
+    "next": ["1688 product pipeline", "Zone Partner onboarding", "Influencer outreach"],
+    "repo": "Railway deployed"
   },
 
   "demoAccounts": {
     "admin": "Tredoux / 870602",
-    "parent": "demo@test.com",
-    "teacher": "Any name / 123"
+    "teacher": "Any name / 123",
+    "parent": "demo@test.com"
+  },
+
+  "keyUrls": {
+    "production": "https://www.teacherpotato.xyz",
+    "assignStudents": "/admin/teacher-students",
+    "teacherLogin": "/teacher",
+    "curriculum": "/teacher/curriculum"
   }
 }
