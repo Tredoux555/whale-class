@@ -19,6 +19,16 @@ interface Child {
   };
 }
 
+const AVATAR_COLORS = [
+  'from-pink-500 to-rose-500',
+  'from-purple-500 to-violet-500',
+  'from-blue-500 to-indigo-500',
+  'from-cyan-500 to-teal-500',
+  'from-emerald-500 to-green-500',
+  'from-amber-500 to-orange-500',
+  'from-red-500 to-pink-500',
+];
+
 export default function TeacherClassroomPage() {
   const router = useRouter();
   const [children, setChildren] = useState<Child[]>([]);
@@ -34,11 +44,7 @@ export default function TeacherClassroomPage() {
       return;
     }
     setTeacherName(name);
-    
-    // Ensure cookie is set (for users who logged in before cookie system)
     ensureCookieSet(name);
-    
-    // ALL teachers now fetch from API (properly filtered by teacher_children)
     fetchChildren(name);
   }, [router]);
 
@@ -56,16 +62,13 @@ export default function TeacherClassroomPage() {
 
   const fetchChildren = async (teacherNameParam?: string) => {
     try {
-      // Pass teacher name as query param as backup to cookie
       const url = teacherNameParam 
         ? `/api/teacher/classroom?teacher=${encodeURIComponent(teacherNameParam)}`
         : '/api/teacher/classroom';
       const res = await fetch(url);
       const data = await res.json();
       setChildren(data.children || []);
-      if (data.message) {
-        setMessage(data.message);
-      }
+      if (data.message) setMessage(data.message);
     } catch (error) {
       console.error('Failed to fetch children:', error);
     } finally {
@@ -82,137 +85,210 @@ export default function TeacherClassroomPage() {
     return Math.round(((child.progress?.mastered || 0) / totalWorks) * 100);
   };
 
+  const getAvatarColor = (index: number) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+
+  // Calculate totals
+  const totalMastered = children.reduce((sum, c) => sum + (c.progress?.mastered || 0), 0);
+  const totalPracticing = children.reduce((sum, c) => sum + (c.progress?.practicing || 0), 0);
+  const totalPresented = children.reduce((sum, c) => sum + (c.progress?.presented || 0), 0);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading classroom...</p>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <span className="text-3xl animate-bounce">🐋</span>
+          </div>
+          <p className="text-gray-600 font-medium">Loading classroom...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">👥 My Classroom</h1>
-          <p className="text-gray-600">{children.length} students • {teacherName}</p>
-        </div>
-        <div className="flex gap-2">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <span className="text-3xl">👥</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">My Classroom</h1>
+                <p className="text-emerald-100">{children.length} students • {teacherName}</p>
+              </div>
+            </div>
+            {children.length > 0 && (
+              <Link
+                href="/teacher/progress"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-600 rounded-xl font-medium hover:bg-emerald-50 transition-colors shadow-lg"
+              >
+                <span>📊</span>
+                <span className="hidden sm:inline">Track Progress</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Stats Bar */}
           {children.length > 0 && (
-            <Link
-              href="/teacher/progress"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              📊 Track Progress
-            </Link>
+            <div className="flex gap-6 mt-6 pt-4 border-t border-white/20">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{totalMastered}</div>
+                <div className="text-xs text-emerald-200">Mastered</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{totalPracticing}</div>
+                <div className="text-xs text-emerald-200">Practicing</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{totalPresented}</div>
+                <div className="text-xs text-emerald-200">Presented</div>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Message from API */}
-      {message && children.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-          <p className="text-amber-800">{message}</p>
-        </div>
-      )}
+      <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Message from API */}
+        {message && children.length === 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <p className="text-amber-800">{message}</p>
+          </div>
+        )}
 
-      {/* Search */}
-      {children.length > 0 && (
-        <div className="mb-6">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search students..."
-            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-          />
-        </div>
-      )}
-
-      {/* Empty State */}
-      {children.length === 0 && !message && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <div className="text-6xl mb-4">👶</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No students assigned</h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Contact your administrator to assign students to your classroom.
-          </p>
-        </div>
-      )}
-
-      {/* Children Grid */}
-      {filteredChildren.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredChildren.map((child) => (
-            <div
-              key={child.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div className="p-4 flex items-center gap-3">
-                <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
-                  {child.name.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">{child.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    Age {child.age?.toFixed(1) || '?'} • {child.age_group || 'Unknown'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 pb-2">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>Progress</span>
-                  <span>{getProgressPercentage(child)}% mastered</span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full flex">
-                    <div className="bg-green-500" style={{ width: `${((child.progress?.mastered || 0) / 268) * 100}%` }} />
-                    <div className="bg-blue-500" style={{ width: `${((child.progress?.practicing || 0) / 268) * 100}%` }} />
-                    <div className="bg-yellow-500" style={{ width: `${((child.progress?.presented || 0) / 268) * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-                <div className="flex justify-between text-xs">
-                  <div className="text-center">
-                    <div className="font-semibold text-yellow-600">{child.progress?.presented || 0}</div>
-                    <div className="text-gray-500">Presented</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-semibold text-blue-600">{child.progress?.practicing || 0}</div>
-                    <div className="text-gray-500">Practicing</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-semibold text-green-600">{child.progress?.mastered || 0}</div>
-                    <div className="text-gray-500">Mastered</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
-                <Link
-                  href={`/teacher/progress?child=${child.id}`}
-                  className="flex-1 text-center text-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-2 rounded-lg transition-colors"
-                >
-                  📊 Progress
-                </Link>
-                <Link
-                  href={`/admin/child-progress/${child.id}`}
-                  className="flex-1 text-center text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 py-2 rounded-lg transition-colors"
-                >
-                  📋 Report
-                </Link>
-              </div>
+        {/* Search */}
+        {children.length > 0 && (
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search students..."
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              />
             </div>
-          ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {children.length === 0 && !message && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">👶</span>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">No students assigned</h2>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Contact your administrator to assign students to your classroom.
+            </p>
+          </div>
+        )}
+
+        {/* Children Grid */}
+        {filteredChildren.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filteredChildren.map((child, index) => (
+              <div
+                key={child.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+              >
+                {/* Header with Avatar */}
+                <div className={`bg-gradient-to-br ${getAvatarColor(index)} p-4`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                      {child.name.charAt(0)}
+                    </div>
+                    <div className="text-white">
+                      <h3 className="font-bold text-lg truncate">{child.name}</h3>
+                      <p className="text-white/80 text-sm">
+                        Age {child.age?.toFixed(1) || '?'} • {child.age_group || 'Unknown'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Section */}
+                <div className="p-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span className="font-medium text-gray-900">{getProgressPercentage(child)}%</span>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
+                    <div className="h-full flex">
+                      <div 
+                        className="bg-green-500 transition-all duration-500" 
+                        style={{ width: `${((child.progress?.mastered || 0) / 268) * 100}%` }} 
+                      />
+                      <div 
+                        className="bg-blue-500 transition-all duration-500" 
+                        style={{ width: `${((child.progress?.practicing || 0) / 268) * 100}%` }} 
+                      />
+                      <div 
+                        className="bg-yellow-500 transition-all duration-500" 
+                        style={{ width: `${((child.progress?.presented || 0) / 268) * 100}%` }} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex justify-between text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                      <span className="text-gray-600">{child.progress?.presented || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="text-gray-600">{child.progress?.practicing || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="text-gray-600">{child.progress?.mastered || 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex gap-2">
+                  <Link
+                    href={`/teacher/progress?child=${child.id}`}
+                    className="flex-1 text-center text-sm bg-emerald-100 text-emerald-700 hover:bg-emerald-200 py-2.5 rounded-xl transition-colors font-medium"
+                  >
+                    📊 Progress
+                  </Link>
+                  <Link
+                    href={`/admin/child-progress/${child.id}`}
+                    className="flex-1 text-center text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 py-2.5 rounded-xl transition-colors font-medium"
+                  >
+                    📋 Report
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Back Link */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/teacher/dashboard"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Dashboard</span>
+          </Link>
         </div>
-      )}
+      </main>
     </div>
   );
 }
