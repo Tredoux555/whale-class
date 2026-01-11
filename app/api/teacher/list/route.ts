@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET() {
   try {
-    // Get all teachers
+    const supabase = getSupabase();
+    
     const { data: teachers, error: teacherError } = await supabase
       .from('simple_teachers')
       .select('id, name, is_active, last_login, created_at')
@@ -20,7 +23,6 @@ export async function GET() {
       return NextResponse.json({ teachers: [] });
     }
 
-    // Get student counts for each teacher from teacher_children table
     const { data: assignments, error: assignError } = await supabase
       .from('teacher_children')
       .select('teacher_id');
@@ -29,7 +31,6 @@ export async function GET() {
       console.error('Error fetching assignments:', assignError);
     }
 
-    // Count students per teacher
     const studentCounts: Record<string, number> = {};
     if (assignments) {
       for (const a of assignments) {
@@ -37,7 +38,6 @@ export async function GET() {
       }
     }
 
-    // Merge counts into teachers
     const teachersWithCounts = (teachers || []).map(t => ({
       id: t.id,
       name: t.name,
