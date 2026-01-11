@@ -1221,3 +1221,90 @@ Dockerfile now installs:
 ---
 
 *Session 18 - PDF flashcards finally fill edge-to-edge, audio upload working* 🐋
+
+
+---
+
+## SESSION 19 - January 11, 2026 ✅ COMPLETE
+
+### 🏫 PRINCIPAL PORTAL + PARENT BYPASS
+
+**Started:** ~20:10 Beijing  
+**Completed:** ~21:00 Beijing  
+**Status:** ✅ All portals polished and connected
+
+---
+
+### WHAT WAS BUILT
+
+**Principal Portal:**
+| Page | URL | Features |
+|------|-----|----------|
+| Dashboard | `/principal` | Stats, teacher list, 6 quick-access cards |
+| Teachers | `/principal/teachers` | Real API data, add modal, student counts |
+| Classrooms | `/principal/classrooms` | Overview by teacher, capacity bars |
+
+**Parent Bypass:**
+- `/parent/demo` → Auto-logs in as demo family (no email entry)
+
+**APIs Created:**
+- `GET /api/teacher/list` - Teachers with student counts
+- `GET/POST/DELETE /api/admin/teachers` - CRUD for teachers
+
+**UI Improvements:**
+- Homepage now has Parents link in header
+- Landing page (/montree) demo section uses bypass route
+
+---
+
+### FILES CREATED/MODIFIED
+
+| File | Action |
+|------|--------|
+| `/app/principal/page.tsx` | REWRITTEN - Full polish |
+| `/app/principal/teachers/page.tsx` | REWRITTEN - Real API |
+| `/app/principal/classrooms/page.tsx` | CREATED |
+| `/app/parent/demo/page.tsx` | CREATED |
+| `/app/api/teacher/list/route.ts` | CREATED |
+| `/app/api/admin/teachers/route.ts` | CREATED |
+| `/app/page.tsx` | Added Parents link |
+| `/app/montree/page.tsx` | Fixed demo link |
+| `/app/admin/montree/page.tsx` | Fixed links |
+
+---
+
+### COMMITS
+
+| Commit | Description |
+|--------|-------------|
+| `e03e949` | Principal Dashboard + Parent bypass |
+| `9bca923` | Teachers + Classrooms pages |
+| `de9f96c` | Teacher list API |
+| `d114ee1` | Admin teachers API |
+| `45b2f5d` | Brain update |
+| `7021e5c` | Parents link on homepage |
+| `ae8af11` | Session checkpoint |
+| `20c3357` | Fix parent demo link on landing |
+
+---
+
+### ENTRY POINTS NOW CLEAR
+
+| Role | Entry Point |
+|------|-------------|
+| Students | Homepage `/` → Videos, Games |
+| Parents | Homepage → Parents → `/parent/demo` |
+| Teachers | Homepage → Teachers → `/teacher` |
+| Principal | `/principal` |
+| Admin | `/admin` (requires login) |
+
+---
+
+### STATUS
+
+✅ **ALL PORTALS READY FOR JAN 16 LAUNCH**
+
+---
+
+*Session 19 completed: January 11, 2026*
+*5 days until Jan 16 presentation*
