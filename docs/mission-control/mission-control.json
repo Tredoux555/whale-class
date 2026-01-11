@@ -1,21 +1,36 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T11:05:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Phase 2: API Isolation",
-  "status": "✅ Phase 1 COMPLETE - Database ready, now updating API",
+  "lastUpdated": "2026-01-11T11:25:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Phase 2 AUDIT & FIX",
+  "status": "🔧 Fixing 3 bugs found in audit",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
   "session15Progress": {
-    "phase1": "✅ COMPLETE - SQL migration ran successfully",
-    "tablesCreated": ["simple_teachers (7 teachers)", "teacher_children (junction)"],
-    "childrenAssigned": "All active children assigned to Tredoux",
-    "videoSearchTerm": "Column added, 10+ terms populated",
-    "phase2": "🔄 IN PROGRESS - Updating /api/teacher/classroom"
+    "phase1": "✅ COMPLETE - Database tables created",
+    "phase2": "🔧 IN PROGRESS - Fixing bugs from audit",
+    "auditFindings": {
+      "bug1": "FIXED - /teacher/classroom bypassed API for non-Tredoux teachers",
+      "bug2": "FIXED - /api/teacher/progress had no ownership check",
+      "bug3": "FIXED - Cookie not set for existing users (now auto-refreshes)"
+    },
+    "filesModified": [
+      "/app/teacher/classroom/page.tsx - Now ALL teachers use API",
+      "/app/api/teacher/progress/route.ts - Added verifyTeacherOwnsChild()",
+      "/app/teacher/progress/page.tsx - Added cookie refresh + teacher param"
+    ]
   },
 
-  "currentTask": "Update /api/teacher/classroom to filter by teacher_id",
+  "nextLogicalSteps": {
+    "immediate": "Build, test, commit fixes",
+    "phase2Complete": "Verify isolation works: John sees 0, Tredoux sees 22",
+    "phase3": "Video search terms in curriculum UI modal",
+    "phase4": "Circle Planner feature parity",
+    "adminTool": "Need /admin UI to assign children to teachers"
+  },
+
+  "criticalInsight": "Teachers currently have 0 students. Need admin tool to assign students to teachers before they can use the system!",
 
   "demoAccounts": {
     "admin": "Tredoux / 870602",

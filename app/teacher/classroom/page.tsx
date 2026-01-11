@@ -25,9 +25,7 @@ export default function TeacherClassroomPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [teacherName, setTeacherName] = useState<string | null>(null);
-  const [showAddStudent, setShowAddStudent] = useState(false);
-  const [newStudent, setNewStudent] = useState({ name: '', birthDate: '', ageGroup: '3-4' });
-  const [adding, setAdding] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const name = localStorage.getItem('teacherName');
@@ -37,63 +35,42 @@ export default function TeacherClassroomPage() {
     }
     setTeacherName(name);
     
-    // Only Tredoux (admin) sees the full student list
-    // Other teachers start with empty classroom
-    if (name === 'Tredoux') {
-      fetchChildren();
-    } else {
-      // Load teacher-specific students from localStorage for now
-      const savedStudents = localStorage.getItem(`classroom_${name}`);
-      if (savedStudents) {
-        setChildren(JSON.parse(savedStudents));
-      }
-      setLoading(false);
-    }
+    // Ensure cookie is set (for users who logged in before cookie system)
+    ensureCookieSet(name);
+    
+    // ALL teachers now fetch from API (properly filtered by teacher_children)
+    fetchChildren(name);
   }, [router]);
 
-  const fetchChildren = async () => {
+  const ensureCookieSet = async (name: string) => {
     try {
-      const res = await fetch('/api/teacher/classroom');
+      await fetch('/api/teacher/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+    } catch (err) {
+      console.log('Cookie refresh failed, continuing');
+    }
+  };
+
+  const fetchChildren = async (teacherNameParam?: string) => {
+    try {
+      // Pass teacher name as query param as backup to cookie
+      const url = teacherNameParam 
+        ? `/api/teacher/classroom?teacher=${encodeURIComponent(teacherNameParam)}`
+        : '/api/teacher/classroom';
+      const res = await fetch(url);
       const data = await res.json();
       setChildren(data.children || []);
+      if (data.message) {
+        setMessage(data.message);
+      }
     } catch (error) {
       console.error('Failed to fetch children:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const addStudent = async () => {
-    if (!newStudent.name || !teacherName) return;
-    
-    setAdding(true);
-    
-    // Create a local student (for non-admin teachers)
-    const student: Child = {
-      id: `local_${Date.now()}`,
-      name: newStudent.name,
-      date_of_birth: newStudent.birthDate || new Date().toISOString().split('T')[0],
-      age_group: newStudent.ageGroup,
-      photo_url: null,
-      age: newStudent.birthDate ? calculateAge(newStudent.birthDate) : 3,
-      progress: { presented: 0, practicing: 0, mastered: 0, total: 0 }
-    };
-    
-    const updatedChildren = [...children, student];
-    setChildren(updatedChildren);
-    
-    // Save to localStorage for this teacher
-    localStorage.setItem(`classroom_${teacherName}`, JSON.stringify(updatedChildren));
-    
-    setNewStudent({ name: '', birthDate: '', ageGroup: '3-4' });
-    setShowAddStudent(false);
-    setAdding(false);
-  };
-
-  const calculateAge = (birthDate: string) => {
-    const dob = new Date(birthDate);
-    const today = new Date();
-    return (today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
   };
 
   const filteredChildren = children.filter(child =>
@@ -125,12 +102,6 @@ export default function TeacherClassroomPage() {
           <p className="text-gray-600">{children.length} students • {teacherName}</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowAddStudent(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            ➕ Add Student
-          </button>
           {children.length > 0 && (
             <Link
               href="/teacher/progress"
@@ -141,6 +112,13 @@ export default function TeacherClassroomPage() {
           )}
         </div>
       </div>
+
+      {/* Message from API */}
+      {message && children.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <p className="text-amber-800">{message}</p>
+        </div>
+      )}
 
       {/* Search */}
       {children.length > 0 && (
@@ -156,19 +134,13 @@ export default function TeacherClassroomPage() {
       )}
 
       {/* Empty State */}
-      {children.length === 0 && (
+      {children.length === 0 && !message && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <div className="text-6xl mb-4">👶</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No students yet</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No students assigned</h2>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Add students to your classroom to track their Montessori progress and generate reports.
+            Contact your administrator to assign students to your classroom.
           </p>
-          <button
-            onClick={() => setShowAddStudent(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-          >
-            ➕ Add Your First Student
-          </button>
         </div>
       )}
 
@@ -239,68 +211,6 @@ export default function TeacherClassroomPage() {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Add Student Modal */}
-      {showAddStudent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add Student</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
-                <input
-                  type="text"
-                  value={newStudent.name}
-                  onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-                  placeholder="Enter name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <input
-                  type="date"
-                  value={newStudent.birthDate}
-                  onChange={(e) => setNewStudent({ ...newStudent, birthDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
-                <select
-                  value={newStudent.ageGroup}
-                  onChange={(e) => setNewStudent({ ...newStudent, ageGroup: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="2-3">2-3 years</option>
-                  <option value="3-4">3-4 years</option>
-                  <option value="4-5">4-5 years</option>
-                  <option value="5-6">5-6 years</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowAddStudent(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addStudent}
-                disabled={!newStudent.name || adding}
-                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {adding ? 'Adding...' : 'Add Student'}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
