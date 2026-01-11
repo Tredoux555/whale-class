@@ -1,85 +1,42 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T12:05:00+08:00",
-  "currentPhase": "Letter Tracer v2 - IMMACULATE PATHS",
-  "status": "🚀 Deploying fixed letter paths",
+  "lastUpdated": "2026-01-12T12:40:00+08:00",
+  "currentPhase": "Letter Tracer v2 - STROKE ORDER POLISH",
+  "status": "🚀 Deployed stroke order fixes",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "testUrl": "www.teacherpotato.xyz/games/letter-tracer",
 
-  "sessionSummary": {
-    "whatWeDid": [
-      "1. Identified issues: 'a' had descending tail like 'q', 'h' looked like 'n', 'g' went off screen",
-      "2. Deep research on correct Montessori stroke order from 6+ authoritative sources",
-      "3. Created comprehensive stroke guide for all 26 lowercase letters",
-      "4. Rewrote ALL lowercase SVG paths with correct coordinates",
-      "5. Increased canvas from 250x250 to 300x300 for better fit",
-      "6. Updated uppercase paths to match new canvas size",
-      "7. Build passed successfully"
-    ],
-    "whatWeAreDoing": [
-      "Deploying fixed Letter Tracer to production",
-      "Waiting for Railway auto-build (~2-3 min)"
-    ],
-    "whatWeAreTryingToAchieve": [
-      "Letters that match the Sass Phonics font shown in header",
-      "Correct educational stroke order for 3-4 year olds",
-      "Proper ascenders: b,d,f,h,k,l,t reach TOP line (y=40)",
-      "Proper descenders: g,j,p,q,y extend below baseline (y=260) but stay ON screen",
-      "All letters fit properly in canvas - no clipping",
-      "Immaculate, professional quality letter tracing"
-    ]
+  "fixesApplied": {
+    "b": "Changed to CONTINUOUS: down from top, retrace up, around clockwise - no M in middle",
+    "f": "Adjusted hook position, smoother curve",
+    "g": "Fixed descender to y=255 (stays on screen), hook connects properly",
+    "h": "Made CONTINUOUS: down, retrace up, hump - no M in middle",
+    "j": "Adjusted descender to y=255, improved hook",
+    "k": "Split into 3 strokes: stem, diagonal in, diagonal out (correct formation)",
+    "m": "Changed to DOWN FIRST: start at top, down, retrace up, hump, down, retrace, hump, down - CONTINUOUS",
+    "n": "Changed to DOWN FIRST: start at top, down, retrace up, hump, down - CONTINUOUS",
+    "p": "Made CONTINUOUS: down to descender, retrace up, around clockwise",
+    "q": "Fixed connection: circle flows into descender smoothly, tail at y=255",
+    "r": "Changed to DOWN FIRST: start at top, down, retrace up, curve right - CONTINUOUS",
+    "t": "Adjusted starting position",
+    "u": "Added final downstroke on right side - now goes down, curve, up, DOWN",
+    "w": "Adjusted middle point for better shape",
+    "y": "Adjusted positions for cleaner look"
   },
 
-  "coordinateSystem": {
-    "canvas": "300x300 pixels",
-    "topLine": "y=40 (ascender top for b,d,f,h,k,l,t)",
-    "midline": "y=100 (x-height top for a,c,e,m,n,o,r,s,u,v,w,x,z)",
-    "baseline": "y=200 (bottom of most letters)",
-    "descenderLine": "y=260 (bottom of g,j,p,q,y)",
-    "horizontalCenter": "x=150",
-    "padding": "40px on all sides ensures nothing clips"
+  "strokeOrderPrinciple": "All vertical strokes go TOP to BOTTOM (down first, then retrace up if needed)",
+  
+  "continuousVsMultiStroke": {
+    "continuous": ["a","b","c","d","e","g","h","l","m","n","o","p","q","r","s","u","v","w","z"],
+    "multiStroke": ["f (stem+cross)", "i (stem+dot)", "j (stem+dot)", "k (stem+diagonals)", "t (stem+cross)", "x (two diagonals)", "y (two diagonals)"]
   },
 
-  "strokeOrderRules": {
-    "universalPrinciples": [
-      "All letters start at TOP or MIDLINE - never baseline",
-      "Vertical strokes move DOWNWARD (pull, don't push)",
-      "Circular strokes (c,o,a,d,g,q) go COUNTERCLOCKWISE",
-      "Horizontal strokes go LEFT to RIGHT",
-      "Only 6 letters need pencil lifts: f,i,j,k,t,x"
-    ],
-    "letterCategories": {
-      "tallLetters": "b,d,f,h,k,l,t - stem starts at y=40 (TOP line)",
-      "shortLetters": "a,c,e,m,n,o,r,s,u,v,w,x,z - start at y=100 (midline)",
-      "descenders": "g,j,p,q,y - extend to y=260 (below baseline)",
-      "circleFirst": "a,c,d,g,o,q - start with counterclockwise circle",
-      "lineFirst": "b,h,k,l,m,n,p,r - start with vertical line down"
-    },
-    "criticalDistinctions": {
-      "b_vs_d": "b starts with LINE (bat then ball), d starts with CIRCLE (Magic C first)",
-      "g_vs_q": "g hooks LEFT, q hooks RIGHT",
-      "m_vs_n": "m has TWO humps, n has ONE hump",
-      "h_vs_n": "h has TALL stem (y=40), n starts at midline (y=100)"
-    }
-  },
-
-  "researchSources": [
-    "Handwriting Without Tears (Learning Without Tears)",
-    "Zaner-Bloser handwriting program",
-    "D'Nealian handwriting",
-    "Montessori sandpaper letters",
-    "Neuhaus Education Center / Reading Universe",
-    "OT Toolbox (Occupational Therapy resources)"
-  ],
-
-  "nextStepsAfterDeploy": [
-    "1. Verify all 26 lowercase letters display correctly",
-    "2. Check 'h' has tall stem reaching top",
-    "3. Check 'g' descender stays on screen",
-    "4. Check 'a' has no descending tail",
-    "5. Test on tablet for touch accuracy",
-    "6. If any issues, fine-tune individual paths"
+  "nextSteps": [
+    "Test all 26 letters on production",
+    "Verify stroke animations flow correctly",
+    "Check that DOWN-first pattern shows in demo",
+    "Fine-tune any remaining issues"
   ],
 
   "demoAccounts": {
