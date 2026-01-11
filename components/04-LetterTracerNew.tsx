@@ -27,88 +27,88 @@ interface Waypoint extends Point { collected: boolean; index: number; }
 // - Descender line (bottom of g,j,p,q,y): y=260
 // - Horizontal center: x=150, letter width ~100px (100-200)
 // - Padding: 40px on all sides ensures nothing goes off canvas
+//
+// STROKE ORDER RULES:
+// - Vertical strokes go TOP to BOTTOM (down first)
+// - Circle letters (a,c,d,g,o,q) start at 2 o'clock, go COUNTERCLOCKWISE
+// - Letters with stems: DOWN first, then retrace UP, then continue
+// - Continuous paths where possible (no M in middle except for dots/crosses)
 // =============================================================================
 const LOWERCASE_PATHS: Record<string, string> = {
   // a: Start 2 o'clock, counterclockwise circle, up right side, down to baseline
-  // Bowl sits between midline and baseline, stem on right
-  a: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 100 L 190 200",
+  a: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 100 L 190 200",
   
-  // b: Start TOP line, down to baseline, retrace up to midline, clockwise bump
-  // Tall letter - stem goes from y=40 to y=200
-  b: "M 100 40 L 100 200 M 100 150 Q 100 200 150 200 Q 200 200 200 150 Q 200 100 150 100 Q 100 100 100 150",
+  // b: DOWN from top, retrace UP to midline, CLOCKWISE bump - CONTINUOUS
+  b: "M 100 40 L 100 200 L 100 100 Q 100 100 150 100 Q 200 100 200 150 Q 200 200 150 200 Q 100 200 100 200",
   
   // c: Start 2 o'clock, counterclockwise curve, stop with opening facing right
   c: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 180",
   
   // d: Start 2 o'clock counterclockwise circle, then UP to top line, down to baseline  
-  // Circle first (like 'c'), then tall stem
-  d: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 M 190 40 L 190 200",
+  d: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 40 L 190 200",
   
   // e: Start middle, horizontal right, then counterclockwise around, stop with opening
   e: "M 110 150 L 190 150 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 175",
   
-  // f: Hook from top right, down to baseline, LIFT, cross at midline
-  f: "M 190 60 Q 160 40 140 60 L 140 200 M 100 100 L 180 100",
+  // f: Hook from top, DOWN to baseline, LIFT, cross at midline
+  f: "M 180 55 Q 150 40 130 60 L 130 200 M 95 100 L 165 100",
   
-  // g: Start 2 o'clock counterclockwise, down BELOW baseline, hook LEFT
-  // Descender goes to y=260
-  g: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 260 Q 190 280 150 280 Q 115 280 105 260",
+  // g: Start 2 o'clock counterclockwise, continues DOWN below baseline, hook LEFT
+  g: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 255 Q 190 270 150 270 Q 115 270 105 250",
   
-  // h: Start TOP line, down to baseline, retrace up, hump RIGHT, down to baseline
-  // CRITICAL: Stem from y=40, hump is at midline level (y=100-200)
-  h: "M 100 40 L 100 200 M 100 140 Q 100 100 150 100 Q 200 100 200 140 L 200 200",
+  // h: DOWN from top to baseline, retrace UP, hump RIGHT, DOWN - CONTINUOUS
+  h: "M 100 40 L 100 200 L 100 110 Q 100 100 150 100 Q 200 100 200 130 L 200 200",
   
-  // i: Down from midline to baseline, LIFT, dot above
-  i: "M 150 100 L 150 200 M 150 65 L 151 66",
+  // i: DOWN from midline to baseline, LIFT, dot above
+  i: "M 150 100 L 150 200 M 150 70 L 151 71",
   
-  // j: Down from midline BELOW baseline, hook LEFT, LIFT, dot above
-  j: "M 160 100 L 160 260 Q 160 280 120 280 Q 90 280 80 260 M 160 65 L 161 66",
+  // j: DOWN from midline BELOW baseline, curve hook LEFT, LIFT, dot above
+  j: "M 160 100 L 160 255 Q 160 270 120 270 Q 90 270 80 250 M 160 70 L 161 71",
   
-  // k: Start TOP line, down to baseline, LIFT, diagonal IN, diagonal OUT
-  k: "M 100 40 L 100 200 M 190 100 L 100 150 L 190 200",
+  // k: DOWN from top to baseline, LIFT, diagonal IN to stem, diagonal OUT - separate strokes
+  k: "M 100 40 L 100 200 M 185 100 L 100 145 M 100 145 L 185 200",
   
-  // l: Start TOP line, straight down to baseline (simplest letter)
+  // l: DOWN from top line to baseline (simplest letter)
   l: "M 150 40 L 150 200",
   
-  // m: Down, retrace, hump, down, retrace, hump, down (TWO humps)
-  // Wider letter - needs more horizontal space
-  m: "M 60 200 L 60 100 Q 60 80 100 80 Q 140 80 140 110 L 140 200 M 140 110 Q 140 80 180 80 Q 220 80 220 110 L 220 200",
+  // m: DOWN first, retrace UP, hump, DOWN, retrace UP, hump, DOWN - CONTINUOUS
+  m: "M 55 100 L 55 200 L 55 110 Q 55 85 95 85 Q 135 85 135 110 L 135 200 L 135 110 Q 135 85 175 85 Q 215 85 215 110 L 215 200",
   
-  // n: Down, retrace, hump, down (ONE hump)
-  n: "M 100 200 L 100 100 Q 100 80 150 80 Q 200 80 200 110 L 200 200",
+  // n: DOWN first, retrace UP, hump, DOWN - CONTINUOUS
+  n: "M 100 100 L 100 200 L 100 110 Q 100 85 150 85 Q 200 85 200 110 L 200 200",
   
   // o: Start 2 o'clock, counterclockwise full circle back to start
   o: "M 190 150 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150",
   
-  // p: Down from midline BELOW baseline, retrace up, clockwise bump
-  p: "M 100 100 L 100 260 M 100 150 Q 100 100 150 100 Q 200 100 200 150 Q 200 200 150 200 Q 100 200 100 150",
+  // p: DOWN from midline BELOW baseline, retrace UP, clockwise bump - CONTINUOUS
+  p: "M 100 100 L 100 260 L 100 100 Q 100 100 150 100 Q 200 100 200 150 Q 200 200 150 200 Q 100 200 100 150",
   
-  // q: Start 2 o'clock counterclockwise, down BELOW baseline, tail kicks RIGHT
-  q: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 260 L 220 240",
+  // q: Counterclockwise circle, continues DOWN to descender, tail kicks RIGHT - CONTINUOUS
+  q: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 185 200 190 180 L 190 255 L 215 235",
   
-  // r: Down, retrace up, small curve to the right (partial hump - doesn't complete)
-  r: "M 100 200 L 100 100 Q 100 80 135 80 Q 170 80 185 100",
+  // r: DOWN first, retrace UP, small curve to the right - CONTINUOUS
+  r: "M 100 100 L 100 200 L 100 110 Q 100 90 130 90 Q 165 90 180 105",
   
   // s: Counterclockwise top curve, reverse direction, clockwise bottom curve
-  s: "M 185 115 Q 150 100 115 115 Q 80 135 150 150 Q 220 165 185 185 Q 150 200 115 185",
+  s: "M 180 115 Q 150 100 120 115 Q 85 130 150 150 Q 215 170 180 185 Q 150 200 120 185",
   
-  // t: Down from above midline (shorter than b/d/f/h/k/l), LIFT, cross at midline
-  t: "M 150 60 L 150 200 M 110 100 L 190 100",
+  // t: DOWN from above midline to baseline, LIFT, cross at midline
+  t: "M 150 55 L 150 200 M 110 100 L 190 100",
   
-  // u: Down, curve at bottom, up
-  u: "M 100 100 L 100 170 Q 100 200 150 200 Q 200 200 200 170 L 200 100",
+  // u: DOWN, curve at bottom, UP, then DOWN again to complete - CONTINUOUS
+  u: "M 100 100 L 100 165 Q 100 200 150 200 Q 200 200 200 165 L 200 100 L 200 200",
   
   // v: Diagonal down to center point, diagonal back up
   v: "M 80 100 L 150 200 L 220 100",
   
   // w: Down, up, down, up (zigzag - 4 points)
-  w: "M 50 100 L 90 200 L 150 130 L 210 200 L 250 100",
+  w: "M 50 100 L 90 200 L 150 120 L 210 200 L 250 100",
   
   // x: Diagonal down-right, LIFT, diagonal down-left (strokes cross)
   x: "M 90 100 L 210 200 M 210 100 L 90 200",
   
   // y: Diagonal to center, LIFT, diagonal continuing BELOW baseline
-  y: "M 90 100 L 150 160 M 210 100 L 110 260",
+  y: "M 90 100 L 150 155 M 210 100 L 115 255",
   
   // z: Horizontal right, diagonal down-left, horizontal right
   z: "M 90 100 L 210 100 L 90 200 L 210 200",
