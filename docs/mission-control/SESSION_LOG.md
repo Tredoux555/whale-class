@@ -435,3 +435,131 @@ git push
 ---
 
 *Session ended: January 12, 2026 12:45 Beijing*
+
+---
+
+## SESSION 15 - January 11, 2026 🔄 IN PROGRESS
+
+### 🌳 INDEPENDENT MONTREE - MASTER PLAN
+
+**Started:** ~10:20 Beijing  
+**Status:** 📋 Planning phase - analyzing architecture
+
+---
+
+### ISSUES DISCOVERED (from 3 screenshots)
+
+| Issue | Severity | Description |
+|-------|----------|-------------|
+| **Data Leakage** | 🚨 CRITICAL | Teacher John sees ALL students (Tredoux's), not his own |
+| **Video URLs** | ⚠️ HIGH | Direct YouTube URLs decay over time, links break |
+| **Circle Planner** | ⚠️ MEDIUM | Admin has features (Flashcards btn) teacher version lacks |
+
+---
+
+### ROOT CAUSE ANALYSIS
+
+**Data Leakage:**
+```
+/api/teacher/classroom/route.ts
+→ Returns ALL children from database
+→ No filtering by teacher_id
+→ No teacher_children junction table exists
+```
+
+**Video URLs:**
+```
+curriculum_roadmap.video_url = direct YouTube link
+→ Videos get removed/made private
+→ Links break
+→ Need: video_search_term instead, generate fresh search
+```
+
+---
+
+### SOLUTION: Independent Montree Architecture
+
+Multi-tenant Montessori platform with proper data isolation:
+
+**Hierarchy:**
+```
+Principal (Super Admin)
+    └── Teachers (each sees ONLY their students)
+           └── Parents (see ONLY their children)
+```
+
+**Database Changes Needed:**
+```sql
+-- 1. Teacher-Student ownership
+CREATE TABLE teacher_children (
+  id UUID PRIMARY KEY,
+  teacher_id UUID REFERENCES simple_teachers(id),
+  child_id UUID REFERENCES children(id),
+  UNIQUE(teacher_id, child_id)
+);
+
+-- 2. Video search terms instead of URLs
+ALTER TABLE curriculum_roadmap 
+ADD COLUMN video_search_term TEXT;
+-- Example: "Montessori Pink Tower presentation"
+```
+
+---
+
+### 6-PHASE IMPLEMENTATION PLAN
+
+| Phase | Description | Timeline |
+|-------|-------------|----------|
+| 1 | Database Schema (teacher_children, video_search_term) | Week 1 |
+| 2 | Teacher Data Isolation (filter APIs by teacher) | Week 1-2 |
+| 3 | Video Search Terms (populate 342 works) | Week 2 |
+| 4 | Feature Parity (match admin features in teacher portal) | Week 2 |
+| 5 | Parent Portal Integration (link via teacher) | Week 3 |
+| 6 | App Packaging (PWA, multi-school, Stripe) | Week 4+ |
+
+---
+
+### FILES ANALYZED THIS SESSION
+
+- `/api/teacher/classroom/route.ts` - Found the leak (no filtering)
+- `/migrations/023_teacher_portal.sql` - simple_teachers table structure
+- `/migrations/016_whale_class_children.sql` - children table
+- `/migrations/003_montree_progress_tracking.sql` - progress tracking
+- `/migrations/018_curriculum_video_urls.sql` - current video_url approach
+- `/app/teacher/circle-planner/page.tsx` - missing features vs admin
+- `/lib/auth-multi.ts` - existing RBAC framework (can extend)
+
+---
+
+### FILES CREATED ✅
+
+| File | Purpose |
+|------|---------|
+| `/app/admin/montree/page.tsx` | Visual 6-phase implementation plan with architecture diagram |
+| `/migrations/027_independent_montree.sql` | Full migration: teacher_children table + video_search_term + 50+ search terms |
+| `/docs/mission-control/UNIFICATION_MASTERPLAN.md` | Complete technical specification |
+
+---
+
+### CHECKPOINT 10:45 Beijing
+
+**Completed:**
+1. ✅ Created `/admin/montree` page with full visual plan
+2. ✅ Created SQL migration 027 with:
+   - teacher_children junction table
+   - video_search_term column
+   - Auto-assign existing children to Tredoux
+   - 50+ video search terms populated
+3. ✅ Created UNIFICATION_MASTERPLAN.md
+
+**In Progress:**
+4. ⏳ Add /admin/montree link to admin dashboard
+
+**Next:**
+5. RUN migration 027 in Supabase
+6. Update /api/teacher/classroom to filter by teacher_id
+7. Test isolation: John sees only John's students
+
+---
+
+*Session 15 checkpoint: January 11, 2026 10:45 Beijing*

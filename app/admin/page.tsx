@@ -57,8 +57,8 @@ const DEFAULT_CARDS: DashboardCard[] = [
   // Core System
   {
     id: 'montree',
-    title: 'Montree',
-    description: 'Curriculum tracking & progress',
+    title: 'Independent Montree',
+    description: 'Multi-tenant platform plan',
     href: '/admin/montree',
     icon: '🌳',
     colorKey: 'green',
