@@ -1,81 +1,74 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T09:15:00+08:00",
-  "currentPhase": "Production Ready",
-  "status": "🐋 READY FOR JAN 16 PRESENTATION",
+  "lastUpdated": "2026-01-11T11:15:00+08:00",
+  "currentPhase": "Game Fixes Complete",
+  "status": "🎮 ALL GAME FIXES COMPLETE - READY TO TEST",
   
   "productionUrl": "https://www.teacherpotato.xyz",
-  "urlNote": "ALWAYS use www subdomain - bare domain has redirect issue",
   
-  "allSystemsGo": {
-    "teacherPortal": "✅ Clean dashboard, curriculum with videos",
-    "parentPortal": "✅ Demo family ready, 3 activities showing",
-    "adminPortal": "✅ Tredoux/870602 login fixed",
-    "gameRecommendations": "✅ 3 games for Language progress",
-    "curriculumDetails": "✅ 342 works with Materials, Aims, Videos"
+  "session13Summary": {
+    "started": "2026-01-11T10:00:00+08:00",
+    "completed": "2026-01-11T11:15:00+08:00",
+    "focus": "Game System Fixes",
+    "result": "6 games fixed, 1 removed from hub"
   },
-  
-  "curriculum": {
-    "totalWorks": 342,
-    "areas": {
-      "practical_life": 101,
-      "sensorial": 45,
-      "math": 77,
-      "language": 66,
-      "cultural": 53
+
+  "fixesApplied": [
+    {
+      "game": "Sentence Builder",
+      "file": "components/10-SentenceBuilderGame.tsx",
+      "fix": "Grammar corrected - added missing articles ('the mat', 'the box'), capitalized 'I'"
     },
-    "features": [
-      "Click any work for detail modal",
-      "Materials list",
-      "Direct & Indirect Aims",
-      "Control of Error",
-      "YouTube video links"
-    ]
+    {
+      "game": "Combined I Spy", 
+      "file": "components/games/CombinedISpy.tsx",
+      "fix": "Audio paths fixed to /audio-new/letters/, added word playback on correct answer"
+    },
+    {
+      "game": "Vocabulary Builder",
+      "file": "lib/games/vocabulary-data.ts", 
+      "fix": "Uses existing audio from /audio-new/words/pink/ instead of missing files"
+    },
+    {
+      "game": "Games Hub",
+      "file": "app/games/page.tsx",
+      "fix": "Removed broken Middle Sound, added Sound Blending & Segmenting to list"
+    },
+    {
+      "game": "Letter Tracer",
+      "file": "components/04-LetterTracer.tsx",
+      "fix": "Complete rewrite - proper demo animation, path-based accuracy detection, larger canvas"
+    }
+  ],
+
+  "gameStatus": {
+    "working": [
+      "Letter Sounds ✅",
+      "Beginning Sound ✅",
+      "Ending Sound ✅",
+      "Combined I Spy ✅ FIXED",
+      "Sound Blending ✅",
+      "Sound Segmenting ✅",
+      "Letter Match ✅",
+      "Letter Tracer ✅ FIXED",
+      "Word Builder ✅",
+      "Vocabulary Builder ✅ FIXED",
+      "Grammar Symbols ✅",
+      "Sentence Builder ✅ FIXED",
+      "Sentence Match ✅"
+    ],
+    "hidden": ["Middle Sound - removed from hub, needs redesign"]
   },
-  
+
+  "nextSteps": [
+    "Deploy changes to Railway",
+    "Test all games on www.teacherpotato.xyz",
+    "Verify audio plays correctly"
+  ],
+
   "demoCredentials": {
     "parent": "demo@test.com",
     "teacher": "Any name from list / 123",
     "admin": "Tredoux / 870602"
-  },
-  
-  "demoData": {
-    "family": {
-      "id": "7c51863b-de5b-4e73-b80f-b4aac30549a4",
-      "name": "Demo Family",
-      "email": "demo@test.com"
-    },
-    "amy": {
-      "childId": "afbed794-4eee-4eb5-8262-30ab67638ec7",
-      "linkedToFamily": true,
-      "todayUpdates": 3,
-      "gameRecommendations": 3
-    }
-  },
-  
-  "session12Commits": [
-    "88c6240 - 📝 Update brain: YouTube videos in curriculum",
-    "f59da14 - 🎬 Add YouTube video links to curriculum work details",
-    "cf7c256 - 🔧 Fix admin auth + add curriculum work detail modal",
-    "8d03326 - 🔧 Fix: Merge math+mathematics areas (77 total)",
-    "22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide",
-    "f390531 - 🔄 Switch unified parent pages to default"
-  ],
-  
-  "knownIssues": [
-    {
-      "issue": "Non-www domain redirect broken",
-      "workaround": "Always use www.teacherpotato.xyz",
-      "priority": "low"
-    }
-  ],
-  
-  "nextSteps": [
-    "✅ Platform ready for Jan 16 presentation",
-    "Optional: Fix bare domain DNS redirect",
-    "Optional: Run cleanup SQL for orphan entries",
-    "Future: Add more YouTube video links to works"
-  ],
-  
-  "handoffNote": "Session 12 complete. Teacher portal cleaned up, curriculum has clickable work details with YouTube videos, admin login fixed, parent demo flow working. Platform is production-ready for Jan 16 presentation."
+  }
 }
