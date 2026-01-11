@@ -53,6 +53,14 @@ const DEFAULT_CARDS: DashboardCard[] = [
     icon: '👩‍🏫',
     colorKey: 'amber',
   },
+  {
+    id: 'teacher-students',
+    title: 'Assign Students',
+    description: 'Link students to teachers',
+    href: '/admin/teacher-students',
+    icon: '🔗',
+    colorKey: 'teal',
+  },
   
   // Core System
   {
