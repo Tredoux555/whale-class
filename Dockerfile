@@ -6,14 +6,14 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     python3 \
     python3-pip \
+    python3-venv \
     curl \
     wget \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install latest yt-dlp directly from GitHub releases (most up-to-date)
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
-    && chmod a+rx /usr/local/bin/yt-dlp
+# Install yt-dlp via pip (easier to update) - use --break-system-packages for newer Python
+RUN pip3 install --break-system-packages yt-dlp
 
 # Verify installations
 RUN ffmpeg -version && yt-dlp --version
