@@ -41,6 +41,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
   { id: 'phonics-planner', title: 'Phonics', description: 'Phonics lessons', href: '/admin/phonics-planner', icon: '🔤', gradient: 'from-red-500 to-pink-500' },
   
   // Utilities
+  { id: 'media-library', title: 'Media Library', description: 'Manage all uploaded files', href: '/admin/media-library', icon: '📁', gradient: 'from-violet-500 to-purple-500' },
   { id: 'site-tester', title: 'Site Tester', description: 'Test site & generate reports', href: '/admin/site-tester', icon: '🔍', gradient: 'from-teal-500 to-emerald-500' },
   { id: 'progress-reports', title: 'Progress Reports', description: 'View student progress', href: '/admin/montessori/reports', icon: '📊', gradient: 'from-orange-500 to-red-500' },
 ];
@@ -208,7 +209,7 @@ export default function AdminDashboard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-white">17</div>
+            <div className="text-3xl font-bold text-white">18</div>
             <div className="text-sm text-slate-400">Admin Tools</div>
           </div>
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
