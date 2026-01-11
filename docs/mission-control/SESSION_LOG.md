@@ -50,6 +50,11 @@
    - **Classroom**: Teachers see their own students only (Tredoux sees all as admin)
    - **Curriculum**: Now uses curriculum_roadmap (342 works showing properly)
 
+9. **Admin Auth + Curriculum Details (Round 3)**
+   - **Admin Login Fix**: `/api/videos` now accepts both `admin-token` AND `user-token` with admin role
+   - **Curriculum Work Details**: Click any work to see Materials, Direct Aims, Indirect Aims, Control of Error
+   - **API Enhanced**: `/api/school/.../curriculum` now returns full work details
+
 ---
 
 ### FILES CHANGED
@@ -65,11 +70,27 @@ app/api/auth/login/route.ts          - Added simple admin login fallback
 
 ### COMMITS
 
+- `cf7c256` - 🔧 Fix admin auth + add curriculum work detail modal
+- `8d03326` - 🔧 Fix: Merge math+mathematics areas in curriculum API (77 total math works)
+- `ad844df` - 📝 Update session log
 - `22c3a42` - 🔧 Fix teacher portal: classroom per-teacher, curriculum from roadmap, English guide direct
 - `f169a9d` - 📝 Update session log with parent flow setup
 - `f390531` - 🔄 Switch unified parent pages to default + link Amy to Demo Family
 - `ab210c0` - 📝 Update session log
 - `5889c16` - 🧹 Clean up teacher portal
+
+---
+
+### CURRENT STATUS (Jan 11 ~09:00 Beijing)
+
+**Waiting for Railway deploy (~2 min) to test:**
+- Admin login with Tredoux/870602 should now work
+- Curriculum works should be clickable with detail modal
+
+**What was fixed:**
+1. `/api/videos` now accepts `user-token` with admin role (not just `admin-token`)
+2. Curriculum page shows work details on click (Materials, Aims, Control of Error)
+3. Curriculum API returns full work details from database
 
 ---
 

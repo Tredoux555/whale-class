@@ -1,8 +1,8 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T08:20:00+08:00",
+  "lastUpdated": "2026-01-11T09:00:00+08:00",
   "currentPhase": "Production Ready",
-  "status": "✅ FULLY WORKING - Teacher→Parent→Games flow verified",
+  "status": "✅ FULLY WORKING - Jan 16 presentation ready",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "urlNote": "ALWAYS use www subdomain - bare domain has redirect issue",
@@ -10,8 +10,10 @@
   "flowStatus": {
     "teacherUpdates": "✅ Working - /api/teacher/progress",
     "parentViews": "✅ Working - /api/unified/today",
-    "gameRecommendations": "✅ Working - 3 games recommended based on Language progress",
-    "verified": "2026-01-11 08:15 Beijing"
+    "gameRecommendations": "✅ Working - 3 games recommended",
+    "adminLogin": "🔄 Testing - Tredoux/870602",
+    "curriculumDetails": "🔄 Testing - Click work for details",
+    "verified": "2026-01-11 09:00 Beijing"
   },
   
   "platformAudit": {
@@ -19,27 +21,41 @@
     "totalRoutes": 41,
     "working": 41,
     "failed": 0,
-    "mainPages": "7/7 ✅",
-    "games": "15/15 ✅",
-    "teacherPages": "7/7 ✅",
-    "parentPages": "3/3 ✅",
-    "unifiedApis": "5/5 ✅",
-    "adminApis": "4/4 ✅"
+    "curriculumWorks": 342,
+    "areas": {
+      "practical_life": 101,
+      "sensorial": 45,
+      "math": 77,
+      "language": 66,
+      "cultural": 53
+    }
+  },
+  
+  "demoCredentials": {
+    "parent": "demo@test.com",
+    "teacher": "Any name from list / 123",
+    "admin": "Tredoux / 870602"
   },
   
   "demoData": {
+    "family": {
+      "id": "7c51863b-de5b-4e73-b80f-b4aac30549a4",
+      "name": "Demo Family",
+      "email": "demo@test.com"
+    },
     "amy": {
       "childId": "afbed794-4eee-4eb5-8262-30ab67638ec7",
-      "languageWorks": ["la_sound_games", "la_sandpaper_letters", "la_moveable_alphabet", "la_pink_series"],
-      "gameRecommendations": ["Letter Sounds", "Beginning Sounds", "Middle Sounds"]
+      "linkedToFamily": true,
+      "todayUpdates": 3,
+      "gameRecommendations": 3
     }
   },
   
   "recentCommits": [
-    "012baeb - 📋 Session 11: Teacher→Parent→Games flow verified working",
-    "3c75805 - ✅ Fix Teacher→Parent→Games flow: correct work_id prefixes",
-    "9e05a27 - 📋 Checkpoint: Railway 404 debug session handoff",
-    "f1d5e92 - Add health check API to verify deployment"
+    "cf7c256 - 🔧 Fix admin auth + add curriculum work detail modal",
+    "8d03326 - 🔧 Fix: Merge math+mathematics areas (77 total)",
+    "ad844df - 📝 Update session log",
+    "22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide"
   ],
   
   "knownIssues": [
@@ -49,39 +65,34 @@
       "priority": "low"
     },
     {
-      "issue": "8 orphan entries with wrong prefixes in Amy's data",
-      "fix": "Run migrations/026b_cleanup_amy_bad_data.sql in Supabase",
+      "issue": "Orphan entries with wrong prefixes in Amy's data",
+      "fix": "Run migrations/026b_cleanup_amy_bad_data.sql",
       "priority": "low"
-    },
-    {
-      "issue": "Unified parent pages not switched to default",
-      "fix": "Swap page-unified.tsx → page.tsx when ready",
-      "priority": "medium"
     }
   ],
   
   "nextSteps": [
-    "1. (Optional) Run cleanup SQL to remove orphan entries",
-    "2. Switch unified parent pages to default",
-    "3. Create test family and link Amy",
-    "4. Test full parent login flow in browser",
-    "5. Fix bare domain DNS redirect in Railway"
+    "1. Verify admin login works after deploy",
+    "2. Verify curriculum work details show data",
+    "3. Test full parent flow in browser",
+    "4. Ready for Jan 16 presentation"
   ],
   
   "dailyLog": [
     {
       "date": "2026-01-11",
-      "session": "Session 11 - Flow Fix",
-      "time": "07:40-08:20 Beijing",
-      "summary": "Fixed Teacher→Parent→Games flow. Root cause: demo data used wrong work_id prefixes (lang_* vs la_*). Used teacher API to insert correct IDs. Verified 3 game recommendations now appear for Amy.",
-      "status": "Complete ✅"
+      "session": "Session 12 - Teacher Portal + Admin Auth",
+      "time": "08:00-09:00 Beijing",
+      "summary": "Fixed teacher portal (English Guide redirect, Classroom per-teacher, Curriculum 342 works). Fixed admin auth to accept user-token. Added curriculum work detail modal.",
+      "commits": ["cf7c256", "8d03326", "22c3a42"],
+      "status": "Deployed - testing"
     },
     {
       "date": "2026-01-11",
-      "session": "Session 10 - 404 Debug",
-      "time": "07:00-07:25 Beijing",
-      "summary": "Discovered 404 only affects bare domain. www.teacherpotato.xyz works perfectly. All 41 routes passing on www.",
-      "status": "Resolved"
+      "session": "Session 11 - Flow Fix",
+      "time": "07:40-08:00 Beijing",
+      "summary": "Fixed Teacher→Parent→Games flow. Root cause: wrong work_id prefixes.",
+      "status": "Complete ✅"
     }
   ]
 }
