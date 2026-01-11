@@ -194,7 +194,7 @@ export default function MontreeLandingPage() {
               { icon: '📊', title: 'Progress Tracking', desc: 'Track each child\'s journey through 342 Montessori works. Presented, practicing, mastered - all at a glance.', color: 'pink' },
               { icon: '👩‍🏫', title: 'Teacher Tools', desc: 'Circle time planner, material generators, flashcard makers, and phonics guides. Everything in one place.', color: 'purple' },
               { icon: '👨‍👩‍👧', title: 'Parent Portal', desc: 'Keep parents informed with beautiful progress reports, activity logs, and recommended home activities.', color: 'blue' },
-              { icon: '🎮', title: 'Learning Games', desc: '13 interactive games for phonics, reading, and math. Children learn while having fun.', color: 'green' },
+              { icon: '🎮', title: 'Learning Games', desc: '14 interactive games for phonics, reading, and math. Children learn while having fun.', color: 'green' },
               { icon: '📚', title: 'Full Curriculum', desc: 'Complete Montessori curriculum with video demonstrations, materials lists, and teaching guides.', color: 'orange' },
               { icon: '📱', title: 'Works Everywhere', desc: 'Use on iPads in the classroom, phones for parents, or desktop for planning. Always in sync.', color: 'cyan' },
             ].map((feature) => (
@@ -233,7 +233,7 @@ export default function MontreeLandingPage() {
                 </div>
               </div>
               <ul className="space-y-4 mb-8">
-                {['Unlimited teachers', 'Unlimited students', 'Parent portal access', 'All 342 curriculum works', '13 learning games', 'Email support'].map((item) => (
+                {['Unlimited teachers', 'Unlimited students', 'Parent portal access', 'All 342 curriculum works', '14 learning games', 'Email support'].map((item) => (
                   <li key={item} className="flex items-center gap-3">
                     <span className="text-emerald-500 text-xl">✓</span>
                     <span>{item}</span>
