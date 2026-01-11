@@ -285,7 +285,7 @@ export default function MontreeLandingPage() {
           <div className="grid sm:grid-cols-3 gap-6">
             {[
               { href: '/teacher', emoji: '👩‍🏫', title: 'Teacher Portal', creds: 'Any name / 123', gradient: 'from-amber-50 to-orange-50', border: 'amber' },
-              { href: '/parent/home', emoji: '👨‍👩‍👧', title: 'Parent Portal', creds: 'demo@test.com', gradient: 'from-blue-50 to-cyan-50', border: 'blue' },
+              { href: '/parent/demo', emoji: '👨‍👩‍👧', title: 'Parent Portal', creds: 'Auto-login demo', gradient: 'from-blue-50 to-cyan-50', border: 'blue' },
               { href: '/games', emoji: '🎮', title: 'Learning Games', creds: 'No login needed', gradient: 'from-green-50 to-emerald-50', border: 'green' },
             ].map((demo) => (
               <Link 
