@@ -25,8 +25,13 @@ export async function GET(
       .order('area')
       .order('sequence');
 
+    // Handle math/mathematics as same area
     if (areaFilter) {
-      query = query.eq('area', areaFilter);
+      if (areaFilter === 'math') {
+        query = query.in('area', ['math', 'mathematics']);
+      } else {
+        query = query.eq('area', areaFilter);
+      }
     }
 
     const { data, error } = await query;
@@ -34,12 +39,12 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Transform to expected format
+    // Transform to expected format, normalize math/mathematics to 'math'
     const curriculum = (data || []).map((item, index) => ({
       id: item.id,
       name: item.name,
       chinese_name: null,
-      area_id: item.area,
+      area_id: item.area === 'mathematics' ? 'math' : item.area,
       sequence: item.sequence || index,
       is_active: true,
       materials_on_shelf: false,
