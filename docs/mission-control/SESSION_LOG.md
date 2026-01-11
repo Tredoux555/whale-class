@@ -1492,3 +1492,26 @@ Applied same lazy-init pattern to `teacher/list/route.ts`
 `01995df` - Lazy-init Supabase in teacher/list API
 
 *Checkpoint: 01995df*
+
+
+---
+
+## Session 20 - UI Cleanup
+**Time:** ~23:20 Beijing
+
+### Changes:
+- Hidden Parents link from homepage
+- Hidden Student Progress from teacher dashboard
+- Hidden Learning Games from teacher dashboard
+
+### Teacher dashboard now shows:
+1. Circle Time Planner
+2. English Guide
+3. Curriculum Overview
+4. Teacher Tools
+
+### Commits:
+- `26188ed` - Hide Parents link
+- `5e7eb9b` - Hide Student Progress + Learning Games
+
+*Checkpoint: 5e7eb9b*
