@@ -71,59 +71,33 @@ export async function POST(request: NextRequest) {
 
     await fs.mkdir(TEMP_DIR, { recursive: true });
 
-    // Create a safe filename
+    // Create a unique filename with timestamp
     const safeFilename = filename?.replace(/[^a-zA-Z0-9.-]/g, '_') || 'video.mp4';
-    const outputPath = path.join(TEMP_DIR, `uploaded_${Date.now()}_${safeFilename}`);
+    const outputPath = path.join(TEMP_DIR, `video_${Date.now()}_${safeFilename}`);
     
-    // Check if we already have this file cached (by URL hash)
-    const urlHash = Buffer.from(videoUrl).toString('base64').slice(0, 20);
-    const cachedPath = path.join(TEMP_DIR, `cached_${urlHash}.mp4`);
+    console.log(`[Download-Uploaded] Downloading fresh copy for "${filename}"`);
+    console.log(`[Download-Uploaded] Output path: ${outputPath}`);
     
-    let finalPath = outputPath;
-    let needsDownload = true;
-    
+    // Always download fresh - no caching to avoid wrong video issues
     try {
-      const stats = await fs.stat(cachedPath);
-      if (stats.size > 1000) {
-        needsDownload = false;
-        finalPath = cachedPath;
-        console.log(`[Download-Uploaded] Using cached file: ${cachedPath} (${Math.round(stats.size/1024/1024)}MB)`);
-      }
-    } catch {
-      // File doesn't exist, need to download
-    }
-
-    if (needsDownload) {
-      console.log('[Download-Uploaded] Downloading from Supabase storage...');
+      await downloadFile(videoUrl, outputPath);
       
-      try {
-        await downloadFile(videoUrl, cachedPath);
-        finalPath = cachedPath;
-        
-        const stats = await fs.stat(finalPath);
-        console.log(`[Download-Uploaded] Downloaded: ${Math.round(stats.size/1024/1024)}MB`);
-      } catch (dlError) {
-        console.error('[Download-Uploaded] Download error:', dlError);
-        throw new Error(`Failed to download video: ${dlError instanceof Error ? dlError.message : 'Unknown error'}`);
-      }
-    }
-
-    // Verify file exists and has content
-    try {
-      const stats = await fs.stat(finalPath);
+      const stats = await fs.stat(outputPath);
+      console.log(`[Download-Uploaded] Downloaded: ${Math.round(stats.size/1024/1024)}MB`);
+      
       if (stats.size < 1000) {
         throw new Error('Downloaded file is too small - may be corrupted');
       }
-      console.log(`[Download-Uploaded] Video file size: ${Math.round(stats.size/1024/1024)}MB`);
-    } catch (e) {
-      throw new Error('Video file not found or corrupted');
+    } catch (dlError) {
+      console.error('[Download-Uploaded] Download error:', dlError);
+      throw new Error(`Failed to download video: ${dlError instanceof Error ? dlError.message : 'Unknown error'}`);
     }
 
     // Get duration using ffprobe
     let duration = 180;
     try {
       const { stdout: durationOut } = await execAsync(
-        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${finalPath}"`,
+        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${outputPath}"`,
         { timeout: 15000 }
       );
       duration = parseFloat(durationOut.trim()) || 180;
@@ -133,10 +107,10 @@ export async function POST(request: NextRequest) {
     }
 
     const elapsed = Math.round((Date.now() - startTime) / 1000);
-    console.log(`[Download-Uploaded] Complete in ${elapsed}s`);
+    console.log(`[Download-Uploaded] Complete in ${elapsed}s - returning path: ${outputPath}`);
 
     return NextResponse.json({
-      filePath: finalPath,
+      filePath: outputPath,
       duration
     });
 
