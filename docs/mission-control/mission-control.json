@@ -1,7 +1,7 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T13:10:00+08:00",
-  "currentStatus": "🚀 READY FOR JAN 16 LAUNCH",
+  "lastUpdated": "2026-01-11T14:00:00+08:00",
+  "currentStatus": "🚀 LAUNCH READY + MONETIZATION BUILT",
   "productionUrl": "https://www.teacherpotato.xyz",
   
   "criticalDate": {
@@ -11,13 +11,34 @@
   },
 
   "session16Summary": {
-    "issuesFixed": [
-      "5 tool pages had /admin back links - teachers couldn't navigate back",
-      "vocabulary-flashcards, english-guide, phonics-planner, circle-planner, label-maker"
-    ],
-    "fix": "Replaced Link href=/admin with router.back() for portal compatibility",
-    "commits": ["5b4f87e", "c7d3944"],
-    "deployed": true
+    "part1_teacherTools": {
+      "issue": "5 tool pages had /admin back links - teachers couldn't navigate",
+      "fix": "Replaced Link href=/admin with router.back()",
+      "files": ["vocabulary-flashcards", "english-guide", "phonics-planner", "circle-planner", "label-maker"]
+    },
+    "part2_monetization": {
+      "built": [
+        "/montree - Marketing landing page with pricing",
+        "/montree/welcome - Post-signup welcome flow",
+        "/api/stripe/checkout - Stripe checkout sessions",
+        "/api/stripe/webhook - Subscription lifecycle handlers",
+        "migrations/028_montree_schools.sql - Multi-tenant school tables"
+      ],
+      "pricing": {
+        "school": "$29/month",
+        "district": "$199/month"
+      },
+      "status": "Demo mode until Stripe keys added"
+    },
+    "commits": ["5b4f87e", "c7d3944", "9205026", "2ca87bd", "4b67d53", "aa43227"]
+  },
+
+  "montreeSaaS": {
+    "landingPage": "/montree",
+    "signupFlow": "Form → API → Stripe Checkout → Welcome page",
+    "demoMode": "Works without Stripe - redirects to welcome?demo=true",
+    "stripeSetup": "See .env.stripe.example for required keys",
+    "database": "Run migrations/028_montree_schools.sql when ready"
   },
 
   "launchReadiness": {
@@ -25,9 +46,10 @@
     "adminAssignment": "✅",
     "videoSearch": "✅",
     "teacherPortal": "✅",
-    "teacherTools": "✅ FIXED",
+    "teacherTools": "✅",
     "adminDashboard": "✅",
     "games": "✅ 13/14",
+    "monetization": "✅ Built (needs Stripe keys)",
     "build": "✅",
     "deployed": "✅"
   },
@@ -40,9 +62,18 @@
 
   "keyUrls": {
     "production": "https://www.teacherpotato.xyz",
+    "landingPage": "/montree",
+    "masterPlan": "/admin/montree",
     "teacherDashboard": "/teacher/dashboard",
     "teacherTools": "/teacher/tools",
     "assignStudents": "/admin/teacher-students",
     "games": "/games"
-  }
+  },
+
+  "nextSteps": [
+    "Jan 16: Launch to teachers",
+    "Create Stripe account + add keys",
+    "Run migration 028 for multi-school tables",
+    "Market to Montessori schools"
+  ]
 }
