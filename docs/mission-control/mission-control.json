@@ -11,9 +11,9 @@
     "teacherUpdates": "✅ Working - /api/teacher/progress",
     "parentViews": "✅ Working - /api/unified/today",
     "gameRecommendations": "✅ Working - 3 games recommended",
-    "adminLogin": "🔄 Testing - Tredoux/870602",
-    "curriculumDetails": "🔄 Testing - Click work for details",
-    "verified": "2026-01-11 09:00 Beijing"
+    "adminLogin": "✅ Fixed - Tredoux/870602 works",
+    "curriculumDetails": "✅ Added - Click work for details + YouTube video",
+    "verified": "2026-01-11 09:10 Beijing"
   },
   
   "platformAudit": {
@@ -52,9 +52,9 @@
   },
   
   "recentCommits": [
+    "f59da14 - 🎬 Add YouTube video links to curriculum work details",
     "cf7c256 - 🔧 Fix admin auth + add curriculum work detail modal",
     "8d03326 - 🔧 Fix: Merge math+mathematics areas (77 total)",
-    "ad844df - 📝 Update session log",
     "22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide"
   ],
   

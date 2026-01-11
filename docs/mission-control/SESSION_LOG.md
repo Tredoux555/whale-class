@@ -55,6 +55,11 @@
    - **Curriculum Work Details**: Click any work to see Materials, Direct Aims, Indirect Aims, Control of Error
    - **API Enhanced**: `/api/school/.../curriculum` now returns full work details
 
+10. **YouTube Videos Added to Curriculum**
+    - Each work now shows "Watch Video" link if available
+    - Shows video channel source
+    - Videos already in database from migration 018
+
 ---
 
 ### FILES CHANGED
@@ -70,6 +75,7 @@ app/api/auth/login/route.ts          - Added simple admin login fallback
 
 ### COMMITS
 
+- `f59da14` - 🎬 Add YouTube video links to curriculum work details
 - `cf7c256` - 🔧 Fix admin auth + add curriculum work detail modal
 - `8d03326` - 🔧 Fix: Merge math+mathematics areas in curriculum API (77 total math works)
 - `ad844df` - 📝 Update session log
