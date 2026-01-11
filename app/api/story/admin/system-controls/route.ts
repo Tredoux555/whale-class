@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
       case 'clear_messages': {
         // First count, then delete
         const { count } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .select('*', { count: 'exact', head: true });
         
         const { error } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .delete()
           .not('id', 'is', null); // Delete all rows
         
@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
 
       case 'clear_expired_messages': {
         const { count } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .select('*', { count: 'exact', head: true })
           .eq('is_expired', true);
         
         const { error } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .delete()
           .eq('is_expired', true);
         
@@ -138,12 +138,12 @@ export async function POST(request: NextRequest) {
 
       case 'clear_all_media': {
         const { count } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .select('*', { count: 'exact', head: true })
           .not('media_url', 'is', null);
         
         const { error } = await supabase
-          .from('story_messages')
+          .from('story_message_history')
           .update({ media_url: null, media_filename: null })
           .not('media_url', 'is', null);
         
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
       case 'factory_reset': {
         // Nuclear option - clear everything
-        await supabase.from('story_messages').delete().not('id', 'is', null);
+        await supabase.from('story_message_history').delete().not('id', 'is', null);
         await supabase.from('story_login_logs').delete().not('id', 'is', null);
         await supabase.from('story_vault').delete().not('id', 'is', null);
         await supabase.from('story_users').delete().not('id', 'is', null);
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
 
     const [messages, users, logs, vault] = await Promise.all([
-      supabase.from('story_messages').select('*', { count: 'exact', head: true }),
+      supabase.from('story_message_history').select('*', { count: 'exact', head: true }),
       supabase.from('story_users').select('*', { count: 'exact', head: true }),
       supabase.from('story_login_logs').select('*', { count: 'exact', head: true }),
       supabase.from('story_vault').select('*', { count: 'exact', head: true }),
