@@ -45,6 +45,11 @@
    - Sandpaper Letters → Practicing 🔄
    - 3 game recommendations showing
 
+8. **Teacher Portal Fixed (Round 2)**
+   - **English Guide**: Now redirects directly to the full guide (no landing page)
+   - **Classroom**: Teachers see their own students only (Tredoux sees all as admin)
+   - **Curriculum**: Now uses curriculum_roadmap (342 works showing properly)
+
 ---
 
 ### FILES CHANGED
@@ -60,7 +65,11 @@ app/api/auth/login/route.ts          - Added simple admin login fallback
 
 ### COMMITS
 
-- `5889c16` - 🧹 Clean up teacher portal: remove redundant links, add curriculum overview, fix admin login
+- `22c3a42` - 🔧 Fix teacher portal: classroom per-teacher, curriculum from roadmap, English guide direct
+- `f169a9d` - 📝 Update session log with parent flow setup
+- `f390531` - 🔄 Switch unified parent pages to default + link Amy to Demo Family
+- `ab210c0` - 📝 Update session log
+- `5889c16` - 🧹 Clean up teacher portal
 
 ---
 
