@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 // ============================================
@@ -17,6 +18,7 @@ interface Label {
 }
 
 const LabelMaker = () => {
+  const router = useRouter();
   const [labels, setLabels] = useState<Label[]>([]);
   const [bulkText, setBulkText] = useState('');
   const [borderColor, setBorderColor] = useState('#2D5A27');
@@ -278,9 +280,9 @@ const LabelMaker = () => {
         color: '#fff'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Link href="/admin" style={{ color: '#fff', textDecoration: 'none', fontSize: '14px' }}>
-            ← Back to Admin
-          </Link>
+          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+            ← Back
+          </button>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <h1 style={{ margin: '0 0 8px 0', fontSize: '2rem', fontWeight: '800' }}>
               🔤 Movable Alphabet Label Maker

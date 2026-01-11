@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 // ============================================
@@ -1182,6 +1183,7 @@ const SOUND_OBJECTS_SHOPPING = {
 // ============================================
 
 export default function EnglishGuidePage() {
+  const router = useRouter();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const [showVocabGuide, setShowVocabGuide] = useState(false);
@@ -1202,12 +1204,12 @@ export default function EnglishGuidePage() {
                 <p className="text-indigo-100">Montessori Language Journey • How to Teach Each Skill</p>
               </div>
             </div>
-            <Link
-              href="/admin"
+            <button
+              onClick={() => router.back()}
               className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition"
             >
-              ← Back to Admin
-            </Link>
+              ← Back
+            </button>
           </div>
         </div>
       </header>

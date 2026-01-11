@@ -4,6 +4,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PHONICS_ACTIVITIES, getActivitiesByType, getActivitiesBySkill } from '@/lib/circle-time/phonics-activities';
 import { PhonicsActivity } from '@/lib/circle-time/types';
@@ -12,6 +13,7 @@ type FilterType = 'all' | PhonicsActivity['type'];
 type FilterSkill = 'all' | PhonicsActivity['targetSkill'];
 
 export default function PhonicsActivitiesPage() {
+  const router = useRouter();
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [filterSkill, setFilterSkill] = useState<FilterSkill>('all');
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
@@ -55,9 +57,9 @@ export default function PhonicsActivitiesPage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700">
                 ← Back
-              </Link>
+              </button>
               <h1 className="text-2xl font-bold text-gray-900">
                 🔤 Phonics Activity Bank
               </h1>
