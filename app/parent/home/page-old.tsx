@@ -1,28 +1,17 @@
 'use client';
 
-// ============================================
-// UNIFIED PARENT LOGIN PAGE
-// Uses unified families API
-// ============================================
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, Users, Loader2, TreePine } from 'lucide-react';
-
-interface Child {
-  id: string;
-  name: string;
-  color: string;
-}
 
 interface Family {
   id: string;
   name: string;
   email: string;
-  children: Child[];
+  children: { id: string; name: string; color: string }[];
 }
 
-export default function MontreeHomeLoginUnified() {
+export default function MontreeHomeLanding() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,24 +25,14 @@ export default function MontreeHomeLoginUnified() {
     setError('');
 
     try {
-      // Try unified API first
-      const res = await fetch(`/api/unified/families?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/montree-home/families?email=${encodeURIComponent(email)}`);
       const data = await res.json();
 
       if (data.families && data.families.length > 0) {
         setFamilies(data.families);
         setShowFamilies(true);
       } else {
-        // Fall back to old API for backwards compatibility
-        const oldRes = await fetch(`/api/montree-home/families?email=${encodeURIComponent(email)}`);
-        const oldData = await oldRes.json();
-        
-        if (oldData.families && oldData.families.length > 0) {
-          setFamilies(oldData.families);
-          setShowFamilies(true);
-        } else {
-          setError('No family found with this email. Please contact your school administrator.');
-        }
+        setError('No family found with this email. Please contact your administrator.');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -77,7 +56,7 @@ export default function MontreeHomeLoginUnified() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Montree Home</h1>
-            <p className="text-sm text-gray-500">See what your child learns at school</p>
+            <p className="text-sm text-gray-500">Montessori at Home</p>
           </div>
         </div>
       </header>
@@ -91,7 +70,7 @@ export default function MontreeHomeLoginUnified() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Home</h2>
               <p className="text-gray-600">
-                Enter your email to see your child&apos;s Montessori journey
+                Enter your email to access your family&apos;s Montessori journey
               </p>
             </div>
 
@@ -137,10 +116,10 @@ export default function MontreeHomeLoginUnified() {
 
             <div className="mt-8 pt-6 border-t text-center">
               <p className="text-sm text-gray-500">
-                Don&apos;t have access?{' '}
-                <span className="text-green-600">
-                  Ask your child&apos;s teacher to link your email
-                </span>
+                New to Montree Home?{' '}
+                <a href="mailto:support@teacherpotato.xyz" className="text-green-600 hover:underline">
+                  Contact us to get started
+                </a>
               </p>
             </div>
           </div>
@@ -160,21 +139,8 @@ export default function MontreeHomeLoginUnified() {
                 >
                   <div className="font-medium text-gray-900">{family.name}</div>
                   <div className="text-sm text-gray-500 mt-1">
-                    {family.children?.length || 0} {family.children?.length === 1 ? 'child' : 'children'}
+                    {family.children?.length || 0} children
                   </div>
-                  {family.children && family.children.length > 0 && (
-                    <div className="flex gap-1 mt-2">
-                      {family.children.map((child) => (
-                        <div
-                          key={child.id}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: child.color }}
-                        >
-                          {child.name.charAt(0)}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </button>
               ))}
             </div>
@@ -198,19 +164,19 @@ export default function MontreeHomeLoginUnified() {
         <section className="max-w-4xl mx-auto px-4 pb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FeatureCard
-              emoji="🏫"
-              title="School Updates"
-              description="See what your child learned at school today"
-            />
-            <FeatureCard
-              emoji="🎮"
-              title="Game Recommendations"
-              description="Play games that reinforce what they're learning"
+              emoji="🌱"
+              title="Daily Activities"
+              description="Curated Montessori activities based on your child's progress"
             />
             <FeatureCard
               emoji="📊"
               title="Track Progress"
-              description="Watch your child grow across all curriculum areas"
+              description="See your child's journey across all curriculum areas"
+            />
+            <FeatureCard
+              emoji="📚"
+              title="250+ Activities"
+              description="Complete Montessori curriculum for ages 2.5-6"
             />
           </div>
         </section>

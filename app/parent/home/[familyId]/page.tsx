@@ -1,5 +1,10 @@
 'use client';
 
+// ============================================
+// UNIFIED FAMILY DASHBOARD
+// Uses unified APIs - reads from teacher database
+// ============================================
+
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
@@ -10,23 +15,27 @@ import {
   ChevronRight,
   Calendar,
   TrendingUp,
-  Package,
+  ShoppingCart,
   CalendarDays,
-  ShoppingCart
+  Gamepad2,
+  Link as LinkIcon
 } from 'lucide-react';
+
+interface ProgressSummary {
+  total_works: number;
+  mastered: number;
+  practicing: number;
+  presented: number;
+  overall_percent: number;
+}
 
 interface Child {
   id: string;
   name: string;
   birth_date: string;
+  date_of_birth: string;
   color: string;
-  progress_summary?: {
-    total_works: number;
-    mastered: number;
-    practicing: number;
-    presented: number;
-    overall_percent: number;
-  };
+  progress_summary?: ProgressSummary;
 }
 
 interface Family {
@@ -36,15 +45,15 @@ interface Family {
   children: Child[];
 }
 
-export default function FamilyDashboard({ params }: { params: Promise<{ familyId: string }> }) {
+export default function FamilyDashboardUnified({ params }: { params: Promise<{ familyId: string }> }) {
   const { familyId } = use(params);
   const router = useRouter();
   const [family, setFamily] = useState<Family | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddChild, setShowAddChild] = useState(false);
-  const [newChild, setNewChild] = useState({ name: '', birth_date: '', color: '#4F46E5' });
-  const [adding, setAdding] = useState(false);
+  const [showLinkChild, setShowLinkChild] = useState(false);
+  const [availableChildren, setAvailableChildren] = useState<Child[]>([]);
+  const [linking, setLinking] = useState(false);
 
   useEffect(() => {
     loadFamily();
@@ -52,15 +61,15 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
 
   const loadFamily = async () => {
     try {
-      // Load family
-      const famRes = await fetch(`/api/montree-home/families?id=${familyId}`);
+      // Load family from unified API
+      const famRes = await fetch(`/api/unified/families?id=${familyId}`);
       const famData = await famRes.json();
       if (famData.families?.[0]) {
         setFamily(famData.families[0]);
       }
 
-      // Load children with progress
-      const childRes = await fetch(`/api/montree-home/children?family_id=${familyId}&include_progress=true`);
+      // Load children with progress from unified API
+      const childRes = await fetch(`/api/unified/children?family_id=${familyId}&include_progress=true`);
       const childData = await childRes.json();
       setChildren(childData.children || []);
     } catch (err) {
@@ -70,27 +79,34 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
     }
   };
 
-  const addChild = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAdding(true);
+  const loadAvailableChildren = async () => {
+    // Load all children without a family_id (unlinked children)
     try {
-      const res = await fetch('/api/montree-home/children', {
+      const res = await fetch('/api/unified/children?unlinked=true');
+      const data = await res.json();
+      setAvailableChildren(data.children || []);
+    } catch (err) {
+      console.error('Error loading available children:', err);
+    }
+  };
+
+  const linkChild = async (childId: string) => {
+    setLinking(true);
+    try {
+      await fetch('/api/unified/children', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          family_id: familyId,
-          ...newChild
+          child_id: childId,
+          family_id: familyId
         })
       });
-      if (res.ok) {
-        setShowAddChild(false);
-        setNewChild({ name: '', birth_date: '', color: '#4F46E5' });
-        loadFamily();
-      }
+      setShowLinkChild(false);
+      loadFamily();
     } catch (err) {
-      console.error('Error adding child:', err);
+      console.error('Error linking child:', err);
     } finally {
-      setAdding(false);
+      setLinking(false);
     }
   };
 
@@ -100,6 +116,7 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
   };
 
   const getAge = (birthDate: string) => {
+    if (!birthDate) return 'Age unknown';
     const birth = new Date(birthDate);
     const now = new Date();
     const years = now.getFullYear() - birth.getFullYear();
@@ -181,30 +198,33 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-3 gap-3 mb-8">
           <button
             onClick={() => router.push(`/parent/home/${familyId}/materials`)}
-            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left flex items-center gap-3"
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
           >
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-2">
               <ShoppingCart className="w-5 h-5 text-amber-600" />
             </div>
-            <div>
-              <h4 className="font-medium text-gray-900">Materials</h4>
-              <p className="text-xs text-gray-500">Shopping checklist</p>
-            </div>
+            <h4 className="font-medium text-gray-900 text-sm">Materials</h4>
           </button>
           <button
             onClick={() => router.push(`/parent/home/${familyId}/planner`)}
-            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left flex items-center gap-3"
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
           >
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
               <CalendarDays className="w-5 h-5 text-blue-600" />
             </div>
-            <div>
-              <h4 className="font-medium text-gray-900">Planner</h4>
-              <p className="text-xs text-gray-500">Weekly schedule</p>
+            <h4 className="font-medium text-gray-900 text-sm">Planner</h4>
+          </button>
+          <button
+            onClick={() => router.push('/games')}
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
+          >
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Gamepad2 className="w-5 h-5 text-purple-600" />
             </div>
+            <h4 className="font-medium text-gray-900 text-sm">Games</h4>
           </button>
         </div>
 
@@ -213,28 +233,34 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Your Children</h3>
             <button
-              onClick={() => setShowAddChild(true)}
+              onClick={() => {
+                loadAvailableChildren();
+                setShowLinkChild(true);
+              }}
               className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
             >
-              <Plus className="w-4 h-4" />
-              Add Child
+              <LinkIcon className="w-4 h-4" />
+              Link Child
             </button>
           </div>
 
           {children.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-8 h-8 text-green-600" />
+                <LinkIcon className="w-8 h-8 text-green-600" />
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">Add your first child</h4>
+              <h4 className="font-medium text-gray-900 mb-2">No children linked yet</h4>
               <p className="text-gray-600 text-sm mb-4">
-                Get started by adding a child to track their Montessori journey
+                Ask your child&apos;s teacher to link their profile to your family account
               </p>
               <button
-                onClick={() => setShowAddChild(true)}
+                onClick={() => {
+                  loadAvailableChildren();
+                  setShowLinkChild(true);
+                }}
                 className="bg-green-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-green-700"
               >
-                Add Child
+                Link a Child
               </button>
             </div>
           ) : (
@@ -248,7 +274,7 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
                   <div className="flex items-center gap-4">
                     <div 
                       className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                      style={{ backgroundColor: child.color }}
+                      style={{ backgroundColor: child.color || '#4F46E5' }}
                     >
                       {child.name.charAt(0)}
                     </div>
@@ -257,7 +283,7 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
                       <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {getAge(child.birth_date)}
+                          {getAge(child.birth_date || child.date_of_birth)}
                         </span>
                         {child.progress_summary && (
                           <span className="flex items-center gap-1">
@@ -312,78 +338,62 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
               color="yellow"
             />
             <StatCard
-              value={250}
-              label="Total Activities"
+              value={children.length > 0 && children[0].progress_summary ? children[0].progress_summary.total_works : 0}
+              label="Total Works"
               color="blue"
             />
           </div>
         )}
       </main>
 
-      {/* Add Child Modal */}
-      {showAddChild && (
+      {/* Link Child Modal */}
+      {showLinkChild && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Add a Child</h3>
-            <form onSubmit={addChild} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Child&apos;s Name
-                </label>
-                <input
-                  type="text"
-                  value={newChild.name}
-                  onChange={(e) => setNewChild({ ...newChild, name: e.target.value })}
-                  placeholder="Enter name"
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500"
-                  required
-                />
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Link a Child</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Select a child from your school to link to your family account
+            </p>
+            
+            {availableChildren.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No unlinked children available</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Ask your teacher to add your child to the system first
+                </p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  value={newChild.birth_date}
-                  onChange={(e) => setNewChild({ ...newChild, birth_date: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500"
-                  required
-                />
+            ) : (
+              <div className="space-y-2">
+                {availableChildren.map((child) => (
+                  <button
+                    key={child.id}
+                    onClick={() => linkChild(child.id)}
+                    disabled={linking}
+                    className="w-full p-4 bg-gray-50 hover:bg-green-50 rounded-xl text-left transition-colors border-2 border-transparent hover:border-green-500 disabled:opacity-50 flex items-center gap-3"
+                  >
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                      style={{ backgroundColor: child.color || '#4F46E5' }}
+                    >
+                      {child.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{child.name}</div>
+                      <div className="text-sm text-gray-500">
+                        {getAge(child.birth_date || child.date_of_birth)}
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Color
-                </label>
-                <div className="flex gap-2">
-                  {['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'].map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setNewChild({ ...newChild, color })}
-                      className={`w-8 h-8 rounded-full border-2 ${newChild.color === color ? 'border-gray-900' : 'border-transparent'}`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddChild(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={adding}
-                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-green-700 disabled:opacity-50"
-                >
-                  {adding ? 'Adding...' : 'Add Child'}
-                </button>
-              </div>
-            </form>
+            )}
+            
+            <button
+              onClick={() => setShowLinkChild(false)}
+              className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -393,14 +403,14 @@ export default function FamilyDashboard({ params }: { params: Promise<{ familyId
 
 function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
   const colors = {
-    green: 'bg-green-100 text-green-800',
-    yellow: 'bg-yellow-100 text-yellow-800',
-    blue: 'bg-blue-100 text-blue-800'
+    green: 'text-green-600',
+    yellow: 'text-yellow-600',
+    blue: 'text-blue-600'
   };
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-      <div className={`text-2xl font-bold ${colors[color as keyof typeof colors]?.split(' ')[1] || 'text-gray-900'}`}>
+      <div className={`text-2xl font-bold ${colors[color as keyof typeof colors] || 'text-gray-900'}`}>
         {value}
       </div>
       <div className="text-xs text-gray-500 mt-1">{label}</div>
