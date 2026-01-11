@@ -16,6 +16,8 @@ interface Work {
   direct_aims?: string[];
   indirect_aims?: string[];
   control_of_error?: string;
+  video_url?: string;
+  video_channel?: string;
 }
 
 const AREAS = [
@@ -187,6 +189,25 @@ export default function TeacherCurriculumPage() {
 
             {/* Modal Content */}
             <div className="p-4 space-y-4">
+              {/* Video Link */}
+              {selectedWork.video_url && (
+                <a
+                  href={selectedWork.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                >
+                  <span className="text-2xl">▶️</span>
+                  <div className="flex-1">
+                    <p className="font-semibold text-red-700">Watch Video</p>
+                    {selectedWork.video_channel && (
+                      <p className="text-sm text-red-600">{selectedWork.video_channel}</p>
+                    )}
+                  </div>
+                  <span className="text-red-400">→</span>
+                </a>
+              )}
+
               {/* Materials */}
               {selectedWork.materials && selectedWork.materials.length > 0 && (
                 <div>
@@ -232,7 +253,8 @@ export default function TeacherCurriculumPage() {
               )}
 
               {/* Empty State */}
-              {!selectedWork.materials?.length && 
+              {!selectedWork.video_url &&
+               !selectedWork.materials?.length && 
                !selectedWork.direct_aims?.length && 
                !selectedWork.indirect_aims?.length && 
                !selectedWork.control_of_error && (
