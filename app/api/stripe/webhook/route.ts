@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
   : null;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Create Supabase client only if env vars are available
+function getSupabase(): SupabaseClient | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
 
 // Helper to generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -23,6 +26,11 @@ function generateSlug(name: string): string {
 export async function POST(request: NextRequest) {
   if (!stripe) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
   }
 
   const body = await request.text();
@@ -130,9 +138,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Disable body parsing for webhooks (Stripe needs raw body)
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Note: In App Router, route handlers receive raw body by default
+// No config needed - Stripe webhook verification works automatically
