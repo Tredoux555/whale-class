@@ -30,6 +30,21 @@
    - Added fallback for Tredoux / 870602 credentials
    - Works alongside Supabase Auth
 
+5. **Parent Pages Unified**
+   - Swapped page-unified.tsx → page.tsx for all 3 parent routes
+   - Old pages saved as page-old.tsx
+
+6. **Demo Family Created**
+   - Email: demo@test.com
+   - Family ID: 7c51863b-de5b-4e73-b80f-b4aac30549a4
+   - Amy linked to family
+
+7. **Fresh Demo Data Added**
+   - Pink Tower → Mastered ⭐
+   - Moveable Alphabet → Presented 📖
+   - Sandpaper Letters → Practicing 🔄
+   - 3 game recommendations showing
+
 ---
 
 ### FILES CHANGED
