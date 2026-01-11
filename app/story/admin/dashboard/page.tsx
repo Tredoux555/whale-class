@@ -60,6 +60,8 @@ const [messageError, setMessageError] = useState('');
 const [selectedImage, setSelectedImage] = useState<File | null>(null);
 const [imagePreview, setImagePreview] = useState<string | null>(null);
 const [uploadingImage, setUploadingImage] = useState(false);
+const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
+const [uploadingAudio, setUploadingAudio] = useState(false);
 const [isLoading, setIsLoading] = useState(true);
 const [vaultPassword, setVaultPassword] = useState('');
 const [vaultUnlocked, setVaultUnlocked] = useState(false);
@@ -239,15 +241,41 @@ loadSystemStats();
 }
 }, [activeTab, loadSystemStats]);
 const sendAdminMessage = async () => {
-  if (!adminMessage.trim() && !selectedImage) return;
+  if (!adminMessage.trim() && !selectedImage && !selectedAudio) return;
   setSendingMessage(true);
   setMessageSent(false);
   setMessageError('');
   try {
     const session = getSession();
     
-    // If there's an image, upload it first
-    if (selectedImage) {
+    // If there's an audio file, upload it
+    if (selectedAudio) {
+      setUploadingAudio(true);
+      const formData = new FormData();
+      formData.append('file', selectedAudio);
+      formData.append('caption', adminMessage.trim());
+      
+      const res = await fetch('/api/story/admin/send-audio', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session}` },
+        body: formData
+      });
+      
+      const data = await res.json();
+      setUploadingAudio(false);
+      
+      if (res.ok) {
+        setAdminMessage('');
+        setSelectedAudio(null);
+        setMessageSent(true);
+        await loadMessages();
+        setTimeout(() => setMessageSent(false), 3000);
+      } else {
+        setMessageError(data.error || 'Failed to send audio');
+      }
+    }
+    // If there's an image, upload it
+    else if (selectedImage) {
       setUploadingImage(true);
       const formData = new FormData();
       formData.append('file', selectedImage);
@@ -297,6 +325,7 @@ const sendAdminMessage = async () => {
   } finally {
     setSendingMessage(false);
     setUploadingImage(false);
+    setUploadingAudio(false);
   }
 };
 
@@ -315,6 +344,20 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 const clearImage = () => {
   setSelectedImage(null);
   setImagePreview(null);
+};
+
+const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setSelectedAudio(file);
+    // Clear image if audio is selected
+    setSelectedImage(null);
+    setImagePreview(null);
+  }
+};
+
+const clearAudio = () => {
+  setSelectedAudio(null);
 };
 const handleVaultUnlock = async () => {
 const session = getSession();
@@ -588,6 +631,23 @@ Sign Out
                 </div>
               )}
               
+              {/* Audio Preview */}
+              {selectedAudio && (
+                <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <span className="text-2xl">🎵</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-purple-800">{selectedAudio.name}</p>
+                    <p className="text-xs text-purple-600">{(selectedAudio.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  </div>
+                  <button
+                    onClick={clearAudio}
+                    className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
               <div className="flex gap-2 flex-wrap">
                 {/* Image Upload Button */}
                 <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
@@ -600,15 +660,26 @@ Sign Out
                   />
                 </label>
                 
+                {/* Audio Upload Button */}
+                <label className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+                  🎵 Add Song
+                  <input
+                    type="file"
+                    accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac"
+                    onChange={handleAudioSelect}
+                    className="hidden"
+                  />
+                </label>
+                
                 <button
                   onClick={sendAdminMessage}
-                  disabled={sendingMessage || uploadingImage || (!adminMessage.trim() && !selectedImage)}
+                  disabled={sendingMessage || uploadingImage || uploadingAudio || (!adminMessage.trim() && !selectedImage && !selectedAudio)}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  {uploadingImage ? '⟳ Uploading...' : sendingMessage ? '⟳ Sending...' : selectedImage ? '✓ Send Photo' : '✓ Send Message'}
+                  {uploadingAudio ? '⟳ Uploading Song...' : uploadingImage ? '⟳ Uploading...' : sendingMessage ? '⟳ Sending...' : selectedAudio ? '✓ Send Song' : selectedImage ? '✓ Send Photo' : '✓ Send Message'}
                 </button>
                 <button
-                  onClick={() => { setAdminMessage(''); setMessageError(''); clearImage(); }}
+                  onClick={() => { setAdminMessage(''); setMessageError(''); clearImage(); clearAudio(); }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Clear
@@ -853,6 +924,27 @@ Sign Out
                     {msg.message_type === 'video' && msg.media_url && (
                       <div className="mt-2">
                         <video src={msg.media_url} controls className="max-w-xs rounded-lg" />
+                        <button
+                          onClick={() => saveMessageToVault(msg.id, msg.media_url!, msg.media_filename)}
+                          disabled={savingToVault === msg.id || savedToVault.has(msg.id)}
+                          className="mt-2 px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {savedToVault.has(msg.id) ? '✓ Saved to Vault' : savingToVault === msg.id ? '⏳ Saving...' : '🔒 Save to Vault'}
+                        </button>
+                      </div>
+                    )}
+                    {msg.message_type === 'audio' && msg.media_url && (
+                      <div className="mt-2">
+                        <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                          <span className="text-2xl">🎵</span>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-purple-800">{msg.media_filename || 'Audio'}</p>
+                            <audio src={msg.media_url} controls className="w-full mt-1" />
+                          </div>
+                        </div>
+                        {msg.message_content && (
+                          <p className="mt-2 text-gray-700 text-sm">{msg.message_content}</p>
+                        )}
                         <button
                           onClick={() => saveMessageToVault(msg.id, msg.media_url!, msg.media_filename)}
                           disabled={savingToVault === msg.id || savedToVault.has(msg.id)}

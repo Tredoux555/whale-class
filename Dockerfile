@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install yt-dlp via pip (easier to update) - use --break-system-packages for newer Python
-RUN pip3 install --break-system-packages yt-dlp
+# Install yt-dlp and reportlab via pip (easier to update) - use --break-system-packages for newer Python
+RUN pip3 install --break-system-packages yt-dlp reportlab
 
 # Verify installations
 RUN ffmpeg -version && yt-dlp --version
