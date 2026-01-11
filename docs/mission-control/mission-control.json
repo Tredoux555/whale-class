@@ -1,55 +1,30 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T10:45:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Phase 1 COMPLETE",
-  "status": "📋 Files created, ready for SQL migration",
+  "lastUpdated": "2026-01-11T10:55:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Migration Fixed",
+  "status": "🔧 Fixed SQL - simple_teachers was missing, now included",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
   "session15Progress": {
-    "filesCreated": [
-      "/app/admin/montree/page.tsx - Visual implementation plan with 6 phases",
-      "/migrations/027_independent_montree.sql - Full migration with teacher_children + video_search_term",
-      "/docs/mission-control/UNIFICATION_MASTERPLAN.md - Complete technical spec"
-    ],
-    "status": "Phase 1 files ready, need to run SQL migration"
+    "issue": "simple_teachers table didn't exist - teacher login uses localStorage only",
+    "fix": "Updated migration 027 to CREATE simple_teachers first, then teacher_children",
+    "status": "Ready to re-run SQL migration"
   },
 
-  "criticalIssues": {
-    "dataLeakage": {
-      "status": "🚨 CRITICAL - FIX READY",
-      "problem": "Teacher John sees ALL students (Tredoux's students), not his own",
-      "cause": "/api/teacher/classroom returns ALL children, no teacher filtering",
-      "solution": "teacher_children junction table created in migration 027",
-      "nextStep": "Run migration, then update API"
-    },
-    "videoUrls": {
-      "status": "⚠️ FIX READY",
-      "problem": "Direct YouTube URLs disappear over time",
-      "solution": "video_search_term column added, 50+ search terms populated in migration 027"
-    },
-    "circlePlannerParity": {
-      "status": "⚠️ PENDING",
-      "problem": "Admin Circle Planner has features teacher version lacks",
-      "solution": "Phase 4 - add missing buttons to teacher version"
-    }
-  },
-
-  "independentMontreePlan": {
-    "phase1": "✅ READY - Database Schema (migration 027)",
-    "phase2": "⏳ NEXT - Teacher Data Isolation (update APIs)",
-    "phase3": "⏳ - Video Search Terms (UI update)",
-    "phase4": "⏳ - Feature Parity",
-    "phase5": "⏳ - Parent Portal Integration", 
-    "phase6": "⏳ - App Packaging"
-  },
+  "migrationOrder": [
+    "1. Creates simple_teachers (7 teachers)",
+    "2. Creates teacher_children junction table", 
+    "3. Assigns existing children to Tredoux",
+    "4. Adds video_search_term column",
+    "5. Populates search terms"
+  ],
 
   "nextSteps": [
-    "1. Add /admin/montree link to admin dashboard",
-    "2. RUN migration 027 in Supabase",
-    "3. Update /api/teacher/classroom to filter by teacher_id",
-    "4. Test: John sees only John's students"
+    "1. RE-RUN migration 027 in Supabase",
+    "2. Verify tables created",
+    "3. Update /api/teacher/classroom to filter by teacher_id"
   ],
 
   "demoAccounts": {
