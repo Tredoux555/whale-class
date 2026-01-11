@@ -37,7 +37,7 @@ export async function GET(
     // Use curriculum_roadmap as the source (unified curriculum)
     let query = supabase
       .from('curriculum_roadmap')
-      .select('id, name, area, sequence, chinese_name, age_range, materials, direct_aims, indirect_aims, control_of_error, video_url, video_channel')
+      .select('id, name, area, sequence, chinese_name, age_range, materials, direct_aims, indirect_aims, control_of_error, video_url, video_channel, video_search_term')
       .order('area')
       .order('sequence');
 
@@ -69,6 +69,7 @@ export async function GET(
       control_of_error: item.control_of_error,
       video_url: item.video_url,
       video_channel: item.video_channel,
+      video_search_term: item.video_search_term,
       is_active: true
     }));
 

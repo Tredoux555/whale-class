@@ -18,6 +18,13 @@ interface Work {
   control_of_error?: string;
   video_url?: string;
   video_channel?: string;
+  video_search_term?: string;
+}
+
+// Generate YouTube search URL from search term or work name
+function getVideoSearchUrl(work: Work): string {
+  const searchTerm = work.video_search_term || `Montessori ${work.name} presentation`;
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
 }
 
 const AREAS = [
@@ -189,24 +196,22 @@ export default function TeacherCurriculumPage() {
 
             {/* Modal Content */}
             <div className="p-4 space-y-4">
-              {/* Video Link */}
-              {selectedWork.video_url && (
-                <a
-                  href={selectedWork.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
-                >
-                  <span className="text-2xl">▶️</span>
-                  <div className="flex-1">
-                    <p className="font-semibold text-red-700">Watch Video</p>
-                    {selectedWork.video_channel && (
-                      <p className="text-sm text-red-600">{selectedWork.video_channel}</p>
-                    )}
-                  </div>
-                  <span className="text-red-400">→</span>
-                </a>
-              )}
+              {/* Video Search Link - Always show, uses search term or generates from name */}
+              <a
+                href={getVideoSearchUrl(selectedWork)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
+              >
+                <span className="text-2xl">🔍</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-red-700">Find Video on YouTube</p>
+                  <p className="text-sm text-red-600 truncate">
+                    {selectedWork.video_search_term || `Montessori ${selectedWork.name}`}
+                  </p>
+                </div>
+                <span className="text-red-400">→</span>
+              </a>
 
               {/* Materials */}
               {selectedWork.materials && selectedWork.materials.length > 0 && (
@@ -252,15 +257,13 @@ export default function TeacherCurriculumPage() {
                 </div>
               )}
 
-              {/* Empty State */}
-              {!selectedWork.video_url &&
-               !selectedWork.materials?.length && 
+              {/* Empty State for other details */}
+              {!selectedWork.materials?.length && 
                !selectedWork.direct_aims?.length && 
                !selectedWork.indirect_aims?.length && 
                !selectedWork.control_of_error && (
-                <div className="text-center py-8 text-gray-400">
-                  <p>No additional details available for this work.</p>
-                  <p className="text-sm mt-1">Details can be added by admin.</p>
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  <p>Additional details (materials, aims) can be added by admin.</p>
                 </div>
               )}
             </div>
