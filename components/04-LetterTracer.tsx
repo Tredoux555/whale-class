@@ -1,629 +1,378 @@
-// components/LetterTracer.tsx
+// components/04-LetterTracer.tsx
+// Letter Tracer - FIXED: Better completion detection, larger canvas, clearer demo
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Volume2, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Volume2, RotateCcw, Play } from 'lucide-react';
+import Link from 'next/link';
+import { GameAudio } from '@/lib/games/audio-paths';
 
-interface LetterTracerProps {
-  childId?: string;
-  onComplete?: () => void;
-}
+interface Point { x: number; y: number; }
 
-const LetterTracer: React.FC<LetterTracerProps> = ({ childId, onComplete }) => {
+const LetterTracer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
   const [currentLetter, setCurrentLetter] = useState('A');
-  const [isAnimating, setIsAnimating] = useState(true);
-  const [isTracing, setIsTracing] = useState(false);
-  const [tracePoints, setTracePoints] = useState<Array<{ x: number; y: number }>>([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [accuracyScore, setAccuracyScore] = useState(0);
-  
-  // Get childId from session if not provided as prop
-  const [effectiveChildId, setEffectiveChildId] = useState<string | undefined>(childId);
+  const [phase, setPhase] = useState<'demo' | 'trace' | 'complete'>('demo');
+  const [tracePoints, setTracePoints] = useState<Point[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [score, setScore] = useState(0);
 
-  const letterStrokes = {
-    A: [
-      { x: 100, y: 50 },
-      { x: 50, y: 200 },
-      { x: 100, y: 50 },
-      { x: 150, y: 200 },
-      { x: 65, y: 120 },
-      { x: 135, y: 120 }
-    ],
-    B: [
-      { x: 80, y: 50 },
-      { x: 80, y: 200 },
-      { x: 80, y: 50 },
-      { x: 140, y: 50 },
-      { x: 140, y: 120 },
-      { x: 80, y: 120 },
-      { x: 80, y: 120 },
-      { x: 145, y: 120 },
-      { x: 145, y: 200 },
-      { x: 80, y: 200 }
-    ],
-    C: [
-      { x: 140, y: 60 },
-      { x: 80, y: 60 },
-      { x: 60, y: 100 },
-      { x: 60, y: 150 },
-      { x: 80, y: 190 },
-      { x: 140, y: 190 }
-    ],
-    D: [
-      { x: 70, y: 50 },
-      { x: 70, y: 200 },
-      { x: 70, y: 50 },
-      { x: 130, y: 75 },
-      { x: 145, y: 125 },
-      { x: 130, y: 175 },
-      { x: 70, y: 200 }
-    ],
-    E: [
-      { x: 70, y: 50 },
-      { x: 70, y: 200 },
-      { x: 70, y: 50 },
-      { x: 140, y: 50 },
-      { x: 70, y: 125 },
-      { x: 130, y: 125 },
-      { x: 70, y: 200 },
-      { x: 140, y: 200 }
-    ],
-    F: [
-      { x: 70, y: 50 },
-      { x: 70, y: 200 },
-      { x: 70, y: 50 },
-      { x: 140, y: 50 },
-      { x: 70, y: 125 },
-      { x: 130, y: 125 }
-    ],
-    G: [
-      { x: 140, y: 60 },
-      { x: 80, y: 60 },
-      { x: 60, y: 100 },
-      { x: 60, y: 150 },
-      { x: 80, y: 190 },
-      { x: 140, y: 190 },
-      { x: 140, y: 190 },
-      { x: 140, y: 130 },
-      { x: 100, y: 130 }
-    ],
-    H: [
-      { x: 60, y: 50 },
-      { x: 60, y: 200 },
-      { x: 140, y: 50 },
-      { x: 140, y: 200 },
-      { x: 60, y: 125 },
-      { x: 140, y: 125 }
-    ],
-    I: [
-      { x: 100, y: 50 },
-      { x: 100, y: 200 }
-    ],
-    J: [
-      { x: 140, y: 50 },
-      { x: 140, y: 180 },
-      { x: 120, y: 195 },
-      { x: 80, y: 195 }
-    ],
-    K: [
-      { x: 70, y: 50 },
-      { x: 70, y: 200 },
-      { x: 70, y: 70 },
-      { x: 140, y: 50 },
-      { x: 70, y: 125 },
-      { x: 140, y: 200 }
-    ],
-    L: [
-      { x: 80, y: 50 },
-      { x: 80, y: 200 },
-      { x: 80, y: 200 },
-      { x: 140, y: 200 }
-    ],
-    M: [
-      { x: 50, y: 200 },
-      { x: 50, y: 50 },
-      { x: 50, y: 50 },
-      { x: 100, y: 120 },
-      { x: 100, y: 120 },
-      { x: 150, y: 50 },
-      { x: 150, y: 50 },
-      { x: 150, y: 200 }
-    ],
-    N: [
-      { x: 60, y: 200 },
-      { x: 60, y: 50 },
-      { x: 60, y: 50 },
-      { x: 140, y: 200 },
-      { x: 140, y: 200 },
-      { x: 140, y: 50 }
-    ],
-    O: [
-      { x: 100, y: 50 },
-      { x: 140, y: 70 },
-      { x: 150, y: 125 },
-      { x: 140, y: 180 },
-      { x: 100, y: 200 },
-      { x: 60, y: 180 },
-      { x: 50, y: 125 },
-      { x: 60, y: 70 },
-      { x: 100, y: 50 }
-    ],
-    P: [
-      { x: 80, y: 50 },
-      { x: 80, y: 200 },
-      { x: 80, y: 50 },
-      { x: 140, y: 50 },
-      { x: 140, y: 120 },
-      { x: 80, y: 120 }
-    ],
-    Q: [
-      { x: 100, y: 50 },
-      { x: 140, y: 70 },
-      { x: 150, y: 125 },
-      { x: 140, y: 180 },
-      { x: 100, y: 200 },
-      { x: 60, y: 180 },
-      { x: 50, y: 125 },
-      { x: 60, y: 70 },
-      { x: 100, y: 50 },
-      { x: 130, y: 170 },
-      { x: 160, y: 210 }
-    ],
-    R: [
-      { x: 80, y: 50 },
-      { x: 80, y: 200 },
-      { x: 80, y: 50 },
-      { x: 140, y: 50 },
-      { x: 140, y: 120 },
-      { x: 80, y: 120 },
-      { x: 80, y: 120 },
-      { x: 140, y: 200 }
-    ],
-    S: [
-      { x: 140, y: 60 },
-      { x: 80, y: 60 },
-      { x: 60, y: 80 },
-      { x: 80, y: 100 },
-      { x: 120, y: 100 },
-      { x: 140, y: 120 },
-      { x: 120, y: 140 },
-      { x: 60, y: 140 },
-      { x: 80, y: 160 },
-      { x: 140, y: 180 }
-    ],
-    T: [
-      { x: 50, y: 50 },
-      { x: 150, y: 50 },
-      { x: 100, y: 50 },
-      { x: 100, y: 200 }
-    ],
-    U: [
-      { x: 60, y: 50 },
-      { x: 60, y: 170 },
-      { x: 80, y: 195 },
-      { x: 120, y: 195 },
-      { x: 140, y: 170 },
-      { x: 140, y: 170 },
-      { x: 140, y: 50 }
-    ],
-    V: [
-      { x: 50, y: 50 },
-      { x: 100, y: 200 },
-      { x: 100, y: 200 },
-      { x: 150, y: 50 }
-    ],
-    W: [
-      { x: 40, y: 50 },
-      { x: 65, y: 200 },
-      { x: 65, y: 200 },
-      { x: 100, y: 100 },
-      { x: 100, y: 100 },
-      { x: 135, y: 200 },
-      { x: 135, y: 200 },
-      { x: 160, y: 50 }
-    ],
-    X: [
-      { x: 50, y: 50 },
-      { x: 150, y: 200 },
-      { x: 150, y: 50 },
-      { x: 50, y: 200 }
-    ],
-    Y: [
-      { x: 50, y: 50 },
-      { x: 100, y: 120 },
-      { x: 150, y: 50 },
-      { x: 100, y: 120 },
-      { x: 100, y: 120 },
-      { x: 100, y: 200 }
-    ],
-    Z: [
-      { x: 50, y: 50 },
-      { x: 150, y: 50 },
-      { x: 150, y: 50 },
-      { x: 50, y: 200 },
-      { x: 50, y: 200 },
-      { x: 150, y: 200 }
-    ]
+  // Letter stroke data (simplified key points)
+  const letterStrokes: Record<string, Point[][]> = {
+    A: [[{x:150,y:50}, {x:75,y:250}], [{x:150,y:50}, {x:225,y:250}], [{x:100,y:160}, {x:200,y:160}]],
+    B: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:175,y:50}, {x:200,y:75}, {x:200,y:125}, {x:175,y:150}, {x:75,y:150}], [{x:75,y:150}, {x:175,y:150}, {x:200,y:175}, {x:200,y:225}, {x:175,y:250}, {x:75,y:250}]],
+    C: [[{x:225,y:75}, {x:175,y:50}, {x:100,y:50}, {x:50,y:100}, {x:50,y:200}, {x:100,y:250}, {x:175,y:250}, {x:225,y:225}]],
+    D: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:150,y:50}, {x:200,y:100}, {x:200,y:200}, {x:150,y:250}, {x:75,y:250}]],
+    E: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:200,y:50}], [{x:75,y:150}, {x:175,y:150}], [{x:75,y:250}, {x:200,y:250}]],
+    F: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:200,y:50}], [{x:75,y:150}, {x:175,y:150}]],
+    G: [[{x:225,y:75}, {x:175,y:50}, {x:100,y:50}, {x:50,y:100}, {x:50,y:200}, {x:100,y:250}, {x:175,y:250}, {x:225,y:200}, {x:225,y:150}, {x:150,y:150}]],
+    H: [[{x:75,y:50}, {x:75,y:250}], [{x:225,y:50}, {x:225,y:250}], [{x:75,y:150}, {x:225,y:150}]],
+    I: [[{x:150,y:50}, {x:150,y:250}]],
+    J: [[{x:200,y:50}, {x:200,y:200}, {x:150,y:250}, {x:100,y:250}, {x:75,y:200}]],
+    K: [[{x:75,y:50}, {x:75,y:250}], [{x:200,y:50}, {x:75,y:150}], [{x:75,y:150}, {x:200,y:250}]],
+    L: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:250}, {x:200,y:250}]],
+    M: [[{x:50,y:250}, {x:50,y:50}], [{x:50,y:50}, {x:150,y:150}], [{x:150,y:150}, {x:250,y:50}], [{x:250,y:50}, {x:250,y:250}]],
+    N: [[{x:75,y:250}, {x:75,y:50}], [{x:75,y:50}, {x:225,y:250}], [{x:225,y:250}, {x:225,y:50}]],
+    O: [[{x:150,y:50}, {x:75,y:100}, {x:75,y:200}, {x:150,y:250}, {x:225,y:200}, {x:225,y:100}, {x:150,y:50}]],
+    P: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:175,y:50}, {x:200,y:75}, {x:200,y:125}, {x:175,y:150}, {x:75,y:150}]],
+    Q: [[{x:150,y:50}, {x:75,y:100}, {x:75,y:200}, {x:150,y:250}, {x:225,y:200}, {x:225,y:100}, {x:150,y:50}], [{x:175,y:200}, {x:250,y:275}]],
+    R: [[{x:75,y:50}, {x:75,y:250}], [{x:75,y:50}, {x:175,y:50}, {x:200,y:75}, {x:200,y:125}, {x:175,y:150}, {x:75,y:150}], [{x:150,y:150}, {x:225,y:250}]],
+    S: [[{x:200,y:75}, {x:150,y:50}, {x:100,y:50}, {x:50,y:100}, {x:100,y:150}, {x:200,y:150}, {x:250,y:200}, {x:200,y:250}, {x:100,y:250}, {x:50,y:225}]],
+    T: [[{x:50,y:50}, {x:250,y:50}], [{x:150,y:50}, {x:150,y:250}]],
+    U: [[{x:75,y:50}, {x:75,y:200}, {x:100,y:250}, {x:200,y:250}, {x:225,y:200}, {x:225,y:50}]],
+    V: [[{x:50,y:50}, {x:150,y:250}], [{x:150,y:250}, {x:250,y:50}]],
+    W: [[{x:25,y:50}, {x:75,y:250}], [{x:75,y:250}, {x:150,y:100}], [{x:150,y:100}, {x:225,y:250}], [{x:225,y:250}, {x:275,y:50}]],
+    X: [[{x:50,y:50}, {x:250,y:250}], [{x:250,y:50}, {x:50,y:250}]],
+    Y: [[{x:50,y:50}, {x:150,y:150}], [{x:250,y:50}, {x:150,y:150}], [{x:150,y:150}, {x:150,y:250}]],
+    Z: [[{x:50,y:50}, {x:250,y:50}], [{x:250,y:50}, {x:50,y:250}], [{x:50,y:250}, {x:250,y:250}]],
   };
 
-  const canvas = canvasRef.current;
+  const getStrokes = () => letterStrokes[currentLetter] || letterStrokes['A'];
 
-  // Get childId from session if not provided
-  useEffect(() => {
-    if (!effectiveChildId) {
-      const session = localStorage.getItem('student_session');
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          setEffectiveChildId(parsed.childId);
-        } catch (err) {
-          console.error('Error parsing session:', err);
-        }
-      }
-    }
-  }, [effectiveChildId]);
-
-  // Draw letter outline
-  const drawOutline = (ctx: CanvasRenderingContext2D) => {
+  // Draw the guide outline
+  const drawGuide = useCallback((ctx: CanvasRenderingContext2D) => {
+    ctx.clearRect(0, 0, 300, 300);
     ctx.strokeStyle = '#e0e7ff';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 40;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-
-    const strokes = letterStrokes[currentLetter as keyof typeof letterStrokes];
-    let currentStroke: Array<{ x: number; y: number }> = [];
-
-    for (let i = 0; i < strokes.length; i++) {
-      const point = strokes[i];
-
-      if (currentStroke.length > 0) {
-        const lastPoint = currentStroke[currentStroke.length - 1];
-        const distance = Math.sqrt(
-          Math.pow(point.x - lastPoint.x, 2) + Math.pow(point.y - lastPoint.y, 2)
-        );
-
-        if (distance > 50) {
-          if (currentStroke.length > 0) {
-            ctx.beginPath();
-            ctx.moveTo(currentStroke[0].x, currentStroke[0].y);
-            for (let j = 1; j < currentStroke.length; j++) {
-              ctx.lineTo(currentStroke[j].x, currentStroke[j].y);
-            }
-            ctx.stroke();
-          }
-          currentStroke = [point];
-        } else {
-          currentStroke.push(point);
-        }
-      } else {
-        currentStroke.push(point);
-      }
-    }
-
-    if (currentStroke.length > 0) {
+    
+    getStrokes().forEach(stroke => {
+      if (stroke.length < 2) return;
       ctx.beginPath();
-      ctx.moveTo(currentStroke[0].x, currentStroke[0].y);
-      for (let j = 1; j < currentStroke.length; j++) {
-        ctx.lineTo(currentStroke[j].x, currentStroke[j].y);
-      }
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      stroke.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.stroke();
-    }
-  };
+    });
 
-  // Animate strokes
-  const animateStrokes = async (ctx: CanvasRenderingContext2D) => {
-    const strokes = letterStrokes[currentLetter as keyof typeof letterStrokes];
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    let currentStroke: Array<{ x: number; y: number }> = [];
-
-    for (let i = 0; i < strokes.length; i++) {
-      const point = strokes[i];
-
-      if (currentStroke.length > 0) {
-        const lastPoint = currentStroke[currentStroke.length - 1];
-        const distance = Math.sqrt(
-          Math.pow(point.x - lastPoint.x, 2) + Math.pow(point.y - lastPoint.y, 2)
-        );
-
-        if (distance > 50) {
-          if (currentStroke.length > 1) {
-            ctx.beginPath();
-            ctx.moveTo(currentStroke[0].x, currentStroke[0].y);
-            for (let j = 1; j < currentStroke.length; j++) {
-              ctx.lineTo(currentStroke[j].x, currentStroke[j].y);
-            }
-            ctx.stroke();
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
-          currentStroke = [point];
-        } else {
-          currentStroke.push(point);
-        }
-      } else {
-        currentStroke.push(point);
-      }
-    }
-
-    if (currentStroke.length > 1) {
+    // Draw start dot
+    const firstStroke = getStrokes()[0];
+    if (firstStroke && firstStroke[0]) {
+      ctx.fillStyle = '#22c55e';
       ctx.beginPath();
-      ctx.moveTo(currentStroke[0].x, currentStroke[0].y);
-      for (let j = 1; j < currentStroke.length; j++) {
-        ctx.lineTo(currentStroke[j].x, currentStroke[j].y);
-      }
-      ctx.stroke();
+      ctx.arc(firstStroke[0].x, firstStroke[0].y, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('1', firstStroke[0].x, firstStroke[0].y);
     }
+  }, [currentLetter]);
 
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setIsAnimating(false);
-    setIsTracing(true);
-  };
-
-  // Initialize canvas
-  useEffect(() => {
+  // Animate demonstration
+  const runDemo = useCallback(async () => {
+    const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = 200;
-    canvas.height = 250;
+    setPhase('demo');
+    drawGuide(ctx);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawOutline(ctx);
+    // Animate each stroke
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    if (isAnimating) {
-      animateStrokes(ctx);
+    for (const stroke of getStrokes()) {
+      if (stroke.length < 2) continue;
+      
+      for (let i = 0; i < stroke.length - 1; i++) {
+        const start = stroke[i];
+        const end = stroke[i + 1];
+        const steps = 20;
+        
+        for (let step = 0; step <= steps; step++) {
+          const t = step / steps;
+          const x = start.x + (end.x - start.x) * t;
+          const y = start.y + (end.y - start.y) * t;
+          
+          if (step === 0 && i === 0) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+          }
+          
+          // Draw finger indicator
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(x, y, 12, 0, Math.PI * 2);
+          ctx.fill();
+          
+          await new Promise(r => setTimeout(r, 30));
+          
+          // Redraw guide + progress
+          drawGuide(ctx);
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 8;
+          
+          // Redraw completed parts
+          const completedStrokes = getStrokes().slice(0, getStrokes().indexOf(stroke));
+          completedStrokes.forEach(s => {
+            ctx.beginPath();
+            ctx.moveTo(s[0].x, s[0].y);
+            s.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+          });
+          
+          // Redraw current stroke progress
+          ctx.beginPath();
+          ctx.moveTo(stroke[0].x, stroke[0].y);
+          for (let j = 0; j <= i; j++) {
+            ctx.lineTo(stroke[j + 1].x, stroke[j + 1].y);
+          }
+          const currentX = start.x + (end.x - start.x) * t;
+          const currentY = start.y + (end.y - start.y) * t;
+          ctx.lineTo(currentX, currentY);
+          ctx.stroke();
+        }
+      }
+      await new Promise(r => setTimeout(r, 300));
     }
-  }, [currentLetter, isAnimating, canvas]);
 
-  // Calculate accuracy based on stroke similarity
-  const calculateAccuracy = (): number => {
-    if (tracePoints.length < 20) return 0;
+    await new Promise(r => setTimeout(r, 500));
+    setPhase('trace');
+    drawGuide(ctx);
+  }, [currentLetter, drawGuide, getStrokes]);
 
-    const referenceStrokes = letterStrokes[currentLetter as keyof typeof letterStrokes];
-    const referenceCoverage = new Set<string>();
+  // Initialize
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = 300;
+    canvas.height = 300;
+    
+    runDemo();
+  }, [currentLetter, runDemo]);
 
-    // Create a grid representation of reference strokes
-    for (const point of referenceStrokes) {
-      const gridKey = `${Math.round(point.x / 5)},${Math.round(point.y / 5)}`;
-      referenceCoverage.add(gridKey);
-    }
-
-    // Check trace points overlap
-    let matchCount = 0;
+  // Calculate trace accuracy
+  const calculateAccuracy = useCallback((): number => {
+    if (tracePoints.length < 30) return 0;
+    
+    let nearPoints = 0;
+    const threshold = 35; // pixels
+    
+    // Check each trace point against stroke paths
     for (const point of tracePoints) {
-      const gridKey = `${Math.round(point.x / 5)},${Math.round(point.y / 5)}`;
-      if (referenceCoverage.has(gridKey)) {
-        matchCount++;
+      for (const stroke of getStrokes()) {
+        for (let i = 0; i < stroke.length - 1; i++) {
+          const dist = pointToLineDistance(point, stroke[i], stroke[i + 1]);
+          if (dist < threshold) {
+            nearPoints++;
+            break;
+          }
+        }
       }
     }
+    
+    return Math.min(100, Math.round((nearPoints / tracePoints.length) * 100));
+  }, [tracePoints, getStrokes]);
 
-    const accuracy = Math.round((matchCount / Math.max(referenceCoverage.size, 1)) * 100);
-    return Math.min(accuracy, 100);
+  // Point to line distance helper
+  const pointToLineDistance = (point: Point, lineStart: Point, lineEnd: Point): number => {
+    const A = point.x - lineStart.x;
+    const B = point.y - lineStart.y;
+    const C = lineEnd.x - lineStart.x;
+    const D = lineEnd.y - lineStart.y;
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+    if (lenSq !== 0) param = dot / lenSq;
+    
+    let xx, yy;
+    if (param < 0) { xx = lineStart.x; yy = lineStart.y; }
+    else if (param > 1) { xx = lineEnd.x; yy = lineEnd.y; }
+    else { xx = lineStart.x + param * C; yy = lineStart.y + param * D; }
+    
+    return Math.sqrt((point.x - xx) ** 2 + (point.y - yy) ** 2);
   };
 
-  // Handle pointer down
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isTracing || isComplete) return;
-    const rect = canvas?.getBoundingClientRect();
-    if (!rect) return;
-
-    const point = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+  // Handle drawing
+  const getPointerPos = (e: React.PointerEvent): Point => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (phase !== 'trace') return;
+    setIsDrawing(true);
+    const point = getPointerPos(e);
     setTracePoints([point]);
   };
 
-  // Handle pointer move
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isTracing || isComplete || tracePoints.length === 0) return;
-
-    const rect = canvas?.getBoundingClientRect();
-    if (!rect || !canvas) return;
-
-    const point = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-
-    const newPoints = [...tracePoints, point];
-    setTracePoints(newPoints);
-
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDrawing || phase !== 'trace') return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(tracePoints[tracePoints.length - 1].x, tracePoints[tracePoints.length - 1].y);
-    ctx.lineTo(point.x, point.y);
-    ctx.stroke();
-
-    // Check for completion
-    if (newPoints.length > 40) {
-      const accuracy = calculateAccuracy();
-      setAccuracyScore(accuracy);
-      setIsComplete(true);
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
-    }
-  };
-
-  // Handle pointer up
-  const handlePointerUp = () => {
-    setTracePoints([]);
-  };
-
-  // Save progress (simplified - can be extended later)
-  const saveProgress = async () => {
-    if (!isComplete || !effectiveChildId) return;
     
-    // Save progress via API if childId is available
-    try {
-      await fetch('/api/student/game-progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameType: 'letter_tracer',
-          childId: effectiveChildId,
-          itemId: currentLetter,
-          completed: true,
-        }),
-      });
-      
-      setTimeout(() => {
-        goToNextLetter();
-      }, 1000);
-    } catch (err) {
-      console.error('Error saving progress:', err);
-      // Still allow navigation even if save fails
-      setTimeout(() => {
-        goToNextLetter();
-      }, 1000);
+    const point = getPointerPos(e);
+    const newPoints = [...tracePoints, point];
+    setTracePoints(newPoints);
+    
+    // Draw trace
+    if (tracePoints.length > 0) {
+      const lastPoint = tracePoints[tracePoints.length - 1];
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
     }
   };
 
-  // Navigate letters
-  const goToPreviousLetter = () => {
-    const letters = Object.keys(letterStrokes);
-    const currentIndex = letters.indexOf(currentLetter);
-    if (currentIndex > 0) {
-      setCurrentLetter(letters[currentIndex - 1]);
-      reset();
-    }
-  };
-
-  const goToNextLetter = () => {
-    const letters = Object.keys(letterStrokes);
-    const currentIndex = letters.indexOf(currentLetter);
-    if (currentIndex < letters.length - 1) {
-      setCurrentLetter(letters[currentIndex + 1]);
-      reset();
-    } else if (onComplete) {
-      onComplete();
+  const handlePointerUp = async () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    
+    // Check completion
+    if (tracePoints.length >= 50) {
+      const accuracy = calculateAccuracy();
+      if (accuracy >= 50) {
+        setPhase('complete');
+        setScore(prev => prev + 1);
+        await GameAudio.playCorrect();
+      }
     }
   };
 
   const reset = () => {
-    setIsAnimating(true);
-    setIsTracing(false);
     setTracePoints([]);
-    setIsComplete(false);
-    setShowCelebration(false);
-    setAccuracyScore(0);
+    setPhase('demo');
+    runDemo();
   };
 
-  const playAudio = async () => {
-    // Use ElevenLabs pre-recorded audio
-    const { GameAudio } = await import('@/lib/games/audio-paths');
+  const nextLetter = () => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const idx = letters.indexOf(currentLetter);
+    if (idx < 25) {
+      setCurrentLetter(letters[idx + 1]);
+      setTracePoints([]);
+      setPhase('demo');
+    }
+  };
+
+  const prevLetter = () => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const idx = letters.indexOf(currentLetter);
+    if (idx > 0) {
+      setCurrentLetter(letters[idx - 1]);
+      setTracePoints([]);
+      setPhase('demo');
+    }
+  };
+
+  const playAudio = () => {
     GameAudio.playLetterNow(currentLetter.toLowerCase());
   };
 
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-        
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="mb-4 pb-4 border-b-2 border-indigo-200">
-          <h2 className="text-2xl font-bold text-indigo-600">Letter Tracer</h2>
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/games" className="text-indigo-600 font-bold">← Back</Link>
+          <div className="text-indigo-600 font-bold">⭐ {score}</div>
         </div>
 
         {/* Letter Display */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-indigo-600 mb-2">{currentLetter}</h1>
-          <p className="text-gray-600 text-lg mb-2">
-            {isAnimating ? 'Watch the letter' : isComplete ? `Great job!` : 'Now your turn!'}
-          </p>
-        </div>
-
-        {/* Canvas */}
-        <div 
-          className="border-4 border-dashed border-indigo-300 rounded-lg bg-white mb-6 flex items-center justify-center"
-          style={{ touchAction: 'none' }}
-        >
-          <canvas
-            ref={canvasRef}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            className="cursor-crosshair"
-            style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
-          />
-        </div>
-
-        {/* Celebration */}
-        {showCelebration && (
-          <div className="text-center mb-6 animate-bounce">
-            <p className="text-4xl mb-2">🎉</p>
-            <p className="text-2xl font-bold text-green-600">Well done!</p>
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="text-center mb-4">
+            <h1 className="text-6xl font-bold text-indigo-600 mb-2">{currentLetter}</h1>
+            <p className="text-gray-600">
+              {phase === 'demo' && '👀 Watch how to write it...'}
+              {phase === 'trace' && '✏️ Now trace the letter!'}
+              {phase === 'complete' && '🎉 Great job!'}
+            </p>
           </div>
-        )}
 
-        {/* Controls */}
-        <div className="space-y-3 mb-6">
-          {isComplete && (
-            <button
-              onClick={saveProgress}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
-            >
-              Continue to Next Letter
+          {/* Canvas */}
+          <div className="bg-gray-50 rounded-xl p-2 mb-4" style={{ touchAction: 'none' }}>
+            <canvas
+              ref={canvasRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              className="w-full aspect-square cursor-crosshair rounded-lg"
+              style={{ maxWidth: '300px', margin: '0 auto', display: 'block' }}
+            />
+          </div>
+
+          {/* Controls */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <button onClick={playAudio} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+              <Volume2 size={20} /> Say
+            </button>
+            <button onClick={() => runDemo()} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+              <Play size={20} /> Demo
+            </button>
+            <button onClick={reset} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+              <RotateCcw size={20} /> Reset
+            </button>
+          </div>
+
+          {/* Complete state */}
+          {phase === 'complete' && (
+            <button onClick={nextLetter} disabled={currentLetter === 'Z'} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl mb-4">
+              Continue to {currentLetter === 'Z' ? 'Done!' : String.fromCharCode(currentLetter.charCodeAt(0) + 1)} →
             </button>
           )}
 
+          {/* Navigation */}
           <div className="flex gap-3">
-            <button
-              onClick={playAudio}
-              className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
-            >
-              <Volume2 size={20} />
-              Say
+            <button onClick={prevLetter} disabled={currentLetter === 'A'} className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300 text-white font-bold py-3 rounded-xl flex items-center justify-center">
+              <ChevronLeft size={20} /> Prev
             </button>
-            <button
-              onClick={reset}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
-            >
-              <RotateCcw size={20} />
-              Retry
+            <button onClick={nextLetter} disabled={currentLetter === 'Z'} className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300 text-white font-bold py-3 rounded-xl flex items-center justify-center">
+              Next <ChevronRight size={20} />
             </button>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <div className="flex gap-3 mb-4">
-          <button
-            onClick={goToPreviousLetter}
-            disabled={currentLetter === 'A'}
-            className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
-          >
-            <ChevronLeft size={20} />
-            Previous
-          </button>
-          <button
-            onClick={goToNextLetter}
-            disabled={currentLetter === 'Z'}
-            className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
-          >
-            Next
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        {/* Letter progress */}
-        <div className="text-center text-sm text-gray-500">
-          Letter {Object.keys(letterStrokes).indexOf(currentLetter) + 1} of {Object.keys(letterStrokes).length}
+          <div className="text-center text-sm text-gray-500 mt-4">
+            Letter {currentLetter.charCodeAt(0) - 64} of 26
+          </div>
         </div>
       </div>
     </div>
