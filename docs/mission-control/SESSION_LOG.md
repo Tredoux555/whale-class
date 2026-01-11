@@ -1364,3 +1364,28 @@ Continue polishing and verify system ready for Jan 16 launch.
 
 *Session 20 checkpoint: January 11, 2026 ~22:40 Beijing*
 *5 days until Jan 16 presentation*
+
+---
+
+## Session 20 - Chunk 1 Complete
+**Time:** ~22:55 Beijing
+
+### Done:
+- Fixed game count 13→14 in: Principal dashboard, Landing page, Teacher dashboard
+- Removed Comic Sans from globals.css (was forcing !important site-wide)
+
+### Commits:
+| Commit | Description |
+|--------|-------------|
+| `49f0b20` | Fix game count in Principal |
+| `98cbb87` | Brain update |
+| `b18d40a` | Fix game count on landing |
+| `6a6dac9` | Fix game count on teacher dashboard |
+| `5cad8c2` | Remove Comic Sans from globals.css |
+
+### Next chunk:
+- Verify no more Comic Sans references
+- Check parent portal styling
+- Any other polish items
+
+*Checkpoint: 5cad8c2*

@@ -95,14 +95,8 @@ body {
   animation: glow 1s infinite;
 }
 
-/* Site Makeover Utility Classes */
-/* Force Comic Sans across entire platform - with proper mobile fallbacks */
-*, *::before, *::after {
-  font-family: 'Comic Sans MS', 'Comic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-}
-
+/* Utility Classes */
 body, html {
-  font-family: 'Comic Sans MS', 'Comic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
   background-color: #f8fafc;
   color: #1e293b;
 }
