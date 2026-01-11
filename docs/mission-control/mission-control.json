@@ -1,59 +1,87 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T07:25:00+08:00",
-  "currentPhase": "Railway Deployment Debugging",
-  "status": "BLOCKED - Production routes returning 404",
+  "lastUpdated": "2026-01-11T08:20:00+08:00",
+  "currentPhase": "Production Ready",
+  "status": "✅ FULLY WORKING - Teacher→Parent→Games flow verified",
   
-  "criticalIssue": {
-    "problem": "All routes except / return 404 on teacherpotato.xyz",
-    "worksLocally": true,
-    "railwayShowsSuccess": true,
-    "suspectedCause": "Railway not building/deploying latest code properly",
-    "diagnosticAdded": "/api/health endpoint to verify code deployed",
-    "lastCommit": "f1d5e92 - Add health check API"
+  "productionUrl": "https://www.teacherpotato.xyz",
+  "urlNote": "ALWAYS use www subdomain - bare domain has redirect issue",
+  
+  "flowStatus": {
+    "teacherUpdates": "✅ Working - /api/teacher/progress",
+    "parentViews": "✅ Working - /api/unified/today",
+    "gameRecommendations": "✅ Working - 3 games recommended based on Language progress",
+    "verified": "2026-01-11 08:15 Beijing"
   },
   
-  "unificationStatus": {
-    "database": "DEPLOYED - 60 game mappings live",
-    "apis": "CODE PUSHED - 5 unified APIs",
-    "parentUI": "CODE PUSHED - 3 page-unified.tsx files",
-    "production": "BLOCKED by 404 issue"
+  "platformAudit": {
+    "date": "2026-01-11",
+    "totalRoutes": 41,
+    "working": 41,
+    "failed": 0,
+    "mainPages": "7/7 ✅",
+    "games": "15/15 ✅",
+    "teacherPages": "7/7 ✅",
+    "parentPages": "3/3 ✅",
+    "unifiedApis": "5/5 ✅",
+    "adminApis": "4/4 ✅"
+  },
+  
+  "demoData": {
+    "amy": {
+      "childId": "afbed794-4eee-4eb5-8262-30ab67638ec7",
+      "languageWorks": ["la_sound_games", "la_sandpaper_letters", "la_moveable_alphabet", "la_pink_series"],
+      "gameRecommendations": ["Letter Sounds", "Beginning Sounds", "Middle Sounds"]
+    }
   },
   
   "recentCommits": [
-    "f1d5e92 - Add health check API to verify deployment",
-    "5eaca99 - Force Railway rebuild",
-    "ebb84c5 - 🐋 Montree Unification: Teacher-Parent sync",
-    "299a097 - 🏔️ Session 9: Grand Unification begins"
+    "012baeb - 📋 Session 11: Teacher→Parent→Games flow verified working",
+    "3c75805 - ✅ Fix Teacher→Parent→Games flow: correct work_id prefixes",
+    "9e05a27 - 📋 Checkpoint: Railway 404 debug session handoff",
+    "f1d5e92 - Add health check API to verify deployment"
   ],
   
-  "testUrls": {
-    "shouldWork": [
-      "https://teacherpotato.xyz/ (200 ✓)",
-      "https://teacherpotato.xyz/api/health (TEST THIS FIRST)"
-    ],
-    "returning404": [
-      "https://teacherpotato.xyz/parent/home",
-      "https://teacherpotato.xyz/games", 
-      "https://teacherpotato.xyz/teacher",
-      "https://teacherpotato.xyz/api/unified/games"
-    ]
-  },
+  "knownIssues": [
+    {
+      "issue": "Non-www domain redirect broken",
+      "workaround": "Always use www.teacherpotato.xyz",
+      "priority": "low"
+    },
+    {
+      "issue": "8 orphan entries with wrong prefixes in Amy's data",
+      "fix": "Run migrations/026b_cleanup_amy_bad_data.sql in Supabase",
+      "priority": "low"
+    },
+    {
+      "issue": "Unified parent pages not switched to default",
+      "fix": "Swap page-unified.tsx → page.tsx when ready",
+      "priority": "medium"
+    }
+  ],
   
-  "nextActions": [
-    "1. Wait for Railway to deploy f1d5e92",
-    "2. Test /api/health - if 200+json, deploy works",
-    "3. If /api/health works but routes 404, check app/parent/home/page.tsx exists",
-    "4. If /api/health also 404, Railway build broken - check logs"
+  "nextSteps": [
+    "1. (Optional) Run cleanup SQL to remove orphan entries",
+    "2. Switch unified parent pages to default",
+    "3. Create test family and link Amy",
+    "4. Test full parent login flow in browser",
+    "5. Fix bare domain DNS redirect in Railway"
   ],
   
   "dailyLog": [
     {
       "date": "2026-01-11",
-      "session": "Railway 404 Debug",
+      "session": "Session 11 - Flow Fix",
+      "time": "07:40-08:20 Beijing",
+      "summary": "Fixed Teacher→Parent→Games flow. Root cause: demo data used wrong work_id prefixes (lang_* vs la_*). Used teacher API to insert correct IDs. Verified 3 game recommendations now appear for Amy.",
+      "status": "Complete ✅"
+    },
+    {
+      "date": "2026-01-11",
+      "session": "Session 10 - 404 Debug",
       "time": "07:00-07:25 Beijing",
-      "summary": "All prod routes 404 except homepage. Local build works. Added health check API (f1d5e92). Awaiting Railway deploy to diagnose.",
-      "status": "Blocked - awaiting deploy"
+      "summary": "Discovered 404 only affects bare domain. www.teacherpotato.xyz works perfectly. All 41 routes passing on www.",
+      "status": "Resolved"
     }
   ]
 }

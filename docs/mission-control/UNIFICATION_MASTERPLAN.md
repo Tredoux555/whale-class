@@ -1,40 +1,12 @@
 # 🏔️ MONTREE UNIFICATION MASTERPLAN
 ## The Brain - Read This First Every Session
 
-**Last Updated:** January 13, 2026 01:00 Beijing  
-**Status:** DATABASE LIVE ✅ | CODE READY TO PUSH ⏳
+**Last Updated:** January 11, 2026 08:20 Beijing  
+**Status:** ✅ FLOW WORKING - Teacher→Parent→Games verified
 
 ---
 
-## 🚨 CHECKPOINT PROTOCOL (MANDATORY)
-
-### Every 5 Minutes OR After Every Task:
-```
-1. SAVE work to disk (write files)
-2. UPDATE this file's "Current Status" section
-3. UPDATE SESSION_LOG.md with what was done
-4. COMMIT to yourself: "Next I will do X"
-5. CONTINUE working
-```
-
-### After Major Milestones:
-```
-1. Write HANDOFF_[DATE]_[TOPIC].md
-2. Update memory edits if needed
-3. Git commit with clear message
-```
-
-### If Interrupted/Context Lost:
-```
-1. READ this file first
-2. READ SESSION_LOG.md
-3. READ latest HANDOFF_*.md
-4. Continue from "NEXT ACTIONS" below
-```
-
----
-
-## 📊 CURRENT STATUS
+## 🎯 CURRENT STATUS
 
 ### Completed ✅
 - [x] Database: families, game_curriculum_mapping tables
@@ -46,118 +18,101 @@
 - [x] API: /api/unified/games
 - [x] API: /api/unified/today
 - [x] UI: page-unified.tsx for all 3 parent pages
-- [x] Docs: HANDOFF_JAN13_UNIFICATION.md
-
-### In Progress ⏳
-- [ ] Git push (Tredoux doing)
-- [ ] Production test
+- [x] Demo data: Amy has correct work_ids for game recommendations
+- [x] **VERIFIED: Game recommendations appearing! ✅**
 
 ### Next Up 🎯
 - [ ] Switch unified pages to default
 - [ ] Create test family data
-- [ ] Verify game recommendations work
+- [ ] Test full parent login flow in browser
 
 ---
 
-## 🎯 NEXT ACTIONS (in order)
+## 🚀 PRODUCTION
 
-### 1. After Git Push - Test Production
+**URL:** `https://www.teacherpotato.xyz` (always use www!)
+
+**Verified Working:**
+- 41/41 routes passing
+- Game recommendations: Letter Sounds, Beginning Sounds, Middle Sounds
+- Amy's Language progress showing correctly
+
+---
+
+## 🧠 THE ARCHITECTURE
+
 ```
-1. Go to teacherpotato.xyz/parent/home
-2. Check page loads without errors
-3. Try to login with test email
+┌─────────────────────────────────────────────────────┐
+│              SINGLE SOURCE OF TRUTH                 │
+├─────────────────────────────────────────────────────┤
+│  families          → Parent accounts                │
+│  children          → Students (+ family_id)         │
+│  curriculum_roadmap → 342 Montessori works          │
+│  child_work_progress → Status per child per work    │
+│  game_curriculum_mapping → 60 game↔work links       │
+└─────────────────────────────────────────────────────┘
+         ↓                    ↓                    ↓
+    TEACHER              PARENT                GAMES
+    writes               reads              recommended
+    progress             progress           based on
+                                           Language works
 ```
 
-### 2. Create Test Data
-```sql
--- Run in Supabase
-INSERT INTO families (name, email) VALUES ('Demo Family', 'demo@test.com');
-UPDATE children SET family_id = (SELECT id FROM families WHERE email = 'demo@test.com') WHERE name = 'Amy';
+---
+
+## 📁 KEY FILES
+
+```
+BRAIN FILES:
+~/Desktop/whale/docs/mission-control/mission-control.json
+~/Desktop/whale/docs/mission-control/SESSION_LOG.md
+~/Desktop/whale/docs/mission-control/HANDOFF_JAN11_FLOW_FIXED.md ← LATEST
+
+UNIFIED APIs:
+/api/unified/families   - Parent login
+/api/unified/children   - All kids + progress
+/api/unified/progress   - Full progress for one child
+/api/unified/games      - All available games
+/api/unified/today      - Today's learning + game recs ⭐
+
+UNIFIED UI:
+app/parent/home/page-unified.tsx
+app/parent/home/[familyId]/page-unified.tsx
+app/parent/home/[familyId]/[childId]/page-unified.tsx
 ```
 
-### 3. Switch to Unified Pages
+---
+
+## 💡 KEY LEARNINGS
+
+### Work ID Prefixes (IMPORTANT!)
+| Area | Correct Prefix | Wrong Prefix |
+|------|---------------|--------------|
+| Language | `la_*` | `lang_*` ❌ |
+| Sensorial | `se_*` | `sen_*` ❌ |
+| Math | `ma_*` | `math_*` ❌ |
+| Practical Life | `pl_*` | ✅ |
+
+### Testing Game Recommendations
 ```bash
-cd ~/Desktop/whale/app/parent/home
-mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
-cd [familyId]
-mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
-cd [childId]  
-mv page.tsx page-old.tsx && mv page-unified.tsx page.tsx
+curl -sL "https://www.teacherpotato.xyz/api/unified/today?child_id=afbed794-4eee-4eb5-8262-30ab67638ec7" | python3 -m json.tool
 ```
 
-### 4. Future Work
-- Teacher UI to assign families
-- Journal entry from parent
-- Game play tracking
-- Principal family overview
-
----
-
-## 📁 FILE MAP
-
-```
-docs/mission-control/
-├── UNIFICATION_MASTERPLAN.md    ← THE BRAIN (this file)
-├── SESSION_LOG.md               ← Session history
-├── HANDOFF_JAN13_UNIFICATION.md ← Latest handoff
-└── DEPLOYMENT_GUIDE.md          ← Step-by-step deploy
-
-migrations/
-├── 025_montree_unification.sql      ← Schema (DEPLOYED)
-└── 025b_seed_game_mappings.sql      ← Game maps (DEPLOYED)
-
-app/api/unified/
-├── families/route.ts    ← Parent login
-├── children/route.ts    ← Kids + progress
-├── progress/route.ts    ← Progress + game recs
-├── games/route.ts       ← All games
-└── today/route.ts       ← Daily updates
-
-app/parent/home/
-├── page-unified.tsx                    ← Login (NEW)
-└── [familyId]/
-    ├── page-unified.tsx                ← Dashboard (NEW)
-    └── [childId]/
-        └── page-unified.tsx            ← Child view (NEW)
-```
-
----
-
-## 🧠 ARCHITECTURE
-
-```
-Teacher taps "Presented" on Sandpaper Letters
-              ↓
-child_work_progress updated (status=1)
-              ↓
-Parent opens app → calls /api/unified/today
-              ↓
-API reads child_work_progress + game_curriculum_mapping
-              ↓
-Parent sees: "Amy learned Sandpaper Letters today!"
-           + "Play Letter Sounds game to practice!"
-```
-
----
-
-## 💡 KEY DECISIONS MADE
-
-1. **TEXT work_id** - curriculum_roadmap.id is TEXT like "la_sandpaper_letters"
-2. **Unified tables** - Extend existing teacher tables, don't rebuild
-3. **60 game mappings** - All 12 games mapped to Language works
-4. **page-unified.tsx** - New pages alongside old for safe rollout
+Expected: `game_recommendations` array with 3 games
 
 ---
 
 ## 🔧 TROUBLESHOOTING
 
-### "No children found"
-- Children need family_id set
-- Run: `UPDATE children SET family_id = 'xxx' WHERE name = 'Amy'`
-
 ### "No game recommendations"
 - Child needs Language works with status >= 1
-- Check: `SELECT * FROM child_work_progress WHERE child_id = 'xxx'`
+- Work IDs must use `la_*` prefix
+- Check: `SELECT * FROM child_work_progress WHERE child_id = 'xxx' AND work_id LIKE 'la_%'`
+
+### "Unknown Work" showing
+- work_id doesn't exist in curriculum_roadmap
+- Check prefix is correct (la_, se_, ma_, pl_)
+- Run cleanup: `migrations/026b_cleanup_amy_bad_data.sql`
 
 ### "API 500 error"
 - Check Railway logs
@@ -165,14 +120,4 @@ Parent sees: "Amy learned Sandpaper Letters today!"
 
 ---
 
-## 📞 CONTEXT FOR CLAUDE
-
-When starting a new session:
-1. User is Tredoux, Montessori teacher in Beijing
-2. Building Whale platform (teacherpotato.xyz)
-3. Just completed Montree Unification
-4. Goal: Teacher→Parent→Games sync for thousands of schools
-
----
-
-*This is the brain. Keep it updated. Read it first.*
+*This is the brain. Read it first every session.*
