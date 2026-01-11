@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FlashcardPreview } from './FlashcardPreview';
 import { FlashcardPDF } from './FlashcardPDF';
 
@@ -61,9 +61,27 @@ export function FlashcardMaker() {
       // Fetch preview at 25% into the video
       const initialTime = Math.min(5, videoDuration * 0.25);
       setScrubberTime(initialTime);
-      fetchPreviewFrame(initialTime, videoPath);
+      // Inline fetch to avoid dependency issues
+      (async () => {
+        setIsLoadingPreview(true);
+        try {
+          const res = await fetch('/api/admin/flashcard-maker/preview-frame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filePath: videoPath, timestamp: initialTime })
+          });
+          if (res.ok) {
+            const { imageData } = await res.json();
+            setScrubberPreview(imageData);
+          }
+        } catch (e) {
+          console.error('Preview fetch error:', e);
+        } finally {
+          setIsLoadingPreview(false);
+        }
+      })();
     }
-  }, [videoPath, videoDuration, fetchPreviewFrame]);
+  }, [videoPath, videoDuration]);
 
   const loadUploadedVideos = async () => {
     setLoadingVideos(true);
@@ -83,7 +101,7 @@ export function FlashcardMaker() {
   };
 
   // Fetch frame preview at specific timestamp
-  const fetchPreviewFrame = useCallback(async (timestamp: number, path?: string) => {
+  const fetchPreviewFrame = async (timestamp: number, path?: string) => {
     const vidPath = path || videoPath;
     if (!vidPath) return;
     
@@ -104,7 +122,7 @@ export function FlashcardMaker() {
     } finally {
       setIsLoadingPreview(false);
     }
-  }, [videoPath]);
+  };
 
   // Debounced preview fetch
   const handleScrubberChange = (time: number) => {
