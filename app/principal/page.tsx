@@ -3,219 +3,299 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-interface Classroom {
+interface Teacher {
   id: string;
   name: string;
-  age_group: string;
-  teacher_id: string | null;
   student_count: number;
 }
 
-interface School {
-  id: string;
-  name: string;
-  slug: string;
-  classroom_count?: number;
-  student_count?: number;
+interface Stats {
+  teachers: number;
+  classrooms: number;
+  students: number;
 }
 
-export default function PrincipalDashboard() {
-  const [schools, setSchools] = useState<School[]>([]);
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
-  const [school, setSchool] = useState<School | null>(null);
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newClass, setNewClass] = useState({ name: '', age_group: '3-6' });
-  const [saving, setSaving] = useState(false);
+const DASHBOARD_ITEMS = [
+  {
+    href: '/admin/teacher-students',
+    icon: '🔗',
+    title: 'Student Assignments',
+    description: 'Assign students to teachers and manage class rosters',
+    gradient: 'from-purple-500 to-pink-500',
+    bgGradient: 'from-purple-50 to-pink-50',
+  },
+  {
+    href: '/teacher/curriculum',
+    icon: '📋',
+    title: 'Curriculum',
+    description: 'Full Montessori curriculum with 342 works',
+    gradient: 'from-orange-500 to-amber-500',
+    bgGradient: 'from-orange-50 to-amber-50',
+  },
+  {
+    href: '/teacher/classroom',
+    icon: '📊',
+    title: 'Student Progress',
+    description: 'View progress tracking across all students',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+  },
+  {
+    href: '/games',
+    icon: '🎮',
+    title: 'Learning Games',
+    description: '13 interactive games for students',
+    gradient: 'from-pink-500 to-rose-500',
+    bgGradient: 'from-pink-50 to-rose-50',
+  },
+  {
+    href: '/teacher/tools',
+    icon: '🛠️',
+    title: 'Teacher Tools',
+    description: 'Material generators and flashcard makers',
+    gradient: 'from-cyan-500 to-blue-500',
+    bgGradient: 'from-cyan-50 to-blue-50',
+  },
+  {
+    href: '/admin',
+    icon: '⚙️',
+    title: 'Admin Panel',
+    description: 'Advanced settings and configurations',
+    gradient: 'from-gray-500 to-slate-500',
+    bgGradient: 'from-gray-50 to-slate-50',
+  },
+];
 
-  // Load schools on mount
+export default function PrincipalDashboard() {
+  const [stats, setStats] = useState<Stats>({ teachers: 0, classrooms: 0, students: 0 });
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [greeting, setGreeting] = useState('');
+
   useEffect(() => {
-    const loadSchools = async () => {
-      try {
-        const res = await fetch('/api/admin/schools');
-        const data = await res.json();
-        const allSchools = data.schools || [];
-        setSchools(allSchools);
-        
-        // Check localStorage for saved school, otherwise use first
-        const saved = localStorage.getItem('principal_school_id');
-        if (saved && allSchools.find((s: School) => s.id === saved)) {
-          setSelectedSchoolId(saved);
-        } else if (allSchools.length > 0) {
-          setSelectedSchoolId(allSchools[0].id);
-        }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    loadSchools();
+    // Set greeting based on time
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 17) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+
+    loadData();
   }, []);
 
-  // Load classrooms when school changes
-  useEffect(() => {
-    if (!selectedSchoolId) return;
-    localStorage.setItem('principal_school_id', selectedSchoolId);
-    
-    const s = schools.find(x => x.id === selectedSchoolId);
-    setSchool(s || null);
-    
-    const loadClassrooms = async () => {
-      try {
-        const res = await fetch(`/api/admin/classrooms?school_id=${selectedSchoolId}`);
-        const data = await res.json();
-        setClassrooms(data.classrooms || []);
-      } catch (e) { console.error(e); }
-    };
-    loadClassrooms();
-  }, [selectedSchoolId, schools]);
-
-  const handleAddClass = async () => {
-    if (!newClass.name.trim() || !selectedSchoolId) return;
-    setSaving(true);
+  const loadData = async () => {
     try {
-      const res = await fetch('/api/admin/classrooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ school_id: selectedSchoolId, ...newClass })
+      // Load teachers
+      const teacherRes = await fetch('/api/teacher/list');
+      const teacherData = await teacherRes.json();
+      const teacherList = teacherData.teachers || [];
+      setTeachers(teacherList);
+
+      // Load children count
+      const childRes = await fetch('/api/children');
+      const childData = await childRes.json();
+      const studentCount = childData.children?.length || 0;
+
+      setStats({
+        teachers: teacherList.length,
+        classrooms: teacherList.filter((t: Teacher) => t.student_count > 0).length,
+        students: studentCount,
       });
-      if (res.ok) {
-        setShowAddModal(false);
-        setNewClass({ name: '', age_group: '3-6' });
-        // Refresh classrooms
-        const classRes = await fetch(`/api/admin/classrooms?school_id=${selectedSchoolId}`);
-        const classData = await classRes.json();
-        setClassrooms(classData.classrooms || []);
-      }
-    } catch (e) { console.error(e); }
-    finally { setSaving(false); }
+    } catch (e) {
+      console.error('Failed to load data:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const totalStudents = classrooms.reduce((sum, c) => sum + c.student_count, 0);
-  const assignedTeachers = classrooms.filter(c => c.teacher_id).length;
-
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <span className="text-3xl animate-bounce">🏫</span>
+          </div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <header className="bg-indigo-600 text-white px-6 py-4">
-        <div className="max-w-6xl mx-auto">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-indigo-200 text-sm">Principal Portal</p>
-              <h1 className="text-2xl font-bold">{school?.name || 'Select School'}</h1>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                <span className="text-2xl">🏫</span>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{greeting},</p>
+                <h1 className="text-xl font-bold text-gray-800">Principal</h1>
+              </div>
             </div>
-            {/* School Selector */}
-            <select
-              value={selectedSchoolId}
-              onChange={(e) => setSelectedSchoolId(e.target.value)}
-              className="bg-indigo-700 text-white px-4 py-2 rounded-lg border border-indigo-500 focus:outline-none focus:ring-2 focus:ring-white"
+            <Link
+              href="/admin/montree"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
             >
-              {schools.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+              <span>🌳 Montree</span>
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Stats */}
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        {/* Welcome Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-indigo-200/50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-1">Principal Dashboard</h2>
+              <p className="text-indigo-100">School overview and management</p>
+            </div>
+            <div className="hidden sm:block text-6xl opacity-50">🏫</div>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-6 border text-center">
-            <div className="text-3xl font-bold text-indigo-600">{classrooms.length}</div>
-            <div className="text-gray-500 text-sm">Classrooms</div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center">
+                <span className="text-2xl">👩‍🏫</span>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{stats.teachers}</div>
+                <div className="text-sm text-gray-500">Teachers</div>
+              </div>
+            </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border text-center">
-            <div className="text-3xl font-bold text-emerald-600">{assignedTeachers}</div>
-            <div className="text-gray-500 text-sm">Teachers Assigned</div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
+                <span className="text-2xl">📚</span>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{stats.classrooms}</div>
+                <div className="text-sm text-gray-500">Active Classes</div>
+              </div>
+            </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border text-center">
-            <div className="text-3xl font-bold text-purple-600">{totalStudents}</div>
-            <div className="text-gray-500 text-sm">Total Students</div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
+                <span className="text-2xl">👶</span>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{stats.students}</div>
+                <div className="text-sm text-gray-500">Students</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Classrooms */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">📚 Classrooms</h2>
-          <button onClick={() => setShowAddModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Classroom</button>
-        </div>
-
-        {classrooms.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed">
-            <div className="text-5xl mb-4">📚</div>
-            <p className="text-gray-500 mb-4">No classrooms yet. Add your first classroom!</p>
-            <button onClick={() => setShowAddModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg">+ Add Classroom</button>
+        {/* Teachers Overview */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800">👩‍🏫 Teachers</h3>
+            <Link
+              href="/admin/users"
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              + Add Teacher
+            </Link>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {classrooms.map((c) => (
-              <div key={c.id} className="bg-white rounded-xl p-5 border hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-2xl">📚</div>
-                  <div>
-                    <h3 className="font-bold">{c.name}</h3>
-                    <p className="text-sm text-gray-500">Ages {c.age_group}</p>
+          {teachers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">👩‍🏫</div>
+              <p>No teachers yet. Add your first teacher!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {teachers.map((teacher) => (
+                <div
+                  key={teacher.id}
+                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl hover:from-indigo-50 hover:to-purple-50 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
+                    {teacher.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-800 truncate">{teacher.name}</div>
+                    <div className="text-sm text-gray-500">{teacher.student_count} students</div>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm text-gray-600 mb-4">
-                  <span>👩‍🏫 {c.teacher_id ? 'Assigned' : <span className="text-orange-500">Unassigned</span>}</span>
-                  <span>👶 {c.student_count} students</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Dashboard Grid */}
+        <h3 className="text-lg font-bold text-gray-800 mb-4">🚀 Quick Access</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {DASHBOARD_ITEMS.map((item, index) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group block"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <div className={`bg-gradient-to-br ${item.bgGradient} rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-white/50 hover:-translate-y-1`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-14 h-14 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
+                    <span className="text-3xl">{item.icon}</span>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={`/principal/classrooms/${c.id}`} className="flex-1 text-center py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200">
-                    Manage
-                  </Link>
-                  <Link href={`/teacher/setup?classroom=${c.id}`} className="flex-1 text-center py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-200">
-                    + Students
-                  </Link>
-                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-gray-900">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-600 line-clamp-2">
+                  {item.description}
+                </p>
               </div>
-            ))}
-          </div>
-        )}
+            </Link>
+          ))}
+        </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 p-6 bg-white rounded-xl border">
-          <h3 className="font-semibold mb-4">⚡ Quick Actions</h3>
+        <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">⚡ Quick Actions</h3>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200">+ Add Classroom</button>
-            <Link href="/principal/teachers" className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm hover:bg-emerald-200">👩‍🏫 Manage Teachers</Link>
-            <Link href="/admin/schools" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">🏫 Master Admin</Link>
+            <Link
+              href="/admin/teacher-students"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
+            >
+              <span>🔗</span>
+              <span>Assign Students</span>
+            </Link>
+            <Link
+              href="/teacher/classroom"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
+            >
+              <span>📊</span>
+              <span>View Progress</span>
+            </Link>
+            <Link
+              href="/parent/home"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
+            >
+              <span>👨‍👩‍👧</span>
+              <span>Parent Portal</span>
+            </Link>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            >
+              <span>⚙️</span>
+              <span>Admin Panel</span>
+            </Link>
           </div>
         </div>
       </main>
-
-      {/* Add Classroom Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Add Classroom to {school?.name}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Classroom Name *</label>
-                <input type="text" value={newClass.name} onChange={(e) => setNewClass({...newClass, name: e.target.value})} className="w-full px-4 py-2 border rounded-lg" placeholder="🐼 Panda Class" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Age Group</label>
-                <select value={newClass.age_group} onChange={(e) => setNewClass({...newClass, age_group: e.target.value})} className="w-full px-4 py-2 border rounded-lg">
-                  <option value="2-3">2-3 years (Toddler)</option>
-                  <option value="3-4">3-4 years</option>
-                  <option value="3-6">3-6 years (Primary)</option>
-                  <option value="4-5">4-5 years</option>
-                  <option value="5-6">5-6 years</option>
-                  <option value="6-9">6-9 years (Lower Elementary)</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowAddModal(false)} className="flex-1 py-2 border rounded-lg">Cancel</button>
-              <button onClick={handleAddClass} disabled={!newClass.name.trim() || saving} className="flex-1 py-2 bg-indigo-600 text-white rounded-lg disabled:opacity-50">{saving ? 'Adding...' : 'Add Classroom'}</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

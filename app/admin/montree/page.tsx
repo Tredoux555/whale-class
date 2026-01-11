@@ -28,20 +28,20 @@ export default function IndependentMontreePage() {
             packaged as an app and licensed to schools worldwide. This is the path to financial freedom.
           </p>
           <div className="grid grid-cols-3 gap-4 mt-6">
-            <Link href="/admin" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
+            <Link href="/principal" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👨‍💼</div>
               <div className="font-bold">Principal</div>
-              <div className="text-sm opacity-80">Tredoux / 870602</div>
+              <div className="text-sm opacity-80">School Overview</div>
             </Link>
             <Link href="/teacher" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👩‍🏫</div>
               <div className="font-bold">Teachers</div>
               <div className="text-sm opacity-80">Any name / 123</div>
             </Link>
-            <Link href="/parent/home" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
+            <Link href="/parent/demo" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👨‍👩‍👧</div>
               <div className="font-bold">Parents</div>
-              <div className="text-sm opacity-80">demo@test.com</div>
+              <div className="text-sm opacity-80">Auto-login demo</div>
             </Link>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function IndependentMontreePage() {
         {/* Quick Actions */}
         <div className="mt-8 bg-emerald-100 border-2 border-emerald-400 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-emerald-800 mb-4">🚀 Test The System</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Link 
               href="/admin/teacher-students"
               className="bg-white rounded-xl p-4 text-center hover:shadow-lg transition-shadow border-2 border-emerald-300"
@@ -231,6 +231,14 @@ export default function IndependentMontreePage() {
               <div className="text-2xl mb-2">🔗</div>
               <div className="font-bold text-sm">Assign Students</div>
               <div className="text-xs text-gray-500">To teachers</div>
+            </Link>
+            <Link 
+              href="/principal"
+              className="bg-white rounded-xl p-4 text-center hover:shadow-lg transition-shadow"
+            >
+              <div className="text-2xl mb-2">👨‍💼</div>
+              <div className="font-bold text-sm">Principal</div>
+              <div className="text-xs text-gray-500">School overview</div>
             </Link>
             <Link 
               href="/teacher"
@@ -257,12 +265,12 @@ export default function IndependentMontreePage() {
               <div className="text-xs text-gray-500">36 weeks</div>
             </Link>
             <Link 
-              href="/parent/home"
+              href="/parent/demo"
               className="bg-white rounded-xl p-4 text-center hover:shadow-lg transition-shadow"
             >
               <div className="text-2xl mb-2">👨‍👩‍👧</div>
               <div className="font-bold text-sm">Parent Portal</div>
-              <div className="text-xs text-gray-500">demo@test.com</div>
+              <div className="text-xs text-gray-500">Auto-login</div>
             </Link>
           </div>
         </div>

@@ -1,6 +1,6 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T19:55:00+08:00",
+  "lastUpdated": "2026-01-11T20:25:00+08:00",
   "currentStatus": "✨ POLISHED + LAUNCH READY",
   "productionUrl": "https://www.teacherpotato.xyz",
   
@@ -10,6 +10,15 @@
     "daysRemaining": 5
   },
 
+  "session19Summary": {
+    "theme": "Principal Dashboard + Parent Bypass",
+    "changes": [
+      "Principal Dashboard: Full polish with modern gradient design",
+      "Parent Portal: Auto-login bypass at /parent/demo",
+      "Montree Hub: Fixed links to use correct routes"
+    ]
+  },
+
   "session18Summary": {
     "theme": "PDF Fix + Audio Upload",
     "changes": [
@@ -17,32 +26,7 @@
       "Flashcard maker: Goes straight to scrubber (removed processing step)",
       "Story audio upload: Fixed bucket name (story-uploads not media)",
       "Dockerfile: Added pillow dependency"
-    ],
-    "commits": ["338dab4", "90266e0", "62f42ea", "4578368", "45d357a"]
-  },
-
-  "session17Summary": {
-    "theme": "UI Polish Sprint",
-    "changes": [
-      "Homepage: Modern gradient header, cleaner video cards, removed visible Admin button",
-      "Games Hub: Hero section with stats, gradient game cards with hover animations",
-      "Teacher Dashboard: Gradient cards, welcome banner with greeting, quick actions",
-      "Teacher Login: Glass-morphism design with blur effects",
-      "Landing Page (/montree): Mobile hamburger menu, refined styling"
-    ],
-    "designLanguage": "Consistent gradients (blue-cyan-indigo), rounded corners, shadow effects, smooth transitions",
-    "commits": ["865865b"]
-  },
-
-  "session16Summary": {
-    "part1_teacherTools": {
-      "issue": "5 tool pages had /admin back links - teachers couldn't navigate",
-      "fix": "Replaced Link href=/admin with router.back()"
-    },
-    "part2_monetization": {
-      "built": ["/montree", "/montree/welcome", "/api/stripe/checkout", "/api/stripe/webhook", "migrations/028_montree_schools.sql"],
-      "pricing": { "school": "$29/month", "district": "$199/month" }
-    }
+    ]
   },
 
   "launchReadiness": {
@@ -50,6 +34,8 @@
     "adminAssignment": "✅",
     "videoSearch": "✅",
     "teacherPortal": "✅ POLISHED",
+    "principalPortal": "✅ POLISHED",
+    "parentPortal": "✅ + Demo bypass",
     "teacherTools": "✅",
     "adminDashboard": "✅",
     "games": "✅ 13/14 POLISHED",
@@ -63,14 +49,16 @@
   "demoAccounts": {
     "admin": "Tredoux / 870602",
     "teacher": "Any name / 123",
-    "parent": "demo@test.com"
+    "parent": "/parent/demo (auto-login)"
   },
 
   "keyUrls": {
     "production": "https://www.teacherpotato.xyz",
     "landingPage": "/montree",
     "masterPlan": "/admin/montree",
+    "principalDashboard": "/principal",
     "teacherDashboard": "/teacher/dashboard",
+    "parentDemo": "/parent/demo",
     "teacherTools": "/teacher/tools",
     "assignStudents": "/admin/teacher-students",
     "games": "/games"
