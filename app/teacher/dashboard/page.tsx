@@ -104,43 +104,48 @@ export default function TeacherDashboard() {
               <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs rounded-full">Games</span>
             </div>
           </Link>
-        </div>
 
-        {/* Quick Resources */}
-        <div className="mt-8">
-          <h2 className="text-lg font-bold text-gray-700 mb-4">Quick Resources</h2>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Link
-                href="/admin/vocabulary-flashcards"
-                className="p-3 bg-cyan-50 rounded-lg text-center hover:bg-cyan-100 transition-colors"
-              >
-                <span className="text-2xl">🃏</span>
-                <p className="text-sm mt-1">Flashcards</p>
-              </Link>
-              <Link
-                href="/admin/card-generator"
-                className="p-3 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors"
-              >
-                <span className="text-2xl">🎴</span>
-                <p className="text-sm mt-1">3-Part Cards</p>
-              </Link>
-              <Link
-                href="/admin/flashcard-maker"
-                className="p-3 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors"
-              >
-                <span className="text-2xl">🎵</span>
-                <p className="text-sm mt-1">Video Cards</p>
-              </Link>
-              <Link
-                href="/english-games"
-                className="p-3 bg-orange-50 rounded-lg text-center hover:bg-orange-100 transition-colors"
-              >
-                <span className="text-2xl">🎮</span>
-                <p className="text-sm mt-1">Learning Games</p>
-              </Link>
+          {/* Curriculum Overview */}
+          <Link
+            href="/teacher/curriculum"
+            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-5xl group-hover:scale-110 transition-transform">📋</span>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Curriculum Overview</h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  Full Montessori curriculum with shelf tracking
+                </p>
+              </div>
             </div>
-          </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full">Practical Life</span>
+              <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">Sensorial</span>
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Math</span>
+              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Language</span>
+            </div>
+          </Link>
+
+          {/* Student Progress */}
+          <Link
+            href="/teacher/classroom"
+            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-5xl group-hover:scale-110 transition-transform">👨‍🎓</span>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Student Progress</h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  Track individual student learning journeys
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">Progress</span>
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">Daily</span>
+            </div>
+          </Link>
         </div>
       </main>
     </div>

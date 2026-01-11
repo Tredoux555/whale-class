@@ -91,17 +91,23 @@ export default function TeacherCirclePlannerPage() {
             </div>
             <div className="flex gap-2">
               <Link
-                href="/admin/vocabulary-flashcards"
-                className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
+                href="/admin/flashcard-maker"
+                className="px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-sm"
               >
-                🃏 Flashcards
+                🎵 Video Cards
+              </Link>
+              <Link
+                href="/admin/card-generator"
+                className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
+              >
+                🎴 3-Part Cards
               </Link>
               {selectedWeek && (
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                  className="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm"
                 >
-                  🖨️ Print Week
+                  🖨️ Print
                 </button>
               )}
             </div>
