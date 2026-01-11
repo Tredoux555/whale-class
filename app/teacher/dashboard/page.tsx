@@ -4,10 +4,103 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const DASHBOARD_ITEMS = [
+  {
+    href: '/teacher/circle-planner',
+    icon: '🌅',
+    title: 'Circle Time Planner',
+    description: '36-week curriculum with songs, books, and activities',
+    gradient: 'from-orange-500 to-amber-500',
+    bgGradient: 'from-orange-50 to-amber-50',
+    tags: [
+      { label: 'Weekly Plans', color: 'orange' },
+      { label: 'Documents', color: 'blue' },
+      { label: 'Notes', color: 'green' },
+    ],
+  },
+  {
+    href: '/teacher/english-guide',
+    icon: '📚',
+    title: 'English Guide',
+    description: 'Phonics, reading levels, and language activities',
+    gradient: 'from-purple-500 to-pink-500',
+    bgGradient: 'from-purple-50 to-pink-50',
+    tags: [
+      { label: 'Phonics', color: 'purple' },
+      { label: 'Reading', color: 'pink' },
+      { label: 'Games', color: 'cyan' },
+    ],
+  },
+  {
+    href: '/teacher/curriculum',
+    icon: '📋',
+    title: 'Curriculum Overview',
+    description: 'Full Montessori curriculum with 342 works',
+    gradient: 'from-blue-500 to-indigo-500',
+    bgGradient: 'from-blue-50 to-indigo-50',
+    tags: [
+      { label: 'Practical Life', color: 'pink' },
+      { label: 'Sensorial', color: 'purple' },
+      { label: 'Math', color: 'blue' },
+      { label: 'Language', color: 'green' },
+    ],
+  },
+  {
+    href: '/teacher/classroom',
+    icon: '👨‍🎓',
+    title: 'Student Progress',
+    description: 'Track individual student learning journeys',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+    tags: [
+      { label: 'Progress Bars', color: 'emerald' },
+      { label: 'Reports', color: 'amber' },
+    ],
+  },
+  {
+    href: '/teacher/tools',
+    icon: '🛠️',
+    title: 'Teacher Tools',
+    description: 'Material generators, flashcard makers, and more',
+    gradient: 'from-cyan-500 to-blue-500',
+    bgGradient: 'from-cyan-50 to-blue-50',
+    tags: [
+      { label: 'Generators', color: 'cyan' },
+      { label: 'Flashcards', color: 'blue' },
+    ],
+  },
+  {
+    href: '/games',
+    icon: '🎮',
+    title: 'Learning Games',
+    description: '13 interactive games for students',
+    gradient: 'from-pink-500 to-rose-500',
+    bgGradient: 'from-pink-50 to-rose-50',
+    tags: [
+      { label: 'Phonics', color: 'pink' },
+      { label: 'Reading', color: 'purple' },
+      { label: 'Grammar', color: 'rose' },
+    ],
+  },
+];
+
+const tagColors: Record<string, string> = {
+  orange: 'bg-orange-100 text-orange-700',
+  blue: 'bg-blue-100 text-blue-700',
+  green: 'bg-green-100 text-green-700',
+  purple: 'bg-purple-100 text-purple-700',
+  pink: 'bg-pink-100 text-pink-700',
+  cyan: 'bg-cyan-100 text-cyan-700',
+  emerald: 'bg-emerald-100 text-emerald-700',
+  amber: 'bg-amber-100 text-amber-700',
+  rose: 'bg-rose-100 text-rose-700',
+};
+
 export default function TeacherDashboard() {
   const router = useRouter();
   const [teacherName, setTeacherName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
     const name = localStorage.getItem('teacherName');
@@ -16,6 +109,12 @@ export default function TeacherDashboard() {
     } else {
       setTeacherName(name);
       setLoading(false);
+      
+      // Set greeting based on time
+      const hour = new Date().getHours();
+      if (hour < 12) setGreeting('Good morning');
+      else if (hour < 17) setGreeting('Good afternoon');
+      else setGreeting('Good evening');
     }
   }, [router]);
 
@@ -27,125 +126,132 @@ export default function TeacherDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100 flex items-center justify-center">
-        <div className="text-xl text-gray-500">Loading...</div>
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <span className="text-3xl animate-bounce">🐋</span>
+          </div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100"
-      style={{ fontFamily: "'Comic Sans MS', cursive" }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🐋</span>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                <span className="text-2xl">🐋</span>
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">Teacher Portal</h1>
-                <p className="text-sm text-gray-500">Welcome, {teacherName}!</p>
+                <p className="text-sm text-gray-500">{greeting},</p>
+                <h1 className="text-xl font-bold text-gray-800">{teacherName}!</h1>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 text-gray-600 hover:text-red-500 text-sm"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
-              Logout →
+              <span>Logout</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <h2 className="text-lg font-bold text-gray-700 mb-4">Your Teaching Tools</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Circle Time Planner */}
-          <Link
-            href="/teacher/circle-planner"
-            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-5xl group-hover:scale-110 transition-transform">🌅</span>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">Circle Time Planner</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  36-week English curriculum with songs, books, and activities
-                </p>
-              </div>
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        {/* Welcome Banner */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-blue-200/50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-1">Teacher Dashboard</h2>
+              <p className="text-blue-100">Everything you need to manage your classroom</p>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">Weekly Plans</span>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Documents</span>
-              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Notes</span>
-            </div>
-          </Link>
+            <div className="hidden sm:block text-6xl opacity-50">📚</div>
+          </div>
+        </div>
 
-          {/* English Guide */}
-          <Link
-            href="/teacher/english-guide"
-            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-5xl group-hover:scale-110 transition-transform">📚</span>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">English Guide</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  Phonics, reading levels, and language activities
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">Phonics</span>
-              <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full">Reading</span>
-              <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs rounded-full">Games</span>
-            </div>
-          </Link>
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {DASHBOARD_ITEMS.map((item, index) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group block"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <div className={`bg-gradient-to-br ${item.bgGradient} rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-white/50 hover:-translate-y-1`}>
+                {/* Icon Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-14 h-14 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
+                    <span className="text-3xl">{item.icon}</span>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
 
-          {/* Curriculum Overview */}
-          <Link
-            href="/teacher/curriculum"
-            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-5xl group-hover:scale-110 transition-transform">📋</span>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">Curriculum Overview</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  Full Montessori curriculum with shelf tracking
+                {/* Title & Description */}
+                <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-gray-900">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                  {item.description}
                 </p>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full">Practical Life</span>
-              <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">Sensorial</span>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Math</span>
-              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Language</span>
-            </div>
-          </Link>
 
-          {/* Student Progress */}
-          <Link
-            href="/teacher/classroom"
-            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow group"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-5xl group-hover:scale-110 transition-transform">👨‍🎓</span>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">Student Progress</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  Track individual student learning journeys
-                </p>
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1.5">
+                  {item.tags.slice(0, 3).map((tag) => (
+                    <span
+                      key={tag.label}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${tagColors[tag.color]}`}
+                    >
+                      {tag.label}
+                    </span>
+                  ))}
+                  {item.tags.length > 3 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      +{item.tags.length - 3}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">Progress</span>
-              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">Daily</span>
-            </div>
-          </Link>
+            </Link>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/teacher/classroom"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
+            >
+              <span>📊</span>
+              <span>Track Progress</span>
+            </Link>
+            <Link
+              href="/games"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
+            >
+              <span>🎮</span>
+              <span>Open Games</span>
+            </Link>
+            <Link
+              href="/teacher/tools"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium"
+            >
+              <span>🛠️</span>
+              <span>Create Materials</span>
+            </Link>
+          </div>
         </div>
       </main>
     </div>
