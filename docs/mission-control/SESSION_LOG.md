@@ -754,3 +754,45 @@ ADD COLUMN video_search_term TEXT;
 
 *Session 16 audit complete: January 11, 2026*
 *Status: 🚀 READY FOR JAN 16*
+
+
+---
+
+### 🔧 FIX IN PROGRESS: Teacher Tool Back Links
+
+**Issue Found:** 5 tool pages have "Back → /admin" links that would break for teachers (auth wall).
+
+**Files to Fix:**
+| File | Status |
+|------|--------|
+| vocabulary-flashcards | ✅ Fixed - router.back() |
+| english-guide | ⏳ Next |
+| phonics-planner | ⏳ |
+| circle-planner | ⏳ |
+| label-maker | ⏳ |
+
+**The Fix:** Replace `<Link href="/admin">` with `<button onClick={() => router.back()}>` so it works from both admin AND teacher portals.
+
+---
+
+*Checkpoint: January 11, 2026 ~12:55 Beijing*
+
+
+---
+
+### ✅ ALL 5 TOOL PAGES FIXED
+
+| File | Fix Applied |
+|------|-------------|
+| vocabulary-flashcards | ✅ router.back() |
+| english-guide | ✅ router.back() |
+| phonics-planner | ✅ router.back() |
+| circle-planner (admin) | ✅ router.back() |
+| label-maker | ✅ router.back() |
+
+**What was done:** Replaced `<Link href="/admin">` with `<button onClick={() => router.back()}>` so Back button works from both admin AND teacher portals.
+
+---
+
+*Checkpoint: January 11, 2026 ~13:05 Beijing*
+*Build in progress...*
