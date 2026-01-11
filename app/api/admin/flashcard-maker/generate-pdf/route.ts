@@ -149,34 +149,44 @@ def create_pdf(data_path, output_path):
                 c.setFillColorRGB(1, 1, 1)
                 c.roundRect(inner_x, inner_y, inner_w, inner_h, 5*mm, fill=1, stroke=0)
                 
-                # Calculate image area - minimal padding, image fills card
-                padding = 1 * mm
+                # Calculate image area - no padding, image fills entire inner area
                 has_lyric = frame.get('lyric') and len(frame.get('lyric', '').strip()) > 0
                 text_height = 18 * mm if has_lyric else 0
                 
-                img_x = inner_x + padding
-                img_w = inner_w - 2 * padding
-                img_h = inner_h - 2 * padding - text_height
-                img_y = inner_y + padding + text_height
+                img_x = inner_x
+                img_y = inner_y + text_height
+                img_w = inner_w
+                img_h = inner_h - text_height
                 
-                # Draw image - fill the available space
+                # Draw image - FILL mode (cover entire area, crop if needed)
                 if frame.get('imagePath'):
                     try:
                         img = ImageReader(frame['imagePath'])
                         iw, ih = img.getSize()
-                        aspect = iw / ih
+                        img_aspect = iw / ih
+                        area_aspect = img_w / img_h
                         
-                        # Scale to fill the available area while maintaining aspect ratio
-                        if img_w / img_h > aspect:
+                        # Scale to FILL (cover entire area, may crop)
+                        if img_aspect > area_aspect:
+                            # Image is wider - scale by height, crop width
                             draw_h = img_h
-                            draw_w = draw_h * aspect
+                            draw_w = draw_h * img_aspect
                         else:
+                            # Image is taller - scale by width, crop height
                             draw_w = img_w
-                            draw_h = draw_w / aspect
+                            draw_h = draw_w / img_aspect
                         
+                        # Center the image
                         draw_x = img_x + (img_w - draw_w) / 2
                         draw_y = img_y + (img_h - draw_h) / 2
+                        
+                        # Clip to image area and draw
+                        c.saveState()
+                        path = c.beginPath()
+                        path.rect(img_x, img_y, img_w, img_h)
+                        c.clipPath(path, stroke=0)
                         c.drawImage(img, draw_x, draw_y, draw_w, draw_h)
+                        c.restoreState()
                     except Exception as e:
                         print(f'Image error: {e}')
                 
@@ -185,7 +195,7 @@ def create_pdf(data_path, output_path):
                     c.setFillColorRGB(0.1, 0.1, 0.1)
                     font_size = 14 if cards_per_page == 1 else 10 if cards_per_page == 2 else 8
                     c.setFont('Helvetica-Bold', font_size)
-                    text_y = inner_y + padding + text_height / 2
+                    text_y = inner_y + text_height / 2
                     c.drawCentredString(inner_x + inner_w / 2, text_y, frame['lyric'][:60])
                 
                 # Draw timestamp
@@ -194,7 +204,7 @@ def create_pdf(data_path, output_path):
                     c.setFont('Helvetica', 8)
                     ts = frame.get('timestamp', 0)
                     ts_str = f'{int(ts//60)}:{int(ts%60):02d}'
-                    c.drawRightString(inner_x + inner_w - padding, inner_y + padding, ts_str)
+                    c.drawRightString(inner_x + inner_w - 2*mm, inner_y + 2*mm, ts_str)
                 
                 frame_idx += 1
         
