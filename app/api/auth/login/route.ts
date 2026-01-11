@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createUserToken } from '@/lib/auth-multi';
+import { createAdminToken } from '@/lib/auth';
 
 function getSupabase() {
   return createClient(
@@ -43,6 +44,9 @@ export async function POST(request: NextRequest) {
         schoolId: null,
       });
 
+      // Also create admin-token for legacy auth system
+      const adminToken = await createAdminToken();
+
       const response = NextResponse.json({
         success: true,
         user: {
@@ -58,6 +62,15 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+
+      // Set admin-token for legacy auth (videos API, etc)
+      response.cookies.set('admin-token', adminToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
         path: '/',
       });
 
