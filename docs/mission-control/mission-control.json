@@ -1,31 +1,21 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T10:55:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Migration Fixed",
-  "status": "🔧 Fixed SQL - simple_teachers was missing, now included",
+  "lastUpdated": "2026-01-11T11:05:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Phase 2: API Isolation",
+  "status": "✅ Phase 1 COMPLETE - Database ready, now updating API",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
   "session15Progress": {
-    "issue": "simple_teachers table didn't exist - teacher login uses localStorage only",
-    "fix": "Updated migration 027 to CREATE simple_teachers first, then teacher_children",
-    "status": "Ready to re-run SQL migration"
+    "phase1": "✅ COMPLETE - SQL migration ran successfully",
+    "tablesCreated": ["simple_teachers (7 teachers)", "teacher_children (junction)"],
+    "childrenAssigned": "All active children assigned to Tredoux",
+    "videoSearchTerm": "Column added, 10+ terms populated",
+    "phase2": "🔄 IN PROGRESS - Updating /api/teacher/classroom"
   },
 
-  "migrationOrder": [
-    "1. Creates simple_teachers (7 teachers)",
-    "2. Creates teacher_children junction table", 
-    "3. Assigns existing children to Tredoux",
-    "4. Adds video_search_term column",
-    "5. Populates search terms"
-  ],
-
-  "nextSteps": [
-    "1. RE-RUN migration 027 in Supabase",
-    "2. Verify tables created",
-    "3. Update /api/teacher/classroom to filter by teacher_id"
-  ],
+  "currentTask": "Update /api/teacher/classroom to filter by teacher_id",
 
   "demoAccounts": {
     "admin": "Tredoux / 870602",
