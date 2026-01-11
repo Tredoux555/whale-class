@@ -249,7 +249,7 @@ export default function RBACManagementPage() {
   return (
     <div 
       className="min-h-screen bg-gray-50"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      
     >
       {/* Header */}
       <header className="bg-white shadow">

@@ -9,7 +9,7 @@ import MaterialGenerator from '@/components/materials/MaterialGenerator';
 export default function MaterialGeneratorPage() {
   return (
     <ErrorBoundary>
-      <div style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}>
+      <div >
         <MaterialGenerator />
       </div>
     </ErrorBoundary>

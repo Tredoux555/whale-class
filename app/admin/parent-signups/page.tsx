@@ -156,7 +156,7 @@ export default function ParentSignupsPage() {
   return (
     <div 
       className="p-8"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      
     >
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-indigo-600 mb-2">

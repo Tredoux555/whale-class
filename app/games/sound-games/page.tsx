@@ -92,7 +92,7 @@ export default function SoundGamesHub() {
           <div className="text-8xl mb-4 animate-bounce">👂</div>
           <h1
             className="text-4xl md:text-5xl font-bold text-white mb-4"
-            style={{ fontFamily: 'Comic Sans MS, cursive' }}
+            
           >
             Sound Games
           </h1>
@@ -143,7 +143,7 @@ export default function SoundGamesHub() {
                 <div className="absolute -top-3 -left-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
                   <span
                     className="text-xl font-bold text-gray-800"
-                    style={{ fontFamily: 'Comic Sans MS, cursive' }}
+                    
                   >
                     {game.order}
                   </span>
@@ -157,7 +157,7 @@ export default function SoundGamesHub() {
                 {/* Game Title */}
                 <h2
                   className="text-2xl font-bold text-white mb-1"
-                  style={{ fontFamily: 'Comic Sans MS, cursive' }}
+                  
                 >
                   {game.title}
                 </h2>
@@ -165,7 +165,7 @@ export default function SoundGamesHub() {
                 {/* Subtitle */}
                 <p
                   className="text-white/90 text-lg italic mb-3"
-                  style={{ fontFamily: 'Comic Sans MS, cursive' }}
+                  
                 >
                   "{game.subtitle}"
                 </p>
@@ -187,7 +187,7 @@ export default function SoundGamesHub() {
         <div className="mt-12 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
           <h3
             className="text-2xl font-bold text-white mb-4"
-            style={{ fontFamily: 'Comic Sans MS, cursive' }}
+            
           >
             📚 Teaching Order
           </h3>

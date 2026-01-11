@@ -155,7 +155,7 @@ export default function MiddleSoundGame() {
       <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="text-8xl mb-6">🎯</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Middle Sound Match</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" >Middle Sound Match</h1>
           <p className="text-xl text-white/90 mb-6">Listen for the sound in the <span className="font-bold">MIDDLE</span> of each word!</p>
 
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-8">
@@ -171,7 +171,7 @@ export default function MiddleSoundGame() {
             </div>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <button onClick={startGame} className="w-full p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl" >
             Start Playing! 🎮
           </button>
 
@@ -190,7 +190,7 @@ export default function MiddleSoundGame() {
       <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Middle Sound Master!</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" >Middle Sound Master!</h1>
           <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
 
           <div className="space-y-4">
@@ -214,7 +214,7 @@ export default function MiddleSoundGame() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>What sound is in the MIDDLE?</p>
+          <p className="text-xl text-white mb-4" >What sound is in the MIDDLE?</p>
 
           <div className="mb-4"><WordImageSimple word={currentWord?.word || ''} size={160} className="mx-auto" /></div>
 
@@ -259,7 +259,7 @@ export default function MiddleSoundGame() {
         </div>
 
         {feedback && (
-          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} >
             {feedback.message}
             {!feedback.correct && feedback.correctVowel && (
               <span className="block mt-2">The middle sound is {VOWEL_IMAGES[feedback.correctVowel]}!</span>

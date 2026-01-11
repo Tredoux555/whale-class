@@ -230,7 +230,7 @@ export default function ISpyBeginningGame() {
         <main className="max-w-2xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
             <div className="text-7xl mb-4">👂</div>
-            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            <h1 className="text-4xl font-bold text-white mb-2" >
               I Spy Beginning Sounds
             </h1>
             <p className="text-white/90 text-lg">Choose your level:</p>
@@ -241,7 +241,7 @@ export default function ISpyBeginningGame() {
               <div className="flex items-center gap-4">
                 <span className="text-5xl">🟢</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Phase 1: Easy Sounds</h2>
+                  <h2 className="text-2xl font-bold text-white" >Phase 1: Easy Sounds</h2>
                   <p className="text-white/80">s, m, f, n, p, t, c, h</p>
                 </div>
               </div>
@@ -251,7 +251,7 @@ export default function ISpyBeginningGame() {
               <div className="flex items-center gap-4">
                 <span className="text-5xl">🟡</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Phase 2: Medium Sounds</h2>
+                  <h2 className="text-2xl font-bold text-white" >Phase 2: Medium Sounds</h2>
                   <p className="text-white/80">b, d, g, j, w, y</p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function ISpyBeginningGame() {
               <div className="flex items-center gap-4">
                 <span className="text-5xl">🔴</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Phase 3: Hard Sounds (ESL)</h2>
+                  <h2 className="text-2xl font-bold text-white" >Phase 3: Hard Sounds (ESL)</h2>
                   <p className="text-white/80">v, th, r, l, z, sh, ch</p>
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function ISpyBeginningGame() {
               <div className="flex items-center gap-4">
                 <span className="text-5xl">🔵</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Vowel Sounds</h2>
+                  <h2 className="text-2xl font-bold text-white" >Vowel Sounds</h2>
                   <p className="text-white/80">a, e, i, o, u (short sounds)</p>
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function ISpyBeginningGame() {
               <div className="flex items-center gap-4">
                 <span className="text-5xl">🌈</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Comic Sans MS, cursive' }}>All Sounds Mixed</h2>
+                  <h2 className="text-2xl font-bold text-white" >All Sounds Mixed</h2>
                   <p className="text-white/80">Practice everything together!</p>
                 </div>
               </div>
@@ -307,16 +307,16 @@ export default function ISpyBeginningGame() {
       <div className="min-h-screen bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-5xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>{message}</h1>
+          <h1 className="text-5xl font-bold text-white mb-4" >{message}</h1>
           <p className="text-3xl text-white/90 mb-8">
             You got <span className="font-bold text-yellow-300">{score}</span> out of <span className="font-bold">{totalRounds}</span> correct!
           </p>
 
           <div className="space-y-4">
-            <button onClick={() => startGame(selectedPhase!)} className="w-full max-w-sm mx-auto p-4 bg-white text-orange-600 rounded-2xl font-bold text-xl hover:bg-white/90 transition-all" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            <button onClick={() => startGame(selectedPhase!)} className="w-full max-w-sm mx-auto p-4 bg-white text-orange-600 rounded-2xl font-bold text-xl hover:bg-white/90 transition-all" >
               Play Again! 🔄
             </button>
-            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl hover:bg-white/30 transition-all" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl hover:bg-white/30 transition-all" >
               Back to Sound Games
             </Link>
           </div>
@@ -348,7 +348,7 @@ export default function ISpyBeginningGame() {
         )}
 
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-2xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <p className="text-2xl text-white mb-4" >
             I spy something that begins with...
           </p>
 
@@ -398,7 +398,7 @@ export default function ISpyBeginningGame() {
         {feedback && (
           <div
             className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-red-400 text-red-900'}`}
-            style={{ fontFamily: 'Comic Sans MS, cursive' }}
+            
           >
             {feedback.message}
           </div>
