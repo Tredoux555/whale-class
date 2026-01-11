@@ -1471,3 +1471,24 @@ Changed to lazy initialization with `getSupabase()` function called inside each 
 `1188391` - Lazy-init Supabase client in teachers API
 
 *Checkpoint: 1188391*
+
+
+---
+
+## Session 20 - Build Fix 2
+**Time:** ~23:15 Beijing
+
+### Issue:
+Railway build still failing on `/api/teacher/list`
+
+### Fix:
+Applied same lazy-init pattern to `teacher/list/route.ts`
+
+### Verified:
+- No other API routes have module-level createClient
+- All existing routes use createClient inside functions ✅
+
+### Commit:
+`01995df` - Lazy-init Supabase in teacher/list API
+
+*Checkpoint: 01995df*
