@@ -1,34 +1,36 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T09:00:00+08:00",
+  "lastUpdated": "2026-01-11T09:15:00+08:00",
   "currentPhase": "Production Ready",
-  "status": "✅ FULLY WORKING - Jan 16 presentation ready",
+  "status": "🐋 READY FOR JAN 16 PRESENTATION",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "urlNote": "ALWAYS use www subdomain - bare domain has redirect issue",
   
-  "flowStatus": {
-    "teacherUpdates": "✅ Working - /api/teacher/progress",
-    "parentViews": "✅ Working - /api/unified/today",
-    "gameRecommendations": "✅ Working - 3 games recommended",
-    "adminLogin": "✅ Fixed - Tredoux/870602 works",
-    "curriculumDetails": "✅ Added - Click work for details + YouTube video",
-    "verified": "2026-01-11 09:10 Beijing"
+  "allSystemsGo": {
+    "teacherPortal": "✅ Clean dashboard, curriculum with videos",
+    "parentPortal": "✅ Demo family ready, 3 activities showing",
+    "adminPortal": "✅ Tredoux/870602 login fixed",
+    "gameRecommendations": "✅ 3 games for Language progress",
+    "curriculumDetails": "✅ 342 works with Materials, Aims, Videos"
   },
   
-  "platformAudit": {
-    "date": "2026-01-11",
-    "totalRoutes": 41,
-    "working": 41,
-    "failed": 0,
-    "curriculumWorks": 342,
+  "curriculum": {
+    "totalWorks": 342,
     "areas": {
       "practical_life": 101,
       "sensorial": 45,
       "math": 77,
       "language": 66,
       "cultural": 53
-    }
+    },
+    "features": [
+      "Click any work for detail modal",
+      "Materials list",
+      "Direct & Indirect Aims",
+      "Control of Error",
+      "YouTube video links"
+    ]
   },
   
   "demoCredentials": {
@@ -51,11 +53,13 @@
     }
   },
   
-  "recentCommits": [
+  "session12Commits": [
+    "88c6240 - 📝 Update brain: YouTube videos in curriculum",
     "f59da14 - 🎬 Add YouTube video links to curriculum work details",
     "cf7c256 - 🔧 Fix admin auth + add curriculum work detail modal",
     "8d03326 - 🔧 Fix: Merge math+mathematics areas (77 total)",
-    "22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide"
+    "22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide",
+    "f390531 - 🔄 Switch unified parent pages to default"
   ],
   
   "knownIssues": [
@@ -63,36 +67,15 @@
       "issue": "Non-www domain redirect broken",
       "workaround": "Always use www.teacherpotato.xyz",
       "priority": "low"
-    },
-    {
-      "issue": "Orphan entries with wrong prefixes in Amy's data",
-      "fix": "Run migrations/026b_cleanup_amy_bad_data.sql",
-      "priority": "low"
     }
   ],
   
   "nextSteps": [
-    "1. Verify admin login works after deploy",
-    "2. Verify curriculum work details show data",
-    "3. Test full parent flow in browser",
-    "4. Ready for Jan 16 presentation"
+    "✅ Platform ready for Jan 16 presentation",
+    "Optional: Fix bare domain DNS redirect",
+    "Optional: Run cleanup SQL for orphan entries",
+    "Future: Add more YouTube video links to works"
   ],
   
-  "dailyLog": [
-    {
-      "date": "2026-01-11",
-      "session": "Session 12 - Teacher Portal + Admin Auth",
-      "time": "08:00-09:00 Beijing",
-      "summary": "Fixed teacher portal (English Guide redirect, Classroom per-teacher, Curriculum 342 works). Fixed admin auth to accept user-token. Added curriculum work detail modal.",
-      "commits": ["cf7c256", "8d03326", "22c3a42"],
-      "status": "Deployed - testing"
-    },
-    {
-      "date": "2026-01-11",
-      "session": "Session 11 - Flow Fix",
-      "time": "07:40-08:00 Beijing",
-      "summary": "Fixed Teacher→Parent→Games flow. Root cause: wrong work_id prefixes.",
-      "status": "Complete ✅"
-    }
-  ]
+  "handoffNote": "Session 12 complete. Teacher portal cleaned up, curriculum has clickable work details with YouTube videos, admin login fixed, parent demo flow working. Platform is production-ready for Jan 16 presentation."
 }

@@ -2,262 +2,142 @@
 
 ---
 
-## SESSION 12 - January 12, 2026 ✅
+## SESSION 12 - January 11, 2026 ✅ COMPLETE
 
-### TEACHER PORTAL CLEANUP
+### TEACHER PORTAL + CURRICULUM OVERHAUL
 
-**Started:** ~Morning Beijing  
-**Status:** COMPLETE ✅
+**Started:** ~08:00 Beijing  
+**Completed:** ~09:15 Beijing  
+**Status:** ✅ ALL WORKING - Ready for Jan 16 presentation
+
+---
+
+### SUMMARY
+
+Fixed teacher portal issues, admin authentication, and added comprehensive curriculum work details with YouTube video links.
 
 ---
 
 ### CHANGES MADE
 
 1. **Teacher Dashboard Cleaned Up**
-   - Removed redundant "Quick Resources" section (Flashcards, 3-Part Cards, Video Cards, Games)
-   - Added Curriculum Overview card with direct access
-   - Added Student Progress card
-   - Now shows: Circle Time Planner, English Guide, Curriculum Overview, Student Progress
+   - Removed redundant "Quick Resources" section
+   - Added Curriculum Overview + Student Progress cards
+   - Clean 4-card layout
 
-2. **Circle Time Planner Updated**
-   - Replaced Flashcards button with Video Cards + 3-Part Cards tabs
-   - Both generators accessible from the header when planning
+2. **English Guide Simplified**
+   - Now redirects directly to full guide (no landing page)
 
-3. **Curriculum Page Fixed**
-   - Back link now goes to /teacher/dashboard instead of login
+3. **Classroom Per-Teacher**
+   - Teachers see their own students only
+   - Tredoux (admin) sees all 22 students
+   - Add Student button for new teachers
 
-4. **Admin Login Fixed**
-   - Added fallback for Tredoux / 870602 credentials
-   - Works alongside Supabase Auth
+4. **Curriculum Overview - MAJOR UPDATE**
+   - 342 works across 5 areas (PL:101, SE:45, MA:77, LA:66, CU:53)
+   - **Click any work** to see detail modal with:
+     - Materials list
+     - Direct Aims
+     - Indirect Aims
+     - Control of Error
+     - **▶️ Watch Video** link (YouTube)
+   - Videos from: My Works Montessori, Global Montessori Network, Info Montessori
 
-5. **Parent Pages Unified**
-   - Swapped page-unified.tsx → page.tsx for all 3 parent routes
-   - Old pages saved as page-old.tsx
+5. **Admin Login Fixed**
+   - `/api/videos` now accepts `user-token` with admin role
+   - Tredoux / 870602 → works properly now
 
-6. **Demo Family Created**
-   - Email: demo@test.com
-   - Family ID: 7c51863b-de5b-4e73-b80f-b4aac30549a4
-   - Amy linked to family
-
-7. **Fresh Demo Data Added**
-   - Pink Tower → Mastered ⭐
-   - Moveable Alphabet → Presented 📖
-   - Sandpaper Letters → Practicing 🔄
-   - 3 game recommendations showing
-
-8. **Teacher Portal Fixed (Round 2)**
-   - **English Guide**: Now redirects directly to the full guide (no landing page)
-   - **Classroom**: Teachers see their own students only (Tredoux sees all as admin)
-   - **Curriculum**: Now uses curriculum_roadmap (342 works showing properly)
-
-9. **Admin Auth + Curriculum Details (Round 3)**
-   - **Admin Login Fix**: `/api/videos` now accepts both `admin-token` AND `user-token` with admin role
-   - **Curriculum Work Details**: Click any work to see Materials, Direct Aims, Indirect Aims, Control of Error
-   - **API Enhanced**: `/api/school/.../curriculum` now returns full work details
-
-10. **YouTube Videos Added to Curriculum**
-    - Each work now shows "Watch Video" link if available
-    - Shows video channel source
-    - Videos already in database from migration 018
+6. **Parent Flow Complete**
+   - Unified pages now default
+   - Demo Family (demo@test.com) linked to Amy
+   - 3 activities + 3 game recommendations showing
 
 ---
 
-### FILES CHANGED
+### FILES MODIFIED
 
 ```
-app/teacher/dashboard/page.tsx       - Removed Quick Resources, added Curriculum + Progress cards
-app/teacher/circle-planner/page.tsx  - Added Video Cards + 3-Part Cards tabs
-app/teacher/curriculum/page.tsx      - Fixed back link
-app/api/auth/login/route.ts          - Added simple admin login fallback
+app/teacher/dashboard/page.tsx           - Clean 4-card layout
+app/teacher/english-guide/page.tsx       - Direct redirect to guide
+app/teacher/classroom/page.tsx           - Per-teacher filtering + add student
+app/teacher/curriculum/page.tsx          - Work detail modal with video
+app/api/school/[schoolId]/curriculum/route.ts - Full work details + video
+app/api/videos/route.ts                  - Accept user-token for admin
+app/parent/home/page.tsx                 - Unified login (swapped)
+app/parent/home/[familyId]/page.tsx      - Unified family (swapped)
+app/parent/home/[familyId]/[childId]/page.tsx - Unified child (swapped)
 ```
 
 ---
 
-### COMMITS
+### COMMITS (Session 12)
 
-- `f59da14` - 🎬 Add YouTube video links to curriculum work details
-- `cf7c256` - 🔧 Fix admin auth + add curriculum work detail modal
-- `8d03326` - 🔧 Fix: Merge math+mathematics areas in curriculum API (77 total math works)
-- `ad844df` - 📝 Update session log
-- `22c3a42` - 🔧 Fix teacher portal: classroom per-teacher, curriculum from roadmap, English guide direct
-- `f169a9d` - 📝 Update session log with parent flow setup
-- `f390531` - 🔄 Switch unified parent pages to default + link Amy to Demo Family
-- `ab210c0` - 📝 Update session log
-- `5889c16` - 🧹 Clean up teacher portal
+```
+88c6240 - 📝 Update brain: YouTube videos in curriculum
+f59da14 - 🎬 Add YouTube video links to curriculum work details
+d37f8c2 - 📝 Checkpoint: Admin auth + curriculum details deployed
+cf7c256 - 🔧 Fix admin auth + add curriculum work detail modal
+8d03326 - 🔧 Fix: Merge math+mathematics areas (77 total)
+ad844df - 📝 Update session log
+22c3a42 - 🔧 Fix teacher portal: classroom, curriculum, english guide
+f390531 - 🔄 Switch unified parent pages to default
+5889c16 - 🧹 Clean up teacher portal
+```
 
 ---
 
-### CURRENT STATUS (Jan 11 ~09:00 Beijing)
+### VERIFIED WORKING ✅
 
-**Waiting for Railway deploy (~2 min) to test:**
-- Admin login with Tredoux/870602 should now work
-- Curriculum works should be clickable with detail modal
+| Feature | Status | Test URL |
+|---------|--------|----------|
+| Teacher Login | ✅ | www.teacherpotato.xyz/teacher |
+| Teacher Dashboard | ✅ | 4 clean cards |
+| Curriculum (342 works) | ✅ | Click work → details + video |
+| English Guide | ✅ | Direct to full guide |
+| Classroom | ✅ | Per-teacher filtering |
+| Admin Login | ✅ | Tredoux / 870602 |
+| Parent Login | ✅ | demo@test.com |
+| Today's Updates | ✅ | 3 activities for Amy |
+| Game Recommendations | ✅ | 3 games showing |
 
-**What was fixed:**
-1. `/api/videos` now accepts `user-token` with admin role (not just `admin-token`)
-2. Curriculum page shows work details on click (Materials, Aims, Control of Error)
-3. Curriculum API returns full work details from database
+---
+
+### DEMO CREDENTIALS
+
+| Portal | Credentials |
+|--------|-------------|
+| Parent | demo@test.com |
+| Teacher | Any name / 123 |
+| Admin | Tredoux / 870602 |
+
+**URL:** `www.teacherpotato.xyz` (always use www)
 
 ---
 
 ## SESSION 11 - January 11, 2026 ✅
 
-### TEACHER→PARENT→GAMES FLOW FIXED!
+### TEACHER→PARENT→GAMES FLOW FIXED
 
-**Started:** ~07:40 Beijing  
-**Status:** COMPLETE ✅
-
----
-
-### KEY DISCOVERIES
-
-1. **Railway 404 Solved** - Use `www.teacherpotato.xyz` (not bare domain)
-2. **Root Cause Found** - Demo data used wrong work_id prefixes
-3. **Flow Now Working** - Teacher updates → Parent sees → Games recommended
+Fixed demo data with wrong work_id prefixes (lang_* → la_*, etc.)
+All 41 routes verified working.
 
 ---
 
-### THE PROBLEM (SOLVED)
-
-Demo data was seeded with wrong prefixes:
-| Area | Wrong Prefix | Correct Prefix |
-|------|--------------|----------------|
-| Language | `lang_*` | `la_*` |
-| Sensorial | `sen_*` | `se_*` |
-| Math | `math_*` | `ma_*` |
-
-This caused:
-- Works showing as "Unknown Work"
-- Area detected as "unknown" instead of "language"
-- Game recommendations returning empty []
-
----
-
-### THE FIX
-
-Used teacher progress API to insert correct work_ids for Amy:
-
-**Language (triggers game recommendations):**
-- `la_sound_games` → Mastered ⭐
-- `la_sandpaper_letters` → Practicing 🔄
-- `la_moveable_alphabet` → Presented 📖
-- `la_pink_series` → Practicing 🔄
-
-**Sensorial:**
-- `se_cylinder_block_1` → Mastered
-- `se_pink_tower` → Practicing
-- `se_brown_stair` → Presented
-
-**Math:**
-- `ma_number_rods` → Practicing
-- `ma_sandpaper_numerals` → Presented
-
----
-
-### VERIFIED RESULTS
-
-```
-/api/unified/today?child_id=amy
-
-Language works updated today: 4
-  📚 Sound Games (I Spy) - ⭐ Mastered
-  📚 Sandpaper Letters - 🔄 Practicing
-  📚 Moveable Alphabet - 📖 Presented
-  📚 Pink Series (CVC Words) - 🔄 Practicing
-
-🎮 Recommended Games:
-  → Letter Sounds (/games/letter-sounds)
-  → Beginning Sounds (/games/sound-games/beginning)
-  → Middle Sounds (/games/sound-games/middle)
-```
-
----
-
-### PLATFORM AUDIT (41/41 routes working)
-
-| Section | Score |
-|---------|-------|
-| Main Pages | 7/7 ✅ |
-| Games | 15/15 ✅ |
-| Teacher Pages | 7/7 ✅ |
-| Parent Pages | 3/3 ✅ |
-| Unified APIs | 5/5 ✅ |
-| Admin APIs | 4/4 ✅ |
-
----
-
-### COMMITS
-
-- `3c75805` - Fix Teacher→Parent→Games flow: correct work_id prefixes
-
----
-
-### CLEANUP NEEDED (Optional)
-
-Run in Supabase to remove old wrong-prefix entries:
-```sql
--- migrations/026b_cleanup_amy_bad_data.sql
-DELETE FROM child_work_progress 
-WHERE child_id = 'afbed794-4eee-4eb5-8262-30ab67638ec7'
-  AND work_id IN ('lang_sound_games', 'lang_sandpaper_letters', 
-    'lang_moveable_alphabet', 'sen_cylinder_block_1', 'sen_pink_tower',
-    'sen_brown_stair', 'math_number_rods', 'math_sandpaper_numbers');
-```
-
----
-
-### NEXT STEPS
-
-1. ✅ ~~Fix Railway 404~~ → Use www.teacherpotato.xyz
-2. ✅ ~~Fix Teacher→Parent→Games flow~~
-3. ⏳ Switch unified pages to default (swap page-unified.tsx → page.tsx)
-4. ⏳ Create test family and link Amy
-5. ⏳ DNS fix for bare domain redirect
-
----
-
-## SESSION 10 - January 11, 2026 
+## SESSION 10 - January 11, 2026 ✅
 
 ### RAILWAY 404 DEBUG
 
-**Started:** ~07:00 Beijing  
-**Status:** RESOLVED - Use www subdomain
-
-*Discovery: Non-www domain has broken redirect, www works perfectly.*
+Resolved: Use www.teacherpotato.xyz (not bare domain)
 
 ---
 
-## SESSION 9 - January 12-13, 2026 🏔️
+## Earlier Sessions
 
-### MONTREE UNIFICATION - COMPLETE ✅
-
-**Started:** ~20:30 Beijing  
-**Database Live:** ~01:00 Beijing  
-**Status:** SQL deployed, code pushed
+- **Session 9:** Montree Unification complete
+- **Session 8:** Railway deployment live
+- **Session 7:** Progress bars deployed
 
 ---
 
-### FINAL RESULTS
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| families table | ✅ LIVE | Parent accounts |
-| children extended | ✅ LIVE | +family_id, +color |
-| game_curriculum_mapping | ✅ LIVE | 60 mappings |
-| 5 Unified APIs | ✅ PUSHED | families, children, progress, games, today |
-| 3 Parent UI pages | ✅ PUSHED | page-unified.tsx files |
-
----
-
-## SESSION 8 - January 11, 2026
-- Fixed Railway deployment
-- Production LIVE at teacherpotato.xyz
-
-## SESSION 7 - January 10, 2026  
-- Progress bars deployed
-- Admin styling issues found
-
----
-
-*Log updated: January 11, 2026 08:15 Beijing*
-*Status: Teacher→Parent→Games flow WORKING ✅*
+*Last updated: January 11, 2026 09:15 Beijing*
+*Status: 🐋 PRODUCTION READY for Jan 16 presentation*
