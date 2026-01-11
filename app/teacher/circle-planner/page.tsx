@@ -46,7 +46,7 @@ export default function TeacherCirclePlannerPage() {
             <head>
               <title>Week ${selectedWeek} - ${plan?.theme}</title>
               <style>
-                body { font-family: 'Comic Sans MS', cursive; padding: 20px; }
+                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
                 h1, h2, h3 { color: #333; }
                 .section { margin: 15px 0; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
                 .section-title { font-weight: bold; color: #666; margin-bottom: 5px; }
@@ -63,49 +63,59 @@ export default function TeacherCirclePlannerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
-        <div className="text-xl text-gray-500">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <span className="text-3xl animate-bounce">🌅</span>
+          </div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100"
-      style={{ fontFamily: "'Comic Sans MS', cursive" }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/teacher/dashboard" className="text-gray-500 hover:text-gray-700">
-                ← Back
+            <div className="flex items-center gap-4">
+              <Link href="/teacher/dashboard" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">
-                🌅 Circle Time Planner
-              </h1>
-              <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-2xl">🌅</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Circle Time Planner</h1>
+                  <p className="text-sm text-gray-500">36-week curriculum</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 bg-orange-100 text-orange-700 text-sm rounded-lg font-medium">
                 {teacherName}
               </span>
-            </div>
-            <div className="flex gap-2">
               <Link
                 href="/admin/flashcard-maker"
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors text-sm font-medium"
               >
                 🎵 Video Cards
               </Link>
               <Link
                 href="/admin/card-generator"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm font-medium"
               >
                 🎴 3-Part Cards
               </Link>
               {selectedWeek && (
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                  className="px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors text-sm font-medium"
                 >
                   🖨️ Print
                 </button>
@@ -119,7 +129,8 @@ export default function TeacherCirclePlannerPage() {
         {!selectedWeek ? (
           /* ========== WEEK SELECTOR GRID ========== */
           <div>
-            <h2 className="text-xl font-bold mb-4">Select a Week (36 Weeks)</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Select a Week</h2>
+            <p className="text-gray-500 mb-6">36-week circle time curriculum with songs, books, and activities</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3">
               {CIRCLE_TIME_CURRICULUM.map((week) => (
                 <button
@@ -128,11 +139,11 @@ export default function TeacherCirclePlannerPage() {
                     setSelectedWeek(week.week);
                     setSelectedDay('monday');
                   }}
-                  className="bg-white rounded-xl p-3 shadow hover:shadow-lg hover:scale-105 transition-all text-center"
-                  style={{ borderLeft: `4px solid ${week.color}` }}
+                  className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg hover:scale-105 transition-all text-center border border-gray-100 group"
+                  style={{ borderLeftWidth: '4px', borderLeftColor: week.color }}
                 >
-                  <div className="text-2xl mb-1">{week.icon}</div>
-                  <div className="text-xs font-bold">Week {week.week}</div>
+                  <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{week.icon}</div>
+                  <div className="text-xs font-bold text-gray-700">Week {week.week}</div>
                   <div className="text-xs text-gray-500 truncate">{week.theme}</div>
                 </button>
               ))}
