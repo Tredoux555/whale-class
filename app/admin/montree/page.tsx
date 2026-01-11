@@ -28,21 +28,21 @@ export default function IndependentMontreePage() {
             packaged as an app and licensed to schools worldwide. This is the path to financial freedom.
           </p>
           <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="bg-white/20 rounded-xl p-4 text-center">
+            <Link href="/admin" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👨‍💼</div>
               <div className="font-bold">Principal</div>
-              <div className="text-sm opacity-80">Sees all teachers &amp; data</div>
-            </div>
-            <div className="bg-white/20 rounded-xl p-4 text-center">
+              <div className="text-sm opacity-80">Tredoux / 870602</div>
+            </Link>
+            <Link href="/teacher" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👩‍🏫</div>
               <div className="font-bold">Teachers</div>
-              <div className="text-sm opacity-80">Own students &amp; progress</div>
-            </div>
-            <div className="bg-white/20 rounded-xl p-4 text-center">
+              <div className="text-sm opacity-80">Any name / 123</div>
+            </Link>
+            <Link href="/parent/home" className="bg-white/20 hover:bg-white/30 rounded-xl p-4 text-center transition-all hover:scale-105 cursor-pointer block">
               <div className="text-3xl mb-2">👨‍👩‍👧</div>
               <div className="font-bold">Parents</div>
-              <div className="text-sm opacity-80">See their children only</div>
-            </div>
+              <div className="text-sm opacity-80">demo@test.com</div>
+            </Link>
           </div>
         </div>
 
