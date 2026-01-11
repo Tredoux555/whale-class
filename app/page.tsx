@@ -208,6 +208,13 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Link 
+                href="/parent/demo"
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition-all backdrop-blur-sm"
+              >
+                <span>👨‍👩‍👧</span>
+                <span className="hidden sm:inline">Parents</span>
+              </Link>
+              <Link 
                 href="/games"
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
               >
