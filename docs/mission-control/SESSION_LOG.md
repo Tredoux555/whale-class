@@ -901,3 +901,128 @@ ADD COLUMN video_search_term TEXT;
 ---
 
 *Checkpoint: January 11, 2026 ~13:45 Beijing*
+
+
+---
+
+## SESSION 16 COMPLETE - HANDOFF
+
+**Date:** January 11, 2026 ~12:30-14:00 Beijing  
+**Status:** ✅ Launch Ready + Monetization Infrastructure Built
+
+---
+
+### WHAT WAS DONE
+
+**Part 1: Teacher Tools Fix**
+- Fixed 5 tool pages with hardcoded `/admin` back links
+- Teachers can now navigate back from all tools
+- Files: vocabulary-flashcards, english-guide, phonics-planner, circle-planner, label-maker
+
+**Part 2: Monetization Infrastructure**
+- Built `/montree` landing page with hero, features, pricing ($29/school, $199/district)
+- Built `/montree/welcome` post-signup welcome flow
+- Built `/api/stripe/checkout` - Creates Stripe checkout sessions
+- Built `/api/stripe/webhook` - Handles subscription lifecycle
+- Created `migrations/028_montree_schools.sql` - Multi-tenant school tables
+- Created `.env.stripe.example` - Template for Stripe keys
+
+**Part 3: Master Plan Page Update**
+- Updated `/admin/montree` to show Phases 1-4 as COMPLETE
+- Made role boxes clickable (Principal → /admin, Teachers → /teacher, Parents → /parent/home)
+- Added launch status banner
+
+---
+
+### COMMITS THIS SESSION
+
+| Commit | Description |
+|--------|-------------|
+| 5b4f87e | Audit complete, brain updated |
+| c7d3944 | Teacher tools back button fix |
+| e292530 | Session log update |
+| 9205026 | Make role boxes clickable |
+| 2ca87bd | Montree landing page |
+| 4b67d53 | Stripe + SaaS infrastructure |
+| aa43227 | Fix webhook build errors |
+
+---
+
+### HOW MONETIZATION WORKS
+
+**Current (Demo Mode):**
+1. User visits `/montree`
+2. Fills signup form (school name + email)
+3. API detects no Stripe keys
+4. Redirects to `/montree/welcome?demo=true`
+5. Shows welcome page with next steps
+
+**When Stripe Configured:**
+1. User fills signup form
+2. API creates Stripe Checkout session with 14-day trial
+3. User enters payment info on Stripe
+4. Webhook creates school in `montree_schools` table
+5. User redirected to `/montree/welcome`
+
+---
+
+### TO ACTIVATE STRIPE
+
+1. Create account at stripe.com
+2. Dashboard → Developers → API keys
+3. Create 2 products:
+   - "Montree School" - $29/month recurring
+   - "Montree District" - $199/month recurring
+4. Add to Railway environment:
+   ```
+   STRIPE_SECRET_KEY=sk_test_xxx
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+   STRIPE_SCHOOL_PRICE_ID=price_xxx
+   STRIPE_DISTRICT_PRICE_ID=price_xxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxx
+   ```
+5. Add webhook endpoint in Stripe: `https://www.teacherpotato.xyz/api/stripe/webhook`
+6. Run migration: `migrations/028_montree_schools.sql`
+
+---
+
+### TESTING URLS
+
+| URL | Purpose |
+|-----|---------|
+| /montree | Marketing landing page |
+| /montree (scroll to signup) | Test signup flow |
+| /montree/welcome?demo=true | Welcome page preview |
+| /admin/montree | Master plan + test links |
+| /teacher | Teacher portal |
+| /parent/home | Parent portal |
+
+---
+
+### JAN 16 LAUNCH CHECKLIST
+
+- [x] Multi-tenant teacher isolation
+- [x] Admin student assignment tool
+- [x] 342 curriculum works with video search
+- [x] Teacher dashboard + classroom + tools
+- [x] 13 working games
+- [x] Parent portal
+- [x] Build passing
+- [x] Deployed to Railway
+- [x] Marketing landing page
+- [x] Stripe infrastructure (needs keys)
+- [ ] Stripe account created
+- [ ] Migration 028 run
+
+---
+
+### NEXT SESSION PRIORITIES
+
+1. **If Stripe needed:** Help set up account + keys
+2. **If marketing needed:** SEO, meta tags, social sharing
+3. **If features needed:** Parent invite codes, PWA
+4. **Otherwise:** Switch to Jeffy Commerce
+
+---
+
+*Session 16 Complete - Ready for Jan 16 Launch* 🐋
