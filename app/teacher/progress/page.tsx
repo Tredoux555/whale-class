@@ -493,6 +493,15 @@ export default function TeacherProgressPage() {
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
