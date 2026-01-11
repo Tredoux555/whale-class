@@ -1,6 +1,6 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T20:25:00+08:00",
+  "lastUpdated": "2026-01-11T20:50:00+08:00",
   "currentStatus": "✨ POLISHED + LAUNCH READY",
   "productionUrl": "https://www.teacherpotato.xyz",
   
@@ -11,32 +11,24 @@
   },
 
   "session19Summary": {
-    "theme": "Principal Dashboard + Parent Bypass",
+    "theme": "Principal Portal Complete + APIs",
     "changes": [
-      "Principal Dashboard: Full polish with stats, teacher list, quick access grid",
-      "Principal Teachers: Real API data, add teacher modal, modern UI",
-      "Principal Classrooms: New page with classroom overview by teacher",
-      "Parent Portal: Auto-login bypass at /parent/demo",
-      "Montree Hub: Fixed links to use correct routes"
-    ]
-  },
-
-  "session18Summary": {
-    "theme": "PDF Fix + Audio Upload",
-    "changes": [
-      "PDF flashcards: Images now fill cards edge-to-edge using PIL crop",
-      "Flashcard maker: Goes straight to scrubber (removed processing step)",
-      "Story audio upload: Fixed bucket name (story-uploads not media)",
-      "Dockerfile: Added pillow dependency"
-    ]
+      "Principal Dashboard: Stats, teacher list, 6 quick-access cards",
+      "Principal Teachers: Real API data, add teacher modal",
+      "Principal Classrooms: Classroom overview by teacher",
+      "Parent Demo bypass: Auto-login at /parent/demo",
+      "API: /api/teacher/list - teachers with student counts",
+      "API: /api/admin/teachers - CRUD for teachers"
+    ],
+    "commits": ["e03e949", "9bca923", "de9f96c", "d114ee1"]
   },
 
   "launchReadiness": {
     "multiTenant": "✅",
     "adminAssignment": "✅",
     "videoSearch": "✅",
-    "teacherPortal": "✅ POLISHED",
     "principalPortal": "✅ POLISHED",
+    "teacherPortal": "✅ POLISHED",
     "parentPortal": "✅ + Demo bypass",
     "teacherTools": "✅",
     "adminDashboard": "✅",
@@ -59,11 +51,18 @@
     "landingPage": "/montree",
     "masterPlan": "/admin/montree",
     "principalDashboard": "/principal",
+    "principalTeachers": "/principal/teachers",
+    "principalClassrooms": "/principal/classrooms",
     "teacherDashboard": "/teacher/dashboard",
     "parentDemo": "/parent/demo",
     "teacherTools": "/teacher/tools",
     "assignStudents": "/admin/teacher-students",
     "games": "/games"
+  },
+
+  "apis": {
+    "teacherList": "GET /api/teacher/list",
+    "adminTeachers": "GET/POST/DELETE /api/admin/teachers"
   },
 
   "nextSteps": [
