@@ -1,6 +1,5 @@
-import LetterTracer from '@/components/04-LetterTracer';
+import LetterTracerNew from '@/components/04-LetterTracerNew';
 
 export default function LetterTracerPage() {
-  return <LetterTracer />;
+  return <LetterTracerNew />;
 }
-
