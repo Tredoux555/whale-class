@@ -49,22 +49,32 @@ export default function DailySummaryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/teacher" className="text-blue-600 hover:text-blue-800">
-                ← Back
+              <Link href="/teacher/dashboard" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-800">📊 Daily Summary</h1>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Daily Summary</h1>
+                  <p className="text-sm text-gray-500">Activity overview</p>
+                </div>
+              </div>
             </div>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border rounded-lg px-3 py-2"
+              className="border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
             />
           </div>
         </div>
