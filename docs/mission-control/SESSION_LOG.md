@@ -2,6 +2,53 @@
 
 ---
 
+## SESSION 12 - January 12, 2026 ✅
+
+### TEACHER PORTAL CLEANUP
+
+**Started:** ~Morning Beijing  
+**Status:** COMPLETE ✅
+
+---
+
+### CHANGES MADE
+
+1. **Teacher Dashboard Cleaned Up**
+   - Removed redundant "Quick Resources" section (Flashcards, 3-Part Cards, Video Cards, Games)
+   - Added Curriculum Overview card with direct access
+   - Added Student Progress card
+   - Now shows: Circle Time Planner, English Guide, Curriculum Overview, Student Progress
+
+2. **Circle Time Planner Updated**
+   - Replaced Flashcards button with Video Cards + 3-Part Cards tabs
+   - Both generators accessible from the header when planning
+
+3. **Curriculum Page Fixed**
+   - Back link now goes to /teacher/dashboard instead of login
+
+4. **Admin Login Fixed**
+   - Added fallback for Tredoux / 870602 credentials
+   - Works alongside Supabase Auth
+
+---
+
+### FILES CHANGED
+
+```
+app/teacher/dashboard/page.tsx       - Removed Quick Resources, added Curriculum + Progress cards
+app/teacher/circle-planner/page.tsx  - Added Video Cards + 3-Part Cards tabs
+app/teacher/curriculum/page.tsx      - Fixed back link
+app/api/auth/login/route.ts          - Added simple admin login fallback
+```
+
+---
+
+### COMMITS
+
+- `5889c16` - 🧹 Clean up teacher portal: remove redundant links, add curriculum overview, fix admin login
+
+---
+
 ## SESSION 11 - January 11, 2026 ✅
 
 ### TEACHER→PARENT→GAMES FLOW FIXED!
