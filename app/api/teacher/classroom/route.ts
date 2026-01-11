@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 function getSupabase() {
   return createClient(
@@ -10,36 +11,97 @@ function getSupabase() {
 
 export async function GET(request: NextRequest) {
   const supabase = getSupabase();
-
-  // Get all children
-  const { data: children, error: childrenError } = await supabase
-    .from('children')
-    .select('id, name, date_of_birth, age_group, photo_url')
-    .order('name');
-
-  if (childrenError) {
-    return NextResponse.json({ error: childrenError.message }, { status: 500 });
+  
+  // Get teacher name from cookie (set during login)
+  const cookieStore = await cookies();
+  const teacherName = cookieStore.get('teacherName')?.value;
+  
+  // Also check query param for flexibility
+  const { searchParams } = new URL(request.url);
+  const queryTeacher = searchParams.get('teacher');
+  
+  const currentTeacher = teacherName || queryTeacher;
+  
+  if (!currentTeacher) {
+    return NextResponse.json({ error: 'Not authenticated', children: [] }, { status: 401 });
   }
 
-  // Try multiple progress tables (different systems may have been used)
+  // Get teacher's ID from simple_teachers
+  const { data: teacher, error: teacherError } = await supabase
+    .from('simple_teachers')
+    .select('id, name')
+    .eq('name', currentTeacher)
+    .single();
+
+  if (teacherError || !teacher) {
+    // Fallback: teacher not in database yet (legacy localStorage login)
+    // For now, return empty to prevent data leakage
+    console.log(`Teacher ${currentTeacher} not found in database`);
+    return NextResponse.json({ 
+      children: [], 
+      teacher: currentTeacher,
+      message: 'No students assigned. Contact admin to assign students.'
+    });
+  }
+
+  // Get ONLY this teacher's children via teacher_children junction table
+  const { data: teacherChildren, error: tcError } = await supabase
+    .from('teacher_children')
+    .select(`
+      child_id,
+      children (
+        id,
+        name,
+        date_of_birth,
+        age_group,
+        photo_url,
+        active_status
+      )
+    `)
+    .eq('teacher_id', teacher.id);
+
+  if (tcError) {
+    console.error('Error fetching teacher children:', tcError);
+    return NextResponse.json({ error: tcError.message }, { status: 500 });
+  }
+
+  // Flatten the children data
+  const children = (teacherChildren || [])
+    .map(tc => tc.children)
+    .filter(c => c && c.active_status);
+
+  // Get progress data for these children only
+  const childIds = children.map(c => c.id);
   
-  // 1. child_work_progress (teacher portal system)
-  const { data: workProgress } = await supabase
-    .from('child_work_progress')
-    .select('child_id, status');
+  let workProgress: any[] = [];
+  let weeklyProgress: any[] = [];
+  let skillProgress: any[] = [];
 
-  // 2. weekly_assignments (weekly planning system) 
-  const { data: weeklyProgress } = await supabase
-    .from('weekly_assignments')
-    .select('child_id, progress_status');
+  if (childIds.length > 0) {
+    // child_work_progress
+    const { data: wp } = await supabase
+      .from('child_work_progress')
+      .select('child_id, status')
+      .in('child_id', childIds);
+    workProgress = wp || [];
 
-  // 3. child_progress (skill-based system)
-  const { data: skillProgress } = await supabase
-    .from('child_progress')
-    .select('child_id, status_level');
+    // weekly_assignments
+    const { data: wa } = await supabase
+      .from('weekly_assignments')
+      .select('child_id, progress_status')
+      .in('child_id', childIds);
+    weeklyProgress = wa || [];
+
+    // child_progress
+    const { data: cp } = await supabase
+      .from('child_progress')
+      .select('child_id, status_level')
+      .in('child_id', childIds);
+    skillProgress = cp || [];
+  }
 
   // Calculate age and aggregate progress for each child
-  const childrenWithProgress = (children || []).map(child => {
+  const childrenWithProgress = children.map(child => {
     // Calculate age
     let age = null;
     if (child.date_of_birth) {
@@ -50,24 +112,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Aggregate from child_work_progress (status 1=presented, 2=practicing, 3=mastered)
-    const cwp = (workProgress || []).filter(p => p.child_id === child.id);
+    const cwp = workProgress.filter(p => p.child_id === child.id);
     const cwpPresented = cwp.filter(p => p.status === 1).length;
     const cwpPracticing = cwp.filter(p => p.status === 2).length;
     const cwpMastered = cwp.filter(p => p.status === 3).length;
 
-    // Aggregate from weekly_assignments (progress_status = 'presented', 'practicing', 'mastered')
-    const wa = (weeklyProgress || []).filter(p => p.child_id === child.id);
+    // Aggregate from weekly_assignments
+    const wa = weeklyProgress.filter(p => p.child_id === child.id);
     const waPresented = wa.filter(p => p.progress_status === 'presented').length;
     const waPracticing = wa.filter(p => p.progress_status === 'practicing').length;
     const waMastered = wa.filter(p => p.progress_status === 'mastered').length;
 
-    // Aggregate from child_progress (status_level 1=observed, 2=guided, 3=independent, 4=mastery)
-    const cp = (skillProgress || []).filter(p => p.child_id === child.id);
+    // Aggregate from child_progress
+    const cp = skillProgress.filter(p => p.child_id === child.id);
     const cpPresented = cp.filter(p => p.status_level === 1).length;
     const cpPracticing = cp.filter(p => p.status_level >= 2 && p.status_level <= 3).length;
     const cpMastered = cp.filter(p => p.status_level >= 4).length;
 
-    // Combine all progress (take the max from any system)
+    // Combine all progress
     const presented = cwpPresented + waPresented + cpPresented;
     const practicing = cwpPracticing + waPracticing + cpPracticing;
     const mastered = cwpMastered + waMastered + cpMastered;
@@ -84,5 +146,10 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  return NextResponse.json({ children: childrenWithProgress });
+  return NextResponse.json({ 
+    children: childrenWithProgress,
+    teacher: teacher.name,
+    teacherId: teacher.id,
+    count: childrenWithProgress.length
+  });
 }

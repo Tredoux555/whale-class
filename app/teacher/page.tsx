@@ -23,7 +23,7 @@ export default function TeacherLoginPage() {
     }
   }, [router]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -37,8 +37,20 @@ export default function TeacherLoginPage() {
       return;
     }
 
-    // Save to localStorage
+    // Save to localStorage (for client-side)
     localStorage.setItem('teacherName', selectedTeacher);
+    
+    // Also set a cookie via API (for server-side API routes)
+    try {
+      await fetch('/api/teacher/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: selectedTeacher }),
+      });
+    } catch (err) {
+      console.log('Cookie set may have failed, continuing with localStorage');
+    }
+    
     router.push('/teacher/dashboard');
   };
 
