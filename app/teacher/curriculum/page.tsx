@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Search } from 'lucide-react';
+import { ChevronLeft, Search, X } from 'lucide-react';
 
 interface Work {
   id: string;
   name: string;
+  chinese_name?: string;
   area_id: string;
   sequence: number;
+  age_range?: string;
+  materials?: string[];
+  direct_aims?: string[];
+  indirect_aims?: string[];
+  control_of_error?: string;
 }
 
 const AREAS = [
@@ -28,7 +34,7 @@ export default function TeacherCurriculumPage() {
   const [selectedArea, setSelectedArea] = useState('practical_life');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [teacherName, setTeacherName] = useState<string | null>(null);
+  const [selectedWork, setSelectedWork] = useState<Work | null>(null);
 
   useEffect(() => {
     const name = localStorage.getItem('teacherName');
@@ -36,7 +42,6 @@ export default function TeacherCurriculumPage() {
       router.push('/teacher');
       return;
     }
-    setTeacherName(name);
   }, [router]);
 
   useEffect(() => {
@@ -73,7 +78,7 @@ export default function TeacherCurriculumPage() {
             </Link>
             <div>
               <h1 className="text-lg font-semibold">📋 Curriculum Overview</h1>
-              <p className="text-sm text-gray-500">Montessori works by area</p>
+              <p className="text-sm text-gray-500">Tap any work to see details</p>
             </div>
           </div>
         </div>
@@ -124,15 +129,22 @@ export default function TeacherCurriculumPage() {
         ) : (
           <div className="space-y-2">
             {filteredCurriculum.map((work, index) => (
-              <div
+              <button
                 key={work.id}
-                className="bg-white rounded-lg border p-4"
+                onClick={() => setSelectedWork(work)}
+                className="w-full bg-white rounded-lg border p-4 text-left hover:border-blue-300 hover:shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-400 w-8">{index + 1}.</span>
-                  <h3 className="font-medium">{work.name}</h3>
+                  <div className="flex-1">
+                    <h3 className="font-medium">{work.name}</h3>
+                    {work.chinese_name && (
+                      <p className="text-sm text-gray-500">{work.chinese_name}</p>
+                    )}
+                  </div>
+                  <span className="text-gray-300">→</span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -145,6 +157,104 @@ export default function TeacherCurriculumPage() {
           <span className="font-medium">{filteredCurriculum.length} works</span>
         </div>
       </div>
+
+      {/* Work Detail Modal */}
+      {selectedWork && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className={`${currentArea?.color || 'bg-blue-500'} text-white p-4 rounded-t-2xl`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">{selectedWork.name}</h2>
+                  {selectedWork.chinese_name && (
+                    <p className="text-white/80">{selectedWork.chinese_name}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setSelectedWork(null)}
+                  className="p-1 hover:bg-white/20 rounded"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              {selectedWork.age_range && (
+                <p className="mt-2 text-sm bg-white/20 inline-block px-2 py-1 rounded">
+                  Age: {selectedWork.age_range}
+                </p>
+              )}
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 space-y-4">
+              {/* Materials */}
+              {selectedWork.materials && selectedWork.materials.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">🧰 Materials</h3>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                    {selectedWork.materials.map((m, i) => (
+                      <li key={i}>{m}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Direct Aims */}
+              {selectedWork.direct_aims && selectedWork.direct_aims.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">🎯 Direct Aims</h3>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                    {selectedWork.direct_aims.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Indirect Aims */}
+              {selectedWork.indirect_aims && selectedWork.indirect_aims.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">🌱 Indirect Aims</h3>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                    {selectedWork.indirect_aims.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Control of Error */}
+              {selectedWork.control_of_error && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">✓ Control of Error</h3>
+                  <p className="text-gray-600">{selectedWork.control_of_error}</p>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!selectedWork.materials?.length && 
+               !selectedWork.direct_aims?.length && 
+               !selectedWork.indirect_aims?.length && 
+               !selectedWork.control_of_error && (
+                <div className="text-center py-8 text-gray-400">
+                  <p>No additional details available for this work.</p>
+                  <p className="text-sm mt-1">Details can be added by admin.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t p-4">
+              <button
+                onClick={() => setSelectedWork(null)}
+                className="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

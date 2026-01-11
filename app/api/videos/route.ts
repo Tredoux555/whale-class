@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { getUserSession } from "@/lib/auth-multi";
 import { getVideos, addVideo } from "@/lib/data";
 import { v4 as uuidv4 } from "uuid";
 // Filesystem imports moved inside function to avoid module-level execution
 
 export async function GET() {
-  const session = await getAdminSession();
-  if (!session) {
+  // Check either admin-token OR user-token with admin/super_admin role
+  const adminSession = await getAdminSession();
+  const userSession = await getUserSession();
+  
+  const isAdmin = adminSession || 
+    (userSession && ['super_admin', 'school_admin', 'admin'].includes(userSession.role));
+  
+  if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -21,8 +28,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) {
+  const adminSession = await getAdminSession();
+  const userSession = await getUserSession();
+  
+  const isAdmin = adminSession || 
+    (userSession && ['super_admin', 'school_admin', 'admin'].includes(userSession.role));
+  
+  if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
