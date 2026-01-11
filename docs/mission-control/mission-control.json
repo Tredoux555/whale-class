@@ -1,43 +1,28 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T11:35:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Admin Assignment Tool COMPLETE",
-  "status": "✅ Ready to commit and deploy",
+  "lastUpdated": "2026-01-11T11:55:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Phase 3 COMPLETE",
+  "status": "✅ Video search terms implemented",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
-  "session15Progress": {
-    "phase1": "✅ COMPLETE - Database tables created",
-    "phase2": "✅ COMPLETE - API isolation + audit fixes deployed",
-    "adminTool": "✅ COMPLETE - /admin/teacher-students page created",
-    "commits": [
-      "fc0f006 - Phase 1 SQL migration",
-      "44b5298 - Phase 2 API isolation", 
-      "fa24cb6 - Audit bug fixes",
-      "PENDING - Admin assignment tool"
-    ]
+  "completedPhases": {
+    "phase1": "✅ Database schema",
+    "phase2": "✅ API isolation + admin assignment tool",
+    "phase3": "✅ Video search terms - YouTube search instead of direct URLs"
   },
 
-  "newFeatures": {
-    "assignStudentsPage": {
-      "url": "/admin/teacher-students",
-      "features": [
-        "View all teachers with student counts",
-        "View unassigned vs assigned students",
-        "Click to assign students to selected teacher",
-        "Remove assignments",
-        "Teacher overview stats"
-      ]
-    }
+  "phase3Changes": {
+    "api": "/api/school/[schoolId]/curriculum - now returns video_search_term",
+    "teacherCurriculum": "Always shows 'Find Video on YouTube' button with search term",
+    "adminClassroom": "Demo button opens YouTube search, no more broken direct links"
   },
 
-  "testPlan": {
-    "step1": "Go to /admin/teacher-students",
-    "step2": "See all 22 students assigned to Tredoux",
-    "step3": "Click on 'John' to select him",
-    "step4": "Click on a student to assign to John",
-    "step5": "Login as John at /teacher → should see that student"
+  "remainingPhases": {
+    "phase4": "⏳ Circle Planner feature parity",
+    "phase5": "⏳ Parent portal integration",
+    "phase6": "⏳ App packaging (PWA, multi-school)"
   },
 
   "demoAccounts": {

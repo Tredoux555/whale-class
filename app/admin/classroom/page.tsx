@@ -226,26 +226,15 @@ function ClassroomView() {
     updateProgress(assignment.id, nextStatus);
   };
 
-  // Watch video
+  // Watch video - uses YouTube search for reliability
   const handleWatchVideo = async (assignment: WorkAssignment) => {
-    // First check if assignment has video_url
-    if (assignment.video_url) {
-      setVideoModal({ url: assignment.video_url, title: assignment.work_name });
-      return;
-    }
+    // Generate YouTube search URL from work name
+    // This is more reliable than direct URLs which break over time
+    const searchTerm = `Montessori ${assignment.work_name} presentation`;
+    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
     
-    // Otherwise fetch from curriculum
-    try {
-      const res = await fetch(`/api/admin/curriculum-works/detail?search=${encodeURIComponent(assignment.work_name)}`);
-      const data = await res.json();
-      if (data.work?.video_url) {
-        setVideoModal({ url: data.work.video_url, title: assignment.work_name });
-      } else {
-        showToast('No video available for this work yet', 'error');
-      }
-    } catch (err) {
-      showToast('Could not load video', 'error');
-    }
+    // Open in new tab
+    window.open(searchUrl, '_blank');
   };
 
   // Capture photo/video
