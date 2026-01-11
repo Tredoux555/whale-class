@@ -17,6 +17,22 @@ interface Stats {
 
 const DASHBOARD_ITEMS = [
   {
+    href: '/principal/teachers',
+    icon: '👩‍🏫',
+    title: 'Teacher Management',
+    description: 'Add teachers, view student counts, manage staff',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+  },
+  {
+    href: '/principal/classrooms',
+    icon: '📚',
+    title: 'Classrooms',
+    description: 'View all classrooms and student distribution',
+    gradient: 'from-blue-500 to-indigo-500',
+    bgGradient: 'from-blue-50 to-indigo-50',
+  },
+  {
     href: '/admin/teacher-students',
     icon: '🔗',
     title: 'Student Assignments',
