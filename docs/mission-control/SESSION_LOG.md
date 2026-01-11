@@ -1594,3 +1594,64 @@ Applied same lazy-init pattern to `teacher/list/route.ts`
 | Jeffy | jeffy.co.za | ✅ Launch ready |
 
 *Session 21 complete*
+
+
+---
+
+## Session 21 - Phase 1: Toast Notifications
+**Time:** ~00:05 Beijing (Jan 12)
+
+### Completed:
+- ✅ Created shared Toast component (`/components/Toast.tsx`)
+- ✅ Added fade-in animation to globals.css
+- ✅ Added toast to teacher progress page
+- ✅ Shows success: "Work Name → Status"
+- ✅ Shows error on API failure
+
+### Commit: `6fb1e03`
+
+### Next:
+- Add toast to curriculum page
+- Add loading indicators
+- PWA manifest
+
+*Checkpoint: 6fb1e03*
+
+
+---
+
+## Session 21 - Montree Monetization Audit
+**Time:** ~00:05 Beijing (Jan 12)
+
+### MONETIZATION GAP ANALYSIS COMPLETE
+
+**Critical Missing Features:**
+1. ❌ No save feedback (toast notifications)
+2. ❌ Silent API failures
+3. ❌ Not a PWA (can't install on tablet)
+4. ❌ No parent portal (parents can't see progress)
+5. ❌ No billing/subscription system
+6. ❌ No school onboarding flow
+
+**Already Working:**
+- ✅ Multi-user auth
+- ✅ Teacher progress tracking (tap to cycle)
+- ✅ 342 curriculum works
+- ✅ Circle time planner
+- ✅ 10 teacher tools
+- ✅ English guide
+
+### RECOMMENDED BUILD ORDER
+
+| Phase | Task | Time |
+|-------|------|------|
+| 1 | Toast notifications + error handling | 2-3 hrs |
+| 2 | PWA (manifest + service worker) | 1-2 hrs |
+| 3 | Parent reports portal | 3-4 hrs |
+| 4 | Stripe billing | 4-6 hrs |
+| 5 | Landing page + pricing | 2-3 hrs |
+
+### NEXT ACTION
+Ready to start Phase 1: Toast notifications
+
+*Checkpoint: Analysis complete, awaiting direction*
