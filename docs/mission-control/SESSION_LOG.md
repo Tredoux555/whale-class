@@ -850,3 +850,54 @@ ADD COLUMN video_search_term TEXT;
 *Session 16 complete: January 11, 2026 ~13:10 Beijing*
 *Commits: 5b4f87e, c7d3944*
 *Status: 🚀 READY FOR JAN 16*
+
+---
+
+## SESSION 16 CONTINUED - Monetization Build
+
+### 🚀 STRIPE + SAAS INFRASTRUCTURE BUILT
+
+**Files Created:**
+
+| File | Purpose |
+|------|---------|
+| `app/montree/page.tsx` | Landing page with pricing + signup |
+| `app/montree/welcome/page.tsx` | Post-signup welcome page |
+| `app/api/stripe/checkout/route.ts` | Creates Stripe checkout sessions |
+| `app/api/stripe/webhook/route.ts` | Handles Stripe webhooks |
+| `migrations/028_montree_schools.sql` | Multi-tenant school tables |
+| `.env.stripe.example` | Template for Stripe keys |
+
+**How It Works (Demo Mode):**
+1. User fills signup form on /montree
+2. Form calls /api/stripe/checkout
+3. Since no Stripe keys → redirects to /montree/welcome?demo=true
+4. Welcome page shows success + next steps
+
+**When Stripe Configured:**
+1. User fills signup form
+2. Redirects to Stripe Checkout (14-day trial)
+3. Stripe webhook creates school in database
+4. User redirected to /montree/welcome
+
+---
+
+### 📋 TO ACTIVATE STRIPE
+
+1. Create Stripe account at stripe.com
+2. Get API keys from Dashboard → Developers → API keys
+3. Create 2 products:
+   - School: $29/month recurring
+   - District: $199/month recurring
+4. Add to .env:
+   ```
+   STRIPE_SECRET_KEY=sk_test_xxx
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+   STRIPE_SCHOOL_PRICE_ID=price_xxx
+   STRIPE_DISTRICT_PRICE_ID=price_xxx
+   ```
+5. Set up webhook endpoint: yoursite.com/api/stripe/webhook
+
+---
+
+*Checkpoint: January 11, 2026 ~13:45 Beijing*

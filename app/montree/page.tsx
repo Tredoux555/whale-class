@@ -2,16 +2,48 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function MontreeLandingPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Save to database / send to Stripe
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          schoolName, 
+          email, 
+          plan: 'school' 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.demo) {
+        // Stripe not configured - redirect to welcome page in demo mode
+        router.push(data.redirect);
+      } else if (data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'Something went wrong');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Failed to start checkout. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -378,7 +410,8 @@ export default function MontreeLandingPage() {
                       value={schoolName}
                       onChange={(e) => setSchoolName(e.target.value)}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      disabled={loading}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
                       placeholder="Sunshine Montessori School"
                     />
                   </div>
@@ -389,15 +422,28 @@ export default function MontreeLandingPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      disabled={loading}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100"
                       placeholder="principal@school.com"
                     />
                   </div>
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                      {error}
+                    </div>
+                  )}
                   <button
                     type="submit"
-                    className="w-full py-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition text-lg"
+                    disabled={loading}
+                    className="w-full py-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition text-lg disabled:bg-emerald-400 disabled:cursor-not-allowed"
                   >
-                    Start Free Trial →
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin">⏳</span> Setting up...
+                      </span>
+                    ) : (
+                      'Start Free Trial →'
+                    )}
                   </button>
                 </form>
                 <p className="text-xs text-gray-400 text-center mt-4">
