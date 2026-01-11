@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Search, X } from 'lucide-react';
 
 interface Work {
   id: string;
@@ -21,18 +20,17 @@ interface Work {
   video_search_term?: string;
 }
 
-// Generate YouTube search URL from search term or work name
 function getVideoSearchUrl(work: Work): string {
   const searchTerm = work.video_search_term || `Montessori ${work.name} presentation`;
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
 }
 
 const AREAS = [
-  { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: 'bg-pink-500' },
-  { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: 'bg-purple-500' },
-  { id: 'math', name: 'Math', icon: '🔢', color: 'bg-blue-500' },
-  { id: 'language', name: 'Language', icon: '📖', color: 'bg-green-500' },
-  { id: 'cultural', name: 'Cultural', icon: '🌍', color: 'bg-orange-500' },
+  { id: 'practical_life', name: 'Practical Life', icon: '🧹', gradient: 'from-pink-500 to-rose-500', bg: 'bg-pink-500' },
+  { id: 'sensorial', name: 'Sensorial', icon: '👁️', gradient: 'from-purple-500 to-violet-500', bg: 'bg-purple-500' },
+  { id: 'math', name: 'Math', icon: '🔢', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-500' },
+  { id: 'language', name: 'Language', icon: '📖', gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-500' },
+  { id: 'cultural', name: 'Cultural', icon: '🌍', gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-500' },
 ];
 
 const SCHOOL_ID = '00000000-0000-0000-0000-000000000001';
@@ -77,63 +75,83 @@ export default function TeacherCurriculumPage() {
   const currentArea = AREAS.find(a => a.id === selectedArea);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link href="/teacher/dashboard" className="p-2 hover:bg-gray-100 rounded-lg">
-              <ChevronLeft className="w-5 h-5" />
+      <div className={`bg-gradient-to-r ${currentArea?.gradient || 'from-blue-500 to-indigo-500'} text-white`}>
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/teacher/dashboard" 
+              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </Link>
             <div>
-              <h1 className="text-lg font-semibold">📋 Curriculum Overview</h1>
-              <p className="text-sm text-gray-500">Tap any work to see details</p>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <span>📋</span>
+                <span>Curriculum Overview</span>
+              </h1>
+              <p className="text-white/80 text-sm mt-1">Tap any work to see details and videos</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Area Tabs */}
-      <div className="bg-white border-b overflow-x-auto">
-        <div className="flex gap-1 p-2 max-w-4xl mx-auto">
-          {AREAS.map(area => (
-            <button
-              key={area.id}
-              onClick={() => setSelectedArea(area.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
-                selectedArea === area.id
-                  ? `${area.color} text-white`
-                  : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              <span>{area.icon}</span>
-              <span className="text-sm font-medium">{area.name}</span>
-            </button>
-          ))}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex gap-1 py-3 overflow-x-auto scrollbar-hide">
+            {AREAS.map(area => (
+              <button
+                key={area.id}
+                onClick={() => setSelectedArea(area.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all font-medium ${
+                  selectedArea === area.id
+                    ? `bg-gradient-to-r ${area.gradient} text-white shadow-lg`
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <span className="text-lg">{area.icon}</span>
+                <span className="text-sm">{area.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Search */}
-      <div className="max-w-4xl mx-auto px-4 py-3">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <input
             type="text"
             placeholder="Search works..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
         </div>
       </div>
 
       {/* Works List */}
-      <div className="max-w-4xl mx-auto px-4 pb-20">
+      <div className="max-w-4xl mx-auto px-4 pb-24">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+              <span className="text-3xl animate-bounce">{currentArea?.icon}</span>
+            </div>
+            <p className="text-gray-600">Loading curriculum...</p>
+          </div>
         ) : filteredCurriculum.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            {searchTerm ? `No works matching "${searchTerm}"` : 'No works found'}
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <span className="text-4xl mb-4 block">🔍</span>
+            <p className="text-gray-600">
+              {searchTerm ? `No works matching "${searchTerm}"` : 'No works found'}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -141,17 +159,23 @@ export default function TeacherCurriculumPage() {
               <button
                 key={work.id}
                 onClick={() => setSelectedWork(work)}
-                className="w-full bg-white rounded-lg border p-4 text-left hover:border-blue-300 hover:shadow-sm transition-all"
+                className="w-full bg-white rounded-xl border-2 border-gray-100 p-4 text-left hover:border-blue-300 hover:shadow-md transition-all group"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-400 w-8">{index + 1}.</span>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{work.name}</h3>
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 ${currentArea?.bg} rounded-lg flex items-center justify-center text-white font-bold text-sm`}>
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                      {work.name}
+                    </h3>
                     {work.chinese_name && (
-                      <p className="text-sm text-gray-500">{work.chinese_name}</p>
+                      <p className="text-sm text-gray-500 truncate">{work.chinese_name}</p>
                     )}
                   </div>
-                  <span className="text-gray-300">→</span>
+                  <svg className="w-5 h-5 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </button>
             ))}
@@ -160,66 +184,82 @@ export default function TeacherCurriculumPage() {
       </div>
 
       {/* Stats Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-3">
-        <div className="max-w-4xl mx-auto px-4 flex justify-between text-sm">
-          <span className="text-gray-500">{currentArea?.icon} {currentArea?.name}</span>
-          <span className="font-medium">{filteredCurriculum.length} works</span>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{currentArea?.icon}</span>
+            <span className="font-medium text-gray-900">{currentArea?.name}</span>
+          </div>
+          <div className={`px-4 py-1.5 rounded-full text-white text-sm font-bold ${currentArea?.bg}`}>
+            {filteredCurriculum.length} works
+          </div>
         </div>
       </div>
 
       {/* Work Detail Modal */}
       {selectedWork && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
-            <div className={`${currentArea?.color || 'bg-blue-500'} text-white p-4 rounded-t-2xl`}>
+            <div className={`bg-gradient-to-r ${currentArea?.gradient || 'from-blue-500 to-indigo-500'} text-white p-6 rounded-t-2xl`}>
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-xl font-bold">{selectedWork.name}</h2>
                   {selectedWork.chinese_name && (
-                    <p className="text-white/80">{selectedWork.chinese_name}</p>
+                    <p className="text-white/80 mt-1">{selectedWork.chinese_name}</p>
                   )}
                 </div>
                 <button
                   onClick={() => setSelectedWork(null)}
-                  className="p-1 hover:bg-white/20 rounded"
+                  className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
               {selectedWork.age_range && (
-                <p className="mt-2 text-sm bg-white/20 inline-block px-2 py-1 rounded">
-                  Age: {selectedWork.age_range}
-                </p>
+                <span className="inline-block mt-3 text-sm bg-white/20 px-3 py-1 rounded-full">
+                  👶 Age: {selectedWork.age_range}
+                </span>
               )}
             </div>
 
             {/* Modal Content */}
-            <div className="p-4 space-y-4">
-              {/* Video Search Link - Always show, uses search term or generates from name */}
+            <div className="p-6 space-y-5">
+              {/* Video Search Link */}
               <a
                 href={getVideoSearchUrl(selectedWork)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-xl hover:border-red-400 hover:shadow-md transition-all group"
               >
-                <span className="text-2xl">🔍</span>
+                <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                  ▶
+                </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-red-700">Find Video on YouTube</p>
+                  <p className="font-bold text-red-700">Find Video on YouTube</p>
                   <p className="text-sm text-red-600 truncate">
                     {selectedWork.video_search_term || `Montessori ${selectedWork.name}`}
                   </p>
                 </div>
-                <span className="text-red-400">→</span>
+                <svg className="w-5 h-5 text-red-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
               </a>
 
               {/* Materials */}
               {selectedWork.materials && selectedWork.materials.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">🧰 Materials</h3>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                  <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+                    <span>🧰</span> Materials
+                  </h3>
+                  <ul className="space-y-2">
                     {selectedWork.materials.map((m, i) => (
-                      <li key={i}>{m}</li>
+                      <li key={i} className="flex items-start gap-2 text-amber-900">
+                        <span className="text-amber-500">•</span>
+                        <span>{m}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -227,11 +267,16 @@ export default function TeacherCurriculumPage() {
 
               {/* Direct Aims */}
               {selectedWork.direct_aims && selectedWork.direct_aims.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">🎯 Direct Aims</h3>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                  <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                    <span>🎯</span> Direct Aims
+                  </h3>
+                  <ul className="space-y-2">
                     {selectedWork.direct_aims.map((a, i) => (
-                      <li key={i}>{a}</li>
+                      <li key={i} className="flex items-start gap-2 text-blue-900">
+                        <span className="text-blue-500">•</span>
+                        <span>{a}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -239,11 +284,16 @@ export default function TeacherCurriculumPage() {
 
               {/* Indirect Aims */}
               {selectedWork.indirect_aims && selectedWork.indirect_aims.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">🌱 Indirect Aims</h3>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                  <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2">
+                    <span>🌱</span> Indirect Aims
+                  </h3>
+                  <ul className="space-y-2">
                     {selectedWork.indirect_aims.map((a, i) => (
-                      <li key={i}>{a}</li>
+                      <li key={i} className="flex items-start gap-2 text-green-900">
+                        <span className="text-green-500">•</span>
+                        <span>{a}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -251,19 +301,22 @@ export default function TeacherCurriculumPage() {
 
               {/* Control of Error */}
               {selectedWork.control_of_error && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">✓ Control of Error</h3>
-                  <p className="text-gray-600">{selectedWork.control_of_error}</p>
+                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                  <h3 className="font-bold text-purple-800 mb-2 flex items-center gap-2">
+                    <span>✓</span> Control of Error
+                  </h3>
+                  <p className="text-purple-900">{selectedWork.control_of_error}</p>
                 </div>
               )}
 
-              {/* Empty State for other details */}
+              {/* Empty State */}
               {!selectedWork.materials?.length && 
                !selectedWork.direct_aims?.length && 
                !selectedWork.indirect_aims?.length && 
                !selectedWork.control_of_error && (
-                <div className="text-center py-4 text-gray-400 text-sm">
-                  <p>Additional details (materials, aims) can be added by admin.</p>
+                <div className="text-center py-6 text-gray-400">
+                  <span className="text-4xl mb-2 block">📝</span>
+                  <p className="text-sm">Additional details can be added by admin.</p>
                 </div>
               )}
             </div>
@@ -272,7 +325,7 @@ export default function TeacherCurriculumPage() {
             <div className="border-t p-4">
               <button
                 onClick={() => setSelectedWork(null)}
-                className="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-colors"
               >
                 Close
               </button>
