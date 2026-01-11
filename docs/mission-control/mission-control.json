@@ -1,43 +1,85 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T11:20:00+08:00",
-  "currentPhase": "Polish & Excellence Phase",
-  "status": "✅ Letter Tracer v2 COMPLETE - Correct Montessori formation",
+  "lastUpdated": "2026-01-12T12:05:00+08:00",
+  "currentPhase": "Letter Tracer v2 - IMMACULATE PATHS",
+  "status": "🚀 Deploying fixed letter paths",
   
   "productionUrl": "https://www.teacherpotato.xyz",
-  
-  "letterTracerV2Complete": {
-    "file": "components/04-LetterTracerNew.tsx",
-    "lines": 541,
-    "build": "✅ PASSED",
-    "features": [
-      "Lowercase letters FIRST (a-z) - Montessori standard",
-      "Uppercase letters second (A-Z)",
-      "52 total letters with correct stroke order",
-      "Based on Reading Universe / Neuhaus stroke directions",
-      "Waypoint-guided tracing (8 dots per letter)",
-      "Animated demo with finger indicator",
-      "Sparkle effects on waypoint collection",
-      "Progress bar",
-      "Audio feedback",
-      "Touch-optimized for tablets"
+  "testUrl": "www.teacherpotato.xyz/games/letter-tracer",
+
+  "sessionSummary": {
+    "whatWeDid": [
+      "1. Identified issues: 'a' had descending tail like 'q', 'h' looked like 'n', 'g' went off screen",
+      "2. Deep research on correct Montessori stroke order from 6+ authoritative sources",
+      "3. Created comprehensive stroke guide for all 26 lowercase letters",
+      "4. Rewrote ALL lowercase SVG paths with correct coordinates",
+      "5. Increased canvas from 250x250 to 300x300 for better fit",
+      "6. Updated uppercase paths to match new canvas size",
+      "7. Build passed successfully"
     ],
-    "strokeOrderSource": "Reading Universe / Neuhaus Education Center",
-    "letterOrder": "a-z first (lowercase), then A-Z (uppercase)"
+    "whatWeAreDoing": [
+      "Deploying fixed Letter Tracer to production",
+      "Waiting for Railway auto-build (~2-3 min)"
+    ],
+    "whatWeAreTryingToAchieve": [
+      "Letters that match the Sass Phonics font shown in header",
+      "Correct educational stroke order for 3-4 year olds",
+      "Proper ascenders: b,d,f,h,k,l,t reach TOP line (y=40)",
+      "Proper descenders: g,j,p,q,y extend below baseline (y=260) but stay ON screen",
+      "All letters fit properly in canvas - no clipping",
+      "Immaculate, professional quality letter tracing"
+    ]
   },
 
-  "strokeDirections": {
-    "circleLetters": "a,c,d,e,g,o,q - start ~2 oclock, go counterclockwise",
-    "stickLetters": "b,h,k,l - start at top, go down",
-    "humpLetters": "m,n,r - down, back up, over"
+  "coordinateSystem": {
+    "canvas": "300x300 pixels",
+    "topLine": "y=40 (ascender top for b,d,f,h,k,l,t)",
+    "midline": "y=100 (x-height top for a,c,e,m,n,o,r,s,u,v,w,x,z)",
+    "baseline": "y=200 (bottom of most letters)",
+    "descenderLine": "y=260 (bottom of g,j,p,q,y)",
+    "horizontalCenter": "x=150",
+    "padding": "40px on all sides ensures nothing clips"
   },
 
-  "deployCommand": "cd ~/Desktop/whale && git add -A && git commit -m '✨ Letter Tracer v2: Correct Montessori stroke order, lowercase first' && git push",
+  "strokeOrderRules": {
+    "universalPrinciples": [
+      "All letters start at TOP or MIDLINE - never baseline",
+      "Vertical strokes move DOWNWARD (pull, don't push)",
+      "Circular strokes (c,o,a,d,g,q) go COUNTERCLOCKWISE",
+      "Horizontal strokes go LEFT to RIGHT",
+      "Only 6 letters need pencil lifts: f,i,j,k,t,x"
+    ],
+    "letterCategories": {
+      "tallLetters": "b,d,f,h,k,l,t - stem starts at y=40 (TOP line)",
+      "shortLetters": "a,c,e,m,n,o,r,s,u,v,w,x,z - start at y=100 (midline)",
+      "descenders": "g,j,p,q,y - extend to y=260 (below baseline)",
+      "circleFirst": "a,c,d,g,o,q - start with counterclockwise circle",
+      "lineFirst": "b,h,k,l,m,n,p,r - start with vertical line down"
+    },
+    "criticalDistinctions": {
+      "b_vs_d": "b starts with LINE (bat then ball), d starts with CIRCLE (Magic C first)",
+      "g_vs_q": "g hooks LEFT, q hooks RIGHT",
+      "m_vs_n": "m has TWO humps, n has ONE hump",
+      "h_vs_n": "h has TALL stem (y=40), n starts at midline (y=100)"
+    }
+  },
 
-  "nextSteps": [
-    "Deploy to production",
-    "Test all 52 letters visually",
-    "Verify on tablet"
+  "researchSources": [
+    "Handwriting Without Tears (Learning Without Tears)",
+    "Zaner-Bloser handwriting program",
+    "D'Nealian handwriting",
+    "Montessori sandpaper letters",
+    "Neuhaus Education Center / Reading Universe",
+    "OT Toolbox (Occupational Therapy resources)"
+  ],
+
+  "nextStepsAfterDeploy": [
+    "1. Verify all 26 lowercase letters display correctly",
+    "2. Check 'h' has tall stem reaching top",
+    "3. Check 'g' descender stays on screen",
+    "4. Check 'a' has no descending tail",
+    "5. Test on tablet for touch accuracy",
+    "6. If any issues, fine-tune individual paths"
   ],
 
   "demoAccounts": {
