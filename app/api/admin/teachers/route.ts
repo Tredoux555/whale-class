@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET() {
   try {
+    const supabase = getSupabase();
     const { data: teachers, error } = await supabase
       .from('simple_teachers')
       .select('*')
@@ -24,14 +27,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const body = await request.json();
-    const { name, email } = body;
+    const { name } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    // Check if teacher already exists
     const { data: existing } = await supabase
       .from('simple_teachers')
       .select('id')
@@ -42,12 +45,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Teacher with this name already exists' }, { status: 400 });
     }
 
-    // Create the teacher
     const { data: teacher, error } = await supabase
       .from('simple_teachers')
       .insert({
         name,
-        password: '123', // Default password
+        password: '123',
         is_active: true
       })
       .select()
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -71,7 +74,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Teacher ID required' }, { status: 400 });
     }
 
-    // Soft delete - set is_active to false
     const { error } = await supabase
       .from('simple_teachers')
       .update({ is_active: false })
