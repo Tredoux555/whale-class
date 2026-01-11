@@ -60,7 +60,7 @@ const DASHBOARD_ITEMS = [
     href: '/games',
     icon: '🎮',
     title: 'Learning Games',
-    description: '13 interactive games for students',
+    description: '14 interactive games for students',
     gradient: 'from-pink-500 to-rose-500',
     bgGradient: 'from-pink-50 to-rose-50',
   },
