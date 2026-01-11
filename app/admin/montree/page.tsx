@@ -278,19 +278,23 @@ export default function IndependentMontreePage() {
         {/* Launch Status */}
         <div className="mt-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white text-center">
           <h2 className="text-2xl font-bold mb-2">🚀 Ready for Jan 16 Launch!</h2>
-          <p className="opacity-90">Phases 1-4 complete. Multi-tenant teacher isolation working.</p>
-          <div className="mt-4 flex justify-center gap-4">
+          <p className="opacity-90">All portals polished. Multi-tenant teacher isolation working. Principal Portal complete.</p>
+          <div className="mt-4 flex justify-center gap-4 flex-wrap">
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <div className="text-2xl font-bold">342</div>
               <div className="text-sm opacity-80">Curriculum Works</div>
             </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <div className="text-2xl font-bold">13</div>
-              <div className="text-sm opacity-80">Games Working</div>
+              <div className="text-2xl font-bold">14</div>
+              <div className="text-sm opacity-80">Games</div>
             </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <div className="text-2xl font-bold">4/6</div>
-              <div className="text-sm opacity-80">Phases Complete</div>
+              <div className="text-2xl font-bold">10</div>
+              <div className="text-sm opacity-80">Teacher Tools</div>
+            </div>
+            <div className="bg-white/20 rounded-lg px-4 py-2">
+              <div className="text-2xl font-bold">5</div>
+              <div className="text-sm opacity-80">Days Left</div>
             </div>
           </div>
         </div>

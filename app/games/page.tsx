@@ -27,6 +27,7 @@ interface GameCategory {
 const SOUND_GAMES: Game[] = [
   { id: 'letter-sounds', name: 'Letter Sounds', description: 'Match letters to their sounds', icon: '🔤', route: '/games/letter-sounds', color: 'cyan', gradient: 'from-cyan-500 to-blue-500' },
   { id: 'beginning-sounds', name: 'Beginning Sounds', description: 'I spy something that begins with...', icon: '👂', route: '/games/sound-games/beginning', color: 'blue', gradient: 'from-blue-500 to-indigo-500' },
+  { id: 'middle-sounds', name: 'Middle Sounds', description: 'Identify the vowel sound in words', icon: '🎯', route: '/games/sound-games/middle', color: 'amber', gradient: 'from-amber-500 to-orange-500', isNew: true },
   { id: 'ending-sounds', name: 'Ending Sounds', description: 'I spy something that ends with...', icon: '📚', route: '/games/sound-games/ending', color: 'purple', gradient: 'from-purple-500 to-pink-500' },
   { id: 'combined-sounds', name: 'Combined I Spy', description: 'Find words by beginning AND ending sounds', icon: '🔍', route: '/games/combined-i-spy', color: 'orange', gradient: 'from-orange-500 to-red-500' },
   { id: 'blending', name: 'Sound Blending', description: 'Blend sounds together to make words', icon: '🔗', route: '/games/sound-games/blending', color: 'teal', gradient: 'from-teal-500 to-cyan-500' },
