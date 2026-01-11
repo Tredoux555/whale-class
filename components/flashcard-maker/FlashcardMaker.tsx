@@ -58,9 +58,12 @@ export function FlashcardMaker() {
     setLoadingVideos(true);
     try {
       const res = await fetch('/api/admin/flashcard-maker/videos');
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      console.log('[FlashcardMaker] Videos API response:', data);
+      if (data.success) {
         setUploadedVideos(data.videos || []);
+      } else {
+        console.error('[FlashcardMaker] API error:', data.error);
       }
     } catch (err) {
       console.error('Failed to load videos:', err);
