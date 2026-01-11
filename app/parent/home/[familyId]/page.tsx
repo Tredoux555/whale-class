@@ -1,25 +1,8 @@
 'use client';
 
-// ============================================
-// UNIFIED FAMILY DASHBOARD
-// Uses unified APIs - reads from teacher database
-// ============================================
-
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  TreePine, 
-  LogOut, 
-  Plus, 
-  Loader2,
-  ChevronRight,
-  Calendar,
-  TrendingUp,
-  ShoppingCart,
-  CalendarDays,
-  Gamepad2,
-  Link as LinkIcon
-} from 'lucide-react';
+import Link from 'next/link';
 
 interface ProgressSummary {
   total_works: number;
@@ -45,6 +28,15 @@ interface Family {
   children: Child[];
 }
 
+const AVATAR_GRADIENTS = [
+  'from-pink-500 to-rose-500',
+  'from-purple-500 to-violet-500',
+  'from-blue-500 to-indigo-500',
+  'from-cyan-500 to-teal-500',
+  'from-emerald-500 to-green-500',
+  'from-amber-500 to-orange-500',
+];
+
 export default function FamilyDashboardUnified({ params }: { params: Promise<{ familyId: string }> }) {
   const { familyId } = use(params);
   const router = useRouter();
@@ -61,14 +53,10 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
 
   const loadFamily = async () => {
     try {
-      // Load family from unified API
       const famRes = await fetch(`/api/unified/families?id=${familyId}`);
       const famData = await famRes.json();
-      if (famData.families?.[0]) {
-        setFamily(famData.families[0]);
-      }
+      if (famData.families?.[0]) setFamily(famData.families[0]);
 
-      // Load children with progress from unified API
       const childRes = await fetch(`/api/unified/children?family_id=${familyId}&include_progress=true`);
       const childData = await childRes.json();
       setChildren(childData.children || []);
@@ -80,7 +68,6 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
   };
 
   const loadAvailableChildren = async () => {
-    // Load all children without a family_id (unlinked children)
     try {
       const res = await fetch('/api/unified/children?unlinked=true');
       const data = await res.json();
@@ -96,10 +83,7 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
       await fetch('/api/unified/children', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          family_id: familyId
-        })
+        body: JSON.stringify({ child_id: childId, family_id: familyId })
       });
       setShowLinkChild(false);
       loadFamily();
@@ -121,10 +105,7 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
     const now = new Date();
     const years = now.getFullYear() - birth.getFullYear();
     const months = now.getMonth() - birth.getMonth();
-    
-    if (years < 1) {
-      return `${months + (years * 12)} months`;
-    }
+    if (years < 1) return `${months + (years * 12)} months`;
     return `${years} years old`;
   };
 
@@ -135,186 +116,207 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
     return 'Good evening';
   };
 
+  const getAvatarGradient = (index: number) => AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <span className="text-3xl animate-bounce">🌳</span>
+          </div>
+          <p className="text-gray-600 font-medium">Loading your family...</p>
+        </div>
       </div>
     );
   }
 
   if (!family) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Family not found</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="text-center bg-white rounded-2xl p-8 shadow-lg max-w-md">
+          <span className="text-5xl mb-4 block">😕</span>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Family not found</h2>
+          <p className="text-gray-600 mb-6">We couldn&apos;t find your family account.</p>
           <button
             onClick={() => router.push('/parent/home')}
-            className="text-green-600 hover:underline"
+            className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
           >
-            Return to login
+            Return to Login
           </button>
         </div>
       </div>
     );
   }
 
+  const totalMastered = children.reduce((sum, c) => sum + (c.progress_summary?.mastered || 0), 0);
+  const totalPracticing = children.reduce((sum, c) => sum + (c.progress_summary?.practicing || 0), 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pb-8">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-              <TreePine className="w-6 h-6 text-white" />
+      <header className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <span className="text-2xl">🌳</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Montree Home</h1>
+                <p className="text-green-100 text-sm">{family.name}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Montree Home</h1>
-              <p className="text-sm text-gray-500">{family.name}</p>
-            </div>
+            <button
+              onClick={logout}
+              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={logout}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Greeting */}
-        <div className="mb-6">
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        {/* Greeting Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             {getGreeting()}, {family.name.split(' ')[0]}! 👋
           </h2>
           <p className="text-gray-600 mt-1">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
+          
+          {children.length > 0 && (
+            <div className="flex gap-6 mt-4 pt-4 border-t border-gray-100">
+              <div>
+                <div className="text-2xl font-bold text-green-600">{totalMastered}</div>
+                <div className="text-xs text-gray-500">Works Mastered</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-600">{totalPracticing}</div>
+                <div className="text-xs text-gray-500">Practicing</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          <button
-            onClick={() => router.push(`/parent/home/${familyId}/materials`)}
-            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Link
+            href={`/parent/home/${familyId}/materials`}
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center group border border-gray-100"
           >
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <ShoppingCart className="w-5 h-5 text-amber-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:scale-110 transition-transform">
+              <span className="text-xl">🛒</span>
             </div>
             <h4 className="font-medium text-gray-900 text-sm">Materials</h4>
-          </button>
-          <button
-            onClick={() => router.push(`/parent/home/${familyId}/planner`)}
-            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
+          </Link>
+          <Link
+            href={`/parent/home/${familyId}/planner`}
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center group border border-gray-100"
           >
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <CalendarDays className="w-5 h-5 text-blue-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:scale-110 transition-transform">
+              <span className="text-xl">📅</span>
             </div>
             <h4 className="font-medium text-gray-900 text-sm">Planner</h4>
-          </button>
-          <button
-            onClick={() => router.push('/games')}
-            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-center"
+          </Link>
+          <Link
+            href="/games"
+            className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center group border border-gray-100"
           >
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Gamepad2 className="w-5 h-5 text-purple-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg group-hover:scale-110 transition-transform">
+              <span className="text-xl">🎮</span>
             </div>
             <h4 className="font-medium text-gray-900 text-sm">Games</h4>
-          </button>
+          </Link>
         </div>
 
-        {/* Children Cards */}
+        {/* Children Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Your Children</h3>
+            <h3 className="text-lg font-bold text-gray-900">Your Children</h3>
             <button
-              onClick={() => {
-                loadAvailableChildren();
-                setShowLinkChild(true);
-              }}
-              className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
+              onClick={() => { loadAvailableChildren(); setShowLinkChild(true); }}
+              className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              <LinkIcon className="w-4 h-4" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
               Link Child
             </button>
           </div>
 
           {children.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LinkIcon className="w-8 h-8 text-green-600" />
+            <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-4xl">👶</span>
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">No children linked yet</h4>
-              <p className="text-gray-600 text-sm mb-4">
+              <h4 className="font-bold text-gray-900 mb-2">No children linked yet</h4>
+              <p className="text-gray-600 text-sm mb-6 max-w-sm mx-auto">
                 Ask your child&apos;s teacher to link their profile to your family account
               </p>
               <button
-                onClick={() => {
-                  loadAvailableChildren();
-                  setShowLinkChild(true);
-                }}
-                className="bg-green-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-green-700"
+                onClick={() => { loadAvailableChildren(); setShowLinkChild(true); }}
+                className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
               >
                 Link a Child
               </button>
             </div>
           ) : (
-            <div className="grid gap-4">
-              {children.map((child) => (
+            <div className="space-y-4">
+              {children.map((child, index) => (
                 <button
                   key={child.id}
                   onClick={() => router.push(`/parent/home/${familyId}/${child.id}`)}
-                  className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow text-left w-full"
+                  className="w-full bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all text-left border border-gray-100 overflow-hidden group"
                 >
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                      style={{ backgroundColor: child.color || '#4F46E5' }}
-                    >
-                      {child.name.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-lg">{child.name}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {getAge(child.birth_date || child.date_of_birth)}
-                        </span>
-                        {child.progress_summary && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="w-4 h-4" />
-                            {child.progress_summary.mastered} mastered
-                          </span>
-                        )}
+                  {/* Child Header */}
+                  <div className={`bg-gradient-to-r ${getAvatarGradient(index)} p-4`}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        {child.name.charAt(0)}
                       </div>
+                      <div className="flex-1 text-white">
+                        <h4 className="font-bold text-lg">{child.name}</h4>
+                        <p className="text-white/80 text-sm">
+                          {getAge(child.birth_date || child.date_of_birth)}
+                        </p>
+                      </div>
+                      <svg className="w-6 h-6 text-white/70 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Progress Section */}
                   {child.progress_summary && child.progress_summary.total_works > 0 && (
-                    <div className="mt-4 pt-4 border-t">
+                    <div className="p-4">
                       <div className="flex items-center justify-between text-sm mb-2">
                         <span className="text-gray-600">Overall Progress</span>
-                        <span className="font-medium text-gray-900">
-                          {child.progress_summary.overall_percent}%
-                        </span>
+                        <span className="font-bold text-gray-900">{child.progress_summary.overall_percent}%</span>
                       </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
                         <div 
-                          className="h-full bg-green-500 rounded-full transition-all"
+                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all"
                           style={{ width: `${child.progress_summary.overall_percent}%` }}
                         />
                       </div>
-                      <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                        <span>🟢 {child.progress_summary.mastered} mastered</span>
-                        <span>🟡 {child.progress_summary.practicing} practicing</span>
-                        <span>🔵 {child.progress_summary.presented} presented</span>
+                      <div className="flex gap-4 text-xs">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-green-500" />
+                          <span className="text-gray-600">{child.progress_summary.mastered} mastered</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-blue-500" />
+                          <span className="text-gray-600">{child.progress_summary.practicing} practicing</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                          <span className="text-gray-600">{child.progress_summary.presented} presented</span>
+                        </span>
                       </div>
                     </div>
                   )}
@@ -324,32 +326,28 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
           )}
         </div>
 
-        {/* Quick Stats */}
+        {/* Tips Section */}
         {children.length > 0 && (
-          <div className="grid grid-cols-3 gap-4">
-            <StatCard
-              value={children.reduce((sum, c) => sum + (c.progress_summary?.mastered || 0), 0)}
-              label="Works Mastered"
-              color="green"
-            />
-            <StatCard
-              value={children.reduce((sum, c) => sum + (c.progress_summary?.practicing || 0), 0)}
-              label="Practicing"
-              color="yellow"
-            />
-            <StatCard
-              value={children.length > 0 && children[0].progress_summary ? children[0].progress_summary.total_works : 0}
-              label="Total Works"
-              color="blue"
-            />
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 text-white shadow-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="text-xl">💡</span>
+              </div>
+              <div>
+                <h3 className="font-bold mb-1">Tip of the Day</h3>
+                <p className="text-green-100 text-sm">
+                  Play learning games together! The Games section has phonics and reading activities that reinforce what your child is learning at school.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </main>
 
       {/* Link Child Modal */}
       {showLinkChild && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Link a Child</h3>
             <p className="text-sm text-gray-600 mb-4">
               Select a child from your school to link to your family account
@@ -357,31 +355,27 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
             
             {availableChildren.length === 0 ? (
               <div className="text-center py-8">
+                <span className="text-4xl mb-3 block">🔍</span>
                 <p className="text-gray-500">No unlinked children available</p>
                 <p className="text-sm text-gray-400 mt-2">
-                  Ask your teacher to add your child to the system first
+                  Ask your teacher to add your child first
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
-                {availableChildren.map((child) => (
+                {availableChildren.map((child, index) => (
                   <button
                     key={child.id}
                     onClick={() => linkChild(child.id)}
                     disabled={linking}
-                    className="w-full p-4 bg-gray-50 hover:bg-green-50 rounded-xl text-left transition-colors border-2 border-transparent hover:border-green-500 disabled:opacity-50 flex items-center gap-3"
+                    className="w-full p-4 bg-gray-50 hover:bg-green-50 rounded-xl text-left transition-all border-2 border-transparent hover:border-green-500 disabled:opacity-50 flex items-center gap-3"
                   >
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: child.color || '#4F46E5' }}
-                    >
+                    <div className={`w-12 h-12 bg-gradient-to-br ${getAvatarGradient(index)} rounded-full flex items-center justify-center text-white font-bold shadow-lg`}>
                       {child.name.charAt(0)}
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">{child.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {getAge(child.birth_date || child.date_of_birth)}
-                      </div>
+                      <div className="text-sm text-gray-500">{getAge(child.birth_date || child.date_of_birth)}</div>
                     </div>
                   </button>
                 ))}
@@ -390,30 +384,13 @@ export default function FamilyDashboardUnified({ params }: { params: Promise<{ f
             
             <button
               onClick={() => setShowLinkChild(false)}
-              className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
+              className="w-full mt-4 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors"
             >
               Cancel
             </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
-  const colors = {
-    green: 'text-green-600',
-    yellow: 'text-yellow-600',
-    blue: 'text-blue-600'
-  };
-
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-      <div className={`text-2xl font-bold ${colors[color as keyof typeof colors] || 'text-gray-900'}`}>
-        {value}
-      </div>
-      <div className="text-xs text-gray-500 mt-1">{label}</div>
     </div>
   );
 }
