@@ -1,5 +1,5 @@
-# HANDOFF - Session 20 Checkpoint
-## January 11, 2026 ~22:40 Beijing
+# HANDOFF - Session 20 
+## January 11, 2026 ~23:05 Beijing
 
 ---
 
@@ -7,9 +7,24 @@
 
 **Status:** ✅ LAUNCH READY - 5 days to Jan 16
 
-**Latest Commit:** `49f0b20` (deployed)
+**Latest Commit:** `0528f0f` (deployed)
 
-**Site:** https://www.teacherpotato.xyz (HTTP 200 confirmed)
+**Site:** https://www.teacherpotato.xyz
+
+---
+
+## SESSION 20 COMPLETED
+
+1. **Game count fixed** (13 → 14) in:
+   - Principal dashboard
+   - Landing page (/montree)
+   - Teacher dashboard
+   - mission-control.json
+
+2. **Comic Sans removed** from:
+   - globals.css (was forcing !important site-wide)
+   - 17 component files with inline styles
+   - 4 files remain with Comic Sans as font SELECTOR (intentional)
 
 ---
 
@@ -23,46 +38,29 @@
 | 👩‍🏫 Teachers | `/teacher` | Any name + "123" |
 | 🏫 Principal | `/principal` | Open |
 | ⚙️ Admin | `/admin` | Tredoux / 870602 |
-| 🌳 Hub | `/admin/montree` | Via admin |
 
 ---
 
-## WHAT SESSION 20 DID
+## COMMITS THIS SESSION
 
-1. Fixed game count in Principal dashboard (13 → 14)
-2. Verified all portals working
-3. Confirmed build passes
-4. Updated brain files
-
----
-
-## SYSTEM VERIFICATION
-
-- [x] Homepage loads with videos
-- [x] Games hub shows 14 games
-- [x] Parent demo auto-login works
-- [x] Teacher login works
-- [x] Principal dashboard shows real stats
-- [x] Build passes cleanly
-- [x] Git pushed to main
+| Commit | Description |
+|--------|-------------|
+| `49f0b20` | Fix game count in Principal |
+| `98cbb87` | Brain update |
+| `b18d40a` | Fix game count on landing |
+| `6a6dac9` | Fix game count on teacher dashboard |
+| `5cad8c2` | Remove Comic Sans attempt 1 |
+| `e487617` | Actually remove from globals |
+| `0528f0f` | Remove from 17 component files |
 
 ---
 
-## NEXT SESSION OPTIONS
+## NEXT STEPS
 
-1. **Demo script** - Walk-through for Jan 16 presentation
-2. **Final polish** - Any visual tweaks
-3. **Parent onboarding** - How real parents get access after demo
-4. **Pivot to Jeffy** - If Whale is locked
-
----
-
-## BRAIN FILES
-
-- `/docs/mission-control/mission-control.json` ✅
-- `/docs/mission-control/SESSION_LOG.md` ✅
-- `/docs/mission-control/HANDOFF_SESSION20.md` ✅ (this file)
+1. Final visual verification
+2. Demo script for Jan 16
+3. Or pivot to Jeffy
 
 ---
 
-*Handoff created: January 11, 2026*
+*Handoff: January 11, 2026 ~23:05 Beijing*
