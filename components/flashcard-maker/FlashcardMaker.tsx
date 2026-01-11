@@ -279,8 +279,8 @@ export function FlashcardMaker() {
           </div>
         )}
 
-        {/* Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 mt-4 border-t border-gray-100">
+        {/* Settings - Hidden since we use manual scrubber now */}
+        {false && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Target Frames: <span className="text-blue-600 font-bold">{targetFrames}</span>
@@ -329,7 +329,10 @@ export function FlashcardMaker() {
             />
           </div>
         </div>
+        )}
 
+        {/* Generate button - Hidden since we use manual scrubber now */}
+        {false && (
         <button
           onClick={processVideo}
           disabled={!selectedVideo || isProcessing}
@@ -337,10 +340,11 @@ export function FlashcardMaker() {
         >
           {isProcessing ? '⏳ Processing...' : `🎬 Generate ~${targetFrames} Flashcards`}
         </button>
+        )}
       </div>
 
-      {/* Progress Section */}
-      {status.stage !== 'idle' && (
+      {/* Progress Section - Hidden since we use manual scrubber now */}
+      {false && status.stage !== 'idle' && (
         <div className={`rounded-2xl p-6 ${
           status.stage === 'error' 
             ? 'bg-red-50 border border-red-200' 
@@ -372,10 +376,10 @@ export function FlashcardMaker() {
       )}
 
       {/* Video Scrubber - Client-side with HTML5 Video */}
-      {selectedVideo && status.stage === 'complete' && (
+      {selectedVideo && (
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">🎞️ Add More Frames Manually</h2>
+            <h2 className="text-xl font-semibold text-gray-800">🎞️ Select Frames from Video</h2>
             <button
               onClick={() => setShowScrubber(!showScrubber)}
               className="text-sm text-blue-600 hover:text-blue-800"
