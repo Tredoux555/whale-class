@@ -1,36 +1,44 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-11T11:25:00+08:00",
-  "currentPhase": "INDEPENDENT MONTREE - Phase 2 AUDIT & FIX",
-  "status": "🔧 Fixing 3 bugs found in audit",
+  "lastUpdated": "2026-01-11T11:35:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Admin Assignment Tool COMPLETE",
+  "status": "✅ Ready to commit and deploy",
   
   "productionUrl": "https://www.teacherpotato.xyz",
   "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
   "session15Progress": {
     "phase1": "✅ COMPLETE - Database tables created",
-    "phase2": "🔧 IN PROGRESS - Fixing bugs from audit",
-    "auditFindings": {
-      "bug1": "FIXED - /teacher/classroom bypassed API for non-Tredoux teachers",
-      "bug2": "FIXED - /api/teacher/progress had no ownership check",
-      "bug3": "FIXED - Cookie not set for existing users (now auto-refreshes)"
-    },
-    "filesModified": [
-      "/app/teacher/classroom/page.tsx - Now ALL teachers use API",
-      "/app/api/teacher/progress/route.ts - Added verifyTeacherOwnsChild()",
-      "/app/teacher/progress/page.tsx - Added cookie refresh + teacher param"
+    "phase2": "✅ COMPLETE - API isolation + audit fixes deployed",
+    "adminTool": "✅ COMPLETE - /admin/teacher-students page created",
+    "commits": [
+      "fc0f006 - Phase 1 SQL migration",
+      "44b5298 - Phase 2 API isolation", 
+      "fa24cb6 - Audit bug fixes",
+      "PENDING - Admin assignment tool"
     ]
   },
 
-  "nextLogicalSteps": {
-    "immediate": "Build, test, commit fixes",
-    "phase2Complete": "Verify isolation works: John sees 0, Tredoux sees 22",
-    "phase3": "Video search terms in curriculum UI modal",
-    "phase4": "Circle Planner feature parity",
-    "adminTool": "Need /admin UI to assign children to teachers"
+  "newFeatures": {
+    "assignStudentsPage": {
+      "url": "/admin/teacher-students",
+      "features": [
+        "View all teachers with student counts",
+        "View unassigned vs assigned students",
+        "Click to assign students to selected teacher",
+        "Remove assignments",
+        "Teacher overview stats"
+      ]
+    }
   },
 
-  "criticalInsight": "Teachers currently have 0 students. Need admin tool to assign students to teachers before they can use the system!",
+  "testPlan": {
+    "step1": "Go to /admin/teacher-students",
+    "step2": "See all 22 students assigned to Tredoux",
+    "step3": "Click on 'John' to select him",
+    "step4": "Click on a student to assign to John",
+    "step5": "Login as John at /teacher → should see that student"
+  },
 
   "demoAccounts": {
     "admin": "Tredoux / 870602",
