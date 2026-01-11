@@ -1105,6 +1105,8 @@ ADD COLUMN video_search_term TEXT;
 | Teacher Curriculum | `/teacher/curriculum` | ✅ Dynamic area colors, video modals |
 | Teacher Progress | `/teacher/progress` | ✅ Swipeable cards, status gradients |
 | Parent Dashboard | `/parent/home/[familyId]` | ✅ Child cards, quick actions |
+| Admin Dashboard | `/admin` | ✅ Dark theme, gradient cards, stats bar |
+| Admin Login | `/admin/login` | ✅ Glass-morphism, dark theme |
 | Landing Page | `/montree` | ✅ Mobile hamburger menu |
 
 ### DESIGN LANGUAGE ESTABLISHED
@@ -1134,6 +1136,7 @@ ADD COLUMN video_search_term TEXT;
 - `4fe54b3` - Teacher Tools + Classroom
 - `abf20e3` - Teacher Curriculum + Parent Dashboard
 - `4c5729f` - Teacher Progress page
+- `1649848` - Admin Dashboard + Login dark theme
 
 ### LAUNCH READINESS (Updated)
 
@@ -1145,7 +1148,7 @@ ADD COLUMN video_search_term TEXT;
 | Teacher portal | ✅ POLISHED |
 | Teacher tools | ✅ POLISHED |
 | Teacher progress | ✅ POLISHED |
-| Admin dashboard | ✅ |
+| Admin dashboard | ✅ POLISHED |
 | Games | ✅ 13/14 |
 | Homepage | ✅ POLISHED |
 | Landing page | ✅ POLISHED + Mobile |
