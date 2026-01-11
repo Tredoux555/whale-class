@@ -309,7 +309,7 @@ export default function Home() {
                     </span>
                     {video.week && (
                       <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                        Week {video.week}
+                        {video.week.toString().toLowerCase().startsWith('week') ? video.week : `Week ${video.week}`}
                       </span>
                     )}
                     {repeatModes[video.id] && (
