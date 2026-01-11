@@ -554,31 +554,40 @@ ADD COLUMN video_search_term TEXT;
 
 ---
 
-### DEPLOYED ✅
+### AUDIT COMPLETED 11:20 Beijing
 
-**Commit:** a9590a3  
-**Pushed:** January 11, 2026 10:50 Beijing
+**3 Bugs Found & Fixed:**
 
----
-
-### NEXT ACTION FOR TREDOUX
-
-**Run this SQL migration in Supabase:**
-
-1. Go to: https://supabase.com/dashboard → Your Project → SQL Editor
-2. Open file: `~/Desktop/whale/migrations/027_independent_montree.sql`
-3. Copy entire contents and paste into SQL Editor
-4. Click "Run"
-5. Verify output shows:
-   - ✅ teacher_children table created
-   - ✅ video_search_term column added
-   - ✅ Existing children assigned to Tredoux
-
-**After SQL runs, test:**
-- Go to www.teacherpotato.xyz/admin/montree
-- See the full 6-phase plan
-- Login as John (teacher) → should still see all students (API not updated yet)
+| Bug | Severity | File | Fix |
+|-----|----------|------|-----|
+| Teachers bypassed API | 🔴 HIGH | `/teacher/classroom/page.tsx` | Removed Tredoux-only check, all teachers use API |
+| No ownership check on progress | 🔴 HIGH | `/api/teacher/progress/route.ts` | Added `verifyTeacherOwnsChild()` |
+| Cookie not set for existing users | 🟡 MED | Multiple pages | Auto-refresh cookie on page load |
 
 ---
 
-*Session 15 checkpoint: January 11, 2026 10:50 Beijing*
+### 💡 CRITICAL INSIGHT
+
+**The Missing Piece:** All children are assigned to Tredoux. Other teachers have 0 students. Need an **Admin UI to assign children to teachers** before the multi-tenant system is usable!
+
+**Priority Order (revised):**
+1. ✅ Phase 1 - Database schema
+2. 🔧 Phase 2 - API isolation (fixing now)
+3. 🆕 **NEW: Admin Assignment Tool** - /admin/teacher-students
+4. ⏳ Phase 3 - Video search terms
+5. ⏳ Phase 4 - Feature parity
+6. ⏳ Phase 5 - Parent portal
+7. ⏳ Phase 6 - App packaging
+
+---
+
+### NEXT STEPS
+
+1. Build & test current fixes
+2. Commit & push to Railway
+3. Create `/admin/teacher-students` page to assign children to teachers
+4. Test: Assign a child to John → John sees that child
+
+---
+
+*Session 15 checkpoint: January 11, 2026 11:25 Beijing*

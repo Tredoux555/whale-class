@@ -65,6 +65,7 @@ export default function TeacherProgressPage() {
   // Detail view state
   const [selectedWorkIndex, setSelectedWorkIndex] = useState<number | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [teacherName, setTeacherName] = useState<string | null>(null);
   
   // Touch handling
   const touchStartX = useRef<number>(0);
@@ -83,18 +84,36 @@ export default function TeacherProgressPage() {
   const selectedWork = selectedWorkIndex !== null ? flatWorks[selectedWorkIndex] : null;
 
   useEffect(() => {
-    fetchChildren();
+    const name = localStorage.getItem('teacherName');
+    if (!name) {
+      // Redirect to login if not authenticated
+      window.location.href = '/teacher';
+      return;
+    }
+    setTeacherName(name);
+    
+    // Ensure cookie is set (for users who logged in before cookie system)
+    fetch('/api/teacher/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }).catch(() => console.log('Cookie refresh failed'));
+    
+    fetchChildren(name);
   }, []);
 
   useEffect(() => {
-    if (selectedChild) {
+    if (selectedChild && teacherName) {
       fetchWorks();
     }
-  }, [selectedChild, selectedArea]);
+  }, [selectedChild, selectedArea, teacherName]);
 
-  const fetchChildren = async () => {
+  const fetchChildren = async (name?: string) => {
     try {
-      const res = await fetch('/api/teacher/classroom');
+      const url = name 
+        ? `/api/teacher/classroom?teacher=${encodeURIComponent(name)}`
+        : '/api/teacher/classroom';
+      const res = await fetch(url);
       const data = await res.json();
       setChildren(data.children || []);
     } catch (error) {
@@ -108,8 +127,9 @@ export default function TeacherProgressPage() {
     if (!selectedChild) return;
     setWorksLoading(true);
     try {
+      const teacherParam = teacherName ? `&teacher=${encodeURIComponent(teacherName)}` : '';
       const res = await fetch(
-        `/api/teacher/progress?childId=${selectedChild.id}&area=${selectedArea}`
+        `/api/teacher/progress?childId=${selectedChild.id}&area=${selectedArea}${teacherParam}`
       );
       const data = await res.json();
       setWorks(data.works || []);

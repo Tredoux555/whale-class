@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+// Helper: Verify teacher owns this child
+async function verifyTeacherOwnsChild(supabase: any, teacherName: string, childId: string): Promise<boolean> {
+  // Get teacher ID
+  const { data: teacher } = await supabase
+    .from('simple_teachers')
+    .select('id')
+    .eq('name', teacherName)
+    .single();
+
+  if (!teacher) return false;
+
+  // Check if child is assigned to this teacher
+  const { data: assignment } = await supabase
+    .from('teacher_children')
+    .select('id')
+    .eq('teacher_id', teacher.id)
+    .eq('child_id', childId)
+    .single();
+
+  return !!assignment;
 }
 
 export async function GET(request: NextRequest) {
@@ -18,8 +41,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'childId required' }, { status: 400 });
   }
 
+  // Get teacher from cookie or query param
+  const cookieStore = await cookies();
+  const teacherName = cookieStore.get('teacherName')?.value || searchParams.get('teacher');
+
+  if (!teacherName) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  // SECURITY: Verify teacher owns this child
+  const ownsChild = await verifyTeacherOwnsChild(supabase, teacherName, childId);
+  if (!ownsChild) {
+    return NextResponse.json({ 
+      error: 'Access denied - child not in your classroom',
+      works: [] 
+    }, { status: 403 });
+  }
+
   // Fetch curriculum works for the area
-  // Using correct column names: id, name, area, category_id, sequence_order
   let worksQuery = supabase
     .from('curriculum_roadmap')
     .select('id, name, area, category_id, sequence_order')
@@ -44,7 +83,6 @@ export async function GET(request: NextRequest) {
 
   if (progressError) {
     console.error('Error fetching child progress:', progressError);
-    // Continue without progress data
   }
 
   // Create a map of work_id -> progress
@@ -80,6 +118,22 @@ export async function POST(request: NextRequest) {
 
   if (!childId || !workId) {
     return NextResponse.json({ error: 'childId and workId required' }, { status: 400 });
+  }
+
+  // Get teacher from cookie
+  const cookieStore = await cookies();
+  const teacherName = cookieStore.get('teacherName')?.value || body.teacher;
+
+  if (!teacherName) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  // SECURITY: Verify teacher owns this child
+  const ownsChild = await verifyTeacherOwnsChild(supabase, teacherName, childId);
+  if (!ownsChild) {
+    return NextResponse.json({ 
+      error: 'Access denied - child not in your classroom' 
+    }, { status: 403 });
   }
 
   // Determine which date field to update based on status
