@@ -134,7 +134,7 @@ export default function VideoManagementPage() {
   return (
     <div 
       className="min-h-screen bg-gray-50"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      
     >
       {/* Header */}
       <div className="bg-white shadow">

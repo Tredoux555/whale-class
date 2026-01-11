@@ -50,7 +50,7 @@ export default function PhonicsActivitiesPage() {
   return (
     <div 
       className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
-      style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+      
     >
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">

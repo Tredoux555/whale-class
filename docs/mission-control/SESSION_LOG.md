@@ -1389,3 +1389,27 @@ Continue polishing and verify system ready for Jan 16 launch.
 - Any other polish items
 
 *Checkpoint: 5cad8c2*
+
+
+---
+
+## Session 20 - Chunk 2 Complete
+**Time:** ~23:00 Beijing
+
+### Done:
+- Actually removed Comic Sans from globals.css (first edit didn't persist)
+- Removed the `*, *::before, *::after` rule with !important
+- Site now uses system font stack
+
+### Commits:
+| Commit | Description |
+|--------|-------------|
+| `e487617` | Actually remove Comic Sans |
+
+### Latest: `e487617`
+
+### Next chunk:
+- Final verification pass
+- Check all portals render with modern fonts
+
+*Checkpoint: e487617*

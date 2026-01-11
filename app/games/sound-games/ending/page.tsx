@@ -173,7 +173,7 @@ export default function ISpyEndingGame() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="text-8xl mb-6">🔚</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <h1 className="text-4xl font-bold text-white mb-4" >
             I Spy Ending Sounds
           </h1>
           <p className="text-xl text-white/90 mb-8">
@@ -184,7 +184,7 @@ export default function ISpyEndingGame() {
             <p className="text-white"><strong>Example:</strong> "ca-/t/" - Cat ends with /t/!</p>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-teal-600 rounded-2xl font-bold text-xl hover:bg-white/90 transition-all" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <button onClick={startGame} className="w-full p-4 bg-white text-teal-600 rounded-2xl font-bold text-xl hover:bg-white/90 transition-all" >
             Start Playing! 🎮
           </button>
 
@@ -205,11 +205,11 @@ export default function ISpyEndingGame() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Great Listening!</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" >Great Listening!</h1>
           <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
 
           <div className="space-y-4">
-            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-teal-600 rounded-2xl font-bold text-xl" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-teal-600 rounded-2xl font-bold text-xl" >
               Play Again! 🔄
             </button>
             <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
@@ -233,7 +233,7 @@ export default function ISpyEndingGame() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-2xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <p className="text-2xl text-white mb-4" >
             I spy something that <span className="font-bold">ENDS</span> with...
           </p>
 
@@ -281,7 +281,7 @@ export default function ISpyEndingGame() {
         </div>
 
         {feedback && (
-          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-red-400 text-red-900'}`} style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-red-400 text-red-900'}`} >
             {feedback.message}
           </div>
         )}

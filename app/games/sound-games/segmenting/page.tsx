@@ -180,14 +180,14 @@ export default function SoundSegmentingGame() {
       <div className="min-h-screen bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="text-8xl mb-6">✂️</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Sound Segmenting</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" >Sound Segmenting</h1>
           <p className="text-xl text-white/90 mb-6">Break words into their sounds! Tap once for each sound you hear.</p>
 
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-8">
             <p className="text-white"><strong>Example:</strong><br />"cat" → tap tap tap (3 sounds: /c/ /a/ /t/)</p>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-rose-600 rounded-2xl font-bold text-xl" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <button onClick={startGame} className="w-full p-4 bg-white text-rose-600 rounded-2xl font-bold text-xl" >
             Start Segmenting! 🎮
           </button>
 
@@ -206,7 +206,7 @@ export default function SoundSegmentingGame() {
       <div className="min-h-screen bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>Sound Slicer!</h1>
+          <h1 className="text-4xl font-bold text-white mb-4" >Sound Slicer!</h1>
           <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
 
           <div className="space-y-4">
@@ -230,7 +230,7 @@ export default function SoundSegmentingGame() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-xl text-white mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <p className="text-xl text-white mb-4" >
             How many sounds in this word?
           </p>
 
@@ -297,7 +297,7 @@ export default function SoundSegmentingGame() {
         </div>
 
         {feedback && (
-          <div className={`p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          <div className={`p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} >
             {feedback.message}
           </div>
         )}

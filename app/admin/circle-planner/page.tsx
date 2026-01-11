@@ -52,7 +52,7 @@ export default function CircleTimePage() {
   return (
     <div 
       className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100"
-      style={{ fontFamily: "'Comic Sans MS', cursive" }}
+      
     >
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
