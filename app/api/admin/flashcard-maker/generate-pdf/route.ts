@@ -149,21 +149,24 @@ def create_pdf(data_path, output_path):
                 c.setFillColorRGB(1, 1, 1)
                 c.roundRect(inner_x, inner_y, inner_w, inner_h, 5*mm, fill=1, stroke=0)
                 
-                # Calculate image area
-                padding = 3 * mm
+                # Calculate image area - minimal padding, image fills card
+                padding = 1 * mm
+                has_lyric = frame.get('lyric') and len(frame.get('lyric', '').strip()) > 0
+                text_height = 18 * mm if has_lyric else 0
+                
                 img_x = inner_x + padding
-                text_height = 20 * mm if frame.get('lyric') else 5 * mm
-                img_h = inner_h - 2 * padding - text_height
                 img_w = inner_w - 2 * padding
+                img_h = inner_h - 2 * padding - text_height
                 img_y = inner_y + padding + text_height
                 
-                # Draw image
+                # Draw image - fill the available space
                 if frame.get('imagePath'):
                     try:
                         img = ImageReader(frame['imagePath'])
                         iw, ih = img.getSize()
                         aspect = iw / ih
                         
+                        # Scale to fill the available area while maintaining aspect ratio
                         if img_w / img_h > aspect:
                             draw_h = img_h
                             draw_w = draw_h * aspect
@@ -177,8 +180,8 @@ def create_pdf(data_path, output_path):
                     except Exception as e:
                         print(f'Image error: {e}')
                 
-                # Draw lyric
-                if frame.get('lyric'):
+                # Draw lyric only if present
+                if has_lyric:
                     c.setFillColorRGB(0.1, 0.1, 0.1)
                     font_size = 14 if cards_per_page == 1 else 10 if cards_per_page == 2 else 8
                     c.setFont('Helvetica-Bold', font_size)
