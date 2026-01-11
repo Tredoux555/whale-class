@@ -1451,3 +1451,23 @@ Continue polishing and verify system ready for Jan 16 launch.
 - circle-planner - font selector dropdown
 
 *Checkpoint: 0528f0f*
+
+
+---
+
+## Session 20 - Build Fix
+**Time:** ~23:10 Beijing
+
+### Issue:
+Railway build failing: `supabaseUrl is required`
+
+### Cause:
+`/api/admin/teachers/route.ts` created Supabase client at module level (runs at build time before env vars available)
+
+### Fix:
+Changed to lazy initialization with `getSupabase()` function called inside each handler
+
+### Commit:
+`1188391` - Lazy-init Supabase client in teachers API
+
+*Checkpoint: 1188391*
