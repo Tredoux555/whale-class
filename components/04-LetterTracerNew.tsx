@@ -18,124 +18,132 @@ interface Waypoint extends Point { collected: boolean; index: number; }
 // Based on Reading Universe / Neuhaus stroke directions
 // =============================================================================
 
-// LOWERCASE LETTERS (a-z) - Correct stroke order
-// Coordinate system: x-height top=80, baseline=195, descender=240
-// Letters should sit ON the baseline, not above it with tails
+// LOWERCASE LETTERS (a-z) - Correct Montessori stroke order
+// =============================================================================
+// COORDINATE SYSTEM (canvas 300x300):
+// - Top line (ascender top for b,d,f,h,k,l,t): y=40
+// - Midline (x-height top for a,c,e,m,n,o,r,s,u,v,w,x,z): y=100
+// - Baseline: y=200
+// - Descender line (bottom of g,j,p,q,y): y=260
+// - Horizontal center: x=150, letter width ~100px (100-200)
+// - Padding: 40px on all sides ensures nothing goes off canvas
+// =============================================================================
 const LOWERCASE_PATHS: Record<string, string> = {
-  // COORDINATE SYSTEM:
-  // - x-height top (a,c,e,m,n,o,r,s,u,v,w,x,z): y=80
-  // - baseline: y=195  
-  // - ascender top (b,d,f,h,k,l,t): y=50
-  // - descender bottom (g,j,p,q,y): y=240
-  // - horizontal center: x=125, width ~90px (80-170)
-
-  // a: bowl on baseline, stem on right - start at 2 o'clock, counterclockwise, up, down
-  a: "M 165 105 Q 165 80 125 80 Q 85 80 85 137 Q 85 195 125 195 Q 165 195 165 137 L 165 80 L 165 195",
+  // a: Start 2 o'clock, counterclockwise circle, up right side, down to baseline
+  // Bowl sits between midline and baseline, stem on right
+  a: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 100 L 190 200",
   
-  // b: tall stem + bowl at bottom - down full height, then bowl
-  b: "M 80 50 L 80 195 M 80 137 Q 80 195 125 195 Q 170 195 170 137 Q 170 80 125 80 L 80 80",
+  // b: Start TOP line, down to baseline, retrace up to midline, clockwise bump
+  // Tall letter - stem goes from y=40 to y=200
+  b: "M 100 40 L 100 200 M 100 150 Q 100 200 150 200 Q 200 200 200 150 Q 200 100 150 100 Q 100 100 100 150",
   
-  // c: open curve - start at 2 o'clock, counterclockwise, stop at 4 o'clock
-  c: "M 170 100 Q 170 80 125 80 Q 80 80 80 137 Q 80 195 125 195 Q 170 195 170 175",
+  // c: Start 2 o'clock, counterclockwise curve, stop with opening facing right
+  c: "M 190 120 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 180",
   
-  // d: bowl + tall stem - counterclockwise bowl, then tall stem down
-  d: "M 165 105 Q 165 80 125 80 Q 85 80 85 137 Q 85 195 125 195 Q 165 195 165 137 M 165 50 L 165 195",
+  // d: Start 2 o'clock counterclockwise circle, then UP to top line, down to baseline  
+  // Circle first (like 'c'), then tall stem
+  d: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 M 190 40 L 190 200",
   
-  // e: horizontal line, then counterclockwise curl
-  e: "M 80 137 L 170 137 Q 170 80 125 80 Q 80 80 80 137 Q 80 195 125 195 Q 170 195 170 170",
+  // e: Start middle, horizontal right, then counterclockwise around, stop with opening
+  e: "M 110 150 L 190 150 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 175",
   
-  // f: curve at top, down, crossbar - starts with hook, down to baseline, cross
-  f: "M 170 70 Q 140 50 115 70 L 115 195 M 80 110 L 150 110",
+  // f: Hook from top right, down to baseline, LIFT, cross at midline
+  f: "M 190 60 Q 160 40 140 60 L 140 200 M 100 100 L 180 100",
   
-  // g: bowl + descender with hook - counterclockwise bowl, down below baseline, hook left
-  g: "M 165 105 Q 165 80 125 80 Q 85 80 85 137 Q 85 195 125 195 Q 165 195 165 137 L 165 240 Q 165 255 125 255 Q 90 255 80 235",
+  // g: Start 2 o'clock counterclockwise, down BELOW baseline, hook LEFT
+  // Descender goes to y=260
+  g: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 260 Q 190 280 150 280 Q 115 280 105 260",
   
-  // h: tall stem + hump - down full height, back up, over hump, down
-  h: "M 80 50 L 80 195 M 80 110 Q 80 80 125 80 Q 170 80 170 110 L 170 195",
+  // h: Start TOP line, down to baseline, retrace up, hump RIGHT, down to baseline
+  // CRITICAL: Stem from y=40, hump is at midline level (y=100-200)
+  h: "M 100 40 L 100 200 M 100 140 Q 100 100 150 100 Q 200 100 200 140 L 200 200",
   
-  // i: short stem + dot - down from x-height, dot above
-  i: "M 125 80 L 125 195 M 125 55 L 126 56",
+  // i: Down from midline to baseline, LIFT, dot above
+  i: "M 150 100 L 150 200 M 150 65 L 151 66",
   
-  // j: stem + descender hook + dot - down below baseline, hook left, dot above  
-  j: "M 140 80 L 140 240 Q 140 255 100 255 Q 75 255 65 235 M 140 55 L 141 56",
+  // j: Down from midline BELOW baseline, hook LEFT, LIFT, dot above
+  j: "M 160 100 L 160 260 Q 160 280 120 280 Q 90 280 80 260 M 160 65 L 161 66",
   
-  // k: tall stem + diagonal arms - down full height, slant in, slant out
-  k: "M 80 50 L 80 195 M 165 80 L 80 137 L 165 195",
+  // k: Start TOP line, down to baseline, LIFT, diagonal IN, diagonal OUT
+  k: "M 100 40 L 100 200 M 190 100 L 100 150 L 190 200",
   
-  // l: tall stem only - simple vertical line
-  l: "M 125 50 L 125 195",
+  // l: Start TOP line, straight down to baseline (simplest letter)
+  l: "M 150 40 L 150 200",
   
-  // m: down + two humps - down, up over first hump, down, up over second hump, down
-  m: "M 45 195 L 45 80 Q 45 65 85 65 Q 125 65 125 95 L 125 195 M 125 95 Q 125 65 165 65 Q 205 65 205 95 L 205 195",
+  // m: Down, retrace, hump, down, retrace, hump, down (TWO humps)
+  // Wider letter - needs more horizontal space
+  m: "M 60 200 L 60 100 Q 60 80 100 80 Q 140 80 140 110 L 140 200 M 140 110 Q 140 80 180 80 Q 220 80 220 110 L 220 200",
   
-  // n: down + one hump - down, up over hump, down
-  n: "M 80 195 L 80 80 Q 80 65 125 65 Q 170 65 170 95 L 170 195",
+  // n: Down, retrace, hump, down (ONE hump)
+  n: "M 100 200 L 100 100 Q 100 80 150 80 Q 200 80 200 110 L 200 200",
   
-  // o: closed oval - counterclockwise full circle
-  o: "M 170 137 Q 170 80 125 80 Q 80 80 80 137 Q 80 195 125 195 Q 170 195 170 137",
+  // o: Start 2 o'clock, counterclockwise full circle back to start
+  o: "M 190 150 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150",
   
-  // p: stem below baseline + bowl - down below baseline, then bowl at x-height
-  p: "M 80 80 L 80 240 M 80 137 Q 80 80 125 80 Q 170 80 170 137 Q 170 195 125 195 L 80 195",
+  // p: Down from midline BELOW baseline, retrace up, clockwise bump
+  p: "M 100 100 L 100 260 M 100 150 Q 100 100 150 100 Q 200 100 200 150 Q 200 200 150 200 Q 100 200 100 150",
   
-  // q: bowl + stem below baseline with tail - counterclockwise bowl, down, tail right
-  q: "M 165 105 Q 165 80 125 80 Q 85 80 85 137 Q 85 195 125 195 Q 165 195 165 137 L 165 240 L 190 220",
+  // q: Start 2 o'clock counterclockwise, down BELOW baseline, tail kicks RIGHT
+  q: "M 190 125 Q 190 100 150 100 Q 110 100 110 150 Q 110 200 150 200 Q 190 200 190 150 L 190 260 L 220 240",
   
-  // r: down + shoulder - down, back up, curve over right
-  r: "M 80 195 L 80 80 Q 80 65 110 65 Q 145 65 160 85",
+  // r: Down, retrace up, small curve to the right (partial hump - doesn't complete)
+  r: "M 100 200 L 100 100 Q 100 80 135 80 Q 170 80 185 100",
   
-  // s: S-curve - top curve right, middle, bottom curve left
-  s: "M 160 95 Q 125 80 90 95 Q 60 115 125 137 Q 190 160 160 180 Q 125 195 90 180",
+  // s: Counterclockwise top curve, reverse direction, clockwise bottom curve
+  s: "M 185 115 Q 150 100 115 115 Q 80 135 150 150 Q 220 165 185 185 Q 150 200 115 185",
   
-  // t: stem + crossbar - tall stem (but shorter than b/d), crossbar near top
-  t: "M 125 55 L 125 195 M 85 80 L 165 80",
+  // t: Down from above midline (shorter than b/d/f/h/k/l), LIFT, cross at midline
+  t: "M 150 60 L 150 200 M 110 100 L 190 100",
   
-  // u: down + curve + up - down, curve at bottom, up
-  u: "M 80 80 L 80 160 Q 80 195 125 195 Q 170 195 170 160 L 170 80",
+  // u: Down, curve at bottom, up
+  u: "M 100 100 L 100 170 Q 100 200 150 200 Q 200 200 200 170 L 200 100",
   
-  // v: diagonal down + diagonal up
-  v: "M 60 80 L 125 195 L 190 80",
+  // v: Diagonal down to center point, diagonal back up
+  v: "M 80 100 L 150 200 L 220 100",
   
-  // w: four diagonals - down, up, down, up
-  w: "M 30 80 L 70 195 L 125 110 L 180 195 L 220 80",
+  // w: Down, up, down, up (zigzag - 4 points)
+  w: "M 50 100 L 90 200 L 150 130 L 210 200 L 250 100",
   
-  // x: two crossing diagonals
-  x: "M 70 80 L 180 195 M 180 80 L 70 195",
+  // x: Diagonal down-right, LIFT, diagonal down-left (strokes cross)
+  x: "M 90 100 L 210 200 M 210 100 L 90 200",
   
-  // y: two diagonals, second continues to descender
-  y: "M 70 80 L 125 150 M 180 80 L 90 240",
+  // y: Diagonal to center, LIFT, diagonal continuing BELOW baseline
+  y: "M 90 100 L 150 160 M 210 100 L 110 260",
   
-  // z: horizontal, diagonal, horizontal
-  z: "M 70 80 L 180 80 L 70 195 L 180 195",
+  // z: Horizontal right, diagonal down-left, horizontal right
+  z: "M 90 100 L 210 100 L 90 200 L 210 200",
 };
 
 // UPPERCASE LETTERS (A-Z) - Correct stroke order
+// Coordinate system (canvas 300x300):
+// - Top: y=40, Baseline: y=260, Center: x=150
 const UPPERCASE_PATHS: Record<string, string> = {
-  A: "M 40 210 L 125 40 L 210 210 M 75 145 L 175 145",
-  B: "M 60 40 L 60 210 M 60 40 L 130 40 Q 175 40 175 75 Q 175 125 130 125 L 60 125 M 60 125 L 140 125 Q 185 125 185 167 Q 185 210 140 210 L 60 210",
-  C: "M 195 70 Q 125 20 60 70 Q 15 125 60 180 Q 125 235 195 180",
-  D: "M 60 40 L 60 210 M 60 40 L 110 40 Q 185 40 185 125 Q 185 210 110 210 L 60 210",
-  E: "M 175 40 L 60 40 L 60 210 L 175 210 M 60 125 L 145 125",
-  F: "M 175 40 L 60 40 L 60 210 M 60 125 L 145 125",
-  G: "M 195 70 Q 125 20 60 70 Q 15 125 60 180 Q 125 235 195 180 L 195 125 L 140 125",
-  H: "M 60 40 L 60 210 M 190 40 L 190 210 M 60 125 L 190 125",
-  I: "M 125 40 L 125 210",
-  J: "M 165 40 L 165 170 Q 165 210 125 210 Q 85 210 85 180",
-  K: "M 60 40 L 60 210 M 175 40 L 60 125 L 175 210",
-  L: "M 60 40 L 60 210 L 175 210",
-  M: "M 40 210 L 40 40 L 125 140 L 210 40 L 210 210",
-  N: "M 60 210 L 60 40 L 190 210 L 190 40",
-  O: "M 195 125 Q 195 40 125 40 Q 55 40 55 125 Q 55 210 125 210 Q 195 210 195 125",
-  P: "M 60 40 L 60 210 M 60 40 L 135 40 Q 180 40 180 82 Q 180 125 135 125 L 60 125",
-  Q: "M 195 125 Q 195 40 125 40 Q 55 40 55 125 Q 55 210 125 210 Q 195 210 195 125 M 150 175 L 205 230",
-  R: "M 60 40 L 60 210 M 60 40 L 135 40 Q 180 40 180 82 Q 180 125 135 125 L 60 125 M 115 125 L 185 210",
-  S: "M 175 70 Q 175 40 135 40 L 115 40 Q 65 40 65 82 Q 65 110 115 125 L 135 135 Q 185 150 185 182 Q 185 210 135 210 L 115 210 Q 65 210 65 185",
-  T: "M 40 40 L 210 40 M 125 40 L 125 210",
-  U: "M 60 40 L 60 165 Q 60 210 125 210 Q 190 210 190 165 L 190 40",
-  V: "M 40 40 L 125 210 L 210 40",
-  W: "M 25 40 L 70 210 L 125 100 L 180 210 L 225 40",
-  X: "M 50 40 L 200 210 M 200 40 L 50 210",
-  Y: "M 50 40 L 125 125 L 200 40 M 125 125 L 125 210",
-  Z: "M 50 40 L 200 40 L 50 210 L 200 210",
+  A: "M 50 260 L 150 40 L 250 260 M 90 175 L 210 175",
+  B: "M 70 40 L 70 260 M 70 40 L 160 40 Q 210 40 210 85 Q 210 150 160 150 L 70 150 M 70 150 L 170 150 Q 220 150 220 205 Q 220 260 170 260 L 70 260",
+  C: "M 230 80 Q 150 20 70 80 Q 20 150 70 220 Q 150 280 230 220",
+  D: "M 70 40 L 70 260 M 70 40 L 130 40 Q 220 40 220 150 Q 220 260 130 260 L 70 260",
+  E: "M 210 40 L 70 40 L 70 260 L 210 260 M 70 150 L 175 150",
+  F: "M 210 40 L 70 40 L 70 260 M 70 150 L 175 150",
+  G: "M 230 80 Q 150 20 70 80 Q 20 150 70 220 Q 150 280 230 220 L 230 150 L 165 150",
+  H: "M 70 40 L 70 260 M 230 40 L 230 260 M 70 150 L 230 150",
+  I: "M 150 40 L 150 260",
+  J: "M 200 40 L 200 200 Q 200 260 150 260 Q 100 260 100 220",
+  K: "M 70 40 L 70 260 M 210 40 L 70 150 L 210 260",
+  L: "M 70 40 L 70 260 L 210 260",
+  M: "M 50 260 L 50 40 L 150 170 L 250 40 L 250 260",
+  N: "M 70 260 L 70 40 L 230 260 L 230 40",
+  O: "M 230 150 Q 230 40 150 40 Q 70 40 70 150 Q 70 260 150 260 Q 230 260 230 150",
+  P: "M 70 40 L 70 260 M 70 40 L 160 40 Q 215 40 215 100 Q 215 150 160 150 L 70 150",
+  Q: "M 230 150 Q 230 40 150 40 Q 70 40 70 150 Q 70 260 150 260 Q 230 260 230 150 M 180 210 L 245 280",
+  R: "M 70 40 L 70 260 M 70 40 L 160 40 Q 215 40 215 100 Q 215 150 160 150 L 70 150 M 140 150 L 220 260",
+  S: "M 210 80 Q 210 40 160 40 L 140 40 Q 80 40 80 100 Q 80 130 140 150 L 160 160 Q 220 175 220 215 Q 220 260 160 260 L 140 260 Q 80 260 80 225",
+  T: "M 50 40 L 250 40 M 150 40 L 150 260",
+  U: "M 70 40 L 70 200 Q 70 260 150 260 Q 230 260 230 200 L 230 40",
+  V: "M 50 40 L 150 260 L 250 40",
+  W: "M 30 40 L 85 260 L 150 120 L 215 260 L 270 40",
+  X: "M 60 40 L 240 260 M 240 40 L 60 260",
+  Y: "M 60 40 L 150 150 L 240 40 M 150 150 L 150 260",
+  Z: "M 60 40 L 240 40 L 60 260 L 240 260",
 };
 
 // Letter order: lowercase first (a-z), then uppercase (A-Z)
@@ -174,9 +182,9 @@ const LetterTracerNew: React.FC = () => {
 
   const currentLetter = LETTER_ORDER[currentLetterIndex];
   
-  const SIZE = 250;
-  const WAYPOINT_RADIUS = 20;
-  const TOLERANCE = 40;
+  const SIZE = 300;
+  const WAYPOINT_RADIUS = 18;
+  const TOLERANCE = 35;
   const NUM_WAYPOINTS = 8;
 
   // Generate waypoints along path
