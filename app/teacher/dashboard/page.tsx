@@ -46,18 +46,6 @@ const DASHBOARD_ITEMS = [
     ],
   },
   {
-    href: '/teacher/classroom',
-    icon: '👨‍🎓',
-    title: 'Student Progress',
-    description: 'Track individual student learning journeys',
-    gradient: 'from-emerald-500 to-teal-500',
-    bgGradient: 'from-emerald-50 to-teal-50',
-    tags: [
-      { label: 'Progress Bars', color: 'emerald' },
-      { label: 'Reports', color: 'amber' },
-    ],
-  },
-  {
     href: '/teacher/tools',
     icon: '🛠️',
     title: 'Teacher Tools',
@@ -67,19 +55,6 @@ const DASHBOARD_ITEMS = [
     tags: [
       { label: 'Generators', color: 'cyan' },
       { label: 'Flashcards', color: 'blue' },
-    ],
-  },
-  {
-    href: '/games',
-    icon: '🎮',
-    title: 'Learning Games',
-    description: '14 interactive games for students',
-    gradient: 'from-pink-500 to-rose-500',
-    bgGradient: 'from-pink-50 to-rose-50',
-    tags: [
-      { label: 'Phonics', color: 'pink' },
-      { label: 'Reading', color: 'purple' },
-      { label: 'Grammar', color: 'rose' },
     ],
   },
 ];
