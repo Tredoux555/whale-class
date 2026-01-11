@@ -29,6 +29,7 @@ const DEFAULT_CARDS: DashboardCard[] = [
   { id: 'classroom', title: 'Classroom', description: 'iPad-friendly progress tracking', href: '/admin/classroom', icon: '🎯', gradient: 'from-emerald-500 to-green-500' },
   
   // Material Generators
+  { id: 'video-manager', title: 'Video Manager', description: 'Edit/delete homepage videos', href: '/admin/video-manager', icon: '🎬', gradient: 'from-red-500 to-orange-500' },
   { id: 'material-generator', title: 'Material Generator', description: 'Print Pink/Blue/Green series', href: '/admin/material-generator', icon: '🖨️', gradient: 'from-pink-500 to-rose-500' },
   { id: 'card-generator', title: '3-Part Cards', description: 'Montessori card maker', href: '/admin/card-generator', icon: '🃏', gradient: 'from-purple-500 to-violet-500' },
   { id: 'flashcard-maker', title: 'Song Flashcards', description: 'YouTube to flashcard PDFs', href: '/admin/flashcard-maker', icon: '🎵', gradient: 'from-indigo-500 to-purple-500' },
@@ -209,7 +210,7 @@ export default function AdminDashboard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-white">18</div>
+            <div className="text-3xl font-bold text-white">19</div>
             <div className="text-sm text-slate-400">Admin Tools</div>
           </div>
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">

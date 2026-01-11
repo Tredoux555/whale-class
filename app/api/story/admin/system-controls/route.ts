@@ -14,7 +14,6 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   if (!authHeader?.startsWith('Bearer ')) return false;
   
   const session = authHeader.substring(7);
-  // Simple session check - in production use proper JWT
   return session.length > 10;
 }
 
@@ -36,38 +35,49 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'clear_messages': {
-        // Delete all messages from story_messages table
-        const { data, error } = await supabase
+        // First count, then delete
+        const { count } = await supabase
+          .from('story_messages')
+          .select('*', { count: 'exact', head: true });
+        
+        const { error } = await supabase
           .from('story_messages')
           .delete()
-          .neq('id', 0); // Delete all
+          .not('id', 'is', null); // Delete all rows
         
         if (error) throw error;
-        result = { success: true, message: 'All messages cleared', affected: data?.length || 0 };
+        result = { success: true, message: 'All messages cleared', affected: count || 0 };
         break;
       }
 
       case 'clear_expired_messages': {
-        // Delete only expired messages
-        const { data, error } = await supabase
+        const { count } = await supabase
+          .from('story_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_expired', true);
+        
+        const { error } = await supabase
           .from('story_messages')
           .delete()
           .eq('is_expired', true);
         
         if (error) throw error;
-        result = { success: true, message: 'Expired messages cleared', affected: data?.length || 0 };
+        result = { success: true, message: 'Expired messages cleared', affected: count || 0 };
         break;
       }
 
       case 'clear_login_logs': {
-        // Delete all login logs
-        const { data, error } = await supabase
+        const { count } = await supabase
+          .from('story_login_logs')
+          .select('*', { count: 'exact', head: true });
+        
+        const { error } = await supabase
           .from('story_login_logs')
           .delete()
-          .neq('id', 0);
+          .not('id', 'is', null);
         
         if (error) throw error;
-        result = { success: true, message: 'Login logs cleared', affected: data?.length || 0 };
+        result = { success: true, message: 'Login logs cleared', affected: count || 0 };
         break;
       }
 
@@ -86,10 +96,10 @@ export async function POST(request: NextRequest) {
         }
         
         // Delete from database
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('story_vault')
           .delete()
-          .neq('id', 0);
+          .not('id', 'is', null);
         
         if (error) throw error;
         result = { success: true, message: 'Vault cleared', affected: files?.length || 0 };
@@ -97,53 +107,57 @@ export async function POST(request: NextRequest) {
       }
 
       case 'reset_user_sessions': {
-        // Clear all user last_login timestamps to force re-login appearance
-        const { data, error } = await supabase
+        const { count } = await supabase
+          .from('story_users')
+          .select('*', { count: 'exact', head: true });
+        
+        const { error } = await supabase
           .from('story_users')
           .update({ last_login: null })
-          .neq('id', 0);
+          .not('id', 'is', null);
         
         if (error) throw error;
-        result = { success: true, message: 'User sessions reset', affected: data?.length || 0 };
+        result = { success: true, message: 'User sessions reset', affected: count || 0 };
         break;
       }
 
       case 'delete_all_users': {
-        // Delete all users (dangerous!)
-        const { data, error } = await supabase
+        const { count } = await supabase
+          .from('story_users')
+          .select('*', { count: 'exact', head: true });
+        
+        const { error } = await supabase
           .from('story_users')
           .delete()
-          .neq('id', 0);
+          .not('id', 'is', null);
         
         if (error) throw error;
-        result = { success: true, message: 'All users deleted', affected: data?.length || 0 };
+        result = { success: true, message: 'All users deleted', affected: count || 0 };
         break;
       }
 
       case 'clear_all_media': {
-        // Delete all media from story_messages storage
-        const { data: messages } = await supabase
+        const { count } = await supabase
           .from('story_messages')
-          .select('media_url')
+          .select('*', { count: 'exact', head: true })
           .not('media_url', 'is', null);
         
-        // Clear media URLs from messages but keep text
         const { error } = await supabase
           .from('story_messages')
           .update({ media_url: null, media_filename: null })
           .not('media_url', 'is', null);
         
         if (error) throw error;
-        result = { success: true, message: 'All media cleared from messages', affected: messages?.length || 0 };
+        result = { success: true, message: 'All media cleared from messages', affected: count || 0 };
         break;
       }
 
       case 'factory_reset': {
         // Nuclear option - clear everything
-        await supabase.from('story_messages').delete().neq('id', 0);
-        await supabase.from('story_login_logs').delete().neq('id', 0);
-        await supabase.from('story_vault').delete().neq('id', 0);
-        await supabase.from('story_users').delete().neq('id', 0);
+        await supabase.from('story_messages').delete().not('id', 'is', null);
+        await supabase.from('story_login_logs').delete().not('id', 'is', null);
+        await supabase.from('story_vault').delete().not('id', 'is', null);
+        await supabase.from('story_users').delete().not('id', 'is', null);
         
         result = { success: true, message: 'Factory reset complete - all data cleared', affected: 0 };
         break;
@@ -173,10 +187,10 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
 
     const [messages, users, logs, vault] = await Promise.all([
-      supabase.from('story_messages').select('id', { count: 'exact', head: true }),
-      supabase.from('story_users').select('id', { count: 'exact', head: true }),
-      supabase.from('story_login_logs').select('id', { count: 'exact', head: true }),
-      supabase.from('story_vault').select('id', { count: 'exact', head: true }),
+      supabase.from('story_messages').select('*', { count: 'exact', head: true }),
+      supabase.from('story_users').select('*', { count: 'exact', head: true }),
+      supabase.from('story_login_logs').select('*', { count: 'exact', head: true }),
+      supabase.from('story_vault').select('*', { count: 'exact', head: true }),
     ]);
 
     return NextResponse.json({
