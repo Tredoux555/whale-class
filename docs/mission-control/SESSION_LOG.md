@@ -552,14 +552,33 @@ ADD COLUMN video_search_term TEXT;
    - 50+ video search terms populated
 3. ✅ Created UNIFICATION_MASTERPLAN.md
 
-**In Progress:**
-4. ⏳ Add /admin/montree link to admin dashboard
+---
 
-**Next:**
-5. RUN migration 027 in Supabase
-6. Update /api/teacher/classroom to filter by teacher_id
-7. Test isolation: John sees only John's students
+### DEPLOYED ✅
+
+**Commit:** a9590a3  
+**Pushed:** January 11, 2026 10:50 Beijing
 
 ---
 
-*Session 15 checkpoint: January 11, 2026 10:45 Beijing*
+### NEXT ACTION FOR TREDOUX
+
+**Run this SQL migration in Supabase:**
+
+1. Go to: https://supabase.com/dashboard → Your Project → SQL Editor
+2. Open file: `~/Desktop/whale/migrations/027_independent_montree.sql`
+3. Copy entire contents and paste into SQL Editor
+4. Click "Run"
+5. Verify output shows:
+   - ✅ teacher_children table created
+   - ✅ video_search_term column added
+   - ✅ Existing children assigned to Tredoux
+
+**After SQL runs, test:**
+- Go to www.teacherpotato.xyz/admin/montree
+- See the full 6-phase plan
+- Login as John (teacher) → should still see all students (API not updated yet)
+
+---
+
+*Session 15 checkpoint: January 11, 2026 10:50 Beijing*
