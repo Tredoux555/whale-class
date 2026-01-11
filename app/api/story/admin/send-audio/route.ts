@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     // Upload to Supabase Storage
     const arrayBuffer = await file.arrayBuffer();
     const { error: uploadError } = await supabase.storage
-      .from('media')
+      .from('story-uploads')
       .upload(filePath, arrayBuffer, {
         contentType: file.type || 'audio/mpeg',
         upsert: false
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('media')
+      .from('story-uploads')
       .getPublicUrl(filePath);
 
     const mediaUrl = urlData.publicUrl;
