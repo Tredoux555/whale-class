@@ -23,6 +23,7 @@ interface UploadedVideo {
   week_number: number;
   file_type: string;
   created_at: string;
+  category?: string;
 }
 
 export function FlashcardMaker() {
@@ -259,7 +260,7 @@ export function FlashcardMaker() {
                       {video.original_filename}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Week {video.week_number} • Uploaded {formatDate(video.created_at)}
+                      {video.category && <span className="capitalize">{video.category} • </span>}Week {video.week_number}
                     </p>
                   </div>
                   {selectedVideo?.id === video.id && (

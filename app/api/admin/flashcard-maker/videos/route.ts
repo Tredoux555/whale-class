@@ -8,25 +8,13 @@ function getSupabase() {
   );
 }
 
-// Get all uploaded videos, newest first
+// Get all videos from the main videos table (the ones on the homepage)
 export async function GET(request: NextRequest) {
   try {
-    // First, let's see ALL documents to debug
-    const { data: allDocs, error: allError } = await getSupabase()
-      .from('lesson_documents')
-      .select('id, original_filename, file_type')
-      .order('created_at', { ascending: false })
-      .limit(10);
-    
-    console.log('[Videos API] All docs sample:', allDocs?.map(d => ({ name: d.original_filename, type: d.file_type })));
-    
-    // Now filter for videos
     const { data, error } = await getSupabase()
-      .from('lesson_documents')
+      .from('videos')
       .select('*')
-      .like('file_type', 'video/%')
-      .order('created_at', { ascending: false })
-      .limit(50);
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('[Videos API] Query error:', error);
@@ -35,14 +23,20 @@ export async function GET(request: NextRequest) {
 
     console.log('[Videos API] Found videos:', data?.length);
 
+    // Map to expected format
+    const videos = (data || []).map(v => ({
+      id: v.id,
+      original_filename: v.title,
+      public_url: v.video_url,
+      week_number: v.week_number,
+      file_type: 'video/mp4',
+      created_at: v.created_at,
+      category: v.category
+    }));
+
     return NextResponse.json({ 
       success: true, 
-      videos: data || [],
-      debug: {
-        totalDocs: allDocs?.length,
-        sampleTypes: allDocs?.map(d => d.file_type),
-        videoCount: data?.length
-      }
+      videos
     });
   } catch (error) {
     console.error('[Videos API] Error:', error);
