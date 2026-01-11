@@ -72,28 +72,50 @@ export async function POST(request: NextRequest) {
     // Output PDF path
     const outputPath = path.join(TEMP_DIR, `flashcards_${timestamp}.pdf`);
 
-    // Get the Python script path (should be in lib/pdf-generator.py)
-    const scriptPath = path.join(process.cwd(), 'lib', 'pdf-generator.py');
-    
-    // Check if script exists, if not use inline Python
-    let pythonCommand: string;
-    
-    try {
-      await fs.access(scriptPath);
-      pythonCommand = `python3 "${scriptPath}" "${dataPath}" "${outputPath}"`;
-    } catch {
-      // Script doesn't exist, use inline Python command
-      pythonCommand = `python3 -c "
+    // Python script with PIL for proper image cropping
+    const pythonCommand = `python3 -c "
 import sys
 import json
+from PIL import Image
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
+from io import BytesIO
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16)/255 for i in (0, 2, 4))
+
+def crop_to_fill(img_path, target_w, target_h):
+    '''Crop image to fill target dimensions (cover behavior)'''
+    img = Image.open(img_path)
+    img_w, img_h = img.size
+    target_aspect = target_w / target_h
+    img_aspect = img_w / img_h
+    
+    if img_aspect > target_aspect:
+        # Image is wider - crop width
+        new_w = int(img_h * target_aspect)
+        left = (img_w - new_w) // 2
+        img = img.crop((left, 0, left + new_w, img_h))
+    else:
+        # Image is taller - crop height
+        new_h = int(img_w / target_aspect)
+        top = (img_h - new_h) // 2
+        img = img.crop((0, top, img_w, top + new_h))
+    
+    # Resize to exact target size
+    img = img.resize((int(target_w), int(target_h)), Image.LANCZOS)
+    
+    # Convert to RGB if necessary (for JPEG compatibility)
+    if img.mode in ('RGBA', 'P'):
+        img = img.convert('RGB')
+    
+    # Save to bytes
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG', quality=95)
+    buffer.seek(0)
+    return buffer
 
 def create_pdf(data_path, output_path):
     with open(data_path, 'r') as f:
@@ -149,7 +171,7 @@ def create_pdf(data_path, output_path):
                 c.setFillColorRGB(1, 1, 1)
                 c.roundRect(inner_x, inner_y, inner_w, inner_h, 5*mm, fill=1, stroke=0)
                 
-                # Calculate image area - no padding, image fills entire inner area
+                # Calculate image area
                 has_lyric = frame.get('lyric') and len(frame.get('lyric', '').strip()) > 0
                 text_height = 18 * mm if has_lyric else 0
                 
@@ -158,35 +180,14 @@ def create_pdf(data_path, output_path):
                 img_w = inner_w
                 img_h = inner_h - text_height
                 
-                # Draw image - FILL mode (cover entire area, crop if needed)
+                # Draw image - pre-cropped to fill
                 if frame.get('imagePath'):
                     try:
-                        img = ImageReader(frame['imagePath'])
-                        iw, ih = img.getSize()
-                        img_aspect = iw / ih
-                        area_aspect = img_w / img_h
-                        
-                        # Scale to FILL (cover entire area, may crop)
-                        if img_aspect > area_aspect:
-                            # Image is wider - scale by height, crop width
-                            draw_h = img_h
-                            draw_w = draw_h * img_aspect
-                        else:
-                            # Image is taller - scale by width, crop height
-                            draw_w = img_w
-                            draw_h = draw_w / img_aspect
-                        
-                        # Center the image
-                        draw_x = img_x + (img_w - draw_w) / 2
-                        draw_y = img_y + (img_h - draw_h) / 2
-                        
-                        # Clip to image area and draw
-                        c.saveState()
-                        path = c.beginPath()
-                        path.rect(img_x, img_y, img_w, img_h)
-                        c.clipPath(path, stroke=0)
-                        c.drawImage(img, draw_x, draw_y, draw_w, draw_h)
-                        c.restoreState()
+                        # Crop image to fill the target area exactly
+                        cropped_buffer = crop_to_fill(frame['imagePath'], img_w * 3, img_h * 3)
+                        from reportlab.lib.utils import ImageReader
+                        img = ImageReader(cropped_buffer)
+                        c.drawImage(img, img_x, img_y, img_w, img_h)
                     except Exception as e:
                         print(f'Image error: {e}')
                 
@@ -222,7 +223,6 @@ def create_pdf(data_path, output_path):
 
 create_pdf('${dataPath}', '${outputPath}')
 "`;
-    }
 
     // Execute Python script
     try {
@@ -233,11 +233,10 @@ create_pdf('${dataPath}', '${outputPath}')
       console.log('Python stdout:', stdout);
     } catch (execError: unknown) {
       console.error('Python execution error:', execError);
-      // Try to give more specific error
       const errorObj = execError as { stderr?: string; message?: string };
       if (errorObj.stderr?.includes('No module named')) {
         return NextResponse.json(
-          { message: 'Missing Python dependency. Run: pip3 install reportlab --break-system-packages' },
+          { message: 'Missing Python dependency. Run: pip3 install reportlab pillow --break-system-packages' },
           { status: 500 }
         );
       }
@@ -264,7 +263,7 @@ create_pdf('${dataPath}', '${outputPath}')
       // Ignore cleanup errors
     }
 
-    // Return PDF - Convert Buffer to Uint8Array for Next.js 16 compatibility
+    // Return PDF
     const uint8Array = new Uint8Array(pdfBuffer);
     return new NextResponse(uint8Array, {
       headers: {

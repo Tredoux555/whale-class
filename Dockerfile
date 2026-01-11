@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install yt-dlp and reportlab via pip (easier to update) - use --break-system-packages for newer Python
-RUN pip3 install --break-system-packages yt-dlp reportlab
+RUN pip3 install --break-system-packages yt-dlp reportlab pillow
 
 # Verify installations
 RUN ffmpeg -version && yt-dlp --version
