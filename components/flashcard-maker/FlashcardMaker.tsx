@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { FlashcardPreview } from './FlashcardPreview';
 import { FlashcardPDF } from './FlashcardPDF';
 
@@ -42,7 +42,7 @@ export function FlashcardMaker() {
   const [songTitle, setSongTitle] = useState('');
   
   // Video scrubber state
-  const [showScrubber, setShowScrubber] = useState(false);
+  const [showScrubber, setShowScrubber] = useState(true);
   const [videoPath, setVideoPath] = useState('');
   const [videoDuration, setVideoDuration] = useState(0);
   const [scrubberTime, setScrubberTime] = useState(0);
@@ -54,6 +54,16 @@ export function FlashcardMaker() {
   useEffect(() => {
     loadUploadedVideos();
   }, []);
+
+  // Auto-fetch preview when video is loaded
+  useEffect(() => {
+    if (videoPath && videoDuration > 0) {
+      // Fetch preview at 25% into the video
+      const initialTime = Math.min(5, videoDuration * 0.25);
+      setScrubberTime(initialTime);
+      fetchPreviewFrame(initialTime, videoPath);
+    }
+  }, [videoPath, videoDuration, fetchPreviewFrame]);
 
   const loadUploadedVideos = async () => {
     setLoadingVideos(true);
@@ -73,15 +83,16 @@ export function FlashcardMaker() {
   };
 
   // Fetch frame preview at specific timestamp
-  const fetchPreviewFrame = async (timestamp: number) => {
-    if (!videoPath) return;
+  const fetchPreviewFrame = useCallback(async (timestamp: number, path?: string) => {
+    const vidPath = path || videoPath;
+    if (!vidPath) return;
     
     setIsLoadingPreview(true);
     try {
       const res = await fetch('/api/admin/flashcard-maker/preview-frame', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filePath: videoPath, timestamp })
+        body: JSON.stringify({ filePath: vidPath, timestamp })
       });
       
       if (res.ok) {
@@ -93,7 +104,7 @@ export function FlashcardMaker() {
     } finally {
       setIsLoadingPreview(false);
     }
-  };
+  }, [videoPath]);
 
   // Debounced preview fetch
   const handleScrubberChange = (time: number) => {
