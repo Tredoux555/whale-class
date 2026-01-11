@@ -1,13 +1,24 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T11:30:00+08:00",
+  "lastUpdated": "2026-01-11T19:55:00+08:00",
   "currentStatus": "✨ POLISHED + LAUNCH READY",
   "productionUrl": "https://www.teacherpotato.xyz",
   
   "criticalDate": {
     "date": "Jan 16, 2026",
     "event": "Whale launch",
-    "daysRemaining": 4
+    "daysRemaining": 5
+  },
+
+  "session18Summary": {
+    "theme": "PDF Fix + Audio Upload",
+    "changes": [
+      "PDF flashcards: Images now fill cards edge-to-edge using PIL crop",
+      "Flashcard maker: Goes straight to scrubber (removed processing step)",
+      "Story audio upload: Fixed bucket name (story-uploads not media)",
+      "Dockerfile: Added pillow dependency"
+    ],
+    "commits": ["338dab4", "90266e0", "62f42ea", "4578368", "45d357a"]
   },
 
   "session17Summary": {

@@ -1159,3 +1159,65 @@ ADD COLUMN video_search_term TEXT;
 ---
 
 *Session 17 Complete - Platform fully polished for Jan 16!* 🐋✨
+
+
+---
+
+## Session 18 - January 11, 2026
+
+### PDF FLASHCARD IMAGE FIX (FINALLY!)
+
+**Problem:** PDF flashcards had white gaps - images not filling cards edge-to-edge
+
+**Multiple attempts that didn't work:**
+- Reduced padding
+- Changed fit → fill scaling logic
+- Added clipping paths in reportlab
+
+**Final Solution:** Use PIL to pre-crop images to exact target dimensions before drawing
+- Same approach that works in card-generator
+- `crop_to_fill()` function crops image to target aspect ratio, then resizes
+- Added `pillow` to Dockerfile dependencies
+
+### FLASHCARD MAKER WORKFLOW SIMPLIFIED
+
+**Before:** Select video → Processing/Extracting → Scrubber
+**After:** Select video → Scrubber immediately
+
+Removed:
+- Target Frames slider
+- Sensitivity slider  
+- Min Interval slider
+- "Generate Flashcards" button
+- Processing progress bar
+
+Now just: Select video → Scrub through → Add frames manually → Export PDF
+
+### STORY AUDIO UPLOAD FIX
+
+**Problem:** Audio upload failing with 500 error - "Bucket not found"
+
+**Root Cause:** Used wrong bucket name `media` instead of `story-uploads`
+
+**Fixed files:**
+- `/api/story/admin/send-audio/route.ts`
+- `/api/story/admin/send-image/route.ts`
+
+Both now use `story-uploads` bucket correctly.
+
+### COMMITS
+- `338dab4` - PDF images fill with clipping (didn't work)
+- `90266e0` - Flashcard maker straight to scrubber
+- `62f42ea` - Fix JSX syntax error
+- `4578368` - Fix bucket name for audio/image uploads
+- `45d357a` - Use PIL to crop images (final fix)
+
+### DEPENDENCIES UPDATED
+Dockerfile now installs:
+- yt-dlp
+- reportlab
+- pillow
+
+---
+
+*Session 18 - PDF flashcards finally fill edge-to-edge, audio upload working* 🐋
