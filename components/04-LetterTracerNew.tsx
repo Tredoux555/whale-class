@@ -383,6 +383,15 @@ const LetterTracerNew: React.FC = () => {
     };
   };
 
+  // MUST be defined BEFORE checkWaypointHit since it's called from there
+  const handleComplete = useCallback(async () => {
+    setPhase('complete');
+    setScore(prev => prev + 1);
+    await GameAudio.playCelebration();
+    await new Promise(r => setTimeout(r, 500));
+    GameAudio.playLetterNow(currentLetter.toLowerCase());
+  }, [currentLetter]);
+
   const checkWaypointHit = useCallback((point: Point) => {
     if (currentWaypointIndex >= waypoints.length) return;
     
@@ -415,15 +424,7 @@ const LetterTracerNew: React.FC = () => {
         handleComplete();
       }
     }
-  }, [currentWaypointIndex, waypoints]);
-
-  const handleComplete = async () => {
-    setPhase('complete');
-    setScore(prev => prev + 1);
-    await GameAudio.playCelebration();
-    await new Promise(r => setTimeout(r, 500));
-    GameAudio.playLetterNow(currentLetter.toLowerCase());
-  };
+  }, [currentWaypointIndex, waypoints, handleComplete]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (phase !== 'trace') return;
