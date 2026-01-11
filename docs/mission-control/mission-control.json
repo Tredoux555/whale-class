@@ -1,42 +1,55 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T12:40:00+08:00",
-  "currentPhase": "Letter Tracer v2 - STROKE ORDER POLISH",
-  "status": "🚀 Deployed stroke order fixes",
+  "lastUpdated": "2026-01-11T10:45:00+08:00",
+  "currentPhase": "INDEPENDENT MONTREE - Phase 1 COMPLETE",
+  "status": "📋 Files created, ready for SQL migration",
   
   "productionUrl": "https://www.teacherpotato.xyz",
-  "testUrl": "www.teacherpotato.xyz/games/letter-tracer",
+  "criticalLaunch": "Jan 16, 2026 - Whale must be ready",
 
-  "fixesApplied": {
-    "b": "Changed to CONTINUOUS: down from top, retrace up, around clockwise - no M in middle",
-    "f": "Adjusted hook position, smoother curve",
-    "g": "Fixed descender to y=255 (stays on screen), hook connects properly",
-    "h": "Made CONTINUOUS: down, retrace up, hump - no M in middle",
-    "j": "Adjusted descender to y=255, improved hook",
-    "k": "Split into 3 strokes: stem, diagonal in, diagonal out (correct formation)",
-    "m": "Changed to DOWN FIRST: start at top, down, retrace up, hump, down, retrace, hump, down - CONTINUOUS",
-    "n": "Changed to DOWN FIRST: start at top, down, retrace up, hump, down - CONTINUOUS",
-    "p": "Made CONTINUOUS: down to descender, retrace up, around clockwise",
-    "q": "Fixed connection: circle flows into descender smoothly, tail at y=255",
-    "r": "Changed to DOWN FIRST: start at top, down, retrace up, curve right - CONTINUOUS",
-    "t": "Adjusted starting position",
-    "u": "Added final downstroke on right side - now goes down, curve, up, DOWN",
-    "w": "Adjusted middle point for better shape",
-    "y": "Adjusted positions for cleaner look"
+  "session15Progress": {
+    "filesCreated": [
+      "/app/admin/montree/page.tsx - Visual implementation plan with 6 phases",
+      "/migrations/027_independent_montree.sql - Full migration with teacher_children + video_search_term",
+      "/docs/mission-control/UNIFICATION_MASTERPLAN.md - Complete technical spec"
+    ],
+    "status": "Phase 1 files ready, need to run SQL migration"
   },
 
-  "strokeOrderPrinciple": "All vertical strokes go TOP to BOTTOM (down first, then retrace up if needed)",
-  
-  "continuousVsMultiStroke": {
-    "continuous": ["a","b","c","d","e","g","h","l","m","n","o","p","q","r","s","u","v","w","z"],
-    "multiStroke": ["f (stem+cross)", "i (stem+dot)", "j (stem+dot)", "k (stem+diagonals)", "t (stem+cross)", "x (two diagonals)", "y (two diagonals)"]
+  "criticalIssues": {
+    "dataLeakage": {
+      "status": "🚨 CRITICAL - FIX READY",
+      "problem": "Teacher John sees ALL students (Tredoux's students), not his own",
+      "cause": "/api/teacher/classroom returns ALL children, no teacher filtering",
+      "solution": "teacher_children junction table created in migration 027",
+      "nextStep": "Run migration, then update API"
+    },
+    "videoUrls": {
+      "status": "⚠️ FIX READY",
+      "problem": "Direct YouTube URLs disappear over time",
+      "solution": "video_search_term column added, 50+ search terms populated in migration 027"
+    },
+    "circlePlannerParity": {
+      "status": "⚠️ PENDING",
+      "problem": "Admin Circle Planner has features teacher version lacks",
+      "solution": "Phase 4 - add missing buttons to teacher version"
+    }
+  },
+
+  "independentMontreePlan": {
+    "phase1": "✅ READY - Database Schema (migration 027)",
+    "phase2": "⏳ NEXT - Teacher Data Isolation (update APIs)",
+    "phase3": "⏳ - Video Search Terms (UI update)",
+    "phase4": "⏳ - Feature Parity",
+    "phase5": "⏳ - Parent Portal Integration", 
+    "phase6": "⏳ - App Packaging"
   },
 
   "nextSteps": [
-    "Test all 26 letters on production",
-    "Verify stroke animations flow correctly",
-    "Check that DOWN-first pattern shows in demo",
-    "Fine-tune any remaining issues"
+    "1. Add /admin/montree link to admin dashboard",
+    "2. RUN migration 027 in Supabase",
+    "3. Update /api/teacher/classroom to filter by teacher_id",
+    "4. Test: John sees only John's students"
   ],
 
   "demoAccounts": {

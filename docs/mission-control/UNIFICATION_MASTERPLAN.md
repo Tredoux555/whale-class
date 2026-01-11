@@ -1,123 +1,252 @@
-# 🏔️ MONTREE UNIFICATION MASTERPLAN
-## The Brain - Read This First Every Session
+# 🌳 INDEPENDENT MONTREE - UNIFICATION MASTERPLAN
 
-**Last Updated:** January 11, 2026 08:20 Beijing  
-**Status:** ✅ FLOW WORKING - Teacher→Parent→Games verified
-
----
-
-## 🎯 CURRENT STATUS
-
-### Completed ✅
-- [x] Database: families, game_curriculum_mapping tables
-- [x] Database: children extended (family_id, color, journal_entries)
-- [x] Database: 60 game mappings seeded
-- [x] API: /api/unified/families
-- [x] API: /api/unified/children
-- [x] API: /api/unified/progress
-- [x] API: /api/unified/games
-- [x] API: /api/unified/today
-- [x] UI: page-unified.tsx for all 3 parent pages
-- [x] Demo data: Amy has correct work_ids for game recommendations
-- [x] **VERIFIED: Game recommendations appearing! ✅**
-
-### Next Up 🎯
-- [ ] Switch unified pages to default
-- [ ] Create test family data
-- [ ] Test full parent login flow in browser
+**Created:** January 11, 2026  
+**Status:** Phase 1 Ready  
+**Priority:** HIGH - Path to financial freedom
 
 ---
 
-## 🚀 PRODUCTION
+## 🎯 THE VISION
 
-**URL:** `https://www.teacherpotato.xyz` (always use www!)
-
-**Verified Working:**
-- 41/41 routes passing
-- Game recommendations: Letter Sounds, Beginning Sounds, Middle Sounds
-- Amy's Language progress showing correctly
+Transform the Whale platform into a standalone, multi-tenant Montessori progress tracking system that can be:
+1. Licensed to schools worldwide
+2. Packaged as a mobile app
+3. White-labeled for different brands
+4. **Generating recurring revenue = financial freedom**
 
 ---
 
-## 🧠 THE ARCHITECTURE
+## 🚨 CRITICAL ISSUES DISCOVERED
 
-```
-┌─────────────────────────────────────────────────────┐
-│              SINGLE SOURCE OF TRUTH                 │
-├─────────────────────────────────────────────────────┤
-│  families          → Parent accounts                │
-│  children          → Students (+ family_id)         │
-│  curriculum_roadmap → 342 Montessori works          │
-│  child_work_progress → Status per child per work    │
-│  game_curriculum_mapping → 60 game↔work links       │
-└─────────────────────────────────────────────────────┘
-         ↓                    ↓                    ↓
-    TEACHER              PARENT                GAMES
-    writes               reads              recommended
-    progress             progress           based on
-                                           Language works
+### Issue 1: DATA LEAKAGE (CRITICAL)
+**Problem:** Teacher John clicks on "Progress" and sees ALL students including Tredoux's Whale Class children.
+
+**Root Cause:**
+```javascript
+// /api/teacher/classroom/route.ts
+const { data: children } = await supabase
+  .from('children')
+  .select('*')  // ← NO FILTERING BY TEACHER!
+  .order('name');
 ```
 
----
+**Solution:** Create `teacher_children` junction table and filter all queries.
 
-## 📁 KEY FILES
+### Issue 2: VIDEO URL DECAY
+**Problem:** Direct YouTube URLs in `curriculum_roadmap.video_url` break over time (videos removed, made private, etc.)
 
-```
-BRAIN FILES:
-~/Desktop/whale/docs/mission-control/mission-control.json
-~/Desktop/whale/docs/mission-control/SESSION_LOG.md
-~/Desktop/whale/docs/mission-control/HANDOFF_JAN11_FLOW_FIXED.md ← LATEST
+**Solution:** Store `video_search_term` instead:
+- Old: `youtube.com/watch?v=XYZ123` (brittle)
+- New: `Montessori Pink Tower presentation` (generates fresh search)
 
-UNIFIED APIs:
-/api/unified/families   - Parent login
-/api/unified/children   - All kids + progress
-/api/unified/progress   - Full progress for one child
-/api/unified/games      - All available games
-/api/unified/today      - Today's learning + game recs ⭐
+### Issue 3: FEATURE PARITY GAP
+**Problem:** Admin Circle Planner has buttons (Video Cards, 3-Part Cards, Flashcards) that teacher version lacks.
 
-UNIFIED UI:
-app/parent/home/page-unified.tsx
-app/parent/home/[familyId]/page-unified.tsx
-app/parent/home/[familyId]/[childId]/page-unified.tsx
-```
+**Solution:** Match all admin features in teacher portal.
 
 ---
 
-## 💡 KEY LEARNINGS
+## 📊 DATA ARCHITECTURE
 
-### Work ID Prefixes (IMPORTANT!)
-| Area | Correct Prefix | Wrong Prefix |
-|------|---------------|--------------|
-| Language | `la_*` | `lang_*` ❌ |
-| Sensorial | `se_*` | `sen_*` ❌ |
-| Math | `ma_*` | `math_*` ❌ |
-| Practical Life | `pl_*` | ✅ |
-
-### Testing Game Recommendations
-```bash
-curl -sL "https://www.teacherpotato.xyz/api/unified/today?child_id=afbed794-4eee-4eb5-8262-30ab67638ec7" | python3 -m json.tool
+### Current State (BROKEN)
+```
+children (table)
+    ↑
+    ALL visible to ALL teachers (no filtering)
 ```
 
-Expected: `game_recommendations` array with 3 games
+### Target State (FIXED)
+```
+simple_teachers
+       │
+       │ 1:many
+       ▼
+teacher_children (NEW)
+       │
+       │ many:1
+       ▼
+children
+       │
+       │ 1:many
+       ▼
+child_work_progress
+```
+
+### New Table: teacher_children
+```sql
+CREATE TABLE teacher_children (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_id UUID NOT NULL REFERENCES simple_teachers(id),
+  child_id UUID NOT NULL REFERENCES children(id),
+  assigned_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(teacher_id, child_id)
+);
+```
 
 ---
 
-## 🔧 TROUBLESHOOTING
+## 🔧 6-PHASE IMPLEMENTATION
 
-### "No game recommendations"
-- Child needs Language works with status >= 1
-- Work IDs must use `la_*` prefix
-- Check: `SELECT * FROM child_work_progress WHERE child_id = 'xxx' AND work_id LIKE 'la_%'`
+### Phase 1: Database Schema ✅ READY
+- [x] Design teacher_children table
+- [x] Create migration file: `027_independent_montree.sql`
+- [x] Add video_search_term column
+- [x] Populate initial search terms (342 works)
+- [ ] **RUN MIGRATION IN SUPABASE**
 
-### "Unknown Work" showing
-- work_id doesn't exist in curriculum_roadmap
-- Check prefix is correct (la_, se_, ma_, pl_)
-- Run cleanup: `migrations/026b_cleanup_amy_bad_data.sql`
+### Phase 2: Teacher Data Isolation
+- [ ] Update `/api/teacher/classroom/route.ts` to filter by teacher
+- [ ] Update `/api/teacher/progress/route.ts` to filter by teacher
+- [ ] Create "Add Student" API for teachers
+- [ ] Create "Transfer Student" API (principal only)
+- [ ] Test: Login as John → sees ONLY John's students
 
-### "API 500 error"
-- Check Railway logs
-- Usually missing table or column
+### Phase 3: Video Search Terms
+- [ ] Update curriculum detail modal to use search terms
+- [ ] Replace "▶️ Watch Video" with "🔍 Find Video"
+- [ ] Generate YouTube search URL dynamically
+- [ ] Review and fill gaps in search terms
+
+### Phase 4: Feature Parity
+- [ ] Add missing buttons to teacher Circle Planner
+- [ ] Give teachers Classroom View (filtered to their data)
+- [ ] Match admin progress tracking features
+- [ ] Ensure print functionality works for teachers
+
+### Phase 5: Parent Portal Integration
+- [ ] Link parents to children via teacher assignment
+- [ ] Parent sees ONLY their children
+- [ ] Teacher generates parent invite codes
+- [ ] Weekly progress reports
+
+### Phase 6: App Packaging
+- [ ] PWA manifest and service worker
+- [ ] Mobile-optimized views
+- [ ] Multi-school tenant architecture
+- [ ] Stripe integration for licensing
+- [ ] White-label branding
 
 ---
 
-*This is the brain. Read it first every session.*
+## 📁 KEY FILES TO MODIFY
+
+### APIs (Data Isolation)
+```
+/app/api/teacher/classroom/route.ts   ← ADD teacher filtering
+/app/api/teacher/progress/route.ts    ← ADD teacher filtering
+/app/api/teacher/students/route.ts    ← CREATE (add/remove students)
+```
+
+### Pages (Feature Parity)
+```
+/app/teacher/circle-planner/page.tsx  ← ADD missing buttons
+/app/teacher/classroom/page.tsx       ← MATCH admin view (filtered)
+/app/teacher/progress/page.tsx        ← VERIFY filtering works
+```
+
+### Curriculum (Video Fix)
+```
+/app/teacher/curriculum/page.tsx      ← Use video_search_term
+/lib/curriculum/curriculum-data.ts    ← Reference search terms
+```
+
+---
+
+## 🔐 ROLE HIERARCHY
+
+```
+PRINCIPAL (Super Admin - Tredoux)
+├── Can see ALL teachers
+├── Can see ALL students
+├── Can transfer students between teachers
+├── Can access /admin/* routes
+└── Manages curriculum, schools, system settings
+
+TEACHER (John, Jasmine, etc.)
+├── Can see ONLY their assigned students
+├── Can add students to their classroom
+├── Can track progress for their students
+├── Can access /teacher/* routes
+└── Cannot see other teachers' students
+
+PARENT
+├── Can see ONLY their children
+├── Can view progress reports
+├── Can access /parent/* routes
+└── Linked via teacher assignment
+```
+
+---
+
+## 🧪 TEST SCENARIOS
+
+### Test 1: Teacher Data Isolation
+1. Login as Tredoux (admin) → `/admin/classroom`
+2. Should see ALL students (22+ children)
+3. Login as John (teacher) → `/teacher/progress`
+4. Should see ONLY John's students (0 initially)
+5. Assign Mia to John via teacher_children
+6. John now sees ONLY Mia
+
+### Test 2: Video Search
+1. Go to `/teacher/curriculum`
+2. Click on "Pink Tower"
+3. Should show "🔍 Find Video" button
+4. Button opens: `youtube.com/results?search_query=Montessori+Pink+Tower+presentation`
+5. Always finds fresh videos!
+
+### Test 3: Parent Isolation
+1. Login as demo@test.com (parent)
+2. Should see ONLY Amy (their child)
+3. Should NOT see any other children
+
+---
+
+## 📋 SQL TO RUN (Phase 1)
+
+```sql
+-- Run this in Supabase SQL Editor
+-- File: migrations/027_independent_montree.sql
+```
+
+After running, verify:
+```sql
+-- Check teacher_children created
+SELECT * FROM teacher_children;
+
+-- Check video_search_term added
+SELECT name, video_search_term 
+FROM curriculum_roadmap 
+WHERE video_search_term IS NOT NULL
+LIMIT 10;
+```
+
+---
+
+## 🚀 IMMEDIATE NEXT STEPS
+
+1. **Run Migration:** Execute `027_independent_montree.sql` in Supabase
+2. **Update API:** Modify `/api/teacher/classroom` to filter by teacher
+3. **Test:** Login as John, verify isolation works
+4. **Deploy:** Push to Railway, verify on production
+
+---
+
+## 💰 BUSINESS MODEL (Future)
+
+### Pricing Tiers
+- **Free:** 1 teacher, 10 students, basic features
+- **School:** $29/month - 10 teachers, 200 students, full features
+- **District:** $199/month - Unlimited, white-label, support
+
+### Revenue Projection
+- 100 schools × $29/month = $2,900/month
+- 10 districts × $199/month = $1,990/month
+- **Total:** $4,890/month = $58,680/year
+
+This is the path to financial freedom. Build it right, license it wide.
+
+---
+
+*Last Updated: January 11, 2026*
+*Session: 15*
