@@ -2549,3 +2549,67 @@ Constraints:
 - Indexed for fast lookups
 
 *Checkpoint: Schema created, need to run in Supabase*
+
+
+---
+
+## Session 21 - DAILY REPORTS ALREADY BUILT! 
+**Time:** ~02:30 Beijing (Jan 12)
+
+### DISCOVERED EXISTING CODE
+Files found:
+- `/app/api/daily-reports/route.ts` - API (GET/POST/DELETE)
+- `/app/teacher/daily-reports/page.tsx` - Teacher form (386 lines!)
+- `/app/parent/child/[id]/daily-reports/page.tsx` - Parent view
+- `/migrations/030_daily_reports.sql` - Migration
+
+### TEACHER FORM FEATURES ✅
+- Child selection grid with progress indicator
+- Mood selection (happy/calm/tired/fussy/sick)
+- Activity checkboxes (10 common activities)
+- Meals eaten selector
+- Nap duration slider
+- Highlights text area
+- Notes for parents
+- Toast notifications on save
+
+### PARENT VIEW FEATURES ✅
+- List of reports (most recent first)
+- Today/Yesterday labels
+- Mood emoji display
+- Activities list
+- Teacher name shown
+
+### NEEDS TO WORK:
+1. Run migration 030 in Supabase
+2. Add Daily Reports link to teacher dashboard
+3. Add Daily Reports link to parent child page
+4. Test end-to-end flow
+
+*Checkpoint: Daily reports already coded, needs integration*
+
+
+---
+
+## Session 21 - DAILY REPORTS INTEGRATED
+**Time:** ~02:35 Beijing (Jan 12)
+
+### CHANGES MADE
+1. Added Daily Reports to parent child page quick links (with "New" badge)
+2. Added Games link to parent child page  
+3. Changed "This Week" placeholder to "Daily Updates" section
+4. Grid now shows 4 items: Daily Reports, Progress, Montree Home, Games
+
+### FILES MODIFIED
+- `/app/parent/child/[id]/page.tsx` - Parent portal with Daily Reports
+
+### LINKS NOW WORK
+- Teacher: `/teacher/daily-reports` - ✅ Already in dashboard
+- Parent: `/parent/child/[id]/daily-reports` - ✅ Now linked
+
+### TO DEPLOY
+1. Run migration 030 in Supabase (if not done)
+2. Push to Railway
+3. Test flow: Teacher creates report → Parent sees it
+
+*Checkpoint: Daily Reports integrated into UI*
