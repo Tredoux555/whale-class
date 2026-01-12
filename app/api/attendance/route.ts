@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Initialize Supabase lazily to avoid build-time errors
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET - Fetch attendance records
 export async function GET(request: NextRequest) {
+  const supabase = getSupabase();
   const { searchParams } = new URL(request.url);
   const childId = searchParams.get('child_id');
   const date = searchParams.get('date');
@@ -31,6 +35,7 @@ export async function GET(request: NextRequest) {
 
 // POST - Mark attendance (upsert)
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
   const body = await request.json();
   const { child_id, status, check_in_time, notes, marked_by } = body;
   const date = body.attendance_date || new Date().toISOString().split('T')[0];
