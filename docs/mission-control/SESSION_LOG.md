@@ -3493,3 +3493,17 @@ Fixed with lazy singleton: `function getSupabase() { if (!supabase) ... }`
 ### BUILD: ✅ PASSED
 
 *Checkpoint: All API routes fixed*
+
+
+---
+
+## FIX: Upload API
+**Time:** ~16:30 Beijing
+
+### FIXED
+`/api/upload/route.ts` - lazy Supabase init
+
+### BUILD: ✅ PASSED
+Commit: 092d7e1
+
+*Checkpoint: Upload API fixed, waiting for Railway*
