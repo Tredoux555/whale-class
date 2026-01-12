@@ -1768,3 +1768,44 @@ Moving to Phase 2: PWA check
 3. ❌ School onboarding flow
 
 *Next: Phase 3 - Parent Portal*
+
+
+---
+
+## Session 21 - Phase 1 Progress
+**Time:** ~00:15 Beijing (Jan 12)
+
+### COMPLETED: Toast notifications for teacher progress
+- Removed duplicate imports
+- Removed custom Toast component
+- Using sonner toast for success/error feedback
+- Commit: `fc4f300`
+
+### Teacher Progress Now Has:
+- ✅ Success toast: "Work Name → Status"
+- ✅ Error toast: "Failed to save. Try again."
+- ✅ Connection error toast
+
+### Build Note:
+- Turbopack fails on Google Fonts (China network)
+- Use `NEXT_BUILD_TURBOPACK=0 npm run build` or standard build
+
+### NEXT: Add toasts to other key pages
+
+*Checkpoint: fc4f300*
+
+
+---
+
+## Session 21 - CHECKPOINT BEFORE PHASE 1
+**Time:** ~00:10 Beijing (Jan 12)
+
+### STATUS RIGHT NOW
+- Monetization audit DONE
+- Ready to start Phase 1: Toast notifications
+- User frustrated by lost progress - MUST SAVE EVERY 5 MIN
+
+### NEXT IMMEDIATE TASK
+Add toast notification library to Whale project
+
+*Checkpoint before starting Phase 1*
