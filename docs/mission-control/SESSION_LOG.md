@@ -3350,3 +3350,40 @@ New pages exist locally but Railway hasn't deployed them.
 4. Polish any issues found
 
 *Checkpoint: Analysis complete*
+
+
+---
+
+## GAME PLAN - Jan 12
+
+### GOAL
+Make Montree a complete, working school app for Jan 16 demo
+
+### BLOCKERS
+1. ⛔ Railway not deploying new pages (404s)
+2. ⛔ Database migrations not run (tables don't exist)
+
+### ACTIONS (In Order)
+
+**Phase 1: Fix Deployment**
+- [ ] Check local build passes
+- [ ] Force push to trigger Railway rebuild
+- [ ] Verify new pages return 200
+
+**Phase 2: Database**
+- [ ] User runs migration in Supabase
+- [ ] Verify tables exist
+
+**Phase 3: Test Features**
+- [ ] Test Daily Reports flow (teacher create → parent view)
+- [ ] Test Messaging flow (two-way chat)
+- [ ] Test Photos flow
+- [ ] Test Attendance flow
+
+**Phase 4: Polish**
+- [ ] Fix any bugs found
+- [ ] Add any missing UX touches
+
+### LET'S START WITH PHASE 1
+
+*Checkpoint: Game plan created*
