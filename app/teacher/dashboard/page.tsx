@@ -19,6 +19,18 @@ const DASHBOARD_ITEMS = [
     ],
   },
   {
+    href: '/teacher/messages',
+    icon: '💬',
+    title: 'Messages',
+    description: 'Chat with parents',
+    gradient: 'from-blue-500 to-cyan-500',
+    bgGradient: 'from-blue-50 to-cyan-50',
+    tags: [
+      { label: 'Chat', color: 'blue' },
+      { label: 'Parents', color: 'cyan' },
+    ],
+  },
+  {
     href: '/teacher/circle-planner',
     icon: '🌅',
     title: 'Circle Time Planner',

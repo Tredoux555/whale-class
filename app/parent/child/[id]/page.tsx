@@ -71,15 +71,16 @@ export default function ParentChildPage() {
             <p className="font-semibold">Daily Reports</p>
             <p className="text-sm text-gray-500">Teacher updates</p>
           </Link>
+          <Link href={`/parent/child/${childId}/messages`} className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-blue-300 relative">
+            <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">New</div>
+            <div className="text-4xl mb-2">💬</div>
+            <p className="font-semibold">Messages</p>
+            <p className="text-sm text-gray-500">Chat with teacher</p>
+          </Link>
           <Link href={`/parent/child/${childId}/progress`} className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-purple-300">
             <div className="text-4xl mb-2">📊</div>
             <p className="font-semibold">Progress</p>
             <p className="text-sm text-gray-500">View learning</p>
-          </Link>
-          <Link href="/montree-home" className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-purple-300">
-            <div className="text-4xl mb-2">🏠</div>
-            <p className="font-semibold">Montree Home</p>
-            <p className="text-sm text-gray-500">250 activities</p>
           </Link>
           <Link href="/games" className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-purple-300">
             <div className="text-4xl mb-2">🎮</div>
