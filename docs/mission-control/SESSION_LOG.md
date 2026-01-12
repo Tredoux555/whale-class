@@ -2740,3 +2740,31 @@ Add photo upload to Teacher Daily Reports form so photos go to parents.
 Create storage bucket: `whale-uploads` with public access
 
 *Checkpoint: Photo sharing feature complete*
+
+
+---
+
+## Session 21 - PROGRESS CHECKPOINT
+**Time:** ~15:52 Beijing (Jan 12)
+
+### COMPLETED THIS SESSION
+1. ✅ Video fixes - all 13 issues resolved
+2. ✅ Daily Reports - discovered existing code, integrated into parent portal
+3. ✅ Photo sharing - teachers can add photos to daily reports
+4. 🔄 Messaging system - IN PROGRESS
+
+### COMMITS SO FAR
+| Hash | Description |
+|------|-------------|
+| 95da73b | Whale fully polished |
+| 1c61882 | Usability gaps identified |
+| 631bc34 | Daily Reports schema |
+| fe4d3d5 | Daily Reports integrated into parent UI |
+| 6a37abc | Fixed parent daily reports page |
+
+### NEXT: Teacher-Parent Messaging
+- Simple message thread per child
+- Teacher sends, parent replies
+- Quick notes/questions
+
+*Checkpoint: Resuming messaging system build*
