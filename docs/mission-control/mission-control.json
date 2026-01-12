@@ -1,23 +1,116 @@
 {
   "project": "Whale - Montessori Learning Platform (Montree)",
-  "lastUpdated": "2026-01-12T20:00:00+08:00",
-  "currentStatus": "🚀 LAUNCH READY - Jan 16 Demo Prepared",
+  "lastUpdated": "2026-01-12T21:30:00+08:00",
+  "currentStatus": "🎯 PRIORITY #1: Assessment System Build",
   "productionUrl": "https://www.teacherpotato.xyz",
-  "latestCommit": "e1fa802",
+  "latestCommit": "bd097bc",
   
   "railwayStatus": "✅ ONLINE",
   "launchDate": "2026-01-16",
   "daysRemaining": 4,
 
-  "session23Summary": {
-    "completedToday": [
-      "Deep audit of all portals",
-      "Classroom compact view + search",
-      "Child media gallery",
-      "Theme song upload system",
-      "Demo script document"
+  "PRIORITY_1": {
+    "name": "Assessment System (Whale Test)",
+    "description": "Pre-K to K English Readiness Assessment - tablet-friendly, child self-administered",
+    "planFile": "/docs/mission-control/ASSESSMENT_SYSTEM_PLAN.md",
+    "approach": "Path 1 - Reuse existing games with testMode prop",
+    "estimatedTime": "2-3 days",
+    "status": "PLAN COMPLETE - Ready for Implementation"
+  },
+
+  "assessmentSystem": {
+    "concept": "Repurpose existing phonics games into structured assessment",
+    "childFlow": "Tap name → Complete 7 mini-tests → Celebration",
+    "adminFlow": "Dashboard → View all results → Drill into child/class",
+    
+    "skills": [
+      {"order": 1, "code": "letter_recognition", "game": "Letter Match", "items": 8},
+      {"order": 2, "code": "letter_sounds", "game": "Letter Sounds", "items": 6},
+      {"order": 3, "code": "beginning_sounds", "game": "Beginning Sounds", "items": 6},
+      {"order": 4, "code": "ending_sounds", "game": "Ending Sounds", "items": 5},
+      {"order": 5, "code": "middle_sounds", "game": "Middle Sounds", "items": 4},
+      {"order": 6, "code": "blending", "game": "Sound Blending", "items": 5},
+      {"order": 7, "code": "segmenting", "game": "Sound Segmenting", "items": 4}
     ],
-    "commits": ["7262809", "f8c3ea7", "e1fa802"]
+    
+    "totalItems": 38,
+    "estimatedDuration": "12-15 minutes",
+    
+    "scoring": {
+      "proficient": "≥80%",
+      "developing": "50-79%",
+      "emerging": "<50%"
+    },
+    
+    "routes": {
+      "childFacing": ["/assessment", "/assessment/[sessionId]", "/assessment/[sessionId]/complete"],
+      "admin": ["/admin/test", "/admin/test/sessions", "/admin/test/sessions/[id]", "/admin/test/children", "/admin/test/children/[id]"]
+    },
+    
+    "database": {
+      "migration": "034_assessment_system.sql",
+      "tables": ["assessment_sessions", "assessment_results"]
+    },
+    
+    "audioNeeded": {
+      "intro": ["intro_welcome.mp3", "intro_start.mp3"],
+      "skills": ["skill_letter_recognition.mp3", "skill_letter_sounds.mp3", "skill_beginning_sounds.mp3", "skill_ending_sounds.mp3", "skill_middle_sounds.mp3", "skill_blending.mp3", "skill_segmenting.mp3"],
+      "transitions": ["transition_great.mp3", "transition_next.mp3", "transition_almost.mp3"],
+      "completion": ["complete_celebration.mp3", "complete_done.mp3"]
+    }
+  },
+
+  "implementationPhases": {
+    "phase1": {
+      "name": "Database & API Foundation",
+      "day": 1,
+      "tasks": ["Create migration 034", "Sessions API", "Results API"]
+    },
+    "phase2": {
+      "name": "Test Mode for Games",
+      "day": "1-2",
+      "tasks": ["useTestMode hook", "Add testMode to 7 games", "TestModeWrapper component"]
+    },
+    "phase3": {
+      "name": "Child-Facing Flow",
+      "day": 2,
+      "tasks": ["Name selection", "Test runner", "Celebration screen", "Progress indicators"]
+    },
+    "phase4": {
+      "name": "Admin Dashboard",
+      "day": "2-3",
+      "tasks": ["Overview dashboard", "Sessions list", "Child detail", "Skill breakdown viz"]
+    },
+    "phase5": {
+      "name": "Polish & PWA",
+      "day": 3,
+      "tasks": ["Offline support", "Error handling", "Tablet testing", "PDF export"]
+    }
+  },
+
+  "existingGamesToModify": {
+    "letterMatch": "/components/games/LetterMatchGame.tsx",
+    "letterSounds": "/components/01-LetterSounds.tsx",
+    "beginningSounds": "/components/games/BeginningSoundGame.tsx",
+    "endingSounds": "/components/games/EndingSoundGame.tsx",
+    "middleSounds": "/components/games/MiddleSoundGame.tsx",
+    "blending": "/components/games/BlendingGame.tsx",
+    "segmenting": "/components/games/SegmentingGame.tsx"
+  },
+
+  "testModeChanges": {
+    "noRetries": "One attempt per item, then move on",
+    "noHints": "Just gentle encouragement",
+    "limitedItems": "4-8 items per skill",
+    "trackEverything": "Record correct/incorrect, time per item",
+    "noScoreDisplay": "Child never sees percentages",
+    "callbackOnComplete": "onComplete(results) fires when done"
+  },
+
+  "credentials": {
+    "teacherAdmin": {"name": "Tredoux", "password": "870602"},
+    "teacherDemo": {"name": "John", "password": "123"},
+    "parentDemo": "/parent/demo"
   },
 
   "platformInventory": {
@@ -29,84 +122,9 @@
     "circleTimeWeeks": 36
   },
 
-  "portals": {
-    "student": {
-      "pages": ["Homepage (videos)", "Games Hub (14 games)"],
-      "status": "✅ Polished"
-    },
-    "teacher": {
-      "pages": ["Dashboard", "Circle Planner", "English Guide", "Curriculum", "Tools", "Progress", "Classroom", "Daily Reports*", "Messages*", "Attendance*"],
-      "status": "✅ Complete",
-      "note": "* Features hidden for non-Tredoux until tested"
-    },
-    "parent": {
-      "pages": ["Demo login", "Child view", "Progress", "Daily Reports", "Messages", "Photos"],
-      "status": "✅ Complete"
-    },
-    "principal": {
-      "pages": ["Dashboard", "Teachers", "Classrooms"],
-      "status": "✅ Built"
-    },
-    "admin": {
-      "pages": ["19+ tools", "Dark theme dashboard"],
-      "status": "✅ Complete"
-    },
-    "landing": {
-      "url": "/montree",
-      "features": ["Hero section", "Features", "Pricing ($29/$199)", "Stripe checkout"],
-      "status": "✅ Professional"
-    }
-  },
-
-  "newFeatures": {
-    "classroomCompactView": {
-      "file": "/app/admin/classroom/page.tsx",
-      "features": ["Grid of names", "Progress bars", "Search filter", "Click to expand"],
-      "status": "✅ Complete"
-    },
-    "childMediaGallery": {
-      "route": "/admin/child-media",
-      "features": ["Grid view", "Filter by child", "Date grouping", "Lightbox", "Stats"],
-      "status": "✅ Complete"
-    },
-    "themeSongUpload": {
-      "api": "/api/circle-songs",
-      "component": "/components/circle-time/ThemeSongPlayer.tsx",
-      "migration": "033_circle_time_songs.sql",
-      "features": ["Audio/video upload", "Player controls", "YouTube fallback", "Replace/delete"],
-      "status": "✅ Complete"
-    }
-  },
-
-  "migrationsToRun": [
-    {
-      "description": "Fix Week 19 assignments",
-      "sql": "UPDATE weekly_assignments SET week_number = 19 WHERE week_number = 2 AND year = 2026;"
-    },
-    {
-      "description": "Circle Time Songs table",
-      "file": "migrations/033_circle_time_songs.sql"
-    }
-  ],
-
-  "demoScript": {
-    "file": "/docs/DEMO_SCRIPT_JAN16.md",
-    "duration": "5-7 minutes",
-    "sections": ["Landing Page", "Teacher Portal", "Classroom View", "Games", "Parent Portal", "Videos"]
-  },
-
-  "credentials": {
-    "teacherAdmin": { "name": "Tredoux", "password": "870602" },
-    "teacherDemo": { "name": "John", "password": "123" },
-    "parentDemo": "/parent/demo"
-  },
-
-  "launchConfidence": "95%",
-  
-  "nextSteps": [
-    "1. Run SQL migrations in Supabase",
-    "2. Test theme song upload on production",
-    "3. Final demo rehearsal",
-    "4. Jan 16 presentation"
-  ]
+  "jan16Status": {
+    "launchConfidence": "95%",
+    "demoScript": "/docs/DEMO_SCRIPT_JAN16.md",
+    "allSystemsGo": true
+  }
 }
