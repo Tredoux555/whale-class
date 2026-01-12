@@ -2433,3 +2433,39 @@ Based on URL analysis:
 - ✅ All features working
 
 *FINAL STATUS: Whale Platform Fully Polished*
+
+
+---
+
+## Session 21 - USABILITY ANALYSIS
+**Time:** ~02:20 Beijing (Jan 12)
+
+### MISSING FEATURES FOR REAL SCHOOL USE
+
+**🔴 HIGH PRIORITY (Parents expect daily):**
+1. Daily Reports - what child did, mood, meals, naps, photo
+2. Photo Gallery - teachers upload, parents view
+3. Teacher-Parent Messaging - simple thread
+
+**🟡 MEDIUM PRIORITY (Weekly):**
+4. Weekly Summary - auto-generated from daily
+5. Observation Notes - Montessori milestones
+6. Calendar/Events - holidays, meetings
+
+**🟢 NICE TO HAVE:**
+7. Push Notifications
+8. Attendance marking
+
+### CURRENT PARENT PORTAL HAS:
+- Child profile ✅
+- Progress tracking ✅  
+- Montree Home activities link ✅
+- "Coming soon" placeholder for weekly updates
+
+### QUICK WIN: Daily Report System
+- Teacher taps child → quick form
+- Mood emoji, activities, notes, photo
+- Parent sees in app immediately
+- Takes 2 min per child
+
+*Checkpoint: Usability gaps identified*
