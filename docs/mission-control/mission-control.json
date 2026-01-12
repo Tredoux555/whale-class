@@ -1,38 +1,30 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T00:05:00+08:00",
-  "currentStatus": "✅ LAUNCH READY - Jan 16 | Monetization audit complete",
+  "lastUpdated": "2026-01-12T00:30:00+08:00",
+  "currentStatus": "✅ LAUNCH READY - Jan 16 | Parent portal complete",
   "productionUrl": "https://www.teacherpotato.xyz",
   
   "session21": {
     "date": "2026-01-12",
     "completed": [
       "Hidden Parents link from homepage",
-      "Hidden Student Progress from teacher dashboard",
-      "Hidden Learning Games from teacher dashboard",
-      "Full Whale audit - all systems working",
-      "Full Jeffy audit - launch ready",
-      "Monetization gap analysis complete"
+      "Hidden Student Progress + Learning Games from teacher dashboard",
+      "Full audit of both Whale and Jeffy",
+      "Monetization gap analysis",
+      "Toast notifications verified",
+      "PWA verified",
+      "Parent progress page created"
     ],
-    "monetizationGaps": [
-      "No toast notifications (save feedback)",
-      "Silent API failures",
-      "Not a PWA",
-      "No parent portal",
-      "No billing/subscription",
-      "No school onboarding"
-    ],
-    "nextPhase": "Phase 1: Toast notifications"
+    "latestCommit": "7c48aab"
   },
 
-  "session20": {
-    "date": "2026-01-11",
-    "completed": [
-      "Fixed game count to 14 everywhere",
-      "Removed Comic Sans site-wide",
-      "Fixed Railway build (lazy-init Supabase)",
-      "UI cleanup"
-    ]
+  "monetizationStatus": {
+    "toastNotifications": "✅ DONE",
+    "errorHandling": "✅ DONE",
+    "pwa": "✅ DONE",
+    "parentPortal": "✅ DONE",
+    "billing": "❌ Not needed for Jan 16",
+    "schoolOnboarding": "❌ Future"
   },
 
   "entryPoints": {
@@ -41,8 +33,8 @@
     "teachers": "/teacher",
     "principal": "/principal",
     "admin": "/admin",
-    "landing": "/montree",
-    "hub": "/admin/montree"
+    "parents": "/parent/home",
+    "parentProgress": "/parent/child/[id]/progress"
   },
 
   "demoAccounts": {
@@ -56,22 +48,12 @@
   "systemStatus": {
     "principalPortal": "✅",
     "teacherPortal": "✅ 4 items",
+    "parentPortal": "✅ Progress view",
     "studentPortal": "✅",
     "games": "✅ 14 games",
     "curriculum": "✅ 342 works",
     "teacherTools": "✅ 10 tools",
     "build": "✅",
     "deployed": "✅"
-  },
-
-  "monetizationReadiness": {
-    "toastNotifications": "✅",
-    "errorHandling": "✅",
-    "pwa": "✅",
-    "parentPortal": "✅",
-    "billing": "❌ NEXT",
-    "schoolOnboarding": "❌"
-  },
-
-  "latestCommit": "a196cbb"
+  }
 }
