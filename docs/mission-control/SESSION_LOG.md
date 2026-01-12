@@ -2469,3 +2469,83 @@ Based on URL analysis:
 - Takes 2 min per child
 
 *Checkpoint: Usability gaps identified*
+
+
+---
+
+## Session 21 - DAILY REPORTS BUILD
+**Time:** ~02:25 Beijing (Jan 12)
+
+### STEP 1: Database Schema ✅
+Created: `migrations/030_daily_reports.sql`
+
+Table: `daily_reports`
+- child_id, teacher_name, report_date
+- mood (happy/calm/tired/fussy/sick)
+- activities_done (array), activities_notes
+- meals_eaten, nap_duration
+- highlights, notes
+- photo_url
+- Unique constraint: one report per child per day
+
+### NEXT STEPS:
+2. API endpoint for CRUD
+3. Teacher form component
+4. Parent view component
+
+*Checkpoint: DB schema created*
+
+
+### STEP 2: API Endpoint ✅
+Created: `app/api/daily-reports/route.ts`
+
+Endpoints:
+- GET `/api/daily-reports?child_id=X` - fetch reports for a child
+- GET `/api/daily-reports?date=2026-01-12` - fetch all reports for a date
+- POST `/api/daily-reports` - create/update report (upsert)
+- DELETE `/api/daily-reports?id=X` - delete report
+
+*Checkpoint: API created*
+
+
+### STEP 3: Teacher Daily Reports Form ✅
+Created: `app/teacher/daily-reports/page.tsx`
+
+Features:
+- Grid of children with completion status
+- Progress bar showing X/Y complete
+- Mood selection with emojis (happy/calm/tired/fussy/sick)
+- Activity toggle buttons (10 common activities)
+- Meals eaten selector
+- Nap duration slider (0-180 min)
+- Highlights and notes text areas
+- Toast notifications on save
+- Auto-clears form after save
+
+*Checkpoint: Teacher form created*
+
+
+---
+
+## Session 21 - DAILY REPORTS: Schema Created
+**Time:** ~02:25 Beijing (Jan 12)
+
+### DATABASE SCHEMA DONE
+File: `/supabase/migrations/004_daily_reports.sql`
+
+Fields:
+- child_id, teacher_id, teacher_name, report_date
+- mood (happy/okay/tired/upset/sick)
+- energy_level (high/medium/low)
+- activities (JSONB array)
+- highlights, notes (text)
+- meals: breakfast/lunch/snack (all/most/some/none/na)
+- nap_start, nap_end (time)
+- photo_url
+- timestamps
+
+Constraints:
+- One report per child per day (UNIQUE)
+- Indexed for fast lookups
+
+*Checkpoint: Schema created, need to run in Supabase*

@@ -7,6 +7,18 @@ import InstallPrompt from '@/components/InstallPrompt';
 
 const DASHBOARD_ITEMS = [
   {
+    href: '/teacher/daily-reports',
+    icon: '📝',
+    title: 'Daily Reports',
+    description: 'Send daily updates to parents',
+    gradient: 'from-green-500 to-emerald-500',
+    bgGradient: 'from-green-50 to-emerald-50',
+    tags: [
+      { label: 'Parents', color: 'green' },
+      { label: 'Daily', color: 'emerald' },
+    ],
+  },
+  {
     href: '/teacher/circle-planner',
     icon: '🌅',
     title: 'Circle Time Planner',
