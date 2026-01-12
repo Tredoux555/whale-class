@@ -3407,3 +3407,48 @@ Commit: d0d0b4c - Empty commit to trigger rebuild
 Railway typically takes 2-3 minutes to rebuild and deploy.
 
 *Checkpoint: Deploy triggered, waiting*
+
+
+---
+
+## PHASE 1 UPDATE: Railway Still 404
+**Time:** ~16:15 Beijing
+
+### STATUS
+After 30 seconds, new pages still return 404.
+
+### POSSIBLE CAUSES
+1. Railway auto-deploy is disabled
+2. Build is queued but not started
+3. Build failed silently
+4. Cache issue
+
+### USER ACTION NEEDED
+
+**Please check Railway dashboard:**
+1. Go to https://railway.app
+2. Find the Whale project
+3. Check if there's a pending or failed deploy
+4. If needed, click "Deploy" or "Redeploy"
+5. Watch build logs for errors
+
+### MEANWHILE
+We can test locally:
+```bash
+cd ~/Desktop/whale && npm run dev
+```
+Then visit http://localhost:3000/teacher/daily-reports
+
+*Checkpoint: Need user to check Railway*
+
+
+---
+
+## BUILD FIX - Jan 12 ~16:20 Beijing
+**Problem:** Railway build failed with "supabaseUrl is required"
+**Cause:** `/api/attendance/route.ts` initialized Supabase at module level (build time)
+**Fix:** Moved Supabase initialization inside functions (lazy init)
+
+### LOCAL BUILD: ✅ PASSED
+
+*Checkpoint: Build fix applied*
