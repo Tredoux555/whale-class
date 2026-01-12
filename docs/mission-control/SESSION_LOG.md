@@ -1676,3 +1676,60 @@ Ready to start Phase 1: Toast notifications
 - Teacher Tools pages
 
 *Checkpoint: 341a34e*
+
+
+---
+
+## Phase 2 Progress - PWA
+**Time:** ~00:20 Beijing
+
+### DONE: PWA Setup
+- ✅ manifest.json already exists
+- ✅ sw.js already exists  
+- ✅ ServiceWorkerRegistration component connected
+- ✅ Build passes
+
+**Commit:** `2f2f80c`
+
+### PWA STATUS NOW:
+| Item | Status |
+|------|--------|
+| manifest.json | ✅ |
+| sw.js | ✅ |
+| Icons | ✅ 192, 512, apple-touch |
+| Service Worker Registration | ✅ |
+| Installable | ✅ (production) |
+
+### NEXT: Add install prompt for teachers
+
+*Checkpoint: 2f2f80c*
+
+
+---
+
+## Session 21 - Phase 1 Toast Check
+**Time:** ~00:15 Beijing
+
+### FINDINGS: Toast Already Implemented! ✅
+
+**Teacher Progress page (/teacher/progress):**
+- ✅ Toast component exists at /components/Toast.tsx
+- ✅ Success toast: "Work Name → Status"
+- ✅ Error toast: "Failed to save. Try again."
+- ✅ Connection error toast
+- ✅ Auto-dismiss after 3 seconds
+
+**Other teacher pages:**
+- Curriculum: Read-only (no saves needed)
+- Circle Planner: Read-only (no saves needed)
+- English Guide: Redirect to admin
+
+**Added:** Sonner library + Toaster to layout.tsx (for future use)
+
+**Build:** ✅ Passes
+
+### Phase 1 Status: ✅ ALREADY DONE
+
+Moving to Phase 2: PWA check
+
+*Commit: pending*
