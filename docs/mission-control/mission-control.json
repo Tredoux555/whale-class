@@ -1,83 +1,50 @@
 {
   "project": "Whale - Montessori Learning Platform (Montree)",
-  "lastUpdated": "2026-01-12T16:30:00+08:00",
-  "currentStatus": "🚀 SCHOOL APP FEATURES BUILT - Ready for migration",
+  "lastUpdated": "2026-01-12T18:25:00+08:00",
+  "currentStatus": "🚀 DEPLOYED - Ready for DB migration & testing",
   "productionUrl": "https://www.teacherpotato.xyz",
-  "landingPage": "/montree",
+  "latestCommit": "032be4c",
   
-  "session21": {
-    "date": "2026-01-12",
-    "newFeatures": [
-      "Daily Reports (teacher → parent)",
-      "Messaging (two-way chat)",
-      "Photo Gallery (from daily reports)",
-      "Attendance (quick marking)"
-    ],
-    "migrations": "RUN_FOR_SCHOOL_APP.sql",
-    "latestCommit": "79ba6da"
-  },
-
-  "schoolAppFeatures": {
-    "dailyReports": {
-      "status": "✅ Built",
-      "teacher": "/teacher/daily-reports",
-      "parent": "/parent/child/[id]/daily-reports",
-      "features": ["mood", "activities", "meals", "nap", "photos", "notes"]
-    },
-    "messaging": {
-      "status": "✅ Built",
-      "teacher": "/teacher/messages",
-      "parent": "/parent/child/[id]/messages",
-      "features": ["real-time chat", "date grouping", "timestamps"]
-    },
-    "photos": {
-      "status": "✅ Built",
-      "parent": "/parent/child/[id]/photos",
-      "features": ["grid view", "lightbox", "from daily reports"]
-    },
-    "attendance": {
-      "status": "✅ Built",
-      "teacher": "/teacher/attendance",
-      "features": ["one-tap marking", "stats bar", "present/absent/sick/late"]
-    }
-  },
-
-  "teacherDashboardTools": [
-    "📝 Daily Reports",
-    "💬 Messages",
-    "📋 Attendance",
-    "🌅 Circle Time Planner",
-    "📚 English Guide",
-    "📋 Curriculum Overview",
-    "🛠️ Teacher Tools"
-  ],
-
-  "parentPortalFeatures": [
-    "📝 Daily Reports",
-    "💬 Messages",
-    "📸 Photos",
-    "📊 Progress"
-  ],
-
-  "migrationRequired": {
-    "file": "/migrations/RUN_FOR_SCHOOL_APP.sql",
-    "tables": ["daily_reports", "parent_messages", "classroom_photos", "attendance"],
-    "status": "⏳ NEEDS TO BE RUN IN SUPABASE"
-  },
-
+  "railwayStatus": "✅ ONLINE",
   "launchDate": "2026-01-16",
   "daysRemaining": 4,
 
-  "systemStatus": {
-    "landingPage": "✅",
-    "teacherPortal": "✅ 7 tools",
-    "parentPortal": "✅ 4 features",
-    "studentPortal": "✅",
-    "games": "✅ 14 games",
-    "curriculum": "✅ 342 works",
-    "videos": "✅ 70 videos",
-    "admin": "✅ 19 tools",
-    "build": "✅",
-    "deployed": "✅"
-  }
+  "pagesLive": {
+    "teacherDailyReports": "✅ 200",
+    "teacherMessages": "✅ 200",
+    "teacherAttendance": "✅ 200",
+    "teacherDashboard": "✅ 200",
+    "games": "✅ 200",
+    "montreeLanding": "✅ 200"
+  },
+
+  "featuresBuilt": {
+    "dailyReports": "✅ Code complete",
+    "messaging": "✅ Code complete",
+    "attendance": "✅ Code complete",
+    "photos": "✅ Code complete",
+    "progressTracking": "✅ Working"
+  },
+
+  "criticalAction": {
+    "what": "RUN DATABASE MIGRATION",
+    "file": "/migrations/RUN_FOR_SCHOOL_APP.sql",
+    "tables": ["daily_reports", "parent_messages", "classroom_photos", "attendance"],
+    "status": "⚠️ NEEDS TO BE RUN IN SUPABASE"
+  },
+
+  "stillNeeded": {
+    "photoUploadInReports": { "effort": "Medium", "value": "High", "done": false },
+    "weeklySummary": { "effort": "Medium", "value": "Medium", "done": false },
+    "calendarEvents": { "effort": "Medium", "value": "Medium", "done": false },
+    "pushNotifications": { "effort": "Hard", "value": "High", "done": false }
+  },
+
+  "nextSteps": [
+    "1. Run database migration in Supabase",
+    "2. Test Daily Reports flow end-to-end",
+    "3. Test Messaging flow end-to-end", 
+    "4. Test Attendance flow",
+    "5. Add photo upload if time permits"
+  ]
 }
