@@ -6,9 +6,23 @@ import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
 
 // Features only available to Tredoux (admin features)
-const ADMIN_ONLY_HREFS = ['/teacher/daily-reports', '/teacher/messages', '/teacher/attendance'];
+const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance'];
 
 const DASHBOARD_ITEMS = [
+  {
+    href: '/admin/classroom',
+    icon: '👥',
+    title: 'My Classroom',
+    description: 'Track progress, update works, capture photos',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+    tags: [
+      { label: 'Progress', color: 'emerald' },
+      { label: 'Photos', color: 'teal' },
+      { label: 'Works', color: 'green' },
+    ],
+    adminOnly: true,
+  },
   {
     href: '/teacher/daily-reports',
     icon: '📝',
@@ -148,6 +162,15 @@ export default function TeacherDashboard() {
     return true;
   });
 
+  // Put Classroom first for Tredoux
+  const sortedItems = teacherName === 'Tredoux' 
+    ? visibleItems.sort((a, b) => {
+        if (a.href === '/admin/classroom') return -1;
+        if (b.href === '/admin/classroom') return 1;
+        return 0;
+      })
+    : visibleItems;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100 flex items-center justify-center">
@@ -207,7 +230,7 @@ export default function TeacherDashboard() {
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {visibleItems.map((item, index) => (
+          {sortedItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
@@ -254,16 +277,41 @@ export default function TeacherDashboard() {
           ))}
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Different for Tredoux */}
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
           <div className="flex flex-wrap gap-3">
+            {teacherName === 'Tredoux' && (
+              <>
+                <Link
+                  href="/admin/weekly-planning"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors font-medium"
+                >
+                  <span>📅</span>
+                  <span>Weekly Planning</span>
+                </Link>
+                <Link
+                  href="/assessment"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors font-medium"
+                >
+                  <span>📝</span>
+                  <span>Run Assessment</span>
+                </Link>
+                <Link
+                  href="/admin/children"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg hover:bg-cyan-200 transition-colors font-medium"
+                >
+                  <span>👶</span>
+                  <span>Manage Students</span>
+                </Link>
+              </>
+            )}
             <Link
-              href="/teacher/classroom"
+              href="/teacher/progress"
               className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
             >
               <span>📊</span>
-              <span>Track Progress</span>
+              <span>Progress Reports</span>
             </Link>
             <Link
               href="/games"

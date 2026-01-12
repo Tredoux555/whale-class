@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
 @import "tailwindcss";
 
 /* Custom theme using v4 CSS-based config */
@@ -203,4 +204,16 @@ body, html {
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;
+}
+
+/* Assessment child-friendly font */
+.font-child {
+  font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard', cursive;
+}
+
+/* Large letters for assessment */
+.assessment-letter {
+  font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard', cursive;
+  font-weight: 700;
+  line-height: 1;
 }

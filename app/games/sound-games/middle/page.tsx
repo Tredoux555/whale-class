@@ -1,118 +1,110 @@
 // app/games/sound-games/middle/page.tsx
-// Middle Sound Match Game - ElevenLabs audio only
-// FIXED: Better audio handling and immediate playback
+// Middle Sound Match Game - Hear word, tap the middle letter
+// Child hears full word, identifies the middle vowel sound
 
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { CVC_WORDS, VOWEL_COLORS, type CVCWord } from '@/lib/sound-games/sound-games-data';
+import { CVC_WORDS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
-import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
-const VOWELS = ['a', 'e', 'i', 'o', 'u'] as const;
+const VOWELS = ['a', 'e', 'i', 'o', 'u'];
+const CONSONANTS = ['b', 'c', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w'];
 
-const VOWEL_IMAGES: Record<string, string> = {
-  a: '🍎',
-  e: '🥚',
-  i: '🏠',
-  o: '🐙',
-  u: '☂️',
-};
+interface GameRound {
+  word: CVCWord;
+  options: string[]; // 4 letters: correct vowel + 3 distractors
+}
 
 export default function MiddleSoundGame() {
   const [gameState, setGameState] = useState<GameState>('intro');
-  const [currentWord, setCurrentWord] = useState<CVCWord | null>(null);
+  const [currentRound, setCurrentRound] = useState<GameRound | null>(null);
   const [score, setScore] = useState(0);
   const [roundsPlayed, setRoundsPlayed] = useState(0);
   const [totalRounds] = useState(10);
-  const [feedback, setFeedback] = useState<{ correct: boolean; message: string; correctVowel?: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ correct: boolean; message: string; correctLetter?: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const getRandomWord = useCallback((): CVCWord => {
-    return CVC_WORDS[Math.floor(Math.random() * CVC_WORDS.length)];
+  // Generate distractor letters
+  const getDistractors = useCallback((correctVowel: string): string[] => {
+    const shuffledConsonants = [...CONSONANTS].sort(() => Math.random() - 0.5);
+    return shuffledConsonants.slice(0, 3);
   }, []);
 
-  // Simple audio play function
-  const playAudio = async (path: string): Promise<void> => {
-    return new Promise((resolve) => {
-      try {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        }
-        
-        const audio = new Audio(path);
-        audioRef.current = audio;
-        
+  const getNextRound = useCallback((): GameRound => {
+    // Try to get a word we haven't used
+    let availableWords = CVC_WORDS.filter(w => !usedWords.has(w.word));
+    if (availableWords.length === 0) {
+      // Reset if we've used them all
+      setUsedWords(new Set());
+      availableWords = CVC_WORDS;
+    }
+    
+    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    const distractors = getDistractors(randomWord.middleSound);
+    const options = [randomWord.middleSound, ...distractors].sort(() => Math.random() - 0.5);
+    
+    return { word: randomWord, options };
+  }, [usedWords, getDistractors]);
+
+  // Play full word audio
+  const playWord = async (word: string): Promise<void> => {
+    setIsPlaying(true);
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      
+      const audio = new Audio(`/audio-new/words/${word}.mp3`);
+      audioRef.current = audio;
+      
+      await new Promise<void>((resolve) => {
         audio.onended = () => resolve();
-        audio.onerror = (e) => {
-          console.warn('Audio error:', path, e);
+        audio.onerror = () => {
+          console.warn('Audio error for word:', word);
           resolve();
         };
-        
-        audio.play().catch((err) => {
-          console.warn('Audio play failed:', path, err);
-          resolve();
-        });
-      } catch (e) {
-        console.warn('Audio exception:', e);
-        resolve();
-      }
-    });
-  };
-
-  // Play the word then emphasize the middle sound
-  const playWordStretched = async (word: CVCWord, includeInstruction: boolean = true) => {
-    setIsPlaying(true);
-
-    try {
-      if (includeInstruction) {
-        await playAudio('/audio-new/instructions/listen-carefully.mp3');
-        await new Promise((r) => setTimeout(r, 300));
-      }
-
-      // Play the word
-      await soundGameAudio.playWord(word.word);
-      await new Promise((r) => setTimeout(r, 400));
-      
-      // Then play the middle vowel sound
-      console.log('Playing middle sound:', word.middleSound);
-      await playAudio(`/audio-new/letters/${word.middleSound}.mp3`);
-    } catch (err) {
-      console.error('Error playing audio:', err);
+        audio.play().catch(() => resolve());
+      });
+    } catch (e) {
+      console.warn('Audio exception:', e);
     }
-
     setIsPlaying(false);
   };
 
   const startGame = async () => {
-    const firstWord = getRandomWord();
+    const firstRound = getNextRound();
     
     setGameState('playing');
     setScore(0);
     setRoundsPlayed(0);
-    setCurrentWord(firstWord);
+    setUsedWords(new Set([firstRound.word.word]));
+    setCurrentRound(firstRound);
+    setFeedback(null);
 
-    // Play immediately on user click
-    await playWordStretched(firstWord);
+    // Play the word
+    await playWord(firstRound.word.word);
   };
 
-  const handleVowelSelect = async (selectedVowel: string) => {
-    if (gameState !== 'playing' || isPlaying || !currentWord) return;
+  const handleLetterSelect = async (selectedLetter: string) => {
+    if (gameState !== 'playing' || isPlaying || !currentRound) return;
 
-    const isCorrect = selectedVowel === currentWord.middleSound;
+    const isCorrect = selectedLetter === currentRound.word.middleSound;
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      setFeedback({ correct: true, message: getRandomPhrase(CORRECT_PHRASES), correctVowel: selectedVowel });
+      setFeedback({ correct: true, message: getRandomPhrase(CORRECT_PHRASES), correctLetter: selectedLetter });
       await soundGameAudio.playCorrect();
 
+      // Play the word again as confirmation
       setTimeout(async () => {
-        await soundGameAudio.playWord(currentWord.word);
+        await playWord(currentRound.word.word);
       }, 500);
 
       setGameState('feedback');
@@ -127,25 +119,26 @@ export default function MiddleSoundGame() {
         } else {
           setFeedback(null);
           setGameState('playing');
-          const nextWord = getRandomWord();
-          setCurrentWord(nextWord);
-          await playWordStretched(nextWord);
+          const nextRound = getNextRound();
+          setCurrentRound(nextRound);
+          setUsedWords(prev => new Set([...prev, nextRound.word.word]));
+          await playWord(nextRound.word.word);
         }
       }, 2000);
     } else {
-      setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES), correctVowel: currentWord.middleSound });
+      setFeedback({ correct: false, message: getRandomPhrase(ENCOURAGEMENT_PHRASES), correctLetter: currentRound.word.middleSound });
       await soundGameAudio.playWrong();
 
       setTimeout(async () => {
         setFeedback(null);
-        await playWordStretched(currentWord, false);
+        await playWord(currentRound.word.word);
       }, 2000);
     }
   };
 
   const handleReplay = async () => {
-    if (currentWord && !isPlaying) {
-      await playWordStretched(currentWord, false);
+    if (currentRound && !isPlaying) {
+      await playWord(currentRound.word.word);
     }
   };
 
@@ -155,27 +148,33 @@ export default function MiddleSoundGame() {
       <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="text-8xl mb-6">🎯</div>
-          <h1 className="text-4xl font-bold text-white mb-4" >Middle Sound Match</h1>
-          <p className="text-xl text-white/90 mb-6">Listen for the sound in the <span className="font-bold">MIDDLE</span> of each word!</p>
+          <h1 className="text-4xl font-bold text-white mb-4">Middle Sound Match</h1>
+          <p className="text-xl text-white/90 mb-6">
+            Listen to the word and find the <span className="font-bold">MIDDLE</span> sound!
+          </p>
 
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-8">
             <p className="text-white font-bold mb-3">The 5 middle sounds:</p>
             <div className="flex justify-center gap-3">
               {VOWELS.map((v) => (
-                <div key={v} className="text-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-1" style={{ backgroundColor: VOWEL_COLORS[v].color }}>
-                    {VOWEL_IMAGES[v]}
-                  </div>
+                <div 
+                  key={v} 
+                  className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl font-bold text-purple-600"
+                  style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+                >
+                  {v}
                 </div>
               ))}
             </div>
           </div>
 
-          <button onClick={startGame} className="w-full p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl" >
+          <button onClick={startGame} className="w-full p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl">
             Start Playing! 🎮
           </button>
 
-          <Link href="/games/sound-games" className="block mt-4 text-white/70 hover:text-white">← Back to Sound Games</Link>
+          <Link href="/games/sound-games" className="block mt-4 text-white/70 hover:text-white">
+            ← Back to Sound Games
+          </Link>
         </div>
       </div>
     );
@@ -190,12 +189,18 @@ export default function MiddleSoundGame() {
       <div className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-9xl mb-6 animate-bounce">{emoji}</div>
-          <h1 className="text-4xl font-bold text-white mb-4" >Middle Sound Master!</h1>
-          <p className="text-2xl text-white/90 mb-8">Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}</p>
+          <h1 className="text-4xl font-bold text-white mb-4">Middle Sound Master!</h1>
+          <p className="text-2xl text-white/90 mb-8">
+            Score: <span className="font-bold text-yellow-300">{score}</span>/{totalRounds}
+          </p>
 
           <div className="space-y-4">
-            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl">Play Again! 🔄</button>
-            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">Back to Sound Games</Link>
+            <button onClick={startGame} className="w-full max-w-sm mx-auto p-4 bg-white text-purple-600 rounded-2xl font-bold text-xl">
+              Play Again! 🔄
+            </button>
+            <Link href="/games/sound-games" className="block w-full max-w-sm mx-auto p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+              Back to Sound Games
+            </Link>
           </div>
         </div>
       </div>
@@ -214,62 +219,76 @@ export default function MiddleSoundGame() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8 text-center">
-          <p className="text-xl text-white mb-4" >What sound is in the MIDDLE?</p>
+          <p className="text-xl text-white mb-6">What sound is in the MIDDLE?</p>
 
-          <div className="mb-4"><WordImageSimple word={currentWord?.word || ''} size={160} className="mx-auto" /></div>
-
-          <button onClick={handleReplay} disabled={isPlaying} className={`px-6 py-3 bg-white/30 rounded-full text-white font-bold ${isPlaying ? 'animate-pulse' : 'hover:bg-white/40'}`}>
-            {isPlaying ? '🔊 Listening...' : '🔊 Hear Again'}
+          {/* Big speaker button */}
+          <button 
+            onClick={handleReplay} 
+            disabled={isPlaying} 
+            className={`bg-white rounded-3xl p-8 shadow-xl mb-4 transition-transform ${
+              isPlaying ? 'animate-pulse scale-105' : 'hover:scale-105'
+            }`}
+          >
+            <span className="text-8xl">🔊</span>
           </button>
           
-          {/* Debug info */}
-          {currentWord && (
-            <p className="text-white/50 text-xs mt-2">
-              Word: {currentWord.word} | Middle: /{currentWord.middleSound}/
-            </p>
-          )}
+          <p className="text-white/80 text-lg">
+            {isPlaying ? 'Listen to the word...' : 'Tap to hear the word'}
+          </p>
         </div>
 
-        <div className="grid grid-cols-5 gap-3">
-          {VOWELS.map((vowel) => (
-            <button
-              key={vowel}
-              onClick={() => handleVowelSelect(vowel)}
-              disabled={gameState !== 'playing' || isPlaying}
-              className={`
-                p-4 rounded-2xl border-4 transition-all transform
-                ${feedback?.correct && vowel === currentWord?.middleSound ? 'scale-110 ring-4 ring-white' : ''}
-                ${feedback && !feedback.correct && vowel === feedback.correctVowel ? 'ring-4 ring-yellow-300' : ''}
-                hover:scale-105
-              `}
-              style={{ backgroundColor: VOWEL_COLORS[vowel].color, borderColor: 'rgba(255,255,255,0.5)' }}
-            >
-              <span className="text-4xl block">{VOWEL_IMAGES[vowel]}</span>
-            </button>
-          ))}
+        {/* Letter options - 2x2 grid */}
+        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+          {currentRound?.options.map((letter, index) => {
+            const isCorrectAnswer = feedback?.correct && letter === currentRound.word.middleSound;
+            const showAsCorrect = feedback && !feedback.correct && letter === feedback.correctLetter;
+            
+            return (
+              <button
+                key={`${letter}-${index}`}
+                onClick={() => handleLetterSelect(letter)}
+                disabled={gameState !== 'playing' || isPlaying}
+                className={`
+                  aspect-square rounded-2xl border-4 transition-all
+                  flex items-center justify-center
+                  ${isCorrectAnswer
+                    ? 'bg-green-400 border-green-300 scale-105 ring-4 ring-green-300/50'
+                    : showAsCorrect
+                    ? 'bg-yellow-400 border-yellow-300 ring-4 ring-yellow-300/50'
+                    : 'bg-white border-white/80 hover:scale-105'
+                  }
+                `}
+                style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+              >
+                <span className="text-6xl font-bold text-gray-800">
+                  {letter}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="mt-4 flex justify-center gap-2 text-sm text-white/70">
-          {VOWELS.map((v) => (
-            <span key={v} className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: VOWEL_COLORS[v].color }} />
-              {VOWEL_IMAGES[v]}
-            </span>
-          ))}
-        </div>
-
+        {/* Feedback message */}
         {feedback && (
-          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'}`} >
+          <div className={`mt-6 p-4 rounded-2xl text-center text-xl font-bold ${
+            feedback.correct ? 'bg-green-400 text-green-900' : 'bg-yellow-400 text-yellow-900'
+          }`}>
             {feedback.message}
-            {!feedback.correct && feedback.correctVowel && (
-              <span className="block mt-2">The middle sound is {VOWEL_IMAGES[feedback.correctVowel]}!</span>
+            {!feedback.correct && feedback.correctLetter && (
+              <span className="block mt-2">
+                The middle sound is "{feedback.correctLetter}"!
+              </span>
             )}
           </div>
         )}
 
+        {/* Progress bar */}
         <div className="mt-8">
           <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-white transition-all" style={{ width: `${(roundsPlayed / totalRounds) * 100}%` }} />
+            <div 
+              className="h-full bg-white transition-all" 
+              style={{ width: `${(roundsPlayed / totalRounds) * 100}%` }} 
+            />
           </div>
         </div>
       </main>

@@ -1,130 +1,79 @@
 {
-  "project": "Whale - Montessori Learning Platform (Montree)",
-  "lastUpdated": "2026-01-12T21:30:00+08:00",
-  "currentStatus": "🎯 PRIORITY #1: Assessment System Build",
+  "project": "Whale - Montessori Learning Platform",
+  "lastUpdated": "2026-01-13T01:15:00+08:00",
+  "currentSession": "Session 26 ENDED - Polish Complete",
+  "currentStatus": "⏳ AWAITING ASSETS - Code fully scaffolded",
   "productionUrl": "https://www.teacherpotato.xyz",
-  "latestCommit": "bd097bc",
   
   "railwayStatus": "✅ ONLINE",
   "launchDate": "2026-01-16",
-  "daysRemaining": 4,
+  "daysRemaining": 3,
 
-  "PRIORITY_1": {
-    "name": "Assessment System (Whale Test)",
-    "description": "Pre-K to K English Readiness Assessment - tablet-friendly, child self-administered",
-    "planFile": "/docs/mission-control/ASSESSMENT_SYSTEM_PLAN.md",
-    "approach": "Path 1 - Reuse existing games with testMode prop",
-    "estimatedTime": "2-3 days",
-    "status": "PLAN COMPLETE - Ready for Implementation"
+  "HANDOFF_LOCATION": "/docs/mission-control/HANDOFF_SESSION_27.md",
+  "RECORDING_SCRIPT": "/docs/AUDIO_RECORDING_SCRIPT.md",
+
+  "SESSION_27_TODO": [
+    "1. Receive audio recording from Tredoux",
+    "2. Segment into 273 word files + 10 sentence files",
+    "3. Copy to /public/audio-new/words/ and /sentences/",
+    "4. Receive/generate images (letters + vocabulary)",
+    "5. Test full assessment end-to-end",
+    "6. Deploy to production"
+  ],
+
+  "polishCompleted": {
+    "comicSansFont": "✅ Added via Google Fonts (Comic Neue)",
+    "assessmentLetterClass": "✅ .assessment-letter CSS class",
+    "letterMatchLowercase": "✅ Now lowercase only",
+    "letterSoundsLowercase": "✅ Now lowercase only",
+    "hearWordButtons": "✅ Added to BeginningTestGame & EndingTestGame",
+    "readingTestsWired": "✅ skills.ts + runner updated",
+    "middleSoundsFont": "✅ Uses assessment-letter class"
   },
 
-  "assessmentSystem": {
-    "concept": "Repurpose existing phonics games into structured assessment",
-    "childFlow": "Tap name → Complete 7 mini-tests → Celebration",
-    "adminFlow": "Dashboard → View all results → Drill into child/class",
-    
-    "skills": [
-      {"order": 1, "code": "letter_recognition", "game": "Letter Match", "items": 8},
-      {"order": 2, "code": "letter_sounds", "game": "Letter Sounds", "items": 6},
-      {"order": 3, "code": "beginning_sounds", "game": "Beginning Sounds", "items": 6},
-      {"order": 4, "code": "ending_sounds", "game": "Ending Sounds", "items": 5},
-      {"order": 5, "code": "middle_sounds", "game": "Middle Sounds", "items": 4},
-      {"order": 6, "code": "blending", "game": "Sound Blending", "items": 5},
-      {"order": 7, "code": "segmenting", "game": "Sound Segmenting", "items": 4}
-    ],
-    
-    "totalItems": 38,
-    "estimatedDuration": "12-15 minutes",
-    
-    "scoring": {
-      "proficient": "≥80%",
-      "developing": "50-79%",
-      "emerging": "<50%"
-    },
-    
-    "routes": {
-      "childFacing": ["/assessment", "/assessment/[sessionId]", "/assessment/[sessionId]/complete"],
-      "admin": ["/admin/test", "/admin/test/sessions", "/admin/test/sessions/[id]", "/admin/test/children", "/admin/test/children/[id]"]
-    },
-    
-    "database": {
-      "migration": "034_assessment_system.sql",
-      "tables": ["assessment_sessions", "assessment_results"]
-    },
-    
-    "audioNeeded": {
-      "intro": ["intro_welcome.mp3", "intro_start.mp3"],
-      "skills": ["skill_letter_recognition.mp3", "skill_letter_sounds.mp3", "skill_beginning_sounds.mp3", "skill_ending_sounds.mp3", "skill_middle_sounds.mp3", "skill_blending.mp3", "skill_segmenting.mp3"],
-      "transitions": ["transition_great.mp3", "transition_next.mp3", "transition_almost.mp3"],
-      "completion": ["complete_celebration.mp3", "complete_done.mp3"]
-    }
+  "assessmentSystemStatus": {
+    "coreComplete": true,
+    "databaseReady": true,
+    "allComponentsReady": true,
+    "readingTestsIntegrated": true,
+    "fontStylingComplete": true,
+    "awaitingAssets": true
   },
 
-  "implementationPhases": {
-    "phase1": {
-      "name": "Database & API Foundation",
-      "day": 1,
-      "tasks": ["Create migration 034", "Sessions API", "Results API"]
-    },
-    "phase2": {
-      "name": "Test Mode for Games",
-      "day": "1-2",
-      "tasks": ["useTestMode hook", "Add testMode to 7 games", "TestModeWrapper component"]
-    },
-    "phase3": {
-      "name": "Child-Facing Flow",
-      "day": 2,
-      "tasks": ["Name selection", "Test runner", "Celebration screen", "Progress indicators"]
-    },
-    "phase4": {
-      "name": "Admin Dashboard",
-      "day": "2-3",
-      "tasks": ["Overview dashboard", "Sessions list", "Child detail", "Skill breakdown viz"]
-    },
-    "phase5": {
-      "name": "Polish & PWA",
-      "day": 3,
-      "tasks": ["Offline support", "Error handling", "Tablet testing", "PDF export"]
-    }
+  "assetsNeeded": {
+    "letterImages": 26,
+    "wordImages": 273,
+    "wordAudio": 273,
+    "sentenceAudio": 10,
+    "total": 582,
+    "recordingScript": "/docs/AUDIO_RECORDING_SCRIPT.md"
   },
 
-  "existingGamesToModify": {
-    "letterMatch": "/components/games/LetterMatchGame.tsx",
-    "letterSounds": "/components/01-LetterSounds.tsx",
-    "beginningSounds": "/components/games/BeginningSoundGame.tsx",
-    "endingSounds": "/components/games/EndingSoundGame.tsx",
-    "middleSounds": "/components/games/MiddleSoundGame.tsx",
-    "blending": "/components/games/BlendingGame.tsx",
-    "segmenting": "/components/games/SegmentingGame.tsx"
-  },
+  "skillsInAssessment": [
+    {"order": 1, "name": "Letter Recognition", "items": 8, "status": "✅ ready"},
+    {"order": 2, "name": "Letter Sounds", "items": 6, "status": "✅ ready"},
+    {"order": 3, "name": "Beginning Sounds", "items": 6, "status": "⏳ needs images+audio"},
+    {"order": 4, "name": "Ending Sounds", "items": 5, "status": "⏳ needs images+audio"},
+    {"order": 5, "name": "Middle Sounds", "items": 4, "status": "⏳ needs audio"},
+    {"order": 6, "name": "Blending", "items": 5, "status": "✅ ready"},
+    {"order": 7, "name": "Word Reading", "items": 10, "status": "✅ wired (needs audio)"},
+    {"order": 8, "name": "Sentence Reading", "items": 5, "status": "✅ wired (needs audio)"}
+  ],
 
-  "testModeChanges": {
-    "noRetries": "One attempt per item, then move on",
-    "noHints": "Just gentle encouragement",
-    "limitedItems": "4-8 items per skill",
-    "trackEverything": "Record correct/incorrect, time per item",
-    "noScoreDisplay": "Child never sees percentages",
-    "callbackOnComplete": "onComplete(results) fires when done"
-  },
+  "totalAssessmentItems": 49,
+
+  "filesModifiedThisSession": [
+    "app/globals.css - Added Comic Neue font + .assessment-letter class",
+    "components/assessment/LetterMatchTestGame.tsx - Lowercase only + font",
+    "components/assessment/LetterSoundsTestGame.tsx - Lowercase only + font",
+    "components/assessment/BeginningTestGame.tsx - Added hear-word buttons",
+    "components/assessment/EndingTestGame.tsx - Added hear-word buttons",
+    "components/assessment/MiddleTestGame.tsx - Added font class",
+    "lib/assessment/skills.ts - Added reading tests (7 & 8)",
+    "app/assessment/[sessionId]/page.tsx - Wired reading tests"
+  ],
 
   "credentials": {
-    "teacherAdmin": {"name": "Tredoux", "password": "870602"},
-    "teacherDemo": {"name": "John", "password": "123"},
-    "parentDemo": "/parent/demo"
-  },
-
-  "platformInventory": {
-    "curriculumWorks": 342,
-    "learningGames": 14,
-    "curatedVideos": 70,
-    "nextjsPages": 266,
-    "teacherTools": 10,
-    "circleTimeWeeks": 36
-  },
-
-  "jan16Status": {
-    "launchConfidence": "95%",
-    "demoScript": "/docs/DEMO_SCRIPT_JAN16.md",
-    "allSystemsGo": true
+    "teacherAdmin": {"name": "Tredoux", "password": "870602"}
   }
 }
