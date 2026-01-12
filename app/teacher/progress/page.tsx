@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import Toast from '@/components/Toast';
 
 interface Child {
   id: string;
@@ -75,7 +74,6 @@ export default function TeacherProgressPage() {
   const [selectedWorkIndex, setSelectedWorkIndex] = useState<number | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [teacherName, setTeacherName] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
@@ -152,13 +150,13 @@ export default function TeacherProgressPage() {
       });
       if (res.ok) {
         setWorks(prev => prev.map(w => w.id === workId ? { ...w, status: newStatus } : w));
-        setToast({ message: `${workName} → ${statusName}`, type: 'success' });
+        toast.success(`${workName} → ${statusName}`);
       } else {
-        setToast({ message: 'Failed to save. Try again.', type: 'error' });
+        toast.error('Failed to save. Try again.');
       }
     } catch (error) {
       console.error('Failed to update progress:', error);
-      setToast({ message: 'Connection error. Try again.', type: 'error' });
+      toast.error('Connection error. Try again.');
     } finally {
       setUpdating(null);
     }
@@ -213,9 +211,6 @@ export default function TeacherProgressPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
-      {/* Toast notifications */}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      
       {/* Header */}
       <div className={`bg-gradient-to-r ${selectedChild ? (currentArea?.gradient || 'from-emerald-600 to-teal-600') : 'from-emerald-600 to-teal-600'} text-white`}>
         <div className="max-w-6xl mx-auto px-4 py-5">
@@ -493,15 +488,6 @@ export default function TeacherProgressPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Toast Notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
       )}
     </div>
   );
