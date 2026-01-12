@@ -68,8 +68,8 @@
     "toastNotifications": "✅",
     "errorHandling": "✅",
     "pwa": "✅",
-    "parentPortal": "❌",
-    "billing": "❌",
+    "parentPortal": "✅",
+    "billing": "❌ NEXT",
     "schoolOnboarding": "❌"
   },
 
