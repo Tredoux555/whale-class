@@ -2971,3 +2971,52 @@ Photo upload in daily reports already exists:
 **BUILD: ✅ PASSED**
 
 *Moving to Step 5: End-to-end testing*
+
+
+---
+
+## STEP 5: TESTING CHECKLIST
+**Time:** ~16:28
+
+### PAGES TO TEST (after deploy)
+| Page | URL | Expected |
+|------|-----|----------|
+| Teacher Daily Reports | /teacher/daily-reports | Child grid, form |
+| Teacher Messages | /teacher/messages | Child list, chat |
+| Teacher Attendance | /teacher/attendance | Child list, status buttons |
+| Parent Daily Reports | /parent/child/[id]/daily-reports | Report history |
+| Parent Messages | /parent/child/[id]/messages | Chat thread |
+| Parent Photos | /parent/child/[id]/photos | Photo gallery |
+
+### MIGRATIONS NEEDED
+Run in Supabase SQL Editor:
+```
+/migrations/RUN_FOR_SCHOOL_APP.sql
+```
+
+Creates 4 tables:
+1. daily_reports
+2. parent_messages
+3. classroom_photos
+4. attendance
+
+### CURRENT DEPLOY STATUS
+- Railway auto-deploys on git push
+- May take 2-5 minutes
+- New pages showing 404 until deploy completes
+
+*Moving to Step 6: Update mission-control.json*
+
+
+---
+
+## STEP 6 COMPLETE ✅
+**Time:** ~16:30
+
+Updated mission-control.json with:
+- All new school app features documented
+- Teacher dashboard now has 7 tools
+- Parent portal now has 4 features
+- Migration requirements documented
+
+*Moving to Step 7: Final build verification*

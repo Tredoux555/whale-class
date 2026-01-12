@@ -1,70 +1,82 @@
 {
   "project": "Whale - Montessori Learning Platform (Montree)",
-  "lastUpdated": "2026-01-12T02:10:00+08:00",
-  "currentStatus": "✅ FULLY POLISHED - Ready for Jan 16 presentation",
+  "lastUpdated": "2026-01-12T16:30:00+08:00",
+  "currentStatus": "🚀 SCHOOL APP FEATURES BUILT - Ready for migration",
   "productionUrl": "https://www.teacherpotato.xyz",
   "landingPage": "/montree",
   
   "session21": {
     "date": "2026-01-12",
-    "completedWork": [
-      "Full production audit both platforms",
-      "Video fixes - all 13 issues resolved",
-      "Polish check - all pages verified",
-      "70 total videos properly named",
-      "All portals verified working"
+    "newFeatures": [
+      "Daily Reports (teacher → parent)",
+      "Messaging (two-way chat)",
+      "Photo Gallery (from daily reports)",
+      "Attendance (quick marking)"
     ],
-    "videoFixes": {
-      "total": 13,
-      "renamedRecovered": 9,
-      "fixedLowercase": 4,
-      "fixedCategories": 1
+    "migrations": "RUN_FOR_SCHOOL_APP.sql",
+    "latestCommit": "79ba6da"
+  },
+
+  "schoolAppFeatures": {
+    "dailyReports": {
+      "status": "✅ Built",
+      "teacher": "/teacher/daily-reports",
+      "parent": "/parent/child/[id]/daily-reports",
+      "features": ["mood", "activities", "meals", "nap", "photos", "notes"]
     },
-    "latestCommit": "46b1ac1"
+    "messaging": {
+      "status": "✅ Built",
+      "teacher": "/teacher/messages",
+      "parent": "/parent/child/[id]/messages",
+      "features": ["real-time chat", "date grouping", "timestamps"]
+    },
+    "photos": {
+      "status": "✅ Built",
+      "parent": "/parent/child/[id]/photos",
+      "features": ["grid view", "lightbox", "from daily reports"]
+    },
+    "attendance": {
+      "status": "✅ Built",
+      "teacher": "/teacher/attendance",
+      "features": ["one-tap marking", "stats bar", "present/absent/sick/late"]
+    }
   },
 
-  "monetizationStatus": {
-    "landingPage": "✅ Professional",
-    "toastNotifications": "✅ Working",
-    "parentPortal": "✅ Complete",
-    "stripeIntegration": "✅ In signup form",
-    "pricing": "✅ $29/mo school, $199/mo district",
-    "pwa": "✅ Ready"
-  },
+  "teacherDashboardTools": [
+    "📝 Daily Reports",
+    "💬 Messages",
+    "📋 Attendance",
+    "🌅 Circle Time Planner",
+    "📚 English Guide",
+    "📋 Curriculum Overview",
+    "🛠️ Teacher Tools"
+  ],
 
-  "entryPoints": {
-    "landing": "/montree",
-    "students": "/",
-    "games": "/games",
-    "teachers": "/teacher",
-    "principal": "/principal",
-    "admin": "/admin",
-    "parentDemo": "/parent/demo",
-    "parentProgress": "/parent/child/[id]/progress",
-    "videoManager": "/admin/video-manager"
-  },
+  "parentPortalFeatures": [
+    "📝 Daily Reports",
+    "💬 Messages",
+    "📸 Photos",
+    "📊 Progress"
+  ],
 
-  "demoFlow": {
-    "step1": "Show landing page /montree",
-    "step2": "Demo teacher portal (any name / 123)",
-    "step3": "Demo parent portal /parent/demo",
-    "step4": "Show games /games",
-    "step5": "Show pricing section"
+  "migrationRequired": {
+    "file": "/migrations/RUN_FOR_SCHOOL_APP.sql",
+    "tables": ["daily_reports", "parent_messages", "classroom_photos", "attendance"],
+    "status": "⏳ NEEDS TO BE RUN IN SUPABASE"
   },
 
   "launchDate": "2026-01-16",
   "daysRemaining": 4,
 
   "systemStatus": {
-    "landingPage": "✅ Professional",
-    "principalPortal": "✅",
-    "teacherPortal": "✅ 4 tools",
-    "parentPortal": "✅",
+    "landingPage": "✅",
+    "teacherPortal": "✅ 7 tools",
+    "parentPortal": "✅ 4 features",
     "studentPortal": "✅",
     "games": "✅ 14 games",
     "curriculum": "✅ 342 works",
-    "videos": "✅ 70 videos (all fixed)",
-    "admin": "✅ 19 tools, dark theme",
+    "videos": "✅ 70 videos",
+    "admin": "✅ 19 tools",
     "build": "✅",
     "deployed": "✅"
   }
