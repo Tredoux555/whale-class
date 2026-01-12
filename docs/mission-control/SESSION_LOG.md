@@ -2173,3 +2173,80 @@ Demo flow:
 - `9061f1a` - Production ready checkpoint
 
 *Session 21 complete: Both platforms production ready*
+
+
+---
+
+## Session 21 - VIDEO AUDIT
+**Time:** ~01:20 Beijing (Jan 12)
+
+### ISSUES FOUND (43 videos total)
+
+| Issue | Count | Examples |
+|-------|-------|----------|
+| "Recovered Video X" names | 9 | Recovered Video 1-9 |
+| "Week Week 16" double prefix | 9 | Same as above |
+| Wrong category | 1 | "P" in stories (should be phonics) |
+| Inconsistent case | 4 | p, l, c, k should be P, L, C, K |
+| Missing week | 7 | Various |
+
+### VIDEOS NEEDING FIXES
+
+Recovered videos to rename:
+- Recovered Video 1 → Check actual video
+- Recovered Video 2 → Check actual video  
+- Recovered Video 3 → "Phonics M" (from URL)
+- Recovered Video 4 → Check actual video
+- Recovered Video 5 → "Phonics U" (from URL)
+- Recovered Video 6 → Check actual video
+- Recovered Video 7 → Check actual video
+- Recovered Video 8 → Check actual video
+- Recovered Video 9 → Check actual video
+
+### NEXT: Create admin tool to fix video metadata
+
+*Checkpoint: Video audit complete*
+
+
+---
+
+## Session 21 - VIDEO FIX SOLUTION
+**Time:** ~01:30 Beijing (Jan 12)
+
+### VIDEO MANAGER EXISTS ✅
+URL: `https://www.teacherpotato.xyz/admin/video-manager`
+
+Features:
+- Shows ⚠️ problem videos alert (recovered, untitled, bad weeks)
+- Click any video to edit
+- Change title, week number, category
+- Delete videos
+- Video preview in edit modal
+
+### HOW TO FIX VIDEOS
+
+1. Go to: https://www.teacherpotato.xyz/admin/video-manager
+2. You'll see red alert: "⚠️ 9 videos need attention"
+3. Click each "Recovered Video X" button
+4. Watch video preview to identify what it is
+5. Update:
+   - Title: Proper name (e.g., "M Song - Jolly Phonics")
+   - Week: Just number like "16" (not "Week Week 16")
+   - Category: weekly-phonics-sound for letter videos
+
+### RECOMMENDED FIXES
+
+Based on URL analysis:
+| Current Title | Real Title | Category |
+|---------------|------------|----------|
+| Recovered Video 3 | M Song | weekly-phonics-sound |
+| Recovered Video 5 | U Song | weekly-phonics-sound |
+| P (in stories) | P Song | weekly-phonics-sound |
+| p, l, c, k | P, L, C, K | weekly-phonics-sound |
+
+### PLAYLIST FEATURES WORKING ✅
+- Auto-play next video ✅
+- Repeat mode per video ✅
+- Lock screen controls ✅ (Media Session API)
+
+*Checkpoint: Video fix solution documented*
