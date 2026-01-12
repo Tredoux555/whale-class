@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
 
+// Features only available to Tredoux (admin features)
+const ADMIN_ONLY_HREFS = ['/teacher/daily-reports', '/teacher/messages', '/teacher/attendance'];
+
 const DASHBOARD_ITEMS = [
   {
     href: '/teacher/daily-reports',
@@ -106,6 +109,7 @@ const tagColors: Record<string, string> = {
   emerald: 'bg-emerald-100 text-emerald-700',
   amber: 'bg-amber-100 text-amber-700',
   rose: 'bg-rose-100 text-rose-700',
+  teal: 'bg-teal-100 text-teal-700',
 };
 
 export default function TeacherDashboard() {
@@ -134,6 +138,15 @@ export default function TeacherDashboard() {
     localStorage.removeItem('teacherName');
     router.push('/teacher');
   };
+
+  // Filter dashboard items based on teacher
+  const visibleItems = DASHBOARD_ITEMS.filter(item => {
+    // If it's an admin-only feature, only show to Tredoux
+    if (ADMIN_ONLY_HREFS.includes(item.href)) {
+      return teacherName === 'Tredoux';
+    }
+    return true;
+  });
 
   if (loading) {
     return (
@@ -194,7 +207,7 @@ export default function TeacherDashboard() {
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {DASHBOARD_ITEMS.map((item, index) => (
+          {visibleItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}

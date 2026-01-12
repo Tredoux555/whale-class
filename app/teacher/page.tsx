@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const TEACHERS = ['Jasmine', 'Ivan', 'John', 'Richard', 'Liza', 'Michael', 'Tredoux'];
-const PASSWORD = '123';
+
+// Teacher-specific passwords
+const PASSWORDS: Record<string, string> = {
+  'Tredoux': '870602',
+};
+const DEFAULT_PASSWORD = '123';
 
 export default function TeacherLoginPage() {
   const router = useRouter();
@@ -35,7 +40,9 @@ export default function TeacherLoginPage() {
       return;
     }
 
-    if (password !== PASSWORD) {
+    // Check password - Tredoux has special password, others use default
+    const expectedPassword = PASSWORDS[selectedTeacher] || DEFAULT_PASSWORD;
+    if (password !== expectedPassword) {
       setError('Incorrect password');
       setIsSubmitting(false);
       return;
