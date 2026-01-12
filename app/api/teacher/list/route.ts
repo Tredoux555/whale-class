@@ -12,6 +12,7 @@ export async function GET() {
   try {
     const supabase = getSupabase();
     
+    // Get all teachers
     const { data: teachers, error: teacherError } = await supabase
       .from('simple_teachers')
       .select('id, name, is_active, last_login, created_at')
@@ -23,31 +24,48 @@ export async function GET() {
       return NextResponse.json({ teachers: [] });
     }
 
+    // Get all assignments with child details
     const { data: assignments, error: assignError } = await supabase
       .from('teacher_children')
-      .select('teacher_id');
+      .select(`
+        teacher_id,
+        child_id,
+        children:child_id(id, name)
+      `);
 
     if (assignError) {
       console.error('Error fetching assignments:', assignError);
     }
 
-    const studentCounts: Record<string, number> = {};
+    // Group students by teacher
+    const teacherStudents: Record<string, { id: string; name: string }[]> = {};
     if (assignments) {
       for (const a of assignments) {
-        studentCounts[a.teacher_id] = (studentCounts[a.teacher_id] || 0) + 1;
+        if (!teacherStudents[a.teacher_id]) {
+          teacherStudents[a.teacher_id] = [];
+        }
+        const child = a.children as any;
+        if (child) {
+          teacherStudents[a.teacher_id].push({
+            id: child.id,
+            name: child.name
+          });
+        }
       }
     }
 
-    const teachersWithCounts = (teachers || []).map(t => ({
+    // Build teacher list with students
+    const teachersWithStudents = (teachers || []).map(t => ({
       id: t.id,
       name: t.name,
       is_active: t.is_active,
       last_login: t.last_login,
       created_at: t.created_at,
-      student_count: studentCounts[t.id] || 0
+      student_count: teacherStudents[t.id]?.length || 0,
+      students: teacherStudents[t.id] || []
     }));
 
-    return NextResponse.json({ teachers: teachersWithCounts });
+    return NextResponse.json({ teachers: teachersWithStudents });
   } catch (error) {
     console.error('Teacher list error:', error);
     return NextResponse.json({ teachers: [], error: 'Failed to load teachers' }, { status: 500 });

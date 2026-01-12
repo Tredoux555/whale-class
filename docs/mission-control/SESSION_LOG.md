@@ -2,6 +2,149 @@
 
 ---
 
+## SESSION 26 - January 13, 2026 Early Morning
+
+### 🎯 ASSESSMENT REFINEMENT & POLISH
+
+**Started:** ~00:00 Beijing  
+**Status:** ✅ POLISH COMPLETE - Awaiting Assets
+
+---
+
+### CHANGES MADE
+
+#### 1. Segmenting Test Removed ✅
+- "How many sounds?" was redundant
+- Assessment now 8 skills (added reading, removed segmenting)
+- Files updated: `lib/assessment/skills.ts`, `[sessionId]/page.tsx`
+
+#### 2. Middle Sounds Redesigned ✅
+- **Before:** Picture → hear vowel → tap emoji
+- **After:** Hear word → tap middle letter
+- Much cleaner, tests actual phonemic awareness
+- Files: `MiddleTestGame.tsx`, `middle/page.tsx`
+
+#### 3. Reading Tests Scaffolded & Wired ✅
+- Created `lib/assessment/reading-data.ts`
+  - 100 CVC words from Pink Series
+  - 10 sentences for reading test
+- Created `ReadingWordsTestGame.tsx` (teacher-assisted)
+- Created `ReadingSentencesTestGame.tsx` (teacher-assisted)
+- Wired into skills.ts as skills 7 & 8
+- Updated assessment runner with both components
+
+#### 4. Font Polish ✅
+- Added Comic Neue font via Google Fonts
+- Created `.assessment-letter` CSS class
+- Applied to all letter display components
+
+#### 5. Lowercase Only ✅
+- LetterMatchTestGame now uses lowercase letters only
+- LetterSoundsTestGame now uses lowercase letters only
+
+#### 6. "Hear Word" Buttons ✅
+- Added 🔊 button to each picture in BeginningTestGame
+- Added 🔊 button to each picture in EndingTestGame
+- Child can tap to hear word name if they don't recognize image
+
+#### 7. Folder Structure Created ✅
+- `/public/images/letters/` - 26 lowercase letter images
+- `/public/images/words/` - vocabulary images
+- `/public/audio-new/sentences/` - sentence audio
+
+#### 8. Asset Requirements PDF Generated ✅
+- Comprehensive list of all 351 assets needed
+- Letter images, word images, word audio, sentence audio
+- Clear instructions for Tredoux
+
+#### 9. Recording Script Created ✅
+- `/docs/AUDIO_RECORDING_SCRIPT.md`
+- 273 words in alphabetical order (add → zoo)
+- 10 sentences
+- One long recording → Claude segments
+
+---
+
+### CURRENT ASSESSMENT SKILLS
+
+| Order | Skill | Items | Status |
+|-------|-------|-------|--------|
+| 1 | Letter Recognition | 8 | ✅ Ready |
+| 2 | Letter Sounds | 6 | ✅ Ready |
+| 3 | Beginning Sounds | 6 | ⏳ Needs images+audio |
+| 4 | Ending Sounds | 5 | ⏳ Needs images+audio |
+| 5 | Middle Sounds | 4 | ⏳ Needs word audio |
+| 6 | Blending | 5 | ✅ Ready |
+| 7 | Word Reading | 10 | ✅ Wired (needs audio) |
+| 8 | Sentence Reading | 5 | ✅ Wired (needs audio) |
+
+**Total: 49 items (~20 min assessment)**
+
+---
+
+### ASSETS BLOCKED ON TREDOUX
+
+**Audio Recording Method:** Single long recording, Claude segments
+
+| Asset Type | Count | Status |
+|------------|-------|--------|
+| Word audio | 273 | 🎤 Recording script ready |
+| Sentence audio | 10 | 🎤 Recording script ready |
+| Letter images | 26 | ⏳ Pending |
+| Word images | ~273 | ⏳ Pending |
+
+**Recording Script:** `/docs/AUDIO_RECORDING_SCRIPT.md`
+- Words in alphabetical order (add → zoo)
+- Then 10 sentences
+- Estimated time: 20-25 minutes
+
+---
+
+### FILES MODIFIED
+
+| File | Change |
+|------|--------|
+| `app/globals.css` | Added Comic Neue font + .assessment-letter class |
+| `LetterMatchTestGame.tsx` | Lowercase only + font class |
+| `LetterSoundsTestGame.tsx` | Lowercase only + font class |
+| `BeginningTestGame.tsx` | Added hear-word buttons on each picture |
+| `EndingTestGame.tsx` | Added hear-word buttons on each picture |
+| `MiddleTestGame.tsx` | Added font class |
+| `lib/assessment/skills.ts` | Added reading tests (order 7 & 8) |
+| `[sessionId]/page.tsx` | Wired reading test components |
+
+---
+
+### FILES CREATED
+
+| File | Purpose |
+|------|---------|
+| `lib/assessment/reading-data.ts` | CVC words + sentences |
+| `components/assessment/ReadingWordsTestGame.tsx` | Word reading test |
+| `components/assessment/ReadingSentencesTestGame.tsx` | Sentence reading test |
+| `docs/mission-control/ASSESSMENT_COMPLETE_PLAN.md` | Full implementation plan |
+| `docs/AUDIO_RECORDING_SCRIPT.md` | Recording script for Tredoux |
+| `WHALE_ASSESSMENT_ASSETS_REQUIRED.pdf` | Asset checklist PDF |
+
+---
+
+### NEXT SESSION TASKS
+
+When assets are ready:
+1. Receive audio recording
+2. Segment into 273 word files + 10 sentence files
+3. Copy images to `/public/images/`
+4. Copy audio to `/public/audio-new/`
+5. Test end-to-end
+6. Deploy to production
+
+---
+
+*Session 26 complete: January 13, 2026 ~01:15 Beijing*
+*3 days until Jan 16 presentation*
+
+---
+
 ## SESSION 24 - January 12, 2026 Night
 
 ### 🎯 ASSESSMENT SYSTEM PLANNING
