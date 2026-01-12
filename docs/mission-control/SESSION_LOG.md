@@ -3473,3 +3473,23 @@ Made Supabase initialization more robust:
 ### BUILD: ✅ PASSED LOCALLY
 
 *Checkpoint: Build fix applied*
+
+
+---
+
+## FIX: All API Build Errors
+**Time:** ~16:25 Beijing
+
+### FIXED FILES
+- `/api/attendance/route.ts` ✅
+- `/api/classroom-photos/route.ts` ✅
+- `/api/daily-reports/route.ts` ✅
+- `/api/messages/route.ts` ✅
+
+### PATTERN
+All had `const supabase = createClient(...)` at module level.
+Fixed with lazy singleton: `function getSupabase() { if (!supabase) ... }`
+
+### BUILD: ✅ PASSED
+
+*Checkpoint: All API routes fixed*
