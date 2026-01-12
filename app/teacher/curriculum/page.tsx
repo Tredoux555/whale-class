@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface Work {
   id: string;
@@ -63,6 +64,7 @@ export default function TeacherCurriculumPage() {
       setCurriculum(data.curriculum || []);
     } catch (error) {
       console.error('Failed to fetch curriculum:', error);
+      toast.error('Failed to load curriculum');
     } finally {
       setLoading(false);
     }
