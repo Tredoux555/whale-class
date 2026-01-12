@@ -2634,3 +2634,49 @@ Files found:
 ### BUILD: ✅ PASSED
 
 *Checkpoint: Build fixed, ready to deploy*
+
+---
+
+## Session 21 - DAILY REPORTS READY TO DEPLOY
+**Time:** ~02:45 Beijing (Jan 12)
+
+### STATUS
+- ✅ API created: `/api/daily-reports`
+- ✅ Teacher form: `/teacher/daily-reports` (in dashboard)
+- ✅ Parent view: `/parent/child/[id]/daily-reports` (linked)
+- ✅ Build passes
+- ⏳ Migration needs to run in Supabase
+
+### MIGRATION REQUIRED
+Run this SQL in Supabase Dashboard → SQL Editor:
+```sql
+CREATE TABLE IF NOT EXISTS daily_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  child_id UUID NOT NULL,
+  teacher_name TEXT NOT NULL,
+  report_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  mood TEXT CHECK (mood IN ('happy', 'calm', 'tired', 'fussy', 'sick')),
+  activities_done TEXT[],
+  activities_notes TEXT,
+  meals_eaten TEXT CHECK (meals_eaten IN ('all', 'most', 'some', 'little', 'none')),
+  nap_duration INTEGER,
+  highlights TEXT,
+  notes TEXT,
+  photo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(child_id, report_date)
+);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_child_date ON daily_reports(child_id, report_date DESC);
+ALTER TABLE daily_reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for daily_reports" ON daily_reports FOR ALL USING (true);
+```
+
+### COMMITS THIS SESSION
+| Hash | Description |
+|------|-------------|
+| 631bc34 | Daily Reports: Schema created |
+| fe4d3d5 | Daily Reports: Integrated into UI |
+| 6a37abc | Fix: Complete parent page |
+
+*Checkpoint: Daily Reports feature complete, needs DB migration*
