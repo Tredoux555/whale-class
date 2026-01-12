@@ -90,7 +90,6 @@ export default function ParentDailyReportsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      {/* Header */}
       <header className="bg-purple-600 text-white px-4 py-6">
         <div className="max-w-2xl mx-auto">
           <Link href={`/parent/child/${childId}`} className="text-purple-200 text-sm hover:text-white">
@@ -112,14 +111,12 @@ export default function ParentDailyReportsPage() {
           <div className="space-y-4">
             {reports.map(report => (
               <div key={report.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                {/* Report Header */}
                 <div className="bg-purple-100 px-4 py-3 flex justify-between items-center">
                   <span className="font-semibold text-purple-800">{formatDate(report.report_date)}</span>
                   <span className="text-sm text-purple-600">by {report.teacher_name}</span>
                 </div>
 
                 <div className="p-4 space-y-4">
-                  {/* Mood */}
                   <div className="flex items-center gap-3">
                     <span className="text-4xl">{MOOD_EMOJIS[report.mood] || '😊'}</span>
                     <div>
@@ -128,19 +125,50 @@ export default function ParentDailyReportsPage() {
                     </div>
                   </div>
 
-                  {/* Activities */}
                   {report.activities_done && report.activities_done.length > 0 && (
                     <div>
                       <p className="text-sm text-gray-500 mb-2">🎨 Activities</p>
                       <div className="flex flex-wrap gap-2">
                         {report.activities_done.map((act, i) => (
-                          <span key={i} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
-                            {act}
-                          </span>
+                          <span key={i} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">{act}</span>
                         ))}
                       </div>
-                      {report.activities_notes && (
-                        <p className="mt-2 text-sm text-gray-600">{report.activities_notes}</p>
-                      )}
                     </div>
                   )}
+
+                  {report.meals_eaten && (
+                    <div className="flex items-center gap-2">
+                      <span>🍽️</span>
+                      <span className="text-sm">{MEAL_LABELS[report.meals_eaten] || report.meals_eaten}</span>
+                    </div>
+                  )}
+
+                  {report.nap_duration > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span>😴</span>
+                      <span className="text-sm">Napped for {report.nap_duration} minutes</span>
+                    </div>
+                  )}
+
+                  {report.highlights && (
+                    <div className="bg-yellow-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-500 mb-1">⭐ Highlights</p>
+                      <p className="text-sm">{report.highlights}</p>
+                    </div>
+                  )}
+
+                  {report.notes && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-500 mb-1">📝 Notes</p>
+                      <p className="text-sm">{report.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
