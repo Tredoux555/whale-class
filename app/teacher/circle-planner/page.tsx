@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { CIRCLE_TIME_CURRICULUM, CircleTimePlan, DayPlan } from '@/lib/circle-time/curriculum-data';
 import LessonDocuments from '@/components/circle-time/LessonDocuments';
 import TeacherNotes from '@/components/circle-time/TeacherNotes';
+import ThemeSongPlayer from '@/components/circle-time/ThemeSongPlayer';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
 const DAY_LABELS = {
@@ -176,6 +177,14 @@ export default function TeacherCirclePlannerPage() {
                 </button>
               </div>
             </div>
+
+            {/* Theme Song Player */}
+            <ThemeSongPlayer
+              weekNumber={plan.week}
+              defaultTitle={plan.song.title}
+              defaultActions={plan.song.actions}
+              themeColor={plan.color}
+            />
 
             {/* Week At A Glance - Prep Summary */}
             <div className="bg-white rounded-xl p-5 mb-4 shadow-sm border-2 border-dashed border-amber-300">
