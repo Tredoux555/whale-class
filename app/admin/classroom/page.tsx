@@ -34,13 +34,6 @@ interface School {
   id: string;
   name: string;
   slug: string;
-  settings?: { owner?: boolean };
-}
-
-interface School {
-  id: string;
-  name: string;
-  slug: string;
   settings?: { owner?: boolean; placeholder?: boolean };
 }
 
@@ -51,7 +44,6 @@ const STATUS_CONFIG = {
   mastered: { label: 'M', color: 'bg-green-200 text-green-800', next: 'not_started' },
 };
 
-// Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
 const AREA_ORDER = ['practical_life', 'sensorial', 'math', 'mathematics', 'language', 'culture'];
 
 const AREA_CONFIG: Record<string, { letter: string; color: string }> = {
@@ -63,9 +55,8 @@ const AREA_CONFIG: Record<string, { letter: string; color: string }> = {
   culture: { letter: 'C', color: 'bg-purple-100 text-purple-700' },
 };
 
-// File size limits
-const MAX_PHOTO_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 function LoadingSpinner() {
   return (
@@ -107,19 +98,22 @@ function ClassroomView() {
   const [filterArea, setFilterArea] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   
-  // School selector
+  // NEW: Search and compact view
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'compact' | 'full'>('compact');
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  
   const [schools, setSchools] = useState<School[]>([]);
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('00000000-0000-0000-0000-000000000001');
   
-  // Video modal
   const [videoModal, setVideoModal] = useState<{ url: string; title: string } | null>(null);
   
-  // Capture state
   const [activeCapture, setActiveCapture] = useState<{ assignment: WorkAssignment; child: ChildWithAssignments } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const childRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     fetchSchools();
@@ -226,18 +220,12 @@ function ClassroomView() {
     updateProgress(assignment.id, nextStatus);
   };
 
-  // Watch video - uses YouTube search for reliability
   const handleWatchVideo = async (assignment: WorkAssignment) => {
-    // Generate YouTube search URL from work name
-    // This is more reliable than direct URLs which break over time
     const searchTerm = `Montessori ${assignment.work_name} presentation`;
     const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
-    
-    // Open in new tab
     window.open(searchUrl, '_blank');
   };
 
-  // Capture photo/video
   const handleCapture = (assignment: WorkAssignment, child: ChildWithAssignments) => {
     setActiveCapture({ assignment, child });
     if (fileInputRef.current) {
@@ -304,35 +292,37 @@ function ClassroomView() {
     }
   };
 
-  const getEmbedUrl = (url: string) => {
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?]+)/);
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    const plMatch = url.match(/youtube\.com\/playlist\?list=([^&]+)/);
-    if (plMatch) return `https://www.youtube.com/embed/videoseries?list=${plMatch[1]}`;
-    return url;
-  };
-
   const getChildStats = (assignments: WorkAssignment[]) => {
     const total = assignments.length;
     const mastered = assignments.filter(a => a.progress_status === 'mastered').length;
     return { total, mastered, percent: total > 0 ? Math.round((mastered / total) * 100) : 0 };
   };
 
-  const filteredChildren = children.map(child => ({
-    ...child,
-    assignments: filterArea === 'all'
-      ? child.assignments
-      : child.assignments.filter(a => a.area === filterArea)
-  }));
+  // Filter children by search query
+  const filteredChildren = children
+    .filter(child => child.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .map(child => ({
+      ...child,
+      assignments: filterArea === 'all'
+        ? child.assignments
+        : child.assignments.filter(a => a.area === filterArea)
+    }));
+
+  // Handle child name click - scroll to and expand
+  const handleChildClick = (childId: string) => {
+    setSelectedChildId(childId);
+    setViewMode('full');
+    setTimeout(() => {
+      childRefs.current[childId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   if (loading) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen bg-gray-100" style={{ overscrollBehaviorX: 'none' }}>
-      {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      {/* Hidden file input - accepts both photo and video */}
       <input
         ref={fileInputRef}
         type="file"
@@ -342,7 +332,6 @@ function ClassroomView() {
         className="hidden"
       />
 
-      {/* Upload Progress Overlay */}
       {uploading && (
         <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center">
           <div className="bg-white rounded-2xl p-6 w-72 text-center">
@@ -388,7 +377,6 @@ function ClassroomView() {
             ))}
           </select>
 
-          {/* School Selector */}
           {schools.length > 1 && (
             <select
               value={selectedSchoolId}
@@ -438,21 +426,68 @@ function ClassroomView() {
         </div>
       </header>
 
-      {/* Legend */}
-      <div className="bg-white border-b px-4 py-2">
-        <div className="flex items-center justify-center gap-6 text-sm max-w-7xl mx-auto">
-          {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-            <span key={key} className="flex items-center gap-2">
-              <span className={`w-8 h-8 rounded-full ${config.color} flex items-center justify-center font-bold`}>
-                {config.label}
-              </span>
-              <span className="capitalize">{key.replace('_', ' ')}</span>
-            </span>
-          ))}
+      {/* Search + View Toggle Bar */}
+      <div className="bg-white border-b px-4 py-3 sticky top-[68px] z-40">
+        <div className="flex items-center gap-4 max-w-7xl mx-auto">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="🔍 Search child by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 pl-10 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+            />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {/* View Toggle */}
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('compact')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'compact' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📋 Names
+            </button>
+            <button
+              onClick={() => setViewMode('full')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'full' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📊 Full
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid */}
+      {/* Legend - only in full view */}
+      {viewMode === 'full' && (
+        <div className="bg-white border-b px-4 py-2">
+          <div className="flex items-center justify-center gap-6 text-sm max-w-7xl mx-auto">
+            {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+              <span key={key} className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-full ${config.color} flex items-center justify-center font-bold`}>
+                  {config.label}
+                </span>
+                <span className="capitalize">{key.replace('_', ' ')}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
       <main className="p-4 max-w-7xl mx-auto">
         {!selectedPlanId ? (
           <div className="text-center py-12">
@@ -467,21 +502,73 @@ function ClassroomView() {
           </div>
         ) : filteredChildren.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="text-gray-600">No assignments for Week {selectedWeek} yet</p>
-            <Link
-              href="/admin/weekly-planning"
-              className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Upload Weekly Plan
-            </Link>
+            <div className="text-5xl mb-4">{searchQuery ? '🔍' : '📋'}</div>
+            <p className="text-gray-600">
+              {searchQuery 
+                ? `No children found matching "${searchQuery}"`
+                : `No assignments for Week ${selectedWeek} yet`
+              }
+            </p>
+            {!searchQuery && (
+              <Link
+                href="/admin/weekly-planning"
+                className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Upload Weekly Plan
+              </Link>
+            )}
+          </div>
+        ) : viewMode === 'compact' ? (
+          /* COMPACT VIEW - Names only */
+          <div className="bg-white rounded-2xl shadow-sm p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-gray-700">
+                {filteredChildren.length} Children
+              </h2>
+              <span className="text-sm text-gray-500">Tap a name to view details</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+              {filteredChildren.map(child => {
+                const stats = getChildStats(child.assignments);
+                return (
+                  <button
+                    key={child.id}
+                    onClick={() => handleChildClick(child.id)}
+                    className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 rounded-xl transition-all text-left group"
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {child.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 truncate">{child.name}</p>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full transition-all ${stats.percent === 100 ? 'bg-green-500' : 'bg-blue-500'}`}
+                            style={{ width: `${stats.percent}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500">{stats.percent}%</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : (
+          /* FULL VIEW - Cards with assignments */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredChildren.map(child => {
               const stats = getChildStats(child.assignments);
               return (
-                <div key={child.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div 
+                  key={child.id} 
+                  ref={el => { childRefs.current[child.id] = el; }}
+                  className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${
+                    selectedChildId === child.id ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                >
                   {/* Child Header */}
                   <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
                     <h3 className="text-white font-bold text-lg truncate">{child.name}</h3>
@@ -496,7 +583,7 @@ function ClassroomView() {
                     </div>
                   </div>
 
-                  {/* Works List - swipe left/right on each row to change work in that area */}
+                  {/* Works List */}
                   <div className="divide-y" style={{ overscrollBehavior: 'contain' }}>
                     {[...child.assignments].sort((a, b) => {
                       const aIndex = AREA_ORDER.indexOf(a.area);
@@ -574,7 +661,7 @@ function ClassroomView() {
             </div>
             <div className="aspect-video bg-black">
               <iframe
-                src={getEmbedUrl(videoModal.url)}
+                src={videoModal.url}
                 className="w-full h-full"
                 allowFullScreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
