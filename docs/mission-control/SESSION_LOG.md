@@ -3452,3 +3452,24 @@ Then visit http://localhost:3000/teacher/daily-reports
 ### LOCAL BUILD: ✅ PASSED
 
 *Checkpoint: Build fix applied*
+
+
+---
+
+## FIX: Attendance API Build Error
+**Time:** ~16:20 Beijing
+
+### ISSUE
+Railway build failed with: `Error: supabaseUrl is required`
+in `/api/attendance/route.ts`
+
+### FIX
+Made Supabase initialization more robust:
+- Lazy singleton pattern
+- Check for env vars before creating client
+- Try/catch in handlers
+- Return 503 if service unavailable
+
+### BUILD: ✅ PASSED LOCALLY
+
+*Checkpoint: Build fix applied*
