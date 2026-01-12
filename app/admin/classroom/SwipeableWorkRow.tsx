@@ -398,13 +398,7 @@ export default function SwipeableWorkRow({
                 onClick={() => { onCapture(); closePanel(); }}
                 className="flex-1 py-2.5 bg-green-100 text-green-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
               >
-                📷 Photo
-              </button>
-              <button
-                onClick={handleRecordVideo}
-                className="flex-1 py-2.5 bg-purple-100 text-purple-700 rounded-lg active:scale-95 transition-transform text-sm font-medium"
-              >
-                🎥 Video
+                📷 Capture
               </button>
               <button
                 onClick={() => { onWatchVideo(); closePanel(); }}
