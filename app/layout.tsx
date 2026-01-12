@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { GlobalVideoSetup } from "@/components/GlobalVideoSetup";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -56,6 +57,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
       </head>
       <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
+        <Toaster position="top-center" richColors closeButton />
         <ServiceWorkerRegistration />
         <GlobalVideoSetup />
         {children}
