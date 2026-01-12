@@ -1,58 +1,62 @@
 {
-  "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-12T00:30:00+08:00",
-  "currentStatus": "✅ LAUNCH READY - Jan 16 | Parent portal complete",
+  "project": "Whale - Montessori Learning Platform (Montree)",
+  "lastUpdated": "2026-01-12T00:45:00+08:00",
+  "currentStatus": "✅ FULLY READY - Jan 16 presentation + monetization",
   "productionUrl": "https://www.teacherpotato.xyz",
+  "landingPage": "/montree",
   
   "session21": {
     "date": "2026-01-12",
-    "completed": [
-      "Hidden Parents link from homepage",
-      "Hidden Student Progress + Learning Games from teacher dashboard",
-      "Full audit of both Whale and Jeffy",
-      "Monetization gap analysis",
-      "Toast notifications verified",
-      "PWA verified",
-      "Parent progress page created"
+    "completedAudit": [
+      "Parent portal verified complete",
+      "Landing page verified professional",
+      "Stripe integration in place",
+      "All portals working",
+      "14 games confirmed",
+      "342 curriculum works confirmed"
     ],
-    "latestCommit": "7c48aab"
+    "latestCommit": "7d09dab"
   },
 
   "monetizationStatus": {
-    "toastNotifications": "✅ DONE",
-    "errorHandling": "✅ DONE",
-    "pwa": "✅ DONE",
-    "parentPortal": "✅ DONE",
-    "billing": "❌ Not needed for Jan 16",
-    "schoolOnboarding": "❌ Future"
+    "landingPage": "✅ Professional",
+    "toastNotifications": "✅ Working",
+    "parentPortal": "✅ Complete",
+    "stripeIntegration": "✅ In signup form",
+    "pricing": "✅ $29/mo school, $199/mo district",
+    "pwa": "✅ Ready"
   },
 
   "entryPoints": {
+    "landing": "/montree",
     "students": "/",
     "games": "/games",
     "teachers": "/teacher",
     "principal": "/principal",
     "admin": "/admin",
-    "parents": "/parent/home",
+    "parentDemo": "/parent/demo",
     "parentProgress": "/parent/child/[id]/progress"
   },
 
-  "demoAccounts": {
-    "admin": "Tredoux / 870602",
-    "teacher": "Any name / 123"
+  "demoFlow": {
+    "step1": "Show landing page /montree",
+    "step2": "Demo teacher portal (any name / 123)",
+    "step3": "Demo parent portal /parent/demo",
+    "step4": "Show games /games",
+    "step5": "Show pricing section"
   },
 
   "launchDate": "2026-01-16",
   "daysRemaining": 4,
 
   "systemStatus": {
+    "landingPage": "✅ Professional",
     "principalPortal": "✅",
-    "teacherPortal": "✅ 4 items",
-    "parentPortal": "✅ Progress view",
+    "teacherPortal": "✅",
+    "parentPortal": "✅",
     "studentPortal": "✅",
     "games": "✅ 14 games",
     "curriculum": "✅ 342 works",
-    "teacherTools": "✅ 10 tools",
     "build": "✅",
     "deployed": "✅"
   }
