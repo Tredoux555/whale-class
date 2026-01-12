@@ -3240,3 +3240,39 @@ Updated mission-control.json with:
 **Action:** Triggered fresh Railway deploy (commit 8009ebe)
 
 *Moving to Step 2: Run Database Migration*
+
+
+---
+
+## STEP 2: Database Migration
+**Time:** ~16:15 Beijing
+
+### MIGRATION REQUIRED
+
+The school app needs 4 tables in Supabase. 
+
+**File:** `/migrations/RUN_FOR_SCHOOL_APP.sql`
+
+**Tables to create:**
+1. `daily_reports` - Daily teacher → parent updates
+2. `parent_messages` - Two-way chat
+3. `classroom_photos` - Photo gallery
+4. `attendance` - Daily check-in
+
+### ACTION REQUIRED FROM USER
+
+1. Open Supabase Dashboard: https://supabase.com/dashboard
+2. Select Whale project
+3. Go to SQL Editor
+4. Copy contents of `/migrations/RUN_FOR_SCHOOL_APP.sql`
+5. Run the SQL
+
+### VERIFICATION
+
+After running, these tables should exist:
+- daily_reports
+- parent_messages
+- classroom_photos
+- attendance
+
+*Waiting for user to run migration...*
