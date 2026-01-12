@@ -31,6 +31,18 @@ const DASHBOARD_ITEMS = [
     ],
   },
   {
+    href: '/teacher/attendance',
+    icon: '📋',
+    title: 'Attendance',
+    description: 'Mark daily attendance',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+    tags: [
+      { label: 'Daily', color: 'emerald' },
+      { label: 'Quick', color: 'teal' },
+    ],
+  },
+  {
     href: '/teacher/circle-planner',
     icon: '🌅',
     title: 'Circle Time Planner',
