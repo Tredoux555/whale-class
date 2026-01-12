@@ -360,6 +360,75 @@ export default function TeacherDailyReportsPage() {
               />
             </div>
 
+            {/* Photo Upload */}
+            <div className="bg-white rounded-xl p-4">
+              <h3 className="font-semibold mb-3">📸 Photo of the Day</h3>
+              {report.photo_url ? (
+                <div className="relative">
+                  <img 
+                    src={report.photo_url} 
+                    alt="Daily photo" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => setReport(prev => ({ ...prev, photo_url: '' }))}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      // Show loading state
+                      const loadingToast = toast.loading('Uploading photo...');
+                      
+                      try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('folder', 'daily-reports');
+                        
+                        const res = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData
+                        });
+                        
+                        const data = await res.json();
+                        if (data.url) {
+                          setReport(prev => ({ ...prev, photo_url: data.url }));
+                          toast.success('Photo uploaded!', { id: loadingToast });
+                        } else {
+                          throw new Error('Upload failed');
+                        }
+                      } catch (err) {
+                        toast.error('Failed to upload photo', { id: loadingToast });
+                        console.error(err);
+                      }
+                    }}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="flex items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-colors"
+                  >
+                    <span className="text-2xl">📷</span>
+                    <span className="text-gray-600">Take or choose photo</span>
+                  </label>
+                  <p className="text-xs text-gray-500 text-center">
+                    Optional: Share a moment from today with parents
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Submit */}
             <button
               onClick={handleSubmit}

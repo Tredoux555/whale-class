@@ -117,6 +117,17 @@ export default function ParentDailyReportsPage() {
                 </div>
 
                 <div className="p-4 space-y-4">
+                  {/* Photo of the day - show first if exists */}
+                  {report.photo_url && (
+                    <div className="relative -mx-4 -mt-4 mb-4">
+                      <img 
+                        src={report.photo_url} 
+                        alt="Photo from school" 
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3">
                     <span className="text-4xl">{MOOD_EMOJIS[report.mood] || '😊'}</span>
                     <div>

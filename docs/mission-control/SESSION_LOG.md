@@ -2680,3 +2680,63 @@ CREATE POLICY "Allow all for daily_reports" ON daily_reports FOR ALL USING (true
 | 6a37abc | Fix: Complete parent page |
 
 *Checkpoint: Daily Reports feature complete, needs DB migration*
+
+
+---
+
+## Session 21 - DATA FLOW ANALYSIS
+**Time:** ~02:50 Beijing (Jan 12)
+
+### CURRENT DATA FLOW
+
+| Teacher Action | Parent View | Status |
+|----------------|-------------|--------|
+| Update work status | `/parent/child/[id]/progress` | ✅ Works |
+| Daily reports | `/parent/child/[id]/daily-reports` | ✅ Just added |
+| Capture photos | ❌ No parent view | 🔴 GAP |
+| Video links | ❌ No parent view | 🔴 GAP |
+
+### THE GAP
+Teachers can capture photos in classroom but they don't flow to parents.
+Daily Reports has photo_url field but no upload button.
+
+### FIX NEEDED
+Add photo upload to Teacher Daily Reports form so photos go to parents.
+
+*Checkpoint: Gap identified, building fix*
+
+
+---
+
+## Session 21 - PHOTO SHARING ADDED ✅
+**Time:** ~03:00 Beijing (Jan 12)
+
+### CHANGES MADE
+1. **Upload API** `/api/upload/route.ts`
+   - Accepts file uploads via FormData
+   - Stores in Supabase Storage (whale-uploads bucket)
+   - Returns public URL
+
+2. **Teacher Daily Reports** - Photo Upload
+   - Added 📸 Photo of the Day section
+   - Camera capture or file picker
+   - Upload to Supabase
+   - Preview with delete button
+
+3. **Parent Daily Reports** - Photo Display
+   - Shows photo at top of each report card
+   - Full width image display
+
+### DATA FLOW NOW COMPLETE
+| Teacher Action | Parent View | Status |
+|----------------|-------------|--------|
+| Update work status | Progress page | ✅ |
+| Daily report + photo | Daily reports | ✅ |
+| Mood/activities/notes | Daily reports | ✅ |
+
+### BUILD: ✅ PASSED
+
+### SUPABASE SETUP NEEDED
+Create storage bucket: `whale-uploads` with public access
+
+*Checkpoint: Photo sharing feature complete*
