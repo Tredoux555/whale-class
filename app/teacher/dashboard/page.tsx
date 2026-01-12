@@ -142,6 +142,9 @@ export default function TeacherDashboard() {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8">
+        {/* Install PWA Prompt */}
+        <InstallPrompt />
+        
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-blue-200/50">
           <div className="flex items-center justify-between">
