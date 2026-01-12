@@ -2809,3 +2809,82 @@ Create storage bucket: `whale-uploads` with public access
 ### BUILD: ✅ PASSED
 
 *Checkpoint: Messaging system complete!*
+
+---
+
+## 🎯 SESSION 21 - ANALYSIS & GAME PLAN
+**Time:** ~16:05 Beijing (Jan 12)
+**Days to Launch:** 4 (Jan 16)
+
+---
+
+### PART 1: WHAT'S BEEN DONE ✅
+
+**Core Platform (Complete):**
+- Landing page /montree - Professional SaaS design
+- Teacher portal - Login, dashboard, 6 tools
+- Parent portal - Child view, progress tracking
+- Student portal - Videos, games
+- Admin dashboard - 19 tools, dark theme
+- Games hub - 14 learning games
+- Curriculum - 342 Montessori works
+- Videos - 70 properly named
+
+**New Features Built Today:**
+- Daily Reports (UI complete, needs migration)
+- Messaging system (UI complete, needs migration)
+- Photo gallery schema ready
+
+---
+
+### PART 2: GOALS
+
+**Primary Goal:** Make Montree a USABLE school app that competes with Brightwheel/HiMama
+
+**Success Criteria for Jan 16:**
+1. Teacher can send daily reports to parents
+2. Parents can see reports and message teacher
+3. Photo sharing works
+4. All features actually functional (not just UI)
+
+---
+
+### PART 3: WHAT NEEDS TO BE DONE
+
+**🔴 CRITICAL (Must work):**
+| Task | Status | Action |
+|------|--------|--------|
+| Run migration 030 (daily_reports) | ❌ | Run SQL in Supabase |
+| Run migration 031 (classroom_photos) | ❌ | Run SQL in Supabase |
+| Run migration 032 (parent_messages) | ❌ | Run SQL in Supabase |
+| Test daily reports flow | ❌ | Teacher create → Parent view |
+| Test messaging flow | ❌ | Teacher send → Parent reply |
+
+**🟡 IMPORTANT (Should have):**
+| Task | Status | Action |
+|------|--------|--------|
+| Photo upload in daily reports | ❌ | Add upload component |
+| Photo gallery for parents | ❌ | Build parent gallery page |
+| Attendance marking | ❌ | Simple present/absent |
+
+**🟢 NICE TO HAVE:**
+| Task | Status | Action |
+|------|--------|--------|
+| Weekly summary auto-generate | ❌ | From daily reports |
+| Push notifications | ❌ | Complex, skip for now |
+| Calendar/events | ❌ | Skip for now |
+
+---
+
+### PART 4: GAME PLAN (8 Steps)
+
+**Step 1:** Create combined migration file (all 3 tables) ← CURRENT
+**Step 2:** Add photo upload to daily reports form
+**Step 3:** Create parent photo gallery page
+**Step 4:** Add attendance feature (simple)
+**Step 5:** Test all features end-to-end
+**Step 6:** Update mission-control.json
+**Step 7:** Final build verification
+**Step 8:** Deploy and verify on production
+
+*Checkpoint: Analysis complete, starting Step 1*
