@@ -2906,3 +2906,41 @@ Created: `/migrations/RUN_FOR_SCHOOL_APP.sql`
 **Action Required:** Run this SQL in Supabase SQL Editor
 
 *Moving to Step 2: Photo upload in daily reports*
+
+
+---
+
+## STEP 2: ALREADY COMPLETE ✅
+**Time:** ~16:12
+
+Photo upload in daily reports already exists:
+- `/app/teacher/daily-reports/page.tsx` - Has photo upload UI
+- `/app/api/upload/route.ts` - Handles Supabase Storage upload
+- Uses 'whale-uploads' bucket
+- Camera capture on mobile supported
+
+*Moving to Step 3: Parent photo gallery*
+
+
+---
+
+## STEP 3 COMPLETE ✅
+**Time:** ~16:18
+
+**Created:** `/app/parent/child/[id]/photos/page.tsx`
+
+**Features:**
+- Grid view of photos from daily reports
+- Lightbox for full-size viewing
+- Date labels on each photo
+- Shows highlights caption if available
+
+**Updated:** Parent child page now shows:
+- 📝 Daily Reports
+- 💬 Messages  
+- 📸 Photos (NEW)
+- 📊 Progress
+
+**BUILD: ✅ PASSED**
+
+*Moving to Step 4: Attendance feature*

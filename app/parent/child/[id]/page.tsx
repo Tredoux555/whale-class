@@ -77,15 +77,16 @@ export default function ParentChildPage() {
             <p className="font-semibold">Messages</p>
             <p className="text-sm text-gray-500">Chat with teacher</p>
           </Link>
+          <Link href={`/parent/child/${childId}/photos`} className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-pink-300 relative">
+            <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-pink-500 text-white text-xs rounded-full">New</div>
+            <div className="text-4xl mb-2">📸</div>
+            <p className="font-semibold">Photos</p>
+            <p className="text-sm text-gray-500">Gallery from school</p>
+          </Link>
           <Link href={`/parent/child/${childId}/progress`} className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-purple-300">
             <div className="text-4xl mb-2">📊</div>
             <p className="font-semibold">Progress</p>
             <p className="text-sm text-gray-500">View learning</p>
-          </Link>
-          <Link href="/games" className="bg-white rounded-xl p-6 border text-center hover:shadow-md hover:border-purple-300">
-            <div className="text-4xl mb-2">🎮</div>
-            <p className="font-semibold">Games</p>
-            <p className="text-sm text-gray-500">14 learning games</p>
           </Link>
         </div>
 
