@@ -2250,3 +2250,35 @@ Based on URL analysis:
 - Lock screen controls ✅ (Media Session API)
 
 *Checkpoint: Video fix solution documented*
+
+
+---
+
+## Session 21 - VIDEO FIX CHECKPOINT
+**Time:** ~01:45 Beijing (Jan 12)
+
+### VIDEOS FIXED SO FAR
+| Original | New Title | Category | Status |
+|----------|-----------|----------|--------|
+| p (lowercase) | P | weekly-phonics-sound | ✅ |
+| l (lowercase) | L | weekly-phonics-sound | ✅ |
+| P (in stories) | P | weekly-phonics-sound | ✅ |
+| Recovered Video 3 | M | weekly-phonics-sound | ✅ |
+| Recovered Video 4 | C (duplicate) | weekly-phonics-sound | ✅ |
+| Recovered Video 8 | Things That Grow (2) | song-of-week | ✅ |
+| Recovered Video 1 | Things That Grow (3) | song-of-week | ✅ |
+| Recovered Video 9 | Do You Like Broccoli (2) | song-of-week | ✅ |
+
+### STILL FIXING (race condition issues)
+- Recovered Video 5 -> U (duplicate)
+- Recovered Video 2 -> The Gingerbread Man
+- Recovered Video 6 -> Things Im Thankful For (2)
+- Recovered Video 7 -> Montessori Bead Chains
+- c (lowercase) -> C
+
+### NOTES
+- API returns success but Supabase storage has eventual consistency
+- Need to wait between updates to avoid race conditions
+- Admin video manager at: /admin/video-manager
+
+*Checkpoint: Video fixes in progress*
