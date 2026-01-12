@@ -3276,3 +3276,77 @@ After running, these tables should exist:
 - attendance
 
 *Waiting for user to run migration...*
+
+
+---
+
+## ⚠️ RAILWAY DEPLOYMENT STATUS
+**Time:** ~16:20 Beijing
+
+### ISSUE
+New pages (daily-reports, messages, attendance) show 404 on production.
+
+**Working pages:** /, /teacher, /teacher/dashboard, /games, /montree
+**404 pages:** /teacher/daily-reports, /teacher/messages, /teacher/attendance
+
+### LOCAL BUILD: ✅ PASSES
+All pages compile correctly locally.
+
+### POSSIBLE CAUSES
+1. Railway hasn't auto-deployed latest commits
+2. Build cache issue
+3. Railway needs manual redeploy
+
+### ACTION NEEDED
+**User should check Railway dashboard:**
+1. Go to Railway dashboard
+2. Check if latest commit (b51e3c8) is deployed
+3. If not, manually trigger redeploy
+4. Check build logs for errors
+
+### ALTERNATIVE
+If Railway continues to fail, pages can be tested locally with:
+```bash
+cd ~/Desktop/whale && npm run dev
+# Then visit http://localhost:3000/teacher/daily-reports
+```
+
+*Continuing to Step 3 while waiting for deploy...*
+
+
+---
+
+## SESSION 21 ANALYSIS - Jan 12 ~16:00 Beijing
+**Commit:** Checking latest state
+
+### WHAT'S BEEN BUILT (Code exists locally)
+
+| Feature | Teacher Route | Parent Route | API | Status |
+|---------|--------------|--------------|-----|--------|
+| Daily Reports | `/teacher/daily-reports` | `/parent/child/[id]/daily-reports` | `/api/daily-reports` | ✅ Built |
+| Messaging | `/teacher/messages` | `/parent/child/[id]/messages` | `/api/messages` | ✅ Built |
+| Photos | - | `/parent/child/[id]/photos` | `/api/classroom-photos` | ✅ Built |
+| Attendance | `/teacher/attendance` | - | `/api/attendance` | ✅ Built |
+
+### PRODUCTION STATUS (Live)
+
+| Page | Status |
+|------|--------|
+| Homepage | ✅ 200 |
+| Teacher Dashboard | ✅ 200 |
+| Teacher Daily Reports | ❌ 404 |
+| Teacher Messages | ❌ 404 |
+| Teacher Attendance | ❌ 404 |
+| Games | ✅ 200 |
+| Montree | ✅ 200 |
+
+### DIAGNOSIS
+New pages exist locally but Railway hasn't deployed them.
+
+### WHAT NEEDS TO HAPPEN
+1. Check why Railway isn't deploying
+2. Run database migrations in Supabase
+3. Test all features end-to-end
+4. Polish any issues found
+
+*Checkpoint: Analysis complete*
