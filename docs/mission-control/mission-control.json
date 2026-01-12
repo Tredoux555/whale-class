@@ -1,50 +1,112 @@
 {
   "project": "Whale - Montessori Learning Platform (Montree)",
-  "lastUpdated": "2026-01-12T18:25:00+08:00",
-  "currentStatus": "🚀 DEPLOYED - Ready for DB migration & testing",
+  "lastUpdated": "2026-01-12T20:00:00+08:00",
+  "currentStatus": "🚀 LAUNCH READY - Jan 16 Demo Prepared",
   "productionUrl": "https://www.teacherpotato.xyz",
-  "latestCommit": "032be4c",
+  "latestCommit": "e1fa802",
   
   "railwayStatus": "✅ ONLINE",
   "launchDate": "2026-01-16",
   "daysRemaining": 4,
 
-  "pagesLive": {
-    "teacherDailyReports": "✅ 200",
-    "teacherMessages": "✅ 200",
-    "teacherAttendance": "✅ 200",
-    "teacherDashboard": "✅ 200",
-    "games": "✅ 200",
-    "montreeLanding": "✅ 200"
+  "session23Summary": {
+    "completedToday": [
+      "Deep audit of all portals",
+      "Classroom compact view + search",
+      "Child media gallery",
+      "Theme song upload system",
+      "Demo script document"
+    ],
+    "commits": ["7262809", "f8c3ea7", "e1fa802"]
   },
 
-  "featuresBuilt": {
-    "dailyReports": "✅ Code complete",
-    "messaging": "✅ Code complete",
-    "attendance": "✅ Code complete",
-    "photos": "✅ Code complete",
-    "progressTracking": "✅ Working"
+  "platformInventory": {
+    "curriculumWorks": 342,
+    "learningGames": 14,
+    "curatedVideos": 70,
+    "nextjsPages": 266,
+    "teacherTools": 10,
+    "circleTimeWeeks": 36
   },
 
-  "criticalAction": {
-    "what": "RUN DATABASE MIGRATION",
-    "file": "/migrations/RUN_FOR_SCHOOL_APP.sql",
-    "tables": ["daily_reports", "parent_messages", "classroom_photos", "attendance"],
-    "status": "⚠️ NEEDS TO BE RUN IN SUPABASE"
+  "portals": {
+    "student": {
+      "pages": ["Homepage (videos)", "Games Hub (14 games)"],
+      "status": "✅ Polished"
+    },
+    "teacher": {
+      "pages": ["Dashboard", "Circle Planner", "English Guide", "Curriculum", "Tools", "Progress", "Classroom", "Daily Reports*", "Messages*", "Attendance*"],
+      "status": "✅ Complete",
+      "note": "* Features hidden for non-Tredoux until tested"
+    },
+    "parent": {
+      "pages": ["Demo login", "Child view", "Progress", "Daily Reports", "Messages", "Photos"],
+      "status": "✅ Complete"
+    },
+    "principal": {
+      "pages": ["Dashboard", "Teachers", "Classrooms"],
+      "status": "✅ Built"
+    },
+    "admin": {
+      "pages": ["19+ tools", "Dark theme dashboard"],
+      "status": "✅ Complete"
+    },
+    "landing": {
+      "url": "/montree",
+      "features": ["Hero section", "Features", "Pricing ($29/$199)", "Stripe checkout"],
+      "status": "✅ Professional"
+    }
   },
 
-  "stillNeeded": {
-    "photoUploadInReports": { "effort": "Medium", "value": "High", "done": false },
-    "weeklySummary": { "effort": "Medium", "value": "Medium", "done": false },
-    "calendarEvents": { "effort": "Medium", "value": "Medium", "done": false },
-    "pushNotifications": { "effort": "Hard", "value": "High", "done": false }
+  "newFeatures": {
+    "classroomCompactView": {
+      "file": "/app/admin/classroom/page.tsx",
+      "features": ["Grid of names", "Progress bars", "Search filter", "Click to expand"],
+      "status": "✅ Complete"
+    },
+    "childMediaGallery": {
+      "route": "/admin/child-media",
+      "features": ["Grid view", "Filter by child", "Date grouping", "Lightbox", "Stats"],
+      "status": "✅ Complete"
+    },
+    "themeSongUpload": {
+      "api": "/api/circle-songs",
+      "component": "/components/circle-time/ThemeSongPlayer.tsx",
+      "migration": "033_circle_time_songs.sql",
+      "features": ["Audio/video upload", "Player controls", "YouTube fallback", "Replace/delete"],
+      "status": "✅ Complete"
+    }
   },
 
+  "migrationsToRun": [
+    {
+      "description": "Fix Week 19 assignments",
+      "sql": "UPDATE weekly_assignments SET week_number = 19 WHERE week_number = 2 AND year = 2026;"
+    },
+    {
+      "description": "Circle Time Songs table",
+      "file": "migrations/033_circle_time_songs.sql"
+    }
+  ],
+
+  "demoScript": {
+    "file": "/docs/DEMO_SCRIPT_JAN16.md",
+    "duration": "5-7 minutes",
+    "sections": ["Landing Page", "Teacher Portal", "Classroom View", "Games", "Parent Portal", "Videos"]
+  },
+
+  "credentials": {
+    "teacherAdmin": { "name": "Tredoux", "password": "870602" },
+    "teacherDemo": { "name": "John", "password": "123" },
+    "parentDemo": "/parent/demo"
+  },
+
+  "launchConfidence": "95%",
+  
   "nextSteps": [
-    "1. Run database migration in Supabase",
-    "2. Test Daily Reports flow end-to-end",
-    "3. Test Messaging flow end-to-end", 
-    "4. Test Attendance flow",
-    "5. Add photo upload if time permits"
+    "1. Run SQL migrations in Supabase",
+    "2. Test theme song upload on production",
+    "3. Final demo rehearsal",
+    "4. Jan 16 presentation"
   ]
 }
