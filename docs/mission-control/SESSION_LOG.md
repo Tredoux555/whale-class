@@ -2074,3 +2074,19 @@ Demo flow:
 5. Show pricing
 
 *Checkpoint: Landing page verified*
+
+
+---
+
+## Session 21 - CHECKPOINT
+**Time:** ~00:50 Beijing (Jan 12)
+
+### CREATED: Demo Script
+`/docs/DEMO_SCRIPT_JAN16.md` with:
+- Quick links to all portals
+- 5-step demo flow (5-10 min)
+- Key talking points
+- Credentials reference
+- FAQ responses
+
+*Checkpoint: Demo script created*
