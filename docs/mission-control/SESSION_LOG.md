@@ -1927,3 +1927,20 @@ Check other pages that need toast feedback
 Parents need to see their child's progress
 
 *Checkpoint: c65c4da*
+
+
+---
+
+## Session 21 - CHECKPOINT 
+**Time:** ~00:20 Beijing (Jan 12)
+
+### PARENT PORTAL AUDIT
+- ✅ Login flow exists (/parent/home)
+- ✅ Family dashboard exists (/parent/home/[familyId])
+- ✅ Child page exists (/parent/child/[id])
+- ❌ **MISSING: Progress page** - Link exists but page doesn't!
+
+### NEXT: Create /parent/child/[id]/progress/page.tsx
+Shows child's Montessori progress to parents
+
+*Checkpoint: 56f5357*
