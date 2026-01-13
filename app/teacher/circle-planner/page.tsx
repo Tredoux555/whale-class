@@ -93,8 +93,18 @@ export default function TeacherCirclePlannerPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">Circle Time Planner</h1>
-                  <p className="text-sm text-gray-500">36-week curriculum</p>
+                  <p className="text-sm text-gray-500">Montessori-aligned curriculum</p>
                 </div>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-3 mr-4">
+              <div className="bg-orange-100 rounded-xl px-3 py-1.5 text-center">
+                <div className="text-lg font-bold text-orange-700">36</div>
+                <div className="text-xs text-orange-600">Weeks</div>
+              </div>
+              <div className="bg-orange-100 rounded-xl px-3 py-1.5 text-center">
+                <div className="text-lg font-bold text-orange-700">5</div>
+                <div className="text-xs text-orange-600">Days</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
