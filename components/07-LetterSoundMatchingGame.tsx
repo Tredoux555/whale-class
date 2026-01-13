@@ -193,8 +193,8 @@ const LetterSoundMatchingGame: React.FC = () => {
           <p className="text-white/90 mt-4">Tap the letter to hear its sound, then find the matching picture!</p>
         </div>
 
-        {/* Pictures - Now using real images */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        {/* Pictures - Now using real images that fill the frame */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
           {shuffledWords.map((word, index) => {
             const isCorrect = correctMatch === word.word;
             const isShaking = shakeCard === word.word;
@@ -203,20 +203,24 @@ const LetterSoundMatchingGame: React.FC = () => {
               <div key={index}
                 onClick={() => handlePictureClick(word)}
                 className={`
-                  bg-white rounded-2xl shadow-xl p-4 text-center cursor-pointer
+                  bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer
                   transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95
-                  ${isCorrect ? 'ring-4 ring-green-500 scale-110 bg-green-50' : ''}
+                  ${isCorrect ? 'ring-4 ring-green-500 scale-110' : ''}
                   ${isShaking ? 'animate-shake ring-4 ring-red-500' : ''}
-                  min-h-[180px] flex flex-col items-center justify-center
+                  border-4 border-white
                 `}>
-                <div className="mb-3 flex items-center justify-center">
-                  <WordImageSimple word={word.word} size={90} />
+                {/* Image fills the card */}
+                <div className="aspect-square relative">
+                  <WordImageSimple word={word.word} size={200} className="!w-full !h-full !rounded-none" />
                 </div>
-                <p className="text-gray-700 font-bold text-lg capitalize mb-2">{word.word}</p>
-                <button onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors text-sm">
-                  <Volume2 size={16} /> Say
-                </button>
+                {/* Label bar at bottom */}
+                <div className="bg-white p-2 text-center">
+                  <p className="text-gray-700 font-bold text-base capitalize">{word.word}</p>
+                  <button onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition-colors text-sm mx-auto mt-1">
+                    <Volume2 size={14} /> Say
+                  </button>
+                </div>
               </div>
             );
           })}
