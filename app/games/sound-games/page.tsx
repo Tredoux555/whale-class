@@ -88,7 +88,7 @@ export default function SoundGamesHub() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 pb-12">
         {/* Hero Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="text-8xl mb-4 animate-bounce">👂</div>
           <h1
             className="text-4xl md:text-5xl font-bold text-white mb-4"
@@ -96,13 +96,23 @@ export default function SoundGamesHub() {
           >
             Sound Games
           </h1>
-          <p className="text-xl text-white/80 max-w-lg mx-auto">
+          <p className="text-xl text-white/80 max-w-lg mx-auto mb-4">
             Train your ears to hear the sounds in words!
             <br />
             <span className="text-amber-300 font-semibold">
               Listen carefully - no letters here!
             </span>
           </p>
+          <div className="inline-flex gap-3">
+            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+              <div className="text-2xl font-bold text-white">5</div>
+              <div className="text-xs text-white/70">Games</div>
+            </div>
+            <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+              <div className="text-2xl font-bold text-white">3</div>
+              <div className="text-xs text-white/70">Phases</div>
+            </div>
+          </div>
         </div>
 
         {/* Info Banner */}
