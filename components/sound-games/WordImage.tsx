@@ -16,18 +16,22 @@ interface WordImageProps {
 }
 
 // Simple version - professional image display for games
+// Use className with !w-full !h-full !rounded-none for fill mode
 export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordImageProps, 'emoji'>) {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   const imageUrl = getWordImageUrl(word);
   
+  // Check if we're in fill mode (className contains !w-full)
+  const isFillMode = className.includes('!w-full');
+  
   // If no image URL or image failed to load, show placeholder
   if (!imageUrl || imageError) {
     return (
       <div 
-        className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-inner ${className}`}
-        style={{ width: size, height: size }}
+        className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-inner ${isFillMode ? 'w-full h-full' : 'rounded-2xl'} ${className}`}
+        style={isFillMode ? undefined : { width: size, height: size }}
       >
         <span className="text-gray-400 text-4xl">🖼️</span>
       </div>
@@ -36,8 +40,8 @@ export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordI
   
   return (
     <div 
-      className={`relative overflow-hidden rounded-2xl bg-white shadow-md ${className}`}
-      style={{ width: size, height: size }}
+      className={`relative overflow-hidden bg-white ${isFillMode ? 'w-full h-full' : 'rounded-2xl shadow-md'} ${className}`}
+      style={isFillMode ? undefined : { width: size, height: size }}
     >
       {isLoading && (
         <div 
@@ -49,9 +53,10 @@ export function WordImageSimple({ word, size = 120, className = '' }: Omit<WordI
       <Image
         src={imageUrl}
         alt={word}
-        width={size}
-        height={size}
-        className={`w-full h-full object-cover transition-all duration-300 ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+        fill={isFillMode}
+        width={isFillMode ? undefined : size}
+        height={isFillMode ? undefined : size}
+        className={`object-cover transition-all duration-300 ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} ${isFillMode ? '' : 'w-full h-full'}`}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           console.error(`Failed to load image for word: ${word}`);
