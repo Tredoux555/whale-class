@@ -129,10 +129,14 @@ export async function GET(request: NextRequest) {
     const parentOnly = url.searchParams.get('parentOnly') === 'true';
     const featuredOnly = url.searchParams.get('featured') === 'true';
     const reportDate = url.searchParams.get('date'); // For daily reports
+    const todayOnly = url.searchParams.get('today') === 'true'; // Filter to today's media
 
     let query = supabase
       .from('child_work_media')
-      .select('*')
+      .select(`
+        *,
+        children:child_id (name)
+      `)
       .order('taken_at', { ascending: false });
 
     if (childId) query = query.eq('child_id', childId);
@@ -143,13 +147,28 @@ export async function GET(request: NextRequest) {
     if (parentOnly) query = query.eq('parent_visible', true);
     if (featuredOnly) query = query.eq('is_featured', true);
     if (reportDate) query = query.eq('report_date', reportDate);
+    
+    // Filter to today's media only
+    if (todayOnly) {
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+      query = query.gte('taken_at', startOfDay).lt('taken_at', endOfDay);
+    }
 
-    const { data: media, error } = await query.limit(100);
+    const { data: mediaRaw, error } = await query.limit(100);
 
     if (error) {
       console.error('Fetch media error:', error);
       return NextResponse.json({ success: false, error: 'Failed to fetch media' }, { status: 500 });
     }
+
+    // Transform to include child_name at top level
+    const media = (mediaRaw || []).map(m => ({
+      ...m,
+      child_name: m.children?.name || 'Unknown',
+      children: undefined // Remove nested object
+    }));
 
     return NextResponse.json({ 
       success: true, 

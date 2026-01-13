@@ -10,6 +10,20 @@ const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teache
 
 const DASHBOARD_ITEMS = [
   {
+    href: '/admin/hub',
+    icon: '🐋',
+    title: 'Classroom Hub',
+    description: 'Photos, shelf manager, and media - all in one place',
+    gradient: 'from-blue-600 to-indigo-600',
+    bgGradient: 'from-blue-50 to-indigo-50',
+    tags: [
+      { label: 'Today', color: 'blue' },
+      { label: 'Shelves', color: 'green' },
+      { label: 'Media', color: 'purple' },
+    ],
+    featured: true,
+  },
+  {
     href: '/teacher/progress',
     icon: '📊',
     title: 'Progress Tracking',
@@ -183,9 +197,11 @@ export default function TeacherDashboard() {
     return true;
   });
 
-  // Put Classroom first for Tredoux, Progress first for other teachers
+  // Put Classroom Hub first for Tredoux, Progress first for other teachers
   const sortedItems = teacherName === 'Tredoux' 
     ? visibleItems.sort((a, b) => {
+        if (a.href === '/admin/hub') return -1;
+        if (b.href === '/admin/hub') return 1;
         if (a.href === '/admin/classroom') return -1;
         if (b.href === '/admin/classroom') return 1;
         return 0;
