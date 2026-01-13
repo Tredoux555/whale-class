@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Whale Class - Learning Videos",
-  description: "Weekly songs and phonics videos for the Whale Class kindergarten",
+  title: "Whale Class - Montessori Progress Tracking",
+  description: "Complete Montessori curriculum tracking for schools - 342 works across 5 areas",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

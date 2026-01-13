@@ -1,11 +1,14 @@
-// Simple teacher layout - NO Montree auth required
-// Teachers log in with name + password "123" stored in localStorage
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Teacher Portal | Whale Class',
+  description: 'Progress tracking, curriculum, and classroom tools',
+};
 
 export default function TeacherLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // No server-side auth check - pages handle their own localStorage check
-  return <>{children}</>;
+  return children;
 }
