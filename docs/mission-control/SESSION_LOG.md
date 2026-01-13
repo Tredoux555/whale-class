@@ -1,29 +1,25 @@
 # WHALE SESSION LOG
-**Last Updated:** Jan 13, 2026 06:32 AM
-**Session:** 28
-**Status:** ✅ PUSHED TO GIT
+**Last Updated:** Jan 13, 2026 07:00 AM
+**Session:** 29
+**Status:** ⏸️ PAUSED FOR REFRESH
 
 ---
 
 ## 🎯 JAN 16 PRESENTATION STATUS
 
 ### ✅ COMPLETED FOR PRESENTATION
-1. **Assessment System** - 8 skills, 49 items, Comic Neue font, hear-word buttons
-2. **Teacher Dashboard** - Classroom card first, emerald/teal gradient, photo/video/notes
-3. **Principal Dashboard** - Classes-first layout, inline teacher management
+1. **Montree Progress Tracking** - 342 works, tap-to-cycle status
+2. **Teacher Data Isolation** - Teachers only see their assigned students
+3. **Principal Dashboard** - Classes-first layout, inline teacher/student management
 4. **Weekly Planning** - Upload docx, Claude parses, grid view, A4 print
-5. **Montree Progress** - Tap-to-cycle status tracking
-6. **Modern UI** - 12 pages with gradients, admin dark theme
-7. **Multi-tenant** - Teacher-student assignments working
+5. **Modern UI** - 12 pages with gradients, admin dark theme
+6. **Assessment Code** - 8 skills, 49 items scaffolded (awaiting assets)
 
-### ⏳ AWAITING FROM TREDOUX (Before Jan 16)
-- **582 audio/image assets** for assessment system
-  - 273 word audio files
-  - 10 sentence audio files  
-  - 26 letter images
-  - 273 word images
-- Recording script at: `/docs/AUDIO_RECORDING_SCRIPT.md`
-- Requirements PDF at: `/docs/WHALE_TEST_ASSET_REQUIREMENTS.pdf`
+### ⏳ AUDIT IN PROGRESS (Session 29)
+- [ ] Demo data verification
+- [ ] Presentation flow walkthrough
+- [ ] Empty states & copy review
+- [ ] Fix any issues found
 
 ### 🚫 NOT FOR JAN 16 (Post-Launch)
 - Phase 5: Parent Portal Integration
@@ -31,45 +27,49 @@
 
 ---
 
-## SESSION 28 COMPLETED
+## SESSION 29 NOTES
 
-### Principal Dashboard Restructure
-**Files Changed:**
-- `/app/principal/page.tsx` (527 lines) - Classes-first layout
-- `/app/api/teacher/list/route.ts` (74 lines) - Enhanced with student details
-- `/app/api/teacher/add/route.ts` (59 lines) - NEW: Create teachers
-- `/app/api/teacher/assign-student/route.ts` (51 lines) - NEW: Assign students
-- `/app/api/teacher/unassign-student/route.ts` (38 lines) - NEW: Remove assignments
+### What Was Done
+- Read all brain files to understand current state
+- Verified teacher data isolation code exists
+- Verified tap-to-cycle progress tracking exists
+- Created audit plan for presentation readiness
 
-**Features:**
-- Stats bar: Classes → Teachers → Students
-- Class cards with teacher name, student count, student preview
-- Inline modals for Add Teacher and Assign Students
-- Unassigned students alert banner
-- Gradient styling (indigo-to-purple)
+### What NOT To Do
+- Don't generate TTS audio files (distraction)
+- Don't work on assessment assets (not priority)
+- Focus on MONTREE progress tracking system
+
+### Next Steps
+1. Check demo data exists in database
+2. Walk through Principal → Teacher → Progress flows
+3. Review empty states and copy
+4. Fix issues in small chunks
 
 ---
 
 ## PREVIOUS SESSIONS SUMMARY
 
-### Sessions 1-27: Assessment System Complete
-- 8 phonics skills with 49 test items
-- Letter Recognition, Letter Sounds, Beginning/Ending/Middle Sounds
-- Blending, Word Reading, Sentence Reading
-- All components wired and functional
-- Awaiting 582 assets from Tredoux
+### Session 28: Principal Dashboard
+- Classes-first layout implemented
+- Inline teacher and student management
+- Stats bar with gradient styling
 
-### Classroom App Enhancement
-- Tredoux full admin features
-- Swipeable work rows
-- Photo/video capture
-- Search/filter/print
-- Quick Actions section
+### Sessions 1-27: Core Systems
+- Assessment system (8 skills, 49 items)
+- Teacher/student assignment system
+- Weekly planning with docx upload
+- Unified parent APIs created
 
 ---
 
 ## GIT STATUS
 **Last Commit:** `879b30d`
-**Message:** "Principal dashboard: Classes-first layout with inline teacher management"
 **Branch:** main
-**Pushed:** ✅ Yes
+**Status:** Clean (removed rogue TTS files)
+
+---
+
+## KEY INSIGHT
+
+**Montree is the money feature.** The progress tracking system is what makes Whale licensable to schools worldwide. Make sure it demos beautifully on Jan 16.

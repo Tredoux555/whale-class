@@ -91,11 +91,23 @@ export default function TeacherProgressPage() {
   const currentArea = AREAS.find(a => a.id === selectedArea);
 
   useEffect(() => {
-    const name = localStorage.getItem('teacherName');
+    // Check URL param first (from principal dashboard), then localStorage
+    const params = new URLSearchParams(window.location.search);
+    const urlTeacher = params.get('teacher');
+    const storedName = localStorage.getItem('teacherName');
+    
+    const name = urlTeacher || storedName;
+    
     if (!name) {
       window.location.href = '/teacher';
       return;
     }
+    
+    // Save to localStorage for subsequent use
+    if (urlTeacher) {
+      localStorage.setItem('teacherName', urlTeacher);
+    }
+    
     setTeacherName(name);
     fetch('/api/teacher/login', {
       method: 'POST',

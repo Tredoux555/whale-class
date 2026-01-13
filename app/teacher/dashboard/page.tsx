@@ -10,6 +10,20 @@ const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teache
 
 const DASHBOARD_ITEMS = [
   {
+    href: '/teacher/progress',
+    icon: '📊',
+    title: 'Progress Tracking',
+    description: 'Track each child\'s Montessori journey across 342 works',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+    tags: [
+      { label: 'Montessori', color: 'emerald' },
+      { label: 'Progress', color: 'teal' },
+      { label: '342 Works', color: 'green' },
+    ],
+    teacherFirst: true,
+  },
+  {
     href: '/admin/classroom',
     icon: '👥',
     title: 'My Classroom',
@@ -162,14 +176,18 @@ export default function TeacherDashboard() {
     return true;
   });
 
-  // Put Classroom first for Tredoux
+  // Put Classroom first for Tredoux, Progress first for other teachers
   const sortedItems = teacherName === 'Tredoux' 
     ? visibleItems.sort((a, b) => {
         if (a.href === '/admin/classroom') return -1;
         if (b.href === '/admin/classroom') return 1;
         return 0;
       })
-    : visibleItems;
+    : visibleItems.sort((a, b) => {
+        if (a.href === '/teacher/progress') return -1;
+        if (b.href === '/teacher/progress') return 1;
+        return 0;
+      });
 
   if (loading) {
     return (
