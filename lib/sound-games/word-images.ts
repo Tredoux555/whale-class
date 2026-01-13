@@ -1,94 +1,215 @@
-// lib/sound-games/word-images.ts
-// Maps words to Supabase storage URLs for DALL-E generated images
-// Updated: Jan 8, 2026 - Added 60 new Sound Games images
+// Auto-generated word to image path mapping
+// All images stored in /public/images/words/
 
-const SUPABASE_URL = 'https://dmfncjjtsoxrnvcdnvjq.supabase.co';
-const BUCKET = 'images';
-const FOLDER = 'sound-objects';
+export const WORD_IMAGES: Record<string, string> = {
+  'add': '/images/words/add.jpeg',
+  'alligator': '/images/words/alligator.jpeg',
+  'ant': '/images/words/ant.jpeg',
+  'apple': '/images/words/apple.jpeg',
+  'arrow': '/images/words/arrow.jpeg',
+  'ax': '/images/words/ax.jpeg',
+  'bag': '/images/words/bag.jpeg',
+  'ball': '/images/words/ball.jpeg',
+  'bat': '/images/words/bat.jpeg',
+  'bed': '/images/words/bed.jpeg',
+  'big': '/images/words/big.jpeg',
+  'bin': '/images/words/bin.jpeg',
+  'book': '/images/words/book.jpeg',
+  'box': '/images/words/box.jpeg',
+  'bud': '/images/words/bud.jpeg',
+  'bug': '/images/words/bug.jpg',
+  'bus': '/images/words/bus.jpeg',
+  'cake': '/images/words/cake.jpeg',
+  'can': '/images/words/can.jpeg',
+  'cap': '/images/words/cap.jpeg',
+  'car': '/images/words/car.jpeg',
+  'cat': '/images/words/cat.jpeg',
+  'chair': '/images/words/chair.jpeg',
+  'cheese': '/images/words/cheese.jpeg',
+  'cherry': '/images/words/cherry.jpeg',
+  'chicken': '/images/words/chicken.jpeg',
+  'chin': '/images/words/chin.jpeg',
+  'chip': '/images/words/chip.jpeg',
+  'cow': '/images/words/cow.jpeg',
+  'cup': '/images/words/cup.webp',
+  'dig': '/images/words/dig.jpeg',
+  'dish': '/images/words/dish.jpg',
+  'dog': '/images/words/dog.jpeg',
+  'doll': '/images/words/doll.jpeg',
+  'door': '/images/words/door.jpeg',
+  'drum': '/images/words/drum.png',
+  'duck': '/images/words/duck.jpeg',
+  'egg': '/images/words/egg.jpeg',
+  'elbow': '/images/words/elbow.jpeg',
+  'elephant': '/images/words/elephant.jpg',
+  'elf': '/images/words/elf.jpg',
+  'end': '/images/words/end.jpeg',
+  'envelope': '/images/words/envelope.jpg',
+  'fan': '/images/words/fan.jpeg',
+  'fish': '/images/words/fish.jpeg',
+  'foot': '/images/words/foot.jpeg',
+  'fork': '/images/words/fork.jpeg',
+  'fox': '/images/words/fox.jpeg',
+  'frog': '/images/words/frog.jpeg',
+  'gift': '/images/words/gift.png',
+  'girl': '/images/words/girl.jpeg',
+  'goat': '/images/words/goat.jpeg',
+  'grape': '/images/words/grape.jpeg',
+  'green': '/images/words/green.png',
+  'gum': '/images/words/gum.jpeg',
+  'hand': '/images/words/hand.png',
+  'hat': '/images/words/hat.png',
+  'heart': '/images/words/heart.avif',
+  'hen': '/images/words/hen.jpeg',
+  'hit': '/images/words/hit.jpeg',
+  'hop': '/images/words/hop.png',
+  'horse': '/images/words/horse.jpeg',
+  'hot': '/images/words/hot.jpeg',
+  'house': '/images/words/house.jpeg',
+  'hug': '/images/words/hug.jpeg',
+  'hut': '/images/words/hut.jpeg',
+  'igloo': '/images/words/igloo.jpeg',
+  'ill': '/images/words/ill.jpeg',
+  'in': '/images/words/in.png',
+  'ink': '/images/words/ink.jpg',
+  'insect': '/images/words/insect.jpeg',
+  'itch': '/images/words/itch.jpeg',
+  'jam': '/images/words/jam.jpeg',
+  'jar': '/images/words/jar.jpg',
+  'jeans': '/images/words/jeans.webp',
+  'jet': '/images/words/jet.jpeg',
+  'juice': '/images/words/juice.webp',
+  'jump': '/images/words/jump.jpeg',
+  'lamp': '/images/words/lamp.jpg',
+  'leaf': '/images/words/leaf.jpeg',
+  'leg': '/images/words/leg.jpg',
+  'lemon': '/images/words/lemon.jpeg',
+  'lid': '/images/words/lid.webp',
+  'lip': '/images/words/lip.jpeg',
+  'log': '/images/words/log.webp',
+  'map': '/images/words/map.jpeg',
+  'mat': '/images/words/mat.jpeg',
+  'milk': '/images/words/milk.avif',
+  'mix': '/images/words/mix.jpeg',
+  'moon': '/images/words/moon.jpg',
+  'mop': '/images/words/mop.avif',
+  'mouse': '/images/words/mouse.webp',
+  'mud': '/images/words/mud.jpg',
+  'mug': '/images/words/mug.webp',
+  'nest': '/images/words/nest.png',
+  'net': '/images/words/net.jpeg',
+  'nine': '/images/words/nine.jpeg',
+  'nose': '/images/words/nose.jpg',
+  'nurse': '/images/words/nurse.jpg',
+  'nut': '/images/words/nut.jpeg',
+  'octopus': '/images/words/octopus.webp',
+  'olive': '/images/words/olive.jpg',
+  'on': '/images/words/on.jpg',
+  'orange': '/images/words/orange.jpeg',
+  'ostrich': '/images/words/ostrich.avif',
+  'ox': '/images/words/ox.webp',
+  'pan': '/images/words/pan.jpeg',
+  'pear': '/images/words/pear.jpeg',
+  'peg': '/images/words/peg.jpeg',
+  'pen': '/images/words/pen.jpeg',
+  'pig': '/images/words/pig.jpg',
+  'pin': '/images/words/pin.jpg',
+  'pink': '/images/words/pink.png',
+  'pot': '/images/words/pot.avif',
+  'pup': '/images/words/pup.jpeg',
+  'rabbit': '/images/words/rabbit.jpeg',
+  'rain': '/images/words/rain.jpg',
+  'rat': '/images/words/rat.webp',
+  'red': '/images/words/red.jpeg',
+  'ring': '/images/words/ring.avif',
+  'rug': '/images/words/rug.jpg',
+  'run': '/images/words/run.jpeg',
+  'sad': '/images/words/sad.webp',
+  'sheep': '/images/words/sheep.webp',
+  'shell': '/images/words/shell.jpeg',
+  'ship': '/images/words/ship.jpeg',
+  'shirt': '/images/words/shirt.webp',
+  'shoe': '/images/words/shoe.jpg',
+  'shop': '/images/words/shop.avif',
+  'sit': '/images/words/sit.jpeg',
+  'six': '/images/words/six.avif',
+  'snake': '/images/words/snake.jpg',
+  'soap': '/images/words/soap.webp',
+  'sock': '/images/words/sock.avif',
+  'spoon': '/images/words/spoon.jpeg',
+  'star': '/images/words/star.avif',
+  'sun': '/images/words/sun.jpeg',
+  'tent': '/images/words/tent.jpeg',
+  'thick': '/images/words/thick.jpg',
+  'thin': '/images/words/thin.jpg',
+  'think': '/images/words/think.png',
+  'three': '/images/words/three.jpeg',
+  'throw': '/images/words/throw.jpg',
+  'thumb': '/images/words/thumb.jpg',
+  'tiger': '/images/words/tiger.jpeg',
+  'top': '/images/words/top.jpg',
+  'toy': '/images/words/toy.jpg',
+  'tree': '/images/words/tree.jpeg',
+  'two': '/images/words/two.webp',
+  'umbrella': '/images/words/umbrella.jpeg',
+  'umpire': '/images/words/umpire.jpeg',
+  'uncle': '/images/words/uncle.jpeg',
+  'under': '/images/words/under.jpeg',
+  'up': '/images/words/up.png',
+  'us': '/images/words/us.avif',
+  'van': '/images/words/van.avif',
+  'vase': '/images/words/vase.jpeg',
+  'vest': '/images/words/vest.jpeg',
+  'vet': '/images/words/vet.jpeg',
+  'vine': '/images/words/vine.png',
+  'violin': '/images/words/violin.jpg',
+  'watch': '/images/words/watch.jpg',
+  'water': '/images/words/water.jpg',
+  'wax': '/images/words/wax.jpeg',
+  'web': '/images/words/web.jpg',
+  'wet': '/images/words/wet.jpeg',
+  'wig': '/images/words/wig.webp',
+  'wing': '/images/words/wing.jpeg',
+  'wolf': '/images/words/wolf.jpeg',
+  'worm': '/images/words/worm.jpg',
+  'yak': '/images/words/yak.webp',
+  'yam': '/images/words/yam.jpeg',
+  'yarn': '/images/words/yarn.webp',
+  'yell': '/images/words/yell.jpeg',
+  'yellow': '/images/words/yellow.png',
+  'yo-yo': '/images/words/yo-yo.jpeg',
+  'zebra': '/images/words/zebra.jpg',
+  'zero': '/images/words/zero.webp',
+  'zigzag': '/images/words/zigzag.avif',
+  'zip': '/images/words/zip.jpeg',
+  'zone': '/images/words/zone.png',
+  'zoo': '/images/words/zoo.avif',
+};
 
-// Original images (filename matches word)
-const ORIGINAL_IMAGES = new Set([
-  'alligator', 'anchor', 'ant', 'apple', 'astronaut', 'ax',
-  'bag', 'ball', 'bat', 'bed', 'bib', 'big', 'box', 'bud', 'bug', 'bus',
-  'cab', 'can', 'cap', 'car', 'cat', 'crab', 'cub', 'cup',
-  'dish', 'dog', 'doll', 'door', 'drum', 'duck',
-  'egg', 'elbow', 'elephant', 'elf', 'engine', 'envelope',
-  'fan', 'feather', 'fish', 'fork', 'fox', 'frog',
-  'gift', 'glass', 'goat', 'gold', 'grape', 'guitar', 'gum',
-  'ham', 'hammer', 'hand', 'hat', 'hen', 'hit', 'horse', 'hot', 'house', 'hug',
-  'igloo', 'iguana', 'ink', 'insect',
-  'jam', 'jar', 'jeep', 'jet', 'jug',
-  'key',
-  'lamp', 'leaf', 'leg', 'lemon', 'lid', 'lip', 'log',
-  'map', 'mat', 'mix', 'moon', 'mop', 'mouse', 'mud', 'mug',
-  'nail', 'necklace', 'nest', 'net', 'nose', 'nut',
-  'octopus', 'olive', 'orange', 'ostrich', 'otter', 'ox',
-  'pan', 'pear', 'pen', 'pet', 'pig', 'pin', 'pot', 'pup',
-  'rabbit', 'rain', 'rat', 'red', 'ring', 'rocket', 'rug',
-  'sit', 'six', 'snake', 'soap', 'sock', 'spoon', 'star', 'sun', 'swim',
-  'tape', 'tent', 'thimble', 'thorn', 'three', 'thumb', 'tiger', 'tooth', 'top', 'toy', 'tub',
-  'umbrella', 'umpire', 'unicorn',
-  'van', 'vase', 'vest', 'vet', 'vine', 'violin',
-  'wagon', 'watch', 'wax', 'web', 'wig', 'wolf', 'worm',
-  'zebra', 'zero', 'zigzag', 'zip', 'zipper', 'zoo'
-]);
+// Helper function to get image path for a word
+export function getWordImage(word: string): string {
+  const path = WORD_IMAGES[word.toLowerCase()];
+  if (path) return path;
+  // Fallback - try common extensions
+  return `/images/words/${word.toLowerCase()}.jpeg`;
+}
 
-// New Sound Games images (filename is sound-{word}.png)
-const SOUND_IMAGES = new Set([
-  'add', 'arrow', 'bin', 'book', 'cake', 'chair', 'cheese', 'cherry',
-  'chicken', 'chin', 'chip', 'cow', 'dig', 'end', 'foot', 'girl',
-  'green', 'heart', 'hop', 'hut', 'ill', 'in', 'itch', 'jeans',
-  'juice', 'jump', 'milk', 'nine', 'nurse', 'on', 'peg', 'pink',
-  'run', 'sad', 'sheep', 'shell', 'ship', 'shirt', 'shoe', 'shop',
-  'thick', 'thin', 'think', 'throw', 'tree', 'two', 'uncle', 'under',
-  'up', 'us', 'water', 'wet', 'wing', 'yak', 'yam', 'yarn',
-  'yell', 'yellow', 'yo-yo', 'zone'
-]);
-
-/**
- * Get the Supabase storage URL for a word's image
- * @param word - The word to get image for (lowercase)
- * @returns URL string if image exists, null otherwise
- */
+// Alias for backwards compatibility
 export function getWordImageUrl(word: string): string | null {
-  const normalizedWord = word.toLowerCase().trim();
-  
-  // Check new sound images first (sound-{word}.png format)
-  if (SOUND_IMAGES.has(normalizedWord)) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${FOLDER}/sound-${normalizedWord}.png`;
-  }
-  
-  // Check original images ({word}.png format)
-  if (ORIGINAL_IMAGES.has(normalizedWord)) {
-    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${FOLDER}/${normalizedWord}.png`;
-  }
-  
-  return null;
+  const path = WORD_IMAGES[word.toLowerCase()];
+  return path || null;
 }
 
-/**
- * Check if a word has an image available
- * @param word - The word to check
- */
+// Check if we have an image for a word
 export function hasWordImage(word: string): boolean {
-  const normalizedWord = word.toLowerCase().trim();
-  return SOUND_IMAGES.has(normalizedWord) || ORIGINAL_IMAGES.has(normalizedWord);
+  return word.toLowerCase() in WORD_IMAGES;
 }
 
-/**
- * Get all available words with images
- */
-export function getAvailableImageWords(): string[] {
-  return [...Array.from(ORIGINAL_IMAGES), ...Array.from(SOUND_IMAGES)];
-}
-
-/**
- * Get count of all available images
- */
-export function getImageCount(): { original: number; sound: number; total: number } {
-  return {
-    original: ORIGINAL_IMAGES.size,
-    sound: SOUND_IMAGES.size,
-    total: ORIGINAL_IMAGES.size + SOUND_IMAGES.size
-  };
+// Component helper - returns image element props
+export function getWordImageProps(word: string): { src: string; isEmoji: boolean } {
+  const path = WORD_IMAGES[word.toLowerCase()];
+  if (path) {
+    return { src: path, isEmoji: false };
+  }
+  return { src: '', isEmoji: true };
 }
