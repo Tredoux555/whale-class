@@ -160,7 +160,7 @@ function PrintContent() {
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
-          Whale Class • Beijing International School • {children.length} children • {children.reduce((sum, c) => sum + c.assignments.length, 0)} works
+          Whale Class • Weekly Progress Report • {children.length} children • {children.reduce((sum, c) => sum + c.assignments.length, 0)} works
         </div>
       </div>
     </>
