@@ -61,7 +61,7 @@ export default function InstallPrompt() {
             <span className="text-2xl">📲</span>
           </div>
           <div>
-            <p className="font-bold">Install Montree App</p>
+            <p className="font-bold">Install Whale App</p>
             <p className="text-sm text-blue-100">
               Add to home screen for faster access
             </p>

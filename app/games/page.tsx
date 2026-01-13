@@ -46,7 +46,7 @@ const VOCABULARY_GAMES: Game[] = [
 
 const GRAMMAR_GAMES: Game[] = [
   { id: 'grammar-symbols', name: 'Grammar Symbols', description: 'Learn parts of speech the Montessori way', icon: '▲', route: '/games/grammar-symbols', color: 'red', gradient: 'from-red-500 to-orange-500' },
-  { id: 'sentence-builder', name: 'Sentence Builder', description: 'Build sentences with word cards', icon: '📝', route: '/games/sentence-builder', color: 'amber', gradient: 'from-amber-500 to-yellow-500' },
+  { id: 'sentence-builder', name: 'Sentence Builder', description: 'Build sentences with word cards', icon: '📝', route: '/games/sentence-builder', color: 'amber', gradient: 'from-amber-500 to-yellow-500', disabled: true },
   { id: 'sentence-match', name: 'Sentence Match', description: 'Match sentences to pictures', icon: '🖼️', route: '/games/sentence-match', color: 'emerald', gradient: 'from-emerald-500 to-teal-500' },
 ];
 

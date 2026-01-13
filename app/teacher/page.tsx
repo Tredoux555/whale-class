@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 // Teacher-specific passwords
 const PASSWORDS: Record<string, string> = {
-  'Tredoux': '870602',
+  'Tredoux': '8706025176086',
 };
 const DEFAULT_PASSWORD = '123';
 

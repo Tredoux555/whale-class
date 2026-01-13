@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Simple admin login fallback (Tredoux / 870602)
-    if ((loginId.toLowerCase() === 'tredoux' || loginId.toLowerCase() === 'tredoux@admin.local') && password === '870602') {
+    // Simple admin login fallback (Tredoux / ID number)
+    if ((loginId.toLowerCase() === 'tredoux' || loginId.toLowerCase() === 'tredoux@admin.local') && password === '8706025176086') {
       const userToken = await createUserToken({
         userId: 'admin-tredoux-001',
         email: 'tredoux@admin.local',

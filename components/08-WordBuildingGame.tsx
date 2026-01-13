@@ -168,7 +168,7 @@ const WordBuildingGame: React.FC = () => {
       setAvailableLetters(newAvailable);
 
       setFeedback('✓ Correct!');
-      await GameAudio.playCorrect();
+      // Only play letter sound - no "correct" ding
       await playLetterSound(letter);
 
       // Check if complete
