@@ -46,6 +46,14 @@
 - Removed hardcoded "Beijing International School" → generic footer
 - Print layout confirmed working (A4, auto-print on load)
 
+### Polish #4: Empty States ✅
+- Reviewed all key pages for empty state handling
+- All have helpful messages with clear next steps:
+  - Teacher Progress: "Contact your administrator to assign students"
+  - Principal: "Add a teacher to create a class" + button
+  - Classroom: Shows which week has no data
+  - Homepage: "Check back soon for new content"
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
