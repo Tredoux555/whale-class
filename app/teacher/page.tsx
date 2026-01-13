@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const TEACHERS = ['Jasmine', 'Ivan', 'John', 'Richard', 'Liza', 'Michael', 'Tredoux'];
-
 // Teacher-specific passwords
 const PASSWORDS: Record<string, string> = {
   'Tredoux': '870602',
@@ -14,11 +12,28 @@ const DEFAULT_PASSWORD = '123';
 
 export default function TeacherLoginPage() {
   const router = useRouter();
+  const [teachers, setTeachers] = useState<string[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [teachersLoading, setTeachersLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch teachers from API
+  useEffect(() => {
+    fetch('/api/teacher/list')
+      .then(res => res.json())
+      .then(data => {
+        const names = (data.teachers || []).map((t: { name: string }) => t.name);
+        setTeachers(names);
+      })
+      .catch(() => {
+        // Fallback to common names if API fails
+        setTeachers(['Tredoux', 'John', 'Jasmine', 'Ivan', 'Richard', 'Liza', 'Michael']);
+      })
+      .finally(() => setTeachersLoading(false));
+  }, []);
 
   useEffect(() => {
     const teacher = localStorage.getItem('teacherName');
@@ -106,10 +121,11 @@ export default function TeacherLoginPage() {
                 <select
                   value={selectedTeacher}
                   onChange={(e) => setSelectedTeacher(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-lg appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-300"
+                  disabled={teachersLoading}
+                  className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-lg appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-300 disabled:opacity-50"
                 >
-                  <option value="">-- Choose your name --</option>
-                  {TEACHERS.map((name) => (
+                  <option value="">{teachersLoading ? 'Loading teachers...' : '-- Choose your name --'}</option>
+                  {teachers.map((name) => (
                     <option key={name} value={name}>
                       {name}
                     </option>
