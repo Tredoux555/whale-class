@@ -177,7 +177,7 @@ export default function GamesHubPage() {
             Learn Through Play
           </h2>
           <p className="text-lg text-blue-100 max-w-xl mx-auto">
-            Fun phonics, reading, and grammar games designed for young learners
+            Montessori-aligned phonics, reading, and grammar games for ages 3-6
           </p>
           
           {/* Quick Stats */}
