@@ -193,7 +193,7 @@ const LetterSoundMatchingGame: React.FC = () => {
           <p className="text-white/90 mt-4">Tap the letter to hear its sound, then find the matching picture!</p>
         </div>
 
-        {/* Pictures - Now using real images that fill the frame */}
+        {/* Pictures - Images fill the frame with floating Say button */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {shuffledWords.map((word, index) => {
             const isCorrect = correctMatch === word.word;
@@ -209,16 +209,15 @@ const LetterSoundMatchingGame: React.FC = () => {
                   ${isShaking ? 'animate-shake ring-4 ring-red-500' : ''}
                   border-4 border-white
                 `}>
-                {/* Image fills the card */}
+                {/* Image fills the entire card */}
                 <div className="aspect-square relative">
                   <WordImageSimple word={word.word} size={200} className="!w-full !h-full !rounded-none" />
-                </div>
-                {/* Label bar at bottom */}
-                <div className="bg-white p-2 text-center">
-                  <p className="text-gray-700 font-bold text-base capitalize">{word.word}</p>
-                  <button onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
-                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition-colors text-sm mx-auto mt-1">
-                    <Volume2 size={14} /> Say
+                  {/* Floating Say button */}
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
+                    className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded-xl flex items-center gap-1 transition-colors text-sm shadow-lg"
+                  >
+                    <Volume2 size={16} /> Say
                   </button>
                 </div>
               </div>
