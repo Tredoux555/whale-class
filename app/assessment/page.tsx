@@ -115,13 +115,22 @@ export default function AssessmentStartPage() {
       {/* Main content */}
       <main className="max-w-4xl mx-auto px-4 pb-8">
         {/* Title */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-white mb-2">
             Who are you?
           </h1>
           <p className="text-white/90 text-xl">
             Tap your name to start! 👆
           </p>
+        </div>
+
+        {/* Info Banner */}
+        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6 text-white text-center">
+          <div className="flex justify-center gap-6 text-sm">
+            <div>📝 <span className="font-medium">8 Skills</span></div>
+            <div>⏱️ <span className="font-medium">5-10 min</span></div>
+            <div>🎯 <span className="font-medium">Adaptive</span></div>
+          </div>
         </div>
 
         {/* Error message */}
