@@ -1,8 +1,8 @@
 # Session 29 Handoff - Jan 16 Polish Sprint
 
-## Status: 18/18 Polish Tasks COMPLETE ✅
+## Status: 22/22 Polish Tasks COMPLETE ✅
 
-### Completed Polish Tasks (1-18):
+### Completed Polish Tasks (1-22):
 1. Homepage - tagline, Principal link, hero banner ✅
 2. Demo Script - 10-min walkthrough at /docs/JAN_16_DEMO_SCRIPT.md ✅
 3. Print Outputs - removed hardcoded school name ✅
@@ -21,12 +21,16 @@
 16. Footer - reviewed (games has one, others fine) ✅
 17. Back Buttons - consistent navigation ✅
 18. Curriculum Page - stats badges (342 works, 5 areas) ✅
+19. Admin Dashboard - dark theme intentional, has stats grid ✅
+20. Sound Games Hub - stats badges (5 games, 3 phases) ✅
+21. Teacher Tools - stats badges (10 Tools, Free) ✅
+22. Circle Planner - stats badges (36 Weeks, 5 Days) ✅
 
 ### Next Polish Tasks (if continuing):
-19. Admin dashboard hero - match other pages
-20. Sound games hub polish
-21. Teacher tools page
-22. Circle planner header
+23. English Guide page header
+24. Progress page refinements
+25. Admin classroom improvements
+26. Error boundaries
 
 ### Key Files Modified:
 - /app/page.tsx (homepage)

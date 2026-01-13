@@ -103,6 +103,19 @@
 ### Polish #18: Curriculum Page ✅
 - Added stats badges (342 works, 5 areas) to header
 
+### Polish #19: Admin Dashboard ✅
+- Dark theme intentional, already has stats grid
+
+### Polish #20: Sound Games Hub ✅
+- Added stats badges (5 games, 3 phases)
+
+### Polish #21: Teacher Tools ✅
+- Added stats badges (10 Tools, Free)
+
+### Polish #22: Circle Planner ✅
+- Added stats badges (36 Weeks, 5 Days)
+- Changed tagline to "Montessori-aligned curriculum"
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
