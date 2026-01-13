@@ -8,6 +8,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { CVC_WORDS, type CVCWord } from '@/lib/sound-games/sound-games-data';
 import { soundGameAudio, getRandomPhrase, CORRECT_PHRASES, ENCOURAGEMENT_PHRASES } from '@/lib/sound-games/sound-utils';
+import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 type GameState = 'intro' | 'playing' | 'feedback' | 'complete';
 
@@ -249,14 +250,15 @@ export default function SoundBlendingGame() {
               onClick={() => handleOptionSelect(option)}
               disabled={gameState !== 'playing' || isPlaying}
               className={`
-                p-6 rounded-3xl border-4 transition-all transform
+                aspect-square rounded-2xl sm:rounded-3xl border-[5px] transition-all transform overflow-hidden
+                shadow-lg hover:shadow-xl
                 ${feedback?.correct && option.word === currentRound.targetWord.word
-                  ? 'bg-green-400 border-green-300 scale-110'
-                  : 'bg-white/90 border-white hover:scale-105'
+                  ? 'bg-green-400 border-green-300 scale-105 ring-4 ring-green-300/50'
+                  : 'bg-white border-white hover:scale-[1.02]'
                 }
               `}
             >
-              <span className="text-7xl block">{option.image}</span>
+              <WordImageSimple word={option.word} size={200} className="!w-full !h-full !rounded-none" />
             </button>
           ))}
         </div>
