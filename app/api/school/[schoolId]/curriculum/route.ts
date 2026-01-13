@@ -83,6 +83,113 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { schoolId: string } }
 ) {
-  // For now, curriculum is read-only from the roadmap
-  return NextResponse.json({ error: 'Curriculum is read-only' }, { status: 403 });
+  try {
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { workId, name, chinese_name, materials, direct_aims, indirect_aims, control_of_error, video_url } = body;
+
+    if (!workId) {
+      return NextResponse.json({ error: 'workId required' }, { status: 400 });
+    }
+
+    const updates: Record<string, any> = {};
+    if (name !== undefined) updates.name = name;
+    if (chinese_name !== undefined) updates.chinese_name = chinese_name;
+    if (materials !== undefined) updates.materials = materials;
+    if (direct_aims !== undefined) updates.direct_aims = direct_aims;
+    if (indirect_aims !== undefined) updates.indirect_aims = indirect_aims;
+    if (control_of_error !== undefined) updates.control_of_error = control_of_error;
+    if (video_url !== undefined) updates.video_url = video_url;
+
+    const { data, error } = await supabase
+      .from('curriculum_roadmap')
+      .update(updates)
+      .eq('id', workId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update work error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, work: data });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to update work' }, { status: 500 });
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { schoolId: string } }
+) {
+  try {
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { name, area_id, sequence, chinese_name } = body;
+
+    if (!name || !area_id) {
+      return NextResponse.json({ error: 'name and area_id required' }, { status: 400 });
+    }
+
+    // Map area_id to area name in db
+    const areaMap: Record<string, string> = {
+      'practical_life': 'practical_life',
+      'sensorial': 'sensorial',
+      'mathematics': 'mathematics',
+      'math': 'mathematics',
+      'language': 'language',
+      'culture': 'culture',
+      'cultural': 'culture'
+    };
+
+    const { data, error } = await supabase
+      .from('curriculum_roadmap')
+      .insert({
+        name,
+        area: areaMap[area_id] || area_id,
+        sequence: sequence || 999,
+        chinese_name: chinese_name || null
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Add work error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, work: data });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to add work' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { schoolId: string } }
+) {
+  try {
+    const supabase = getSupabase();
+    const url = new URL(request.url);
+    const workId = url.searchParams.get('workId');
+
+    if (!workId) {
+      return NextResponse.json({ error: 'workId required' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('curriculum_roadmap')
+      .delete()
+      .eq('id', workId);
+
+    if (error) {
+      console.error('Delete work error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to delete work' }, { status: 500 });
+  }
 }
