@@ -264,18 +264,16 @@ export default function ISpyEndingGame() {
               onClick={() => handleOptionSelect(option)}
               disabled={gameState !== 'playing' || isPlaying}
               className={`
-                aspect-square rounded-2xl sm:rounded-3xl border-4 transition-all transform overflow-hidden
+                aspect-square rounded-2xl sm:rounded-3xl border-[5px] transition-all transform overflow-hidden
                 shadow-lg hover:shadow-xl
                 ${feedback?.correct && option.word === currentRound.targetWord.word
                   ? 'bg-green-400 border-green-300 scale-105 ring-4 ring-green-300/50'
-                  : 'bg-white border-white/80 hover:scale-[1.02] hover:border-white'
+                  : 'bg-white border-white hover:scale-[1.02]'
                 }
                 ${gameState !== 'playing' || isPlaying ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >
-              <div className="w-full h-full p-2 sm:p-3 flex items-center justify-center">
-                <WordImageSimple word={option.word} size={140} className="w-full h-full max-w-[140px] max-h-[140px]" />
-              </div>
+              <WordImageSimple word={option.word} size={200} className="!w-full !h-full !rounded-none" />
             </button>
           ))}
         </div>
