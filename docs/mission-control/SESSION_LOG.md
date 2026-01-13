@@ -1,7 +1,7 @@
 # WHALE SESSION LOG
-**Last Updated:** Jan 13, 2026 07:00 AM
+**Last Updated:** Jan 13, 2026 2:00 PM
 **Session:** 29
-**Status:** ⏸️ PAUSED FOR REFRESH
+**Status:** ✅ AUDIT COMPLETE
 
 ---
 
@@ -15,11 +15,12 @@
 5. **Modern UI** - 12 pages with gradients, admin dark theme
 6. **Assessment Code** - 8 skills, 49 items scaffolded (awaiting assets)
 
-### ⏳ AUDIT IN PROGRESS (Session 29)
-- [ ] Demo data verification
-- [ ] Presentation flow walkthrough
-- [ ] Empty states & copy review
-- [ ] Fix any issues found
+### ✅ AUDIT FIXES (Session 29)
+- [x] Demo data verified: Week 19 has 98 assignments for 20 children
+- [x] **Classroom click fix:** Click child → shows ONLY that child + "Back to All" button
+- [x] **Instant media upload:** No blocking modal, toast feedback, background upload
+- [x] **Principal → Teacher link:** Progress page accepts ?teacher= URL param
+- [x] **Dynamic countdown:** Montree page shows real days until Jan 16
 
 ### 🚫 NOT FOR JAN 16 (Post-Launch)
 - Phase 5: Parent Portal Integration
@@ -27,49 +28,54 @@
 
 ---
 
-## SESSION 29 NOTES
+## SESSION 29 ACCOMPLISHMENTS
 
-### What Was Done
-- Read all brain files to understand current state
-- Verified teacher data isolation code exists
-- Verified tap-to-cycle progress tracking exists
-- Created audit plan for presentation readiness
+### UX Fixes
+1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
-### What NOT To Do
-- Don't generate TTS audio files (distraction)
-- Don't work on assessment assets (not priority)
-- Focus on MONTREE progress tracking system
+2. **Media Upload:** Removed blocking upload modal. Now shows instant "📤 Saving to Amy..." toast, uploads in background, shows "✅ Saved!" when done. User can continue working immediately.
 
-### Next Steps
-1. Check demo data exists in database
-2. Walk through Principal → Teacher → Progress flows
-3. Review empty states and copy
-4. Fix issues in small chunks
+3. **Teacher Progress URL:** Added support for `?teacher=Name` URL parameter so Principal can link directly to a teacher's progress view without needing localStorage.
+
+4. **Montree Countdown:** Changed static "5 Days Left" to dynamic calculation that updates automatically.
+
+### Demo Data Verified
+```
+Teachers: 7 (Tredoux: 22 students, John: 3 students)
+Weekly Plans: 3 (Week 17-19)
+Week 19 Assignments: 98 across 20 children
+Montessori Works: 60 in database
+```
 
 ---
 
-## PREVIOUS SESSIONS SUMMARY
+## PRESENTATION FLOW (Jan 16)
 
-### Session 28: Principal Dashboard
-- Classes-first layout implemented
-- Inline teacher and student management
-- Stats bar with gradient styling
+### Flow 1: Principal Overview
+1. `/principal` - See all classes with teachers
+2. Click teacher card → "📊 Progress" button
+3. Shows teacher's students and progress
 
-### Sessions 1-27: Core Systems
-- Assessment system (8 skills, 49 items)
-- Teacher/student assignment system
-- Weekly planning with docx upload
-- Unified parent APIs created
+### Flow 2: Teacher Progress
+1. `/teacher` - Login as any teacher (password: 123)
+2. `/teacher/progress` - Select child, tap works to cycle status
+3. Demonstrates data isolation (John only sees his 3 students)
+
+### Flow 3: Classroom View
+1. `/admin/classroom` - Week selector, school filter
+2. Click "Full" to see all students with works
+3. Click student name → filtered single-child view
+4. Tap to cycle progress, capture media
 
 ---
 
 ## GIT STATUS
-**Last Commit:** `879b30d`
+**Last Commit:** `8a16523` - Session 29: UX fixes for Jan 16 demo
 **Branch:** main
-**Status:** Clean (removed rogue TTS files)
+**Status:** Pushed to origin ✓
 
 ---
 
 ## KEY INSIGHT
 
-**Montree is the money feature.** The progress tracking system is what makes Whale licensable to schools worldwide. Make sure it demos beautifully on Jan 16.
+**3 days to go.** The core system works. Demo data is in place. Focus on presentation polish and rehearsal, not new features.
