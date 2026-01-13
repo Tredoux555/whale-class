@@ -94,15 +94,27 @@ export default function TeacherToolsPage() {
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-              <span className="text-4xl">🛠️</span>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <span className="text-4xl">🛠️</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Teacher Tools</h1>
+                <p className="text-blue-100 mt-1">
+                  Resources to help you prepare materials and plan lessons
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">Teacher Tools</h1>
-              <p className="text-blue-100 mt-1">
-                Resources to help you prepare materials and plan lessons
-              </p>
+            <div className="flex gap-3">
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">10</div>
+                <div className="text-xs text-blue-100">Tools</div>
+              </div>
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">🎯</div>
+                <div className="text-xs text-blue-100">Free</div>
+              </div>
             </div>
           </div>
         </div>
