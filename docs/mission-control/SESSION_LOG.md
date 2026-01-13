@@ -30,6 +30,11 @@
 
 ## SESSION 29 ACCOMPLISHMENTS
 
+### Polish #1: Homepage ✅
+- Changed tagline: "Learning Videos" → "Montessori Progress Tracking"
+- Added Principal link in header (easy demo access)
+- Added hero banner with stats: 342 works, 14 games, 5 areas
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
