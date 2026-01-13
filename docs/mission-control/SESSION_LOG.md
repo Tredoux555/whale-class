@@ -54,6 +54,12 @@
   - Classroom: Shows which week has no data
   - Homepage: "Check back soon for new content"
 
+### Polish #5: Mobile/iPad ✅
+- Viewport configured correctly (device-width, no zoom)
+- Touch targets all 40px+ (p-4, py-4 padding)
+- Responsive grids: 2 cols mobile → 5 cols desktop
+- PWA manifest configured for "Add to Home Screen"
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
