@@ -220,30 +220,6 @@ export default function Home() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 pb-20">
-        {/* Hero Banner - Platform Overview */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 mb-6 text-white shadow-lg">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-1">Welcome to Whale Class</h2>
-              <p className="text-emerald-100">Complete Montessori curriculum tracking for your school</p>
-            </div>
-            <div className="flex gap-3">
-              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                <div className="text-2xl font-bold">342</div>
-                <div className="text-xs text-emerald-100">Works</div>
-              </div>
-              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                <div className="text-2xl font-bold">14</div>
-                <div className="text-xs text-emerald-100">Games</div>
-              </div>
-              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                <div className="text-2xl font-bold">5</div>
-                <div className="text-xs text-emerald-100">Areas</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Category Pills - Scrollable on mobile */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map((cat) => (
