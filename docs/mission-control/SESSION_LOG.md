@@ -85,6 +85,24 @@
 ### Polish #12: Password Hint ✅
 - Added "Hint: Default is 123" on teacher login
 
+### Polish #13: Assessment Page ✅
+- Added info banner: 8 Skills, 5-10 min, Adaptive
+
+### Polish #14: Favicon ✅
+- Updated icon.svg, noted PNG icons need regeneration
+
+### Polish #15: Principal Dashboard ✅
+- Replaced stats cards with hero banner matching homepage/teacher
+
+### Polish #16: Footer ✅
+- Games page has footer, other pages fine without
+
+### Polish #17: Back Buttons ✅
+- Consistent navigation across all demo pages
+
+### Polish #18: Curriculum Page ✅
+- Added stats badges (342 works, 5 areas) to header
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
