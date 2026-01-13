@@ -172,38 +172,25 @@ export default function PrincipalDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats Bar */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">📚</span>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.classrooms}</div>
-                <div className="text-sm text-gray-500">Active Classes</div>
-              </div>
+        {/* Hero Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-indigo-200/50">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-1">Principal Dashboard</h2>
+              <p className="text-indigo-100">School overview and class management</p>
             </div>
-          </div>
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">👩‍🏫</span>
+            <div className="flex gap-3">
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">{stats.classrooms}</div>
+                <div className="text-xs text-indigo-100">Classes</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.teachers}</div>
-                <div className="text-sm text-gray-500">Teachers</div>
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">{stats.teachers}</div>
+                <div className="text-xs text-indigo-100">Teachers</div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">👶</span>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.students}</div>
-                <div className="text-sm text-gray-500">Students</div>
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">{stats.students}</div>
+                <div className="text-xs text-indigo-100">Students</div>
               </div>
             </div>
           </div>
