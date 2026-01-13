@@ -35,6 +35,12 @@
 - Added Principal link in header (easy demo access)
 - Added hero banner with stats: 342 works, 14 games, 5 areas
 
+### Polish #2: Demo Script ✅
+- Created `/docs/JAN_16_DEMO_SCRIPT.md`
+- 10-minute walkthrough with timing
+- 5 flows: Principal, Teacher Progress, Classroom, Games, Curriculum
+- Includes troubleshooting and backup demos
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
