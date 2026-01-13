@@ -41,6 +41,11 @@
 - 5 flows: Principal, Teacher Progress, Classroom, Games, Curriculum
 - Includes troubleshooting and backup demos
 
+### Polish #3: Print Outputs ✅
+- Reviewed weekly plan print page
+- Removed hardcoded "Beijing International School" → generic footer
+- Print layout confirmed working (A4, auto-print on load)
+
 ### UX Fixes
 1. **Classroom View:** Click child now filters to ONLY that child instead of scrolling to them in the full grid. Added "← Back to All Children" button to return.
 
