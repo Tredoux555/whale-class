@@ -145,6 +145,7 @@ export default function TeacherDashboard() {
   const [teacherName, setTeacherName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('');
+  const [studentCount, setStudentCount] = useState(0);
 
   useEffect(() => {
     const name = localStorage.getItem('teacherName');
@@ -159,6 +160,12 @@ export default function TeacherDashboard() {
       if (hour < 12) setGreeting('Good morning');
       else if (hour < 17) setGreeting('Good afternoon');
       else setGreeting('Good evening');
+      
+      // Fetch student count
+      fetch(`/api/children?teacher=${encodeURIComponent(name)}`)
+        .then(res => res.json())
+        .then(data => setStudentCount(data.children?.length || 0))
+        .catch(() => {});
     }
   }, [router]);
 
@@ -235,14 +242,27 @@ export default function TeacherDashboard() {
         {/* Install PWA Prompt */}
         <InstallPrompt />
         
-        {/* Welcome Banner */}
+        {/* Welcome Banner with Stats */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-blue-200/50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold mb-1">Teacher Dashboard</h2>
               <p className="text-blue-100">Everything you need to manage your classroom</p>
             </div>
-            <div className="hidden sm:block text-6xl opacity-50">📚</div>
+            <div className="flex gap-3">
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">{studentCount}</div>
+                <div className="text-xs text-blue-100">Students</div>
+              </div>
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">342</div>
+                <div className="text-xs text-blue-100">Works</div>
+              </div>
+              <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">5</div>
+                <div className="text-xs text-blue-100">Areas</div>
+              </div>
+            </div>
           </div>
         </div>
 
