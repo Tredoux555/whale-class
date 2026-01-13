@@ -214,20 +214,6 @@ export default function Home() {
                 <span>🎮</span>
                 <span className="hidden sm:inline">Games</span>
               </Link>
-              <Link 
-                href="/principal"
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all backdrop-blur-sm"
-              >
-                <span>🏫</span>
-                <span className="hidden sm:inline">Principal</span>
-              </Link>
-              <Link 
-                href="/teacher"
-                className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 rounded-xl font-medium transition-colors"
-              >
-                <span>👩‍🏫</span>
-                <span className="hidden sm:inline">Teachers</span>
-              </Link>
             </div>
           </div>
         </div>
