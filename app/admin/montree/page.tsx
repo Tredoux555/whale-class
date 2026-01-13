@@ -4,6 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 
 export default function IndependentMontreePage() {
+  // Calculate days until Jan 16
+  const launchDate = new Date('2026-01-16');
+  const today = new Date();
+  const daysLeft = Math.max(0, Math.ceil((launchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -293,8 +298,8 @@ export default function IndependentMontreePage() {
               <div className="text-sm opacity-80">Teacher Tools</div>
             </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <div className="text-2xl font-bold">5</div>
-              <div className="text-sm opacity-80">Days Left</div>
+              <div className="text-2xl font-bold">{daysLeft}</div>
+              <div className="text-sm opacity-80">{daysLeft === 1 ? 'Day' : 'Days'} Left</div>
             </div>
           </div>
         </div>

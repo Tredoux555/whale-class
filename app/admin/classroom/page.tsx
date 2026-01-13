@@ -109,8 +109,6 @@ function ClassroomView() {
   const [videoModal, setVideoModal] = useState<{ url: string; title: string } | null>(null);
   
   const [activeCapture, setActiveCapture] = useState<{ assignment: WorkAssignment; child: ChildWithAssignments } | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const childRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -248,8 +246,9 @@ function ClassroomView() {
       return;
     }
 
-    setUploading(true);
-    setUploadProgress(10);
+    // Show instant feedback - upload happens in background
+    const childName = activeCapture.child.name;
+    showToast(`📤 Saving to ${childName}...`, 'success');
     
     const formData = new FormData();
     formData.append('file', file);
@@ -261,35 +260,25 @@ function ClassroomView() {
     formData.append('year', selectedYear.toString());
     formData.append('parentVisible', 'false');
 
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => Math.min(prev + 15, 90));
-    }, 150);
+    // Clear input immediately so user can capture more
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setActiveCapture(null);
 
-    try {
-      const res = await fetch('/api/media', {
-        method: 'POST',
-        body: formData
-      });
-      
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      
+    // Background upload - no blocking
+    fetch('/api/media', {
+      method: 'POST',
+      body: formData
+    }).then(async (res) => {
       const data = await res.json();
       if (data.success) {
-        showToast(`✅ Saved to ${activeCapture.child.name}'s folder!`, 'success');
+        showToast(`✅ Saved to ${childName}'s folder!`, 'success');
       } else {
-        showToast('Failed to save: ' + (data.error || 'Unknown error'), 'error');
+        showToast('❌ Failed: ' + (data.error || 'Unknown error'), 'error');
       }
-    } catch (err) {
-      clearInterval(progressInterval);
+    }).catch((err) => {
       console.error('Upload error:', err);
-      showToast('Failed to save', 'error');
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-      setActiveCapture(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+      showToast(`❌ Failed to save for ${childName}`, 'error');
+    });
   };
 
   const getChildStats = (assignments: WorkAssignment[]) => {
@@ -298,9 +287,10 @@ function ClassroomView() {
     return { total, mastered, percent: total > 0 ? Math.round((mastered / total) * 100) : 0 };
   };
 
-  // Filter children by search query
+  // Filter children by search query and selected child
   const filteredChildren = children
     .filter(child => child.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(child => !selectedChildId || child.id === selectedChildId)
     .map(child => ({
       ...child,
       assignments: filterArea === 'all'
@@ -308,13 +298,15 @@ function ClassroomView() {
         : child.assignments.filter(a => a.area === filterArea)
     }));
 
-  // Handle child name click - scroll to and expand
+  // Handle child name click - filter to just that child
   const handleChildClick = (childId: string) => {
     setSelectedChildId(childId);
     setViewMode('full');
-    setTimeout(() => {
-      childRefs.current[childId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  };
+
+  // Clear child filter to show all
+  const clearChildFilter = () => {
+    setSelectedChildId(null);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -331,21 +323,6 @@ function ClassroomView() {
         onChange={handleFileSelect}
         className="hidden"
       />
-
-      {uploading && (
-        <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl p-6 w-72 text-center">
-            <div className="text-4xl mb-3">📤</div>
-            <p className="font-semibold mb-3">Saving...</p>
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-blue-500 rounded-full transition-all duration-200"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-md px-4 py-3">
@@ -558,7 +535,17 @@ function ClassroomView() {
           </div>
         ) : (
           /* FULL VIEW - Cards with assignments */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div>
+            {/* Show "Back to All" when viewing single child */}
+            {selectedChildId && (
+              <button
+                onClick={clearChildFilter}
+                className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium flex items-center gap-2"
+              >
+                ← Back to All Children
+              </button>
+            )}
+            <div className={`grid gap-4 ${selectedChildId ? 'grid-cols-1 max-w-md' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
             {filteredChildren.map(child => {
               const stats = getChildStats(child.assignments);
               return (
@@ -636,6 +623,7 @@ function ClassroomView() {
                 </div>
               );
             })}
+            </div>
           </div>
         )}
       </main>
