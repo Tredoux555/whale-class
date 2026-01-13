@@ -6,7 +6,7 @@ import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
 
 // Features only available to Tredoux (admin features)
-const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance'];
+const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance', '/teacher/progress'];
 
 const DASHBOARD_ITEMS = [
   {
@@ -342,15 +342,15 @@ export default function TeacherDashboard() {
                   <span>👶</span>
                   <span>Manage Students</span>
                 </Link>
+                <Link
+                  href="/teacher/progress"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
+                >
+                  <span>📊</span>
+                  <span>Progress Reports</span>
+                </Link>
               </>
             )}
-            <Link
-              href="/teacher/progress"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
-            >
-              <span>📊</span>
-              <span>Progress Reports</span>
-            </Link>
             <Link
               href="/games"
               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
