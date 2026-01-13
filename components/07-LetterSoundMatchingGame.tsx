@@ -8,10 +8,10 @@ import { Volume2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { GameAudio } from '@/lib/games/audio-paths';
 import { GAME_FONTS, GAME_ANIMATIONS, getRandomCelebration } from '@/lib/games/design-system';
+import { WordImageSimple } from '@/components/sound-games/WordImage';
 
 interface Word {
   word: string;
-  picture: string;
   sound: string;
 }
 
@@ -23,32 +23,32 @@ interface Letter {
 
 const LetterSoundMatchingGame: React.FC = () => {
   const letterSequence: Letter[] = [
-    { letter: 'A', sound: '/a/', words: [{ word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'bat', picture: '🦇', sound: 'bat' }] },
-    { letter: 'B', sound: '/b/', words: [{ word: 'bat', picture: '🦇', sound: 'bat' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'apple', picture: '🍎', sound: 'apple' }] },
-    { letter: 'C', sound: '/c/', words: [{ word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'dog', picture: '🐶', sound: 'dog' }] },
-    { letter: 'D', sound: '/d/', words: [{ word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'bat', picture: '🦇', sound: 'bat' }, { word: 'cat', picture: '🐱', sound: 'cat' }] },
-    { letter: 'E', sound: '/e/', words: [{ word: 'egg', picture: '🥚', sound: 'egg' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'apple', picture: '🍎', sound: 'apple' }] },
-    { letter: 'F', sound: '/f/', words: [{ word: 'fish', picture: '🐠', sound: 'fish' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'cat', picture: '🐱', sound: 'cat' }] },
-    { letter: 'G', sound: '/g/', words: [{ word: 'goat', picture: '🐐', sound: 'goat' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'egg', picture: '🥚', sound: 'egg' }] },
-    { letter: 'H', sound: '/h/', words: [{ word: 'hat', picture: '🎩', sound: 'hat' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'dog', picture: '🐶', sound: 'dog' }] },
-    { letter: 'I', sound: '/i/', words: [{ word: 'insect', picture: '🐛', sound: 'insect' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'fish', picture: '🐠', sound: 'fish' }] },
-    { letter: 'J', sound: '/j/', words: [{ word: 'jam', picture: '🫙', sound: 'jam' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'bat', picture: '🦇', sound: 'bat' }] },
-    { letter: 'K', sound: '/k/', words: [{ word: 'kite', picture: '🪁', sound: 'kite' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'cat', picture: '🐱', sound: 'cat' }] },
-    { letter: 'L', sound: '/l/', words: [{ word: 'leg', picture: '🦵', sound: 'leg' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'egg', picture: '🥚', sound: 'egg' }] },
-    { letter: 'M', sound: '/m/', words: [{ word: 'mop', picture: '🧹', sound: 'mop' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'fish', picture: '🐠', sound: 'fish' }] },
-    { letter: 'N', sound: '/n/', words: [{ word: 'net', picture: '🥅', sound: 'net' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'apple', picture: '🍎', sound: 'apple' }] },
-    { letter: 'O', sound: '/o/', words: [{ word: 'octopus', picture: '🐙', sound: 'octopus' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'bat', picture: '🦇', sound: 'bat' }] },
-    { letter: 'P', sound: '/p/', words: [{ word: 'pig', picture: '🐷', sound: 'pig' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'dog', picture: '🐶', sound: 'dog' }] },
-    { letter: 'Q', sound: '/kw/', words: [{ word: 'queen', picture: '👑', sound: 'queen' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'fish', picture: '🐠', sound: 'fish' }] },
-    { letter: 'R', sound: '/r/', words: [{ word: 'rat', picture: '🐀', sound: 'rat' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'egg', picture: '🥚', sound: 'egg' }] },
-    { letter: 'S', sound: '/s/', words: [{ word: 'sun', picture: '☀️', sound: 'sun' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'cat', picture: '🐱', sound: 'cat' }] },
-    { letter: 'T', sound: '/t/', words: [{ word: 'top', picture: '🔝', sound: 'top' }, { word: 'bat', picture: '🦇', sound: 'bat' }, { word: 'dog', picture: '🐶', sound: 'dog' }] },
-    { letter: 'U', sound: '/u/', words: [{ word: 'umbrella', picture: '☂️', sound: 'umbrella' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'fish', picture: '🐠', sound: 'fish' }] },
-    { letter: 'V', sound: '/v/', words: [{ word: 'van', picture: '🚐', sound: 'van' }, { word: 'cat', picture: '🐱', sound: 'cat' }, { word: 'dog', picture: '🐶', sound: 'dog' }] },
-    { letter: 'W', sound: '/w/', words: [{ word: 'web', picture: '🕸️', sound: 'web' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'bat', picture: '🦇', sound: 'bat' }] },
-    { letter: 'X', sound: '/ks/', words: [{ word: 'box', picture: '📦', sound: 'box' }, { word: 'dog', picture: '🐶', sound: 'dog' }, { word: 'egg', picture: '🥚', sound: 'egg' }] },
-    { letter: 'Y', sound: '/y/', words: [{ word: 'yak', picture: '🦬', sound: 'yak' }, { word: 'apple', picture: '🍎', sound: 'apple' }, { word: 'cat', picture: '🐱', sound: 'cat' }] },
-    { letter: 'Z', sound: '/z/', words: [{ word: 'zebra', picture: '🦓', sound: 'zebra' }, { word: 'bat', picture: '🦇', sound: 'bat' }, { word: 'fish', picture: '🐠', sound: 'fish' }] },
+    { letter: 'A', sound: '/a/', words: [{ word: 'apple', sound: 'apple' }, { word: 'dog', sound: 'dog' }, { word: 'bat', sound: 'bat' }] },
+    { letter: 'B', sound: '/b/', words: [{ word: 'bat', sound: 'bat' }, { word: 'cat', sound: 'cat' }, { word: 'apple', sound: 'apple' }] },
+    { letter: 'C', sound: '/c/', words: [{ word: 'cat', sound: 'cat' }, { word: 'apple', sound: 'apple' }, { word: 'dog', sound: 'dog' }] },
+    { letter: 'D', sound: '/d/', words: [{ word: 'dog', sound: 'dog' }, { word: 'bat', sound: 'bat' }, { word: 'cat', sound: 'cat' }] },
+    { letter: 'E', sound: '/e/', words: [{ word: 'egg', sound: 'egg' }, { word: 'dog', sound: 'dog' }, { word: 'apple', sound: 'apple' }] },
+    { letter: 'F', sound: '/f/', words: [{ word: 'fish', sound: 'fish' }, { word: 'apple', sound: 'apple' }, { word: 'cat', sound: 'cat' }] },
+    { letter: 'G', sound: '/g/', words: [{ word: 'goat', sound: 'goat' }, { word: 'cat', sound: 'cat' }, { word: 'egg', sound: 'egg' }] },
+    { letter: 'H', sound: '/h/', words: [{ word: 'hat', sound: 'hat' }, { word: 'apple', sound: 'apple' }, { word: 'dog', sound: 'dog' }] },
+    { letter: 'I', sound: '/i/', words: [{ word: 'insect', sound: 'insect' }, { word: 'cat', sound: 'cat' }, { word: 'fish', sound: 'fish' }] },
+    { letter: 'J', sound: '/j/', words: [{ word: 'jam', sound: 'jam' }, { word: 'apple', sound: 'apple' }, { word: 'bat', sound: 'bat' }] },
+    { letter: 'K', sound: '/k/', words: [{ word: 'cat', sound: 'cat' }, { word: 'dog', sound: 'dog' }, { word: 'apple', sound: 'apple' }] },
+    { letter: 'L', sound: '/l/', words: [{ word: 'leg', sound: 'leg' }, { word: 'apple', sound: 'apple' }, { word: 'egg', sound: 'egg' }] },
+    { letter: 'M', sound: '/m/', words: [{ word: 'mop', sound: 'mop' }, { word: 'cat', sound: 'cat' }, { word: 'fish', sound: 'fish' }] },
+    { letter: 'N', sound: '/n/', words: [{ word: 'net', sound: 'net' }, { word: 'dog', sound: 'dog' }, { word: 'apple', sound: 'apple' }] },
+    { letter: 'O', sound: '/o/', words: [{ word: 'octopus', sound: 'octopus' }, { word: 'apple', sound: 'apple' }, { word: 'bat', sound: 'bat' }] },
+    { letter: 'P', sound: '/p/', words: [{ word: 'pig', sound: 'pig' }, { word: 'cat', sound: 'cat' }, { word: 'dog', sound: 'dog' }] },
+    { letter: 'Q', sound: '/kw/', words: [{ word: 'cup', sound: 'cup' }, { word: 'apple', sound: 'apple' }, { word: 'fish', sound: 'fish' }] },
+    { letter: 'R', sound: '/r/', words: [{ word: 'rat', sound: 'rat' }, { word: 'dog', sound: 'dog' }, { word: 'egg', sound: 'egg' }] },
+    { letter: 'S', sound: '/s/', words: [{ word: 'sun', sound: 'sun' }, { word: 'apple', sound: 'apple' }, { word: 'cat', sound: 'cat' }] },
+    { letter: 'T', sound: '/t/', words: [{ word: 'top', sound: 'top' }, { word: 'bat', sound: 'bat' }, { word: 'dog', sound: 'dog' }] },
+    { letter: 'U', sound: '/u/', words: [{ word: 'umbrella', sound: 'umbrella' }, { word: 'apple', sound: 'apple' }, { word: 'fish', sound: 'fish' }] },
+    { letter: 'V', sound: '/v/', words: [{ word: 'van', sound: 'van' }, { word: 'cat', sound: 'cat' }, { word: 'dog', sound: 'dog' }] },
+    { letter: 'W', sound: '/w/', words: [{ word: 'web', sound: 'web' }, { word: 'apple', sound: 'apple' }, { word: 'bat', sound: 'bat' }] },
+    { letter: 'X', sound: '/ks/', words: [{ word: 'box', sound: 'box' }, { word: 'dog', sound: 'dog' }, { word: 'egg', sound: 'egg' }] },
+    { letter: 'Y', sound: '/y/', words: [{ word: 'yak', sound: 'yak' }, { word: 'apple', sound: 'apple' }, { word: 'cat', sound: 'cat' }] },
+    { letter: 'Z', sound: '/z/', words: [{ word: 'zebra', sound: 'zebra' }, { word: 'bat', sound: 'bat' }, { word: 'fish', sound: 'fish' }] },
   ];
 
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
@@ -193,7 +193,7 @@ const LetterSoundMatchingGame: React.FC = () => {
           <p className="text-white/90 mt-4">Tap the letter to hear its sound, then find the matching picture!</p>
         </div>
 
-        {/* Pictures */}
+        {/* Pictures - Now using real images */}
         <div className="grid grid-cols-3 gap-6 mb-8">
           {shuffledWords.map((word, index) => {
             const isCorrect = correctMatch === word.word;
@@ -203,13 +203,15 @@ const LetterSoundMatchingGame: React.FC = () => {
               <div key={index}
                 onClick={() => handlePictureClick(word)}
                 className={`
-                  bg-white rounded-2xl shadow-xl p-6 text-center cursor-pointer
+                  bg-white rounded-2xl shadow-xl p-4 text-center cursor-pointer
                   transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95
                   ${isCorrect ? 'ring-4 ring-green-500 scale-110 bg-green-50' : ''}
                   ${isShaking ? 'animate-shake ring-4 ring-red-500' : ''}
                   min-h-[180px] flex flex-col items-center justify-center
                 `}>
-                <div className="text-7xl mb-3">{word.picture}</div>
+                <div className="mb-3 flex items-center justify-center">
+                  <WordImageSimple word={word.word} size={90} />
+                </div>
                 <p className="text-gray-700 font-bold text-lg capitalize mb-2">{word.word}</p>
                 <button onClick={(e) => { e.stopPropagation(); playWordSound(word.word); }}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors text-sm">
@@ -223,8 +225,8 @@ const LetterSoundMatchingGame: React.FC = () => {
         {/* Hint after 2 tries */}
         {tries >= 2 && !correctMatch && correctWord && (
           <div className="bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 mb-6 text-center animate-float">
-            <p className="text-yellow-800 font-bold text-lg">
-              💡 Hint: Look for <span className="text-2xl">{correctWord.picture}</span> ({correctWord.word})!
+            <p className="text-yellow-800 font-bold text-lg flex items-center justify-center gap-2">
+              💡 Hint: Look for <WordImageSimple word={correctWord.word} size={40} /> ({correctWord.word})!
             </p>
           </div>
         )}
@@ -242,7 +244,9 @@ const LetterSoundMatchingGame: React.FC = () => {
             <div className="bg-white rounded-3xl p-8 text-center shadow-2xl animate-pop max-w-md mx-4">
               <div className="text-7xl mb-4 animate-bounce">🎉</div>
               <p className="text-3xl font-bold text-green-600 mb-2">{celebration}</p>
-              <div className="text-6xl mb-2">{celebrationWord.picture}</div>
+              <div className="flex justify-center mb-2">
+                <WordImageSimple word={celebrationWord.word} size={100} />
+              </div>
               <p className="text-2xl font-bold text-indigo-600">
                 {celebrationWord.word.toUpperCase()} starts with {currentLetter.letter.toLowerCase()}!
               </p>
