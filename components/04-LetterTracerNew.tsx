@@ -274,7 +274,9 @@ const LetterTracerNew: React.FC = () => {
       } else {
         document.body.removeChild(svg);
         setDemoFingerPos(null);
-        setTimeout(() => { setPhase('trace'); setDemoProgress(0); }, 400);
+        // Play letter sound right after demo animation completes
+        GameAudio.playLetterNow(currentLetter.toLowerCase());
+        setTimeout(() => { setPhase('trace'); setDemoProgress(0); }, 600);
       }
     };
     animationRef.current = requestAnimationFrame(animate);
