@@ -151,6 +151,7 @@ export default function TeacherLoginPage() {
                 placeholder="Enter password"
                 className="w-full px-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-300"
               />
+              <p className="mt-2 text-sm text-gray-400">Hint: Default is 123</p>
             </div>
 
             {/* Error */}
