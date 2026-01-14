@@ -23,8 +23,15 @@ interface Stats {
   students: number;
 }
 
+interface GameStats {
+  todaySessions: number;
+  activeStudents: number;
+  totalMinutes: number;
+}
+
 export default function PrincipalDashboard() {
   const [stats, setStats] = useState<Stats>({ teachers: 0, classrooms: 0, students: 0 });
+  const [gameStats, setGameStats] = useState<GameStats>({ todaySessions: 0, activeStudents: 0, totalMinutes: 0 });
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [allChildren, setAllChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +72,21 @@ export default function PrincipalDashboard() {
         classrooms: teacherList.filter((t: Teacher) => t.student_count > 0).length,
         students: children.length,
       });
+
+      // Load today's game activity
+      try {
+        const gameRes = await fetch('/api/games/today-stats');
+        const gameData = await gameRes.json();
+        if (gameData) {
+          setGameStats({
+            todaySessions: gameData.todaySessions || 0,
+            activeStudents: gameData.activeStudents || 0,
+            totalMinutes: gameData.totalMinutes || 0,
+          });
+        }
+      } catch (gameErr) {
+        console.log('Game stats not available yet');
+      }
     } catch (e) {
       console.error('Failed to load data:', e);
     } finally {
@@ -196,6 +218,35 @@ export default function PrincipalDashboard() {
           </div>
         </div>
 
+        {/* Today's Game Activity */}
+        {(gameStats.todaySessions > 0 || gameStats.activeStudents > 0) && (
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-5 mb-8 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎮</span>
+                <div>
+                  <h3 className="font-bold">Today's Game Activity</h3>
+                  <p className="text-purple-100 text-sm">Student engagement with learning games</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{gameStats.todaySessions}</div>
+                  <div className="text-xs text-purple-100">Sessions</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{gameStats.activeStudents}</div>
+                  <div className="text-xs text-purple-100">Students</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{gameStats.totalMinutes}m</div>
+                  <div className="text-xs text-purple-100">Play Time</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ===== CLASSES SECTION (PRIMARY) ===== */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8">
           <div className="p-6 border-b border-gray-100">
@@ -285,6 +336,13 @@ export default function PrincipalDashboard() {
 
                     {/* Quick Actions */}
                     <div className="px-4 py-3 border-t bg-gray-50 flex gap-2">
+                      <Link
+                        href={`/teacher/classroom?teacher=${teacher.name}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 text-center py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                      >
+                        👥 Classroom
+                      </Link>
                       <Link
                         href={`/teacher/progress?teacher=${teacher.name}`}
                         onClick={(e) => e.stopPropagation()}

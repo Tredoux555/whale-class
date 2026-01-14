@@ -17,6 +17,12 @@ interface Child {
     mastered: number;
     total: number;
   };
+  lastGame?: {
+    name: string;
+    playedAt: string;
+    duration: number | null;
+  } | null;
+  totalGameSessions?: number;
 }
 
 const AVATAR_COLORS = [
@@ -29,6 +35,31 @@ const AVATAR_COLORS = [
   'from-red-500 to-pink-500',
 ];
 
+// Helper to format relative time
+function formatTimeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+// Helper to check if played today
+function isActiveToday(dateStr: string | undefined): boolean {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  const now = new Date();
+  return date.toDateString() === now.toDateString();
+}
+
 export default function TeacherClassroomPage() {
   const router = useRouter();
   const [children, setChildren] = useState<Child[]>([]);
@@ -36,15 +67,29 @@ export default function TeacherClassroomPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [teacherName, setTeacherName] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [viewingAsPrincipal, setViewingAsPrincipal] = useState(false);
 
   useEffect(() => {
-    const name = localStorage.getItem('teacherName');
+    // Check URL param first (for principal viewing teacher's classroom)
+    const params = new URLSearchParams(window.location.search);
+    const urlTeacher = params.get('teacher');
+    
+    if (urlTeacher) {
+      setViewingAsPrincipal(true);
+    }
+    
+    // Then check localStorage
+    const storedName = localStorage.getItem('teacherName');
+    const name = urlTeacher || storedName;
+    
     if (!name) {
       router.push('/teacher');
       return;
     }
     setTeacherName(name);
-    ensureCookieSet(name);
+    if (!urlTeacher) {
+      ensureCookieSet(name);
+    }
     fetchChildren(name);
   }, [router]);
 
@@ -107,6 +152,20 @@ export default function TeacherClassroomPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+      {/* Back to Principal link */}
+      {viewingAsPrincipal && (
+        <div className="bg-indigo-600 text-white px-4 py-2">
+          <div className="max-w-6xl mx-auto">
+            <Link href="/principal" className="inline-flex items-center gap-2 text-sm hover:text-indigo-200 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Principal Dashboard
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -200,7 +259,14 @@ export default function TeacherClassroomPage() {
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
               >
                 {/* Header with Avatar */}
-                <div className={`bg-gradient-to-br ${getAvatarColor(index)} p-4`}>
+                <div className={`bg-gradient-to-br ${getAvatarColor(index)} p-4 relative`}>
+                  {/* Active Today indicator */}
+                  {isActiveToday(child.lastGame?.playedAt) && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                      <span className="text-[10px] text-white font-medium">Active</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                       {child.name.charAt(0)}
@@ -254,6 +320,20 @@ export default function TeacherClassroomPage() {
                       <span className="text-gray-600">{child.progress?.mastered || 0}</span>
                     </div>
                   </div>
+
+                  {/* Game Activity */}
+                  {child.lastGame ? (
+                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+                      <span className="text-purple-600">🎮</span> {child.lastGame.name}
+                      <span className="text-gray-400 ml-1">
+                        • {formatTimeAgo(child.lastGame.playedAt)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                      🎮 No games yet
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -263,6 +343,12 @@ export default function TeacherClassroomPage() {
                     className="flex-1 text-center text-sm bg-emerald-100 text-emerald-700 hover:bg-emerald-200 py-2.5 rounded-xl transition-colors font-medium"
                   >
                     📊 Progress
+                  </Link>
+                  <Link
+                    href={`/teacher/progress?child=${child.id}&tab=games`}
+                    className="flex-1 text-center text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 py-2.5 rounded-xl transition-colors font-medium"
+                  >
+                    🎮 Games
                   </Link>
                   <Link
                     href={`/admin/child-progress/${child.id}`}

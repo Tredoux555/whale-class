@@ -19,6 +19,8 @@ import Confetti from './Confetti';
 
 const PROGRESS_KEY = 'letter-trace-progress';
 const CANVAS_SIZE = 300;
+const GAME_ID = 'letter-tracer';
+const GAME_NAME = 'Letter Tracer';
 
 interface TraceProgress {
   completedLetters: string[];
@@ -44,6 +46,7 @@ export default function LetterTraceGame() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [strokeFeedback, setStrokeFeedback] = useState<'none' | 'good' | 'bad'>('none');
   const [attempts, setAttempts] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   
   // Current drawing stroke (using ref to avoid re-renders during drawing)
   const currentStrokeRef = useRef<StrokePoint[]>([]);
@@ -65,6 +68,67 @@ export default function LetterTraceGame() {
       }
     }
   }, []);
+
+  // Session tracking - start on mount, end on unmount
+  useEffect(() => {
+    const startSession = async () => {
+      if (typeof window === 'undefined') return;
+      const studentSession = localStorage.getItem('studentSession');
+      if (!studentSession) return;
+      
+      try {
+        const { childId } = JSON.parse(studentSession);
+        const res = await fetch('/api/games/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'start',
+            childId,
+            gameId: GAME_ID,
+            gameName: GAME_NAME,
+          }),
+        });
+        const data = await res.json();
+        if (data.sessionId) setSessionId(data.sessionId);
+      } catch (e) {
+        console.log('Session tracking not available');
+      }
+    };
+    startSession();
+
+    return () => {
+      // End session on unmount
+      const endSession = async () => {
+        const studentSession = localStorage.getItem('studentSession');
+        const currentSessionId = sessionId;
+        if (!studentSession || !currentSessionId) return;
+        
+        try {
+          const { childId } = JSON.parse(studentSession);
+          const saved = localStorage.getItem(PROGRESS_KEY);
+          const prog = saved ? JSON.parse(saved) : { completedLetters: [] };
+          
+          await fetch('/api/games/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'end',
+              sessionId: currentSessionId,
+              childId,
+              gameId: GAME_ID,
+              gameName: GAME_NAME,
+              itemsCompleted: prog.completedLetters?.length || 0,
+              itemsTotal: 26,
+              itemsMastered: prog.completedLetters || [],
+            }),
+          });
+        } catch (e) {
+          console.log('Failed to end session');
+        }
+      };
+      endSession();
+    };
+  }, [sessionId]);
 
   // Save progress
   const saveProgress = (newProgress: TraceProgress) => {
