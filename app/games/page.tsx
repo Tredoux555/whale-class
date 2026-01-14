@@ -36,7 +36,9 @@ const SOUND_GAMES: Game[] = [
 
 const READING_GAMES: Game[] = [
   { id: 'letter-match', name: 'Letter Match', description: 'Match uppercase to lowercase letters', icon: '🔡', route: '/games/letter-match', color: 'green', gradient: 'from-green-500 to-emerald-500' },
-  { id: 'letter-tracer', name: 'Letter Tracer', description: 'Practice writing letters', icon: '✏️', route: '/games/letter-tracer', color: 'teal', gradient: 'from-teal-500 to-green-500' },
+  { id: 'letter-tracer', name: 'Letter Tracer', description: 'Practice writing lowercase letters', icon: '✏️', route: '/games/letter-tracer', color: 'teal', gradient: 'from-teal-500 to-green-500' },
+  { id: 'capital-letter-tracer', name: 'Capital Letters', description: 'Trace uppercase A-Z', icon: '🔠', route: '/games/capital-letter-tracer', color: 'blue', gradient: 'from-blue-500 to-indigo-500', isNew: true },
+  { id: 'number-tracer', name: 'Number Tracer', description: 'Practice writing numbers 0-9', icon: '🔢', route: '/games/number-tracer', color: 'purple', gradient: 'from-purple-500 to-pink-500', isNew: true },
   { id: 'word-builder', name: 'Word Builder', description: 'Build words letter by letter', icon: '🧱', route: '/games/word-builder', color: 'indigo', gradient: 'from-indigo-500 to-purple-500' },
 ];
 

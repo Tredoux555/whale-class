@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
   let workProgress: any[] = [];
   let weeklyProgress: any[] = [];
   let skillProgress: any[] = [];
+  let gameProgress: any[] = [];
 
   if (childIds.length > 0) {
     // child_work_progress
@@ -98,6 +99,14 @@ export async function GET(request: NextRequest) {
       .select('child_id, status_level')
       .in('child_id', childIds);
     skillProgress = cp || [];
+
+    // game_sessions - get most recent for each child
+    const { data: gs } = await supabase
+      .from('game_sessions')
+      .select('child_id, game_name, started_at, duration_seconds')
+      .in('child_id', childIds)
+      .order('started_at', { ascending: false });
+    gameProgress = gs || [];
   }
 
   // Calculate age and aggregate progress for each child
@@ -134,6 +143,10 @@ export async function GET(request: NextRequest) {
     const practicing = cwpPracticing + waPracticing + cpPracticing;
     const mastered = cwpMastered + waMastered + cpMastered;
 
+    // Get most recent game session for this child
+    const childGames = gameProgress.filter(g => g.child_id === child.id);
+    const lastGame = childGames.length > 0 ? childGames[0] : null; // Already sorted by started_at desc
+
     return {
       ...child,
       age,
@@ -142,7 +155,13 @@ export async function GET(request: NextRequest) {
         practicing,
         mastered,
         total: presented + practicing + mastered
-      }
+      },
+      lastGame: lastGame ? {
+        name: lastGame.game_name,
+        playedAt: lastGame.started_at,
+        duration: lastGame.duration_seconds
+      } : null,
+      totalGameSessions: childGames.length
     };
   });
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import StudentGameProgress from '@/components/teacher/StudentGameProgress';
 
 interface Child {
   id: string;
@@ -74,6 +75,8 @@ export default function TeacherProgressPage() {
   const [selectedWorkIndex, setSelectedWorkIndex] = useState<number | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [teacherName, setTeacherName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'games'>('curriculum');
+  const [fromClassroom, setFromClassroom] = useState(false);
   
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
@@ -120,6 +123,25 @@ export default function TeacherProgressPage() {
   useEffect(() => {
     if (selectedChild && teacherName) fetchWorks();
   }, [selectedChild, selectedArea, teacherName]);
+
+  // Auto-select child from URL param (e.g., from classroom page)
+  useEffect(() => {
+    if (children.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const childParam = params.get('child');
+    const tabParam = params.get('tab');
+    if (childParam) {
+      setFromClassroom(true);
+      const child = children.find(c => c.id === childParam);
+      if (child && !selectedChild) {
+        setSelectedChild(child);
+      }
+      // Set games tab if specified in URL
+      if (tabParam === 'games') {
+        setActiveTab('games');
+      }
+    }
+  }, [children, selectedChild]);
 
   const fetchChildren = async (name?: string) => {
     try {
@@ -323,54 +345,99 @@ export default function TeacherProgressPage() {
         </div>
       ) : (
         <>
-          {/* Area Tabs */}
-          <div className="bg-white border-b shadow-sm sticky top-0 z-10">
-            <div className="max-w-6xl mx-auto px-4">
-              <div className="flex gap-1 py-3 overflow-x-auto">
-                {AREAS.map((area) => (
+          {/* Main Tab Toggle: Curriculum vs Games */}
+          <div className="bg-white border-b shadow-sm">
+            <div className="max-w-6xl mx-auto px-4 py-3">
+              <div className="flex items-center gap-4">
+                {fromClassroom && (
+                  <Link href="/teacher/classroom" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mr-4">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Classroom
+                  </Link>
+                )}
+                <div className="flex bg-gray-100 rounded-xl p-1">
                   <button
-                    key={area.id}
-                    onClick={() => setSelectedArea(area.id)}
-                    className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                      selectedArea === area.id
-                        ? `bg-gradient-to-r ${area.gradient} text-white shadow-lg`
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    onClick={() => setActiveTab('curriculum')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeTab === 'curriculum'
+                        ? 'bg-white text-emerald-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
-                    <span className="mr-1">{area.icon}</span>
-                    <span className="hidden sm:inline">{area.name}</span>
+                    📚 Curriculum
                   </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="bg-white/50 px-4 py-2 border-b">
-            <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-gray-500">
-              <span>Tap work to open • Swipe to navigate</span>
-              <div className="flex gap-2">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Presented</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Practicing</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Mastered</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Works Grid */}
-          <div className="max-w-6xl mx-auto p-4">
-            {worksLoading ? (
-              <div className="text-center py-16">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg mb-3">
-                  <span className="text-2xl animate-bounce">{currentArea?.icon}</span>
+                  <button
+                    onClick={() => setActiveTab('games')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeTab === 'games'
+                        ? 'bg-white text-purple-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    🎮 Games
+                  </button>
                 </div>
-                <p className="text-gray-500">Loading works...</p>
               </div>
-            ) : Object.keys(worksByCategory).length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
-                <span className="text-4xl mb-3 block">📋</span>
-                <p className="text-gray-500">No works found for this area.</p>
+            </div>
+          </div>
+
+          {activeTab === 'games' ? (
+            /* Games Tab Content */
+            <div className="max-w-6xl mx-auto p-4">
+              <StudentGameProgress childId={selectedChild.id} childName={selectedChild.name} />
+            </div>
+          ) : (
+            <>
+              {/* Area Tabs */}
+              <div className="bg-white border-b shadow-sm sticky top-0 z-10">
+                <div className="max-w-6xl mx-auto px-4">
+                  <div className="flex gap-1 py-3 overflow-x-auto">
+                    {AREAS.map((area) => (
+                      <button
+                        key={area.id}
+                        onClick={() => setSelectedArea(area.id)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                          selectedArea === area.id
+                            ? `bg-gradient-to-r ${area.gradient} text-white shadow-lg`
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        <span className="mr-1">{area.icon}</span>
+                        <span className="hidden sm:inline">{area.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              {/* Legend */}
+              <div className="bg-white/50 px-4 py-2 border-b">
+                <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-gray-500">
+                  <span>Tap work to open • Swipe to navigate</span>
+                  <div className="flex gap-2">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Presented</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Practicing</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Mastered</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Works Grid */}
+              <div className="max-w-6xl mx-auto p-4">
+                {worksLoading ? (
+                  <div className="text-center py-16">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg mb-3">
+                      <span className="text-2xl animate-bounce">{currentArea?.icon}</span>
+                    </div>
+                    <p className="text-gray-500">Loading works...</p>
+                  </div>
+                ) : Object.keys(worksByCategory).length === 0 ? (
+                  <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+                    <span className="text-4xl mb-3 block">📋</span>
+                    <p className="text-gray-500">No works found for this area.</p>
+                  </div>
             ) : (
               Object.entries(worksByCategory).map(([category, categoryWorks]) => (
                 <div key={category} className="mb-6">
@@ -400,6 +467,8 @@ export default function TeacherProgressPage() {
               ))
             )}
           </div>
+        </>
+      )}
         </>
       )}
 
