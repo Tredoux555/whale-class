@@ -6,7 +6,8 @@ import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
 
 // Features only available to Tredoux (admin features)
-const ADMIN_ONLY_HREFS = ['/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance', '/teacher/progress'];
+// CRITICAL SECURITY: Classroom Hub contains photos and sensitive media - ONLY Tredoux can access
+const ADMIN_ONLY_HREFS = ['/admin/hub', '/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance', '/teacher/progress'];
 
 const DASHBOARD_ITEMS = [
   {
