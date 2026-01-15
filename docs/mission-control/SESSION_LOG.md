@@ -1,6 +1,78 @@
 
 ---
 
+## SESSION 31: Unified Classroom UI (Jan 15, 2026)
+
+### What Was Built
+Unified child-first navigation for the Whale classroom app:
+
+**New Route Structure:**
+```
+/classroom              → Children grid (main entry point)
+/classroom/[childId]    → Child profile with 3 tabs
+```
+
+**Child Profile 3-Tab View:**
+1. **This Week** - Current weekly assignments + Capture button + status toggle
+2. **Progress** - All-time progress by area with expandable work lists
+3. **Portfolio** - Photos/videos grouped by work with lightbox viewing
+
+**Video Thumbnails:**
+- Auto-generates thumbnail from first frame
+- Shows play button overlay for videos
+- Displays date badge on each thumbnail
+
+**Files Created:**
+```
+app/classroom/page.tsx                          - Children grid
+app/classroom/[childId]/page.tsx                - Child profile with tabs
+app/api/classroom/children/route.ts             - API: all children with progress
+app/api/classroom/child/[childId]/route.ts      - API: single child data
+app/api/classroom/child/[childId]/week/route.ts - API: weekly assignments
+app/api/classroom/child/[childId]/progress/route.ts - API: all-time progress
+components/classroom/ThisWeekTab.tsx            - This week tab component
+components/classroom/ProgressTab.tsx            - Progress tab component
+components/classroom/PortfolioTab.tsx           - Portfolio tab with lightbox
+```
+
+### User Flow
+1. Open `/classroom` → See all 20 children as cards
+2. Tap child → Opens their profile
+3. Tab navigation:
+   - "This Week" shows weekly assigned works with capture
+   - "Progress" shows all curriculum areas with expandable details
+   - "Portfolio" shows all photos/videos organized by work
+
+### Key Features
+- Children-first navigation (everything flows from the child)
+- Capture happens in context (this week's work)
+- Photos immediately show in portfolio after capture
+- Video thumbnail auto-generation
+- Keyboard navigation in lightbox (arrows, escape)
+- Filter by photos/videos in portfolio
+- Progress bars and stats everywhere
+
+### To Deploy
+```bash
+git add .
+git commit -m "Add unified classroom UI with child-first navigation"
+git push
+```
+
+### Access
+- URL: `www.teacherpotato.xyz/classroom`
+- Select a child to see their full profile
+
+### Replaces/Simplifies
+This unified view consolidates functionality from:
+- `/admin/classroom` - still works, but new `/classroom` is cleaner
+- `/admin/hub` - media tab now in portfolio
+- `/admin/child-media` - now integrated into child profile
+- `/teacher/classroom` - can redirect here
+- `/teacher/progress` - now in child profile
+
+---
+
 ## SESSION 30: Mission Protocol PWA (Jan 15, 2026)
 
 ### What Was Built
@@ -71,9 +143,8 @@ The protocol documentation lives in `~/Desktop/tredoux-OS/mission-protocol/`:
 ---
 
 ## NEXT STEPS
-1. Run migration 036 in Supabase
-2. Deploy to Railway
-3. Test `/mission` on phone
-4. Add to home screen as PWA
+1. Deploy Session 31 changes to Railway
+2. Test `/classroom` flow on iPad
+3. Consider deprecating redundant routes
 
 ---
