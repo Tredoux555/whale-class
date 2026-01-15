@@ -1,234 +1,196 @@
+# WHALE SESSION LOG
 
 ---
 
-## SESSION 32: Photo Categories & Portfolio Generators (Jan 15, 2026)
+## SESSION 33: Schools Hierarchy & English Reports (Jan 15, 2026 Evening)
+
+### 🎯 THE MISSION
+Tredoux needs to write weekly English progress reports for each child. Currently a manual schlep. We built an auto-generator AND restructured the entire platform architecture.
+
+### 🏗️ ARCHITECTURE PROBLEM IDENTIFIED
+The platform was fragmented:
+- Curriculum was GLOBAL, not per-school
+- English progression was HARDCODED in React components
+- No clear hierarchy: Master → Schools → Classrooms
+
+### 🏗️ ARCHITECTURE SOLUTION BUILT
+```
+WHALE PLATFORM (Master - Tredoux)
+├── Master Curriculum (read-only gold standard)
+├── Master English Works (BS, WBW/a/, etc.)
+│
+└── SCHOOLS
+    └── Beijing International School ⭐
+        ├── School Curriculum (cloned from master, editable)
+        ├── School English Works (cloned, reorderable)
+        ├── Classrooms
+        │   └── Whale Class
+        │       └── Children with progress
+        ├── Teachers
+        └── Parents
+```
+
+### ⭐ KEY FEATURE: Weekly English Reports
+**Route:** `/admin/schools/beijing-international/english-reports`
+
+For each child:
+1. Select work done this week (WBW/a/, WBW/e/, etc.)
+2. Select performance (excellent/good/needs practice/introduced/none)
+3. Select next week's work
+4. Add optional notes
+5. **AUTO-GENERATES report text!**
+
+Example output:
+> "This week Amy did the WBW/a/ (Word Building: Short A). She did quite well with it. Next week we will do the WBW/e/."
+
+Features:
+- Copy individual reports
+- Copy ALL reports at once
+- Preview modal
+- Week selector
+
+### 📚 English Works Sequence (Default)
+```
+1. BS - Beginning Sounds
+2. ES - Ending Sounds
+3. MS - Middle Sounds
+4. WBW/a/ - Word Building: Short A
+5. WBW/e/ - Word Building: Short E
+6. WBW/i/ - Word Building: Short I
+7. WBW/o/ - Word Building: Short O
+8. WBW/u/ - Word Building: Short U
+9. PR/a/ - Pink Reading: Short A
+10. PR/e/ - Pink Reading: Short E
+11. PR/i/ - Pink Reading: Short I
+12. PR/o/ - Pink Reading: Short O
+13. PR/u/ - Pink Reading: Short U
+14. BL/init/ - Initial Blends
+15. BL/final/ - Final Blends
+```
+
+### 🛤️ NEW ROUTES BUILT
+| Route | Purpose |
+|-------|---------|
+| `/admin/schools` | Master schools list |
+| `/admin/schools/beijing-international` | School dashboard |
+| `/admin/schools/beijing-international/curriculum` | 5 curriculum areas |
+| `/admin/schools/beijing-international/english` | Drag-to-reorder English works |
+| `/admin/schools/beijing-international/english-reports` | **⭐ THE KEY FEATURE** |
+
+### 📁 FILES CREATED
+```
+app/admin/page.tsx                              - MODIFIED: Added Schools as first card
+app/admin/schools/page.tsx                      - Schools management
+app/admin/schools/[slug]/page.tsx               - School dashboard
+app/admin/schools/[slug]/curriculum/page.tsx    - Curriculum by area
+app/admin/schools/[slug]/english/page.tsx       - English progression editor
+app/admin/schools/[slug]/english-reports/page.tsx - Report generator ⭐
+app/api/schools/route.ts                        - MODIFIED: Added stats
+app/api/schools/[schoolId]/english-works/route.ts - English works API
+app/api/schools/[schoolId]/curriculum/stats/route.ts - Curriculum stats API
+migrations/036_school_english_works.sql         - Database migration (not run yet)
+docs/mission-control/HANDOFF_SCHOOLS_JAN15.md   - Session handoff
+```
+
+### 🗄️ DATABASE STATUS
+**Current:** All UI uses MOCK DATA - works without database
+**Migration ready:** `migrations/036_school_english_works.sql`
+**Blocker:** `schools` table doesn't exist yet in Supabase
+**Plan:** Get UI right first, then wire up database
+
+### ✅ DEPLOYED
+- Fixed duplicate `[id]`/`[slug]` route conflict
+- Pushed to Railway
+- Build succeeded
+
+### 🧪 TO TEST
+1. Go to `/admin`
+2. Click **Schools** (first card, gold/amber)
+3. Click **Beijing International School**
+4. Try **English Reports** - generate weekly reports!
+
+### ⏭️ NEXT STEPS
+1. Test the UI thoroughly
+2. When happy, create comprehensive database migration
+3. Wire APIs to real Supabase data
+4. Connect actual children to English progression
+
+---
+
+## SESSION 32: Photo Categories & Portfolio Generator (Jan 15, 2026)
 
 ### What Was Built
-Completed the photo category system and portfolio generators that were started but not finished in the previous session.
+Completed the photo category system and portfolio generators.
 
-**Photo Categories System:**
+**Photo Categories:**
 - 📚 **Work** - Photos linked to curriculum activities
-- 🌳 **Life** - Outdoor play, snack time, general moments (per child)
-- 👥 **Shared** - Group photos that auto-distribute to ALL children
+- 🌳 **Life** - Outdoor play, snack time, general moments
+- 👥 **Shared** - Group photos auto-distribute to ALL children
 
-**Updated Components:**
-```
-app/api/media/route.ts                 - Added category parameter to upload/fetch
-components/classroom/PhotoCapture.tsx  - Category selection UI (work/life/shared)
-components/classroom/PortfolioTab.tsx  - Category-organized gallery with filters
-```
-
-**New Album Generator:**
-```
-app/api/classroom/album/generate/route.ts - PDF generation with pdfkit
-```
-- Beautiful PDF with title page
-- Photos organized by category (Work, Life, Group)
-- Progress summary included
-- Downloads instantly
-
-**New Video Generator:**
-```
-app/api/classroom/video/route.ts       - Photo data for client-side generation
-components/classroom/VideoGenerator.tsx - Client-side slideshow creator
-```
-- Ken Burns zoom effect on each photo
-- Smooth fade transitions
-- Title and end slides with branding
-- Captions and dates on each photo
-- Downloads as WebM format
-
-**Shared Photos System:**
-- Upload once → automatically copies to ALL active children
-- Trigger function in database handles distribution
-- Perfect for class photos, group activities
+**Album Generator:** PDF download with photos by category
+**Video Generator:** Client-side slideshow with Ken Burns effect
 
 ### Files Created/Modified
 ```
-app/api/media/route.ts                      - MODIFIED: category support
-app/api/classroom/album/generate/route.ts   - NEW: PDF album generation
-app/api/classroom/video/route.ts            - NEW: Video data endpoint
-components/classroom/PortfolioTab.tsx       - MODIFIED: category filters, generators
-components/classroom/VideoGenerator.tsx     - NEW: Client-side video creation
+app/api/media/route.ts - category support
+app/api/classroom/album/generate/route.ts - PDF generation
+app/api/classroom/video/route.ts - Video data endpoint
+components/classroom/PortfolioTab.tsx - Category filters
+components/classroom/VideoGenerator.tsx - Client-side video
 ```
-
-### Migration Required
-**Run before deploying:** `migrations/037_photo_categories.sql`
-
-This adds:
-- `category` column to `child_work_media` table
-- `shared_photos` table
-- Trigger to auto-distribute shared photos
-
-### To Deploy
-```bash
-# 1. Run migration 037 in Supabase SQL Editor first
-# 2. Then:
-cd ~/Desktop/whale
-git add .
-git commit -m "Session 31+32: Unified classroom, photo categories, album & video generators"
-git push
-```
-
-### Verification Status (Jan 15, 15:50)
-- ✅ All API routes exist and have content
-- ✅ All components complete
-- ✅ Migration file ready
-- ⏳ Awaiting deploy + testing
-
-### How to Use
-1. Go to `/classroom` → tap a child → "Portfolio" tab
-2. Click "📖 Album" to download PDF
-3. Click "🎬 Video" to generate slideshow
-4. When capturing photos, select category (Work/Life/Shared)
-5. Shared photos appear in every child's portfolio
 
 ---
 
 ## SESSION 31: Unified Classroom UI (Jan 15, 2026)
 
 ### What Was Built
-Unified child-first navigation for the Whale classroom app:
+Child-first navigation for the classroom app.
 
-**New Route Structure:**
-```
-/classroom              → Children grid (main entry point)
-/classroom/[childId]    → Child profile with 3 tabs
-```
+**Routes:**
+- `/classroom` - Children grid
+- `/classroom/[childId]` - Child profile with 3 tabs
 
-**Child Profile 3-Tab View:**
-1. **This Week** - Current weekly assignments + Capture button + status toggle
-2. **Progress** - All-time progress by area with expandable work lists
-3. **Portfolio** - Photos/videos grouped by work with lightbox viewing
-
-**Video Thumbnails:**
-- Auto-generates thumbnail from first frame
-- Shows play button overlay for videos
-- Displays date badge on each thumbnail
-
-**Files Created:**
-```
-app/classroom/page.tsx                          - Children grid
-app/classroom/[childId]/page.tsx                - Child profile with tabs
-app/api/classroom/children/route.ts             - API: all children with progress
-app/api/classroom/child/[childId]/route.ts      - API: single child data
-app/api/classroom/child/[childId]/week/route.ts - API: weekly assignments
-app/api/classroom/child/[childId]/progress/route.ts - API: all-time progress
-components/classroom/ThisWeekTab.tsx            - This week tab component
-components/classroom/ProgressTab.tsx            - Progress tab component
-components/classroom/PortfolioTab.tsx           - Portfolio tab with lightbox
-```
-
-### User Flow
-1. Open `/classroom` → See all 20 children as cards
-2. Tap child → Opens their profile
-3. Tab navigation:
-   - "This Week" shows weekly assigned works with capture
-   - "Progress" shows all curriculum areas with expandable details
-   - "Portfolio" shows all photos/videos organized by work
-
-### Key Features
-- Children-first navigation (everything flows from the child)
-- Capture happens in context (this week's work)
-- Photos immediately show in portfolio after capture
-- Video thumbnail auto-generation
-- Keyboard navigation in lightbox (arrows, escape)
-- Filter by photos/videos in portfolio
-- Progress bars and stats everywhere
-
-### To Deploy
-```bash
-git add .
-git commit -m "Add unified classroom UI with child-first navigation"
-git push
-```
-
-### Access
-- URL: `www.teacherpotato.xyz/classroom`
-- Select a child to see their full profile
-
-### Replaces/Simplifies
-This unified view consolidates functionality from:
-- `/admin/classroom` - still works, but new `/classroom` is cleaner
-- `/admin/hub` - media tab now in portfolio
-- `/admin/child-media` - now integrated into child profile
-- `/teacher/classroom` - can redirect here
-- `/teacher/progress` - now in child profile
+**Tabs:**
+1. This Week - Current assignments + capture
+2. Progress - All-time progress by area
+3. Portfolio - Photos/videos by work
 
 ---
 
 ## SESSION 30: Mission Protocol PWA (Jan 15, 2026)
 
-### What Was Built
-Complete Mission Protocol system integrated into Whale as a PWA at `/mission`:
-
-**Database (migration 036):**
-- `mission_sessions` - tracks check-ins with energy, project, first action, mission connection
-- `mission_wins` - logs accomplishments
-- `mission_streaks` - single-row table tracking all stats with auto-update triggers
-- `mission_weekly_calibrations` - for Sunday reviews
-
-**API Routes:**
-- `/api/mission/status` - GET streaks, sessions, wins
-- `/api/mission/checkin` - POST new session (Mission Bridge)
-- `/api/mission/wins` - GET/POST wins
-- `/api/mission/anchor` - POST session anchor
-
-**Frontend (`/mission`):**
-- Mobile-first dark gradient theme
-- Dashboard: streak counter, energy patterns, project sessions, recent wins
-- Briefing form: energy level, project, first action, mission connection
-- Win logger: quick add accomplishments
-- Session anchor: end-of-session reflection
-
-### Files Created
-```
-migrations/036_mission_protocol.sql
-app/api/mission/status/route.ts
-app/api/mission/checkin/route.ts
-app/api/mission/wins/route.ts
-app/api/mission/anchor/route.ts
-app/mission/page.tsx
-```
-
-### To Deploy
-
-1. **Run Migration in Supabase:**
-   - Go to Supabase SQL Editor
-   - Paste contents of `migrations/036_mission_protocol.sql`
-   - Run it
-
-2. **Deploy to Railway:**
-   ```bash
-   git add .
-   git commit -m "Add Mission Protocol PWA"
-   git push
-   ```
-
-3. **Access:**
-   - URL: `www.teacherpotato.xyz/mission`
-   - Works as PWA - can add to home screen
-
-### Also Built (in tredoux-OS)
-The protocol documentation lives in `~/Desktop/tredoux-OS/mission-protocol/`:
-- `MISSION_PROTOCOL.md` - Full guide
-- `WORK_PROTOCOL.md` - Chunk→Save→Analyze→Proceed rules
-- `protocol-state.json` - Local tracking
-- `QUICK_REFERENCE.txt` - Printable card
-- Updated `brain.json` with CORE_LAWS
-
-### Commands (for Claude sessions)
-- "Briefing" - Run Mission Bridge check-in
-- "Status" - Show streaks and patterns
-- "Log win: X" - Record accomplishment
-- "Session done" - Complete session anchor
-- "Checkpoint" - Save current work state
+Mission Protocol integrated at `/mission` with streaks, check-ins, wins tracking.
 
 ---
 
-## NEXT STEPS
-1. Deploy Session 31 changes to Railway
-2. Test `/classroom` flow on iPad
-3. Consider deprecating redundant routes
+## 🎯 MASTER TODO
+
+### Immediate (Jan 16 Launch)
+- [x] Schools hierarchy UI
+- [x] English reports generator
+- [ ] Test on teacherpotato.xyz
+- [ ] Wire database when UI confirmed
+
+### Post-Launch
+- [ ] Connect real children to English progression
+- [ ] Auto-track child position in sequence
+- [ ] Parent portal to view reports
 
 ---
+
+## 📊 PLATFORM STATUS
+
+| Feature | Status |
+|---------|--------|
+| Schools Hierarchy | ✅ UI Complete (mock data) |
+| English Reports | ✅ Built & deployed |
+| Photo Categories | ✅ Built |
+| Album Generator | ✅ Built |
+| Video Generator | ✅ Built |
+| Unified Classroom | ✅ Built |
+| Mission Protocol | ✅ Built |
+| Database | ⏳ Schools tables pending |
+
+---
+
+**Last Updated:** Jan 15, 2026 19:00 Beijing Time

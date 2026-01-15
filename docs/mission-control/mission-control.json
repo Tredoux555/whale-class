@@ -1,8 +1,8 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-15T15:30:00+08:00",
-  "currentSession": "Session 32 - Photo Categories & Portfolio Generator",
-  "currentStatus": "✅ BUILT - Ready to deploy",
+  "lastUpdated": "2026-01-15T19:00:00+08:00",
+  "currentSession": "Session 33 - Schools Hierarchy & English Reports",
+  "currentStatus": "✅ UI COMPLETE - Mock data, DB pending",
   "productionUrl": "https://www.teacherpotato.xyz",
   
   "railwayStatus": "✅ ONLINE",
@@ -11,54 +11,98 @@
 
   "HANDOFF_LOCATION": "/docs/mission-control/SESSION_LOG.md",
 
-  "SESSION_32_COMPLETED": [
-    "Photo categories (work, life, shared) - API updated",
-    "Migration 037 for category column + shared_photos table",
-    "PhotoCapture component with category selection",
-    "PortfolioTab organized by category with filters",
-    "Album Generator - PDF download with photos by category",
-    "Video Generator - Client-side slideshow with Ken Burns effect",
-    "Shared photo API - auto-distributes to all children"
-  ],
-
-  "SESSION_31_BUILT": [
-    "Unified /classroom route - children grid entry point",
-    "Child profile page with 3 tabs (This Week, Progress, Portfolio)",
-    "Portfolio tab with photos grouped by work",
-    "Video thumbnail auto-generation",
-    "Lightbox with keyboard navigation",
-    "API endpoints for all data"
-  ],
-
-  "NEW_ROUTES": {
-    "/classroom": "Children grid - main entry point",
-    "/classroom/[childId]": "Child profile with 3 tabs"
+  "CURRENT_FOCUS": "SCHOOL HIERARCHY ARCHITECTURE",
+  
+  "ARCHITECTURE_VISION": {
+    "level0_master": "Whale Platform (Tredoux - super admin)",
+    "level1_schools": "Schools (Beijing International first, then others)",
+    "level2_roles": "Principal → Teachers → Parents",
+    "level3_data": "Classrooms → Children → Progress"
   },
 
-  "NEW_API_ROUTES": {
-    "/api/classroom/children": "GET all children with progress",
-    "/api/classroom/child/[childId]": "GET single child data",
-    "/api/classroom/child/[childId]/week": "GET weekly assignments",
-    "/api/classroom/child/[childId]/progress": "GET all-time progress",
-    "/api/classroom/shared-photo": "POST shared photo (auto-distributes)",
-    "/api/classroom/album/generate": "POST generate PDF album",
-    "/api/classroom/video": "GET photos for video generation"
-  },
-
-  "NEW_COMPONENTS": {
-    "components/classroom/PhotoCapture.tsx": "Camera with category selection",
-    "components/classroom/PortfolioTab.tsx": "Category-organized gallery",
-    "components/classroom/VideoGenerator.tsx": "Client-side video creation"
-  },
-
-  "TO_DEPLOY": [
-    "1. Run migration 037 in Supabase SQL Editor",
-    "2. git add .",
-    "3. git commit -m 'Add photo categories, album & video generators'",
-    "4. git push"
+  "SESSION_33_COMPLETED": [
+    "Schools card added as FIRST item on /admin dashboard",
+    "/admin/schools - Master schools management page",
+    "/admin/schools/[slug] - Individual school dashboard",
+    "/admin/schools/[slug]/curriculum - School curriculum page",
+    "/admin/schools/[slug]/english - English progression (drag to reorder WBW/a/, etc.)",
+    "/admin/schools/[slug]/english-reports - Weekly auto-report generator ⭐",
+    "All using MOCK DATA - no database required yet",
+    "Fixed duplicate [id]/[slug] route conflict"
   ],
 
-  "MIGRATION_TO_RUN": "migrations/037_photo_categories.sql",
+  "KEY_FEATURE_BUILT": {
+    "name": "Weekly English Reports Auto-Generator",
+    "route": "/admin/schools/beijing-international/english-reports",
+    "purpose": "Auto-generates weekly parent reports",
+    "example_output": "This week Rachel did the WBW/a/ (Word Building: Short A). She did quite well with it. Next week we will do the WBW/e/.",
+    "features": [
+      "Select work done per child",
+      "Select performance level",
+      "Select next week's work", 
+      "Auto-generates report text",
+      "Copy individual or all reports"
+    ]
+  },
+
+  "ENGLISH_WORKS_SEQUENCE": [
+    "BS - Beginning Sounds",
+    "ES - Ending Sounds",
+    "MS - Middle Sounds",
+    "WBW/a/ - Word Building: Short A",
+    "WBW/e/ - Word Building: Short E",
+    "WBW/i/ - Word Building: Short I",
+    "WBW/o/ - Word Building: Short O",
+    "WBW/u/ - Word Building: Short U",
+    "PR/a/ - Pink Reading: Short A",
+    "PR/e/ - Pink Reading: Short E",
+    "PR/i/ - Pink Reading: Short I",
+    "PR/o/ - Pink Reading: Short O",
+    "PR/u/ - Pink Reading: Short U",
+    "BL/init/ - Initial Blends",
+    "BL/final/ - Final Blends"
+  ],
+
+  "NEW_ROUTES_SESSION_33": {
+    "/admin/schools": "Master schools list",
+    "/admin/schools/beijing-international": "Beijing Int'l School dashboard",
+    "/admin/schools/beijing-international/curriculum": "School curriculum by area",
+    "/admin/schools/beijing-international/english": "English progression editor",
+    "/admin/schools/beijing-international/english-reports": "Weekly report generator ⭐"
+  },
+
+  "DATABASE_STATUS": {
+    "migration_ready": "migrations/036_school_english_works.sql",
+    "tables_to_create": [
+      "master_english_works - Platform gold standard",
+      "school_english_works - Per-school customization",
+      "child_english_progress - Track each child's position",
+      "weekly_english_log - For report generation"
+    ],
+    "blocker": "Need to create 'schools' table first (doesn't exist yet)",
+    "current_approach": "UI works with mock data - wire DB later"
+  },
+
+  "WHAT_PROBLEM_WE_SOLVED": {
+    "before": "Curriculum was global, not per-school. English progression hardcoded in React.",
+    "after": "Clean hierarchy: Master → Schools → Classrooms. English works editable per school."
+  },
+
+  "NEXT_STEPS": [
+    "1. Test UI flow at /admin/schools",
+    "2. If happy with UI, create comprehensive database migration",
+    "3. Wire up APIs to real data",
+    "4. Connect children to English progression for real reports"
+  ],
+
+  "ROUTES_OVERVIEW": {
+    "admin_entry": "/admin → Schools card (first)",
+    "schools_list": "/admin/schools",
+    "school_dashboard": "/admin/schools/beijing-international",
+    "curriculum": "/admin/schools/beijing-international/curriculum",
+    "english_progression": "/admin/schools/beijing-international/english",
+    "english_reports": "/admin/schools/beijing-international/english-reports"
+  },
 
   "credentials": {
     "teacherAdmin": {"name": "Tredoux", "password": "870602"}
