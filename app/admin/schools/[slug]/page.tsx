@@ -185,6 +185,23 @@ export default function SchoolPage() {
               </svg>
             </Link>
 
+            {/* Newsletter Generator */}
+            <Link
+              href={`/admin/schools/${slug}/newsletter`}
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl hover:border-amber-500/50 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📰</span>
+                <div>
+                  <span className="text-white font-medium">Newsletter Generator</span>
+                  <p className="text-slate-400 text-xs">Weekly reports from Circle Time</p>
+                </div>
+              </div>
+              <svg className="w-5 h-5 text-amber-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+
             {/* English Sequence */}
             <Link
               href={`/admin/schools/${slug}/english`}
