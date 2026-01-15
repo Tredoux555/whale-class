@@ -1,5 +1,6 @@
 // app/api/english-reports/route.ts
 // Fetches children and their English progress for weekly reports
+// TWO-WAY SYNC: Saving reports also updates child_work_progress
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -9,6 +10,40 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
+
+// Map work codes to database IDs
+const codeToWorkId: Record<string, string> = {
+  'BS': 'eng_bs',
+  'ES': 'eng_es',
+  'MS': 'eng_ms',
+  'WBW/a/': 'eng_wbw_a',
+  'WBW/e/': 'eng_wbw_e',
+  'WBW/i/': 'eng_wbw_i',
+  'WBW/o/': 'eng_wbw_o',
+  'WBW/u/': 'eng_wbw_u',
+  'WFW/a/': 'eng_wfw_a',
+  'WFW/e/': 'eng_wfw_e',
+  'WFW/i/': 'eng_wfw_i',
+  'WFW/o/': 'eng_wfw_o',
+  'WFW/u/': 'eng_wfw_u',
+  'PR/a/': 'eng_pr_a',
+  'PR/e/': 'eng_pr_e',
+  'PR/i/': 'eng_pr_i',
+  'PR/o/': 'eng_pr_o',
+  'PR/u/': 'eng_pr_u',
+  'PrPh Red 1': 'eng_prph_1',
+  'PrPh Red 2': 'eng_prph_2',
+  'PrPh Red 3': 'eng_prph_3',
+  'PrPh Red 4': 'eng_prph_4',
+  'PrPh Red 5': 'eng_prph_5',
+  'PrPh Red 6': 'eng_prph_6',
+  'PrPh Red 7': 'eng_prph_7',
+  'PrPh Red 8': 'eng_prph_8',
+  'PrPh Red 9': 'eng_prph_9',
+  'PrPh Red 10': 'eng_prph_10',
+  'BL/init/': 'eng_bl_init',
+  'BL/final/': 'eng_bl_final',
+};
 
 export async function GET(request: NextRequest) {
   const supabase = getSupabase();
@@ -34,7 +69,6 @@ export async function GET(request: NextRequest) {
   }
 
   // 2. Fetch all English progress for these children
-  // English works have IDs starting with 'eng_'
   const childIds = (children || []).map(c => c.id);
   
   const { data: allProgress, error: progressError } = await supabase
@@ -68,14 +102,13 @@ export async function GET(request: NextRequest) {
     workNames[w.id] = w.name;
   });
 
-  // 5. Group progress by child and find what was done THIS WEEK
+  // 5. Group progress by child
   const progressByChild: Record<string, any[]> = {};
   (allProgress || []).forEach(p => {
     if (!progressByChild[p.child_id]) {
       progressByChild[p.child_id] = [];
     }
     
-    // Check if this work was updated this week
     const updatedAt = new Date(p.last_updated);
     const isThisWeek = updatedAt >= weekStart && updatedAt < weekEnd;
     
@@ -92,13 +125,12 @@ export async function GET(request: NextRequest) {
     savedLogsMap[log.child_id] = log;
   });
 
-  // 7. Build response with children and their progress
+  // 7. Build response
   const result = (children || []).map(child => {
     const progress = progressByChild[child.id] || [];
     const thisWeekWorks = progress.filter(p => p.isThisWeek && p.status > 0);
     const savedLog = savedLogsMap[child.id];
     
-    // Find highest status work as "current work"
     const currentWork = progress
       .filter(p => p.status > 0)
       .sort((a, b) => b.status - a.status || new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime())[0];
@@ -130,7 +162,7 @@ export async function GET(request: NextRequest) {
   });
 }
 
-// Save weekly report
+// Save weekly report AND sync to progress tracker
 export async function POST(request: NextRequest) {
   const supabase = getSupabase();
   const body = await request.json();
@@ -140,7 +172,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'childId, week, and year required' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const now = new Date().toISOString();
+
+  // 1. Save to english_weekly_log
+  const { data: logData, error: logError } = await supabase
     .from('english_weekly_log')
     .upsert({
       child_id: childId,
@@ -149,15 +184,47 @@ export async function POST(request: NextRequest) {
       works_done: worksDone || [],
       next_work: nextWork || '',
       report_text: reportText || '',
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     }, { onConflict: 'child_id,week_number,year' })
     .select()
     .single();
 
-  if (error) {
-    console.error('Error saving report:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (logError) {
+    console.error('Error saving report:', logError);
+    return NextResponse.json({ error: logError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, log: data });
+  // 2. TWO-WAY SYNC: Update child_work_progress for each work done
+  if (worksDone && worksDone.length > 0) {
+    for (const entry of worksDone) {
+      if (!entry.work) continue;
+      
+      const workId = codeToWorkId[entry.work];
+      if (!workId) continue;
+
+      // Map performance to status: excellent=3, good=2, struggled=1, repeat=1
+      let status = 2; // default to practicing
+      if (entry.performance === 'excellent') status = 3; // mastered
+      else if (entry.performance === 'good') status = 2; // practicing
+      else if (entry.performance === 'struggled') status = 1; // presented
+      else if (entry.performance === 'repeat') status = 1; // presented
+
+      const dateFields: Record<string, string> = {};
+      if (status === 1) dateFields.presented_date = now;
+      if (status === 2) dateFields.practicing_date = now;
+      if (status === 3) dateFields.mastered_date = now;
+
+      await supabase
+        .from('child_work_progress')
+        .upsert({
+          child_id: childId,
+          work_id: workId,
+          status,
+          last_updated: now,
+          ...dateFields
+        }, { onConflict: 'child_id,work_id' });
+    }
+  }
+
+  return NextResponse.json({ success: true, log: logData });
 }
