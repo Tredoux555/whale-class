@@ -35,7 +35,7 @@ export interface DayPlan {
 export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
   // ============ WEEK 1: Welcome Back ============
   {
-    week: 1,
+    week: 3,
     theme: "Welcome Back",
     icon: "🎒",
     color: "#ef4444",
@@ -100,7 +100,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 2: Classroom Rules ============
   {
-    week: 2,
+    week: 4,
     theme: "Classroom Rules",
     icon: "📋",
     color: "#f97316",
@@ -165,7 +165,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 3: My Body ============
   {
-    week: 3,
+    week: 5,
     theme: "My Body",
     icon: "🧍",
     color: "#eab308",
@@ -230,7 +230,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 4: My 5 Senses ============
   {
-    week: 4,
+    week: 6,
     theme: "My 5 Senses",
     icon: "👁️",
     color: "#22c55e",
@@ -295,7 +295,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 5: My Feelings ============
   {
-    week: 5,
+    week: 7,
     theme: "My Feelings",
     icon: "😊",
     color: "#3b82f6",
@@ -360,7 +360,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 6: I Am Special ============
   {
-    week: 6,
+    week: 8,
     theme: "I Am Special",
     icon: "⭐",
     color: "#8b5cf6",
@@ -425,7 +425,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 7: Five Food Groups ============
   {
-    week: 7,
+    week: 9,
     theme: "Five Food Groups",
     icon: "🍎",
     color: "#ef4444",
@@ -490,7 +490,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 8: Healthy Habits - Hygiene ============
   {
-    week: 8,
+    week: 10,
     theme: "Healthy Habits",
     icon: "🧼",
     color: "#06b6d4",
@@ -555,7 +555,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 9: Dental Health ============
   {
-    week: 9,
+    week: 11,
     theme: "Dental Health",
     icon: "🦷",
     color: "#f0fdf4",
@@ -620,7 +620,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 10: My Family ============
   {
-    week: 10,
+    week: 12,
     theme: "My Family",
     icon: "👨‍👩‍👧‍👦",
     color: "#ec4899",
@@ -685,7 +685,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 11: Plant Life Cycle ============
   {
-    week: 11,
+    week: 13,
     theme: "Plant Life Cycle",
     icon: "🌱",
     color: "#22c55e",
@@ -750,7 +750,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 12: Animal Life Cycle ============
   {
-    week: 12,
+    week: 14,
     theme: "Animal Life Cycle",
     icon: "🐛",
     color: "#f59e0b",
@@ -815,7 +815,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 13: Thanksgiving ============
   {
-    week: 13,
+    week: 15,
     theme: "Thanksgiving",
     icon: "🦃",
     color: "#92400e",
@@ -880,7 +880,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 14: Community Helpers ============
   {
-    week: 14,
+    week: 16,
     theme: "Community Helpers",
     icon: "👨‍⚕️",
     color: "#0ea5e9",
@@ -945,7 +945,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 15: Safety Heroes ============
   {
-    week: 15,
+    week: 17,
     theme: "Safety Heroes",
     icon: "🚒",
     color: "#dc2626",
@@ -1010,7 +1010,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 16: Christmas ============
   {
-    week: 16,
+    week: 18,
     theme: "Christmas",
     icon: "🎄",
     color: "#16a34a",
@@ -1075,7 +1075,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 17: Winter ============
   {
-    week: 17,
+    week: 19,
     theme: "Winter",
     icon: "❄️",
     color: "#0284c7",
@@ -1140,7 +1140,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 18: Weather ============
   {
-    week: 18,
+    week: 20,
     theme: "Weather",
     icon: "🌤️",
     color: "#fbbf24",
@@ -1205,7 +1205,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 19: Beijing ============
   {
-    week: 19,
+    week: 21,
     theme: "Beijing",
     icon: "🏯",
     color: "#ef4444",
@@ -1270,7 +1270,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 20: China ============
   {
-    week: 20,
+    week: 22,
     theme: "China",
     icon: "🐼",
     color: "#000000",
@@ -1335,7 +1335,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 21: Chinese New Year ============
   {
-    week: 21,
+    week: 23,
     theme: "Chinese New Year",
     icon: "🧧",
     color: "#dc2626",
@@ -1400,7 +1400,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 22: Seven Continents ============
   {
-    week: 22,
+    week: 24,
     theme: "Seven Continents",
     icon: "🌍",
     color: "#22c55e",
@@ -1465,7 +1465,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 23: Five Oceans ============
   {
-    week: 23,
+    week: 25,
     theme: "Five Oceans",
     icon: "🌊",
     color: "#0284c7",
@@ -1530,7 +1530,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 24: Asia ============
   {
-    week: 24,
+    week: 26,
     theme: "Asia",
     icon: "🗻",
     color: "#f59e0b",
@@ -1595,7 +1595,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 25: Japan ============
   {
-    week: 25,
+    week: 27,
     theme: "Japan",
     icon: "🗾",
     color: "#ef4444",
@@ -1652,7 +1652,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 26: The Earth ============
   {
-    week: 26,
+    week: 28,
     theme: "The Earth",
     icon: "🌍",
     color: "#22c55e",
@@ -1709,7 +1709,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 27: Landforms ============
   {
-    week: 27,
+    week: 29,
     theme: "Landforms",
     icon: "⛰️",
     color: "#78716c",
@@ -1766,7 +1766,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 28: Animal Habitats ============
   {
-    week: 28,
+    week: 30,
     theme: "Animal Habitats",
     icon: "🦁",
     color: "#ca8a04",
@@ -1823,7 +1823,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 29: Earth Day ============
   {
-    week: 29,
+    week: 31,
     theme: "Earth Day",
     icon: "♻️",
     color: "#16a34a",
@@ -1880,7 +1880,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 30: Solar System ============
   {
-    week: 30,
+    week: 32,
     theme: "Solar System",
     icon: "☀️",
     color: "#f59e0b",
@@ -1937,7 +1937,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 31: Sun and Moon ============
   {
-    week: 31,
+    week: 33,
     theme: "Sun and Moon",
     icon: "🌙",
     color: "#6366f1",
@@ -1994,7 +1994,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 32: The Planets ============
   {
-    week: 32,
+    week: 34,
     theme: "The Planets",
     icon: "🪐",
     color: "#a855f7",
@@ -2051,7 +2051,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 33: Mars ============
   {
-    week: 33,
+    week: 35,
     theme: "Mars",
     icon: "🔴",
     color: "#dc2626",
@@ -2108,7 +2108,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 34: Astronauts ============
   {
-    week: 34,
+    week: 36,
     theme: "Astronauts",
     icon: "👨‍🚀",
     color: "#1e40af",
@@ -2165,7 +2165,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 35: Stars ============
   {
-    week: 35,
+    week: 37,
     theme: "Stars",
     icon: "⭐",
     color: "#fbbf24",
@@ -2222,7 +2222,7 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
 
   // ============ WEEK 36: Dinosaurs ============
   {
-    week: 36,
+    week: 38,
     theme: "Dinosaurs",
     icon: "🦕",
     color: "#65a30d",
