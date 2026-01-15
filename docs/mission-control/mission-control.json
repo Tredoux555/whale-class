@@ -25,6 +25,7 @@
     "/admin/schools - Master schools management page",
     "/admin/schools/[slug] - Individual school dashboard",
     "/admin/schools/[slug]/curriculum - School curriculum page",
+    "/admin/schools/[slug]/curriculum/[areaId] - Individual area works list (FIXED 404)",
     "/admin/schools/[slug]/english - English progression (drag to reorder WBW/a/, etc.)",
     "/admin/schools/[slug]/english-reports - Weekly auto-report generator ⭐",
     "All using MOCK DATA - no database required yet",
