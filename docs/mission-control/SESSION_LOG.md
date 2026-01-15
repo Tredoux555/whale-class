@@ -241,3 +241,74 @@ Built weekly English report generator matching Tredoux's exact style and student
 
 **Migration:** 039_whale_class_correct_order.sql (resets children to exact 18)
 
+
+
+---
+
+## SESSION 35 CONTINUED: THE STEM Architecture (Jan 15, 2026 - 21:40)
+
+### 🌱 THE STEM Philosophy
+
+**`/admin/schools/beijing-international`** is THE STEM - the single source of truth.
+- Everything grows from here
+- "If this goes down for even a day, we lose the school forever"
+- Build step by step, only what's needed - maximum efficiency
+- Tesla style: energy direct from source to output
+
+### Access Control
+- **ACTIVE NOW:** Tredoux only (Owner)
+- **INACTIVE:** Jasmine, Ivan (will activate later)
+
+### What I Built
+
+**School Dashboard (THE STEM)** now has 3 tabs:
+1. **Classrooms** - Shows Whale Class with 18 students
+2. **Teachers** - Tredoux (active), Jasmine (inactive), Ivan (inactive)
+3. **Tools** - All access points in one place:
+   - 📝 Weekly English Reports (highlighted - most used)
+   - 🔤 English Progression
+   - 📚 Curriculum
+   - 👶 Student Progress (links to classroom)
+   - ⚙️ Settings
+
+**Classroom Page** - Updated with real students:
+- 18 Whale Class students in exact order from your report
+- Shows current English work for each child
+- Quick links to Reports, English Sequence, Curriculum
+
+### 18 Students with Current Progress (from Week 17 report):
+| # | Name | Current Work |
+|---|------|--------------|
+| 1 | Rachel | WFW /e/ |
+| 2 | Yueze | WFW /o/ |
+| 3 | Lucky | WFW /i/ |
+| 4 | Austin | WFW /e/ |
+| 5 | Minxi | WBW 3ptc /e/ |
+| 6 | Leo | WBW 3ptc /e/ |
+| 7 | Joey | WBW Mixed Box 1 |
+| 8 | Eric | WFW /a/ |
+| 9 | Jimmy | WBW /e/ |
+| 10 | Kevin | WBW Mixed Box 1 |
+| 11 | Niuniu | WBW /a/ |
+| 12 | Amy | Sound Games |
+| 13 | Henry | SPL /a/ |
+| 14 | Segina | Spindle Box |
+| 15 | Hayden | WBW 3ptc |
+| 16 | KK | WBW /a/ |
+| 17 | Kayla | I Spy games |
+| 18 | Stella | I Spy games |
+
+### Routes from THE STEM
+```
+/admin/schools/beijing-international          → THE STEM (main dashboard)
+/admin/schools/beijing-international/classrooms/whale → Student list
+/admin/schools/beijing-international/english-reports  → Weekly reports
+/admin/schools/beijing-international/english          → English sequence
+/admin/schools/beijing-international/curriculum       → Montessori works
+```
+
+### Next: Wire to Database
+When ready, run migrations to persist this data:
+- `039_whale_class_correct_order.sql` - Creates 18 students with display_order
+- `038_english_reports_complete.sql` - English works + progress tracking
+
