@@ -1,5 +1,5 @@
 // app/admin/schools/[slug]/curriculum/page.tsx
-// School Curriculum Management - Connected to Real Data
+// School Curriculum Management - Connected to Real Data with Seed Function
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -30,6 +30,8 @@ export default function SchoolCurriculumPage() {
   const [areas, setAreas] = useState<CurriculumArea[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalWorks, setTotalWorks] = useState(0);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMessage, setSeedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCurriculumStats();
@@ -73,6 +75,32 @@ export default function SchoolCurriculumPage() {
     }
   };
 
+  const seedCurriculum = async () => {
+    if (seeding) return;
+    setSeeding(true);
+    setSeedMessage(null);
+    
+    try {
+      const res = await fetch('/api/admin/seed-curriculum', { method: 'POST' });
+      const data = await res.json();
+      
+      if (data.success) {
+        setSeedMessage(`✅ Seeded ${data.count} works!`);
+        // Refresh counts
+        await fetchCurriculumStats();
+      } else {
+        setSeedMessage(`⚠️ ${data.error || 'Seed failed'}`);
+      }
+    } catch (err) {
+      console.error('Seed error:', err);
+      setSeedMessage('❌ Failed to seed curriculum');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const isEmpty = totalWorks === 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
@@ -91,21 +119,67 @@ export default function SchoolCurriculumPage() {
             </div>
           </div>
           
-          <button className="px-4 py-2 bg-amber-500 text-black rounded-xl font-medium hover:bg-amber-400 transition-colors text-sm">
-            🔄 Sync from Master
-          </button>
+          <div className="flex gap-2">
+            {isEmpty && (
+              <button 
+                onClick={seedCurriculum}
+                disabled={seeding}
+                className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
+                  seeding 
+                    ? 'bg-slate-700 text-slate-400 cursor-wait' 
+                    : 'bg-green-500 text-white hover:bg-green-400'
+                }`}
+              >
+                {seeding ? '⏳ Seeding...' : '🌱 Seed Curriculum'}
+              </button>
+            )}
+            <button 
+              onClick={fetchCurriculumStats}
+              className="px-4 py-2 bg-amber-500 text-black rounded-xl font-medium hover:bg-amber-400 transition-colors text-sm"
+            >
+              🔄 Refresh
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto p-6">
+        {/* Seed Message */}
+        {seedMessage && (
+          <div className={`rounded-xl p-4 mb-6 ${
+            seedMessage.includes('✅') ? 'bg-green-500/10 border border-green-500/20' :
+            seedMessage.includes('⚠️') ? 'bg-amber-500/10 border border-amber-500/20' :
+            'bg-red-500/10 border border-red-500/20'
+          }`}>
+            <p className={`text-sm ${
+              seedMessage.includes('✅') ? 'text-green-400' :
+              seedMessage.includes('⚠️') ? 'text-amber-400' :
+              'text-red-400'
+            }`}>{seedMessage}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {isEmpty && !loading && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-6 mb-6 text-center">
+            <div className="text-4xl mb-3">📭</div>
+            <h3 className="text-lg font-bold text-amber-400 mb-2">Curriculum is Empty</h3>
+            <p className="text-amber-200/70 text-sm mb-4">
+              Click "Seed Curriculum" above to populate with 74 Montessori works.
+            </p>
+          </div>
+        )}
+
         {/* Info */}
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
-          <p className="text-amber-200 text-sm">
-            <strong className="text-amber-400">School Curriculum</strong> — 
-            Customize works for {SCHOOL_NAME}. Changes here don't affect the master curriculum.
-          </p>
-        </div>
+        {!isEmpty && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
+            <p className="text-amber-200 text-sm">
+              <strong className="text-amber-400">School Curriculum</strong> — 
+              Customize works for {SCHOOL_NAME}. Changes here don't affect the master curriculum.
+            </p>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -120,8 +194,10 @@ export default function SchoolCurriculumPage() {
             <div className="text-sm text-slate-400">Areas</div>
           </div>
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 text-center">
-            <div className="text-3xl font-bold text-green-400">✓</div>
-            <div className="text-sm text-slate-400">Connected</div>
+            <div className={`text-3xl font-bold ${totalWorks > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {totalWorks > 0 ? '✓' : '✗'}
+            </div>
+            <div className="text-sm text-slate-400">{totalWorks > 0 ? 'Seeded' : 'Empty'}</div>
           </div>
         </div>
 
@@ -156,18 +232,27 @@ export default function SchoolCurriculumPage() {
         {/* Quick Actions */}
         <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <button className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors">
+          <Link 
+            href={`/admin/schools/${slug}/curriculum/add`}
+            className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors"
+          >
             <div className="text-xl mb-2">➕</div>
             <div className="font-medium text-white text-sm">Add Work</div>
-          </button>
-          <button className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors">
+          </Link>
+          <Link 
+            href={`/admin/schools/${slug}/curriculum/import`}
+            className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors"
+          >
             <div className="text-xl mb-2">📥</div>
             <div className="font-medium text-white text-sm">Import</div>
-          </button>
-          <button className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors">
+          </Link>
+          <Link 
+            href={`/admin/schools/${slug}/curriculum/export`}
+            className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors"
+          >
             <div className="text-xl mb-2">📤</div>
             <div className="font-medium text-white text-sm">Export</div>
-          </button>
+          </Link>
           <Link 
             href={`/admin/schools/${slug}/english`}
             className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-left hover:border-slate-600 transition-colors"
