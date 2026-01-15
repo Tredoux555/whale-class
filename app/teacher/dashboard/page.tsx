@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
 
-// Features only available to Tredoux (admin features)
-// CRITICAL SECURITY: Classroom Hub contains photos and sensitive media - ONLY Tredoux can access
-const ADMIN_ONLY_HREFS = ['/admin/hub', '/admin/classroom', '/teacher/daily-reports', '/teacher/messages', '/teacher/attendance', '/teacher/progress'];
-
+// ALL teachers now have full access to all tools
 const DASHBOARD_ITEMS = [
   {
     href: '/admin/hub',
@@ -36,7 +33,6 @@ const DASHBOARD_ITEMS = [
       { label: 'Progress', color: 'teal' },
       { label: '342 Works', color: 'green' },
     ],
-    teacherFirst: true,
   },
   {
     href: '/games',
@@ -109,8 +105,8 @@ const DASHBOARD_ITEMS = [
     bgGradient: 'from-orange-50 to-amber-50',
     tags: [
       { label: 'Weekly Plans', color: 'orange' },
-      { label: 'Documents', color: 'blue' },
-      { label: 'Notes', color: 'green' },
+      { label: 'Songs', color: 'pink' },
+      { label: 'Books', color: 'blue' },
     ],
   },
   {
@@ -195,13 +191,11 @@ export default function TeacherDashboard() {
       setTeacherName(name);
       setLoading(false);
       
-      // Set greeting based on time
       const hour = new Date().getHours();
       if (hour < 12) setGreeting('Good morning');
       else if (hour < 17) setGreeting('Good afternoon');
       else setGreeting('Good evening');
       
-      // Fetch student count
       fetch(`/api/children?teacher=${encodeURIComponent(name)}`)
         .then(res => res.json())
         .then(data => setStudentCount(data.children?.length || 0))
@@ -213,30 +207,6 @@ export default function TeacherDashboard() {
     localStorage.removeItem('teacherName');
     router.push('/teacher');
   };
-
-  // Filter dashboard items based on teacher
-  const visibleItems = DASHBOARD_ITEMS.filter(item => {
-    // If it's an admin-only feature, only show to Tredoux
-    if (ADMIN_ONLY_HREFS.includes(item.href)) {
-      return teacherName === 'Tredoux';
-    }
-    return true;
-  });
-
-  // Put Classroom Hub first for Tredoux, Progress first for other teachers
-  const sortedItems = teacherName === 'Tredoux' 
-    ? visibleItems.sort((a, b) => {
-        if (a.href === '/admin/hub') return -1;
-        if (b.href === '/admin/hub') return 1;
-        if (a.href === '/admin/classroom') return -1;
-        if (b.href === '/admin/classroom') return 1;
-        return 0;
-      })
-    : visibleItems.sort((a, b) => {
-        if (a.href === '/teacher/progress') return -1;
-        if (b.href === '/teacher/progress') return 1;
-        return 0;
-      });
 
   if (loading) {
     return (
@@ -281,10 +251,9 @@ export default function TeacherDashboard() {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Install PWA Prompt */}
         <InstallPrompt />
         
-        {/* Welcome Banner with Stats */}
+        {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-8 text-white shadow-xl shadow-blue-200/50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -308,9 +277,9 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Dashboard Grid */}
+        {/* Dashboard Grid - ALL ITEMS FOR ALL TEACHERS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {sortedItems.map((item, index) => (
+          {DASHBOARD_ITEMS.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
@@ -318,7 +287,6 @@ export default function TeacherDashboard() {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className={`bg-gradient-to-br ${item.bgGradient} rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-white/50 hover:-translate-y-1`}>
-                {/* Icon Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className={`w-14 h-14 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
                     <span className="text-3xl">{item.icon}</span>
@@ -328,7 +296,6 @@ export default function TeacherDashboard() {
                   </svg>
                 </div>
 
-                {/* Title & Description */}
                 <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-gray-900">
                   {item.title}
                 </h3>
@@ -336,7 +303,6 @@ export default function TeacherDashboard() {
                   {item.description}
                 </p>
 
-                {/* Tags */}
                 <div className="flex flex-wrap gap-1.5">
                   {item.tags.slice(0, 3).map((tag) => (
                     <span
@@ -346,53 +312,44 @@ export default function TeacherDashboard() {
                       {tag.label}
                     </span>
                   ))}
-                  {item.tags.length > 3 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                      +{item.tags.length - 3}
-                    </span>
-                  )}
                 </div>
               </div>
             </Link>
           ))}
         </div>
 
-        {/* Quick Actions - Different for Tredoux */}
+        {/* Quick Actions - Same for ALL teachers */}
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
           <div className="flex flex-wrap gap-3">
-            {teacherName === 'Tredoux' && (
-              <>
-                <Link
-                  href="/admin/weekly-planning"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors font-medium"
-                >
-                  <span>📅</span>
-                  <span>Weekly Planning</span>
-                </Link>
-                <Link
-                  href="/assessment"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors font-medium"
-                >
-                  <span>📝</span>
-                  <span>Run Assessment</span>
-                </Link>
-                <Link
-                  href="/admin/children"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg hover:bg-cyan-200 transition-colors font-medium"
-                >
-                  <span>👶</span>
-                  <span>Manage Students</span>
-                </Link>
-                <Link
-                  href="/teacher/progress"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
-                >
-                  <span>📊</span>
-                  <span>Progress Reports</span>
-                </Link>
-              </>
-            )}
+            <Link
+              href="/admin/weekly-planning"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors font-medium"
+            >
+              <span>📅</span>
+              <span>Weekly Planning</span>
+            </Link>
+            <Link
+              href="/assessment"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors font-medium"
+            >
+              <span>📝</span>
+              <span>Run Assessment</span>
+            </Link>
+            <Link
+              href="/admin/children"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg hover:bg-cyan-200 transition-colors font-medium"
+            >
+              <span>👶</span>
+              <span>Manage Students</span>
+            </Link>
+            <Link
+              href="/teacher/progress"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium"
+            >
+              <span>📊</span>
+              <span>Progress Reports</span>
+            </Link>
             <Link
               href="/games"
               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
