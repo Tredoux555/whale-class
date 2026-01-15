@@ -1,98 +1,49 @@
 // app/admin/page.tsx
-// Modern Admin Dashboard with gradient design
+// Simplified Admin Dashboard - Schools + Tools
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-interface DashboardCard {
+interface Tool {
   id: string;
   title: string;
   description: string;
   href: string;
   icon: string;
-  gradient: string;
+  color: string;
 }
 
-const DEFAULT_CARDS: DashboardCard[] = [
-  // 🔝 MASTER - Schools Management (Super Admin)
-  { id: 'schools', title: 'Schools', description: 'Manage all schools & curricula', href: '/admin/schools', icon: '🏛️', gradient: 'from-amber-600 to-yellow-500' },
-  
-  // Role Portals
-  { id: 'principal', title: 'Principal', description: 'School & classroom overview', href: '/principal', icon: '🏫', gradient: 'from-slate-600 to-slate-700' },
-  { id: 'teacher', title: 'Teacher Portal', description: 'Progress tracking & tools', href: '/teacher/dashboard', icon: '👩‍🏫', gradient: 'from-amber-500 to-orange-500' },
-  { id: 'teacher-students', title: 'Assign Students', description: 'Link students to teachers', href: '/admin/teacher-students', icon: '🔗', gradient: 'from-teal-500 to-cyan-500' },
-  
-  // Core System
-  { id: 'montree', title: 'Independent Montree', description: 'Multi-tenant platform plan', href: '/admin/montree', icon: '🌳', gradient: 'from-green-500 to-emerald-500' },
-  { id: 'montree-home', title: 'Montree Home', description: 'Homeschool platform management', href: '/admin/montree-home', icon: '🏠', gradient: 'from-emerald-500 to-teal-500' },
-  { id: 'weekly-planning', title: 'Weekly Planning', description: 'Upload plans, track progress', href: '/admin/weekly-planning', icon: '📅', gradient: 'from-cyan-500 to-blue-500' },
-  { id: 'classroom', title: 'Classroom', description: 'iPad-friendly progress tracking', href: '/admin/classroom', icon: '🎯', gradient: 'from-emerald-500 to-green-500' },
+const TOOLS: Tool[] = [
+  // Teaching Tools
+  { id: 'classroom', title: 'Classroom', href: '/admin/classroom', icon: '🎯', color: 'bg-emerald-500', description: 'iPad progress tracking' },
+  { id: 'weekly-planning', title: 'Weekly Planning', href: '/admin/weekly-planning', icon: '📅', color: 'bg-cyan-500', description: 'Upload & manage plans' },
+  { id: 'circle-planner', title: 'Circle Time', href: '/admin/circle-planner', icon: '⭕', color: 'bg-amber-500', description: 'Plan activities' },
+  { id: 'english-guide', title: 'English Guide', href: '/admin/english-guide', icon: '📖', color: 'bg-blue-500', description: 'How to teach' },
+  { id: 'english-progress', title: 'English Progress', href: '/admin/english-progress', icon: '📊', color: 'bg-indigo-500', description: 'Parent reports' },
+  { id: 'phonics-planner', title: 'Phonics', href: '/admin/phonics-planner', icon: '🔤', color: 'bg-red-500', description: 'Phonics lessons' },
   
   // Material Generators
-  { id: 'video-manager', title: 'Video Manager', description: 'Edit/delete homepage videos', href: '/admin/video-manager', icon: '🎬', gradient: 'from-red-500 to-orange-500' },
-  { id: 'material-generator', title: 'Material Generator', description: 'Print Pink/Blue/Green series', href: '/admin/material-generator', icon: '🖨️', gradient: 'from-pink-500 to-rose-500' },
-  { id: 'card-generator', title: '3-Part Cards', description: 'Montessori card maker', href: '/admin/card-generator', icon: '🃏', gradient: 'from-purple-500 to-violet-500' },
-  { id: 'flashcard-maker', title: 'Song Flashcards', description: 'YouTube to flashcard PDFs', href: '/admin/flashcard-maker', icon: '🎵', gradient: 'from-indigo-500 to-purple-500' },
-  { id: 'vocabulary-flashcards', title: 'Vocab Flashcards', description: 'Weekly vocabulary cards', href: '/admin/vocabulary-flashcards', icon: '📇', gradient: 'from-cyan-500 to-teal-500' },
+  { id: 'card-generator', title: '3-Part Cards', href: '/admin/card-generator', icon: '🃏', color: 'bg-purple-500', description: 'Montessori cards' },
+  { id: 'material-generator', title: 'Material Generator', href: '/admin/material-generator', icon: '🖨️', color: 'bg-pink-500', description: 'Pink/Blue/Green' },
+  { id: 'flashcard-maker', title: 'Song Flashcards', href: '/admin/flashcard-maker', icon: '🎵', color: 'bg-violet-500', description: 'YouTube to PDF' },
+  { id: 'vocabulary-flashcards', title: 'Vocab Flashcards', href: '/admin/vocabulary-flashcards', icon: '📇', color: 'bg-teal-500', description: 'Weekly vocab' },
   
-  // Teaching Tools
-  { id: 'english-progress', title: 'English Progress', description: 'Parent reports & tracking', href: '/admin/english-progress', icon: '📚', gradient: 'from-blue-500 to-indigo-500' },
-  { id: 'english-guide', title: 'English Guide', description: 'How to teach each skill', href: '/admin/english-guide', icon: '📖', gradient: 'from-indigo-500 to-blue-500' },
-  { id: 'circle-planner', title: 'Circle Time', description: 'Plan circle activities', href: '/admin/circle-planner', icon: '⭕', gradient: 'from-yellow-500 to-amber-500' },
-  { id: 'phonics-planner', title: 'Phonics', description: 'Phonics lessons', href: '/admin/phonics-planner', icon: '🔤', gradient: 'from-red-500 to-pink-500' },
-  
-  // Utilities
-  { id: 'media-library', title: 'Media Library', description: 'Manage all uploaded files', href: '/admin/media-library', icon: '📁', gradient: 'from-violet-500 to-purple-500' },
-  { id: 'site-tester', title: 'Site Tester', description: 'Test site & generate reports', href: '/admin/site-tester', icon: '🔍', gradient: 'from-teal-500 to-emerald-500' },
-  { id: 'progress-reports', title: 'Progress Reports', description: 'View student progress', href: '/admin/montessori/reports', icon: '📊', gradient: 'from-orange-500 to-red-500' },
+  // Management
+  { id: 'video-manager', title: 'Video Manager', href: '/admin/video-manager', icon: '🎬', color: 'bg-orange-500', description: 'Homepage videos' },
+  { id: 'media-library', title: 'Media Library', href: '/admin/media-library', icon: '📁', color: 'bg-slate-500', description: 'Uploaded files' },
+  { id: 'montree', title: 'Independent Montree', href: '/admin/montree', icon: '🌳', color: 'bg-green-600', description: 'Multi-tenant' },
+  { id: 'site-tester', title: 'Site Tester', href: '/admin/site-tester', icon: '🔍', color: 'bg-slate-600', description: 'Test & debug' },
 ];
-
-const STORAGE_KEY = 'whale_admin_card_order';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [cards, setCards] = useState<DashboardCard[]>(DEFAULT_CARDS);
-  const [draggedCard, setDraggedCard] = useState<string | null>(null);
-  const [dragOverCard, setDragOverCard] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     checkAuth();
-    loadCardOrder();
   }, []);
-
-  const loadCardOrder = () => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const savedOrder: string[] = JSON.parse(saved);
-        const orderedCards: DashboardCard[] = [];
-        savedOrder.forEach(id => {
-          const card = DEFAULT_CARDS.find(c => c.id === id);
-          if (card) orderedCards.push(card);
-        });
-        DEFAULT_CARDS.forEach(card => {
-          if (!orderedCards.find(c => c.id === card.id)) {
-            orderedCards.push(card);
-          }
-        });
-        setCards(orderedCards);
-      }
-    } catch (e) {
-      console.error('Failed to load card order:', e);
-    }
-  };
-
-  const saveCardOrder = (newCards: DashboardCard[]) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newCards.map(c => c.id)));
-    } catch (e) {
-      console.error('Failed to save card order:', e);
-    }
-  };
 
   const checkAuth = async () => {
     try {
@@ -108,51 +59,11 @@ export default function AdminDashboard() {
     router.push("/admin/login");
   };
 
-  const handleDragStart = (e: React.DragEvent, cardId: string) => {
-    if (!editMode) return;
-    setDraggedCard(cardId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent, cardId: string) => {
-    if (!editMode) return;
-    e.preventDefault();
-    if (cardId !== draggedCard) setDragOverCard(cardId);
-  };
-
-  const handleDrop = (e: React.DragEvent, targetCardId: string) => {
-    if (!editMode || !draggedCard || draggedCard === targetCardId) {
-      setDraggedCard(null);
-      setDragOverCard(null);
-      return;
-    }
-    e.preventDefault();
-
-    const newCards = [...cards];
-    const draggedIndex = newCards.findIndex(c => c.id === draggedCard);
-    const targetIndex = newCards.findIndex(c => c.id === targetCardId);
-
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-      const [removed] = newCards.splice(draggedIndex, 1);
-      newCards.splice(targetIndex, 0, removed);
-      setCards(newCards);
-      saveCardOrder(newCards);
-    }
-
-    setDraggedCard(null);
-    setDragOverCard(null);
-  };
-
-  const resetOrder = () => {
-    setCards(DEFAULT_CARDS);
-    localStorage.removeItem(STORAGE_KEY);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-2xl">🐋</span>
@@ -164,25 +75,15 @@ export default function AdminDashboard() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setEditMode(!editMode)}
-              className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                editMode 
-                  ? 'bg-yellow-500 text-black' 
-                  : 'bg-slate-700 text-white hover:bg-slate-600'
-              }`}
-            >
-              {editMode ? '✓ Done' : '⚙️ Edit Layout'}
-            </button>
             <Link
               href="/"
-              className="px-4 py-2 bg-slate-700 text-white rounded-xl font-medium hover:bg-slate-600 transition-colors"
+              className="px-4 py-2 bg-slate-700 text-white rounded-xl font-medium hover:bg-slate-600 transition-colors text-sm"
             >
               🌐 View Site
             </Link>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors text-sm"
             >
               Logout
             </button>
@@ -190,103 +91,55 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* Edit Mode Banner */}
-      {editMode && (
-        <div className="bg-yellow-500 text-black py-3 px-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <p className="font-medium flex items-center gap-2">
-              <span className="text-xl">✋</span>
-              Drag cards to reorder them. Click "Done" when finished.
-            </p>
-            <button
-              onClick={resetOrder}
-              className="px-3 py-1.5 bg-black/20 rounded-lg text-sm font-medium hover:bg-black/30 transition-colors"
-            >
-              Reset to Default
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-6">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-white">19</div>
-            <div className="text-sm text-slate-400">Admin Tools</div>
-          </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-emerald-400">✓</div>
-            <div className="text-sm text-slate-400">System Online</div>
-          </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-blue-400">342</div>
-            <div className="text-sm text-slate-400">Curriculum Works</div>
-          </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-purple-400">14</div>
-            <div className="text-sm text-slate-400">Games Available</div>
-          </div>
-        </div>
-
-        {/* Dashboard Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {cards.map((card) => (
-            <div
-              key={card.id}
-              draggable={editMode}
-              onDragStart={(e) => handleDragStart(e, card.id)}
-              onDragOver={(e) => handleDragOver(e, card.id)}
-              onDragLeave={() => setDragOverCard(null)}
-              onDrop={(e) => handleDrop(e, card.id)}
-              onDragEnd={() => { setDraggedCard(null); setDragOverCard(null); }}
-              className={`relative ${editMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
-            >
-              {/* Drop indicator */}
-              {dragOverCard === card.id && draggedCard !== card.id && (
-                <div className="absolute inset-0 border-4 border-yellow-400 rounded-2xl pointer-events-none z-10" />
-              )}
-              
-              {editMode ? (
-                <div 
-                  className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-5 transition-all ${
-                    draggedCard === card.id ? 'opacity-50 scale-95' : 'hover:scale-[1.02]'
-                  }`}
-                >
-                  {/* Drag handle */}
-                  <div className="absolute top-3 right-3 text-white/40">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
-                    </svg>
-                  </div>
-                  <div className="text-4xl mb-3">{card.icon}</div>
-                  <h2 className="text-lg font-bold text-white mb-1">{card.title}</h2>
-                  <p className="text-white/70 text-sm">{card.description}</p>
-                </div>
-              ) : (
-                <Link
-                  href={card.href}
-                  className={`block bg-gradient-to-br ${card.gradient} rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 group`}
-                >
-                  <div className="text-4xl mb-3 group-hover:scale-110 group-hover:rotate-3 transition-transform">{card.icon}</div>
-                  <h2 className="text-lg font-bold text-white mb-1">{card.title}</h2>
-                  <p className="text-white/70 text-sm">{card.description}</p>
-                  <div className="mt-3 flex items-center gap-2 text-white/50 text-sm group-hover:text-white/80 transition-colors">
-                    <span>Open</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </Link>
-              )}
+      <main className="max-w-6xl mx-auto p-6">
+        
+        {/* SCHOOLS - Primary Action */}
+        <section className="mb-10">
+          <Link
+            href="/admin/schools"
+            className="block bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl p-6 transition-all hover:scale-[1.01] hover:shadow-2xl hover:shadow-amber-500/20 group"
+          >
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                <span className="text-4xl group-hover:scale-110 transition-transform">🏛️</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-white">Schools</h2>
+                <p className="text-white/80">Manage schools, curriculum, teachers, students & reports</p>
+              </div>
+              <div className="text-white/60 group-hover:text-white group-hover:translate-x-2 transition-all">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </div>
-          ))}
-        </div>
+          </Link>
+        </section>
+
+        {/* TOOLS */}
+        <section>
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Tools</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {TOOLS.map((tool) => (
+              <Link
+                key={tool.id}
+                href={tool.href}
+                className="group bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 hover:bg-slate-800 transition-all"
+              >
+                <div className={`w-10 h-10 ${tool.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                  <span className="text-xl">{tool.icon}</span>
+                </div>
+                <h3 className="font-bold text-white text-sm">{tool.title}</h3>
+                <p className="text-slate-500 text-xs mt-1">{tool.description}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-slate-500 text-sm">
-          <p>Whale Montessori Platform • Admin Dashboard</p>
+        <div className="mt-12 text-center text-slate-600 text-sm">
+          <p>Whale Montessori Platform</p>
         </div>
       </main>
     </div>
