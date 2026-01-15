@@ -1073,74 +1073,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 17: Winter ============
+  // ============ WEEK 19: Weather ============
   {
     week: 19,
-    theme: "Winter",
-    icon: "❄️",
-    color: "#0284c7",
-    song: {
-      title: "Snowflake, Snowflake, Little Snowflake",
-      actions: "Float like snowflake, spin gently, land softly"
-    },
-    vocabulary: ["winter", "cold", "snow", "ice", "mittens", "coat", "scarf", "boots", "hibernate", "freeze"],
-    books: [
-      {
-        title: "The Snowy Day",
-        author: "Ezra Jack Keats",
-        activities: ["Paper snowflake cutting", "Winter dress-up sequence"]
-      },
-      {
-        title: "Animals in Winter",
-        author: "Henrietta Bancroft",
-        activities: ["Hibernate/migrate sort", "Winter animal craft"]
-      }
-    ],
-    mondayPlan: {
-      focus: "Theme Introduction - Song & Flashcards",
-      warmup: "Brrr! Is it cold outside? It's WINTER! Let's learn about this chilly season!",
-      main: "Introduce Winter. Teach snowflake song. Show vocabulary flashcards - winter words.",
-      activities: "Winter actions - shiver, put on coat, make snowball, ice skate...",
-      closing: "Winter can be cold but fun! Theme song.",
-      materials: ["Vocabulary flashcards", "Winter clothing items"]
-    },
-    tuesdayPlan: {
-      focus: "Book 1: The Snowy Day",
-      warmup: "Snowflake song. Float like snowflakes!",
-      main: "Read 'The Snowy Day'. Peter plays in snow! What does he do? Tracks, snowball, angels...",
-      activities: "Paper snowflake craft - fold and cut. Each one unique! Winter dress-up - correct order for getting dressed.",
-      closing: "Snowflakes are beautiful! Theme song.",
-      materials: ["Book: The Snowy Day", "White paper", "Scissors", "Winter clothes"]
-    },
-    wednesdayPlan: {
-      focus: "Book 2: Animals in Winter",
-      warmup: "Theme song. What do you do in winter?",
-      main: "Read 'Animals in Winter'. Animals do different things! Hibernate (sleep), migrate (move), or stay and adapt.",
-      activities: "Animal sorting - hibernate, migrate, or stay? Bears hibernate, birds migrate, rabbits stay and grow thick fur!",
-      closing: "Animals are smart about winter! Theme song.",
-      materials: ["Book", "Animal cards", "Sorting mat"]
-    },
-    thursdayPlan: {
-      focus: "Review & Creative Production",
-      warmup: "Theme song. Winter vocabulary quiz.",
-      main: "Review: What happens in winter? Cold, snow, ice. What do we wear? What do animals do?",
-      activities: "Winter scene art - draw or paint a winter scene with snow, animals, people in warm clothes.",
-      closing: "Winter wonderland! Theme song.",
-      materials: ["Paper", "Paint/crayons", "Cotton balls for snow"]
-    },
-    fridayPlan: {
-      focus: "Phonics Fun Friday",
-      warmup: "Alphabet song. Letter sounds.",
-      main: "Focus letters: W (winter), S (snow), C (cold, coat). Practice sounds.",
-      activities: "Snowflake letters. Winter word sound sort. Write letters in 'snow' (white salt/flour).",
-      closing: "Stay warm! Great winter week!",
-      materials: ["Letter cards", "Salt/flour trays"]
-    }
-  },
-
-  // ============ WEEK 18: Weather ============
-  {
-    week: 20,
     theme: "Weather",
     icon: "🌤️",
     color: "#fbbf24",
@@ -1203,9 +1138,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 19: Beijing ============
+  // ============ WEEK 20: Beijing ============
   {
-    week: 21,
+    week: 20,
     theme: "Beijing",
     icon: "🏯",
     color: "#ef4444",
@@ -1268,9 +1203,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 20: China ============
+  // ============ WEEK 21: China ============
   {
-    week: 22,
+    week: 21,
     theme: "China",
     icon: "🐼",
     color: "#000000",
@@ -1333,9 +1268,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 21: Chinese New Year ============
+  // ============ WEEK 22: Chinese New Year ============
   {
-    week: 23,
+    week: 22,
     theme: "Chinese New Year",
     icon: "🧧",
     color: "#dc2626",
@@ -1398,9 +1333,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 22: Seven Continents ============
+  // ============ WEEK 23: Seven Continents ============
   {
-    week: 24,
+    week: 23,
     theme: "Seven Continents",
     icon: "🌍",
     color: "#22c55e",
@@ -1463,9 +1398,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 23: Five Oceans ============
+  // ============ WEEK 24: Five Oceans ============
   {
-    week: 25,
+    week: 24,
     theme: "Five Oceans",
     icon: "🌊",
     color: "#0284c7",
@@ -1528,9 +1463,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 24: Asia ============
+  // ============ WEEK 25: Asia ============
   {
-    week: 26,
+    week: 25,
     theme: "Asia",
     icon: "🗻",
     color: "#f59e0b",
@@ -1593,9 +1528,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 25: Japan ============
+  // ============ WEEK 26: Japan ============
   {
-    week: 27,
+    week: 26,
     theme: "Japan",
     icon: "🗾",
     color: "#ef4444",
@@ -1650,9 +1585,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 26: The Earth ============
+  // ============ WEEK 27: The Earth ============
   {
-    week: 28,
+    week: 27,
     theme: "The Earth",
     icon: "🌍",
     color: "#22c55e",
@@ -1707,9 +1642,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 27: Landforms ============
+  // ============ WEEK 28: Landforms ============
   {
-    week: 29,
+    week: 28,
     theme: "Landforms",
     icon: "⛰️",
     color: "#78716c",
@@ -1764,9 +1699,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 28: Animal Habitats ============
+  // ============ WEEK 29: Animal Habitats ============
   {
-    week: 30,
+    week: 29,
     theme: "Animal Habitats",
     icon: "🦁",
     color: "#ca8a04",
@@ -1821,9 +1756,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 29: Earth Day ============
+  // ============ WEEK 30: Earth Day ============
   {
-    week: 31,
+    week: 30,
     theme: "Earth Day",
     icon: "♻️",
     color: "#16a34a",
@@ -1878,9 +1813,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 30: Solar System ============
+  // ============ WEEK 31: Solar System ============
   {
-    week: 32,
+    week: 31,
     theme: "Solar System",
     icon: "☀️",
     color: "#f59e0b",
@@ -1935,9 +1870,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 31: Sun and Moon ============
+  // ============ WEEK 32: Sun and Moon ============
   {
-    week: 33,
+    week: 32,
     theme: "Sun and Moon",
     icon: "🌙",
     color: "#6366f1",
@@ -1992,9 +1927,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 32: The Planets ============
+  // ============ WEEK 33: The Planets ============
   {
-    week: 34,
+    week: 33,
     theme: "The Planets",
     icon: "🪐",
     color: "#a855f7",
@@ -2049,9 +1984,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 33: Mars ============
+  // ============ WEEK 34: Mars ============
   {
-    week: 35,
+    week: 34,
     theme: "Mars",
     icon: "🔴",
     color: "#dc2626",
@@ -2106,9 +2041,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 34: Astronauts ============
+  // ============ WEEK 35: Astronauts ============
   {
-    week: 36,
+    week: 35,
     theme: "Astronauts",
     icon: "👨‍🚀",
     color: "#1e40af",
@@ -2163,9 +2098,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 35: Stars ============
+  // ============ WEEK 36: Stars ============
   {
-    week: 37,
+    week: 36,
     theme: "Stars",
     icon: "⭐",
     color: "#fbbf24",
@@ -2220,9 +2155,9 @@ export const CIRCLE_TIME_CURRICULUM: CircleTimePlan[] = [
     }
   },
 
-  // ============ WEEK 36: Dinosaurs ============
+  // ============ WEEK 37: Dinosaurs ============
   {
-    week: 38,
+    week: 37,
     theme: "Dinosaurs",
     icon: "🦕",
     color: "#65a30d",
