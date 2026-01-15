@@ -1,6 +1,7 @@
 // app/admin/schools/[slug]/english-reports/page.tsx
 // Weekly English Reports - CONNECTED TO DATABASE
-// Reads progress from child_work_progress (what you tap in classroom app)
+// TWO-WAY SYNC: Reports update progress tracker
+// NEXT WEEK LIST: Easy copy-paste list for planning
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -51,39 +52,20 @@ const PERFORMANCE = [
   { value: 'repeat', label: '🔄 Repeat', desc: 'needs more practice' },
 ];
 
-// Map work_id to display code
 const workIdToCode = (id: string): string => {
   const map: Record<string, string> = {
-    'eng_bs': 'BS',
-    'eng_es': 'ES',
-    'eng_ms': 'MS',
-    'eng_wbw_a': 'WBW/a/',
-    'eng_wbw_e': 'WBW/e/',
-    'eng_wbw_i': 'WBW/i/',
-    'eng_wbw_o': 'WBW/o/',
-    'eng_wbw_u': 'WBW/u/',
-    'eng_wfw_a': 'WFW/a/',
-    'eng_wfw_e': 'WFW/e/',
-    'eng_wfw_i': 'WFW/i/',
-    'eng_wfw_o': 'WFW/o/',
-    'eng_wfw_u': 'WFW/u/',
-    'eng_pr_a': 'PR/a/',
-    'eng_pr_e': 'PR/e/',
-    'eng_pr_i': 'PR/i/',
-    'eng_pr_o': 'PR/o/',
-    'eng_pr_u': 'PR/u/',
-    'eng_prph_1': 'PrPh Red 1',
-    'eng_prph_2': 'PrPh Red 2',
-    'eng_prph_3': 'PrPh Red 3',
-    'eng_prph_4': 'PrPh Red 4',
-    'eng_prph_5': 'PrPh Red 5',
-    'eng_prph_6': 'PrPh Red 6',
-    'eng_prph_7': 'PrPh Red 7',
-    'eng_prph_8': 'PrPh Red 8',
-    'eng_prph_9': 'PrPh Red 9',
+    'eng_bs': 'BS', 'eng_es': 'ES', 'eng_ms': 'MS',
+    'eng_wbw_a': 'WBW/a/', 'eng_wbw_e': 'WBW/e/', 'eng_wbw_i': 'WBW/i/',
+    'eng_wbw_o': 'WBW/o/', 'eng_wbw_u': 'WBW/u/',
+    'eng_wfw_a': 'WFW/a/', 'eng_wfw_e': 'WFW/e/', 'eng_wfw_i': 'WFW/i/',
+    'eng_wfw_o': 'WFW/o/', 'eng_wfw_u': 'WFW/u/',
+    'eng_pr_a': 'PR/a/', 'eng_pr_e': 'PR/e/', 'eng_pr_i': 'PR/i/',
+    'eng_pr_o': 'PR/o/', 'eng_pr_u': 'PR/u/',
+    'eng_prph_1': 'PrPh Red 1', 'eng_prph_2': 'PrPh Red 2', 'eng_prph_3': 'PrPh Red 3',
+    'eng_prph_4': 'PrPh Red 4', 'eng_prph_5': 'PrPh Red 5', 'eng_prph_6': 'PrPh Red 6',
+    'eng_prph_7': 'PrPh Red 7', 'eng_prph_8': 'PrPh Red 8', 'eng_prph_9': 'PrPh Red 9',
     'eng_prph_10': 'PrPh Red 10',
-    'eng_bl_init': 'BL/init/',
-    'eng_bl_final': 'BL/final/',
+    'eng_bl_init': 'BL/init/', 'eng_bl_final': 'BL/final/',
   };
   return map[id] || id;
 };
@@ -92,7 +74,6 @@ export default function EnglishReportsPage() {
   const params = useParams();
   const slug = params.slug as string;
   
-  // Week calculation
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const currentWeek = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
@@ -103,9 +84,10 @@ export default function EnglishReportsPage() {
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<Record<string, LocalLog>>({});
   const [showPreview, setShowPreview] = useState(false);
+  const [showNextList, setShowNextList] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
 
-  // Fetch data from database
   useEffect(() => {
     fetchData();
   }, [selectedWeek]);
@@ -119,16 +101,14 @@ export default function EnglishReportsPage() {
       if (data.children) {
         setChildren(data.children);
         
-        // Initialize local logs from database + this week's works
         const initialLogs: Record<string, LocalLog> = {};
         data.children.forEach((child: Child) => {
           const savedLog = child.savedLog;
           const thisWeekWorks = child.thisWeekWorks || [];
           
-          // Convert this week's works to work entries
           const autoWorks: WorkEntry[] = thisWeekWorks.map(w => ({
             work: workIdToCode(w.id),
-            performance: w.status === 3 ? 'excellent' : w.status === 2 ? 'good' : 'good',
+            performance: w.status === 3 ? 'excellent' : 'good',
           }));
           
           initialLogs[child.id] = {
@@ -150,12 +130,10 @@ export default function EnglishReportsPage() {
     }
   };
 
-  // Get log for child
   const getLog = (childId: string): LocalLog => {
     return logs[childId] || { works: [], nextWork: '', reportText: '' };
   };
 
-  // Update log
   const updateLog = (childId: string, updates: Partial<LocalLog>) => {
     setLogs(prev => ({
       ...prev,
@@ -163,7 +141,6 @@ export default function EnglishReportsPage() {
     }));
   };
 
-  // Add work entry
   const addWork = (childId: string) => {
     const log = getLog(childId);
     updateLog(childId, {
@@ -171,7 +148,6 @@ export default function EnglishReportsPage() {
     });
   };
 
-  // Update work entry
   const updateWorkEntry = (childId: string, index: number, updates: Partial<WorkEntry>) => {
     const log = getLog(childId);
     const newWorks = [...log.works];
@@ -179,13 +155,11 @@ export default function EnglishReportsPage() {
     updateLog(childId, { works: newWorks });
   };
 
-  // Remove work entry
   const removeWork = (childId: string, index: number) => {
     const log = getLog(childId);
     updateLog(childId, { works: log.works.filter((_, i) => i !== index) });
   };
 
-  // Save report to database
   const saveReport = async (childId: string) => {
     setSaving(childId);
     try {
@@ -211,18 +185,41 @@ export default function EnglishReportsPage() {
     }
   };
 
-  // Generate report text
+  // Save ALL reports at once
+  const saveAllReports = async () => {
+    setSavingAll(true);
+    try {
+      for (const child of children) {
+        const log = getLog(child.id);
+        await fetch('/api/english-reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            childId: child.id,
+            week: selectedWeek,
+            year: now.getFullYear(),
+            worksDone: log.works,
+            nextWork: log.nextWork,
+            reportText: log.reportText || generateReport(child),
+          }),
+        });
+      }
+      alert('All reports saved & progress tracker updated!');
+    } catch (err) {
+      console.error('Error saving all:', err);
+    } finally {
+      setSavingAll(false);
+    }
+  };
+
   const generateReport = (child: Child): string => {
     const log = getLog(child.id);
     const pronoun = child.gender === 'she' ? 'she' : child.gender === 'he' ? 'he' : 'they';
-    const verb = child.gender === 'they' ? 'were' : 'was';
     
-    // If custom text, use it
     if (log.reportText.trim()) {
       return log.reportText;
     }
     
-    // No works
     if (log.works.length === 0 || log.works.every(w => !w.work)) {
       if (log.nextWork) {
         return `${child.name} didn't come through to do any English work this week. Next week we can do the ${log.nextWork}.`;
@@ -230,7 +227,6 @@ export default function EnglishReportsPage() {
       return `${child.name} didn't come through to do any English work this week. However ${pronoun} seems to be becoming more comfortable with English requests and remains quite active in the English circle.`;
     }
     
-    // Build report
     let report = '';
     const validWorks = log.works.filter(w => w.work);
     
@@ -255,7 +251,6 @@ export default function EnglishReportsPage() {
     return report;
   };
 
-  // Copy all
   const copyAll = () => {
     const header = `Week ${selectedWeek} English summary\n\n`;
     const reports = children.map(child => generateReport(child)).join('\n\n');
@@ -263,7 +258,28 @@ export default function EnglishReportsPage() {
     alert('Copied to clipboard!');
   };
 
-  // Build dropdown options from english works
+  // Generate Next Week List for copy-paste
+  const generateNextWeekList = (): string => {
+    const lines: string[] = [`Week ${selectedWeek + 1} English Plan\n`];
+    
+    children.forEach(child => {
+      const log = getLog(child.id);
+      if (log.nextWork) {
+        lines.push(`${child.name} - ${log.nextWork}`);
+      } else {
+        lines.push(`${child.name} - (no work set)`);
+      }
+    });
+    
+    return lines.join('\n');
+  };
+
+  const copyNextWeekList = () => {
+    const list = generateNextWeekList();
+    navigator.clipboard.writeText(list);
+    alert('Next week list copied!');
+  };
+
   const workOptions = englishWorks.map(w => ({
     code: workIdToCode(w.id),
     name: w.name,
@@ -304,15 +320,22 @@ export default function EnglishReportsPage() {
 
       {/* Actions */}
       <div className="border-b border-slate-800">
-        <div className="max-w-3xl mx-auto px-4 py-2 flex gap-2">
+        <div className="max-w-3xl mx-auto px-4 py-2 flex gap-2 flex-wrap">
           <button onClick={copyAll} className="px-4 py-1.5 bg-teal-600 text-white rounded text-sm hover:bg-teal-500">
-            📋 Copy All
+            📋 Copy All Reports
+          </button>
+          <button onClick={() => setShowNextList(true)} className="px-4 py-1.5 bg-amber-600 text-white rounded text-sm hover:bg-amber-500">
+            📅 Next Week List
           </button>
           <button onClick={() => setShowPreview(true)} className="px-4 py-1.5 bg-slate-800 text-white rounded text-sm hover:bg-slate-700">
             👁️ Preview
           </button>
-          <button onClick={fetchData} className="px-4 py-1.5 bg-slate-800 text-white rounded text-sm hover:bg-slate-700">
-            🔄 Refresh
+          <button 
+            onClick={saveAllReports} 
+            disabled={savingAll}
+            className="px-4 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-500 disabled:opacity-50"
+          >
+            {savingAll ? '⏳ Saving...' : '💾 Save All & Sync'}
           </button>
         </div>
       </div>
@@ -334,20 +357,15 @@ export default function EnglishReportsPage() {
                 <span className="text-slate-600 text-xs">({child.gender})</span>
                 {hasThisWeekWorks && (
                   <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded">
-                    {child.thisWeekWorks.length} work{child.thisWeekWorks.length > 1 ? 's' : ''} this week
-                  </span>
-                )}
-                {child.currentWork && (
-                  <span className="text-xs text-slate-500 ml-auto">
-                    Current: {child.currentWork}
+                    {child.thisWeekWorks.length} from tracker
                   </span>
                 )}
               </div>
               
-              {/* Auto-detected works from classroom app */}
+              {/* Auto-detected works */}
               {hasThisWeekWorks && (
                 <div className="mb-3 p-2 bg-teal-500/10 border border-teal-500/20 rounded-lg">
-                  <p className="text-xs text-teal-400 mb-1">📱 From Classroom App:</p>
+                  <p className="text-xs text-teal-400 mb-1">📱 From Progress Tracker:</p>
                   <div className="flex flex-wrap gap-1">
                     {child.thisWeekWorks.map((w, i) => (
                       <span key={i} className="text-xs bg-teal-600/30 text-teal-300 px-2 py-0.5 rounded">
@@ -358,7 +376,7 @@ export default function EnglishReportsPage() {
                 </div>
               )}
               
-              {/* Works Done This Week */}
+              {/* Works Done */}
               <div className="space-y-2 mb-3">
                 {log.works.map((entry, index) => (
                   <div key={index} className="flex gap-2 items-center">
@@ -418,7 +436,7 @@ export default function EnglishReportsPage() {
                 disabled={saving === child.id}
                 className="text-xs text-slate-500 hover:text-teal-400"
               >
-                {saving === child.id ? 'Saving...' : '💾 Save report'}
+                {saving === child.id ? 'Saving...' : '💾 Save'}
               </button>
             </div>
           );
@@ -441,6 +459,37 @@ export default function EnglishReportsPage() {
               {children.map(child => (
                 <p key={child.id} className="leading-relaxed">{generateReport(child)}</p>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Next Week List Modal */}
+      {showNextList && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowNextList(false)}>
+          <div className="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b flex items-center justify-between bg-amber-50">
+              <h2 className="font-bold text-slate-800">📅 Week {selectedWeek + 1} Plan</h2>
+              <div className="flex gap-2">
+                <button onClick={copyNextWeekList} className="px-3 py-1 bg-amber-600 text-white rounded text-sm">📋 Copy</button>
+                <button onClick={() => setShowNextList(false)} className="text-slate-500 hover:text-slate-800">✕</button>
+              </div>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[70vh]">
+              <p className="text-xs text-slate-500 mb-3">Copy this list for your weekly planning:</p>
+              <div className="bg-slate-100 rounded-lg p-4 font-mono text-sm space-y-1">
+                {children.map(child => {
+                  const log = getLog(child.id);
+                  return (
+                    <div key={child.id} className="flex justify-between">
+                      <span className="text-slate-700">{child.name}</span>
+                      <span className={log.nextWork ? 'text-amber-600 font-medium' : 'text-slate-400'}>
+                        {log.nextWork || '—'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
