@@ -152,6 +152,19 @@ const DASHBOARD_ITEMS = [
       { label: 'Flashcards', color: 'blue' },
     ],
   },
+  {
+    href: '/teacher/resources',
+    icon: '📁',
+    title: 'Shared Resources',
+    description: 'Games, ESL materials, printables for all teachers',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-50 to-teal-50',
+    tags: [
+      { label: 'Games', color: 'purple' },
+      { label: 'ESL', color: 'blue' },
+      { label: 'Printables', color: 'orange' },
+    ],
+  },
 ];
 
 const tagColors: Record<string, string> = {
