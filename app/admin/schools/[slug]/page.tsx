@@ -1,40 +1,62 @@
 // app/admin/schools/[slug]/page.tsx
-// Individual School Dashboard - Clean UI
+// Individual School Dashboard - Connected to Real Data
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-interface School {
-  id: string;
-  name: string;
-  slug: string;
-  settings?: { owner?: boolean };
+interface SchoolStats {
   classroom_count: number;
   teacher_count: number;
   student_count: number;
 }
 
-// Mock data - will be replaced with real API
-const MOCK_SCHOOLS: Record<string, School> = {
-  'beijing-international': {
-    id: '00000000-0000-0000-0000-000000000001',
-    name: 'Beijing International School',
-    slug: 'beijing-international',
-    settings: { owner: true },
-    classroom_count: 1,
-    teacher_count: 2,
-    student_count: 12,
-  },
+interface School {
+  id: string;
+  name: string;
+  slug: string;
+  isOwner: boolean;
+  stats: SchoolStats;
+}
+
+// Slug to school name mapping
+const SCHOOL_INFO: Record<string, { name: string; isOwner: boolean }> = {
+  'beijing-international': { name: 'Beijing International School', isOwner: true },
 };
 
 export default function SchoolDashboardPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const school = MOCK_SCHOOLS[slug];
+  const [stats, setStats] = useState<SchoolStats>({ classroom_count: 0, teacher_count: 0, student_count: 0 });
+  const [loading, setLoading] = useState(true);
+  
+  const schoolInfo = SCHOOL_INFO[slug];
 
-  if (!school) {
+  useEffect(() => {
+    fetchSchoolStats();
+  }, [slug]);
+
+  const fetchSchoolStats = async () => {
+    try {
+      // Fetch real stats from API
+      const res = await fetch(`/api/schools/${slug}/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        setStats({
+          classroom_count: data.classrooms || 0,
+          teacher_count: data.teachers || 0,
+          student_count: data.students || 0,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch school stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!schoolInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -48,7 +70,7 @@ export default function SchoolDashboardPage() {
     );
   }
 
-  const isOwner = school.settings?.owner;
+  const { name, isOwner } = schoolInfo;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -64,7 +86,7 @@ export default function SchoolDashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white">{school.name}</h1>
+                <h1 className="text-xl font-bold text-white">{name}</h1>
                 {isOwner && (
                   <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold">
                     YOUR SCHOOL
@@ -81,18 +103,24 @@ export default function SchoolDashboardPage() {
       <main className="max-w-6xl mx-auto p-6">
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className={`rounded-xl p-5 ${isOwner ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-800/50 border border-slate-700'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>{school.classroom_count}</div>
+          <Link href={`/admin/schools/${slug}/classrooms`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
+            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
+              {loading ? '...' : stats.classroom_count}
+            </div>
             <div className="text-slate-400 mt-1">Classrooms</div>
-          </div>
-          <div className={`rounded-xl p-5 ${isOwner ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-800/50 border border-slate-700'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>{school.teacher_count}</div>
+          </Link>
+          <Link href={`/admin/schools/${slug}/teachers`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
+            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
+              {loading ? '...' : stats.teacher_count}
+            </div>
             <div className="text-slate-400 mt-1">Teachers</div>
-          </div>
-          <div className={`rounded-xl p-5 ${isOwner ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-800/50 border border-slate-700'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>{school.student_count}</div>
+          </Link>
+          <Link href={`/admin/schools/${slug}/students`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
+            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
+              {loading ? '...' : stats.student_count}
+            </div>
             <div className="text-slate-400 mt-1">Students</div>
-          </div>
+          </Link>
         </div>
 
         {/* Curriculum Section */}
@@ -183,7 +211,7 @@ export default function SchoolDashboardPage() {
               <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">🏫</div>
               <div>
                 <h3 className="font-bold text-white">Classrooms</h3>
-                <p className="text-sm text-slate-400">{school.classroom_count} classes</p>
+                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.classroom_count} classes`}</p>
               </div>
             </Link>
             
@@ -194,7 +222,7 @@ export default function SchoolDashboardPage() {
               <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl">👩‍🏫</div>
               <div>
                 <h3 className="font-bold text-white">Teachers</h3>
-                <p className="text-sm text-slate-400">{school.teacher_count} teachers</p>
+                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.teacher_count} teachers`}</p>
               </div>
             </Link>
             
@@ -205,7 +233,7 @@ export default function SchoolDashboardPage() {
               <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">👶</div>
               <div>
                 <h3 className="font-bold text-white">Students</h3>
-                <p className="text-sm text-slate-400">{school.student_count} students</p>
+                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.student_count} students`}</p>
               </div>
             </Link>
           </div>
