@@ -1,5 +1,6 @@
 // app/api/schools/[schoolId]/curriculum/stats/route.ts
 // Get curriculum statistics for a school
+// Handles both 'area' and 'area_id' fields for backwards compatibility
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -19,31 +20,32 @@ export async function GET(
     const supabase = getSupabase();
     
     // Get work counts by area from curriculum_roadmap
-    // For now, we use the global curriculum_roadmap since school-specific hasn't been implemented
     const { data: works, error } = await supabase
       .from('curriculum_roadmap')
       .select('area, area_id');
     
     if (error) {
       console.error('Curriculum query error:', error);
-      // Return defaults if table doesn't exist
+      // Return zeros if table error
       return NextResponse.json({
         areas: {
-          practical_life: 45,
-          sensorial: 35,
-          math: 55,
-          language: 40,
-          cultural: 25,
+          practical_life: 0,
+          sensorial: 0,
+          math: 0,
+          language: 0,
+          cultural: 0,
         },
-        total: 200,
+        total: 0,
+        error: error.message,
       });
     }
     
-    // Count works per area
+    // Count works per area (use area_id if available, otherwise area)
     const areaCounts: Record<string, number> = {};
     (works || []).forEach((work: any) => {
+      // Prefer area_id, fallback to area
       const area = work.area_id || work.area || 'other';
-      // Normalize area names
+      // Normalize area names to lowercase with underscores
       const normalizedArea = area.toLowerCase().replace(/\s+/g, '_');
       areaCounts[normalizedArea] = (areaCounts[normalizedArea] || 0) + 1;
     });
@@ -53,6 +55,7 @@ export async function GET(
     return NextResponse.json({
       areas: areaCounts,
       total,
+      schoolId,
     });
   } catch (error: any) {
     console.error('Curriculum stats error:', error);

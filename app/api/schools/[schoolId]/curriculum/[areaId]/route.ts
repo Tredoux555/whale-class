@@ -1,6 +1,6 @@
 // app/api/schools/[schoolId]/curriculum/[areaId]/route.ts
 // Get curriculum works by area
-// Supports both 'master' (global curriculum) and specific schoolId
+// Supports both 'area' and 'area_id' columns for backwards compatibility
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -19,15 +19,13 @@ export async function GET(
     const { schoolId, areaId } = params;
     const supabase = getSupabase();
     
-    // For now, all schools use the master curriculum_roadmap
-    // Later we can add school_curriculum_works table for customization
-    
-    // Fetch works from curriculum_roadmap
-    const { data: works, error } = await supabase
+    // Try area_id first, fallback to area
+    // Seed data uses 'area' field, migration adds 'area_id' field
+    let { data: works, error } = await supabase
       .from('curriculum_roadmap')
-      .select('id, name, work_name, description, sequence, area_id, category_id, age_range, chinese_name')
-      .eq('area_id', areaId)
-      .order('sequence', { ascending: true });
+      .select('id, name, work_name, description, sequence, sequence_order, area_id, area, category_id, age_range, chinese_name, stage')
+      .or(`area_id.eq.${areaId},area.eq.${areaId}`)
+      .order('sequence_order', { ascending: true });
     
     if (error) {
       console.error('Curriculum fetch error:', error);
@@ -44,11 +42,12 @@ export async function GET(
       id: work.id,
       name: work.name || work.work_name || 'Unnamed Work',
       description: work.description || null,
-      sequence: work.sequence || index + 1,
-      areaId: work.area_id,
+      sequence: work.sequence || work.sequence_order || index + 1,
+      areaId: work.area_id || work.area,
       categoryId: work.category_id,
       ageRange: work.age_range,
       chineseName: work.chinese_name,
+      stage: work.stage,
       isActive: true,
     }));
     
