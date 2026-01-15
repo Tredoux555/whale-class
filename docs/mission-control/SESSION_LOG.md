@@ -1,6 +1,90 @@
 
 ---
 
+## SESSION 32: Photo Categories & Portfolio Generators (Jan 15, 2026)
+
+### What Was Built
+Completed the photo category system and portfolio generators that were started but not finished in the previous session.
+
+**Photo Categories System:**
+- 📚 **Work** - Photos linked to curriculum activities
+- 🌳 **Life** - Outdoor play, snack time, general moments (per child)
+- 👥 **Shared** - Group photos that auto-distribute to ALL children
+
+**Updated Components:**
+```
+app/api/media/route.ts                 - Added category parameter to upload/fetch
+components/classroom/PhotoCapture.tsx  - Category selection UI (work/life/shared)
+components/classroom/PortfolioTab.tsx  - Category-organized gallery with filters
+```
+
+**New Album Generator:**
+```
+app/api/classroom/album/generate/route.ts - PDF generation with pdfkit
+```
+- Beautiful PDF with title page
+- Photos organized by category (Work, Life, Group)
+- Progress summary included
+- Downloads instantly
+
+**New Video Generator:**
+```
+app/api/classroom/video/route.ts       - Photo data for client-side generation
+components/classroom/VideoGenerator.tsx - Client-side slideshow creator
+```
+- Ken Burns zoom effect on each photo
+- Smooth fade transitions
+- Title and end slides with branding
+- Captions and dates on each photo
+- Downloads as WebM format
+
+**Shared Photos System:**
+- Upload once → automatically copies to ALL active children
+- Trigger function in database handles distribution
+- Perfect for class photos, group activities
+
+### Files Created/Modified
+```
+app/api/media/route.ts                      - MODIFIED: category support
+app/api/classroom/album/generate/route.ts   - NEW: PDF album generation
+app/api/classroom/video/route.ts            - NEW: Video data endpoint
+components/classroom/PortfolioTab.tsx       - MODIFIED: category filters, generators
+components/classroom/VideoGenerator.tsx     - NEW: Client-side video creation
+```
+
+### Migration Required
+**Run before deploying:** `migrations/037_photo_categories.sql`
+
+This adds:
+- `category` column to `child_work_media` table
+- `shared_photos` table
+- Trigger to auto-distribute shared photos
+
+### To Deploy
+```bash
+# 1. Run migration 037 in Supabase SQL Editor first
+# 2. Then:
+cd ~/Desktop/whale
+git add .
+git commit -m "Session 31+32: Unified classroom, photo categories, album & video generators"
+git push
+```
+
+### Verification Status (Jan 15, 15:50)
+- ✅ All API routes exist and have content
+- ✅ All components complete
+- ✅ Migration file ready
+- ⏳ Awaiting deploy + testing
+
+### How to Use
+1. Go to `/classroom` → tap a child → "Portfolio" tab
+2. Click "📖 Album" to download PDF
+3. Click "🎬 Video" to generate slideshow
+4. When capturing photos, select category (Work/Life/Shared)
+5. Shared photos appear in every child's portfolio
+
+---
+
 ## SESSION 31: Unified Classroom UI (Jan 15, 2026)
 
 ### What Was Built

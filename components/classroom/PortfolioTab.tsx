@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import VideoGenerator from './VideoGenerator';
+import PhotoCapture from './PhotoCapture';
 
 interface Media {
   id: string;
@@ -13,12 +16,14 @@ interface Media {
   taken_at: string;
   week_number?: number;
   year?: number;
+  category?: 'work' | 'life' | 'shared';
 }
 
-interface WorkWithMedia {
-  workName: string;
-  workId?: string;
-  area?: string;
+interface CategoryGroup {
+  category: 'work' | 'life' | 'shared';
+  label: string;
+  icon: string;
+  color: string;
   media: Media[];
 }
 
@@ -27,20 +32,21 @@ interface PortfolioTabProps {
   childName: string;
 }
 
-const AREA_COLORS: Record<string, string> = {
-  practical_life: 'from-pink-500 to-rose-500',
-  sensorial: 'from-purple-500 to-violet-500',
-  math: 'from-blue-500 to-indigo-500',
-  mathematics: 'from-blue-500 to-indigo-500',
-  language: 'from-green-500 to-emerald-500',
-  culture: 'from-orange-500 to-amber-500',
+const CATEGORY_CONFIG = {
+  work: { label: 'Work Photos', icon: '📚', color: 'from-blue-500 to-indigo-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+  life: { label: 'Life Photos', icon: '🌳', color: 'from-green-500 to-emerald-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  shared: { label: 'Group Photos', icon: '👥', color: 'from-purple-500 to-violet-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
 };
 
 export default function PortfolioTab({ childId, childName }: PortfolioTabProps) {
-  const [workGroups, setWorkGroups] = useState<WorkWithMedia[]>([]);
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<{ media: Media; index: number; all: Media[] } | null>(null);
   const [filter, setFilter] = useState<'all' | 'photos' | 'videos'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'work' | 'life' | 'shared'>('all');
+  const [generatingAlbum, setGeneratingAlbum] = useState(false);
+  const [showVideoGenerator, setShowVideoGenerator] = useState(false);
+  const [showCapture, setShowCapture] = useState(false);
 
   useEffect(() => {
     fetchMedia();
@@ -51,29 +57,29 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
       const res = await fetch(`/api/media?childId=${childId}`);
       const data = await res.json();
       
-      // Group media by work_name
-      const grouped: Record<string, WorkWithMedia> = {};
+      // Group media by category
+      const grouped: Record<string, Media[]> = { work: [], life: [], shared: [] };
       
       (data.media || []).forEach((m: Media) => {
-        const key = m.work_name || 'Other';
-        if (!grouped[key]) {
-          grouped[key] = {
-            workName: key,
-            workId: m.work_id,
-            media: []
-          };
-        }
-        grouped[key].media.push(m);
+        const cat = m.category || 'work';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(m);
       });
 
-      // Sort by most recent media in each group
-      const sorted = Object.values(grouped).sort((a, b) => {
-        const aLatest = new Date(a.media[0]?.taken_at || 0).getTime();
-        const bLatest = new Date(b.media[0]?.taken_at || 0).getTime();
-        return bLatest - aLatest;
-      });
+      // Create category groups
+      const groups: CategoryGroup[] = Object.entries(grouped)
+        .filter(([_, media]) => media.length > 0)
+        .map(([cat, media]) => ({
+          category: cat as 'work' | 'life' | 'shared',
+          ...CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG],
+          media: media.sort((a, b) => new Date(b.taken_at).getTime() - new Date(a.taken_at).getTime())
+        }))
+        .sort((a, b) => {
+          const order = { work: 0, life: 1, shared: 2 };
+          return order[a.category] - order[b.category];
+        });
 
-      setWorkGroups(sorted);
+      setCategoryGroups(groups);
     } catch (error) {
       console.error('Failed to fetch media:', error);
     } finally {
@@ -101,19 +107,67 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
   };
 
   // Filter media
-  const filteredGroups = workGroups.map(group => ({
-    ...group,
-    media: group.media.filter(m => 
-      filter === 'all' || 
-      (filter === 'photos' && m.media_type === 'photo') ||
-      (filter === 'videos' && m.media_type === 'video')
-    )
-  })).filter(g => g.media.length > 0);
+  const filteredGroups = categoryGroups
+    .filter(g => categoryFilter === 'all' || g.category === categoryFilter)
+    .map(group => ({
+      ...group,
+      media: group.media.filter(m => 
+        filter === 'all' || 
+        (filter === 'photos' && m.media_type === 'photo') ||
+        (filter === 'videos' && m.media_type === 'video')
+      )
+    }))
+    .filter(g => g.media.length > 0);
 
   // Stats
-  const allMedia = workGroups.flatMap(g => g.media);
+  const allMedia = categoryGroups.flatMap(g => g.media);
   const photoCount = allMedia.filter(m => m.media_type === 'photo').length;
   const videoCount = allMedia.filter(m => m.media_type === 'video').length;
+
+  // Generate Album
+  const handleGenerateAlbum = async () => {
+    if (allMedia.length === 0) {
+      toast.error('No photos to include in album');
+      return;
+    }
+    
+    setGeneratingAlbum(true);
+    try {
+      const res = await fetch('/api/classroom/album/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childId, childName })
+      });
+      
+      if (!res.ok) throw new Error('Failed to generate album');
+      
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${childName.replace(/\s+/g, '_')}_Album.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success('📖 Album downloaded!');
+    } catch (error) {
+      console.error('Album generation error:', error);
+      toast.error('Failed to generate album');
+    } finally {
+      setGeneratingAlbum(false);
+    }
+  };
+
+  // Show Video Generator
+  const handleGenerateVideo = () => {
+    if (photoCount === 0) {
+      toast.error('No photos to include in video');
+      return;
+    }
+    setShowVideoGenerator(true);
+  };
 
   if (loading) {
     return (
@@ -142,17 +196,59 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
 
   return (
     <div>
-      {/* Stats & Filter */}
+      {/* Stats & Actions */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-bold text-gray-900">{childName}'s Portfolio</h3>
             <p className="text-sm text-gray-500">
-              {photoCount} photos • {videoCount} videos • {workGroups.length} works
+              {photoCount} photos • {videoCount} videos
             </p>
           </div>
           
-          {/* Filter buttons */}
+          {/* Generate Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleGenerateAlbum}
+              disabled={generatingAlbum}
+              className="px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              {generatingAlbum ? '⏳' : '📖'} Album
+            </button>
+            <button
+              onClick={handleGenerateVideo}
+              className="px-3 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all"
+            >
+              🎬 Video
+            </button>
+          </div>
+        </div>
+        
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          {/* Category Filter */}
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'work', label: '📚' },
+              { id: 'life', label: '🌳' },
+              { id: 'shared', label: '👥' },
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setCategoryFilter(f.id as any)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  categoryFilter === f.id 
+                    ? 'bg-white shadow text-blue-600' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          
+          {/* Type Filter */}
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
             {[
               { id: 'all', label: 'All' },
@@ -175,15 +271,16 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
         </div>
       </div>
 
-      {/* Works with Media */}
+      {/* Category Groups */}
       <div className="space-y-4">
         {filteredGroups.map(group => (
-          <div key={group.workName} className="bg-white rounded-xl shadow-sm overflow-hidden">
-            {/* Work Header */}
-            <div className="p-3 border-b bg-gray-50">
-              <div className="flex items-center justify-between">
-                <h4 className="font-bold text-gray-900">{group.workName}</h4>
-                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+          <div key={group.category} className="bg-white rounded-xl shadow-sm overflow-hidden">
+            {/* Category Header */}
+            <div className={`p-3 ${group.bgColor} border-b`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{group.icon}</span>
+                <h4 className={`font-bold ${group.textColor}`}>{group.label}</h4>
+                <span className={`text-xs ${group.bgColor} ${group.textColor} px-2 py-0.5 rounded-full ml-auto`}>
                   {group.media.length} {group.media.length === 1 ? 'item' : 'items'}
                 </span>
               </div>
@@ -205,6 +302,40 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
         ))}
       </div>
 
+      {/* Video Generator Modal */}
+      {showVideoGenerator && (
+        <VideoGenerator
+          childId={childId}
+          childName={childName}
+          onClose={() => setShowVideoGenerator(false)}
+        />
+      )}
+
+      {/* Photo Capture Modal */}
+      {showCapture && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+          <PhotoCapture
+            childId={childId}
+            childName={childName}
+            defaultCategory="life"
+            onComplete={() => {
+              setShowCapture(false);
+              fetchMedia();
+            }}
+            onClose={() => setShowCapture(false)}
+          />
+        </div>
+      )}
+
+      {/* Floating Action Button */}
+      <button
+        onClick={() => setShowCapture(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full shadow-xl flex items-center justify-center text-3xl hover:shadow-2xl hover:scale-105 transition-all z-50"
+        title="Add photo"
+      >
+        +
+      </button>
+
       {/* Lightbox */}
       {lightbox && (
         <Lightbox
@@ -223,7 +354,6 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
 // Media Thumbnail Component
 function MediaThumbnail({ media, onClick }: { media: Media; onClick: () => void }) {
   const [videoThumb, setVideoThumb] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (media.media_type === 'video' && !media.thumbnail_url) {
@@ -312,7 +442,6 @@ function Lightbox({
   onPrev: () => void;
   onNext: () => void;
 }) {
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -324,6 +453,7 @@ function Lightbox({
   }, [onClose, onPrev, onNext]);
 
   const isVideo = media.media_type === 'video';
+  const categoryConfig = CATEGORY_CONFIG[media.category || 'work'];
 
   return (
     <div 
@@ -379,6 +509,10 @@ function Lightbox({
 
         {/* Info bar */}
         <div className="mt-4 text-center text-white">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span>{categoryConfig.icon}</span>
+            <span className="text-sm text-white/70">{categoryConfig.label}</span>
+          </div>
           <p className="font-bold">{media.work_name}</p>
           <p className="text-sm text-white/70">
             {new Date(media.taken_at).toLocaleDateString('en-US', { 

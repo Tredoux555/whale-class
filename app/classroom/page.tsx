@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 interface Child {
   id: string;
@@ -32,6 +33,9 @@ export default function ClassroomPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSharedCapture, setShowSharedCapture] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchChildren();
@@ -52,6 +56,47 @@ export default function ClassroomPage() {
   const filteredChildren = children.filter(child =>
     child.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleSharedPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      toast.error(`File too large! Max ${isVideo ? '50MB' : '10MB'}`);
+      fileInputRef.current!.value = '';
+      return;
+    }
+
+    setUploading(true);
+    toast.info('Uploading to all children...');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', `Group Photo - ${new Date().toLocaleDateString()}`);
+
+    try {
+      const res = await fetch('/api/classroom/shared-photo', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(`📸 Shared with ${data.distributedTo} children!`);
+      } else {
+        toast.error(data.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Upload failed');
+    } finally {
+      setUploading(false);
+      fileInputRef.current!.value = '';
+    }
+  };
 
   const getAvatarGradient = (index: number) => AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
 
@@ -220,6 +265,24 @@ export default function ClassroomPage() {
           </div>
         )}
       </main>
+
+      {/* Shared Photo Button */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        capture="environment"
+        onChange={handleSharedPhotoSelect}
+        className="hidden"
+      />
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-full shadow-xl flex items-center justify-center text-2xl hover:shadow-2xl hover:scale-105 transition-all z-50 disabled:opacity-50"
+        title="Add group photo (shared with all children)"
+      >
+        {uploading ? '⏳' : '👥'}
+      </button>
     </div>
   );
 }

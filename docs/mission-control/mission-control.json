@@ -1,7 +1,7 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-15T14:00:00+08:00",
-  "currentSession": "Session 31 - Unified Classroom UI",
+  "lastUpdated": "2026-01-15T15:30:00+08:00",
+  "currentSession": "Session 32 - Photo Categories & Portfolio Generator",
   "currentStatus": "✅ BUILT - Ready to deploy",
   "productionUrl": "https://www.teacherpotato.xyz",
   
@@ -10,6 +10,16 @@
   "daysRemaining": 1,
 
   "HANDOFF_LOCATION": "/docs/mission-control/SESSION_LOG.md",
+
+  "SESSION_32_COMPLETED": [
+    "Photo categories (work, life, shared) - API updated",
+    "Migration 037 for category column + shared_photos table",
+    "PhotoCapture component with category selection",
+    "PortfolioTab organized by category with filters",
+    "Album Generator - PDF download with photos by category",
+    "Video Generator - Client-side slideshow with Ken Burns effect",
+    "Shared photo API - auto-distributes to all children"
+  ],
 
   "SESSION_31_BUILT": [
     "Unified /classroom route - children grid entry point",
@@ -29,14 +39,26 @@
     "/api/classroom/children": "GET all children with progress",
     "/api/classroom/child/[childId]": "GET single child data",
     "/api/classroom/child/[childId]/week": "GET weekly assignments",
-    "/api/classroom/child/[childId]/progress": "GET all-time progress"
+    "/api/classroom/child/[childId]/progress": "GET all-time progress",
+    "/api/classroom/shared-photo": "POST shared photo (auto-distributes)",
+    "/api/classroom/album/generate": "POST generate PDF album",
+    "/api/classroom/video": "GET photos for video generation"
+  },
+
+  "NEW_COMPONENTS": {
+    "components/classroom/PhotoCapture.tsx": "Camera with category selection",
+    "components/classroom/PortfolioTab.tsx": "Category-organized gallery",
+    "components/classroom/VideoGenerator.tsx": "Client-side video creation"
   },
 
   "TO_DEPLOY": [
-    "git add .",
-    "git commit -m 'Add unified classroom UI'",
-    "git push"
+    "1. Run migration 037 in Supabase SQL Editor",
+    "2. git add .",
+    "3. git commit -m 'Add photo categories, album & video generators'",
+    "4. git push"
   ],
+
+  "MIGRATION_TO_RUN": "migrations/037_photo_categories.sql",
 
   "credentials": {
     "teacherAdmin": {"name": "Tredoux", "password": "870602"}
