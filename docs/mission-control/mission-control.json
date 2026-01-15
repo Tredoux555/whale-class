@@ -1,76 +1,41 @@
 {
   "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-13T01:15:00+08:00",
-  "currentSession": "Session 26 ENDED - Polish Complete",
-  "currentStatus": "⏳ AWAITING ASSETS - Code fully scaffolded",
+  "lastUpdated": "2026-01-15T14:00:00+08:00",
+  "currentSession": "Session 31 - Unified Classroom UI",
+  "currentStatus": "✅ BUILT - Ready to deploy",
   "productionUrl": "https://www.teacherpotato.xyz",
   
   "railwayStatus": "✅ ONLINE",
   "launchDate": "2026-01-16",
-  "daysRemaining": 3,
+  "daysRemaining": 1,
 
-  "HANDOFF_LOCATION": "/docs/mission-control/HANDOFF_SESSION_27.md",
-  "RECORDING_SCRIPT": "/docs/AUDIO_RECORDING_SCRIPT.md",
+  "HANDOFF_LOCATION": "/docs/mission-control/SESSION_LOG.md",
 
-  "SESSION_27_TODO": [
-    "1. Receive audio recording from Tredoux",
-    "2. Segment into 273 word files + 10 sentence files",
-    "3. Copy to /public/audio-new/words/ and /sentences/",
-    "4. Receive/generate images (letters + vocabulary)",
-    "5. Test full assessment end-to-end",
-    "6. Deploy to production"
+  "SESSION_31_BUILT": [
+    "Unified /classroom route - children grid entry point",
+    "Child profile page with 3 tabs (This Week, Progress, Portfolio)",
+    "Portfolio tab with photos grouped by work",
+    "Video thumbnail auto-generation",
+    "Lightbox with keyboard navigation",
+    "API endpoints for all data"
   ],
 
-  "polishCompleted": {
-    "comicSansFont": "✅ Added via Google Fonts (Comic Neue)",
-    "assessmentLetterClass": "✅ .assessment-letter CSS class",
-    "letterMatchLowercase": "✅ Now lowercase only",
-    "letterSoundsLowercase": "✅ Now lowercase only",
-    "hearWordButtons": "✅ Added to BeginningTestGame & EndingTestGame",
-    "readingTestsWired": "✅ skills.ts + runner updated",
-    "middleSoundsFont": "✅ Uses assessment-letter class"
+  "NEW_ROUTES": {
+    "/classroom": "Children grid - main entry point",
+    "/classroom/[childId]": "Child profile with 3 tabs"
   },
 
-  "assessmentSystemStatus": {
-    "coreComplete": true,
-    "databaseReady": true,
-    "allComponentsReady": true,
-    "readingTestsIntegrated": true,
-    "fontStylingComplete": true,
-    "awaitingAssets": true
+  "NEW_API_ROUTES": {
+    "/api/classroom/children": "GET all children with progress",
+    "/api/classroom/child/[childId]": "GET single child data",
+    "/api/classroom/child/[childId]/week": "GET weekly assignments",
+    "/api/classroom/child/[childId]/progress": "GET all-time progress"
   },
 
-  "assetsNeeded": {
-    "letterImages": 26,
-    "wordImages": 273,
-    "wordAudio": 273,
-    "sentenceAudio": 10,
-    "total": 582,
-    "recordingScript": "/docs/AUDIO_RECORDING_SCRIPT.md"
-  },
-
-  "skillsInAssessment": [
-    {"order": 1, "name": "Letter Recognition", "items": 8, "status": "✅ ready"},
-    {"order": 2, "name": "Letter Sounds", "items": 6, "status": "✅ ready"},
-    {"order": 3, "name": "Beginning Sounds", "items": 6, "status": "⏳ needs images+audio"},
-    {"order": 4, "name": "Ending Sounds", "items": 5, "status": "⏳ needs images+audio"},
-    {"order": 5, "name": "Middle Sounds", "items": 4, "status": "⏳ needs audio"},
-    {"order": 6, "name": "Blending", "items": 5, "status": "✅ ready"},
-    {"order": 7, "name": "Word Reading", "items": 10, "status": "✅ wired (needs audio)"},
-    {"order": 8, "name": "Sentence Reading", "items": 5, "status": "✅ wired (needs audio)"}
-  ],
-
-  "totalAssessmentItems": 49,
-
-  "filesModifiedThisSession": [
-    "app/globals.css - Added Comic Neue font + .assessment-letter class",
-    "components/assessment/LetterMatchTestGame.tsx - Lowercase only + font",
-    "components/assessment/LetterSoundsTestGame.tsx - Lowercase only + font",
-    "components/assessment/BeginningTestGame.tsx - Added hear-word buttons",
-    "components/assessment/EndingTestGame.tsx - Added hear-word buttons",
-    "components/assessment/MiddleTestGame.tsx - Added font class",
-    "lib/assessment/skills.ts - Added reading tests (7 & 8)",
-    "app/assessment/[sessionId]/page.tsx - Wired reading tests"
+  "TO_DEPLOY": [
+    "git add .",
+    "git commit -m 'Add unified classroom UI'",
+    "git push"
   ],
 
   "credentials": {
