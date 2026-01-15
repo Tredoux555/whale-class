@@ -194,3 +194,50 @@ Mission Protocol integrated at `/mission` with streaks, check-ins, wins tracking
 ---
 
 **Last Updated:** Jan 15, 2026 19:00 Beijing Time
+
+
+---
+
+## SESSION 35: Individual English Reports (Jan 15, 2026 - 21:30)
+
+Built weekly English report generator matching Tredoux's exact style and student order.
+
+**18 Whale Class Students (in exact report order):**
+1. Rachel, 2. Yueze, 3. Lucky, 4. Austin, 5. Minxi, 6. Leo, 7. Joey, 8. Eric
+9. Jimmy, 10. Kevin, 11. Niuniu, 12. Amy, 13. Henry, 14. Segina, 15. Hayden
+16. KK, 17. Kayla, 18. Stella
+
+**Report Style Matched:**
+- Direct tone: "Rachel did the WBW /e/ -- she didn't have much trouble with it."
+- Struggles noted: "they really struggled, but did better than before"
+- Absent handling: "was absent and I didn't get to see them this week"
+- No work: "didn't make it to the English side of things"
+- Next week: "Next week we can do the..."
+
+**English Works Added:**
+- Matching: Big/Small letter puzzle, Animal matching, Baby animals
+- 3ptc: /a/ through /u/ + Mixed
+- WBW: Individual vowels + 3ptc variants + Mixed Boxes 1-3
+- WFW: /a/ through /u/
+- SPL: /a/ through /u/
+- Sound Games: I Spy, Beginning/Ending Sounds
+- Pink Reading: /a/ through /u/
+- Primary Phonics: Red 1-5
+
+**Routes:**
+- `/admin/schools/[slug]/english-reports` → Weekly report generator
+
+**Features:**
+- Week selector (1-52)
+- Child list in exact order with:
+  - Work done dropdown
+  - Performance selector (excellent/good/struggled/repeat/absent/none)
+  - Next work dropdown
+  - Notes field
+  - Custom report override textarea
+- Preview modal (white paper style)
+- Copy All button
+- Download button (txt file)
+
+**Migration:** 039_whale_class_correct_order.sql (resets children to exact 18)
+
