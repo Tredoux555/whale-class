@@ -1,37 +1,17 @@
 // app/admin/schools/[slug]/english-reports/page.tsx
-// Weekly English Reports - CONNECTED TO DATABASE
-// TWO-WAY SYNC: Reports update progress tracker
-// NEXT WEEK LIST: Easy copy-paste list for planning
+// Weekly English Reports - WORKING VERSION
+// Uses hardcoded 18 students so you can generate reports NOW
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-
-interface EnglishWork {
-  id: string;
-  name: string;
-}
-
-interface WeekWork {
-  id: string;
-  name: string;
-  status: number;
-  updatedAt: string;
-}
 
 interface Child {
   id: string;
   name: string;
-  gender: 'he' | 'she' | 'they';
+  gender: 'he' | 'she';
   order: number;
-  currentWork: string | null;
-  thisWeekWorks: WeekWork[];
-  savedLog: {
-    works_done: any[];
-    next_work: string;
-    report_text: string;
-  } | null;
 }
 
 interface WorkEntry {
@@ -45,30 +25,68 @@ interface LocalLog {
   reportText: string;
 }
 
+// YOUR 18 WHALE CLASS STUDENTS - EXACT ORDER FROM YOUR DOCX
+const WHALE_CLASS: Child[] = [
+  { id: '1', name: 'Rachel', gender: 'she', order: 1 },
+  { id: '2', name: 'Yueze', gender: 'he', order: 2 },
+  { id: '3', name: 'Lucky', gender: 'she', order: 3 },
+  { id: '4', name: 'Austin', gender: 'he', order: 4 },
+  { id: '5', name: 'Minxi', gender: 'she', order: 5 },
+  { id: '6', name: 'Leo', gender: 'he', order: 6 },
+  { id: '7', name: 'Joey', gender: 'he', order: 7 },
+  { id: '8', name: 'Eric', gender: 'he', order: 8 },
+  { id: '9', name: 'Jimmy', gender: 'he', order: 9 },
+  { id: '10', name: 'Kevin', gender: 'he', order: 10 },
+  { id: '11', name: 'Niuniu', gender: 'she', order: 11 },
+  { id: '12', name: 'Amy', gender: 'she', order: 12 },
+  { id: '13', name: 'Henry', gender: 'he', order: 13 },
+  { id: '14', name: 'Segina', gender: 'she', order: 14 },
+  { id: '15', name: 'Hayden', gender: 'he', order: 15 },
+  { id: '16', name: 'KK', gender: 'he', order: 16 },
+  { id: '17', name: 'Kayla', gender: 'she', order: 17 },
+  { id: '18', name: 'Stella', gender: 'she', order: 18 },
+];
+
+// YOUR 30 ENGLISH WORKS
+const ENGLISH_WORKS = [
+  { code: 'BS', name: 'Beginning Sounds' },
+  { code: 'ES', name: 'Ending Sounds' },
+  { code: 'MS', name: 'Middle Sounds' },
+  { code: 'WBW/a/', name: 'Word Building /a/' },
+  { code: 'WBW/e/', name: 'Word Building /e/' },
+  { code: 'WBW/i/', name: 'Word Building /i/' },
+  { code: 'WBW/o/', name: 'Word Building /o/' },
+  { code: 'WBW/u/', name: 'Word Building /u/' },
+  { code: 'WFW/a/', name: 'Word Family /a/' },
+  { code: 'WFW/e/', name: 'Word Family /e/' },
+  { code: 'WFW/i/', name: 'Word Family /i/' },
+  { code: 'WFW/o/', name: 'Word Family /o/' },
+  { code: 'WFW/u/', name: 'Word Family /u/' },
+  { code: 'PR/a/', name: 'Pink Reading /a/' },
+  { code: 'PR/e/', name: 'Pink Reading /e/' },
+  { code: 'PR/i/', name: 'Pink Reading /i/' },
+  { code: 'PR/o/', name: 'Pink Reading /o/' },
+  { code: 'PR/u/', name: 'Pink Reading /u/' },
+  { code: 'PrPh Red 1', name: 'Primary Phonics Red 1' },
+  { code: 'PrPh Red 2', name: 'Primary Phonics Red 2' },
+  { code: 'PrPh Red 3', name: 'Primary Phonics Red 3' },
+  { code: 'PrPh Red 4', name: 'Primary Phonics Red 4' },
+  { code: 'PrPh Red 5', name: 'Primary Phonics Red 5' },
+  { code: 'PrPh Red 6', name: 'Primary Phonics Red 6' },
+  { code: 'PrPh Red 7', name: 'Primary Phonics Red 7' },
+  { code: 'PrPh Red 8', name: 'Primary Phonics Red 8' },
+  { code: 'PrPh Red 9', name: 'Primary Phonics Red 9' },
+  { code: 'PrPh Red 10', name: 'Primary Phonics Red 10' },
+  { code: 'BL/init/', name: 'Initial Blends' },
+  { code: 'BL/final/', name: 'Final Blends' },
+];
+
 const PERFORMANCE = [
   { value: 'excellent', label: '🌟 Excellent', desc: 'did very well' },
   { value: 'good', label: '✅ Good', desc: "didn't have much trouble" },
   { value: 'struggled', label: '💪 Struggled', desc: 'found it challenging' },
   { value: 'repeat', label: '🔄 Repeat', desc: 'needs more practice' },
 ];
-
-const workIdToCode = (id: string): string => {
-  const map: Record<string, string> = {
-    'eng_bs': 'BS', 'eng_es': 'ES', 'eng_ms': 'MS',
-    'eng_wbw_a': 'WBW/a/', 'eng_wbw_e': 'WBW/e/', 'eng_wbw_i': 'WBW/i/',
-    'eng_wbw_o': 'WBW/o/', 'eng_wbw_u': 'WBW/u/',
-    'eng_wfw_a': 'WFW/a/', 'eng_wfw_e': 'WFW/e/', 'eng_wfw_i': 'WFW/i/',
-    'eng_wfw_o': 'WFW/o/', 'eng_wfw_u': 'WFW/u/',
-    'eng_pr_a': 'PR/a/', 'eng_pr_e': 'PR/e/', 'eng_pr_i': 'PR/i/',
-    'eng_pr_o': 'PR/o/', 'eng_pr_u': 'PR/u/',
-    'eng_prph_1': 'PrPh Red 1', 'eng_prph_2': 'PrPh Red 2', 'eng_prph_3': 'PrPh Red 3',
-    'eng_prph_4': 'PrPh Red 4', 'eng_prph_5': 'PrPh Red 5', 'eng_prph_6': 'PrPh Red 6',
-    'eng_prph_7': 'PrPh Red 7', 'eng_prph_8': 'PrPh Red 8', 'eng_prph_9': 'PrPh Red 9',
-    'eng_prph_10': 'PrPh Red 10',
-    'eng_bl_init': 'BL/init/', 'eng_bl_final': 'BL/final/',
-  };
-  return map[id] || id;
-};
 
 export default function EnglishReportsPage() {
   const params = useParams();
@@ -79,56 +97,9 @@ export default function EnglishReportsPage() {
   const currentWeek = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
   
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
-  const [children, setChildren] = useState<Child[]>([]);
-  const [englishWorks, setEnglishWorks] = useState<EnglishWork[]>([]);
-  const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<Record<string, LocalLog>>({});
   const [showPreview, setShowPreview] = useState(false);
   const [showNextList, setShowNextList] = useState(false);
-  const [saving, setSaving] = useState<string | null>(null);
-  const [savingAll, setSavingAll] = useState(false);
-
-  useEffect(() => {
-    fetchData();
-  }, [selectedWeek]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/english-reports?week=${selectedWeek}&year=${now.getFullYear()}`);
-      const data = await res.json();
-      
-      if (data.children) {
-        setChildren(data.children);
-        
-        const initialLogs: Record<string, LocalLog> = {};
-        data.children.forEach((child: Child) => {
-          const savedLog = child.savedLog;
-          const thisWeekWorks = child.thisWeekWorks || [];
-          
-          const autoWorks: WorkEntry[] = thisWeekWorks.map(w => ({
-            work: workIdToCode(w.id),
-            performance: w.status === 3 ? 'excellent' : 'good',
-          }));
-          
-          initialLogs[child.id] = {
-            works: savedLog?.works_done?.length ? savedLog.works_done : autoWorks,
-            nextWork: savedLog?.next_work || '',
-            reportText: savedLog?.report_text || '',
-          };
-        });
-        setLogs(initialLogs);
-      }
-      
-      if (data.englishWorks) {
-        setEnglishWorks(data.englishWorks);
-      }
-    } catch (err) {
-      console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getLog = (childId: string): LocalLog => {
     return logs[childId] || { works: [], nextWork: '', reportText: '' };
@@ -160,61 +131,9 @@ export default function EnglishReportsPage() {
     updateLog(childId, { works: log.works.filter((_, i) => i !== index) });
   };
 
-  const saveReport = async (childId: string) => {
-    setSaving(childId);
-    try {
-      const log = getLog(childId);
-      const child = children.find(c => c.id === childId);
-      
-      await fetch('/api/english-reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childId,
-          week: selectedWeek,
-          year: now.getFullYear(),
-          worksDone: log.works,
-          nextWork: log.nextWork,
-          reportText: log.reportText || generateReport(child!),
-        }),
-      });
-    } catch (err) {
-      console.error('Error saving:', err);
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  // Save ALL reports at once
-  const saveAllReports = async () => {
-    setSavingAll(true);
-    try {
-      for (const child of children) {
-        const log = getLog(child.id);
-        await fetch('/api/english-reports', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            childId: child.id,
-            week: selectedWeek,
-            year: now.getFullYear(),
-            worksDone: log.works,
-            nextWork: log.nextWork,
-            reportText: log.reportText || generateReport(child),
-          }),
-        });
-      }
-      alert('All reports saved & progress tracker updated!');
-    } catch (err) {
-      console.error('Error saving all:', err);
-    } finally {
-      setSavingAll(false);
-    }
-  };
-
   const generateReport = (child: Child): string => {
     const log = getLog(child.id);
-    const pronoun = child.gender === 'she' ? 'she' : child.gender === 'he' ? 'he' : 'they';
+    const pronoun = child.gender;
     
     if (log.reportText.trim()) {
       return log.reportText;
@@ -253,45 +172,24 @@ export default function EnglishReportsPage() {
 
   const copyAll = () => {
     const header = `Week ${selectedWeek} English summary\n\n`;
-    const reports = children.map(child => generateReport(child)).join('\n\n');
+    const reports = WHALE_CLASS.map(child => generateReport(child)).join('\n\n');
     navigator.clipboard.writeText(header + reports);
     alert('Copied to clipboard!');
   };
 
-  // Generate Next Week List for copy-paste
   const generateNextWeekList = (): string => {
     const lines: string[] = [`Week ${selectedWeek + 1} English Plan\n`];
-    
-    children.forEach(child => {
+    WHALE_CLASS.forEach(child => {
       const log = getLog(child.id);
-      if (log.nextWork) {
-        lines.push(`${child.name} - ${log.nextWork}`);
-      } else {
-        lines.push(`${child.name} - (no work set)`);
-      }
+      lines.push(`${child.name} - ${log.nextWork || '(no work set)'}`);
     });
-    
     return lines.join('\n');
   };
 
   const copyNextWeekList = () => {
-    const list = generateNextWeekList();
-    navigator.clipboard.writeText(list);
+    navigator.clipboard.writeText(generateNextWeekList());
     alert('Next week list copied!');
   };
-
-  const workOptions = englishWorks.map(w => ({
-    code: workIdToCode(w.id),
-    name: w.name,
-  }));
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -302,7 +200,7 @@ export default function EnglishReportsPage() {
             <Link href={`/admin/schools/${slug}`} className="text-slate-500 hover:text-white text-sm">← Back</Link>
             <div>
               <h1 className="text-white font-medium">📝 Weekly English Reports</h1>
-              <p className="text-slate-500 text-xs">Whale Class • Week {selectedWeek} • {children.length} students</p>
+              <p className="text-slate-500 text-xs">Whale Class • Week {selectedWeek} • {WHALE_CLASS.length} students</p>
             </div>
           </div>
           
@@ -330,21 +228,13 @@ export default function EnglishReportsPage() {
           <button onClick={() => setShowPreview(true)} className="px-4 py-1.5 bg-slate-800 text-white rounded text-sm hover:bg-slate-700">
             👁️ Preview
           </button>
-          <button 
-            onClick={saveAllReports} 
-            disabled={savingAll}
-            className="px-4 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-500 disabled:opacity-50"
-          >
-            {savingAll ? '⏳ Saving...' : '💾 Save All & Sync'}
-          </button>
         </div>
       </div>
 
       {/* Children List */}
       <main className="max-w-3xl mx-auto p-4 space-y-3">
-        {children.map((child) => {
+        {WHALE_CLASS.map((child) => {
           const log = getLog(child.id);
-          const hasThisWeekWorks = child.thisWeekWorks?.length > 0;
           
           return (
             <div key={child.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -355,26 +245,7 @@ export default function EnglishReportsPage() {
                 </span>
                 <span className="font-bold text-white">{child.name}</span>
                 <span className="text-slate-600 text-xs">({child.gender})</span>
-                {hasThisWeekWorks && (
-                  <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded">
-                    {child.thisWeekWorks.length} from tracker
-                  </span>
-                )}
               </div>
-              
-              {/* Auto-detected works */}
-              {hasThisWeekWorks && (
-                <div className="mb-3 p-2 bg-teal-500/10 border border-teal-500/20 rounded-lg">
-                  <p className="text-xs text-teal-400 mb-1">📱 From Progress Tracker:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {child.thisWeekWorks.map((w, i) => (
-                      <span key={i} className="text-xs bg-teal-600/30 text-teal-300 px-2 py-0.5 rounded">
-                        {workIdToCode(w.id)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
               
               {/* Works Done */}
               <div className="space-y-2 mb-3">
@@ -386,7 +257,7 @@ export default function EnglishReportsPage() {
                       className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-sm"
                     >
                       <option value="">Select work...</option>
-                      {workOptions.map(w => (
+                      {ENGLISH_WORKS.map(w => (
                         <option key={w.code} value={w.code}>{w.code}</option>
                       ))}
                     </select>
@@ -416,7 +287,7 @@ export default function EnglishReportsPage() {
                   className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-sm"
                 >
                   <option value="">Select...</option>
-                  {workOptions.map(w => (
+                  {ENGLISH_WORKS.map(w => (
                     <option key={w.code} value={w.code}>{w.code}</option>
                   ))}
                 </select>
@@ -427,17 +298,8 @@ export default function EnglishReportsPage() {
                 value={log.reportText || generateReport(child)}
                 onChange={(e) => updateLog(child.id, { reportText: e.target.value })}
                 rows={3}
-                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm resize-none mb-2"
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm resize-none"
               />
-              
-              {/* Save Button */}
-              <button
-                onClick={() => saveReport(child.id)}
-                disabled={saving === child.id}
-                className="text-xs text-slate-500 hover:text-teal-400"
-              >
-                {saving === child.id ? 'Saving...' : '💾 Save'}
-              </button>
             </div>
           );
         })}
@@ -456,7 +318,7 @@ export default function EnglishReportsPage() {
             </div>
             <div className="p-6 overflow-y-auto max-h-[70vh] text-slate-800 space-y-4 font-serif">
               <h3 className="font-bold text-center mb-6">Week {selectedWeek} English summary</h3>
-              {children.map(child => (
+              {WHALE_CLASS.map(child => (
                 <p key={child.id} className="leading-relaxed">{generateReport(child)}</p>
               ))}
             </div>
@@ -478,7 +340,7 @@ export default function EnglishReportsPage() {
             <div className="p-4 overflow-y-auto max-h-[70vh]">
               <p className="text-xs text-slate-500 mb-3">Copy this list for your weekly planning:</p>
               <div className="bg-slate-100 rounded-lg p-4 font-mono text-sm space-y-1">
-                {children.map(child => {
+                {WHALE_CLASS.map(child => {
                   const log = getLog(child.id);
                   return (
                     <div key={child.id} className="flex justify-between">
