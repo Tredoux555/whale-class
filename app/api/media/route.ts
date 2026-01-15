@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const year = formData.get('year') as string;
     const notes = formData.get('notes') as string;
     const parentVisible = formData.get('parentVisible') === 'true';
+    const category = (formData.get('category') as string) || 'work'; // 'work', 'life', or 'shared'
 
     if (!file || !childId || !workName) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
         assignment_id: assignmentId || null,
         work_id: workId || null,
         work_name: workName,
+        category: category,
         media_type: mediaType,
         media_url: mediaUrl,
         file_size_bytes: file.size,
@@ -126,6 +128,7 @@ export async function GET(request: NextRequest) {
     const weekNumber = url.searchParams.get('week');
     const year = url.searchParams.get('year');
     const mediaType = url.searchParams.get('type'); // 'photo', 'video', or null for all
+    const category = url.searchParams.get('category'); // 'work', 'life', 'shared', or null for all
     const parentOnly = url.searchParams.get('parentOnly') === 'true';
     const featuredOnly = url.searchParams.get('featured') === 'true';
     const reportDate = url.searchParams.get('date'); // For daily reports
@@ -144,6 +147,7 @@ export async function GET(request: NextRequest) {
     if (weekNumber) query = query.eq('week_number', parseInt(weekNumber));
     if (year) query = query.eq('year', parseInt(year));
     if (mediaType) query = query.eq('media_type', mediaType);
+    if (category) query = query.eq('category', category);
     if (parentOnly) query = query.eq('parent_visible', true);
     if (featuredOnly) query = query.eq('is_featured', true);
     if (reportDate) query = query.eq('report_date', reportDate);
