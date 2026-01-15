@@ -24,7 +24,11 @@
     "Fixed curriculum APIs to handle both area and area_id fields",
     "Added school stats API for real data (classrooms, teachers, students)",
     "Connected school dashboard to real data instead of mock",
-    "Stats cards now clickable links to their respective pages"
+    "Stats cards now clickable links to their respective pages",
+    "SIMPLIFIED admin dashboard - now just Schools + Tools",
+    "Added WFW/a/-u (Word Family Work) to English progression",
+    "Added Primary Phonics Red 1-10 to English progression",
+    "English progression now has 30 works total"
   ],
 
   "SESSION_33_COMPLETED": [
@@ -62,11 +66,17 @@
     "WBW/i/ - Word Building: Short I",
     "WBW/o/ - Word Building: Short O",
     "WBW/u/ - Word Building: Short U",
+    "WFW/a/ - Word Family: Short A",
+    "WFW/e/ - Word Family: Short E",
+    "WFW/i/ - Word Family: Short I",
+    "WFW/o/ - Word Family: Short O",
+    "WFW/u/ - Word Family: Short U",
     "PR/a/ - Pink Reading: Short A",
     "PR/e/ - Pink Reading: Short E",
     "PR/i/ - Pink Reading: Short I",
     "PR/o/ - Pink Reading: Short O",
     "PR/u/ - Pink Reading: Short U",
+    "PrPh Red 1-10 - Primary Phonics Red Series",
     "BL/init/ - Initial Blends",
     "BL/final/ - Final Blends"
   ],
