@@ -17,6 +17,9 @@ interface DashboardCard {
 }
 
 const DEFAULT_CARDS: DashboardCard[] = [
+  // 🔝 MASTER - Schools Management (Super Admin)
+  { id: 'schools', title: 'Schools', description: 'Manage all schools & curricula', href: '/admin/schools', icon: '🏛️', gradient: 'from-amber-600 to-yellow-500' },
+  
   // Role Portals
   { id: 'principal', title: 'Principal', description: 'School & classroom overview', href: '/principal', icon: '🏫', gradient: 'from-slate-600 to-slate-700' },
   { id: 'teacher', title: 'Teacher Portal', description: 'Progress tracking & tools', href: '/teacher/dashboard', icon: '👩‍🏫', gradient: 'from-amber-500 to-orange-500' },

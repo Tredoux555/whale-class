@@ -1,3 +1,5 @@
+// app/admin/schools/page.tsx
+// Master Schools Management - UI First (Mock Data)
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,104 +9,246 @@ interface School {
   id: string;
   name: string;
   slug: string;
-  logo_url: string | null;
+  logo_url?: string;
+  contact_email?: string;
+  settings?: {
+    owner?: boolean;
+    placeholder?: boolean;
+    primary?: boolean;
+  };
+  is_active: boolean;
+  created_at: string;
   classroom_count: number;
   teacher_count: number;
   student_count: number;
 }
 
+// Mock data - will be replaced with real API later
+const MOCK_SCHOOLS: School[] = [
+  {
+    id: '00000000-0000-0000-0000-000000000001',
+    name: 'Beijing International School',
+    slug: 'beijing-international',
+    settings: { owner: true, primary: true },
+    is_active: true,
+    created_at: '2024-01-01',
+    classroom_count: 1,
+    teacher_count: 2,
+    student_count: 12,
+  },
+  {
+    id: '00000000-0000-0000-0000-000000000002',
+    name: 'School 2 (Available)',
+    slug: 'school-2',
+    settings: { placeholder: true },
+    is_active: true,
+    created_at: '2024-01-01',
+    classroom_count: 0,
+    teacher_count: 0,
+    student_count: 0,
+  },
+  {
+    id: '00000000-0000-0000-0000-000000000003',
+    name: 'School 3 (Available)',
+    slug: 'school-3',
+    settings: { placeholder: true },
+    is_active: true,
+    created_at: '2024-01-01',
+    classroom_count: 0,
+    teacher_count: 0,
+    student_count: 0,
+  },
+];
+
 export default function SchoolsManagementPage() {
-  const [schools, setSchools] = useState<School[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newSchool, setNewSchool] = useState({ name: '', slug: '' });
-  const [saving, setSaving] = useState(false);
+  const [schools, setSchools] = useState<School[]>(MOCK_SCHOOLS);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => { fetchSchools(); }, []);
+  // Sort: owner school first
+  const sortedSchools = [...schools].sort((a, b) => {
+    if (a.settings?.owner) return -1;
+    if (b.settings?.owner) return 1;
+    if (a.settings?.placeholder && !b.settings?.placeholder) return 1;
+    if (!a.settings?.placeholder && b.settings?.placeholder) return -1;
+    return a.name.localeCompare(b.name);
+  });
 
-  const fetchSchools = async () => {
-    try {
-      const res = await fetch('/api/admin/schools');
-      const data = await res.json();
-      setSchools(data.schools || []);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  };
-
-  const handleAddSchool = async () => {
-    if (!newSchool.name.trim()) return;
-    setSaving(true);
-    try {
-      const slug = newSchool.slug || newSchool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const res = await fetch('/api/admin/schools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newSchool.name, slug })
-      });
-      if (res.ok) { setShowAddModal(false); setNewSchool({ name: '', slug: '' }); fetchSchools(); }
-    } catch (e) { console.error(e); }
-    finally { setSaving(false); }
-  };
-
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  const activeSchools = schools.filter(s => !s.settings?.placeholder);
+  const totalClassrooms = schools.reduce((acc, s) => acc + s.classroom_count, 0);
+  const totalTeachers = schools.reduce((acc, s) => acc + s.teacher_count, 0);
+  const totalStudents = schools.reduce((acc, s) => acc + s.student_count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">🏫 School Management</h1>
-            <p className="text-gray-500 text-sm">Master Admin - Manage all schools</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="text-slate-400 hover:text-white transition-colors text-sm">
+              ← Admin
+            </Link>
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl">🏛️</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Schools</h1>
+              <p className="text-slate-400 text-sm">Whale Platform Master</p>
+            </div>
           </div>
-          <button onClick={() => setShowAddModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium">+ Add School</button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {schools.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-            <div className="text-6xl mb-4">🏫</div>
-            <h3 className="text-xl font-semibold mb-2">No schools yet</h3>
-            <button onClick={() => setShowAddModal(true)} className="bg-emerald-600 text-white px-6 py-3 rounded-lg mt-4">+ Add First School</button>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto p-6">
+        {/* Platform Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div className="text-3xl font-bold text-amber-400">{activeSchools.length}</div>
+            <div className="text-sm text-slate-400">Active Schools</div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {schools.map((s) => (
-              <div key={s.id} className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md">
-                <div className="p-6 border-b flex items-center gap-4">
-                  <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center text-3xl">{s.logo_url ? <img src={s.logo_url} className="w-full h-full object-cover rounded-xl" /> : '🏫'}</div>
-                  <div><h3 className="font-bold text-lg">{s.name}</h3><p className="text-sm text-gray-500">/{s.slug}</p></div>
-                </div>
-                <div className="grid grid-cols-3 divide-x">
-                  <div className="p-4 text-center"><div className="text-2xl font-bold text-emerald-600">{s.classroom_count}</div><div className="text-xs text-gray-500">Classes</div></div>
-                  <div className="p-4 text-center"><div className="text-2xl font-bold text-blue-600">{s.teacher_count}</div><div className="text-xs text-gray-500">Teachers</div></div>
-                  <div className="p-4 text-center"><div className="text-2xl font-bold text-purple-600">{s.student_count}</div><div className="text-xs text-gray-500">Students</div></div>
-                </div>
-                <div className="p-4 bg-gray-50 flex gap-2">
-                  <Link href={`/admin/schools/${s.id}`} className="flex-1 text-center py-2 bg-white border rounded-lg text-sm">⚙️ Manage</Link>
-                  <Link href={`/admin/schools/${s.id}/classrooms`} className="flex-1 text-center py-2 bg-emerald-600 text-white rounded-lg text-sm">📚 Classes</Link>
-                </div>
-              </div>
-            ))}
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div className="text-3xl font-bold text-blue-400">{totalClassrooms}</div>
+            <div className="text-sm text-slate-400">Classrooms</div>
           </div>
-        )}
-      </main>
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Add New School</h2>
-            <div className="space-y-4">
-              <div><label className="block text-sm font-medium mb-1">School Name *</label><input type="text" value={newSchool.name} onChange={(e) => setNewSchool({...newSchool, name: e.target.value})} className="w-full px-4 py-2 border rounded-lg" placeholder="Beijing International School" /></div>
-              <div><label className="block text-sm font-medium mb-1">URL Slug</label><input type="text" value={newSchool.slug} onChange={(e) => setNewSchool({...newSchool, slug: e.target.value})} className="w-full px-4 py-2 border rounded-lg" placeholder="beijing-international" /></div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowAddModal(false)} className="flex-1 py-2 border rounded-lg">Cancel</button>
-              <button onClick={handleAddSchool} disabled={!newSchool.name.trim() || saving} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg disabled:opacity-50">{saving ? 'Adding...' : 'Add School'}</button>
-            </div>
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div className="text-3xl font-bold text-green-400">{totalTeachers}</div>
+            <div className="text-sm text-slate-400">Teachers</div>
+          </div>
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div className="text-3xl font-bold text-purple-400">{totalStudents}</div>
+            <div className="text-sm text-slate-400">Students</div>
           </div>
         </div>
-      )}
+
+        {/* Schools Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {sortedSchools.map((school) => {
+            const isOwner = school.settings?.owner;
+            const isPlaceholder = school.settings?.placeholder;
+            
+            return (
+              <Link
+                key={school.id}
+                href={isPlaceholder ? '#' : `/admin/schools/${school.slug}`}
+                className={`block rounded-2xl overflow-hidden transition-all ${
+                  isPlaceholder 
+                    ? 'opacity-40 cursor-not-allowed' 
+                    : 'hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20'
+                }`}
+              >
+                <div className={`p-6 ${
+                  isOwner 
+                    ? 'bg-gradient-to-br from-amber-600 to-yellow-500' 
+                    : isPlaceholder
+                    ? 'bg-slate-800/50 border border-dashed border-slate-600'
+                    : 'bg-gradient-to-br from-slate-700 to-slate-600'
+                }`}>
+                  {/* Badge */}
+                  {isOwner && (
+                    <div className="inline-flex items-center gap-1.5 bg-black/20 rounded-full px-3 py-1 text-xs font-bold text-white mb-3">
+                      ⭐ YOUR SCHOOL
+                    </div>
+                  )}
+                  
+                  {isPlaceholder && (
+                    <div className="inline-flex items-center gap-1.5 bg-slate-700/50 rounded-full px-3 py-1 text-xs font-medium text-slate-500 mb-3">
+                      🔒 Available
+                    </div>
+                  )}
+                  
+                  {/* School Info */}
+                  <div className="flex items-start gap-4">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl ${
+                      isOwner ? 'bg-white/20' : isPlaceholder ? 'bg-slate-700/50' : 'bg-slate-600'
+                    }`}>
+                      {isOwner ? '🐋' : isPlaceholder ? '➕' : '🏫'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className={`text-lg font-bold truncate ${
+                        isOwner ? 'text-white' : isPlaceholder ? 'text-slate-500' : 'text-white'
+                      }`}>
+                        {school.name}
+                      </h2>
+                      <p className={`text-sm ${isOwner ? 'text-white/70' : 'text-slate-400'}`}>
+                        /{school.slug}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Stats */}
+                  {!isPlaceholder && (
+                    <div className="flex gap-6 mt-4 pt-4 border-t border-white/10">
+                      <div>
+                        <div className={`text-xl font-bold ${isOwner ? 'text-white' : 'text-slate-200'}`}>
+                          {school.classroom_count}
+                        </div>
+                        <div className={`text-xs ${isOwner ? 'text-white/60' : 'text-slate-400'}`}>Classes</div>
+                      </div>
+                      <div>
+                        <div className={`text-xl font-bold ${isOwner ? 'text-white' : 'text-slate-200'}`}>
+                          {school.teacher_count}
+                        </div>
+                        <div className={`text-xs ${isOwner ? 'text-white/60' : 'text-slate-400'}`}>Teachers</div>
+                      </div>
+                      <div>
+                        <div className={`text-xl font-bold ${isOwner ? 'text-white' : 'text-slate-200'}`}>
+                          {school.student_count}
+                        </div>
+                        <div className={`text-xs ${isOwner ? 'text-white/60' : 'text-slate-400'}`}>Students</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Master Curriculum Section */}
+        <div className="border-t border-slate-700 pt-8">
+          <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+            📕 Master Curriculum
+          </h2>
+          <p className="text-slate-400 text-sm mb-4">
+            The master curriculum is cloned to each new school. Edit here to update the platform defaults.
+          </p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link
+              href="/admin/schools/master/curriculum"
+              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
+            >
+              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center text-2xl">📚</div>
+              <div>
+                <h3 className="font-bold text-white">All Works</h3>
+                <p className="text-sm text-slate-400">195 curriculum works</p>
+              </div>
+            </Link>
+            
+            <Link
+              href="/admin/schools/master/english"
+              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
+            >
+              <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center text-2xl">🔤</div>
+              <div>
+                <h3 className="font-bold text-white">English Sequence</h3>
+                <p className="text-sm text-slate-400">15 English works</p>
+              </div>
+            </Link>
+            
+            <Link
+              href="/admin/schools/master/areas"
+              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
+            >
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">🎯</div>
+              <div>
+                <h3 className="font-bold text-white">Areas</h3>
+                <p className="text-sm text-slate-400">5 curriculum areas</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
