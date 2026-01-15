@@ -8,9 +8,7 @@ function getSupabase() {
   );
 }
 
-const CATEGORIES = ['games', 'esl_games', 'activities', 'printables', 'videos', 'documents', 'other'];
-
-// GET - Fetch all resources (optionally filter by category)
+// GET - Fetch all resources
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -29,12 +27,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
+      console.error('GET error:', error);
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, resources: data || [] });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('GET catch:', error);
+    return NextResponse.json({ success: false, error: error.message || 'Server error' }, { status: 500 });
   }
 }
 
@@ -59,23 +59,28 @@ export async function POST(request: NextRequest) {
     let fileSize = null;
 
     // Upload file if provided
-    if (file) {
+    if (file && file.size > 0) {
       const timestamp = Date.now();
-      const ext = file.name.split('.').pop() || 'bin';
-      const filename = `resources/${category}/${timestamp}_${file.name.replace(/\s+/g, '_')}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filename = `resources/${timestamp}_${safeName}`;
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
+      // Try work-photos bucket first, fall back to creating in public
       const { error: uploadError } = await supabase.storage
         .from('work-photos')
         .upload(filename, buffer, {
-          contentType: file.type,
-          upsert: false
+          contentType: file.type || 'application/octet-stream',
+          upsert: true
         });
 
       if (uploadError) {
-        return NextResponse.json({ success: false, error: 'Upload failed: ' + uploadError.message }, { status: 500 });
+        console.error('Upload error:', uploadError);
+        return NextResponse.json({ 
+          success: false, 
+          error: 'File upload failed: ' + uploadError.message 
+        }, { status: 500 });
       }
 
       const { data: urlData } = supabase.storage.from('work-photos').getPublicUrl(filename);
@@ -100,12 +105,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      console.error('DB insert error:', error);
+      return NextResponse.json({ success: false, error: 'Database error: ' + error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, resource: data });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('POST catch:', error);
+    return NextResponse.json({ success: false, error: error.message || 'Server error' }, { status: 500 });
   }
 }
 
@@ -120,14 +127,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
     }
 
-    // Get resource to delete file from storage
     const { data: resource } = await supabase
       .from('teacher_resources')
       .select('file_url')
       .eq('id', id)
       .single();
 
-    // Delete from storage if file exists
     if (resource?.file_url) {
       const path = resource.file_url.split('/work-photos/')[1];
       if (path) {
@@ -135,18 +140,19 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // Delete from database
     const { error } = await supabase
       .from('teacher_resources')
       .delete()
       .eq('id', id);
 
     if (error) {
+      console.error('Delete error:', error);
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('DELETE catch:', error);
+    return NextResponse.json({ success: false, error: error.message || 'Server error' }, { status: 500 });
   }
 }
