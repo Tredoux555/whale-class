@@ -28,7 +28,11 @@
     "SIMPLIFIED admin dashboard - now just Schools + Tools",
     "Added WFW/a/-u (Word Family Work) to English progression",
     "Added Primary Phonics Red 1-10 to English progression",
-    "English progression now has 30 works total"
+    "English progression now has 30 works total",
+    "REDESIGNED Schools page - Tesla style minimal list",
+    "BUILT School dashboard with Classrooms/Teachers tabs",
+    "BUILT Classroom detail page - students list + curriculum links",
+    "BUILT Classroom curriculum editor - insert/delete/reorder works"
   ],
 
   "SESSION_33_COMPLETED": [
