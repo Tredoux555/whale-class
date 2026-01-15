@@ -13,35 +13,63 @@ interface EnglishWork {
   name: string;
   description?: string;
   sequence: number;
-  category: 'sound_games' | 'word_building' | 'reading' | 'blends' | 'phonograms';
+  category: 'sound_games' | 'word_building' | 'word_family' | 'reading' | 'primary_phonics' | 'blends' | 'phonograms';
   isActive: boolean;
 }
 
 const CATEGORIES = {
   sound_games: { name: 'Sound Games', icon: '👂', color: 'bg-purple-500', bgLight: 'bg-purple-500/20' },
   word_building: { name: 'Word Building', icon: '🔤', color: 'bg-amber-500', bgLight: 'bg-amber-500/20' },
-  reading: { name: 'Reading', icon: '📖', color: 'bg-pink-500', bgLight: 'bg-pink-500/20' },
+  word_family: { name: 'Word Family', icon: '🏠', color: 'bg-orange-500', bgLight: 'bg-orange-500/20' },
+  reading: { name: 'Pink Reading', icon: '📖', color: 'bg-pink-500', bgLight: 'bg-pink-500/20' },
+  primary_phonics: { name: 'Primary Phonics', icon: '📕', color: 'bg-red-600', bgLight: 'bg-red-600/20' },
   blends: { name: 'Blends', icon: '🔵', color: 'bg-blue-500', bgLight: 'bg-blue-500/20' },
   phonograms: { name: 'Phonograms', icon: '🟢', color: 'bg-green-500', bgLight: 'bg-green-500/20' },
 };
 
 // Default English works sequence
 const DEFAULT_WORKS: EnglishWork[] = [
+  // Sound Games
   { id: 'bs', code: 'BS', name: 'Beginning Sounds', description: 'I Spy with beginning sounds', sequence: 1, category: 'sound_games', isActive: true },
   { id: 'es', code: 'ES', name: 'Ending Sounds', description: 'I Spy with ending sounds', sequence: 2, category: 'sound_games', isActive: true },
   { id: 'ms', code: 'MS', name: 'Middle Sounds', description: 'Identifying middle vowel sounds', sequence: 3, category: 'sound_games', isActive: true },
+  
+  // Word Building (WBW)
   { id: 'wbw_a', code: 'WBW/a/', name: 'Word Building: Short A', description: 'cat, hat, bat, mat', sequence: 4, category: 'word_building', isActive: true },
   { id: 'wbw_e', code: 'WBW/e/', name: 'Word Building: Short E', description: 'pen, bed, red, hen', sequence: 5, category: 'word_building', isActive: true },
   { id: 'wbw_i', code: 'WBW/i/', name: 'Word Building: Short I', description: 'pin, sit, bit, pig', sequence: 6, category: 'word_building', isActive: true },
   { id: 'wbw_o', code: 'WBW/o/', name: 'Word Building: Short O', description: 'hot, pot, dog, log', sequence: 7, category: 'word_building', isActive: true },
   { id: 'wbw_u', code: 'WBW/u/', name: 'Word Building: Short U', description: 'cup, bus, sun, fun', sequence: 8, category: 'word_building', isActive: true },
-  { id: 'pr_a', code: 'PR/a/', name: 'Pink Reading: Short A', description: 'Reading CVC with short A', sequence: 9, category: 'reading', isActive: true },
-  { id: 'pr_e', code: 'PR/e/', name: 'Pink Reading: Short E', description: 'Reading CVC with short E', sequence: 10, category: 'reading', isActive: true },
-  { id: 'pr_i', code: 'PR/i/', name: 'Pink Reading: Short I', description: 'Reading CVC with short I', sequence: 11, category: 'reading', isActive: true },
-  { id: 'pr_o', code: 'PR/o/', name: 'Pink Reading: Short O', description: 'Reading CVC with short O', sequence: 12, category: 'reading', isActive: true },
-  { id: 'pr_u', code: 'PR/u/', name: 'Pink Reading: Short U', description: 'Reading CVC with short U', sequence: 13, category: 'reading', isActive: true },
-  { id: 'bl_init', code: 'BL/init/', name: 'Initial Blends', description: 'bl, cl, fl, gl, br, cr, dr', sequence: 14, category: 'blends', isActive: true },
-  { id: 'bl_final', code: 'BL/final/', name: 'Final Blends', description: 'nd, nt, nk, mp, ft, lt', sequence: 15, category: 'blends', isActive: true },
+  
+  // Word Family Work (WFW)
+  { id: 'wfw_a', code: 'WFW/a/', name: 'Word Family: Short A', description: '-at, -an, -ap, -ad families', sequence: 9, category: 'word_family', isActive: true },
+  { id: 'wfw_e', code: 'WFW/e/', name: 'Word Family: Short E', description: '-en, -et, -ed, -eg families', sequence: 10, category: 'word_family', isActive: true },
+  { id: 'wfw_i', code: 'WFW/i/', name: 'Word Family: Short I', description: '-in, -it, -ip, -ig families', sequence: 11, category: 'word_family', isActive: true },
+  { id: 'wfw_o', code: 'WFW/o/', name: 'Word Family: Short O', description: '-ot, -op, -og, -ob families', sequence: 12, category: 'word_family', isActive: true },
+  { id: 'wfw_u', code: 'WFW/u/', name: 'Word Family: Short U', description: '-un, -ut, -ug, -ub families', sequence: 13, category: 'word_family', isActive: true },
+  
+  // Pink Reading (PR)
+  { id: 'pr_a', code: 'PR/a/', name: 'Pink Reading: Short A', description: 'Reading CVC with short A', sequence: 14, category: 'reading', isActive: true },
+  { id: 'pr_e', code: 'PR/e/', name: 'Pink Reading: Short E', description: 'Reading CVC with short E', sequence: 15, category: 'reading', isActive: true },
+  { id: 'pr_i', code: 'PR/i/', name: 'Pink Reading: Short I', description: 'Reading CVC with short I', sequence: 16, category: 'reading', isActive: true },
+  { id: 'pr_o', code: 'PR/o/', name: 'Pink Reading: Short O', description: 'Reading CVC with short O', sequence: 17, category: 'reading', isActive: true },
+  { id: 'pr_u', code: 'PR/u/', name: 'Pink Reading: Short U', description: 'Reading CVC with short U', sequence: 18, category: 'reading', isActive: true },
+  
+  // Primary Phonics Red Series
+  { id: 'prph_red_1', code: 'PrPh Red 1', name: 'Primary Phonics: Red 1', description: 'Sam, Mac, Nat stories', sequence: 19, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_2', code: 'PrPh Red 2', name: 'Primary Phonics: Red 2', description: 'Continuing short A', sequence: 20, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_3', code: 'PrPh Red 3', name: 'Primary Phonics: Red 3', description: 'Short I introduction', sequence: 21, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_4', code: 'PrPh Red 4', name: 'Primary Phonics: Red 4', description: 'Short A & I mixed', sequence: 22, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_5', code: 'PrPh Red 5', name: 'Primary Phonics: Red 5', description: 'Short O introduction', sequence: 23, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_6', code: 'PrPh Red 6', name: 'Primary Phonics: Red 6', description: 'Short A, I, O mixed', sequence: 24, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_7', code: 'PrPh Red 7', name: 'Primary Phonics: Red 7', description: 'Short U introduction', sequence: 25, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_8', code: 'PrPh Red 8', name: 'Primary Phonics: Red 8', description: 'All short vowels', sequence: 26, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_9', code: 'PrPh Red 9', name: 'Primary Phonics: Red 9', description: 'Short E introduction', sequence: 27, category: 'primary_phonics', isActive: true },
+  { id: 'prph_red_10', code: 'PrPh Red 10', name: 'Primary Phonics: Red 10', description: 'All five short vowels mastery', sequence: 28, category: 'primary_phonics', isActive: true },
+  
+  // Blends
+  { id: 'bl_init', code: 'BL/init/', name: 'Initial Blends', description: 'bl, cl, fl, gl, br, cr, dr', sequence: 29, category: 'blends', isActive: true },
+  { id: 'bl_final', code: 'BL/final/', name: 'Final Blends', description: 'nd, nt, nk, mp, ft, lt', sequence: 30, category: 'blends', isActive: true },
 ];
 
 const SCHOOL_NAME = 'Beijing International School';
