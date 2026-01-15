@@ -1,263 +1,307 @@
 // app/admin/schools/[slug]/page.tsx
-// Individual School Dashboard - Connected to Real Data
+// School Dashboard - Tesla Style: Classrooms + Teachers lists
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-interface SchoolStats {
-  classroom_count: number;
-  teacher_count: number;
-  student_count: number;
-}
-
-interface School {
+interface Classroom {
   id: string;
   name: string;
-  slug: string;
-  isOwner: boolean;
-  stats: SchoolStats;
+  teacher?: string;
+  teacherId?: string;
+  studentCount: number;
 }
 
-// Slug to school name mapping
-const SCHOOL_INFO: Record<string, { name: string; isOwner: boolean }> = {
-  'beijing-international': { name: 'Beijing International School', isOwner: true },
+interface Teacher {
+  id: string;
+  name: string;
+  email?: string;
+  classroom?: string;
+  classroomId?: string;
+  isActive: boolean;
+}
+
+// Mock data
+const MOCK_CLASSROOMS: Classroom[] = [
+  { id: '1', name: 'Whale Class', teacher: 'Tredoux', teacherId: 't1', studentCount: 12 },
+];
+
+const MOCK_TEACHERS: Teacher[] = [
+  { id: 't1', name: 'Tredoux', email: 'tredoux@school.com', classroom: 'Whale Class', classroomId: '1', isActive: true },
+];
+
+const SCHOOL_NAMES: Record<string, string> = {
+  'beijing-international': 'Beijing International School',
+  'master': 'Master Templates',
 };
 
-export default function SchoolDashboardPage() {
+export default function SchoolPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const [stats, setStats] = useState<SchoolStats>({ classroom_count: 0, teacher_count: 0, student_count: 0 });
-  const [loading, setLoading] = useState(true);
+  const schoolName = SCHOOL_NAMES[slug] || slug;
   
-  const schoolInfo = SCHOOL_INFO[slug];
+  const [tab, setTab] = useState<'classrooms' | 'teachers'>('classrooms');
+  const [classrooms, setClassrooms] = useState<Classroom[]>(MOCK_CLASSROOMS);
+  const [teachers, setTeachers] = useState<Teacher[]>(MOCK_TEACHERS);
+  const [showAddClassroom, setShowAddClassroom] = useState(false);
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const [newClassroomName, setNewClassroomName] = useState('');
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [newTeacherEmail, setNewTeacherEmail] = useState('');
 
-  useEffect(() => {
-    fetchSchoolStats();
-  }, [slug]);
-
-  const fetchSchoolStats = async () => {
-    try {
-      // Fetch real stats from API
-      const res = await fetch(`/api/schools/${slug}/stats`);
-      if (res.ok) {
-        const data = await res.json();
-        setStats({
-          classroom_count: data.classrooms || 0,
-          teacher_count: data.teachers || 0,
-          student_count: data.students || 0,
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch school stats:', err);
-    } finally {
-      setLoading(false);
-    }
+  const addClassroom = () => {
+    if (!newClassroomName.trim()) return;
+    const newClassroom: Classroom = {
+      id: Date.now().toString(),
+      name: newClassroomName.trim(),
+      studentCount: 0,
+    };
+    setClassrooms([...classrooms, newClassroom]);
+    setNewClassroomName('');
+    setShowAddClassroom(false);
   };
 
-  if (!schoolInfo) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🔍</div>
-          <h2 className="text-xl font-bold text-white mb-2">School Not Found</h2>
-          <Link href="/admin/schools" className="text-amber-400 hover:text-amber-300">
-            ← Back to Schools
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const { name, isOwner } = schoolInfo;
+  const addTeacher = () => {
+    if (!newTeacherName.trim()) return;
+    const newTeacher: Teacher = {
+      id: Date.now().toString(),
+      name: newTeacherName.trim(),
+      email: newTeacherEmail.trim() || undefined,
+      isActive: true,
+    };
+    setTeachers([...teachers, newTeacher]);
+    setNewTeacherName('');
+    setNewTeacherEmail('');
+    setShowAddTeacher(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       {/* Header */}
-      <header className={`${isOwner ? 'bg-gradient-to-r from-amber-900/30 to-yellow-900/20' : 'bg-slate-800/50'} backdrop-blur-sm border-b border-slate-700 sticky top-0 z-20`}>
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin/schools" className="text-slate-400 hover:text-white transition-colors text-sm">
+      <header className="border-b border-slate-800">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Link href="/admin/schools" className="text-slate-500 hover:text-white text-sm">
               ← Schools
             </Link>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${isOwner ? 'bg-gradient-to-br from-amber-500 to-yellow-500' : 'bg-slate-700'}`}>
-              <span className="text-2xl">{isOwner ? '🐋' : '🏫'}</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white">{name}</h1>
-                {isOwner && (
-                  <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold">
-                    YOUR SCHOOL
-                  </span>
-                )}
-              </div>
-              <p className="text-slate-400 text-sm">School Dashboard</p>
-            </div>
+            <span className="text-slate-700">/</span>
+            <h1 className="text-white font-medium">{schoolName}</h1>
+          </div>
+          
+          {/* Tabs */}
+          <div className="flex gap-6">
+            <button
+              onClick={() => setTab('classrooms')}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                tab === 'classrooms' 
+                  ? 'text-white border-white' 
+                  : 'text-slate-500 border-transparent hover:text-slate-300'
+              }`}
+            >
+              Classrooms ({classrooms.length})
+            </button>
+            <button
+              onClick={() => setTab('teachers')}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                tab === 'teachers' 
+                  ? 'text-white border-white' 
+                  : 'text-slate-500 border-transparent hover:text-slate-300'
+              }`}
+            >
+              Teachers ({teachers.length})
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6">
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <Link href={`/admin/schools/${slug}/classrooms`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
-              {loading ? '...' : stats.classroom_count}
-            </div>
-            <div className="text-slate-400 mt-1">Classrooms</div>
-          </Link>
-          <Link href={`/admin/schools/${slug}/teachers`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
-              {loading ? '...' : stats.teacher_count}
-            </div>
-            <div className="text-slate-400 mt-1">Teachers</div>
-          </Link>
-          <Link href={`/admin/schools/${slug}/students`} className={`rounded-xl p-5 transition-all hover:scale-[1.02] ${isOwner ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'}`}>
-            <div className={`text-4xl font-bold ${isOwner ? 'text-amber-400' : 'text-white'}`}>
-              {loading ? '...' : stats.student_count}
-            </div>
-            <div className="text-slate-400 mt-1">Students</div>
-          </Link>
-        </div>
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-6 py-6">
+        
+        {/* CLASSROOMS TAB */}
+        {tab === 'classrooms' && (
+          <div>
+            {/* Add Button */}
+            {!showAddClassroom ? (
+              <button
+                onClick={() => setShowAddClassroom(true)}
+                className="w-full py-3 border border-dashed border-slate-700 rounded-lg text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-colors text-sm mb-4"
+              >
+                + Add Classroom
+              </button>
+            ) : (
+              <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4">
+                <input
+                  type="text"
+                  placeholder="Classroom name (e.g., Whale Class)"
+                  value={newClassroomName}
+                  onChange={(e) => setNewClassroomName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addClassroom()}
+                  autoFocus
+                  className="w-full bg-transparent border-none text-white placeholder-slate-600 focus:outline-none mb-3"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={addClassroom}
+                    className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-slate-200"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => { setShowAddClassroom(false); setNewClassroomName(''); }}
+                    className="px-4 py-2 text-slate-500 text-sm hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
 
-        {/* Curriculum Section */}
-        <section className="mb-8">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Curriculum</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link
-              href={`/admin/schools/${slug}/curriculum`}
-              className="group bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📚</div>
-              <h3 className="text-lg font-bold text-white">Curriculum</h3>
-              <p className="text-white/70 text-sm mt-1">Customize works for this school</p>
-            </Link>
-            
-            <Link
-              href={`/admin/schools/${slug}/english`}
-              className="group bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-red-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">🔤</div>
-              <h3 className="text-lg font-bold text-white">English Progression</h3>
-              <p className="text-white/70 text-sm mt-1">WBW/a/, WBW/e/ sequence</p>
-            </Link>
-            
-            <Link
-              href="/admin/weekly-planning"
-              className="group bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📅</div>
-              <h3 className="text-lg font-bold text-white">Weekly Planning</h3>
-              <p className="text-white/70 text-sm mt-1">Upload & manage plans</p>
-            </Link>
-          </div>
-        </section>
+            {/* Classrooms List */}
+            <div className="divide-y divide-slate-800">
+              {classrooms.map((classroom) => (
+                <Link
+                  key={classroom.id}
+                  href={`/admin/schools/${slug}/classrooms/${classroom.id}`}
+                  className="flex items-center justify-between py-4 hover:bg-slate-900/50 -mx-4 px-4 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div>
+                      <span className="text-white font-medium">{classroom.name}</span>
+                      {classroom.teacher && (
+                        <span className="text-slate-500 text-sm ml-3">
+                          {classroom.teacher}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-500 text-sm">{classroom.studentCount} students</span>
+                    <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              ))}
+            </div>
 
-        {/* Teaching Tools Section */}
-        <section className="mb-8">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Teaching Tools</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link
-              href="/admin/classroom"
-              className="group bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">🎯</div>
-              <h3 className="text-lg font-bold text-white">Classroom View</h3>
-              <p className="text-white/70 text-sm mt-1">iPad-friendly tracking</p>
-            </Link>
-            
-            <Link
-              href={`/admin/schools/${slug}/english-reports`}
-              className="group bg-gradient-to-br from-teal-500 to-cyan-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📝</div>
-              <h3 className="text-lg font-bold text-white">English Reports</h3>
-              <p className="text-white/70 text-sm mt-1">Weekly auto-generated</p>
-            </Link>
-            
-            <Link
-              href="/admin/english-progress"
-              className="group bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📊</div>
-              <h3 className="text-lg font-bold text-white">English Progress</h3>
-              <p className="text-white/70 text-sm mt-1">Parent journey view</p>
-            </Link>
+            {classrooms.length === 0 && (
+              <p className="text-slate-600 text-center py-8">No classrooms yet</p>
+            )}
           </div>
-        </section>
+        )}
 
-        {/* Management Section */}
-        <section className="mb-8">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Management</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              href="/principal"
-              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
-            >
-              <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-2xl">👔</div>
-              <div>
-                <h3 className="font-bold text-white">Principal</h3>
-                <p className="text-sm text-slate-400">Overview</p>
+        {/* TEACHERS TAB */}
+        {tab === 'teachers' && (
+          <div>
+            {/* Add Button */}
+            {!showAddTeacher ? (
+              <button
+                onClick={() => setShowAddTeacher(true)}
+                className="w-full py-3 border border-dashed border-slate-700 rounded-lg text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-colors text-sm mb-4"
+              >
+                + Add Teacher
+              </button>
+            ) : (
+              <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4">
+                <input
+                  type="text"
+                  placeholder="Teacher name"
+                  value={newTeacherName}
+                  onChange={(e) => setNewTeacherName(e.target.value)}
+                  autoFocus
+                  className="w-full bg-transparent border-none text-white placeholder-slate-600 focus:outline-none mb-2"
+                />
+                <input
+                  type="email"
+                  placeholder="Email (optional)"
+                  value={newTeacherEmail}
+                  onChange={(e) => setNewTeacherEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addTeacher()}
+                  className="w-full bg-transparent border-none text-white placeholder-slate-600 focus:outline-none mb-3"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={addTeacher}
+                    className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-slate-200"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => { setShowAddTeacher(false); setNewTeacherName(''); setNewTeacherEmail(''); }}
+                    className="px-4 py-2 text-slate-500 text-sm hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            </Link>
-            
-            <Link
-              href={`/admin/schools/${slug}/classrooms`}
-              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
-            >
-              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">🏫</div>
-              <div>
-                <h3 className="font-bold text-white">Classrooms</h3>
-                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.classroom_count} classes`}</p>
-              </div>
-            </Link>
-            
-            <Link
-              href={`/admin/schools/${slug}/teachers`}
-              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
-            >
-              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl">👩‍🏫</div>
-              <div>
-                <h3 className="font-bold text-white">Teachers</h3>
-                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.teacher_count} teachers`}</p>
-              </div>
-            </Link>
-            
-            <Link
-              href={`/admin/schools/${slug}/students`}
-              className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors"
-            >
-              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">👶</div>
-              <div>
-                <h3 className="font-bold text-white">Students</h3>
-                <p className="text-sm text-slate-400">{loading ? '...' : `${stats.student_count} students`}</p>
-              </div>
-            </Link>
+            )}
+
+            {/* Teachers List */}
+            <div className="divide-y divide-slate-800">
+              {teachers.map((teacher) => (
+                <div
+                  key={teacher.id}
+                  className="flex items-center justify-between py-4 -mx-4 px-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-2 h-2 rounded-full ${teacher.isActive ? 'bg-green-500' : 'bg-slate-600'}`} />
+                    <div>
+                      <span className="text-white font-medium">{teacher.name}</span>
+                      {teacher.email && (
+                        <span className="text-slate-600 text-sm ml-3">{teacher.email}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {teacher.classroom ? (
+                      <span className="text-slate-500 text-sm">{teacher.classroom}</span>
+                    ) : (
+                      <select className="bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm text-slate-400 focus:outline-none">
+                        <option value="">Assign to classroom...</option>
+                        {classrooms.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {teachers.length === 0 && (
+              <p className="text-slate-600 text-center py-8">No teachers yet</p>
+            )}
           </div>
-        </section>
+        )}
 
         {/* Quick Links */}
-        <section>
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Quick Links</h2>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/admin/card-generator" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-slate-600 hover:text-white transition-colors">
-              🃏 3-Part Cards
+        <div className="mt-12 pt-8 border-t border-slate-800">
+          <p className="text-slate-600 text-xs uppercase tracking-wider mb-4">School Settings</p>
+          <div className="flex gap-4">
+            <Link 
+              href={`/admin/schools/${slug}/curriculum`}
+              className="text-slate-500 hover:text-white text-sm transition-colors"
+            >
+              School Curriculum →
             </Link>
-            <Link href="/admin/material-generator" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-slate-600 hover:text-white transition-colors">
-              🖨️ Materials
+            <Link 
+              href={`/admin/schools/${slug}/english`}
+              className="text-slate-500 hover:text-white text-sm transition-colors"
+            >
+              English Sequence →
             </Link>
-            <Link href="/admin/english-guide" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-slate-600 hover:text-white transition-colors">
-              📖 English Guide
-            </Link>
-            <Link href="/admin/circle-planner" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:border-slate-600 hover:text-white transition-colors">
-              ⭕ Circle Time
+            <Link 
+              href={`/admin/schools/${slug}/settings`}
+              className="text-slate-500 hover:text-white text-sm transition-colors"
+            >
+              Settings →
             </Link>
           </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
