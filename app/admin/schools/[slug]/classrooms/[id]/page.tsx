@@ -79,6 +79,12 @@ export default function ClassroomPage() {
             📝 Weekly Reports
           </Link>
           <Link
+            href={`/admin/schools/${slug}/newsletter`}
+            className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm text-amber-400 hover:border-amber-500/50 transition-colors whitespace-nowrap"
+          >
+            📰 Newsletter
+          </Link>
+          <Link
             href={`/admin/schools/${slug}/english`}
             className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white hover:border-slate-700 transition-colors whitespace-nowrap"
           >

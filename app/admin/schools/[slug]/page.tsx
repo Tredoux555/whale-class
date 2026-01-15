@@ -140,27 +140,42 @@ export default function SchoolPage() {
         {tab === 'teachers' && (
           <div className="divide-y divide-slate-800">
             {teachers.map((teacher) => (
-              <div key={teacher.id} className="flex items-center justify-between py-4 -mx-4 px-4">
-                <div className="flex items-center gap-4">
-                  <div className={`w-2 h-2 rounded-full ${teacher.isActive ? 'bg-green-500' : 'bg-slate-700'}`} />
-                  <div>
-                    <span className="text-white font-medium">{teacher.name}</span>
-                    {teacher.role === 'owner' && (
-                      <span className="ml-2 px-2 py-0.5 bg-teal-500/20 text-teal-400 text-xs rounded">Owner</span>
-                    )}
-                    {!teacher.isActive && (
+              teacher.classroomId ? (
+                <Link
+                  key={teacher.id}
+                  href={`/admin/schools/${slug}/classrooms/${teacher.classroomId}`}
+                  className="flex items-center justify-between py-4 -mx-4 px-4 rounded-lg transition-colors hover:bg-slate-900/50 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-2 h-2 rounded-full ${teacher.isActive ? 'bg-green-500' : 'bg-slate-700'}`} />
+                    <div>
+                      <span className="text-white font-medium">{teacher.name}</span>
+                      {teacher.role === 'owner' && (
+                        <span className="ml-2 px-2 py-0.5 bg-teal-500/20 text-teal-400 text-xs rounded">Owner</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-500 text-sm">{teacher.classroom}</span>
+                    <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              ) : (
+                <div key={teacher.id} className="flex items-center justify-between py-4 -mx-4 px-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-2 h-2 rounded-full bg-slate-700" />
+                    <div>
+                      <span className="text-white font-medium">{teacher.name}</span>
                       <span className="ml-2 text-slate-600 text-xs">Inactive</span>
-                    )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-600 text-sm">Unassigned</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  {teacher.classroom ? (
-                    <span className="text-slate-500 text-sm">{teacher.classroom}</span>
-                  ) : (
-                    <span className="text-slate-600 text-sm">Unassigned</span>
-                  )}
-                </div>
-              </div>
+              )
             ))}
           </div>
         )}
