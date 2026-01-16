@@ -28,12 +28,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Get children for this school, ordered by display_order
+    // Get children for this school
     const { data: children, error } = await supabase
       .from('children')
-      .select('id, name, display_order, active_status, date_of_birth')
+      .select('id, name, date_of_birth')
       .eq('school_id', school.id)
-      .order('display_order', { ascending: true });
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('Children query error:', error);

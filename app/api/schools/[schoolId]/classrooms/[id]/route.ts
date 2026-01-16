@@ -71,12 +71,12 @@ export async function GET(
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
     }
 
-    // 3. Get students from children table, ordered by display_order
+    // 3. Get students from children table
     const { data: students, error: studentsError } = await supabase
       .from('children')
-      .select('id, name, display_order, date_of_birth')
+      .select('id, name, date_of_birth')
       .eq('school_id', school.id)
-      .order('display_order', { ascending: true });
+      .order('name', { ascending: true });
 
     if (studentsError) {
       console.error('Students query error:', studentsError);
