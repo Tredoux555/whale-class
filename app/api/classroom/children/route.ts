@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
       .from('children')
       .select('id, name, display_order, active_status, date_of_birth')
       .eq('school_id', school.id)
-      .eq('active_status', true)
       .order('display_order', { ascending: true });
 
     if (error) {
