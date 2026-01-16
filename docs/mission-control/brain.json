@@ -1,0 +1,112 @@
+{
+  "CORE_LAWS": {
+    "1_MONTREE_IS_TRUTH": "The /schools/ tree (Montree) is THE source of truth. Everything else is noise.",
+    "2_ADMIN_IS_PET": "The /admin/ system is Tredoux's personal sandbox. NOT the product.",
+    "3_PORTABLE_BY_DESIGN": "Montree can be cut clean and migrated to any domain at any time.",
+    "4_DATABASE_FIRST": "All data lives in Supabase. Frontend just displays it.",
+    "5_MULTI_TENANT_ALWAYS": "Every feature must work for ANY school, not just Beijing International."
+  },
+
+  "project": "Montree - Multi-tenant Montessori Platform",
+  "codename": "Whale (legacy)",
+  "lastUpdated": "2026-01-16T23:45:00+08:00",
+  "currentSession": "Session 37 - Montree Architecture Established",
+  
+  "MONTREE": {
+    "definition": "The /schools/ tree - a portable, multi-tenant school management system",
+    "rootPath": "/schools/",
+    "productionUrl": "https://www.teacherpotato.xyz/schools/",
+    "futureUrl": "TBD - will be its own domain when ready",
+    "status": "🌱 PLANTED - Basic structure deployed"
+  },
+
+  "ARCHITECTURE": {
+    "hierarchy": [
+      "/schools/                              → Platform root (all schools)",
+      "/schools/[slug]/                       → School dashboard",
+      "/schools/[slug]/classrooms/            → School's classrooms",
+      "/schools/[slug]/classrooms/[id]/       → Classroom view (students)",
+      "/schools/[slug]/students/[id]/         → Student detail (future)",
+      "/schools/[slug]/teachers/              → Teacher management (future)"
+    ],
+    "apiPattern": "/api/schools/[schoolId]/...",
+    "principle": "URL structure mirrors data hierarchy"
+  },
+
+  "DATABASE_SCHEMA": {
+    "schools": {
+      "purpose": "Tenants",
+      "key_fields": ["id", "name", "slug"],
+      "current_records": 1
+    },
+    "children": {
+      "purpose": "Students",
+      "key_fields": ["id", "name", "school_id", "date_of_birth"],
+      "needs_migration": ["display_order", "classroom_id"],
+      "current_records": 18
+    },
+    "classrooms": {
+      "purpose": "Classes within schools",
+      "key_fields": ["id", "name", "school_id"],
+      "status": "needs setup"
+    },
+    "teachers": {
+      "purpose": "Teachers linked to classrooms",
+      "status": "future"
+    }
+  },
+
+  "FIRST_TENANT": {
+    "name": "Beijing International School",
+    "slug": "beijing-international",
+    "id": "772b08f1-4e56-4ea6-83b5-21aa8f079b35",
+    "classroom": "Whale Class",
+    "students": 18,
+    "student_order": [
+      "Rachel", "Yueze", "Lucky", "Austin", "Minxi", "Leo",
+      "Joey", "Eric", "Jimmy", "Kevin", "Niuniu", "Amy",
+      "Henry", "Segina", "Hayden", "KK", "Kayla", "Stella"
+    ]
+  },
+
+  "LEGACY_ADMIN": {
+    "status": "PET PROJECT",
+    "path": "/admin/",
+    "note": "Tredoux's personal sandbox. NOT Montree. NOT the product.",
+    "migration": "Useful features may be ported to Montree over time"
+  },
+
+  "MIGRATION_STATUS": {
+    "from_admin_to_montree": {
+      "students_list": "✅ Using same children table",
+      "display_order": "⏳ Column needs to be added",
+      "progress_tracking": "⏳ To be implemented in Montree",
+      "english_reports": "⏳ To be ported from admin",
+      "teacher_dashboard": "⏳ To be rebuilt for Montree"
+    }
+  },
+
+  "NEXT_PRIORITIES": [
+    "1. Verify /schools/ deployment works",
+    "2. Add display_order column to children table",
+    "3. Build /schools/[slug]/students/[id] detail page",
+    "4. Port progress tracking to Montree",
+    "5. Add teacher authentication for Montree"
+  ],
+
+  "CREDENTIALS": {
+    "note": "For Montree, auth will be school-scoped",
+    "current_test": {
+      "name": "Tredoux",
+      "role": "Platform Owner + Beijing School Admin + Whale Teacher"
+    }
+  },
+
+  "SESSION_PROTOCOL": {
+    "1_READ_BRAIN": "Always read this file first",
+    "2_READ_HANDOFF": "Check latest HANDOFF_*.md",
+    "3_MONTREE_FIRST": "Work on /schools/ tree, not /admin/",
+    "4_DATABASE_CHANGES": "Document all schema changes",
+    "5_HANDOFF_ALWAYS": "Write handoff at session end"
+  }
+}
