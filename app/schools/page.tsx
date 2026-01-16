@@ -1,6 +1,7 @@
 // /schools/page.tsx
-// THE ROOT - All schools in the platform
+// THE ROOT - All schools in the platform (MONTREE)
 // This is the entry point. The stem from which all branches grow.
+// Last rebuild: Jan 17, 2026
 'use client';
 
 import { useState, useEffect } from 'react';
