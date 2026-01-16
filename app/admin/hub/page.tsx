@@ -1,8 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+
+// SECURITY: Only Tredoux can access this page
+function useAuthCheck() {
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
+  
+  useEffect(() => {
+    const teacher = localStorage.getItem('teacherName');
+    if (teacher !== 'Tredoux') {
+      router.push('/teacher/dashboard');
+    } else {
+      setAuthorized(true);
+    }
+  }, [router]);
+  
+  return authorized;
+}
 
 interface ChildMedia {
   id: string;
@@ -34,6 +52,7 @@ const AREAS = [
 ];
 
 export default function ClassroomHubPage() {
+  const authorized = useAuthCheck();
   const [activeTab, setActiveTab] = useState<'today' | 'shelves' | 'media'>('today');
   const [todayMedia, setTodayMedia] = useState<ChildMedia[]>([]);
   const [allMedia, setAllMedia] = useState<ChildMedia[]>([]);
@@ -152,6 +171,15 @@ export default function ClassroomHubPage() {
     const date = new Date(dateStr);
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
+
+  // SECURITY: Block unauthorized access
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
