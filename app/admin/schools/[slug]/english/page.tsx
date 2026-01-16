@@ -1,9 +1,8 @@
 // app/admin/schools/[slug]/english/page.tsx
-// English Progression Management - The Key Page!
-// This is where you define WBW/a/, WBW/e/, etc. and their order
+// English Progression Management - With Inline Editing
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -27,35 +26,26 @@ const CATEGORIES = {
   phonograms: { name: 'Phonograms', icon: '🟢', color: 'bg-green-500', bgLight: 'bg-green-500/20' },
 };
 
-// Default English works sequence
+// Default English works
 const DEFAULT_WORKS: EnglishWork[] = [
-  // Sound Games
   { id: 'bs', code: 'BS', name: 'Beginning Sounds', description: 'I Spy with beginning sounds', sequence: 1, category: 'sound_games', isActive: true },
   { id: 'es', code: 'ES', name: 'Ending Sounds', description: 'I Spy with ending sounds', sequence: 2, category: 'sound_games', isActive: true },
   { id: 'ms', code: 'MS', name: 'Middle Sounds', description: 'Identifying middle vowel sounds', sequence: 3, category: 'sound_games', isActive: true },
-  
-  // Word Building (WBW)
   { id: 'wbw_a', code: 'WBW/a/', name: 'Word Building: Short A', description: 'cat, hat, bat, mat', sequence: 4, category: 'word_building', isActive: true },
   { id: 'wbw_e', code: 'WBW/e/', name: 'Word Building: Short E', description: 'pen, bed, red, hen', sequence: 5, category: 'word_building', isActive: true },
   { id: 'wbw_i', code: 'WBW/i/', name: 'Word Building: Short I', description: 'pin, sit, bit, pig', sequence: 6, category: 'word_building', isActive: true },
   { id: 'wbw_o', code: 'WBW/o/', name: 'Word Building: Short O', description: 'hot, pot, dog, log', sequence: 7, category: 'word_building', isActive: true },
   { id: 'wbw_u', code: 'WBW/u/', name: 'Word Building: Short U', description: 'cup, bus, sun, fun', sequence: 8, category: 'word_building', isActive: true },
-  
-  // Word Family Work (WFW)
   { id: 'wfw_a', code: 'WFW/a/', name: 'Word Family: Short A', description: '-at, -an, -ap, -ad families', sequence: 9, category: 'word_family', isActive: true },
   { id: 'wfw_e', code: 'WFW/e/', name: 'Word Family: Short E', description: '-en, -et, -ed, -eg families', sequence: 10, category: 'word_family', isActive: true },
   { id: 'wfw_i', code: 'WFW/i/', name: 'Word Family: Short I', description: '-in, -it, -ip, -ig families', sequence: 11, category: 'word_family', isActive: true },
   { id: 'wfw_o', code: 'WFW/o/', name: 'Word Family: Short O', description: '-ot, -op, -og, -ob families', sequence: 12, category: 'word_family', isActive: true },
   { id: 'wfw_u', code: 'WFW/u/', name: 'Word Family: Short U', description: '-un, -ut, -ug, -ub families', sequence: 13, category: 'word_family', isActive: true },
-  
-  // Pink Reading (PR)
   { id: 'pr_a', code: 'PR/a/', name: 'Pink Reading: Short A', description: 'Reading CVC with short A', sequence: 14, category: 'reading', isActive: true },
   { id: 'pr_e', code: 'PR/e/', name: 'Pink Reading: Short E', description: 'Reading CVC with short E', sequence: 15, category: 'reading', isActive: true },
   { id: 'pr_i', code: 'PR/i/', name: 'Pink Reading: Short I', description: 'Reading CVC with short I', sequence: 16, category: 'reading', isActive: true },
   { id: 'pr_o', code: 'PR/o/', name: 'Pink Reading: Short O', description: 'Reading CVC with short O', sequence: 17, category: 'reading', isActive: true },
   { id: 'pr_u', code: 'PR/u/', name: 'Pink Reading: Short U', description: 'Reading CVC with short U', sequence: 18, category: 'reading', isActive: true },
-  
-  // Primary Phonics Red Series
   { id: 'prph_red_1', code: 'PrPh Red 1', name: 'Primary Phonics: Red 1', description: 'Sam, Mac, Nat stories', sequence: 19, category: 'primary_phonics', isActive: true },
   { id: 'prph_red_2', code: 'PrPh Red 2', name: 'Primary Phonics: Red 2', description: 'Continuing short A', sequence: 20, category: 'primary_phonics', isActive: true },
   { id: 'prph_red_3', code: 'PrPh Red 3', name: 'Primary Phonics: Red 3', description: 'Short I introduction', sequence: 21, category: 'primary_phonics', isActive: true },
@@ -66,22 +56,171 @@ const DEFAULT_WORKS: EnglishWork[] = [
   { id: 'prph_red_8', code: 'PrPh Red 8', name: 'Primary Phonics: Red 8', description: 'All short vowels', sequence: 26, category: 'primary_phonics', isActive: true },
   { id: 'prph_red_9', code: 'PrPh Red 9', name: 'Primary Phonics: Red 9', description: 'Short E introduction', sequence: 27, category: 'primary_phonics', isActive: true },
   { id: 'prph_red_10', code: 'PrPh Red 10', name: 'Primary Phonics: Red 10', description: 'All five short vowels mastery', sequence: 28, category: 'primary_phonics', isActive: true },
-  
-  // Blends
   { id: 'bl_init', code: 'BL/init/', name: 'Initial Blends', description: 'bl, cl, fl, gl, br, cr, dr', sequence: 29, category: 'blends', isActive: true },
   { id: 'bl_final', code: 'BL/final/', name: 'Final Blends', description: 'nd, nt, nk, mp, ft, lt', sequence: 30, category: 'blends', isActive: true },
 ];
 
-const SCHOOL_NAME = 'Beijing International School';
+// School ID mapping
+const SCHOOL_IDS: Record<string, string> = {
+  'beijing-international': '00000000-0000-0000-0000-000000000001',
+};
 
 export default function SchoolEnglishPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const schoolId = SCHOOL_IDS[slug] || slug;
   
   const [works, setWorks] = useState<EnglishWork[]>(DEFAULT_WORKS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isDefault, setIsDefault] = useState(true);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  
+  // Editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editField, setEditField] = useState<'name' | 'description' | 'code' | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [originalValue, setOriginalValue] = useState('');
+  const editInputRef = useRef<HTMLInputElement>(null);
+
+  // Load works from database
+  useEffect(() => {
+    loadWorks();
+  }, [schoolId]);
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingId, editField]);
+
+  const loadWorks = async () => {
+    try {
+      const res = await fetch(`/api/schools/${schoolId}/english-works`);
+      const data = await res.json();
+      
+      setIsDefault(data.is_default === true);
+      
+      if (data.works && data.works.length > 0) {
+        // Map database fields to our format
+        const mappedWorks = data.works.map((w: any) => ({
+          id: w.id || w.work_code || w.code,
+          code: w.work_code || w.code,
+          name: w.work_name || w.name,
+          description: w.description,
+          sequence: w.sequence,
+          category: w.category || 'other',
+          isActive: w.is_active !== false,
+        }));
+        setWorks(mappedWorks);
+      }
+    } catch (error) {
+      console.error('Failed to load works:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Start editing
+  const startEditing = (work: EnglishWork, field: 'name' | 'description' | 'code') => {
+    const value = field === 'name' ? work.name : field === 'description' ? (work.description || '') : work.code;
+    setEditingId(work.id);
+    setEditField(field);
+    setEditValue(value);
+    setOriginalValue(value);
+  };
+
+  // Save edit
+  const saveEdit = async () => {
+    if (!editingId || !editField || editValue === originalValue) {
+      cancelEdit();
+      return;
+    }
+    
+    const work = works.find(w => w.id === editingId);
+    if (!work) return;
+
+    // Update local state immediately
+    const updatedWorks = works.map(w => {
+      if (w.id === editingId) {
+        return {
+          ...w,
+          [editField]: editValue,
+        };
+      }
+      return w;
+    });
+    setWorks(updatedWorks);
+
+    // Clear editing state
+    const savedField = editField;
+    const savedValue = editValue;
+    const savedSequence = work.sequence;
+    const savedOldCode = work.code;
+    setEditingId(null);
+    setEditField(null);
+
+    // Save to database - use sequence to find the work (most reliable)
+    setSaving(true);
+    try {
+      const updateData: any = { sequence: savedSequence };
+      if (savedField === 'name') updateData.name = savedValue;
+      if (savedField === 'description') updateData.description = savedValue;
+      if (savedField === 'code') {
+        updateData.code = savedValue;
+        updateData.old_code = savedOldCode;
+      }
+
+      const res = await fetch(`/api/schools/${schoolId}/english-works`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
+      
+      if (res.ok) {
+        setSaveMessage('✓ Saved');
+        setTimeout(() => setSaveMessage(null), 2000);
+        // If we were using defaults, we need to save all works first
+        if (isDefault) {
+          await saveAllWorks(updatedWorks);
+          setIsDefault(false);
+        }
+      } else {
+        const err = await res.json();
+        console.error('Save error:', err);
+        setSaveMessage('⚠ Save failed');
+        setTimeout(() => setSaveMessage(null), 3000);
+      }
+    } catch (error) {
+      console.error('Save failed:', error);
+      setSaveMessage('⚠ Save failed');
+      setTimeout(() => setSaveMessage(null), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Cancel edit
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditField(null);
+    setEditValue('');
+    setOriginalValue('');
+  };
+
+  // Handle key press in edit input
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveEdit();
+    } else if (e.key === 'Escape') {
+      cancelEdit();
+    }
+  };
 
   // Drag handlers
   const handleDragStart = (index: number) => setDraggedIndex(index);
@@ -99,18 +238,72 @@ export default function SchoolEnglishPage() {
     setDraggedIndex(index);
   };
 
-  const handleDragEnd = () => setDraggedIndex(null);
-
-  const toggleActive = (id: string) => {
-    setWorks(prev => prev.map(w => w.id === id ? { ...w, isActive: !w.isActive } : w));
+  const handleDragEnd = async () => {
+    setDraggedIndex(null);
+    await saveAllWorks(works);
   };
 
-  const deleteWork = (id: string) => {
-    if (confirm('Remove this work from the progression?')) {
-      setWorks(prev => {
-        const filtered = prev.filter(w => w.id !== id);
-        return filtered.map((w, i) => ({ ...w, sequence: i + 1 }));
+  const toggleActive = async (id: string) => {
+    const work = works.find(w => w.id === id);
+    if (!work) return;
+    
+    const updatedWorks = works.map(w => w.id === id ? { ...w, isActive: !w.isActive } : w);
+    setWorks(updatedWorks);
+    
+    // Save to database
+    setSaving(true);
+    try {
+      if (isDefault) {
+        await saveAllWorks(updatedWorks);
+        setIsDefault(false);
+      } else {
+        await fetch(`/api/schools/${schoolId}/english-works`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sequence: work.sequence, is_active: !work.isActive }),
+        });
+      }
+      setSaveMessage('✓ Saved');
+      setTimeout(() => setSaveMessage(null), 2000);
+    } catch (error) {
+      console.error('Toggle failed:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteWork = async (id: string) => {
+    if (!confirm('Remove this work from the progression?')) return;
+    
+    const updatedWorks = works.filter(w => w.id !== id).map((w, i) => ({ ...w, sequence: i + 1 }));
+    setWorks(updatedWorks);
+    await saveAllWorks(updatedWorks);
+  };
+
+  const saveAllWorks = async (worksToSave: EnglishWork[] = works) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/schools/${schoolId}/english-works`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ works: worksToSave.map(w => ({
+          code: w.code,
+          name: w.name,
+          description: w.description,
+          category: w.category,
+          is_active: w.isActive,
+        })) }),
       });
+      
+      if (res.ok) {
+        setSaveMessage('✓ Saved');
+        setIsDefault(false);
+        setTimeout(() => setSaveMessage(null), 2000);
+      }
+    } catch (error) {
+      console.error('Save all failed:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -120,6 +313,14 @@ export default function SchoolEnglishPage() {
     : works.filter(w => w.category === filterCategory);
 
   const activeCount = works.filter(w => w.isActive).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -135,26 +336,35 @@ export default function SchoolEnglishPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">English Progression</h1>
-              <p className="text-slate-400 text-sm">Drag to reorder</p>
+              <p className="text-slate-400 text-sm">Click text to edit • Drag to reorder</p>
             </div>
           </div>
           
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-400 transition-colors text-sm"
-          >
-            + Add Work
-          </button>
+          <div className="flex items-center gap-3">
+            {saveMessage && (
+              <span className={`text-sm ${saveMessage.includes('✓') ? 'text-green-400' : 'text-amber-400'}`}>
+                {saveMessage}
+              </span>
+            )}
+            {saving && (
+              <span className="text-sm text-slate-400">Saving...</span>
+            )}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-400 transition-colors text-sm"
+            >
+              + Add Work
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto p-6">
         {/* Info */}
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
-          <p className="text-red-200 text-sm">
-            <strong className="text-red-400">English Works Sequence</strong> — 
-            This defines the order children progress through English. Used for weekly reports.
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
+          <p className="text-amber-200 text-sm">
+            <strong className="text-amber-400">✏️ Click to Edit:</strong> Click any code, name, or description to edit it inline. Press <kbd className="bg-slate-700 px-1.5 py-0.5 rounded text-xs">Enter</kbd> to save, <kbd className="bg-slate-700 px-1.5 py-0.5 rounded text-xs">Esc</kbd> to cancel. Changes sync to database instantly.
           </p>
         </div>
 
@@ -185,24 +395,25 @@ export default function SchoolEnglishPage() {
 
         {/* Works List */}
         <div className="space-y-2">
-          {filteredWorks.map((work, index) => {
-            const cat = CATEGORIES[work.category];
+          {filteredWorks.map((work) => {
+            const cat = CATEGORIES[work.category] || CATEGORIES.word_building;
             const actualIndex = works.findIndex(w => w.id === work.id);
+            const isEditing = editingId === work.id;
             
             return (
               <div
                 key={work.id}
-                draggable
+                draggable={!isEditing}
                 onDragStart={() => handleDragStart(actualIndex)}
                 onDragOver={(e) => handleDragOver(e, actualIndex)}
                 onDragEnd={handleDragEnd}
-                className={`bg-slate-800 border rounded-xl p-4 transition-all cursor-grab active:cursor-grabbing ${
+                className={`bg-slate-800 border rounded-xl p-4 transition-all ${
                   draggedIndex === actualIndex 
-                    ? 'border-red-500 scale-[0.98] opacity-60' 
+                    ? 'border-red-500 scale-[0.98] opacity-60 cursor-grabbing' 
                     : work.isActive 
                     ? 'border-slate-700 hover:border-slate-600' 
                     : 'border-slate-800 opacity-40'
-                }`}
+                } ${isEditing ? '' : 'cursor-grab active:cursor-grabbing'}`}
               >
                 <div className="flex items-center gap-4">
                   {/* Drag Handle */}
@@ -222,14 +433,74 @@ export default function SchoolEnglishPage() {
                     {cat.icon}
                   </div>
                   
-                  {/* Work Info */}
+                  {/* Work Info - Editable */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-amber-400 text-lg">{work.code}</span>
-                      <span className="text-white font-medium truncate">{work.name}</span>
+                      {/* Code - Editable */}
+                      {isEditing && editField === 'code' ? (
+                        <input
+                          ref={editInputRef}
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={saveEdit}
+                          onKeyDown={handleKeyDown}
+                          className="font-mono font-bold text-amber-400 text-lg bg-slate-900 border-2 border-amber-500 rounded px-2 py-0.5 focus:outline-none w-36"
+                        />
+                      ) : (
+                        <span 
+                          onClick={() => startEditing(work, 'code')}
+                          className="font-mono font-bold text-amber-400 text-lg cursor-text hover:bg-amber-500/20 rounded px-1 -mx-1 transition-colors"
+                          title="Click to edit code"
+                        >
+                          {work.code}
+                        </span>
+                      )}
+                      
+                      {/* Name - Editable */}
+                      {isEditing && editField === 'name' ? (
+                        <input
+                          ref={editInputRef}
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={saveEdit}
+                          onKeyDown={handleKeyDown}
+                          className="text-white font-medium bg-slate-900 border-2 border-teal-500 rounded px-2 py-0.5 focus:outline-none flex-1"
+                        />
+                      ) : (
+                        <span 
+                          onClick={() => startEditing(work, 'name')}
+                          className="text-white font-medium truncate cursor-text hover:bg-teal-500/20 rounded px-1 -mx-1 transition-colors"
+                          title="Click to edit name"
+                        >
+                          {work.name}
+                        </span>
+                      )}
                     </div>
-                    {work.description && (
-                      <p className="text-sm text-slate-500 truncate">{work.description}</p>
+                    
+                    {/* Description - Editable */}
+                    {isEditing && editField === 'description' ? (
+                      <input
+                        ref={editInputRef}
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={saveEdit}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Add description..."
+                        className="text-sm text-slate-400 bg-slate-900 border-2 border-blue-500 rounded px-2 py-0.5 focus:outline-none w-full mt-1"
+                      />
+                    ) : (
+                      <p 
+                        onClick={() => startEditing(work, 'description')}
+                        className={`text-sm truncate cursor-text hover:bg-blue-500/20 rounded px-1 -mx-1 mt-0.5 transition-colors ${
+                          work.description ? 'text-slate-500' : 'text-slate-600 italic'
+                        }`}
+                        title="Click to edit description"
+                      >
+                        {work.description || 'Click to add description...'}
+                      </p>
                     )}
                   </div>
                   
@@ -239,8 +510,8 @@ export default function SchoolEnglishPage() {
                       onClick={() => toggleActive(work.id)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         work.isActive 
-                          ? 'bg-green-500/20 text-green-400' 
-                          : 'bg-slate-700 text-slate-500'
+                          ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
+                          : 'bg-slate-700 text-slate-500 hover:bg-slate-600'
                       }`}
                     >
                       {work.isActive ? '✓ Active' : 'Hidden'}
@@ -249,6 +520,7 @@ export default function SchoolEnglishPage() {
                     <button
                       onClick={() => deleteWork(work.id)}
                       className="p-2 text-slate-600 hover:text-red-400 transition-colors"
+                      title="Remove work"
                     >
                       ✕
                     </button>
@@ -274,77 +546,111 @@ export default function SchoolEnglishPage() {
             ))}
           </div>
         </div>
-
-        {/* Save Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-slate-500 text-sm">Changes auto-save when database is connected</p>
-        </div>
       </main>
 
       {/* Add Work Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowAddModal(false)}>
-          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-white mb-4">Add English Work</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Code</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., WBW/a/" 
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Name</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., Word Building: Short A" 
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Category</label>
-                <select className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600">
-                  {Object.entries(CATEGORIES).map(([key, cat]) => (
-                    <option key={key} value={key}>{cat.icon} {cat.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Description (optional)</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., cat, hat, bat, mat" 
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  alert('Will save to database when connected');
-                  setShowAddModal(false);
-                }}
-                className="flex-1 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors font-medium"
-              >
-                Add Work
-              </button>
-            </div>
+        <AddWorkModal 
+          onClose={() => setShowAddModal(false)}
+          onAdd={async (newWork) => {
+            const updatedWorks = [...works, { ...newWork, sequence: works.length + 1, isActive: true }];
+            setWorks(updatedWorks);
+            setShowAddModal(false);
+            await saveAllWorks(updatedWorks);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Add Work Modal Component
+function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: any) => void }) {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('word_building');
+
+  const handleSubmit = () => {
+    if (!code || !name) return;
+    onAdd({
+      id: code.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      code,
+      name,
+      description,
+      category,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700" onClick={e => e.stopPropagation()}>
+        <h2 className="text-xl font-bold text-white mb-4">Add English Work</h2>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Code *</label>
+            <input 
+              type="text" 
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="e.g., WBW/a/" 
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Name *</label>
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Word Building: Short A" 
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Category</label>
+            <select 
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600"
+            >
+              {Object.entries(CATEGORIES).map(([key, cat]) => (
+                <option key={key} value={key}>{cat.icon} {cat.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Description</label>
+            <input 
+              type="text" 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., cat, hat, bat, mat" 
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            />
           </div>
         </div>
-      )}
+        
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!code || !name}
+            className="flex-1 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-400 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Add Work
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
