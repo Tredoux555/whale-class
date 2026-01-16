@@ -1,7 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+// SECURITY: Only Tredoux can access classroom data
+function useAuthCheck() {
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
+  
+  useEffect(() => {
+    const teacher = localStorage.getItem('teacherName');
+    if (teacher !== 'Tredoux') {
+      router.push('/teacher/dashboard');
+    } else {
+      setAuthorized(true);
+    }
+  }, [router]);
+  
+  return authorized;
+}
 
 interface Child {
   id: string;
@@ -17,6 +35,7 @@ interface School {
 }
 
 export default function ClassroomPage() {
+  const authorized = useAuthCheck();
   const [activeTab, setActiveTab] = useState<'classroom' | 'tools'>('classroom');
   const [children, setChildren] = useState<Child[]>([]);
   const [school, setSchool] = useState<School | null>(null);
@@ -43,6 +62,15 @@ export default function ClassroomPage() {
   const filteredChildren = children.filter(child =>
     child.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // SECURITY: Block unauthorized access
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
