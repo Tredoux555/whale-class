@@ -63,3 +63,4 @@ export default function SchoolsPage() {
     </div>
   );
 }
+// Trigger rebuild Sat Jan 17 06:46:37 CST 2026
