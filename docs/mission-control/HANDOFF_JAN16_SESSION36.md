@@ -211,3 +211,33 @@ railway logs --service whale-class | tail -20
 
 *Session ended: 21:50 Beijing Time*
 *Next priority: Fix Railway deployment, then verify classroom page loads*
+
+---
+
+## 🔪 SURGICAL MODE PROTOCOL (NEW)
+
+**Paste this at the START of every new conversation:**
+
+```
+SURGICAL MODE ACTIVE
+
+Before you write ANY code:
+1. Read ~/Desktop/tredoux-OS/brain.json
+2. Read the relevant mission-control files
+3. Tell me what you found and what you plan to do
+4. Wait for my approval
+
+Rules:
+- ONE change at a time
+- Verify each change works before the next
+- NEVER touch authentication, login, or access control
+- If you're unsure, ASK - don't assume
+- Dark theme only for UI
+- No fluff, no show - raw power
+
+If you catch yourself writing more than 50 lines without checking in, STOP.
+
+Current project: [whale/jeffy/guardian]
+```
+
+This protocol exists because Session 36 went off the rails. Hold Claude accountable.
