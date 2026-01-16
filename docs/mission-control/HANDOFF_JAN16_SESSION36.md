@@ -4,6 +4,16 @@
 
 ---
 
+## 🚨 SECURITY FIX APPLIED
+
+**Problem:** Claude changed login redirect from `/teacher/dashboard` to `/admin/classroom`, exposing admin section to all teachers.
+
+**Fix:** Reverted. Teachers now properly redirect to `/teacher/dashboard` after login.
+
+**PERMANENT RULE:** NEVER touch authentication, login flows, or access control without explicit instruction. Only Tredoux has access to /admin and montree. Other teachers have separate restricted access.
+
+---
+
 ## WHAT WE TRIED TO DO
 Rebuild `/admin/classroom` as the primary teacher interface with:
 - Two tabs: Classroom | Tools
@@ -154,6 +164,7 @@ Click → /api/classroom/student/[id]
 
 ## WHAT NOT TO DO
 
+- ❌ **NEVER touch authentication or login redirects** - this protects Tredoux's job
 - ❌ Don't create more migration files
 - ❌ Don't touch `/admin/schools/beijing-international` routes
 - ❌ Don't modify the 18 students in database
