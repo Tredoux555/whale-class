@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         status,
         progress_status,
         notes,
-        children(id, name, avatar_emoji, school_id)
+        children(id, name, avatar_emoji, school_id, display_order)
       `)
       .eq('week_number', weekNumber)
       .eq('year', yearNumber);
@@ -102,6 +102,7 @@ export async function GET(request: NextRequest) {
     const childMap = new Map<string, {
       id: string;
       name: string;
+      display_order: number | null;
       assignments: any[];
     }>();
 
@@ -111,11 +112,13 @@ export async function GET(request: NextRequest) {
 
       const childId = childData.id;
       const childName = childData.name;
+      const displayOrder = childData.display_order;
       
       if (!childMap.has(childId)) {
         childMap.set(childId, {
           id: childId,
           name: childName,
+          display_order: displayOrder,
           assignments: []
         });
       }
@@ -134,9 +137,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Convert to array and sort by name
+    // Convert to array and sort by display_order (from THE STEM), fallback to name
     const children = Array.from(childMap.values())
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => {
+        // Sort by display_order if available, otherwise by name
+        if (a.display_order && b.display_order) {
+          return a.display_order - b.display_order;
+        }
+        return a.name.localeCompare(b.name);
+      });
 
     return NextResponse.json({ 
       children,
