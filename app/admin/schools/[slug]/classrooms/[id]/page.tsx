@@ -1,57 +1,73 @@
 // app/admin/schools/[slug]/classrooms/[id]/page.tsx
-// Classroom Detail - Whale Class with 18 real students
+// Classroom Detail - MULTI-TENANT: Fetches from database
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 interface Student {
   id: string;
   name: string;
-  order: number;
-  currentWork?: string;
+  display_order: number;
+  current_work?: string;
 }
 
-// THE 18 WHALE CLASS STUDENTS - EXACT ORDER
-const WHALE_CLASS_STUDENTS: Student[] = [
-  { id: '1', name: 'Rachel', order: 1, currentWork: 'WFW /e/' },
-  { id: '2', name: 'Yueze', order: 2, currentWork: 'WFW /o/' },
-  { id: '3', name: 'Lucky', order: 3, currentWork: 'WFW /i/' },
-  { id: '4', name: 'Austin', order: 4, currentWork: 'WFW /e/' },
-  { id: '5', name: 'Minxi', order: 5, currentWork: 'WBW 3ptc /e/' },
-  { id: '6', name: 'Leo', order: 6, currentWork: 'WBW 3ptc /e/' },
-  { id: '7', name: 'Joey', order: 7, currentWork: 'WBW Mixed Box 1' },
-  { id: '8', name: 'Eric', order: 8, currentWork: 'WFW /a/' },
-  { id: '9', name: 'Jimmy', order: 9, currentWork: 'WBW /e/' },
-  { id: '10', name: 'Kevin', order: 10, currentWork: 'WBW Mixed Box 1' },
-  { id: '11', name: 'Niuniu', order: 11, currentWork: 'WBW /a/' },
-  { id: '12', name: 'Amy', order: 12, currentWork: 'Sound Games' },
-  { id: '13', name: 'Henry', order: 13, currentWork: 'SPL /a/' },
-  { id: '14', name: 'Segina', order: 14, currentWork: 'Spindle Box' },
-  { id: '15', name: 'Hayden', order: 15, currentWork: 'WBW 3ptc' },
-  { id: '16', name: 'KK', order: 16, currentWork: 'WBW /a/' },
-  { id: '17', name: 'Kayla', order: 17, currentWork: 'I Spy games' },
-  { id: '18', name: 'Stella', order: 18, currentWork: 'I Spy games' },
-];
-
-const CLASSROOM_NAMES: Record<string, string> = {
-  '1': 'Whale Class',
-  'whale': 'Whale Class',
-};
+interface Classroom {
+  id: string;
+  name: string;
+  school_id: string;
+}
 
 export default function ClassroomPage() {
   const params = useParams();
   const slug = params.slug as string;
   const classroomId = params.id as string;
-  const classroomName = CLASSROOM_NAMES[classroomId] || 'Classroom';
   
-  const [students] = useState<Student[]>(WHALE_CLASS_STUDENTS);
+  const [classroom, setClassroom] = useState<Classroom | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    fetchClassroomData();
+  }, [slug, classroomId]);
+
+  async function fetchClassroomData() {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/schools/${slug}/classrooms/${classroomId}`);
+      if (!res.ok) throw new Error('Failed to fetch classroom');
+      const data = await res.json();
+      setClassroom(data.classroom);
+      setStudents(data.students || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filtered = students.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -63,7 +79,7 @@ export default function ClassroomPage() {
               ← Back
             </Link>
             <span className="text-slate-700">/</span>
-            <h1 className="text-white font-medium">{classroomName}</h1>
+            <h1 className="text-white font-medium">{classroom?.name || 'Classroom'}</h1>
             <span className="text-slate-600 text-sm">• {students.length} students</span>
           </div>
         </div>
@@ -115,16 +131,16 @@ export default function ClassroomPage() {
           {filtered.map((student) => (
             <div
               key={student.id}
-              className="flex items-center justify-between py-3 -mx-4 px-4 hover:bg-slate-900/50 rounded-lg"
+              className="flex items-center justify-between py-3 -mx-4 px-4 hover:bg-slate-900/50 rounded-lg cursor-pointer"
             >
               <div className="flex items-center gap-4">
                 <span className="w-6 h-6 bg-slate-800 rounded-full flex items-center justify-center text-xs text-slate-500">
-                  {student.order}
+                  {student.display_order}
                 </span>
                 <span className="text-white font-medium">{student.name}</span>
               </div>
-              {student.currentWork && (
-                <span className="text-slate-500 text-sm">{student.currentWork}</span>
+              {student.current_work && (
+                <span className="text-slate-500 text-sm">{student.current_work}</span>
               )}
             </div>
           ))}
@@ -132,7 +148,7 @@ export default function ClassroomPage() {
 
         {filtered.length === 0 && (
           <p className="text-slate-600 text-center py-8">
-            {search ? 'No students match your search' : 'No students'}
+            {search ? 'No students match your search' : 'No students in this classroom'}
           </p>
         )}
       </div>
