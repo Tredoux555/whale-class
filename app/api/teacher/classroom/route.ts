@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
   if (currentTeacher === 'Tredoux') {
     const { data: children, error } = await supabase
       .from('children')
-      .select('id, name, date_of_birth, age_group, photo_url, display_order')
+      .select('id, name, date_of_birth, age_group, photo_url')
       .eq('school_id', BEIJING_SCHOOL_ID)
-      .order('display_order', { ascending: true });
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('Error fetching STEM children:', error);
