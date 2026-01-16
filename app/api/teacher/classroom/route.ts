@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
+// THE STEM school ID - Beijing International School
+const BEIJING_SCHOOL_ID = '772b08f1-4e56-4ea6-83b5-21aa8f079b35';
+
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,21 +15,43 @@ function getSupabase() {
 export async function GET(request: NextRequest) {
   const supabase = getSupabase();
   
-  // Get teacher name from cookie (set during login)
+  // Get teacher name from cookie or query param
   const cookieStore = await cookies();
   const teacherName = cookieStore.get('teacherName')?.value;
-  
-  // Also check query param for flexibility
   const { searchParams } = new URL(request.url);
   const queryTeacher = searchParams.get('teacher');
-  
   const currentTeacher = teacherName || queryTeacher;
   
   if (!currentTeacher) {
     return NextResponse.json({ error: 'Not authenticated', children: [] }, { status: 401 });
   }
 
-  // Get teacher's ID from simple_teachers
+  // TREDOUX: Pull directly from THE STEM (children table with school_id)
+  if (currentTeacher === 'Tredoux') {
+    const { data: children, error } = await supabase
+      .from('children')
+      .select('id, name, date_of_birth, age_group, photo_url, display_order')
+      .eq('school_id', BEIJING_SCHOOL_ID)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching STEM children:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Get progress and game data for these children
+    const childIds = (children || []).map(c => c.id);
+    const childrenWithProgress = await enrichChildrenData(supabase, children || [], childIds);
+
+    return NextResponse.json({
+      children: childrenWithProgress,
+      teacher: 'Tredoux',
+      count: childrenWithProgress.length,
+      source: 'THE_STEM'
+    });
+  }
+
+  // OTHER TEACHERS: Use junction table (existing logic)
   const { data: teacher, error: teacherError } = await supabase
     .from('simple_teachers')
     .select('id, name')
@@ -34,9 +59,6 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (teacherError || !teacher) {
-    // Fallback: teacher not in database yet (legacy localStorage login)
-    // For now, return empty to prevent data leakage
-    console.log(`Teacher ${currentTeacher} not found in database`);
     return NextResponse.json({ 
       children: [], 
       teacher: currentTeacher,
@@ -44,118 +66,90 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Get ONLY this teacher's children via teacher_children junction table
   const { data: teacherChildren, error: tcError } = await supabase
     .from('teacher_children')
     .select(`
       child_id,
       children (
-        id,
-        name,
-        date_of_birth,
-        age_group,
-        photo_url,
-        active_status
+        id, name, date_of_birth, age_group, photo_url, active_status, display_order
       )
     `)
     .eq('teacher_id', teacher.id);
 
   if (tcError) {
-    console.error('Error fetching teacher children:', tcError);
     return NextResponse.json({ error: tcError.message }, { status: 500 });
   }
 
-  // Flatten the children data
   const children = (teacherChildren || [])
     .map(tc => tc.children)
     .filter(c => c && c.active_status);
 
-  // Get progress data for these children only
   const childIds = children.map(c => c.id);
-  
-  let workProgress: any[] = [];
-  let weeklyProgress: any[] = [];
-  let skillProgress: any[] = [];
-  let gameProgress: any[] = [];
+  const childrenWithProgress = await enrichChildrenData(supabase, children, childIds);
 
-  if (childIds.length > 0) {
-    // child_work_progress
-    const { data: wp } = await supabase
-      .from('child_work_progress')
-      .select('child_id, status')
-      .in('child_id', childIds);
-    workProgress = wp || [];
+  return NextResponse.json({ 
+    children: childrenWithProgress,
+    teacher: teacher.name,
+    teacherId: teacher.id,
+    count: childrenWithProgress.length
+  });
+}
 
-    // weekly_assignments
-    const { data: wa } = await supabase
-      .from('weekly_assignments')
-      .select('child_id, progress_status')
-      .in('child_id', childIds);
-    weeklyProgress = wa || [];
+// Helper: Add progress and game data to children
+async function enrichChildrenData(supabase: any, children: any[], childIds: string[]) {
+  if (childIds.length === 0) return [];
 
-    // child_progress
-    const { data: cp } = await supabase
-      .from('child_progress')
-      .select('child_id, status_level')
-      .in('child_id', childIds);
-    skillProgress = cp || [];
+  // Fetch all progress data in parallel
+  const [workProgressRes, weeklyProgressRes, skillProgressRes, gameProgressRes] = await Promise.all([
+    supabase.from('child_work_progress').select('child_id, status').in('child_id', childIds),
+    supabase.from('weekly_assignments').select('child_id, progress_status').in('child_id', childIds),
+    supabase.from('child_progress').select('child_id, status_level').in('child_id', childIds),
+    supabase.from('game_sessions').select('child_id, game_name, started_at, duration_seconds')
+      .in('child_id', childIds).order('started_at', { ascending: false })
+  ]);
 
-    // game_sessions - get most recent for each child
-    const { data: gs } = await supabase
-      .from('game_sessions')
-      .select('child_id, game_name, started_at, duration_seconds')
-      .in('child_id', childIds)
-      .order('started_at', { ascending: false });
-    gameProgress = gs || [];
-  }
+  const workProgress = workProgressRes.data || [];
+  const weeklyProgress = weeklyProgressRes.data || [];
+  const skillProgress = skillProgressRes.data || [];
+  const gameProgress = gameProgressRes.data || [];
 
-  // Calculate age and aggregate progress for each child
-  const childrenWithProgress = children.map(child => {
+  return children.map(child => {
     // Calculate age
     let age = null;
     if (child.date_of_birth) {
       const dob = new Date(child.date_of_birth);
-      const today = new Date();
-      const diffMs = today.getTime() - dob.getTime();
+      const diffMs = Date.now() - dob.getTime();
       age = diffMs / (1000 * 60 * 60 * 24 * 365.25);
     }
 
-    // Aggregate from child_work_progress (status 1=presented, 2=practicing, 3=mastered)
-    const cwp = workProgress.filter(p => p.child_id === child.id);
-    const cwpPresented = cwp.filter(p => p.status === 1).length;
-    const cwpPracticing = cwp.filter(p => p.status === 2).length;
-    const cwpMastered = cwp.filter(p => p.status === 3).length;
+    // Aggregate progress from all sources
+    const cwp = workProgress.filter((p: any) => p.child_id === child.id);
+    const wa = weeklyProgress.filter((p: any) => p.child_id === child.id);
+    const cp = skillProgress.filter((p: any) => p.child_id === child.id);
 
-    // Aggregate from weekly_assignments
-    const wa = weeklyProgress.filter(p => p.child_id === child.id);
-    const waPresented = wa.filter(p => p.progress_status === 'presented').length;
-    const waPracticing = wa.filter(p => p.progress_status === 'practicing').length;
-    const waMastered = wa.filter(p => p.progress_status === 'mastered').length;
+    const presented = 
+      cwp.filter((p: any) => p.status === 1).length +
+      wa.filter((p: any) => p.progress_status === 'presented').length +
+      cp.filter((p: any) => p.status_level === 1).length;
 
-    // Aggregate from child_progress
-    const cp = skillProgress.filter(p => p.child_id === child.id);
-    const cpPresented = cp.filter(p => p.status_level === 1).length;
-    const cpPracticing = cp.filter(p => p.status_level >= 2 && p.status_level <= 3).length;
-    const cpMastered = cp.filter(p => p.status_level >= 4).length;
+    const practicing = 
+      cwp.filter((p: any) => p.status === 2).length +
+      wa.filter((p: any) => p.progress_status === 'practicing').length +
+      cp.filter((p: any) => p.status_level >= 2 && p.status_level <= 3).length;
 
-    // Combine all progress
-    const presented = cwpPresented + waPresented + cpPresented;
-    const practicing = cwpPracticing + waPracticing + cpPracticing;
-    const mastered = cwpMastered + waMastered + cpMastered;
+    const mastered = 
+      cwp.filter((p: any) => p.status === 3).length +
+      wa.filter((p: any) => p.progress_status === 'mastered').length +
+      cp.filter((p: any) => p.status_level >= 4).length;
 
-    // Get most recent game session for this child
-    const childGames = gameProgress.filter(g => g.child_id === child.id);
-    const lastGame = childGames.length > 0 ? childGames[0] : null; // Already sorted by started_at desc
+    // Get most recent game
+    const childGames = gameProgress.filter((g: any) => g.child_id === child.id);
+    const lastGame = childGames[0] || null;
 
     return {
       ...child,
       age,
-      progress: {
-        presented,
-        practicing,
-        mastered,
-        total: presented + practicing + mastered
-      },
+      progress: { presented, practicing, mastered, total: presented + practicing + mastered },
       lastGame: lastGame ? {
         name: lastGame.game_name,
         playedAt: lastGame.started_at,
@@ -163,12 +157,5 @@ export async function GET(request: NextRequest) {
       } : null,
       totalGameSessions: childGames.length
     };
-  });
-
-  return NextResponse.json({ 
-    children: childrenWithProgress,
-    teacher: teacher.name,
-    teacherId: teacher.id,
-    count: childrenWithProgress.length
   });
 }
