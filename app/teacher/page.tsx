@@ -38,7 +38,7 @@ export default function TeacherLoginPage() {
   useEffect(() => {
     const teacher = localStorage.getItem('teacherName');
     if (teacher) {
-      router.push('/admin/classroom');
+      router.push('/teacher/dashboard');
     } else {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function TeacherLoginPage() {
       console.log('Cookie set may have failed, continuing with localStorage');
     }
     
-    router.push('/admin/classroom');
+    router.push('/teacher/dashboard');
   };
 
   if (loading) {
