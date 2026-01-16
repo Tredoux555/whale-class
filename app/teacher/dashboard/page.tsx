@@ -196,7 +196,7 @@ export default function TeacherDashboard() {
       else if (hour < 17) setGreeting('Good afternoon');
       else setGreeting('Good evening');
       
-      fetch(`/api/children?teacher=${encodeURIComponent(name)}`)
+      fetch(`/api/teacher/classroom?teacher=${encodeURIComponent(name)}`)
         .then(res => res.json())
         .then(data => setStudentCount(data.children?.length || 0))
         .catch(() => {});
