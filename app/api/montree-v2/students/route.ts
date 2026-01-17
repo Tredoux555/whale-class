@@ -4,16 +4,21 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Initialize at request time, not build time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Beijing International School (hardcoded for single-tenant MVP)
 const SCHOOL_ID = '772b08f1-4e56-4ea6-83b5-21aa8f079b35';
 const TOTAL_CURRICULUM_WORKS = 97;
 
 export async function GET() {
+  const supabase = getSupabase();
+  
   try {
     // 1. Get all students ordered by display_order
     const { data: students, error: studentErr } = await supabase

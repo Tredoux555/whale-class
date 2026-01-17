@@ -4,10 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Initialize Supabase at request time, not build time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Generate deterministic UUID from work_id string
 function generateCurriculumWorkId(workId: string): string {
@@ -17,6 +20,8 @@ function generateCurriculumWorkId(workId: string): string {
 
 // POST - Record new work
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase();
+  
   try {
     const body = await request.json();
     const { studentId, workId, status, notes, photo } = body;
@@ -84,17 +89,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // TODO: Handle photo upload to Supabase Storage
-    let photoUrl = null;
-    if (photo && photo.startsWith('data:image')) {
-      // Photo handling would go here
-      // For now, we'll skip storage and just acknowledge
-    }
-
     return NextResponse.json({
       success: true,
       work: data,
-      photoUrl,
       message: 'Work recorded successfully'
     });
 
@@ -106,25 +103,20 @@ export async function POST(request: NextRequest) {
 
 // GET - Retrieve works for a student
 export async function GET(request: NextRequest) {
+  const supabase = getSupabase();
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get('studentId');
-  const area = searchParams.get('area');
 
   if (!studentId) {
     return NextResponse.json({ error: 'studentId required' }, { status: 400 });
   }
 
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('child_work_completion')
       .select('*')
       .eq('child_id', studentId)
       .order('created_at', { ascending: false });
-
-    // If area filter provided, filter by work_id prefix
-    // (This is a simple approach - could be improved)
-
-    const { data, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

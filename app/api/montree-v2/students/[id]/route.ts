@@ -3,10 +3,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Initialize at request time, not build time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Curriculum areas with work counts (from JSON files)
 const AREAS = [
@@ -26,18 +29,18 @@ function getAreaFromWorkId(workId: string): string {
   if (lower.startsWith('ma_') || lower.includes('math')) return 'mathematics';
   if (lower.startsWith('la_') || lower.includes('language')) return 'language';
   if (lower.startsWith('cu_') || lower.includes('cultural')) return 'cultural';
-  // Default fallback based on first letters
   if (lower.match(/^(wbw|wfw|sound|letter|read)/)) return 'language';
   if (lower.match(/^(pink|brown|cylinder|color)/)) return 'sensorial';
   if (lower.match(/^(number|spindle|teen)/)) return 'mathematics';
   if (lower.match(/^(pour|spoon|button|zip)/)) return 'practical_life';
-  return 'language'; // Default to language
+  return 'language';
 }
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const supabase = getSupabase();
   const { id: studentId } = await params;
 
   try {
@@ -93,7 +96,7 @@ export async function GET(
       name: p.work_id?.replace(/_/g, ' ').replace(/^(wbw|wfw|la|pl|se|ma|cu)\s*/i, '') || 'Unknown Work',
       status: p.status,
       date: p.created_at,
-      hasPhoto: false, // TODO: Wire to photos
+      hasPhoto: false,
       notes: p.notes
     }));
 
