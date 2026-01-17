@@ -97,9 +97,9 @@ export default function DashboardPage() {
             <Link
               key={student.id}
               href={`/montree/dashboard/student/${student.id}`}
-              className="bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-emerald-500 rounded-lg flex items-center justify-center transition-all active:scale-95"
+              className="bg-emerald-600 hover:bg-emerald-500 rounded-md flex items-center justify-center transition-all active:scale-95 shadow-sm"
             >
-              <span className="text-white text-sm font-medium truncate px-1">
+              <span className="text-white text-sm font-medium truncate px-2">
                 {student.name}
               </span>
             </Link>
