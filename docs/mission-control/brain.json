@@ -4,13 +4,38 @@
     "2_ADMIN_IS_SANDBOX": "The /admin/ system is Tredoux's personal sandbox. NOT the product.",
     "3_SCHOOLS_IS_LEGACY": "The /schools/ attempt is legacy. Don't touch.",
     "4_DATABASE_FIRST": "All data lives in Supabase. Frontend just displays it.",
-    "5_COPY_PATTERNS_NOT_CODE": "Reuse logic patterns, but build fresh in /montree/"
+    "5_COPY_PATTERNS_NOT_CODE": "Reuse logic patterns, but build fresh in /montree/",
+    "6_CURRICULUM_PER_CLASSROOM": "Each classroom has its own editable curriculum copy in DB"
   },
 
   "project": "Montree - Premium Montessori Platform",
   "codename": "Whale",
-  "lastUpdated": "2026-01-18T00:50:00+08:00",
-  "currentSession": "Session 41 - Teacher Dashboard Built",
+  "lastUpdated": "2026-01-18T01:15:00+08:00",
+  "currentSession": "Session 42 - Classroom Curriculum Architecture",
+
+  "CURRICULUM_ARCHITECTURE": {
+    "overview": "Each classroom gets its own editable copy of the Montessori curriculum",
+    "master_source": "lib/curriculum/data/*.json (5 areas, ~195 works)",
+    
+    "database_tables": {
+      "classroom_curriculum_areas": "Stores 5 areas per classroom (practical_life, sensorial, etc)",
+      "classroom_curriculum_works": "Stores all works per classroom, editable by teachers"
+    },
+    
+    "apis": {
+      "/api/montree/curriculum/seed": "POST to create curriculum, GET to check, DELETE to reset",
+      "/api/montree/curriculum/works": "GET works by area (DB first, fallback to JSON)"
+    },
+    
+    "flow": [
+      "1. School admin seeds curriculum for classroom (POST /seed)",
+      "2. ~195 works copied from master JSON to classroom_curriculum_works",
+      "3. Teachers can enable/disable, add notes, reorder works",
+      "4. Swipeable rows fetch from /api/montree/curriculum/works?area=X&classroomId=Y"
+    ],
+    
+    "migration_file": "supabase/migrations/20260118_classroom_curriculum.sql"
+  },
 
   "FULL_ARCHITECTURE": {
     "overview": "/montree is the product root. Three user types: Admin, Teacher, Parent.",
@@ -23,11 +48,9 @@
         "priority": "Week 3",
         "pages": {
           "/students": "List all students",
-          "/students/add": "Add new student form",
-          "/students/[id]/edit": "Edit existing student",
+          "/curriculum": "Edit classroom curriculum (enable/disable works)",
           "/teachers": "Manage teachers",
-          "/classrooms": "Classroom configuration",
-          "/billing": "Subscription management"
+          "/classrooms": "Classroom configuration"
         }
       },
       
@@ -35,117 +58,54 @@
         "purpose": "THE PRODUCT - Teacher's daily tool",
         "priority": "NOW",
         "pages": {
-          "/": "Student grid (18 students in YOUR order)",
-          "/student/[id]": "Student detail (THE MONEY PAGE)",
-          "/student/[id]/add-work": "Add work with photo capture",
-          "/reports": "Generate weekly/monthly reports",
-          "/games": "English games hub (11 games)",
-          "/settings": "Teacher preferences"
+          "/": "Student grid (auto-resize to fill screen)",
+          "/student/[id]": "Student detail with swipeable work rows",
+          "/student/[id]/add-work": "Assign work from classroom curriculum",
+          "/tools": "Tools menu (reports, games, admin)"
         }
       },
       
       "/montree/parent": {
         "purpose": "Parent portal - view child progress",
-        "priority": "Week 4+",
-        "pages": {
-          "/": "My child's progress overview",
-          "/videos": "Weekly videos (WeChat ready)",
-          "/reports": "View generated reports",
-          "/games": "Practice games at home"
-        }
+        "priority": "Week 4+"
       }
     }
   },
 
-  "DATA_FLOW": {
-    "admin": "Adds students, teachers, classrooms (setup phase)",
-    "teacher": "Records progress, photos, videos (daily use)",
-    "system": "Auto-generates reports and video compilations",
-    "parent": "Receives videos, views progress (passive consumer)"
-  },
-
-  "BUILD_PRIORITY": {
-    "NOW": "/dashboard - Clean student grid, video generation",
-    "WEEK_2": "Video compilation (iPhone-style), WeChat sending",
-    "WEEK_3": "/admin - Student/teacher management for schools",
-    "WEEK_4+": "/parent - Parent portal with videos"
-  },
-
-  "VIDEO_FEATURE": {
-    "description": "One-click weekly video generation for all students",
-    "api": "/api/montree/videos/generate",
-    "preview_page": "/montree/dashboard/videos/preview",
-    "flow": "Generate All → Preview each student → Send to Parents",
-    "claude_usage": "Generates personalized narration for each child (~$0.005 per student)",
-    "monthly_cost_estimate": "$0.36 for 18 students x 4 weeks"
+  "UI_THEME": {
+    "style": "Clean, light, educational-friendly",
+    "primary_color": "Blue (bg-blue-500)",
+    "avatars": "Blue circles with white initials",
+    "cards": "White with subtle shadows",
+    "dashboard": "Auto-resize grid that fills available space"
   },
 
   "DATABASE_SCHEMA": {
     "schools": "id, name, slug, subscription_tier",
-    "children": "id, name, school_id, date_of_birth, display_order, active_status",
+    "children": "id, name, school_id, date_of_birth, display_order",
     "teachers": "id, name, email, school_id, role",
-    "child_work_completion": "id, child_id, work_id, status, completed_date",
-    "student_works": "id, student_id, work_name, area, photo_url, notes, created_at",
-    "reports": "(future) id, child_id, type, generated_at, pdf_url, video_url"
+    "weekly_assignments": "id, child_id, work_name, area, week_number, year, status",
+    "classroom_curriculum_areas": "id, classroom_id, area_key, name, icon, color, sequence",
+    "classroom_curriculum_works": "id, area_id, classroom_id, work_key, name, description, is_active, teacher_notes"
   },
-
-  "CURRENT_STATUS": {
-    "deployment": "Railway - www.teacherpotato.xyz",
-    "smart_import": "BUILT - Claude-powered student import",
-    "admin_pages": "BUILT - /montree/admin/students"
-  },
-
-  "SMART_IMPORT_FEATURE": {
-    "description": "AI-powered student import - drop any document, Claude extracts names",
-    "url": "/montree/admin/students",
-    "flow": "Drop file/paste → Claude parses → Preview/edit → Import to Supabase",
-    "supported_formats": ["Excel", "CSV", "PDF", "Image", "Plain text"],
-    "api_parse": "/api/montree/students/parse (Claude-powered)",
-    "api_import": "/api/montree/students/import (Supabase bulk insert)"
-  },
-
-  "FILES_CREATED_SESSION40": [
-    "app/montree/dashboard/layout.tsx",
-    "app/montree/dashboard/page.tsx",
-    "app/montree/dashboard/student/[id]/page.tsx",
-    "app/montree/dashboard/student/[id]/add-work/page.tsx",
-    "app/montree/dashboard/reports/page.tsx",
-    "app/montree/dashboard/games/page.tsx",
-    "app/montree/dashboard/settings/page.tsx",
-    "app/api/montree/students/route.ts",
-    "app/api/montree/students/[id]/route.ts",
-    "app/api/montree/works/route.ts",
-    "app/api/montree/curriculum/route.ts",
-    "app/api/health/route.ts"
-  ],
 
   "WHALE_CLASS": {
-    "students_ordered": [
-      "Rachel", "Yueze", "Lucky", "Austin", "Minxi", "Leo",
-      "Joey", "Eric", "Jimmy", "Kevin", "Niuniu", "Amy",
-      "Henry", "Segina", "Hayden", "KK", "Kayla", "Stella"
-    ],
-    "total": 18,
-    "teachers": ["Tredoux (lead)", "Vanessa", "Dana", "Jenny"]
-  },
-
-  "SCHOOL_LOOKUP": {
-    "method": "BY SLUG not hardcoded UUID",
-    "slug": "beijing-international",
-    "note": "API now looks up school dynamically"
-  },
-
-  "TEST_URLS": {
-    "health": "https://www.teacherpotato.xyz/api/health",
-    "dashboard": "https://www.teacherpotato.xyz/montree/dashboard",
-    "local": "http://localhost:3000/montree/dashboard"
+    "students": 22,
+    "teachers": ["Tredoux (lead)", "Vanessa", "Dana", "Jenny"],
+    "curriculum_status": "PENDING - need to run migration then seed"
   },
 
   "NEXT_STEPS": [
-    "1. git push the API fix (slug lookup)",
-    "2. Test dashboard loads students",
-    "3. Test student detail page",
-    "4. Test add work flow",
-    "5. Build /montree/admin/students when dashboard is solid"
-  ]
+    "1. Run supabase/migrations/20260118_classroom_curriculum.sql",
+    "2. Seed Whale Class curriculum via POST /api/montree/curriculum/seed",
+    "3. Build curriculum editor at /montree/admin/curriculum",
+    "4. Build Add Work page",
+    "5. Connect swipeable rows to DB curriculum"
+  ],
+
+  "TEST_URLS": {
+    "dashboard": "http://localhost:3000/montree/dashboard",
+    "student": "http://localhost:3000/montree/dashboard/student/[id]",
+    "curriculum_check": "http://localhost:3000/api/montree/curriculum/seed?classroomId=xxx"
+  }
 }
