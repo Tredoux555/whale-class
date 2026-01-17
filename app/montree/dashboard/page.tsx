@@ -1,9 +1,8 @@
 // /montree/dashboard/page.tsx
-// Ultra-clean teacher dashboard
-// Just students. Nothing else. Tools hidden at bottom.
+// Full-screen student grid - tiles fill available space
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 interface Student {
@@ -15,7 +14,8 @@ interface Student {
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showTools, setShowTools] = useState(false);
+  const [gridCols, setGridCols] = useState(4);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/montree/students')
@@ -27,52 +27,79 @@ export default function DashboardPage() {
       .catch(() => setLoading(false));
   }, []);
 
+  // Calculate optimal grid based on student count and screen size
+  useEffect(() => {
+    const calculateGrid = () => {
+      if (!containerRef.current || students.length === 0) return;
+      
+      const container = containerRef.current;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      const count = students.length;
+      
+      // Find optimal columns to fill screen nicely
+      // Try different column counts and pick the one that best fills space
+      let bestCols = 4;
+      let bestRatio = 0;
+      
+      for (let cols = 3; cols <= 8; cols++) {
+        const rows = Math.ceil(count / cols);
+        const cellWidth = width / cols;
+        const cellHeight = height / rows;
+        const ratio = Math.min(cellWidth, cellHeight * 2) / Math.max(cellWidth, cellHeight * 2);
+        
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          bestCols = cols;
+        }
+      }
+      
+      setGridCols(bestCols);
+    };
+
+    calculateGrid();
+    window.addEventListener('resize', calculateGrid);
+    return () => window.removeEventListener('resize', calculateGrid);
+  }, [students]);
+
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-gray-400">Loading...</div>
       </div>
     );
   }
 
+  const rows = Math.ceil(students.length / gridCols);
+
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
-      {/* Minimal Header */}
-      <header className="px-4 py-3 flex items-center justify-between">
+    <div className="h-screen bg-gray-950 flex flex-col overflow-hidden">
+      {/* Header - Centered class name + logo */}
+      <header className="py-3 flex items-center justify-center gap-2 border-b border-gray-800">
+        <span className="text-2xl">🐋</span>
         <h1 className="text-lg font-bold text-white">Whale Class</h1>
-        <Link 
-          href="/montree/admin/students"
-          className="text-emerald-400 text-sm font-medium"
-        >
-          + Add
-        </Link>
       </header>
 
-      {/* Student Grid - The whole screen */}
-      <main className="flex-1 px-3 pb-20 overflow-auto">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+      {/* Student Grid - Fills screen */}
+      <main 
+        ref={containerRef}
+        className="flex-1 p-2 overflow-hidden"
+      >
+        <div 
+          className="h-full grid gap-1.5"
+          style={{
+            gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+          }}
+        >
           {students.map((student) => (
             <Link
               key={student.id}
               href={`/montree/dashboard/student/${student.id}`}
-              className="aspect-square bg-gray-900 hover:bg-gray-800 border-2 border-gray-800 hover:border-emerald-500 rounded-xl flex flex-col items-center justify-center p-2 transition-all active:scale-95"
+              className="bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-emerald-500 rounded-lg flex items-center justify-center transition-all active:scale-95"
             >
-              {/* Photo or Initial */}
-              {student.photo_url ? (
-                <img 
-                  src={student.photo_url} 
-                  alt={student.name}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mb-2"
-                />
-              ) : (
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center mb-2">
-                  <span className="text-white text-lg sm:text-xl font-bold">
-                    {student.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              {/* Name */}
-              <span className="text-white text-xs sm:text-sm font-medium text-center truncate w-full">
+              <span className="text-white text-sm font-medium truncate px-1">
                 {student.name}
               </span>
             </Link>
@@ -80,69 +107,28 @@ export default function DashboardPage() {
         </div>
 
         {students.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-64">
-            <div className="text-4xl mb-4">👧</div>
+          <div className="h-full flex flex-col items-center justify-center">
+            <div className="text-3xl mb-3">🐋</div>
             <div className="text-gray-400 mb-2">No students yet</div>
             <Link 
               href="/montree/admin/students"
-              className="text-emerald-400 font-medium"
+              className="text-emerald-400"
             >
-              + Add your students
+              + Add students
             </Link>
           </div>
         )}
       </main>
 
-      {/* Tools Tab - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800">
-        {/* Tools Panel (slides up) */}
-        {showTools && (
-          <div className="bg-gray-900 border-t border-gray-800 p-4 space-y-3">
-            <Link
-              href="/montree/dashboard/videos/preview"
-              className="flex items-center gap-3 w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
-            >
-              <span className="text-2xl">🎬</span>
-              <div className="text-left">
-                <div className="text-white font-medium">Generate Weekly Videos</div>
-                <div className="text-purple-200 text-xs">AI-powered parent updates</div>
-              </div>
-            </Link>
-            
-            <Link
-              href="/montree/dashboard/reports"
-              className="flex items-center gap-3 w-full p-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
-            >
-              <span className="text-2xl">📊</span>
-              <div className="text-left">
-                <div className="text-white font-medium">Generate Weekly Reports</div>
-                <div className="text-blue-200 text-xs">Progress summaries for parents</div>
-              </div>
-            </Link>
 
-            <Link
-              href="/montree/admin"
-              className="flex items-center gap-3 w-full p-3 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
-            >
-              <span className="text-2xl">⚙️</span>
-              <div className="text-left">
-                <div className="text-white font-medium">Admin Settings</div>
-                <div className="text-gray-400 text-xs">Manage students & school</div>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        {/* Tools Toggle Button */}
-        <button
-          onClick={() => setShowTools(!showTools)}
-          className="w-full py-4 flex items-center justify-center gap-2 text-emerald-400 font-medium"
+      {/* Tools Link */}
+      <div className="p-2 flex justify-center">
+        <Link
+          href="/montree/dashboard/tools"
+          className="bg-emerald-600 hover:bg-emerald-700 rounded-lg px-6 py-2 transition-all active:scale-95"
         >
-          <span className={`transition-transform ${showTools ? 'rotate-180' : ''}`}>
-            ▲
-          </span>
-          Tools
-        </button>
+          <span className="text-xl">🔧</span>
+        </Link>
       </div>
     </div>
   );
