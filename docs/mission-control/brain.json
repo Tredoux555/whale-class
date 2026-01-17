@@ -9,25 +9,84 @@
 
   "project": "Montree - Premium Montessori Platform",
   "codename": "Whale",
-  "lastUpdated": "2026-01-17T16:00:00+08:00",
-  "currentSession": "Session 40 - Montree Standalone Build COMPLETE",
+  "lastUpdated": "2026-01-17T23:30:00+08:00",
+  "currentSession": "Session 40 - Architecture Mapped",
 
-  "SESSION_SUMMARY": {
-    "what_was_built": "Complete Montree dashboard system as standalone product",
-    "total_files_created": 10,
-    "total_apis_created": 4,
-    "status": "READY FOR TESTING"
+  "FULL_ARCHITECTURE": {
+    "overview": "/montree is the product root. Three user types: Admin, Teacher, Parent.",
+    
+    "routes": {
+      "/montree": "Landing page (marketing, pricing)",
+      
+      "/montree/admin": {
+        "purpose": "School admin portal - setup and management",
+        "priority": "Week 3",
+        "pages": {
+          "/students": "List all students",
+          "/students/add": "Add new student form",
+          "/students/[id]/edit": "Edit existing student",
+          "/teachers": "Manage teachers",
+          "/classrooms": "Classroom configuration",
+          "/billing": "Subscription management"
+        }
+      },
+      
+      "/montree/dashboard": {
+        "purpose": "THE PRODUCT - Teacher's daily tool",
+        "priority": "NOW",
+        "pages": {
+          "/": "Student grid (18 students in YOUR order)",
+          "/student/[id]": "Student detail (THE MONEY PAGE)",
+          "/student/[id]/add-work": "Add work with photo capture",
+          "/reports": "Generate weekly/monthly reports",
+          "/games": "English games hub (11 games)",
+          "/settings": "Teacher preferences"
+        }
+      },
+      
+      "/montree/parent": {
+        "purpose": "Parent portal - view child progress",
+        "priority": "Week 4+",
+        "pages": {
+          "/": "My child's progress overview",
+          "/videos": "Weekly videos (WeChat ready)",
+          "/reports": "View generated reports",
+          "/games": "Practice games at home"
+        }
+      }
+    }
   },
 
-  "ARCHITECTURE": {
-    "product_path": "/montree/dashboard/",
-    "marketing_path": "/montree/",
-    "admin_sandbox": "/admin/",
-    "legacy_ignore": "/schools/",
-    "api_namespace": "/api/montree/"
+  "DATA_FLOW": {
+    "admin": "Adds students, teachers, classrooms (setup phase)",
+    "teacher": "Records progress, photos, videos (daily use)",
+    "system": "Auto-generates reports and video compilations",
+    "parent": "Receives videos, views progress (passive consumer)"
   },
 
-  "FILES_CREATED": [
+  "BUILD_PRIORITY": {
+    "NOW": "/dashboard - Teacher tool working perfectly",
+    "WEEK_2": "/reports - Auto-generation of weekly/monthly reports",
+    "WEEK_3": "/admin - Student/teacher management for schools",
+    "WEEK_4+": "/parent - Parent portal with videos"
+  },
+
+  "DATABASE_SCHEMA": {
+    "schools": "id, name, slug, subscription_tier",
+    "children": "id, name, school_id, date_of_birth, display_order, active_status",
+    "teachers": "id, name, email, school_id, role",
+    "child_work_completion": "id, child_id, work_id, status, completed_date",
+    "student_works": "id, student_id, work_name, area, photo_url, notes, created_at",
+    "reports": "(future) id, child_id, type, generated_at, pdf_url, video_url"
+  },
+
+  "CURRENT_STATUS": {
+    "deployment": "Railway - www.teacherpotato.xyz",
+    "api_fix_pending": "Changed from hardcoded UUID to slug lookup",
+    "needs_git_push": true
+  },
+
+  "FILES_CREATED_SESSION40": [
     "app/montree/dashboard/layout.tsx",
     "app/montree/dashboard/page.tsx",
     "app/montree/dashboard/student/[id]/page.tsx",
@@ -35,27 +94,12 @@
     "app/montree/dashboard/reports/page.tsx",
     "app/montree/dashboard/games/page.tsx",
     "app/montree/dashboard/settings/page.tsx",
-    "app/montree/dashboard/README.md",
     "app/api/montree/students/route.ts",
     "app/api/montree/students/[id]/route.ts",
     "app/api/montree/works/route.ts",
-    "app/api/montree/curriculum/route.ts"
+    "app/api/montree/curriculum/route.ts",
+    "app/api/health/route.ts"
   ],
-
-  "FEATURES_STATUS": {
-    "dashboard_student_grid": "✅ BUILT - Real progress data",
-    "student_detail_page": "✅ BUILT - Progress by area, recent works",
-    "add_work_flow": "✅ BUILT - Real curriculum (97+ works), photo capture",
-    "curriculum_api": "✅ BUILT - Loads from JSON files",
-    "games_hub": "✅ BUILT - Links to 11 existing games",
-    "reports_page": "🟡 PLACEHOLDER - Coming soon",
-    "settings_page": "🟡 PLACEHOLDER - Basic UI"
-  },
-
-  "DATABASE_IDS": {
-    "school_id": "772b08f1-4e56-4ea6-83b5-21aa8f079b35",
-    "classroom_id": "7fc99496-600c-4a46-9a4c-617c08f226e8"
-  },
 
   "WHALE_CLASS": {
     "students_ordered": [
@@ -63,24 +107,27 @@
       "Joey", "Eric", "Jimmy", "Kevin", "Niuniu", "Amy",
       "Henry", "Segina", "Hayden", "KK", "Kayla", "Stella"
     ],
+    "total": 18,
     "teachers": ["Tredoux (lead)", "Vanessa", "Dana", "Jenny"]
   },
 
-  "TEST_LOCALLY": {
-    "command": "cd ~/Desktop/whale && npm run dev",
-    "url": "http://localhost:3000/montree/dashboard"
+  "SCHOOL_LOOKUP": {
+    "method": "BY SLUG not hardcoded UUID",
+    "slug": "beijing-international",
+    "note": "API now looks up school dynamically"
   },
 
-  "PRODUCTION": {
-    "url": "https://www.teacherpotato.xyz/montree/dashboard",
-    "note": "Use www. prefix - Railway domain config"
+  "TEST_URLS": {
+    "health": "https://www.teacherpotato.xyz/api/health",
+    "dashboard": "https://www.teacherpotato.xyz/montree/dashboard",
+    "local": "http://localhost:3000/montree/dashboard"
   },
 
-  "NEXT_PRIORITIES": [
-    "1. Test locally: npm run dev → /montree/dashboard",
-    "2. Verify student data loads from Supabase",
-    "3. Test Add Work flow with photo capture",
-    "4. Fix Railway if still 404",
-    "5. Build report generation"
+  "NEXT_STEPS": [
+    "1. git push the API fix (slug lookup)",
+    "2. Test dashboard loads students",
+    "3. Test student detail page",
+    "4. Test add work flow",
+    "5. Build /montree/admin/students when dashboard is solid"
   ]
 }
