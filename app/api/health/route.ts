@@ -1,10 +1,11 @@
+// /api/health/route.ts
+// Simple health check endpoint for Railway
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  return NextResponse.json({
+  return NextResponse.json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: 'unification-v1',
-    routes: ['/parent/home', '/games', '/teacher']
+    app: 'whale-montree'
   });
 }
