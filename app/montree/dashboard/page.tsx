@@ -1,6 +1,6 @@
 // /montree/dashboard/page.tsx
-// Clean dashboard - student names only, whole class visible
-// One-click video generation, one-click send to parents
+// Ultra-clean teacher dashboard
+// Just students. Nothing else. Tools hidden at bottom.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,15 +9,13 @@ import Link from 'next/link';
 interface Student {
   id: string;
   name: string;
+  photo_url?: string;
 }
 
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generatingVideos, setGeneratingVideos] = useState(false);
-  const [generatingReports, setGeneratingReports] = useState(false);
-  const [videosReady, setVideosReady] = useState(false);
-  const [reportsReady, setReportsReady] = useState(false);
+  const [showTools, setShowTools] = useState(false);
 
   useEffect(() => {
     fetch('/api/montree/students')
@@ -29,178 +27,122 @@ export default function DashboardPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const generateWeeklyVideos = async () => {
-    setGeneratingVideos(true);
-    // TODO: Call video generation API
-    await new Promise(r => setTimeout(r, 3000)); // Simulate
-    setGeneratingVideos(false);
-    setVideosReady(true);
-  };
-
-  const generateWeeklyReports = async () => {
-    setGeneratingReports(true);
-    // TODO: Call report generation API
-    await new Promise(r => setTimeout(r, 2000)); // Simulate
-    setGeneratingReports(false);
-    setReportsReady(true);
-  };
-
-  const sendToParents = async (type: 'videos' | 'reports') => {
-    alert(`Sending ${type} to all parents via WeChat...`);
-    // TODO: Implement WeChat/email sending
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-gray-400">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Whale Class</h1>
-          <p className="text-gray-400 text-sm">{students.length} students</p>
-        </div>
+    <div className="min-h-screen bg-gray-950 flex flex-col">
+      {/* Minimal Header */}
+      <header className="px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-white">Whale Class</h1>
         <Link 
           href="/montree/admin/students"
-          className="text-emerald-400 hover:text-emerald-300 text-sm"
+          className="text-emerald-400 text-sm font-medium"
         >
-          + Add Students
+          + Add
         </Link>
-      </div>
+      </header>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {/* Weekly Videos */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">🎬</span>
-            <h3 className="font-bold text-white">Weekly Videos</h3>
-          </div>
-          {!videosReady ? (
-            <button
-              onClick={generateWeeklyVideos}
-              disabled={generatingVideos}
-              className="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {generatingVideos ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⚡</span> Generating...
-                </span>
-              ) : (
-                'Generate All Videos'
-              )}
-            </button>
-          ) : (
-            <div className="space-y-2">
-              <Link
-                href="/montree/dashboard/videos/preview"
-                className="block w-full py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg text-center transition-colors"
-              >
-                👀 Preview Videos
-              </Link>
-              <button
-                onClick={() => sendToParents('videos')}
-                className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                📤 Send to Parents
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Weekly Reports */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">📊</span>
-            <h3 className="font-bold text-white">Weekly Reports</h3>
-          </div>
-          {!reportsReady ? (
-            <button
-              onClick={generateWeeklyReports}
-              disabled={generatingReports}
-              className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {generatingReports ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⚡</span> Generating...
-                </span>
-              ) : (
-                'Generate All Reports'
-              )}
-            </button>
-          ) : (
-            <div className="space-y-2">
-              <Link
-                href="/montree/dashboard/reports/preview"
-                className="block w-full py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg text-center transition-colors"
-              >
-                👀 Preview Reports
-              </Link>
-              <button
-                onClick={() => sendToParents('reports')}
-                className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                📤 Send to Parents
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Student Grid - Clean, compact, names only */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-white">Students</h3>
-          <span className="text-gray-500 text-xs">Tap to view details</span>
-        </div>
-        
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-          {students.map((student, index) => (
+      {/* Student Grid - The whole screen */}
+      <main className="flex-1 px-3 pb-20 overflow-auto">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          {students.map((student) => (
             <Link
               key={student.id}
               href={`/montree/dashboard/student/${student.id}`}
-              className="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-emerald-500 rounded-lg p-3 text-center transition-all group"
+              className="aspect-square bg-gray-900 hover:bg-gray-800 border-2 border-gray-800 hover:border-emerald-500 rounded-xl flex flex-col items-center justify-center p-2 transition-all active:scale-95"
             >
-              <div className="text-white font-medium text-sm truncate group-hover:text-emerald-400">
+              {/* Photo or Initial */}
+              {student.photo_url ? (
+                <img 
+                  src={student.photo_url} 
+                  alt={student.name}
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mb-2"
+                />
+              ) : (
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center mb-2">
+                  <span className="text-white text-lg sm:text-xl font-bold">
+                    {student.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              {/* Name */}
+              <span className="text-white text-xs sm:text-sm font-medium text-center truncate w-full">
                 {student.name}
-              </div>
+              </span>
             </Link>
           ))}
         </div>
 
         {students.length === 0 && (
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-2">No students yet</div>
+          <div className="flex flex-col items-center justify-center h-64">
+            <div className="text-4xl mb-4">👧</div>
+            <div className="text-gray-400 mb-2">No students yet</div>
             <Link 
               href="/montree/admin/students"
-              className="text-emerald-400 hover:text-emerald-300 text-sm"
+              className="text-emerald-400 font-medium"
             >
-              + Add your first students
+              + Add your students
             </Link>
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Quick Stats */}
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div className="bg-gray-900/50 rounded-lg p-3">
-          <div className="text-2xl font-bold text-white">{students.length}</div>
-          <div className="text-xs text-gray-500">Students</div>
-        </div>
-        <div className="bg-gray-900/50 rounded-lg p-3">
-          <div className="text-2xl font-bold text-emerald-400">0</div>
-          <div className="text-xs text-gray-500">This Week</div>
-        </div>
-        <div className="bg-gray-900/50 rounded-lg p-3">
-          <div className="text-2xl font-bold text-purple-400">0</div>
-          <div className="text-xs text-gray-500">Videos Sent</div>
-        </div>
+      {/* Tools Tab - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800">
+        {/* Tools Panel (slides up) */}
+        {showTools && (
+          <div className="bg-gray-900 border-t border-gray-800 p-4 space-y-3">
+            <Link
+              href="/montree/dashboard/videos/preview"
+              className="flex items-center gap-3 w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
+            >
+              <span className="text-2xl">🎬</span>
+              <div className="text-left">
+                <div className="text-white font-medium">Generate Weekly Videos</div>
+                <div className="text-purple-200 text-xs">AI-powered parent updates</div>
+              </div>
+            </Link>
+            
+            <Link
+              href="/montree/dashboard/reports"
+              className="flex items-center gap-3 w-full p-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
+            >
+              <span className="text-2xl">📊</span>
+              <div className="text-left">
+                <div className="text-white font-medium">Generate Weekly Reports</div>
+                <div className="text-blue-200 text-xs">Progress summaries for parents</div>
+              </div>
+            </Link>
+
+            <Link
+              href="/montree/admin"
+              className="flex items-center gap-3 w-full p-3 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
+            >
+              <span className="text-2xl">⚙️</span>
+              <div className="text-left">
+                <div className="text-white font-medium">Admin Settings</div>
+                <div className="text-gray-400 text-xs">Manage students & school</div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Tools Toggle Button */}
+        <button
+          onClick={() => setShowTools(!showTools)}
+          className="w-full py-4 flex items-center justify-center gap-2 text-emerald-400 font-medium"
+        >
+          <span className={`transition-transform ${showTools ? 'rotate-180' : ''}`}>
+            ▲
+          </span>
+          Tools
+        </button>
       </div>
     </div>
   );

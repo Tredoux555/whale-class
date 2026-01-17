@@ -1,284 +1,172 @@
 // /montree/dashboard/student/[id]/page.tsx
-// STUDENT DETAIL PAGE - Real progress data
+// Student work capture page
+// Quick: Select work → Take photo → Save → Done
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 
 interface Student {
   id: string;
   name: string;
-  date_of_birth?: string;
-  display_order?: number;
+  photo_url?: string;
 }
 
-interface AreaProgress {
+interface Work {
   id: string;
   name: string;
-  emoji: string;
-  color: string;
-  totalWorks: number;
-  completed: number;
-  inProgress: number;
-  percentage: number;
+  area: string;
+  photo_url?: string;
+  created_at: string;
 }
 
-interface RecentWork {
-  id: string;
-  workId: string;
-  name: string;
-  status: string;
-  date: string;
-  hasPhoto: boolean;
-  notes?: string;
-}
+const AREAS = [
+  { id: 'practical_life', name: 'Practical Life', emoji: '🧹', color: 'bg-orange-600' },
+  { id: 'sensorial', name: 'Sensorial', emoji: '👁️', color: 'bg-pink-600' },
+  { id: 'language', name: 'Language', emoji: '📖', color: 'bg-blue-600' },
+  { id: 'math', name: 'Math', emoji: '🔢', color: 'bg-green-600' },
+  { id: 'science', name: 'Science', emoji: '🌿', color: 'bg-purple-600' },
+];
 
-interface StudentData {
-  student: Student;
-  progress: {
-    overall: {
-      totalWorks: number;
-      completed: number;
-      inProgress: number;
-      percentage: number;
-    };
-    byArea: AreaProgress[];
-  };
-  recentWorks: RecentWork[];
-}
-
-export default function StudentDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const studentId = params.id as string;
-  
-  const [data, setData] = useState<StudentData | null>(null);
+export default function StudentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [student, setStudent] = useState<Student | null>(null);
+  const [recentWorks, setRecentWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [showAddWork, setShowAddWork] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStudentData();
-  }, [studentId]);
-
-  async function fetchStudentData() {
-    try {
-      const res = await fetch(`/api/montree/students/${studentId}`);
-      if (!res.ok) throw new Error('Failed to fetch student');
-      const result = await res.json();
-      setData(result);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+    fetch(`/api/montree/students/${id}`)
+      .then(r => r.json())
+      .then(data => {
+        setStudent(data.student);
+        setRecentWorks(data.recentWorks || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-teal-400 border-t-transparent mx-auto mb-4" />
-          <p className="text-slate-500 text-sm">Loading student...</p>
-        </div>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
       </div>
     );
   }
 
-  if (error || !data) {
+  if (!student) {
     return (
-      <div className="p-6">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400">
-          <p className="font-medium">Error loading student</p>
-          <p className="text-sm mt-1">{error || 'Student not found'}</p>
-          <button 
-            onClick={() => router.back()}
-            className="mt-3 text-sm underline hover:no-underline"
-          >
-            Go back
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-red-400">Student not found</div>
       </div>
     );
   }
-
-  const { student, progress, recentWorks } = data;
-
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => router.back()}
-          className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all"
-        >
+    <div className="min-h-screen bg-gray-950">
+      {/* Header */}
+      <header className="px-4 py-3 flex items-center gap-4 border-b border-gray-800">
+        <Link href="/montree/dashboard" className="text-gray-400 hover:text-white">
           ←
-        </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">{student.name}</h1>
-          <p className="text-slate-500 text-sm">
-            {progress.overall.completed} works completed
-          </p>
-        </div>
-        <Link
-          href={`/montree/dashboard/student/${studentId}/add-work`}
-          className="px-4 py-2 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-all"
-        >
-          + Work
         </Link>
-      </div>
-
-      {/* Overall Progress */}
-      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900 rounded-2xl p-6 border border-slate-700/50">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white font-semibold">Overall Progress</h2>
-          <span className="text-3xl font-bold text-teal-400">{progress.overall.percentage}%</span>
-        </div>
-        <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-teal-500 via-cyan-400 to-teal-500 rounded-full transition-all duration-700"
-            style={{ width: `${progress.overall.percentage}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-3 text-sm">
-          <span className="text-slate-500">
-            <span className="text-green-400">{progress.overall.completed}</span> completed
-          </span>
-          <span className="text-slate-500">
-            <span className="text-amber-400">{progress.overall.inProgress}</span> in progress
-          </span>
-          <span className="text-slate-500">
-            {progress.overall.totalWorks} total
-          </span>
-        </div>
-      </div>
-
-      {/* Progress by Area */}
-      <div>
-        <h2 className="text-white font-semibold mb-3">By Area</h2>
-        <div className="space-y-2">
-          {progress.byArea.map((area) => (
-            <Link
-              key={area.id}
-              href={`/montree/dashboard/student/${studentId}/area/${area.id}`}
-              className="w-full flex items-center gap-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-slate-600 rounded-xl p-4 transition-all group"
-            >
-              <span className="text-2xl">{area.emoji}</span>
-              <div className="flex-1 text-left">
-                <div className="text-white font-medium">{area.name}</div>
-                <div className="text-slate-500 text-sm">{area.completed}/{area.totalWorks} works</div>
-              </div>
-              <div className="w-24">
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full transition-all"
-                    style={{ 
-                      width: `${area.percentage}%`,
-                      backgroundColor: area.color 
-                    }}
-                  />
-                </div>
-              </div>
-              <span className="text-slate-600 group-hover:text-slate-400 transition-colors">→</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Works */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-white font-semibold">Recent Works</h2>
-          <Link 
-            href={`/montree/dashboard/student/${studentId}/history`}
-            className="text-teal-400 text-sm hover:text-teal-300"
-          >
-            View All →
-          </Link>
-        </div>
-        
-        {recentWorks.length > 0 ? (
-          <div className="space-y-2">
-            {recentWorks.map((work) => (
-              <div
-                key={work.id}
-                className="flex items-center gap-4 bg-slate-800/50 border border-slate-700/50 rounded-xl p-3"
-              >
-                {work.hasPhoto ? (
-                  <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg flex items-center justify-center text-xl">
-                    📷
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 bg-slate-800 border border-slate-700 border-dashed rounded-lg flex items-center justify-center text-slate-600 text-sm">
-                    +📷
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-white font-medium truncate">{work.name}</div>
-                  <div className="text-slate-500 text-sm">{formatDate(work.date)}</div>
-                </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                  work.status === 'completed' 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : work.status === 'in_progress'
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                    : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                }`}>
-                  {work.status === 'completed' ? '✓ Done' : work.status === 'in_progress' ? '◐ Practice' : '○ Presented'}
-                </div>
-              </div>
-            ))}
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center">
+            <span className="text-white font-bold">{student.name.charAt(0)}</span>
           </div>
-        ) : (
-          <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-6 text-center">
-            <div className="text-3xl mb-2">📝</div>
-            <p className="text-slate-500 text-sm">No works recorded yet</p>
-            <Link
-              href={`/montree/dashboard/student/${studentId}/add-work`}
-              className="inline-block mt-3 text-teal-400 text-sm hover:text-teal-300"
-            >
-              Add first work →
-            </Link>
+          <h1 className="text-xl font-bold text-white">{student.name}</h1>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="p-4">
+        {/* Quick Add Work Button */}
+        {!showAddWork && (
+          <button
+            onClick={() => setShowAddWork(true)}
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded-xl mb-6 transition-colors active:scale-98"
+          >
+            + Record Work
+          </button>
+        )}
+
+        {/* Add Work Flow */}
+        {showAddWork && (
+          <div className="bg-gray-900 rounded-xl p-4 mb-6 border border-gray-800">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white">What did {student.name} work on?</h3>
+              <button 
+                onClick={() => { setShowAddWork(false); setSelectedArea(null); }}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Area Selection */}
+            {!selectedArea && (
+              <div className="grid grid-cols-2 gap-2">
+                {AREAS.map(area => (
+                  <button
+                    key={area.id}
+                    onClick={() => setSelectedArea(area.id)}
+                    className={`${area.color} p-4 rounded-xl text-left transition-all active:scale-95`}
+                  >
+                    <div className="text-2xl mb-1">{area.emoji}</div>
+                    <div className="text-white font-medium">{area.name}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Work Selection (after area is chosen) */}
+            {selectedArea && (
+              <div>
+                <button
+                  onClick={() => setSelectedArea(null)}
+                  className="text-emerald-400 text-sm mb-3"
+                >
+                  ← Back to areas
+                </button>
+                <Link
+                  href={`/montree/dashboard/student/${id}/add-work?area=${selectedArea}`}
+                  className="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-center rounded-xl"
+                >
+                  Select Work & Add Photo →
+                </Link>
+              </div>
+            )}
           </div>
         )}
-      </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          href={`/montree/dashboard/student/${studentId}/add-work`}
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/40 rounded-xl p-4 text-teal-400 font-medium hover:from-teal-500/30 hover:to-cyan-500/30 transition-all"
-        >
-          📸 Capture
-        </Link>
-        <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-xl p-4 text-amber-400 font-medium hover:from-amber-500/30 hover:to-orange-500/30 transition-all">
-          📹 Video
-        </button>
-        <Link
-          href={`/montree/dashboard/reports?student=${studentId}`}
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500/20 to-purple-500/20 border border-violet-500/40 rounded-xl p-4 text-violet-400 font-medium hover:from-violet-500/30 hover:to-purple-500/30 transition-all"
-        >
-          📝 Report
-        </Link>
-        <Link
-          href="/montree/dashboard/games"
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-500/40 rounded-xl p-4 text-pink-400 font-medium hover:from-pink-500/30 hover:to-rose-500/30 transition-all"
-        >
-          🎮 Games
-        </Link>
-      </div>
+        {/* Recent Works */}
+        <div>
+          <h3 className="text-gray-400 text-sm font-medium mb-3">This Week</h3>
+          {recentWorks.length > 0 ? (
+            <div className="space-y-2">
+              {recentWorks.map(work => (
+                <div key={work.id} className="bg-gray-900 rounded-xl p-3 flex items-center gap-3">
+                  {work.photo_url ? (
+                    <img src={work.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-gray-600">
+                      📷
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div className="text-white font-medium text-sm">{work.name}</div>
+                    <div className="text-gray-500 text-xs">{work.area}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              No work recorded this week yet
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
