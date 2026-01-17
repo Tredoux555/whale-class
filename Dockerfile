@@ -28,7 +28,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260117
+ARG CACHEBUST=20260117-fix-health
 
 # Copy application files
 COPY . .

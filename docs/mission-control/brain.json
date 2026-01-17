@@ -1,125 +1,86 @@
 {
   "CORE_LAWS": {
-    "1_MONTREE_IS_TRUTH": "The /schools/ tree (Montree) is THE source of truth. Everything else is noise.",
-    "2_ADMIN_IS_PET": "The /admin/ system is Tredoux's personal sandbox. NOT the product.",
-    "3_PORTABLE_BY_DESIGN": "Montree can be cut clean and migrated to any domain at any time.",
+    "1_MONTREE_STANDALONE": "The /montree/dashboard/ is THE PRODUCT. Clean, standalone, premium.",
+    "2_ADMIN_IS_SANDBOX": "The /admin/ system is Tredoux's personal sandbox. NOT the product.",
+    "3_SCHOOLS_IS_LEGACY": "The /schools/ attempt is legacy. Don't touch.",
     "4_DATABASE_FIRST": "All data lives in Supabase. Frontend just displays it.",
-    "5_MULTI_TENANT_ALWAYS": "Every feature must work for ANY school, not just Beijing International."
+    "5_COPY_PATTERNS_NOT_CODE": "Reuse logic patterns, but build fresh in /montree/"
   },
 
-  "project": "Montree - Multi-tenant Montessori Platform",
-  "codename": "Whale (legacy)",
-  "lastUpdated": "2026-01-17T00:15:00+08:00",
-  "currentSession": "Session 37 FINAL - Teacher Model Defined",
-  
-  "MONTREE": {
-    "definition": "The /schools/ tree - a portable, multi-tenant school management system",
-    "rootPath": "/schools/",
-    "productionUrl": "https://www.teacherpotato.xyz/schools/",
-    "futureUrl": "TBD - will be its own domain when ready",
-    "status": "🌱 PLANTED - Awaiting Railway deployment"
+  "project": "Montree - Premium Montessori Platform",
+  "codename": "Whale",
+  "lastUpdated": "2026-01-17T16:00:00+08:00",
+  "currentSession": "Session 40 - Montree Standalone Build COMPLETE",
+
+  "SESSION_SUMMARY": {
+    "what_was_built": "Complete Montree dashboard system as standalone product",
+    "total_files_created": 10,
+    "total_apis_created": 4,
+    "status": "READY FOR TESTING"
   },
 
   "ARCHITECTURE": {
-    "hierarchy": [
-      "/schools/                              → Platform root (all schools)",
-      "/schools/[slug]/                       → School dashboard",
-      "/schools/[slug]/classrooms/            → School's classrooms",
-      "/schools/[slug]/classrooms/[id]/       → Classroom (teachers + students)",
-      "/schools/[slug]/classrooms/[id]/login  → Teacher login (future)",
-      "/schools/[slug]/students/[id]/         → Student detail (future)"
-    ],
-    "key_insight": "School → Classroom → Teachers (with lead) → Students + Works",
-    "apiPattern": "/api/schools/[schoolId]/..."
+    "product_path": "/montree/dashboard/",
+    "marketing_path": "/montree/",
+    "admin_sandbox": "/admin/",
+    "legacy_ignore": "/schools/",
+    "api_namespace": "/api/montree/"
   },
 
-  "TEACHER_MODEL": {
-    "principle": "Each classroom has teachers. One is lead. All share student access.",
-    "permissions": {
-      "all_teachers": ["view_children", "log_progress", "add_notes", "view_works"],
-      "lead_only": ["edit_curriculum", "manage_teachers", "change_work_order", "view_audit_log"]
-    },
-    "authentication": "Each teacher has unique login (name + password)",
-    "audit": "Nice-to-have: Log who changed what in progress_audit_log table"
+  "FILES_CREATED": [
+    "app/montree/dashboard/layout.tsx",
+    "app/montree/dashboard/page.tsx",
+    "app/montree/dashboard/student/[id]/page.tsx",
+    "app/montree/dashboard/student/[id]/add-work/page.tsx",
+    "app/montree/dashboard/reports/page.tsx",
+    "app/montree/dashboard/games/page.tsx",
+    "app/montree/dashboard/settings/page.tsx",
+    "app/montree/dashboard/README.md",
+    "app/api/montree/students/route.ts",
+    "app/api/montree/students/[id]/route.ts",
+    "app/api/montree/works/route.ts",
+    "app/api/montree/curriculum/route.ts"
+  ],
+
+  "FEATURES_STATUS": {
+    "dashboard_student_grid": "✅ BUILT - Real progress data",
+    "student_detail_page": "✅ BUILT - Progress by area, recent works",
+    "add_work_flow": "✅ BUILT - Real curriculum (97+ works), photo capture",
+    "curriculum_api": "✅ BUILT - Loads from JSON files",
+    "games_hub": "✅ BUILT - Links to 11 existing games",
+    "reports_page": "🟡 PLACEHOLDER - Coming soon",
+    "settings_page": "🟡 PLACEHOLDER - Basic UI"
   },
 
-  "WHALE_CLASS_TEAM": {
-    "classroom": "Whale Class",
+  "DATABASE_IDS": {
     "school_id": "772b08f1-4e56-4ea6-83b5-21aa8f079b35",
-    "teachers": [
-      { "name": "Tredoux", "role": "Lead Teacher", "is_lead": true },
-      { "name": "Vanessa", "role": "Teacher", "is_lead": false },
-      { "name": "Dana", "role": "Teacher", "is_lead": false },
-      { "name": "Jenny", "role": "Teacher", "is_lead": false }
-    ]
+    "classroom_id": "7fc99496-600c-4a46-9a4c-617c08f226e8"
   },
 
-  "DATABASE_SCHEMA": {
-    "schools": {
-      "purpose": "Tenants",
-      "key_fields": ["id", "name", "slug"],
-      "status": "✅ exists"
-    },
-    "classrooms": {
-      "purpose": "Classes within schools",
-      "key_fields": ["id", "name", "school_id"],
-      "status": "⏳ needs Whale Class entry"
-    },
-    "teachers": {
-      "purpose": "Teacher accounts",
-      "key_fields": ["id", "name", "email", "password_hash"],
-      "status": "⏳ needs creation"
-    },
-    "classroom_teachers": {
-      "purpose": "Links teachers to classrooms with is_lead flag",
-      "key_fields": ["classroom_id", "teacher_id", "school_id", "is_lead"],
-      "status": "⏳ needs creation"
-    },
-    "children": {
-      "purpose": "Students",
-      "key_fields": ["id", "name", "school_id", "classroom_id", "display_order"],
-      "status": "✅ exists, needs display_order + classroom_id columns"
-    },
-    "progress_audit_log": {
-      "purpose": "Track who changed what (nice-to-have)",
-      "key_fields": ["child_id", "teacher_id", "action", "old_value", "new_value"],
-      "status": "⏳ future"
-    }
-  },
-
-  "FIRST_TENANT": {
-    "name": "Beijing International School",
-    "slug": "beijing-international",
-    "id": "772b08f1-4e56-4ea6-83b5-21aa8f079b35",
-    "classroom": "Whale Class",
-    "students": 18,
-    "student_order": [
+  "WHALE_CLASS": {
+    "students_ordered": [
       "Rachel", "Yueze", "Lucky", "Austin", "Minxi", "Leo",
       "Joey", "Eric", "Jimmy", "Kevin", "Niuniu", "Amy",
       "Henry", "Segina", "Hayden", "KK", "Kayla", "Stella"
-    ]
+    ],
+    "teachers": ["Tredoux (lead)", "Vanessa", "Dana", "Jenny"]
   },
 
-  "LEGACY_ADMIN": {
-    "status": "PET PROJECT - SEPARATE FROM MONTREE",
-    "path": "/admin/",
-    "note": "Do not connect admin features to Montree. They are different systems."
+  "TEST_LOCALLY": {
+    "command": "cd ~/Desktop/whale && npm run dev",
+    "url": "http://localhost:3000/montree/dashboard"
   },
 
-  "NEXT_SESSION_PRIORITIES": [
-    "1. Check if /schools/ routes deployed (Railway may have caught up)",
-    "2. Run student display_order SQLs",
-    "3. Create teachers + classroom_teachers tables",
-    "4. Insert Whale Class teachers (Tredoux lead, Vanessa/Dana/Jenny)",
-    "5. Build teacher login at /schools/[slug]/classrooms/[id]/login",
-    "6. Implement is_lead permission checks"
-  ],
+  "PRODUCTION": {
+    "url": "https://www.teacherpotato.xyz/montree/dashboard",
+    "note": "Use www. prefix - Railway domain config"
+  },
 
-  "SESSION_PROTOCOL": {
-    "1_READ_BRAIN": "Always read this file first",
-    "2_READ_HANDOFF": "Check HANDOFF_JAN17_SESSION37_FINAL.md",
-    "3_MONTREE_FIRST": "Work on /schools/ tree, not /admin/",
-    "4_DATABASE_CHANGES": "Document all schema changes",
-    "5_HANDOFF_ALWAYS": "Write handoff at session end"
-  }
+  "NEXT_PRIORITIES": [
+    "1. Test locally: npm run dev → /montree/dashboard",
+    "2. Verify student data loads from Supabase",
+    "3. Test Add Work flow with photo capture",
+    "4. Fix Railway if still 404",
+    "5. Build report generation"
+  ]
 }
