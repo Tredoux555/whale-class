@@ -2,10 +2,10 @@
 // Report Generation - Weekly, Monthly, Term
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function ReportsPage() {
+function ReportsContent() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get('student');
   
@@ -82,5 +82,17 @@ export default function ReportsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-teal-400 border-t-transparent" />
+      </div>
+    }>
+      <ReportsContent />
+    </Suspense>
   );
 }
