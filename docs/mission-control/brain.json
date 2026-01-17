@@ -82,8 +82,17 @@
 
   "CURRENT_STATUS": {
     "deployment": "Railway - www.teacherpotato.xyz",
-    "api_fix_pending": "Changed from hardcoded UUID to slug lookup",
-    "needs_git_push": true
+    "smart_import": "BUILT - Claude-powered student import",
+    "admin_pages": "BUILT - /montree/admin/students"
+  },
+
+  "SMART_IMPORT_FEATURE": {
+    "description": "AI-powered student import - drop any document, Claude extracts names",
+    "url": "/montree/admin/students",
+    "flow": "Drop file/paste → Claude parses → Preview/edit → Import to Supabase",
+    "supported_formats": ["Excel", "CSV", "PDF", "Image", "Plain text"],
+    "api_parse": "/api/montree/students/parse (Claude-powered)",
+    "api_import": "/api/montree/students/import (Supabase bulk insert)"
   },
 
   "FILES_CREATED_SESSION40": [
