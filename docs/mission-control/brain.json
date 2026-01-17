@@ -65,10 +65,19 @@
   },
 
   "BUILD_PRIORITY": {
-    "NOW": "/dashboard - Teacher tool working perfectly",
-    "WEEK_2": "/reports - Auto-generation of weekly/monthly reports",
+    "NOW": "/dashboard - Clean student grid, video generation",
+    "WEEK_2": "Video compilation (iPhone-style), WeChat sending",
     "WEEK_3": "/admin - Student/teacher management for schools",
     "WEEK_4+": "/parent - Parent portal with videos"
+  },
+
+  "VIDEO_FEATURE": {
+    "description": "One-click weekly video generation for all students",
+    "api": "/api/montree/videos/generate",
+    "preview_page": "/montree/dashboard/videos/preview",
+    "flow": "Generate All → Preview each student → Send to Parents",
+    "claude_usage": "Generates personalized narration for each child (~$0.005 per student)",
+    "monthly_cost_estimate": "$0.36 for 18 students x 4 weeks"
   },
 
   "DATABASE_SCHEMA": {
