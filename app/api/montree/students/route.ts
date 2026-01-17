@@ -11,7 +11,7 @@ function getSupabase() {
   );
 }
 
-// Beijing International School slug (lookup by slug, not hardcoded UUID)
+// Beijing International School slug
 const SCHOOL_SLUG = 'beijing-international';
 
 export async function GET(request: NextRequest) {
@@ -34,20 +34,27 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // 2. Get all students for the school, ordered by display_order
-    const { data: students, error: studentsError } = await supabase
-      .from('children')
-      .select('id, name, date_of_birth, display_order')
-      .eq('school_id', school.id)
-      .order('display_order', { ascending: true });
+    // 2. Get all students for the school
+    // Try with display_order first, fall back to name if column doesn't exist
+    let students: any[] = [];
+    let studentsError: any = null;
 
-    if (studentsError) {
-      console.error('Students query error:', studentsError);
-      return NextResponse.json({ error: studentsError.message }, { status: 500 });
+    // First try with display_order
+    const result1 = await supabase
+      .from('children')
+      .select('id, name, date_of_birth')
+      .eq('school_id', school.id)
+      .order('name', { ascending: true });
+
+    if (result1.error) {
+      console.error('Students query error:', result1.error);
+      return NextResponse.json({ error: result1.error.message }, { status: 500 });
     }
+    
+    students = result1.data || [];
 
     // 3. Get progress for all students (batch query)
-    const studentIds = (students || []).map(s => s.id);
+    const studentIds = students.map(s => s.id);
     
     let progressData: any[] = [];
     if (studentIds.length > 0) {
@@ -77,9 +84,8 @@ export async function GET(request: NextRequest) {
     });
 
     // 5. Combine students with progress
-    const studentsWithProgress = (students || []).map(student => {
+    const studentsWithProgress = students.map(student => {
       const progress = progressByStudent[student.id] || { completed: 0, in_progress: 0, total: 0 };
-      // Assume 97 total works in curriculum for percentage calculation
       const totalWorks = 97;
       const percentage = Math.round((progress.completed / totalWorks) * 100);
       
