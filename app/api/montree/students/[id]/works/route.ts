@@ -15,9 +15,9 @@ export async function GET(
   );
 
   try {
-    // Get student info
+    // Get student info (from montree_children table)
     const { data: student, error: studentError } = await supabase
-      .from('children')
+      .from('montree_children')
       .select('id, name')
       .eq('id', id)
       .single();

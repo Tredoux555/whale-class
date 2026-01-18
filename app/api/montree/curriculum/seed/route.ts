@@ -1,6 +1,7 @@
 // /api/montree/curriculum/seed/route.ts
 // Seeds a classroom with its own editable copy of the curriculum
 // POST: Creates curriculum for a classroom from master JSON files
+// Uses montree_classroom_curriculum_areas and montree_classroom_curriculum_works
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Check if curriculum already exists for this classroom
     const { data: existing } = await supabase
-      .from('classroom_curriculum_areas')
+      .from('montree_classroom_curriculum_areas')
       .select('id')
       .eq('classroom_id', classroomId)
       .limit(1);
@@ -48,13 +49,13 @@ export async function POST(request: NextRequest) {
     }));
 
     const { data: insertedAreas, error: areaError } = await supabase
-      .from('classroom_curriculum_areas')
+      .from('montree_classroom_curriculum_areas')
       .insert(areaInserts)
       .select();
 
     if (areaError) {
       console.error('Failed to insert areas:', areaError);
-      return NextResponse.json({ error: 'Failed to create curriculum areas' }, { status: 500 });
+      return NextResponse.json({ error: `Failed to create curriculum areas: ${areaError.message}` }, { status: 500 });
     }
 
     // Create area ID lookup
@@ -86,6 +87,8 @@ export async function POST(request: NextRequest) {
             control_of_error: work.controlOfError,
             prerequisites: work.prerequisites || [],
             video_search_terms: work.videoSearchTerms || [],
+            category_key: category.id,
+            category_name: category.name,
             sequence: sequenceCounter++,
             is_active: true,
           });
@@ -100,11 +103,15 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < workInserts.length; i += batchSize) {
       const batch = workInserts.slice(i, i + batchSize);
       const { error: workError } = await supabase
-        .from('classroom_curriculum_works')
+        .from('montree_classroom_curriculum_works')
         .insert(batch);
 
       if (workError) {
         console.error('Failed to insert works batch:', workError);
+        return NextResponse.json({ 
+          error: `Failed to insert works: ${workError.message}`,
+          areasCreated: insertedAreas.length 
+        }, { status: 500 });
       } else {
         totalInserted += batch.length;
       }
@@ -120,7 +127,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Curriculum seed error:', error);
-    return NextResponse.json({ error: 'Failed to seed curriculum' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to seed curriculum' }, { status: 500 });
   }
 }
 
@@ -135,19 +142,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'classroomId is required' }, { status: 400 });
     }
 
-    const { data: areas, error } = await supabase
-      .from('classroom_curriculum_areas')
+    const { data: areas, error: areaError } = await supabase
+      .from('montree_classroom_curriculum_areas')
       .select('id, area_key, name')
       .eq('classroom_id', classroomId);
 
-    if (error) {
-      return NextResponse.json({ error: 'Failed to check curriculum' }, { status: 500 });
+    if (areaError) {
+      return NextResponse.json({ error: `Failed to check areas: ${areaError.message}` }, { status: 500 });
     }
 
-    const { count } = await supabase
-      .from('classroom_curriculum_works')
+    const { count, error: workError } = await supabase
+      .from('montree_classroom_curriculum_works')
       .select('id', { count: 'exact', head: true })
       .eq('classroom_id', classroomId);
+
+    if (workError) {
+      return NextResponse.json({ error: `Failed to check works: ${workError.message}` }, { status: 500 });
+    }
 
     return NextResponse.json({
       exists: areas && areas.length > 0,
@@ -157,7 +168,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to check curriculum' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to check curriculum' }, { status: 500 });
   }
 }
 
@@ -174,13 +185,13 @@ export async function DELETE(request: NextRequest) {
 
     // Delete works first (foreign key)
     await supabase
-      .from('classroom_curriculum_works')
+      .from('montree_classroom_curriculum_works')
       .delete()
       .eq('classroom_id', classroomId);
 
     // Delete areas
     await supabase
-      .from('classroom_curriculum_areas')
+      .from('montree_classroom_curriculum_areas')
       .delete()
       .eq('classroom_id', classroomId);
 

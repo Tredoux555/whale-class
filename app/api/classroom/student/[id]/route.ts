@@ -11,11 +11,11 @@ function getSupabase() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getSupabase();
-    const studentId = params.id;
+    const { id: studentId } = await params;  // ✅ Fixed: await params
 
     // Get student
     const { data: student, error } = await supabase
