@@ -53,3 +53,40 @@ export async function verifyUserToken(authHeader: string | null): Promise<string
     return null;
   }
 }
+
+// Extract session token from auth header (first 50 chars, matches login_logs format)
+export function getSessionToken(authHeader: string | null): string | null {
+  if (!authHeader) return null;
+  const token = authHeader.replace('Bearer ', '');
+  return token.substring(0, 50);
+}
+
+// Get login_log_id for a session token
+export async function getLoginLogId(sessionToken: string | null): Promise<number | null> {
+  if (!sessionToken) return null;
+  
+  try {
+    const supabase = getSupabase();
+    const { data: loginLog } = await supabase
+      .from('story_login_logs')
+      .select('id')
+      .eq('session_token', sessionToken)
+      .order('login_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    return loginLog?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+// Helper to get session info for message history inserts
+export async function getSessionInfo(authHeader: string | null): Promise<{
+  sessionToken: string | null;
+  loginLogId: number | null;
+}> {
+  const sessionToken = getSessionToken(authHeader);
+  const loginLogId = await getLoginLogId(sessionToken);
+  return { sessionToken, loginLogId };
+}

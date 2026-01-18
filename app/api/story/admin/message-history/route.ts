@@ -40,9 +40,22 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '50', 10);
     const showExpired = url.searchParams.get('showExpired') === 'true';
 
+    // Query with left join to login_logs for session info
     let query = supabase
       .from('story_message_history')
-      .select('id, week_start_date, message_type, content, media_url, media_filename, author, created_at, is_expired')
+      .select(`
+        id, 
+        week_start_date, 
+        message_type, 
+        content, 
+        media_url, 
+        media_filename, 
+        author, 
+        created_at, 
+        is_expired,
+        session_token,
+        login_log_id
+      `)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -53,6 +66,25 @@ export async function GET(req: NextRequest) {
     const { data: rows, error } = await query;
 
     if (error) throw error;
+
+    // Fetch login logs for messages that have login_log_id
+    const loginLogIds = (rows || [])
+      .filter(r => r.login_log_id)
+      .map(r => r.login_log_id);
+    
+    let loginLogsMap: Record<number, any> = {};
+    if (loginLogIds.length > 0) {
+      const { data: loginLogs } = await supabase
+        .from('story_login_logs')
+        .select('id, username, login_at, ip_address, user_agent')
+        .in('id', loginLogIds);
+      
+      if (loginLogs) {
+        loginLogs.forEach(log => {
+          loginLogsMap[log.id] = log;
+        });
+      }
+    }
 
     const messages = (rows || []).map(row => {
       let content = row.content;
@@ -65,6 +97,9 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Get linked login info
+      const linkedLogin = row.login_log_id ? loginLogsMap[row.login_log_id] : null;
+
       return {
         id: row.id,
         week_start_date: row.week_start_date,
@@ -74,7 +109,15 @@ export async function GET(req: NextRequest) {
         media_filename: row.media_filename,
         author: row.author,
         created_at: row.created_at,
-        is_expired: row.is_expired
+        is_expired: row.is_expired,
+        // Session linking info
+        has_session_link: !!row.login_log_id,
+        linked_login: linkedLogin ? {
+          username: linkedLogin.username,
+          login_at: linkedLogin.login_at,
+          ip_address: linkedLogin.ip_address,
+          user_agent: linkedLogin.user_agent
+        } : null
       };
     });
 
@@ -94,7 +137,18 @@ export async function GET(req: NextRequest) {
       count
     }));
 
-    return NextResponse.json({ messages, statistics });
+    // Count messages with/without session links
+    const linkedCount = messages.filter(m => m.has_session_link).length;
+    const unlinkedCount = messages.filter(m => !m.has_session_link).length;
+
+    return NextResponse.json({ 
+      messages, 
+      statistics,
+      session_stats: {
+        linked: linkedCount,
+        unlinked: unlinkedCount
+      }
+    });
   } catch (error) {
     console.error('[MessageHistory] Error:', error);
     return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });

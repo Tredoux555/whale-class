@@ -26,6 +26,12 @@ function getCurrentWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
 
+function getSessionToken(authHeader: string | null): string | null {
+  if (!authHeader) return null;
+  const token = authHeader.replace('Bearer ', '');
+  return token.substring(0, 50);
+}
+
 async function verifyAdminToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader) return null;
   try {
@@ -38,12 +44,31 @@ async function verifyAdminToken(authHeader: string | null): Promise<string | nul
   }
 }
 
+async function getAdminLoginLogId(supabase: any, sessionToken: string | null): Promise<number | null> {
+  if (!sessionToken) return null;
+  try {
+    const { data } = await supabase
+      .from('story_admin_login_logs')
+      .select('id')
+      .eq('session_token', sessionToken)
+      .order('login_at', { ascending: false })
+      .limit(1)
+      .single();
+    return data?.id || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const adminUsername = await verifyAdminToken(req.headers.get('authorization'));
+    const authHeader = req.headers.get('authorization');
+    const adminUsername = await verifyAdminToken(authHeader);
     if (!adminUsername) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const sessionToken = getSessionToken(authHeader);
 
     const body = await req.json();
     const { message } = body;
@@ -60,14 +85,19 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMessage);
 
-    // Save to history
+    // Get admin login log ID for session linking
+    const loginLogId = await getAdminLoginLogId(supabase, sessionToken);
+
+    // Save to history with session linking
     await supabase.from('story_message_history').insert({
       week_start_date: weekStartDate,
       message_type: 'text',
       content: encryptedMessage,
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
-      is_from_admin: true
+      is_from_admin: true,
+      session_token: sessionToken,
+      login_log_id: loginLogId
     });
 
     // Check if story exists
