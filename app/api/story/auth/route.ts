@@ -29,31 +29,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
   }
 
+  const supabase = getSupabase();
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+
   // CHECK 1: Hardcoded fallback (always works)
   if (USER_PASSWORDS[username] === password) {
-    console.log('[Auth] Hardcoded auth success');
+    console.log('[Auth] Hardcoded auth success for:', username);
     const token = await new SignJWT({ username })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('24h')
       .sign(getJWTSecret());
 
-    // Log the login
+    // Log the login - use only core columns
     try {
-      const supabase = getSupabase();
-      const ip = req.headers.get('x-forwarded-for') || 'unknown';
-      const userAgent = req.headers.get('user-agent') || 'unknown';
-      
-      await supabase.from('story_login_logs').insert({
+      const { error: logError } = await supabase.from('story_login_logs').insert({
         username,
         login_at: new Date().toISOString(),
-        session_token: token.substring(0, 50),
         ip_address: ip,
-        user_agent: userAgent,
-        user_id: username
+        user_agent: userAgent
       });
+      
+      if (logError) {
+        console.error('[Auth] Login log insert error:', logError);
+      } else {
+        console.log('[Auth] Login logged successfully for:', username);
+      }
     } catch (e) {
-      console.error('[Auth] Log failed:', e);
+      console.error('[Auth] Login log exception:', e);
     }
 
     return NextResponse.json({ session: token });
@@ -62,7 +66,6 @@ export async function POST(req: NextRequest) {
   // CHECK 2: Database with bcrypt (if configured)
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const supabase = getSupabase();
       const { data: users, error } = await supabase
         .from('story_users')
         .select('username, password_hash')
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
         const valid = await bcrypt.compare(password, users[0].password_hash);
         
         if (valid) {
-          console.log('[Auth] DB auth success');
+          console.log('[Auth] DB auth success for:', username);
           const token = await new SignJWT({ username })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
@@ -83,19 +86,20 @@ export async function POST(req: NextRequest) {
 
           // Log the login
           try {
-            const ip = req.headers.get('x-forwarded-for') || 'unknown';
-            const userAgent = req.headers.get('user-agent') || 'unknown';
-            
-            await supabase.from('story_login_logs').insert({
+            const { error: logError } = await supabase.from('story_login_logs').insert({
               username,
               login_at: new Date().toISOString(),
-              session_token: token.substring(0, 50),
               ip_address: ip,
-              user_agent: userAgent,
-              user_id: username
+              user_agent: userAgent
             });
+            
+            if (logError) {
+              console.error('[Auth] Login log insert error:', logError);
+            } else {
+              console.log('[Auth] Login logged successfully for:', username);
+            }
           } catch (e) {
-            console.error('[Auth] Log failed:', e);
+            console.error('[Auth] Login log exception:', e);
           }
 
           return NextResponse.json({ session: token });
