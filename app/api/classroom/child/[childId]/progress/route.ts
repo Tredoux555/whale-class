@@ -15,10 +15,10 @@ export async function GET(
   const supabase = getSupabase();
   const { childId } = await params;
 
-  // Get all curriculum works
+  // Get all curriculum works (correct column names)
   const { data: curriculum, error: currError } = await supabase
     .from('curriculum_roadmap')
-    .select('id, name, area, category, subcategory, sequence_order')
+    .select('id, name, area, category_id, sequence_order')
     .order('area')
     .order('sequence_order');
 
@@ -70,8 +70,7 @@ export async function GET(
     id: work.id,
     name: work.name,
     area: work.area,
-    category: work.category,
-    subcategory: work.subcategory,
+    category: work.category_id, // Use category_id
     status: progressMap[work.id] || 0
   }));
 
