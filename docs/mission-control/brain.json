@@ -1,9 +1,9 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-19T11:00:00Z",
-  "session": 58,
+  "lastUpdated": "2026-01-18T22:30:00Z",
+  "session": 59,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "Handoff written, data clear SQL ready, continuing polish",
+  "currentSubPhase": "CRITICAL FIX: Unified data systems - Montree now uses admin APIs",
   "phaseStatus": "🔄 IN PROGRESS",
   
   "CORE_LAWS": [
@@ -16,16 +16,27 @@
     "7. PURE ENGLISH PLATFORM - No Chinese/dual-language. i18n via separate system after build."
   ],
 
-  "SESSION_58_CRITICAL_FIX": {
-    "bug": "Reports queried 'children' table but dashboard uses 'montree_children'",
-    "impact": "Complete report flow failure",
+  "SESSION_59_CRITICAL_FIX": {
+    "problem": "Montree and Admin used SEPARATE data tables that didn't connect",
+    "montree_was": "montree_children + montree_child_assignments (EMPTY)",
+    "admin_uses": "children + weekly_assignments (WORKING)",
+    "solution": "Made Montree read from same tables as admin",
     "status": "✅ FIXED",
-    "files_fixed": 7,
-    "build": "✅ PASSED (330 pages)"
+    "files_fixed": 2,
+    "build": "✅ PASSED"
   },
 
-  "DATA_CLEAR_SQL": "~/Desktop/whale/supabase/clear_session58.sql",
-  "DATA_STATUS": "Run SQL in Supabase to clear, then re-import students",
+  "DATA_FLOW_NOW": {
+    "step_1": "Drop weekly plan at /admin/weekly-planning",
+    "step_2": "AI parses → children + weekly_assignments tables",
+    "step_3": "Montree /api/montree/children reads from children table",
+    "step_4": "Montree student page uses /api/classroom/child APIs",
+    "result": "Works appear correctly in both admin AND Montree!"
+  },
+
+  "SQL_FILES": {
+    "clear_montree": "~/Desktop/whale/supabase/clear_montree_fresh.sql"
+  },
 
   "PHASE_OVERVIEW": {
     "phase_1": { "name": "Database Foundation", "status": "✅ COMPLETE" },
@@ -39,19 +50,18 @@
     "phase_9": { "name": "Test & Polish", "status": "🔄 IN PROGRESS", "priority": "HIGH" }
   },
 
-  "SESSION_58_CHECKLIST": {
-    "build_verification": "✅ PASSED",
-    "critical_bug_fix": "✅ 7 files fixed",
-    "post_fix_build": "✅ PASSED",
-    "handoff_written": "✅ HANDOFF_SESSION58.md",
-    "data_clear_sql": "✅ clear_session58.sql",
-    "code_polish": "🔄 IN PROGRESS"
-  },
+  "NEXT_STEPS": [
+    "1. Run clear_montree_fresh.sql in Supabase (optional - clears old montree tables)",
+    "2. Upload weekly plan at /admin/weekly-planning",
+    "3. Check /admin/classroom - students should appear with works",
+    "4. Check /montree/dashboard - SAME students should appear",
+    "5. Click student → verify This Week tab shows works"
+  ],
 
-  "NEXT_STEP": "Continue code audit for polish items",
-
+  "AI_EXTRACTION_STATUS": "⚠️ LOW ACCURACY (10%) - Consider teacher form input instead",
+  
   "dataState": {
-    "children": "⏳ PENDING CLEAR (run SQL)",
+    "children": "From weekly_assignments upload",
     "curriculum_works": 268,
     "work_translations_seeded": 237,
     "tokens_table": "✅ READY",
