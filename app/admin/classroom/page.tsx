@@ -34,6 +34,15 @@ interface School {
   slug: string;
 }
 
+// Get current ISO week number
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
 export default function ClassroomPage() {
   const authorized = useAuthCheck();
   const [activeTab, setActiveTab] = useState<'classroom' | 'tools'>('classroom');
@@ -41,6 +50,11 @@ export default function ClassroomPage() {
   const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  // Current week/year for print
+  const now = new Date();
+  const currentWeek = getWeekNumber(now);
+  const currentYear = now.getFullYear();
 
   useEffect(() => {
     fetchChildren();
@@ -93,12 +107,22 @@ export default function ClassroomPage() {
                 <p className="text-sm text-gray-500">{children.length} students</p>
               </div>
             </div>
-            <Link 
-              href="/admin" 
-              className="text-gray-400 hover:text-gray-600 text-sm"
-            >
-              ← Admin
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/admin/classroom/print?week=${currentWeek}&year=${currentYear}`}
+                target="_blank"
+                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
+                title="Print Weekly Plan"
+              >
+                🖨️
+              </Link>
+              <Link 
+                href="/admin" 
+                className="text-gray-400 hover:text-gray-600 text-sm"
+              >
+                ← Admin
+              </Link>
+            </div>
           </div>
 
           {/* Tabs */}
