@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    // Week number comes from document parsing, not form
     const year = new Date().getFullYear();
 
     if (!file) {
@@ -113,9 +112,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save plan' }, { status: 500 });
     }
 
-    // Create assignments for each child-work pair
+    // Create children and assignments for each child-work pair
     if (savedPlan) {
-      await createAssignments(supabase, weekNumber, year, matchedPlan);
+      await createChildrenAndAssignments(supabase, weekNumber, year, matchedPlan);
     }
 
     return NextResponse.json({
@@ -269,30 +268,60 @@ async function matchWorksToCurriculum(
 }
 
 
-async function createAssignments(
+async function createChildrenAndAssignments(
   supabase: SupabaseClient, 
   weekNumber: number,
   year: number,
   plan: TranslatedPlan
 ) {
-  // Get children from database
-  const { data: children } = await supabase
+  // Get existing children from database
+  const { data: existingChildren } = await supabase
     .from('children')
     .select('id, name');
 
-  if (!children) return;
+  const childrenMap = new Map<string, string>();
+  
+  // Build map of existing children (lowercase name -> id)
+  if (existingChildren) {
+    for (const child of existingChildren) {
+      childrenMap.set(child.name.toLowerCase(), child.id);
+    }
+  }
+
+  // Create children that don't exist
+  let displayOrder = existingChildren?.length || 0;
+  
+  for (const assignment of plan.assignments) {
+    const childNameLower = assignment.childName.toLowerCase();
+    
+    if (!childrenMap.has(childNameLower)) {
+      // CREATE the child
+      const { data: newChild, error } = await supabase
+        .from('children')
+        .insert({
+          name: assignment.childName,
+          display_order: displayOrder++
+        })
+        .select('id, name')
+        .single();
+      
+      if (newChild && !error) {
+        childrenMap.set(childNameLower, newChild.id);
+        console.log(`[Upload] Created child: ${assignment.childName}`);
+      } else {
+        console.error(`[Upload] Failed to create child: ${assignment.childName}`, error);
+      }
+    }
+  }
 
   // Build assignments
   const assignments = [];
 
   for (const assignment of plan.assignments) {
-    // Find matching child (case-insensitive)
-    const child = children.find(c => 
-      c.name.toLowerCase() === assignment.childName.toLowerCase()
-    );
+    const childId = childrenMap.get(assignment.childName.toLowerCase());
 
-    if (!child) {
-      console.log(`[Upload] Child not found: ${assignment.childName}`);
+    if (!childId) {
+      console.log(`[Upload] Child still not found: ${assignment.childName}`);
       continue;
     }
 
@@ -304,7 +333,7 @@ async function createAssignments(
       assignments.push({
         week_number: weekNumber,
         year: year,
-        child_id: child.id,
+        child_id: childId,
         work_id: work.matchedWorkId || null,
         work_name: work.workNameEnglish || work.workNameChinese,
         area: area
@@ -328,7 +357,7 @@ async function createAssignments(
     if (error) {
       console.error('Failed to insert assignments:', error);
     } else {
-      console.log(`[Upload] Created ${assignments.length} assignments`);
+      console.log(`[Upload] Created ${assignments.length} assignments for ${childrenMap.size} children`);
     }
   }
 }
