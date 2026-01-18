@@ -40,22 +40,10 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '50', 10);
     const showExpired = url.searchParams.get('showExpired') === 'true';
 
-    // Query with left join to login_logs for session info
+    // Query - use * to get all columns and handle column name variations
     let query = supabase
       .from('story_message_history')
-      .select(`
-        id, 
-        week_start_date, 
-        message_type, 
-        content, 
-        media_url, 
-        media_filename, 
-        author, 
-        created_at, 
-        is_expired,
-        session_token,
-        login_log_id
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -65,40 +53,26 @@ export async function GET(req: NextRequest) {
 
     const { data: rows, error } = await query;
 
-    if (error) throw error;
-
-    // Fetch login logs for messages that have login_log_id
-    const loginLogIds = (rows || [])
-      .filter(r => r.login_log_id)
-      .map(r => r.login_log_id);
-    
-    let loginLogsMap: Record<number, any> = {};
-    if (loginLogIds.length > 0) {
-      const { data: loginLogs } = await supabase
-        .from('story_login_logs')
-        .select('id, username, login_at, ip_address, user_agent')
-        .in('id', loginLogIds);
-      
-      if (loginLogs) {
-        loginLogs.forEach(log => {
-          loginLogsMap[log.id] = log;
-        });
-      }
+    if (error) {
+      console.error('[MessageHistory] Query error:', error);
+      throw error;
     }
 
+    console.log('[MessageHistory] Found', rows?.length || 0, 'messages');
+
     const messages = (rows || []).map(row => {
-      let content = row.content;
+      // Handle both column names: content OR message_content
+      let content = row.content || row.message_content || null;
+      
       if (row.message_type === 'text' && content) {
         try {
           content = decryptMessage(content);
         } catch (e) {
           console.error('[MessageHistory] Decrypt failed:', e);
-          content = '[Encrypted - decryption failed]';
+          // Return raw content if decryption fails (might not be encrypted)
+          content = row.content || row.message_content || '[Content unavailable]';
         }
       }
-
-      // Get linked login info
-      const linkedLogin = row.login_log_id ? loginLogsMap[row.login_log_id] : null;
 
       return {
         id: row.id,
@@ -109,15 +83,7 @@ export async function GET(req: NextRequest) {
         media_filename: row.media_filename,
         author: row.author,
         created_at: row.created_at,
-        is_expired: row.is_expired,
-        // Session linking info
-        has_session_link: !!row.login_log_id,
-        linked_login: linkedLogin ? {
-          username: linkedLogin.username,
-          login_at: linkedLogin.login_at,
-          ip_address: linkedLogin.ip_address,
-          user_agent: linkedLogin.user_agent
-        } : null
+        is_expired: row.is_expired
       };
     });
 
@@ -137,17 +103,9 @@ export async function GET(req: NextRequest) {
       count
     }));
 
-    // Count messages with/without session links
-    const linkedCount = messages.filter(m => m.has_session_link).length;
-    const unlinkedCount = messages.filter(m => !m.has_session_link).length;
-
     return NextResponse.json({ 
       messages, 
-      statistics,
-      session_stats: {
-        linked: linkedCount,
-        unlinked: unlinkedCount
-      }
+      statistics
     });
   } catch (error) {
     console.error('[MessageHistory] Error:', error);
