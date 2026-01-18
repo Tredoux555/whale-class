@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
 
+// Helper to extract session token from auth header
+function getSessionToken(authHeader: string | null): string | null {
+  if (!authHeader) return null;
+  const token = authHeader.replace('Bearer ', '');
+  return token.substring(0, 50); // Same format as stored in login_logs
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const username = await verifyUserToken(req.headers.get('authorization'));
+    const authHeader = req.headers.get('authorization');
+    const username = await verifyUserToken(authHeader);
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const sessionToken = getSessionToken(authHeader);
 
     const body = await req.json();
     const { message, author } = body;
@@ -25,14 +35,37 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMsg);
 
-    // Save to history for admin
-    await supabase.from('story_message_history').insert({
+    // Get the login_log_id for this session
+    let loginLogId: number | null = null;
+    if (sessionToken) {
+      const { data: loginLog } = await supabase
+        .from('story_login_logs')
+        .select('id')
+        .eq('session_token', sessionToken)
+        .order('login_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (loginLog) {
+        loginLogId = loginLog.id;
+      }
+    }
+
+    // Save to history for admin - now with session linking
+    const { error: historyError } = await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
       content: encryptedMessage,
       author: msgAuthor,
-      expires_at: expiresAt.toISOString()
+      expires_at: expiresAt.toISOString(),
+      session_token: sessionToken,
+      login_log_id: loginLogId
     });
+
+    if (historyError) {
+      console.error('[Message] History insert error:', historyError);
+      // Continue anyway - don't fail the whole request for logging issues
+    }
 
     // Update secret_stories so message displays to users
     const { error: updateError } = await supabase
