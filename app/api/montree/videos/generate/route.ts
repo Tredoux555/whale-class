@@ -43,9 +43,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // 2. Get all students
+    // 2. Get all students (from montree_children table)
+    // NOTE: This route may need further refactoring - uses old schema patterns
     const { data: students } = await supabase
-      .from('children')
+      .from('montree_children')
       .select('id, name')
       .eq('school_id', school.id)
       .order('name');

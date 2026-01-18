@@ -1,111 +1,60 @@
 {
-  "CORE_LAWS": {
-    "1_MONTREE_STANDALONE": "The /montree/dashboard/ is THE PRODUCT. Clean, standalone, premium.",
-    "2_ADMIN_IS_SANDBOX": "The /admin/ system is Tredoux's personal sandbox. NOT the product.",
-    "3_SCHOOLS_IS_LEGACY": "The /schools/ attempt is legacy. Don't touch.",
-    "4_DATABASE_FIRST": "All data lives in Supabase. Frontend just displays it.",
-    "5_COPY_PATTERNS_NOT_CODE": "Reuse logic patterns, but build fresh in /montree/",
-    "6_CURRICULUM_PER_CLASSROOM": "Each classroom has its own editable curriculum copy in DB"
-  },
-
-  "project": "Montree - Premium Montessori Platform",
-  "codename": "Whale",
-  "lastUpdated": "2026-01-18T01:15:00+08:00",
-  "currentSession": "Session 42 - Classroom Curriculum Architecture",
-
-  "CURRICULUM_ARCHITECTURE": {
-    "overview": "Each classroom gets its own editable copy of the Montessori curriculum",
-    "master_source": "lib/curriculum/data/*.json (5 areas, ~195 works)",
-    
-    "database_tables": {
-      "classroom_curriculum_areas": "Stores 5 areas per classroom (practical_life, sensorial, etc)",
-      "classroom_curriculum_works": "Stores all works per classroom, editable by teachers"
-    },
-    
-    "apis": {
-      "/api/montree/curriculum/seed": "POST to create curriculum, GET to check, DELETE to reset",
-      "/api/montree/curriculum/works": "GET works by area (DB first, fallback to JSON)"
-    },
-    
-    "flow": [
-      "1. School admin seeds curriculum for classroom (POST /seed)",
-      "2. ~195 works copied from master JSON to classroom_curriculum_works",
-      "3. Teachers can enable/disable, add notes, reorder works",
-      "4. Swipeable rows fetch from /api/montree/curriculum/works?area=X&classroomId=Y"
-    ],
-    
-    "migration_file": "supabase/migrations/20260118_classroom_curriculum.sql"
-  },
-
-  "FULL_ARCHITECTURE": {
-    "overview": "/montree is the product root. Three user types: Admin, Teacher, Parent.",
-    
-    "routes": {
-      "/montree": "Landing page (marketing, pricing)",
-      
-      "/montree/admin": {
-        "purpose": "School admin portal - setup and management",
-        "priority": "Week 3",
-        "pages": {
-          "/students": "List all students",
-          "/curriculum": "Edit classroom curriculum (enable/disable works)",
-          "/teachers": "Manage teachers",
-          "/classrooms": "Classroom configuration"
-        }
-      },
-      
-      "/montree/dashboard": {
-        "purpose": "THE PRODUCT - Teacher's daily tool",
-        "priority": "NOW",
-        "pages": {
-          "/": "Student grid (auto-resize to fill screen)",
-          "/student/[id]": "Student detail with swipeable work rows",
-          "/student/[id]/add-work": "Assign work from classroom curriculum",
-          "/tools": "Tools menu (reports, games, admin)"
-        }
-      },
-      
-      "/montree/parent": {
-        "purpose": "Parent portal - view child progress",
-        "priority": "Week 4+"
-      }
-    }
-  },
-
-  "UI_THEME": {
-    "style": "Clean, light, educational-friendly",
-    "primary_color": "Blue (bg-blue-500)",
-    "avatars": "Blue circles with white initials",
-    "cards": "White with subtle shadows",
-    "dashboard": "Auto-resize grid that fills available space"
-  },
-
-  "DATABASE_SCHEMA": {
-    "schools": "id, name, slug, subscription_tier",
-    "children": "id, name, school_id, date_of_birth, display_order",
-    "teachers": "id, name, email, school_id, role",
-    "weekly_assignments": "id, child_id, work_name, area, week_number, year, status",
-    "classroom_curriculum_areas": "id, classroom_id, area_key, name, icon, color, sequence",
-    "classroom_curriculum_works": "id, area_id, classroom_id, work_key, name, description, is_active, teacher_notes"
-  },
-
-  "WHALE_CLASS": {
-    "students": 22,
-    "teachers": ["Tredoux (lead)", "Vanessa", "Dana", "Jenny"],
-    "curriculum_status": "PENDING - need to run migration then seed"
-  },
-
-  "NEXT_STEPS": [
-    "1. Run supabase/migrations/20260118_classroom_curriculum.sql",
-    "2. Seed Whale Class curriculum via POST /api/montree/curriculum/seed",
-    "3. Build curriculum editor at /montree/admin/curriculum",
-    "4. Build Add Work page",
-    "5. Connect swipeable rows to DB curriculum"
+  "project": "montree",
+  "lastUpdated": "2026-01-19T11:00:00Z",
+  "session": 58,
+  "phase": "9 - Test & Polish",
+  "currentSubPhase": "Handoff written, data clear SQL ready, continuing polish",
+  "phaseStatus": "🔄 IN PROGRESS",
+  
+  "CORE_LAWS": [
+    "1. The /montree/ is THE PRODUCT. Completely standalone, duplicatable per school.",
+    "2. The /admin/ is Tredoux's personal sandbox. DISCONNECT from Montree completely.",
+    "3. Brain updates are MANDATORY after every chunk of work.",
+    "4. READ THIS FILE FIRST - Every single session.",
+    "5. JAPANESE ENGINEER MINDSET - Seek perfection, fix issues before moving on.",
+    "6. SEGMENT WORK - Bite-size chunks, update brain after EVERY step.",
+    "7. PURE ENGLISH PLATFORM - No Chinese/dual-language. i18n via separate system after build."
   ],
 
-  "TEST_URLS": {
-    "dashboard": "http://localhost:3000/montree/dashboard",
-    "student": "http://localhost:3000/montree/dashboard/student/[id]",
-    "curriculum_check": "http://localhost:3000/api/montree/curriculum/seed?classroomId=xxx"
+  "SESSION_58_CRITICAL_FIX": {
+    "bug": "Reports queried 'children' table but dashboard uses 'montree_children'",
+    "impact": "Complete report flow failure",
+    "status": "✅ FIXED",
+    "files_fixed": 7,
+    "build": "✅ PASSED (330 pages)"
+  },
+
+  "DATA_CLEAR_SQL": "~/Desktop/whale/supabase/clear_session58.sql",
+  "DATA_STATUS": "Run SQL in Supabase to clear, then re-import students",
+
+  "PHASE_OVERVIEW": {
+    "phase_1": { "name": "Database Foundation", "status": "✅ COMPLETE" },
+    "phase_2": { "name": "Media Capture System", "status": "✅ COMPLETE + AUDITED" },
+    "phase_3": { "name": "Weekly Reports Generation", "status": "✅ COMPLETE + BUG FIXED" },
+    "phase_4": { "name": "PDF Export System", "status": "✅ COMPLETE + BUG FIXED" },
+    "phase_5": { "name": "AI Content Generation", "status": "✅ COMPLETE + BUG FIXED" },
+    "phase_6": { "name": "Parent Portal", "status": "✅ COMPLETE + BUG FIXED" },
+    "phase_7": { "name": "Email Delivery", "status": "❌ NOT STARTED", "priority": "LOW" },
+    "phase_8": { "name": "Video Slideshows", "status": "❌ NOT STARTED", "priority": "LOW" },
+    "phase_9": { "name": "Test & Polish", "status": "🔄 IN PROGRESS", "priority": "HIGH" }
+  },
+
+  "SESSION_58_CHECKLIST": {
+    "build_verification": "✅ PASSED",
+    "critical_bug_fix": "✅ 7 files fixed",
+    "post_fix_build": "✅ PASSED",
+    "handoff_written": "✅ HANDOFF_SESSION58.md",
+    "data_clear_sql": "✅ clear_session58.sql",
+    "code_polish": "🔄 IN PROGRESS"
+  },
+
+  "NEXT_STEP": "Continue code audit for polish items",
+
+  "dataState": {
+    "children": "⏳ PENDING CLEAR (run SQL)",
+    "curriculum_works": 268,
+    "work_translations_seeded": 237,
+    "tokens_table": "✅ READY",
+    "storage_bucket": "whale-media (private)"
   }
 }

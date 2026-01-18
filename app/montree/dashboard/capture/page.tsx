@@ -1,0 +1,365 @@
+// app/montree/dashboard/capture/page.tsx
+// Main photo capture flow - Select child → Take photo → Upload
+// Phase 2 - Session 53
+
+'use client';
+
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import CameraCapture from '@/components/montree/media/CameraCapture';
+import ChildSelector from '@/components/montree/media/ChildSelector';
+import { uploadPhoto, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
+import type { MontreeChild, CapturedPhoto, UploadProgress } from '@/lib/montree/media/types';
+
+// ============================================
+// TYPES
+// ============================================
+
+type FlowStep = 'select-child' | 'camera' | 'uploading' | 'success' | 'error';
+
+// ============================================
+// LOADING FALLBACK
+// ============================================
+
+function CaptureLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4" />
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// MAIN CONTENT COMPONENT
+// ============================================
+
+function CaptureContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Get pre-selected child from URL if any
+  const preSelectedChildId = searchParams.get('child');
+  const isGroupMode = searchParams.get('group') === 'true';
+
+  // State
+  const [step, setStep] = useState<FlowStep>(preSelectedChildId ? 'camera' : 'select-child');
+  const [children, setChildren] = useState<MontreeChild[]>([]);
+  const [loadingChildren, setLoadingChildren] = useState(true);
+  const [selectedChildIds, setSelectedChildIds] = useState<string[]>(
+    preSelectedChildId ? [preSelectedChildId] : []
+  );
+  const [capturedPhoto, setCapturedPhoto] = useState<CapturedPhoto | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [schoolId, setSchoolId] = useState<string>('');
+
+  // ============================================
+  // FETCH CHILDREN
+  // ============================================
+
+  useEffect(() => {
+    const fetchChildren = async () => {
+      try {
+        const response = await fetch('/api/montree/children');
+        const data = await response.json();
+        
+        if (data.children) {
+          setChildren(data.children);
+          
+          // Get school_id from first child's classroom
+          if (data.children.length > 0 && data.children[0].classroom?.school_id) {
+            setSchoolId(data.children[0].classroom.school_id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch children:', err);
+      } finally {
+        setLoadingChildren(false);
+      }
+    };
+
+    fetchChildren();
+  }, []);
+
+  // ============================================
+  // HANDLERS
+  // ============================================
+
+  const handleChildSelect = (ids: string[]) => {
+    setSelectedChildIds(ids);
+  };
+
+  const handleProceedToCamera = () => {
+    if (selectedChildIds.length > 0) {
+      setStep('camera');
+    }
+  };
+
+  const handlePhotoCapture = async (photo: CapturedPhoto) => {
+    setCapturedPhoto(photo);
+    setStep('uploading');
+    setError(null);
+
+    try {
+      const result = await uploadPhoto(photo, {
+        school_id: schoolId || 'default-school',
+        child_id: selectedChildIds.length === 1 ? selectedChildIds[0] : undefined,
+        child_ids: selectedChildIds.length > 1 ? selectedChildIds : undefined,
+        onProgress: setUploadProgress,
+      });
+
+      if (result.success) {
+        setStep('success');
+      } else {
+        setError(result.error || 'Upload failed');
+        setStep('error');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError(err instanceof Error ? err.message : 'Upload failed');
+      setStep('error');
+    }
+  };
+
+  const handleCameraCancel = () => {
+    if (preSelectedChildId) {
+      router.back();
+    } else {
+      setStep('select-child');
+    }
+  };
+
+  const handleTakeAnother = () => {
+    setCapturedPhoto(null);
+    setUploadProgress(null);
+    setStep('camera');
+  };
+
+  const handleDone = () => {
+    if (preSelectedChildId) {
+      router.push(`/montree/dashboard/student/${preSelectedChildId}`);
+    } else {
+      router.push('/montree/dashboard');
+    }
+  };
+
+  const handleRetry = () => {
+    if (capturedPhoto) {
+      handlePhotoCapture(capturedPhoto);
+    }
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
+
+  // Camera step
+  if (step === 'camera') {
+    return (
+      <CameraCapture
+        onCapture={handlePhotoCapture}
+        onCancel={handleCameraCancel}
+      />
+    );
+  }
+
+  // Upload progress / success / error steps
+  if (step === 'uploading' || step === 'success' || step === 'error') {
+    const selectedChildren = children.filter(c => selectedChildIds.includes(c.id));
+    
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <header className="bg-white shadow-sm px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">🐋</span>
+          <h1 className="text-lg font-bold text-gray-800">
+            {step === 'success' ? 'Photo Saved!' : step === 'error' ? 'Upload Failed' : 'Uploading...'}
+          </h1>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 flex flex-col items-center justify-center p-6">
+          {/* Preview */}
+          {capturedPhoto && (
+            <div className="w-full max-w-sm mb-6">
+              <img
+                src={capturedPhoto.dataUrl}
+                alt="Captured"
+                className="w-full rounded-2xl shadow-lg"
+              />
+            </div>
+          )}
+
+          {/* Tagged children */}
+          {selectedChildren.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {selectedChildren.map(child => (
+                <span
+                  key={child.id}
+                  className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                >
+                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
+                    {child.name.charAt(0)}
+                  </span>
+                  {child.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Progress */}
+          {step === 'uploading' && uploadProgress && (
+            <div className="w-full max-w-sm">
+              <div className="text-center mb-4">
+                <p className="text-lg font-medium text-gray-700">
+                  {getProgressMessage(uploadProgress)}
+                </p>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${getProgressColor(uploadProgress.status)}`}
+                  style={{ width: `${uploadProgress.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Success state */}
+          {step === 'success' && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">✅</div>
+              <p className="text-lg text-gray-600 mb-8">Photo uploaded successfully!</p>
+              
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                <button
+                  onClick={handleTakeAnother}
+                  className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                >
+                  📷 Take Another Photo
+                </button>
+                <button
+                  onClick={handleDone}
+                  className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  ✓ Done
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {step === 'error' && (
+            <div className="text-center">
+              <div className="text-6xl mb-4">❌</div>
+              <p className="text-lg text-gray-600 mb-2">Upload failed</p>
+              <p className="text-sm text-red-500 mb-8">{error}</p>
+              
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                <button
+                  onClick={handleRetry}
+                  className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                >
+                  🔄 Try Again
+                </button>
+                <button
+                  onClick={handleTakeAnother}
+                  className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  📷 Retake Photo
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // Child selection step
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/montree/dashboard"
+            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
+          >
+            ←
+          </Link>
+          <div>
+            <h1 className="text-lg font-bold text-gray-800">Take Photo</h1>
+            <p className="text-xs text-gray-400">
+              {isGroupMode ? 'Select children for group photo' : 'Select a child'}
+            </p>
+          </div>
+        </div>
+        
+        {/* Group mode toggle */}
+        <Link
+          href={isGroupMode ? '/montree/dashboard/capture' : '/montree/dashboard/capture?group=true'}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            isGroupMode 
+              ? 'bg-blue-100 text-blue-700' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          👥 Group
+        </Link>
+      </header>
+
+      {/* Child selector */}
+      <main className="flex-1 overflow-hidden">
+        <ChildSelector
+          children={children}
+          selectedIds={selectedChildIds}
+          onSelectionChange={handleChildSelect}
+          multiSelect={isGroupMode}
+          loading={loadingChildren}
+          maxHeight="calc(100vh - 180px)"
+        />
+      </main>
+
+      {/* Bottom action bar */}
+      <div className="bg-white border-t border-gray-200 px-4 py-4 safe-area-bottom">
+        <button
+          onClick={handleProceedToCamera}
+          disabled={selectedChildIds.length === 0}
+          className={`
+            w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all
+            ${selectedChildIds.length > 0
+              ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-98'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }
+          `}
+        >
+          <span>📷</span>
+          <span>
+            {selectedChildIds.length === 0 
+              ? 'Select a child first'
+              : selectedChildIds.length === 1
+                ? 'Take Photo'
+                : `Take Photo (${selectedChildIds.length} children)`
+            }
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// PAGE EXPORT WITH SUSPENSE
+// ============================================
+
+export default function CapturePage() {
+  return (
+    <Suspense fallback={<CaptureLoading />}>
+      <CaptureContent />
+    </Suspense>
+  );
+}

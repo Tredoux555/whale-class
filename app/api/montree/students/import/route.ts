@@ -1,61 +1,86 @@
 // /api/montree/students/import/route.ts
-// Bulk import students to database
+// Bulk import students to montree_children (standalone, no legacy connection)
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@/lib/supabase/server';
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+// UUID validation
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
 }
 
-const SCHOOL_SLUG = 'beijing-international';
-
 export async function POST(request: NextRequest) {
-  const supabase = getSupabase();
-
   try {
-    const { students } = await request.json();
+    const { students, classroom_id } = await request.json();
 
     if (!students || !Array.isArray(students) || students.length === 0) {
       return NextResponse.json({ error: 'No students provided' }, { status: 400 });
     }
 
-    // 1. Get school by slug
-    const { data: school, error: schoolError } = await supabase
-      .from('schools')
-      .select('id')
-      .eq('slug', SCHOOL_SLUG)
+    const supabase = await createServerClient();
+    
+    // If no classroom_id provided, get the first classroom
+    let targetClassroomId = classroom_id;
+    
+    if (!targetClassroomId) {
+      const { data: classrooms } = await supabase
+        .from('montree_classrooms')
+        .select('id')
+        .limit(1);
+      
+      if (!classrooms || classrooms.length === 0) {
+        return NextResponse.json({ error: 'No classroom found. Create a classroom first.' }, { status: 404 });
+      }
+      
+      targetClassroomId = classrooms[0].id;
+    }
+    
+    // Validate classroom_id
+    if (!isValidUUID(targetClassroomId)) {
+      return NextResponse.json({ error: 'Invalid classroom_id format' }, { status: 400 });
+    }
+    
+    // Verify classroom exists
+    const { data: classroom, error: classroomError } = await supabase
+      .from('montree_classrooms')
+      .select('id, name')
+      .eq('id', targetClassroomId)
       .single();
-
-    if (schoolError || !school) {
-      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    
+    if (classroomError || !classroom) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
     }
 
-    // 2. Get current max display_order
-    const { data: existingStudents } = await supabase
-      .from('children')
-      .select('id')
-      .eq('school_id', school.id);
+    // Prepare students for insertion into montree_children
+    const studentsToInsert = students.map((s: any) => {
+      // Calculate age from dateOfBirth if provided
+      let age: number | null = null;
+      if (s.dateOfBirth || s.date_of_birth) {
+        const dob = s.dateOfBirth || s.date_of_birth;
+        const birthDate = new Date(dob);
+        if (!isNaN(birthDate.getTime())) {
+          const today = new Date();
+          const ageYears = (today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+          age = Math.floor(ageYears);
+        }
+      }
+      
+      return {
+        classroom_id: targetClassroomId,
+        name: s.name.trim(),
+        date_of_birth: s.dateOfBirth || s.date_of_birth || null,
+        age: age,
+        notes: s.notes || null,
+        settings: { name_chinese: s.name_chinese?.trim() || null },
+        created_at: new Date().toISOString(),
+      };
+    });
 
-    const startOrder = (existingStudents?.length || 0) + 1;
-
-    // 3. Prepare students for insertion
-    const studentsToInsert = students.map((s: any, index: number) => ({
-      name: s.name.trim(),
-      school_id: school.id,
-      date_of_birth: s.dateOfBirth || null,
-      display_order: startOrder + index,
-      active_status: true,
-      enrollment_date: new Date().toISOString().split('T')[0],
-    }));
-
-    // 4. Insert students
+    // Insert into montree_children
     const { data: inserted, error: insertError } = await supabase
-      .from('children')
+      .from('montree_children')
       .insert(studentsToInsert)
-      .select('id, name, display_order');
+      .select('id, name');
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -66,6 +91,7 @@ export async function POST(request: NextRequest) {
       success: true,
       count: inserted?.length || 0,
       students: inserted,
+      classroom: { id: classroom.id, name: classroom.name },
     });
 
   } catch (error: any) {
