@@ -307,7 +307,7 @@ async function createChildrenAndAssignments(
           name: assignment.childName,
           display_order: displayOrder++,
           date_of_birth: '2021-01-01', // Placeholder - teacher can update later
-          age_group: '3-6' // Default Montessori primary age group
+          age_group: '4-5' // Valid values: 2-3, 3-4, 4-5, 5-6
         })
         .select('id, name')
         .single();
