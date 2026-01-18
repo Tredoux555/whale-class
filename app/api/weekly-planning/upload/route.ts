@@ -295,12 +295,13 @@ async function createChildrenAndAssignments(
     const childNameLower = assignment.childName.toLowerCase();
     
     if (!childrenMap.has(childNameLower)) {
-      // CREATE the child
+      // CREATE the child with required date_of_birth (use placeholder)
       const { data: newChild, error } = await supabase
         .from('children')
         .insert({
           name: assignment.childName,
-          display_order: displayOrder++
+          display_order: displayOrder++,
+          date_of_birth: '2021-01-01' // Placeholder - teacher can update later
         })
         .select('id, name')
         .single();
