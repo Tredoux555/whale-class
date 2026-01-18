@@ -300,13 +300,14 @@ async function createChildrenAndAssignments(
     const childNameLower = assignment.childName.toLowerCase();
     
     if (!childrenMap.has(childNameLower)) {
-      // CREATE the child with required date_of_birth (use placeholder)
+      // CREATE the child with all required fields
       const { data: newChild, error } = await supabase
         .from('children')
         .insert({
           name: assignment.childName,
           display_order: displayOrder++,
-          date_of_birth: '2021-01-01' // Placeholder - teacher can update later
+          date_of_birth: '2021-01-01', // Placeholder - teacher can update later
+          age_group: '3-6' // Default Montessori primary age group
         })
         .select('id, name')
         .single();
