@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Student {
   id: string;
@@ -22,6 +23,7 @@ function getCurrentWeek(): number {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [gridCols, setGridCols] = useState(2);
@@ -80,6 +82,13 @@ export default function DashboardPage() {
     window.addEventListener('resize', calculateGrid);
     return () => window.removeEventListener('resize', calculateGrid);
   }, [students]);
+
+  // Handle camera button click without triggering parent link
+  const handleCameraClick = (e: React.MouseEvent, childId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/montree/dashboard/capture?child=${childId}`);
+  };
 
   if (loading) {
     return (
@@ -184,15 +193,14 @@ export default function DashboardPage() {
                     <p className="font-semibold text-gray-800 truncate">{student.name}</p>
                   </div>
                   
-                  {/* Quick camera button (shows on hover/touch) */}
-                  <Link
-                    href={`/montree/dashboard/capture?child=${student.id}`}
-                    onClick={(e) => e.stopPropagation()}
+                  {/* Quick camera button - use button instead of Link to avoid nesting */}
+                  <button
+                    onClick={(e) => handleCameraClick(e, student.id)}
                     className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-blue-600"
                     title="Take photo"
                   >
                     📷
-                  </Link>
+                  </button>
                 </div>
 
                 {/* Progress Bar */}

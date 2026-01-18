@@ -266,9 +266,9 @@ function ThisWeekTab({ studentId, studentName, onMediaUploaded }: {
     try {
       const res = await fetch(`/api/montree/assignments?child_id=${studentId}`);
       const data = await res.json();
-      // Filter to current/active works (not mastered, not not_started)
+      // Show ALL assigned works (mastered items hidden, will go to Progress tab)
       const activeWorks = (data.assignments || []).filter((a: WorkAssignment) => 
-        a.status === 'presented' || a.status === 'practicing'
+        a.status !== 'mastered'
       );
       setAssignments(activeWorks);
     } catch (error) {
