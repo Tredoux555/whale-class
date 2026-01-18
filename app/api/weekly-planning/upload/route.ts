@@ -59,10 +59,12 @@ export async function POST(request: NextRequest) {
       .from('work_translations')
       .select('chinese_name, english_name, area, aliases');
     
-    // Get curriculum works for matching
+    // Get curriculum works for matching (with sequence order)
     const { data: curriculumWorks } = await supabase
       .from('curriculum_roadmap')
-      .select('id, name, chinese_name, area_id');
+      .select('id, name, chinese_name, area_id, area, sequence_order')
+      .order('area')
+      .order('sequence_order');
 
     // Use Claude to parse and translate
     let translatedPlan: TranslatedPlan;
@@ -112,9 +114,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save plan' }, { status: 500 });
     }
 
-    // Create children and assignments for each child-work pair
+    // Create children, assignments, AND backfill progress
+    let backfillCount = 0;
     if (savedPlan) {
-      await createChildrenAndAssignments(supabase, weekNumber, year, matchedPlan);
+      backfillCount = await createChildrenAndAssignments(supabase, weekNumber, year, matchedPlan, curriculumWorks || []);
     }
 
     return NextResponse.json({
@@ -123,7 +126,8 @@ export async function POST(request: NextRequest) {
       translatedContent: matchedPlan,
       debug: {
         childrenCount: matchedPlan.assignments?.length || 0,
-        totalWorks: matchedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0
+        totalWorks: matchedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0,
+        masteredBackfilled: backfillCount
       }
     });
 
@@ -272,8 +276,9 @@ async function createChildrenAndAssignments(
   supabase: SupabaseClient, 
   weekNumber: number,
   year: number,
-  plan: TranslatedPlan
-) {
+  plan: TranslatedPlan,
+  curriculumWorks: any[]
+): Promise<number> {
   // Get existing children from database
   const { data: existingChildren } = await supabase
     .from('children')
@@ -315,8 +320,28 @@ async function createChildrenAndAssignments(
     }
   }
 
-  // Build assignments
+  // Build curriculum lookup maps for backfill
+  // Map: area -> sorted list of works by sequence_order
+  const worksByArea = new Map<string, { id: string; sequence: number }[]>();
+  const workIdToInfo = new Map<string, { area: string; sequence: number }>();
+  
+  for (const work of curriculumWorks) {
+    const area = work.area || work.area_id;
+    if (!worksByArea.has(area)) {
+      worksByArea.set(area, []);
+    }
+    worksByArea.get(area)!.push({ id: work.id, sequence: work.sequence_order || 0 });
+    workIdToInfo.set(work.id, { area, sequence: work.sequence_order || 0 });
+  }
+  
+  // Sort works in each area by sequence
+  for (const [area, works] of worksByArea) {
+    works.sort((a, b) => a.sequence - b.sequence);
+  }
+
+  // Build assignments and track backfill
   const assignments = [];
+  const progressToBackfill: { child_id: string; work_id: string; status: number }[] = [];
 
   for (const assignment of plan.assignments) {
     const childId = childrenMap.get(assignment.childName.toLowerCase());
@@ -337,11 +362,37 @@ async function createChildrenAndAssignments(
         child_id: childId,
         work_id: work.matchedWorkId || null,
         work_name: work.workNameEnglish || work.workNameChinese,
-        area: area
+        area: area,
+        progress_status: 'practicing' // Current work is "practicing"
       });
+
+      // BACKFILL: Mark current work as practicing (status 2)
+      if (work.matchedWorkId) {
+        progressToBackfill.push({
+          child_id: childId,
+          work_id: work.matchedWorkId,
+          status: 2 // practicing
+        });
+
+        // Find all works BEFORE this one in the same area and mark as mastered
+        const workInfo = workIdToInfo.get(work.matchedWorkId);
+        if (workInfo) {
+          const areaWorks = worksByArea.get(workInfo.area) || [];
+          for (const prevWork of areaWorks) {
+            if (prevWork.sequence < workInfo.sequence) {
+              progressToBackfill.push({
+                child_id: childId,
+                work_id: prevWork.id,
+                status: 3 // mastered
+              });
+            }
+          }
+        }
+      }
     }
   }
 
+  // Insert weekly assignments
   if (assignments.length > 0) {
     // Delete existing assignments for this week
     await supabase
@@ -358,7 +409,34 @@ async function createChildrenAndAssignments(
     if (error) {
       console.error('Failed to insert assignments:', error);
     } else {
-      console.log(`[Upload] Created ${assignments.length} assignments for ${childrenMap.size} children`);
+      console.log(`[Upload] Created ${assignments.length} weekly assignments`);
     }
   }
+
+  // Insert/update progress backfill (permanent progress tracking)
+  let backfillCount = 0;
+  if (progressToBackfill.length > 0) {
+    // Use upsert to avoid duplicates - update if exists, insert if not
+    // Only update if new status is higher (don't demote mastered to practicing)
+    for (const progress of progressToBackfill) {
+      const { error } = await supabase
+        .from('child_work_progress')
+        .upsert({
+          child_id: progress.child_id,
+          work_id: progress.work_id,
+          status: progress.status,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'child_id,work_id',
+          ignoreDuplicates: false
+        });
+      
+      if (!error) {
+        backfillCount++;
+      }
+    }
+    console.log(`[Upload] Backfilled ${backfillCount} progress records (mastered + current)`);
+  }
+
+  return backfillCount;
 }
