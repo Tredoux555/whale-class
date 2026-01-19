@@ -3,7 +3,7 @@
   "lastUpdated": "2026-01-20T03:45:00Z",
   "session": 68,
   "phase": "Foundation Phase 1-4",
-  "currentSubPhase": "Fixing AI endpoint queries",
+  "currentSubPhase": "Fixing AI endpoints",
   "phaseStatus": "🔧 Removing name_chinese from queries",
   
   "CORE_LAWS": [
@@ -23,16 +23,17 @@
     "ai_weekly_report": "🔧 FIXING - same issue"
   },
 
-  "BUG_FOUND": {
-    "issue": "suggest-next and weekly-report query name_chinese column",
-    "root_cause": "montree_children table has NO name_chinese column",
-    "analyze_works_because": "analyze query doesn't include name_chinese",
-    "fix": "Remove name_chinese from both queries"
+  "ROOT_CAUSE_FOUND": {
+    "problem": "suggest-next and weekly-report return Child not found",
+    "cause": "Queries include name_chinese column that doesn't exist in montree_children",
+    "analyze_works_because": "analyze query doesn't have name_chinese",
+    "fix": "Remove name_chinese from both endpoint queries"
   },
 
-  "FIXES_IN_PROGRESS": {
+  "FIX_STATUS": {
     "suggest-next": "✅ Fixed - removed name_chinese",
-    "weekly-report": "⏳ Next to fix"
+    "weekly-report": "⏳ Next to fix",
+    "then": "Commit, push, test"
   },
 
   "NEXT_STEPS": [
