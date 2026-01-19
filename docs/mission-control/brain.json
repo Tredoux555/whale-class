@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T00:05:00Z",
+  "lastUpdated": "2026-01-20T00:30:00Z",
   "session": 66,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "DEEP AUDIT IN PROGRESS",
-  "phaseStatus": "🔍 FIXING DUPLICATE CODE + VERIFYING BUILD",
+  "currentSubPhase": "SESSION 66 COMPLETE",
+  "phaseStatus": "✅ UI REFINEMENT DEPLOYED - READY FOR FOUNDATION",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
@@ -16,39 +16,68 @@
     "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_66_CURRENT_STEP": {
-    "step": "DEEP AUDIT - Build Verification",
-    "status": "IN PROGRESS",
-    "just_fixed": "Removed duplicate auto-focus useEffect in WorkNavigator.tsx",
-    "next": "Verify build passes, then commit final polish"
+  "SESSION_66_SUMMARY": {
+    "objective": "UI refinement for student dashboard",
+    "status": "✅ COMPLETE",
+    "commits": [
+      "e8ea418 - Swipe area filtering, remove tap buttons",
+      "0b05e27 - WorkNavigator browse-first rewrite",
+      "bf88946 - Auto-focus search input",
+      "083838e - Smart hints, error handling, cleaner truncation",
+      "50b73d6 - Remove duplicate auto-focus useEffect"
+    ],
+    "deployed_to": "Railway (auto-deploy from main)"
   },
 
-  "SESSION_66_COMPLETED_CHANGES": {
-    "commits_pushed": ["e8ea418", "0b05e27", "bf88946", "083838e"],
-    
-    "changes_summary": {
-      "1_SWIPE_SAME_AREA": "✅ Swipe cycles through works in SAME AREA only",
-      "2_REMOVED_TAP_BUTTONS": "✅ Removed Prev/Next buttons - swipe only",
-      "3_WORK_NAVIGATOR_REWRITE": "✅ Shows full list immediately, search filters",
-      "4_REMOVED_SNAPBACK": "✅ Removed Return to X button",
-      "5_AUTO_FOCUS": "✅ Search input auto-focuses when panel opens",
-      "6_ERROR_HANDLING": "✅ WorkNavigator shows error state with retry",
-      "7_SMART_TRUNCATION": "✅ Only adds '...' if name > 18 chars",
-      "8_SINGLE_WORK_HINT": "✅ Shows 'Only L work this week' when area has 1 work"
+  "SESSION_66_DELIVERABLES": {
+    "student_dashboard": {
+      "file": "/app/montree/dashboard/student/[id]/page.tsx",
+      "features": [
+        "✅ Swipe navigates within SAME AREA only",
+        "✅ Removed tap navigation buttons (cleaner)",
+        "✅ Smart hint: 'L works (2/3)' or 'Only L work this week'",
+        "✅ Swipe indicator shows next work name"
+      ]
+    },
+    "work_navigator": {
+      "file": "/components/montree/WorkNavigator.tsx",
+      "features": [
+        "✅ Shows full work list immediately when opened",
+        "✅ Search box filters existing list in real-time",
+        "✅ Area pills filter by curriculum area",
+        "✅ Auto-focus search input on open",
+        "✅ Error state with retry button",
+        "✅ Footer shows count"
+      ]
     }
   },
 
-  "UNCOMMITTED_FIX": {
-    "file": "/components/montree/WorkNavigator.tsx",
-    "issue": "Had duplicate auto-focus useEffect",
-    "status": "FIXED - needs commit after build verification"
+  "VISION_ALIGNMENT": {
+    "ui_layer": "✅ COMPLETE - Teacher-friendly, mobile-optimized",
+    "classroom_curriculum": "✅ READY - Queries montree_classroom_curriculum_works",
+    "session_logging": "✅ READY - montree_work_sessions captures all interactions",
+    "school_hierarchy": "⏳ PENDING - Foundation Phase 1-2",
+    "ai_analysis": "⏳ PENDING - Foundation Phase 4"
   },
 
-  "PRE_EXISTING_ISSUES_NOTED": {
-    "description": "TypeScript errors in /admin/ API routes",
-    "cause": "Next.js 15 params Promise pattern not updated in old admin APIs",
-    "impact": "None on /montree/ - these are sandbox admin routes",
-    "action": "Ignore for now, not blocking"
+  "TECHNICAL_DEBT": [
+    {
+      "issue": "Hardcoded classroomId in week API",
+      "location": "/api/classroom/child/[id]/week/route.ts",
+      "fix": "Add classroom_id column to children table",
+      "priority": "Foundation Step 1"
+    },
+    {
+      "issue": "Using weekly_assignments instead of child_work_assignments",
+      "fix": "Foundation Phase 1 creates proper table",
+      "priority": "Foundation Step 3"
+    }
+  ],
+
+  "NEXT_SESSION_PRIORITY": {
+    "recommendation": "Continue Montree Foundation Phase 1",
+    "handoff": "~/Desktop/whale/docs/mission-control/HANDOFF_MONTREE_FOUNDATION.md",
+    "start_at": "Step 1: Audit Admin/Montree Connections"
   },
 
   "FILES_MODIFIED_SESSION_66": [
@@ -56,11 +85,13 @@
     "/components/montree/WorkNavigator.tsx"
   ],
 
-  "NEXT_STEPS_AFTER_BUILD": [
-    "1. Commit duplicate fix if build passes",
-    "2. Complete aesthetic review",
-    "3. Vision alignment analysis",
-    "4. Write comprehensive handoff",
-    "5. Update brain with final state"
+  "TEST_CHECKLIST": [
+    "[ ] Visit teacherpotato.xyz/montree/dashboard/student/[id]",
+    "[ ] Tap 'Find Work' - verify full list appears",
+    "[ ] Type in search - verify list filters",
+    "[ ] Tap area pill - verify area filter works",
+    "[ ] Tap a work - verify it expands (if assigned) or shows toast",
+    "[ ] Swipe left/right - verify stays in same area",
+    "[ ] Verify hint shows position correctly"
   ]
 }
