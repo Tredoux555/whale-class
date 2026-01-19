@@ -23,11 +23,12 @@ interface UploadResult {
   debug?: {
     childrenCount: number;
     totalWorks: number;
-    masteredBackfilled: number;
+    assignmentsCreated: number;
     curriculumSync: {
       matched: number;
       autoAdded: number;
       childrenSynced: number;
+      backfilled: number;
     };
   };
 }
@@ -226,9 +227,6 @@ export default function WeeklyPlanningPage() {
             <p className="text-green-700 mb-4">
               {uploadResult.translatedContent?.assignments?.length || 0} children • {' '}
               {uploadResult.translatedContent?.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0} total works assigned
-              {uploadResult.debug?.masteredBackfilled > 0 && (
-                <> • {uploadResult.debug.masteredBackfilled} progress records updated</>
-              )}
             </p>
 
             {/* Curriculum Sync Indicator */}
@@ -240,8 +238,8 @@ export default function WeeklyPlanningPage() {
                   {uploadResult.debug.curriculumSync.autoAdded > 0 && (
                     <> • {uploadResult.debug.curriculumSync.autoAdded} auto-added</>
                   )}
-                  {uploadResult.debug.curriculumSync.childrenSynced > 0 && (
-                    <> • {uploadResult.debug.curriculumSync.childrenSynced} children synced</>
+                  {uploadResult.debug.curriculumSync.backfilled > 0 && (
+                    <> • {uploadResult.debug.curriculumSync.backfilled} progress backfilled</>
                   )}
                 </span>
               </div>

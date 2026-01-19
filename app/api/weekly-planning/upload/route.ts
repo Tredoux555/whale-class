@@ -59,12 +59,13 @@ export async function POST(request: NextRequest) {
       .from('work_translations')
       .select('chinese_name, english_name, area, aliases');
     
-    // Get curriculum works for matching (with sequence order)
+    // Get curriculum works for Claude context only (matching is done by sync-all)
     const { data: curriculumWorks } = await supabase
-      .from('curriculum_roadmap')
-      .select('id, name, chinese_name, area_id, area, sequence_order')
-      .order('area')
-      .order('sequence_order');
+      .from('montree_classroom_curriculum_works')
+      .select('id, name, name_chinese, area_id, sequence')
+      .eq('classroom_id', 'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6')
+      .order('area_id')
+      .order('sequence');
 
     // Use Claude to parse and translate
     let translatedPlan: TranslatedPlan;
@@ -83,23 +84,20 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Match works to curriculum database
-    const matchedPlan = await matchWorksToCurriculum(supabase, translatedPlan, curriculumWorks || []);
-
     // Use week number from parsed document
     const weekNumber = translatedPlan.weekNumber;
     if (!weekNumber || weekNumber === 0) {
       return NextResponse.json({ error: 'Could not detect week number from document' }, { status: 400 });
     }
 
-    // Save to database
+    // Save to database (sync-all will handle curriculum matching)
     const { data: savedPlan, error: saveError } = await supabase
       .from('weekly_plans')
       .upsert({
         week_number: weekNumber,
         year: year,
         original_filename: file.name,
-        translated_content: matchedPlan,
+        translated_content: translatedPlan,
         status: 'active',
         start_date: translatedPlan.startDate,
         end_date: translatedPlan.endDate,
@@ -114,10 +112,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save plan' }, { status: 500 });
     }
 
-    // Create children, assignments, AND backfill progress
-    let backfillCount = 0;
+    // Create children and weekly assignments (sync-all will link and backfill)
+    let assignmentCount = 0;
     if (savedPlan) {
-      backfillCount = await createChildrenAndAssignments(supabase, weekNumber, year, matchedPlan, curriculumWorks || []);
+      assignmentCount = await createChildrenAndAssignments(supabase, weekNumber, year, translatedPlan);
     }
 
     // AUTO-SYNC: Link new assignments to classroom curriculum
@@ -140,11 +138,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       plan: savedPlan,
-      translatedContent: matchedPlan,
+      translatedContent: translatedPlan,
       debug: {
-        childrenCount: matchedPlan.assignments?.length || 0,
-        totalWorks: matchedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0,
-        masteredBackfilled: backfillCount,
+        childrenCount: translatedPlan.assignments?.length || 0,
+        totalWorks: translatedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0,
+        assignmentsCreated: assignmentCount,
         curriculumSync: syncResult
       }
     });
@@ -177,7 +175,7 @@ async function translatePlanWithClaude(
   
   // Build context with known works
   const knownWorks = curriculumWorks.slice(0, 100).map(w => 
-    `${w.chinese_name || ''} = ${w.name} (${w.area_id})`
+    `${w.name_chinese || ''} = ${w.name} (${w.area_id})`
   ).filter(s => s.includes(' = ')).join('\n');
 
   const message = await anthropic.messages.create({
@@ -251,51 +249,11 @@ IMPORTANT:
 }
 
 
-async function matchWorksToCurriculum(
-  supabase: SupabaseClient, 
-  plan: TranslatedPlan,
-  curriculumWorks: any[]
-): Promise<TranslatedPlan> {
-  
-  const { data: translations } = await supabase
-    .from('work_translations')
-    .select('chinese_name, english_name, curriculum_work_id, aliases');
-
-  for (const assignment of plan.assignments) {
-    for (const work of assignment.works) {
-      // Try to match via translations table
-      const translation = translations?.find(t => 
-        t.chinese_name === work.workNameChinese ||
-        t.aliases?.includes(work.workNameChinese)
-      );
-      
-      if (translation?.curriculum_work_id) {
-        work.matchedWorkId = translation.curriculum_work_id;
-        continue;
-      }
-
-      // Try direct match on curriculum works
-      const curriculumMatch = curriculumWorks.find(c =>
-        c.name?.toLowerCase() === work.workNameEnglish?.toLowerCase() ||
-        c.chinese_name === work.workNameChinese
-      );
-
-      if (curriculumMatch) {
-        work.matchedWorkId = curriculumMatch.id;
-      }
-    }
-  }
-
-  return plan;
-}
-
-
 async function createChildrenAndAssignments(
   supabase: SupabaseClient, 
   weekNumber: number,
   year: number,
-  plan: TranslatedPlan,
-  curriculumWorks: any[]
+  plan: TranslatedPlan
 ): Promise<number> {
   // Get existing children from database
   const { data: existingChildren } = await supabase
@@ -318,14 +276,13 @@ async function createChildrenAndAssignments(
     const childNameLower = assignment.childName.toLowerCase();
     
     if (!childrenMap.has(childNameLower)) {
-      // CREATE the child with all required fields
       const { data: newChild, error } = await supabase
         .from('children')
         .insert({
           name: assignment.childName,
           display_order: displayOrder++,
-          date_of_birth: '2021-01-01', // Placeholder - teacher can update later
-          age_group: '4-5' // Valid values: 2-3, 3-4, 4-5, 5-6
+          date_of_birth: '2021-01-01',
+          age_group: '4-5'
         })
         .select('id, name')
         .single();
@@ -339,28 +296,8 @@ async function createChildrenAndAssignments(
     }
   }
 
-  // Build curriculum lookup maps for backfill
-  // Map: area -> sorted list of works by sequence_order
-  const worksByArea = new Map<string, { id: string; sequence: number }[]>();
-  const workIdToInfo = new Map<string, { area: string; sequence: number }>();
-  
-  for (const work of curriculumWorks) {
-    const area = work.area || work.area_id;
-    if (!worksByArea.has(area)) {
-      worksByArea.set(area, []);
-    }
-    worksByArea.get(area)!.push({ id: work.id, sequence: work.sequence_order || 0 });
-    workIdToInfo.set(work.id, { area, sequence: work.sequence_order || 0 });
-  }
-  
-  // Sort works in each area by sequence
-  for (const [area, works] of worksByArea) {
-    works.sort((a, b) => a.sequence - b.sequence);
-  }
-
-  // Build assignments and track backfill
+  // Build weekly assignments (WITHOUT work_id - sync-all will link them)
   const assignments = [];
-  const progressToBackfill: { child_id: string; work_id: string; status: number }[] = [];
 
   for (const assignment of plan.assignments) {
     const childId = childrenMap.get(assignment.childName.toLowerCase());
@@ -371,7 +308,6 @@ async function createChildrenAndAssignments(
     }
 
     for (const work of assignment.works) {
-      // Map area names to match DB constraint (mathematics → math)
       let area = work.area;
       if (area === 'mathematics') area = 'math';
       
@@ -379,48 +315,22 @@ async function createChildrenAndAssignments(
         week_number: weekNumber,
         year: year,
         child_id: childId,
-        work_id: work.matchedWorkId || null,
+        work_id: null, // Leave unlinked - sync-all will match
         work_name: work.workNameEnglish || work.workNameChinese,
         area: area,
-        progress_status: 'practicing' // Current work is "practicing"
+        progress_status: 'practicing'
       });
-
-      // BACKFILL: Mark current work as practicing (status 2)
-      if (work.matchedWorkId) {
-        progressToBackfill.push({
-          child_id: childId,
-          work_id: work.matchedWorkId,
-          status: 2 // practicing
-        });
-
-        // Find all works BEFORE this one in the same area and mark as mastered
-        const workInfo = workIdToInfo.get(work.matchedWorkId);
-        if (workInfo) {
-          const areaWorks = worksByArea.get(workInfo.area) || [];
-          for (const prevWork of areaWorks) {
-            if (prevWork.sequence < workInfo.sequence) {
-              progressToBackfill.push({
-                child_id: childId,
-                work_id: prevWork.id,
-                status: 3 // mastered
-              });
-            }
-          }
-        }
-      }
     }
   }
 
   // Insert weekly assignments
   if (assignments.length > 0) {
-    // Delete existing assignments for this week
     await supabase
       .from('weekly_assignments')
       .delete()
       .eq('week_number', weekNumber)
       .eq('year', year);
 
-    // Insert new assignments
     const { error } = await supabase
       .from('weekly_assignments')
       .insert(assignments);
@@ -428,60 +338,9 @@ async function createChildrenAndAssignments(
     if (error) {
       console.error('Failed to insert assignments:', error);
     } else {
-      console.log(`[Upload] Created ${assignments.length} weekly assignments`);
+      console.log(`[Upload] Created ${assignments.length} weekly assignments (unlinked, sync-all will match)`);
     }
   }
 
-  // Insert/update progress backfill (permanent progress tracking)
-  let backfillCount = 0;
-  if (progressToBackfill.length > 0) {
-    // FIXED: Only UPGRADE status, never DEMOTE (mastered stays mastered)
-    // First, get all existing progress for the children involved
-    const childIds = [...new Set(progressToBackfill.map(p => p.child_id))];
-    const workIds = [...new Set(progressToBackfill.map(p => p.work_id))];
-    
-    const { data: existingProgress } = await supabase
-      .from('child_work_progress')
-      .select('child_id, work_id, status')
-      .in('child_id', childIds)
-      .in('work_id', workIds);
-    
-    // Build lookup map for existing progress
-    const existingMap = new Map<string, number>();
-    if (existingProgress) {
-      for (const p of existingProgress) {
-        existingMap.set(`${p.child_id}|${p.work_id}`, p.status);
-      }
-    }
-    
-    // Only upsert if new status >= existing status (never demote)
-    for (const progress of progressToBackfill) {
-      const key = `${progress.child_id}|${progress.work_id}`;
-      const existingStatus = existingMap.get(key) ?? -1;
-      
-      // Skip if existing status is already higher
-      if (existingStatus >= progress.status) {
-        continue;
-      }
-      
-      const { error } = await supabase
-        .from('child_work_progress')
-        .upsert({
-          child_id: progress.child_id,
-          work_id: progress.work_id,
-          status: progress.status,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'child_id,work_id',
-          ignoreDuplicates: false
-        });
-      
-      if (!error) {
-        backfillCount++;
-      }
-    }
-    console.log(`[Upload] Backfilled ${backfillCount} progress records (only upgrades, never demotions)`);
-  }
-
-  return backfillCount;
+  return assignments.length;
 }
