@@ -496,6 +496,8 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 function ProgressTab({ childId, childName }: { childId: string; childName: string }) {
   const [areaProgress, setAreaProgress] = useState<AreaProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
   useEffect(() => {
@@ -532,6 +534,42 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
     }
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch(`/api/classroom/child/${childId}/progress/sync`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setSyncResult(`✅ ${data.message}`);
+        fetchProgress();
+      } else {
+        setSyncResult(`❌ ${data.error || 'Sync failed'}`);
+      }
+    } catch (error) {
+      setSyncResult('❌ Sync failed');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleWorkClick = async (work: any) => {
+    const newStatus = work.status === 3 ? 0 : 3;
+    try {
+      await fetch(`/api/classroom/child/${childId}/progress/${work.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      fetchProgress();
+    } catch (error) {
+      console.error('Update error:', error);
+    }
+  };
+
   const toggleArea = (areaId: string) => {
     setExpandedArea(prev => prev === areaId ? null : areaId);
   };
@@ -563,6 +601,33 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
 
   return (
     <div>
+      {/* SYNC BUTTON */}
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-4 mb-4 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-white">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">
+              🔄
+            </div>
+            <div>
+              <h3 className="font-bold">Sync from This Week</h3>
+              <p className="text-sm text-white/80">Link & backfill mastered works</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="px-5 py-2.5 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 disabled:opacity-50 shadow"
+          >
+            {syncing ? '⏳...' : '🚀 Sync'}
+          </button>
+        </div>
+        {syncResult && (
+          <p className="mt-3 text-sm text-white/90 bg-white/10 rounded-lg px-3 py-2">
+            {syncResult}
+          </p>
+        )}
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-gray-900">Overall Progress</h3>
@@ -595,6 +660,9 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
           </div>
         </div>
       </div>
+
+      {/* Tip */}
+      <p className="text-xs text-gray-400 text-center mb-3">💡 Tap any work to toggle mastered</p>
 
       <div className="space-y-3">
         {areaProgress.map(area => {
@@ -644,20 +712,28 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
 
               {isExpanded && area.works.length > 0 && (
                 <div className={`border-t ${area.bgColor} p-3`}>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {area.works.map((work: any) => (
-                      <div
+                      <button
                         key={work.id}
-                        className={`p-2 rounded-lg bg-white shadow-sm border-l-4 ${
-                          work.status === 3 ? 'border-green-500' :
-                          work.status === 2 ? 'border-blue-500' :
-                          work.status === 1 ? 'border-yellow-400' :
-                          'border-gray-200'
+                        onClick={() => handleWorkClick(work)}
+                        className={`p-2.5 rounded-lg text-left transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                          work.status === 3 
+                            ? 'bg-green-500 text-white shadow-md' 
+                            : work.status === 2 
+                              ? 'bg-blue-100 border-2 border-blue-300' 
+                              : work.status === 1 
+                                ? 'bg-yellow-50 border border-yellow-300' 
+                                : 'bg-white border border-gray-200'
                         }`}
                       >
-                        <p className="text-xs font-medium text-gray-800 truncate">{work.name}</p>
-                        <p className="text-[10px] text-gray-500">{STATUS_LABELS[work.status]}</p>
-                      </div>
+                        <p className={`text-xs font-medium truncate ${work.status === 3 ? 'text-white' : 'text-gray-800'}`}>
+                          {work.name}
+                        </p>
+                        <p className={`text-[10px] ${work.status === 3 ? 'text-green-100' : 'text-gray-500'}`}>
+                          {STATUS_LABELS[work.status]}
+                        </p>
+                      </button>
                     ))}
                   </div>
                 </div>

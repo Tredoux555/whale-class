@@ -114,6 +114,15 @@ export default function DashboardPage() {
         
         {/* Header actions */}
         <div className="flex items-center gap-2">
+          {/* Curriculum Editor link */}
+          <Link
+            href="/admin/curriculum-editor"
+            className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center justify-center transition-colors"
+            title="Curriculum Editor"
+          >
+            <span className="text-lg">📚</span>
+          </Link>
+          
           {/* Reports link */}
           <Link
             href="/montree/dashboard/reports"

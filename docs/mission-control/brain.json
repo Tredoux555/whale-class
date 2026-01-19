@@ -1,70 +1,147 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-18T22:30:00Z",
-  "session": 59,
+  "lastUpdated": "2026-01-19T14:45:00Z",
+  "session": 63,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "CRITICAL FIX: Unified data systems - Montree now uses admin APIs",
-  "phaseStatus": "🔄 IN PROGRESS",
+  "currentSubPhase": "SESSION 63 COMPLETE",
+  "phaseStatus": "✅ PROGRESS TRACKING UI COMPLETE",
   
   "CORE_LAWS": [
-    "1. The /montree/ is THE PRODUCT. Completely standalone, duplicatable per school.",
-    "2. The /admin/ is Tredoux's personal sandbox. DISCONNECT from Montree completely.",
-    "3. Brain updates are MANDATORY after every chunk of work.",
-    "4. READ THIS FILE FIRST - Every single session.",
-    "5. JAPANESE ENGINEER MINDSET - Seek perfection, fix issues before moving on.",
-    "6. SEGMENT WORK - Bite-size chunks, update brain after EVERY step.",
-    "7. PURE ENGLISH PLATFORM - No Chinese/dual-language. i18n via separate system after build."
+    "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
+    "2. The /montree/ is THE PRODUCT. Standalone, duplicatable per school.",
+    "3. The /admin/ is Tredoux's personal sandbox.",
+    "4. Brain updates MANDATORY after every chunk of work.",
+    "5. READ THIS FILE FIRST - Every session.",
+    "6. JAPANESE ENGINEER MINDSET - Perfection before progress.",
+    "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_59_CRITICAL_FIX": {
-    "problem": "Montree and Admin used SEPARATE data tables that didn't connect",
-    "montree_was": "montree_children + montree_child_assignments (EMPTY)",
-    "admin_uses": "children + weekly_assignments (WORKING)",
-    "solution": "Made Montree read from same tables as admin",
-    "status": "✅ FIXED",
-    "files_fixed": 2,
-    "build": "✅ PASSED"
+  "SESSION_63_WORK_DETAIL_UI": {
+    "status": "✅ COMPLETE - AUDITED & FIXED",
+    "started": "2026-01-19T13:45:00Z",
+    "audited": "2026-01-19T14:15:00Z",
+    
+    "AUDIT_RESULTS": {
+      "issues_found": 5,
+      "issues_fixed": 3,
+      "issues_deferred": 2,
+      "fixes_applied": [
+        "BUG-001: Moved swipe handlers to nav area only (not whole panel)",
+        "BUG-002: Added unsaved notes confirmation on navigate",
+        "BUG-003: Added stopPropagation to all buttons + textarea"
+      ],
+      "deferred": [
+        "UX-001: Keyboard shortcuts (Escape, Arrow keys) - nice to have",
+        "UX-002: Visual unsaved indicator on row - nice to have"
+      ]
+    },
+    
+    "PROGRESS_TAB_FIX": {
+      "status": "✅ FIXED",
+      "problem": "Showed 0% because it only counted mastered works",
+      "solution": "Now shows X/308 'works started' (presented + practicing + mastered)",
+      "changes": [
+        "Overall Progress: shows works started count instead of mastered %",
+        "Area cards: show X/total works started with color coding",
+        "Removed confusing percentage that was always 0%",
+        "Added Edit Curriculum button → /admin/curriculum-editor"
+      ]
+    },
+    
+    "UX_SIMPLIFICATION": {
+      "status": "✅ COMPLETE",
+      "change": "Progress Tab: one-click mastery toggle",
+      "before": "Click cycled through 4 statuses (confusing)",
+      "after": "Click toggles mastered on/off (simple)",
+      "this_week_tab": "Keeps full P → Pr → M cycle for detailed tracking"
+    },
+    
+    "COMPLETED": {
+      "expandable_row": {
+        "status": "✅ BUILT & FIXED",
+        "file": "/app/montree/dashboard/student/[id]/page.tsx",
+        "features": [
+          "Click row to expand/collapse",
+          "Notes textarea with save button",
+          "Demo button → YouTube search for work presentation",
+          "Capture button (photo/video)",
+          "Prev/Next navigation with stopPropagation",
+          "Swipe navigation (on nav bar only)",
+          "Work counter (1 of 5)",
+          "Chevron indicator",
+          "Unsaved notes confirmation"
+        ]
+      },
+      "notes_api": {
+        "status": "✅ VERIFIED",
+        "file": "/app/api/weekly-planning/progress/route.ts"
+      }
+    }
   },
 
-  "DATA_FLOW_NOW": {
-    "step_1": "Drop weekly plan at /admin/weekly-planning",
-    "step_2": "AI parses → children + weekly_assignments tables",
-    "step_3": "Montree /api/montree/children reads from children table",
-    "step_4": "Montree student page uses /api/classroom/child APIs",
-    "result": "Works appear correctly in both admin AND Montree!"
+  "SESSION_62_POST_AUDIT": {
+    "status": "✅ COMPLETE",
+    "completed": "2026-01-19T13:30:00Z"
   },
 
-  "SQL_FILES": {
-    "clear_montree": "~/Desktop/whale/supabase/clear_montree_fresh.sql"
+  "SESSION_61_AUDIT": {
+    "status": "✅ COMPLETE",
+    "issues_found": 4,
+    "issues_fixed": 4,
+    "segments_passed": "5/5"
   },
 
-  "PHASE_OVERVIEW": {
-    "phase_1": { "name": "Database Foundation", "status": "✅ COMPLETE" },
-    "phase_2": { "name": "Media Capture System", "status": "✅ COMPLETE + AUDITED" },
-    "phase_3": { "name": "Weekly Reports Generation", "status": "✅ COMPLETE + BUG FIXED" },
-    "phase_4": { "name": "PDF Export System", "status": "✅ COMPLETE + BUG FIXED" },
-    "phase_5": { "name": "AI Content Generation", "status": "✅ COMPLETE + BUG FIXED" },
-    "phase_6": { "name": "Parent Portal", "status": "✅ COMPLETE + BUG FIXED" },
-    "phase_7": { "name": "Email Delivery", "status": "❌ NOT STARTED", "priority": "LOW" },
-    "phase_8": { "name": "Video Slideshows", "status": "❌ NOT STARTED", "priority": "LOW" },
-    "phase_9": { "name": "Test & Polish", "status": "🔄 IN PROGRESS", "priority": "HIGH" }
+  "SESSION_60_CURRICULUM_SYSTEM": {
+    "vision": "Each classroom owns its curriculum. Teachers customize freely.",
+    "whale_classroom_id": "bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6",
+    "correct_tables": [
+      "montree_classroom_curriculum_areas (5 areas)",
+      "montree_classroom_curriculum_works (308 works)"
+    ],
+    "wrong_table": "curriculum_roadmap (global - DO NOT USE)",
+    "phase_1": "✅ Progress API updated",
+    "phase_2": "✅ Sync API with auto-add",
+    "phase_3": "✅ CRUD APIs + Editor UI",
+    "phase_4": "✅ Auto-sync on import",
+    "handoff": "/docs/mission-control/HANDOFF_CURRICULUM_EDITOR.md"
   },
 
-  "NEXT_STEPS": [
-    "1. Run clear_montree_fresh.sql in Supabase (optional - clears old montree tables)",
-    "2. Upload weekly plan at /admin/weekly-planning",
-    "3. Check /admin/classroom - students should appear with works",
-    "4. Check /montree/dashboard - SAME students should appear",
-    "5. Click student → verify This Week tab shows works"
-  ],
+  "CURRICULUM_APIS": {
+    "progress": "/api/classroom/child/[childId]/progress",
+    "sync": "/api/classroom/child/[childId]/progress/sync",
+    "crud": "/api/admin/curriculum",
+    "crud_single": "/api/admin/curriculum/[id]",
+    "orphaned": "/api/admin/curriculum/orphaned",
+    "sync_all": "/api/admin/curriculum/sync-all",
+    "editor_ui": "/admin/curriculum-editor"
+  },
 
-  "AI_EXTRACTION_STATUS": "⚠️ LOW ACCURACY (10%) - Consider teacher form input instead",
-  
-  "dataState": {
-    "children": "From weekly_assignments upload",
-    "curriculum_works": 268,
-    "work_translations_seeded": 237,
-    "tokens_table": "✅ READY",
-    "storage_bucket": "whale-media (private)"
-  }
+  "STATUS_CODES": {
+    "0": "not_started (white)",
+    "1": "presented (yellow)", 
+    "2": "practicing (blue)",
+    "3": "mastered (green)"
+  },
+
+  "CURRENT_STATS": {
+    "curriculum_works": 308,
+    "montessori_areas": 5,
+    "orphaned_works": 0,
+    "linked_progress": 4,
+    "total_progress_records": 26,
+    "works_by_area": {
+      "practical_life": 92,
+      "sensorial": 44,
+      "mathematics": 65,
+      "language": 47,
+      "cultural": 60
+    }
+  },
+
+  "NEXT_SESSION_PRIORITIES": [
+    "1. Test full flow: Upload weekly plan → verify auto-sync fires",
+    "2. Progress Tab UI polish in student view",
+    "3. Consider deprecating curriculum_roadmap table",
+    "4. Add curriculum sync indicator to upload success toast"
+  ]
 }

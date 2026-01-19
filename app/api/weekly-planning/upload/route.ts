@@ -120,6 +120,23 @@ export async function POST(request: NextRequest) {
       backfillCount = await createChildrenAndAssignments(supabase, weekNumber, year, matchedPlan, curriculumWorks || []);
     }
 
+    // AUTO-SYNC: Link new assignments to classroom curriculum
+    // This matches works to montree_classroom_curriculum_works and creates progress records
+    let syncResult = { matched: 0, autoAdded: 0, childrenSynced: 0 };
+    try {
+      const syncResponse = await fetch(new URL('/api/admin/curriculum/sync-all', request.url), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (syncResponse.ok) {
+        const syncData = await syncResponse.json();
+        syncResult = syncData.results || syncResult;
+        console.log(`[Upload] Auto-sync complete: ${syncData.message}`);
+      }
+    } catch (syncError) {
+      console.error('[Upload] Auto-sync failed (non-fatal):', syncError);
+    }
+
     return NextResponse.json({
       success: true,
       plan: savedPlan,
@@ -127,7 +144,8 @@ export async function POST(request: NextRequest) {
       debug: {
         childrenCount: matchedPlan.assignments?.length || 0,
         totalWorks: matchedPlan.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0,
-        masteredBackfilled: backfillCount
+        masteredBackfilled: backfillCount,
+        curriculumSync: syncResult
       }
     });
 
@@ -417,9 +435,35 @@ async function createChildrenAndAssignments(
   // Insert/update progress backfill (permanent progress tracking)
   let backfillCount = 0;
   if (progressToBackfill.length > 0) {
-    // Use upsert to avoid duplicates - update if exists, insert if not
-    // Only update if new status is higher (don't demote mastered to practicing)
+    // FIXED: Only UPGRADE status, never DEMOTE (mastered stays mastered)
+    // First, get all existing progress for the children involved
+    const childIds = [...new Set(progressToBackfill.map(p => p.child_id))];
+    const workIds = [...new Set(progressToBackfill.map(p => p.work_id))];
+    
+    const { data: existingProgress } = await supabase
+      .from('child_work_progress')
+      .select('child_id, work_id, status')
+      .in('child_id', childIds)
+      .in('work_id', workIds);
+    
+    // Build lookup map for existing progress
+    const existingMap = new Map<string, number>();
+    if (existingProgress) {
+      for (const p of existingProgress) {
+        existingMap.set(`${p.child_id}|${p.work_id}`, p.status);
+      }
+    }
+    
+    // Only upsert if new status >= existing status (never demote)
     for (const progress of progressToBackfill) {
+      const key = `${progress.child_id}|${progress.work_id}`;
+      const existingStatus = existingMap.get(key) ?? -1;
+      
+      // Skip if existing status is already higher
+      if (existingStatus >= progress.status) {
+        continue;
+      }
+      
       const { error } = await supabase
         .from('child_work_progress')
         .upsert({
@@ -436,7 +480,7 @@ async function createChildrenAndAssignments(
         backfillCount++;
       }
     }
-    console.log(`[Upload] Backfilled ${backfillCount} progress records (mastered + current)`);
+    console.log(`[Upload] Backfilled ${backfillCount} progress records (only upgrades, never demotions)`);
   }
 
   return backfillCount;
