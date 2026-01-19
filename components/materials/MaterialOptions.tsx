@@ -55,18 +55,28 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
     onChange({ ...options, [key]: value });
   };
 
-  const handleImageFiles = (files: FileList | null) => {
+  const handleImageFiles = async (files: FileList | null) => {
     if (!files) return;
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newImages = [...(options.images || []), e.target?.result as string];
-          update('images', newImages);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    
+    // Read all files and collect results
+    const readPromises = Array.from(files)
+      .filter(file => file.type.startsWith('image/'))
+      .map(file => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+    
+    try {
+      const newImages = await Promise.all(readPromises);
+      // Add all new images at once
+      update('images', [...(options.images || []), ...newImages]);
+    } catch (err) {
+      console.error('Error reading images:', err);
+    }
   };
 
   const removeImage = (index: number) => {
