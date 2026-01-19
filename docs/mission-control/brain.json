@@ -1,14 +1,14 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T03:25:00Z",
+  "lastUpdated": "2026-01-20T03:45:00Z",
   "session": 68,
   "phase": "Foundation Phase 1-4",
-  "currentSubPhase": "✅ FOUNDATION 100% LIVE",
-  "phaseStatus": "🎉 All systems operational",
+  "currentSubPhase": "Fixing AI endpoint queries",
+  "phaseStatus": "🔧 Removing name_chinese from queries",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
-    "2. The /montree/ is THE PRODUCT",
+    "2. The /montree/ is THE PRODUCT", 
     "3. The /admin/ is Tredoux's sandbox",
     "4. Brain updates MANDATORY after every chunk",
     "5. READ THIS FILE FIRST",
@@ -16,46 +16,29 @@
     "7. SEGMENT WORK - update brain after EVERY step"
   ],
 
-  "SESSION_68_COMPLETE": {
-    "problem_solved": "API 404 issue + AI endpoint bugs",
-    "root_cause_404": "DNS misconfiguration on non-www domain",
-    "root_cause_ai_bug": "date_of_birth column doesn't exist in montree_children",
-    "fixes_applied": [
-      "Use www.teacherpotato.xyz",
-      "Removed date_of_birth from suggest-next query",
-      "Removed date_of_birth from weekly-report query"
-    ],
-    "all_systems_verified": true
+  "SESSION_68_PROGRESS": {
+    "api_404_fixed": "✅ Use www.teacherpotato.xyz",
+    "ai_analyze": "✅ WORKS",
+    "ai_suggest_next": "🔧 FIXING - name_chinese column doesn't exist",
+    "ai_weekly_report": "🔧 FIXING - same issue"
   },
 
-  "VERIFIED_WORKING": {
-    "domain": "www.teacherpotato.xyz",
-    "api_health": "✅",
-    "api_schools": "✅ Returns Beijing International School",
-    "api_children": "✅ Returns 20 children",
-    "api_students": "✅ Returns 20 students from montree_children",
-    "api_classrooms": "✅ Returns Whale Class",
-    "api_ai_analyze": "✅ Returns comprehensive developmental analysis!",
-    "api_ai_suggest_next": "❓ Testing - same child_id returned 'Child not found'"
+  "BUG_FOUND": {
+    "issue": "suggest-next and weekly-report query name_chinese column",
+    "root_cause": "montree_children table has NO name_chinese column",
+    "analyze_works_because": "analyze query doesn't include name_chinese",
+    "fix": "Remove name_chinese from both queries"
   },
 
-  "DATA_NOTE": {
-    "two_child_tables": true,
-    "children_table": "Old table - used by classroom features",
-    "montree_children_table": "New Montree Foundation table - used by AI",
-    "ids_are_different": "Same names, different UUIDs"
-  },
-
-  "AI_ANALYSIS_SAMPLE": {
-    "child": "Rachel",
-    "child_id_montree": "9a771bd2-7ab7-43c0-986b-758280b100fd",
-    "result": "Full developmental insights with area breakdowns"
+  "FIXES_IN_PROGRESS": {
+    "suggest-next": "✅ Fixed - removed name_chinese",
+    "weekly-report": "⏳ Next to fix"
   },
 
   "NEXT_STEPS": [
-    "1. Write SESSION_68 handoff",
-    "2. Fix non-www DNS (optional - can use www)",
-    "3. Wire AI into dashboard UI",
-    "4. Test weekly-report and suggest-next endpoints"
+    "1. Fix weekly-report query (remove name_chinese)",
+    "2. Test locally",
+    "3. Commit and push",
+    "4. Test on www.teacherpotato.xyz"
   ]
 }

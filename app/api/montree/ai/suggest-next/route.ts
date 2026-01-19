@@ -102,7 +102,6 @@ export async function POST(request: NextRequest) {
       .select(`
         id,
         name,
-        name_chinese,
         age,
         classroom_id,
         classroom:montree_classrooms(id, name)
