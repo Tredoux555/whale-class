@@ -92,12 +92,10 @@ export async function POST(req: NextRequest) {
     await supabase.from('story_message_history').insert({
       week_start_date: weekStartDate,
       message_type: 'text',
-      content: encryptedMessage,
+      message_content: encryptedMessage,
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
-      is_from_admin: true,
-      session_token: sessionToken,
-      login_log_id: loginLogId
+      is_expired: false
     });
 
     // Check if story exists
