@@ -97,7 +97,6 @@ export async function POST(request: NextRequest) {
         id,
         name,
         age,
-        date_of_birth,
         classroom_id,
         classroom:montree_classrooms(id, name)
       `)

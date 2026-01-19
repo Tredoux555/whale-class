@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
         name,
         name_chinese,
         age,
-        date_of_birth,
         classroom_id,
         classroom:montree_classrooms(id, name)
       `)
