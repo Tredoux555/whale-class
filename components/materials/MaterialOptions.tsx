@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { MaterialType, CardSize, GeneratorOptions } from './MaterialGenerator';
 
 interface Props {
@@ -42,8 +42,31 @@ const SENTENCE_LEVELS = ['pink-level', 'blue-level', 'green-level', 'all'];
 const PHONOGRAM_GROUPS = ['long-a', 'long-i', 'long-o', 'long-u', 'long-e', 'digraphs'];
 
 export default function MaterialOptions({ type, options, onChange, onGenerate, generating }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  
   const update = (key: keyof GeneratorOptions, value: any) => {
     onChange({ ...options, [key]: value });
+  };
+
+  const handleImageFiles = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const newImages = [...(options.images || []), e.target?.result as string];
+          update('images', newImages);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...(options.images || [])];
+    newImages.splice(index, 1);
+    update('images', newImages);
   };
 
   return (
@@ -222,6 +245,73 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {type === 'picture-cards' && (
+          <div className="space-y-4">
+            {/* Drop Zone */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                handleImageFiles(e.dataTransfer.files);
+              }}
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              <div className="text-3xl mb-2">📷</div>
+              <div className="text-sm text-gray-600">
+                <span className="text-indigo-600 font-medium">Drop images here</span>
+                <br />or click to select
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageFiles(e.target.files)}
+              />
+            </div>
+
+            {/* Image Preview Grid */}
+            {options.images && options.images.length > 0 && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {options.images.length} image{options.images.length !== 1 ? 's' : ''}
+                  </span>
+                  <button
+                    onClick={() => update('images', [])}
+                    className="text-xs text-red-500 hover:text-red-700"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {options.images.map((img, i) => (
+                    <div key={i} className="relative group">
+                      <img
+                        src={img}
+                        alt={`Image ${i + 1}`}
+                        className="w-full h-16 object-cover rounded-lg border"
+                      />
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
