@@ -57,11 +57,11 @@ export default function MaterialGenerator() {
     jumbo: 150,
   };
 
-  // Series colors (RGB)
+  // Series colors (RGB) - vibrant Montessori colors for borders
   const SERIES_COLORS: Record<string, [number, number, number]> = {
-    pink: [236, 72, 153],
-    blue: [59, 130, 246],
-    green: [34, 197, 94],
+    pink: [236, 72, 153],    // #EC4899 - vibrant pink
+    blue: [59, 130, 246],    // #3B82F6 - vibrant blue
+    green: [34, 197, 94],    // #22C55E - vibrant green
   };
 
   // Crop image to square from center with rounded corners
@@ -115,33 +115,35 @@ export default function MaterialGenerator() {
   // Generate picture cards PDF client-side
   const generatePictureCardsPDF = async (images: string[], size: CardSize, seriesColor: string = 'pink'): Promise<string> => {
     const cardSize = SIZE_MAP[size];
-    const margin = 10; // mm
-    const gap = 5; // mm between cards
-    const borderWidth = 3; // mm
-    const cornerRadius = 4; // mm - rounded corners
+    const margin = 10; // mm - matches pdf-generator
+    const gap = 5; // mm - matches pdf-generator for single-cut separation
+    const cornerRadius = 4; // mm - matches pdf-generator
+    const borderWidth = 3; // mm - thick vibrant border like screenshot
     
     // A4 dimensions in mm
     const pageWidth = 210;
     const pageHeight = 297;
     
-    // Calculate how many cards fit per row/column
-    const cardsPerRow = Math.floor((pageWidth - 2 * margin + gap) / (cardSize + gap));
-    const cardsPerCol = Math.floor((pageHeight - 2 * margin + gap) / (cardSize + gap));
+    // Calculate grid - same formula as pdf-generator
+    const usableWidth = pageWidth - (margin * 2);
+    const usableHeight = pageHeight - (margin * 2) - 15; // 15mm for header
+    const cardsPerRow = Math.floor(usableWidth / (cardSize + gap));
+    const cardsPerCol = Math.floor(usableHeight / (cardSize + gap));
     const cardsPerPage = cardsPerRow * cardsPerCol;
     
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
-    // Get border color
+    // Get border color - using vibrant Montessori series colors
     const [r, g, b] = SERIES_COLORS[seriesColor] || SERIES_COLORS.pink;
     
-    // Process images - crop to square
+    // Process images - crop to square with rounded corners
     const croppedImages: string[] = [];
     for (const img of images) {
       try {
         const cropped = await loadAndCropImage(img);
         croppedImages.push(cropped);
       } catch {
-        croppedImages.push(img); // Use original if cropping fails
+        croppedImages.push(img);
       }
     }
     
@@ -155,28 +157,55 @@ export default function MaterialGenerator() {
       const col = pageIndex % cardsPerRow;
       
       const x = margin + col * (cardSize + gap);
-      const y = margin + row * (cardSize + gap);
+      const y = 15 + row * (cardSize + gap); // 15mm offset for header area
       
-      // Draw colored rounded border
+      // Card with thick colored border and white background
+      doc.setFillColor(255, 255, 255); // White background
       doc.setDrawColor(r, g, b);
       doc.setLineWidth(borderWidth);
-      doc.roundedRect(x + borderWidth/2, y + borderWidth/2, cardSize - borderWidth, cardSize - borderWidth, cornerRadius, cornerRadius, 'S');
+      doc.roundedRect(x, y, cardSize, cardSize, cornerRadius, cornerRadius, 'FD');
       
-      // Add image filling inner area (already has rounded corners baked in)
-      const innerOffset = borderWidth;
-      const innerSize = cardSize - 2 * borderWidth;
+      // Add image with padding inside border (image already has rounded corners)
+      const padding = borderWidth + 1; // mm padding inside card
+      const imageSize = cardSize - (padding * 2);
       
       try {
-        doc.addImage(croppedImages[i], 'JPEG', x + innerOffset, y + innerOffset, innerSize, innerSize);
+        doc.addImage(croppedImages[i], 'JPEG', x + padding, y + padding, imageSize, imageSize);
       } catch {
         try {
-          doc.addImage(croppedImages[i], 'PNG', x + innerOffset, y + innerOffset, innerSize, innerSize);
+          doc.addImage(croppedImages[i], 'PNG', x + padding, y + padding, imageSize, imageSize);
         } catch {
-          // Draw placeholder
-          doc.setFillColor(240, 240, 240);
-          doc.roundedRect(x + innerOffset, y + innerOffset, innerSize, innerSize, cornerRadius - 1, cornerRadius - 1, 'F');
+          // placeholder
         }
       }
+    }
+    
+    // Add cutting guides (dotted lines) - same as pdf-generator
+    const totalPages = Math.ceil(croppedImages.length / cardsPerPage);
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) continue; // guides on first page only or all pages
+      doc.setPage(page + 1);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineDashPattern([2, 2], 0);
+      doc.setLineWidth(0.2);
+      
+      // Vertical cutting guides
+      for (let c = 0; c <= cardsPerRow; c++) {
+        const lineX = margin + c * (cardSize + gap) - gap/2;
+        if (c > 0 && c < cardsPerRow) {
+          doc.line(lineX, 12, lineX, pageHeight - margin);
+        }
+      }
+      
+      // Horizontal cutting guides
+      for (let r = 0; r <= cardsPerCol; r++) {
+        const lineY = 15 + r * (cardSize + gap) - gap/2;
+        if (r > 0 && r < cardsPerCol) {
+          doc.line(margin - 2, lineY, pageWidth - margin + 2, lineY);
+        }
+      }
+      
+      doc.setLineDashPattern([], 0);
     }
     
     return doc.output('datauristring');
