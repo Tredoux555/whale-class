@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { MaterialType, CardSize, GeneratorOptions } from './MaterialGenerator';
+import { MaterialType, CardSize, GeneratorOptions, SeriesColor } from './MaterialGenerator';
 
 interface Props {
   type: MaterialType;
@@ -16,6 +16,12 @@ const SIZES: { value: CardSize; label: string; desc: string }[] = [
   { value: 'medium', label: 'Medium', desc: '75×75mm' },
   { value: 'large', label: 'Large', desc: '100×100mm' },
   { value: 'jumbo', label: 'Jumbo', desc: '150×150mm' },
+];
+
+const SERIES_COLORS: { value: SeriesColor; label: string; color: string }[] = [
+  { value: 'pink', label: 'Pink Series', color: '#EC4899' },
+  { value: 'blue', label: 'Blue Series', color: '#3B82F6' },
+  { value: 'green', label: 'Green Series', color: '#22C55E' },
 ];
 
 const VOWELS = ['a', 'i', 'o', 'e', 'u'];
@@ -250,6 +256,35 @@ export default function MaterialOptions({ type, options, onChange, onGenerate, g
 
         {type === 'picture-cards' && (
           <div className="space-y-4">
+            {/* Series Color Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Border Color (match your series)
+              </label>
+              <div className="flex gap-2">
+                {SERIES_COLORS.map((sc) => (
+                  <button
+                    key={sc.value}
+                    onClick={() => update('seriesColor', sc.value)}
+                    className={`flex-1 p-2 rounded-lg border-2 text-center transition-all ${
+                      (options.seriesColor || 'pink') === sc.value
+                        ? 'border-gray-800 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    style={{ 
+                      backgroundColor: (options.seriesColor || 'pink') === sc.value ? sc.color + '20' : 'transparent'
+                    }}
+                  >
+                    <div 
+                      className="w-6 h-6 rounded-full mx-auto mb-1"
+                      style={{ backgroundColor: sc.color }}
+                    />
+                    <div className="text-xs font-medium">{sc.label.replace(' Series', '')}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Drop Zone */}
             <div
               onClick={() => fileInputRef.current?.click()}

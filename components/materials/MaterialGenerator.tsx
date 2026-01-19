@@ -20,6 +20,8 @@ export type MaterialType =
 
 export type CardSize = 'small' | 'medium' | 'large' | 'jumbo';
 
+export type SeriesColor = 'pink' | 'blue' | 'green';
+
 export interface GeneratorOptions {
   size: CardSize;
   lowercase?: boolean;
@@ -32,6 +34,7 @@ export interface GeneratorOptions {
   group?: string;
   categories?: string[];
   images?: string[];  // For picture cards - base64 image data
+  seriesColor?: SeriesColor;  // Border color for picture cards
 }
 
 export default function MaterialGenerator() {
@@ -54,11 +57,45 @@ export default function MaterialGenerator() {
     jumbo: 150,
   };
 
+  // Series colors (RGB)
+  const SERIES_COLORS: Record<string, [number, number, number]> = {
+    pink: [236, 72, 153],
+    blue: [59, 130, 246],
+    green: [34, 197, 94],
+  };
+
+  // Crop image to square from center
+  const cropToSquare = (img: HTMLImageElement): HTMLCanvasElement => {
+    const canvas = document.createElement('canvas');
+    const size = Math.min(img.width, img.height);
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    const offsetX = (img.width - size) / 2;
+    const offsetY = (img.height - size) / 2;
+    ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
+    return canvas;
+  };
+
+  // Load image and return cropped base64
+  const loadAndCropImage = (src: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const cropped = cropToSquare(img);
+        resolve(cropped.toDataURL('image/jpeg', 0.95));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
+
   // Generate picture cards PDF client-side
-  const generatePictureCardsPDF = async (images: string[], size: CardSize): Promise<string> => {
+  const generatePictureCardsPDF = async (images: string[], size: CardSize, seriesColor: string = 'pink'): Promise<string> => {
     const cardSize = SIZE_MAP[size];
     const margin = 10; // mm
     const gap = 5; // mm between cards
+    const borderWidth = 3; // mm
     
     // A4 dimensions in mm
     const pageWidth = 210;
@@ -71,7 +108,21 @@ export default function MaterialGenerator() {
     
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
-    for (let i = 0; i < images.length; i++) {
+    // Get border color
+    const [r, g, b] = SERIES_COLORS[seriesColor] || SERIES_COLORS.pink;
+    
+    // Process images - crop to square
+    const croppedImages: string[] = [];
+    for (const img of images) {
+      try {
+        const cropped = await loadAndCropImage(img);
+        croppedImages.push(cropped);
+      } catch {
+        croppedImages.push(img); // Use original if cropping fails
+      }
+    }
+    
+    for (let i = 0; i < croppedImages.length; i++) {
       if (i > 0 && i % cardsPerPage === 0) {
         doc.addPage();
       }
@@ -83,21 +134,24 @@ export default function MaterialGenerator() {
       const x = margin + col * (cardSize + gap);
       const y = margin + row * (cardSize + gap);
       
-      // Draw border
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(x, y, cardSize, cardSize);
+      // Draw colored border
+      doc.setDrawColor(r, g, b);
+      doc.setLineWidth(borderWidth);
+      doc.rect(x + borderWidth/2, y + borderWidth/2, cardSize - borderWidth, cardSize - borderWidth);
       
-      // Add image
+      // Add image filling inner area
+      const innerOffset = borderWidth;
+      const innerSize = cardSize - 2 * borderWidth;
+      
       try {
-        doc.addImage(images[i], 'JPEG', x + 1, y + 1, cardSize - 2, cardSize - 2);
+        doc.addImage(croppedImages[i], 'JPEG', x + innerOffset, y + innerOffset, innerSize, innerSize);
       } catch {
-        // If image fails, try as PNG
         try {
-          doc.addImage(images[i], 'PNG', x + 1, y + 1, cardSize - 2, cardSize - 2);
+          doc.addImage(croppedImages[i], 'PNG', x + innerOffset, y + innerOffset, innerSize, innerSize);
         } catch {
           // Draw placeholder
           doc.setFillColor(240, 240, 240);
-          doc.rect(x + 1, y + 1, cardSize - 2, cardSize - 2, 'F');
+          doc.rect(x + innerOffset, y + innerOffset, innerSize, innerSize, 'F');
         }
       }
     }
@@ -118,9 +172,9 @@ export default function MaterialGenerator() {
         if (!options.images || options.images.length === 0) {
           throw new Error('Please add some images first');
         }
-        const pdf = await generatePictureCardsPDF(options.images, options.size);
+        const pdf = await generatePictureCardsPDF(options.images, options.size, options.seriesColor || 'pink');
         setPdfData(pdf);
-        setFilename(`picture-cards-${options.size}.pdf`);
+        setFilename(`picture-cards-${options.seriesColor || 'pink'}-${options.size}.pdf`);
         setGenerating(false);
         return;
       }
