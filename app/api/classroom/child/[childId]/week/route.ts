@@ -29,14 +29,15 @@ export async function GET(
   const now = new Date();
   const { week: currentWeek, year: currentYear } = getWeekNumber(now);
 
-  // Get the child's classroom ID
-  const { data: childData } = await supabase
-    .from('children')
-    .select('classroom_id')
-    .eq('id', childId)
+  // Get the classroom ID (currently using the first/only classroom - Whale Class)
+  // TODO: Add classroom_id column to children table for multi-classroom support
+  const { data: classroomData } = await supabase
+    .from('classrooms')
+    .select('id')
+    .limit(1)
     .single();
   
-  const classroomId = childData?.classroom_id || null;
+  const classroomId = classroomData?.id || null;
 
   // Try to find the most recent weekly plan
   const { data: plans } = await supabase
