@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-// WorkNavigator removed - using swipe-only navigation
+import WorkNavigator from '@/components/montree/WorkNavigator';
 
 interface Child {
   id: string;
@@ -264,6 +264,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState(false);
+  const [classroomId, setClassroomId] = useState<string | null>(null);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwipeActive, setIsSwipeActive] = useState(false);
@@ -282,6 +283,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       const data = await res.json();
       setAssignments(data.assignments || []);
       setWeekInfo(data.weekInfo);
+      if (data.classroomId) {
+        setClassroomId(data.classroomId);
+      }
 
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
@@ -570,6 +574,26 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
             />
           </div>
         </div>
+      )}
+
+      {/* Work Navigator - Browse all works */}
+      {classroomId && (
+        <WorkNavigator
+          classroomId={classroomId}
+          childId={childId}
+          onWorkSelect={(work) => {
+            // Find if this work is in assignments
+            const idx = assignments.findIndex(a => 
+              a.work_id === work.id || a.work_name === work.name
+            );
+            if (idx >= 0) {
+              setExpandedIndex(idx);
+              setEditingNotes(assignments[idx]?.notes || '');
+            } else {
+              toast.info(`${work.name} is not assigned this week`);
+            }
+          }}
+        />
       )}
 
       {/* Legend - only show when collapsed */}
