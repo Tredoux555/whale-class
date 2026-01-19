@@ -29,6 +29,15 @@ export async function GET(
   const now = new Date();
   const { week: currentWeek, year: currentYear } = getWeekNumber(now);
 
+  // Get the child's classroom ID
+  const { data: childData } = await supabase
+    .from('children')
+    .select('classroom_id')
+    .eq('id', childId)
+    .single();
+  
+  const classroomId = childData?.classroom_id || null;
+
   // Try to find the most recent weekly plan
   const { data: plans } = await supabase
     .from('weekly_plans')
@@ -97,6 +106,7 @@ export async function GET(
     weekInfo: {
       week: latestPlan.week_number,
       year: latestPlan.year
-    }
+    },
+    classroomId
   });
 }
