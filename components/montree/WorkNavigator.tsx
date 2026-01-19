@@ -54,6 +54,14 @@ export default function WorkNavigator({
   
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Focus search input when panel opens
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
+
   // Fetch all works when panel opens or area changes
   const fetchWorks = useCallback(async () => {
     if (!classroomId || !isOpen) return;
