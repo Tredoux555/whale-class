@@ -125,6 +125,13 @@
 
   "URGENT_FIX": {
     "issue": "Story system - messages/logins not showing in admin",
-    "status": "FIXING NOW"
+    "status": "✅ FIXED - Column name mismatches corrected",
+    "commit": "f4e46d8",
+    "details": {
+      "root_cause": "API code used wrong column names vs database schema",
+      "message_column": "content → message_content",
+      "login_column": "login_at → login_time",
+      "files_fixed": ["send-message", "send-image", "send-audio", "auth", "login-logs"]
+    }
   }
 }

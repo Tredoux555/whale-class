@@ -1,5 +1,6 @@
 // /montree/dashboard/games/page.tsx
 // English Games - Links to existing games
+// Polished Session 64 - Consistent with Montree theme
 'use client';
 
 import Link from 'next/link';
@@ -10,7 +11,7 @@ interface Game {
   emoji: string;
   description: string;
   href: string;
-  color: string;
+  gradient: string;
 }
 
 const GAMES: Game[] = [
@@ -20,7 +21,7 @@ const GAMES: Game[] = [
     emoji: '🔤',
     description: 'Build CVC words letter by letter',
     href: '/games/word-builder',
-    color: 'teal',
+    gradient: 'from-teal-500 to-cyan-600',
   },
   {
     id: 'sound-games',
@@ -28,7 +29,7 @@ const GAMES: Game[] = [
     emoji: '🎵',
     description: 'Beginning, ending, middle sounds',
     href: '/games/sound-games',
-    color: 'amber',
+    gradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'letter-sounds',
@@ -36,7 +37,7 @@ const GAMES: Game[] = [
     emoji: '🅰️',
     description: 'Match letters to their sounds',
     href: '/games/letter-sounds',
-    color: 'pink',
+    gradient: 'from-pink-500 to-rose-600',
   },
   {
     id: 'letter-match',
@@ -44,7 +45,7 @@ const GAMES: Game[] = [
     emoji: '🎯',
     description: 'Match uppercase to lowercase',
     href: '/games/letter-match',
-    color: 'violet',
+    gradient: 'from-violet-500 to-purple-600',
   },
   {
     id: 'letter-tracer',
@@ -52,7 +53,7 @@ const GAMES: Game[] = [
     emoji: '✏️',
     description: 'Practice letter formation',
     href: '/games/letter-tracer',
-    color: 'blue',
+    gradient: 'from-blue-500 to-indigo-600',
   },
   {
     id: 'capital-tracer',
@@ -60,7 +61,7 @@ const GAMES: Game[] = [
     emoji: '🔠',
     description: 'Trace uppercase letters',
     href: '/games/capital-letter-tracer',
-    color: 'green',
+    gradient: 'from-green-500 to-emerald-600',
   },
   {
     id: 'number-tracer',
@@ -68,7 +69,7 @@ const GAMES: Game[] = [
     emoji: '🔢',
     description: 'Practice writing numbers',
     href: '/games/number-tracer',
-    color: 'orange',
+    gradient: 'from-orange-500 to-red-600',
   },
   {
     id: 'vocabulary',
@@ -76,7 +77,7 @@ const GAMES: Game[] = [
     emoji: '📖',
     description: 'Build vocabulary with pictures',
     href: '/games/vocabulary-builder',
-    color: 'cyan',
+    gradient: 'from-cyan-500 to-blue-600',
   },
   {
     id: 'sentence-builder',
@@ -84,7 +85,7 @@ const GAMES: Game[] = [
     emoji: '📝',
     description: 'Build simple sentences',
     href: '/games/sentence-builder',
-    color: 'rose',
+    gradient: 'from-rose-500 to-pink-600',
   },
   {
     id: 'i-spy',
@@ -92,7 +93,7 @@ const GAMES: Game[] = [
     emoji: '👁️',
     description: 'Find objects by sound',
     href: '/games/combined-i-spy',
-    color: 'emerald',
+    gradient: 'from-emerald-500 to-teal-600',
   },
   {
     id: 'grammar',
@@ -100,49 +101,58 @@ const GAMES: Game[] = [
     emoji: '🔺',
     description: 'Learn Montessori grammar symbols',
     href: '/games/grammar-symbols',
-    color: 'purple',
+    gradient: 'from-purple-500 to-violet-600',
   },
 ];
 
 export default function GamesPage() {
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">English Games</h1>
-        <p className="text-slate-500 text-sm">{GAMES.length} games available</p>
-      </div>
-
-      {/* Games Grid */}
-      <div className="space-y-2">
-        {GAMES.map((game) => (
-          <Link
-            key={game.id}
-            href={game.href}
-            className="flex items-center gap-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-teal-500/50 rounded-xl p-4 transition-all group"
-          >
-            <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-              {game.emoji}
-            </div>
-            <div className="flex-1">
-              <div className="text-white font-medium">{game.name}</div>
-              <div className="text-slate-500 text-sm">{game.description}</div>
-            </div>
-            <span className="text-slate-600 group-hover:text-teal-400 group-hover:translate-x-1 transition-all">→</span>
-          </Link>
-        ))}
-      </div>
-
-      {/* Note */}
-      <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">💡</span>
+      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 py-4 px-4 flex items-center gap-3 sticky top-0 z-10">
+        <Link 
+          href="/montree/dashboard/tools" 
+          className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors"
+        >
+          <span className="text-lg">←</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🎮</span>
           <div>
-            <div className="text-white font-medium text-sm">Tip</div>
-            <div className="text-slate-500 text-xs">Games adapt to each child's level</div>
+            <h1 className="text-xl font-bold text-gray-800">English Games</h1>
+            <p className="text-gray-500 text-xs">{GAMES.length} games available</p>
           </div>
         </div>
-      </div>
+      </header>
+
+      {/* Games Grid */}
+      <main className="p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+          {GAMES.map((game) => (
+            <Link
+              key={game.id}
+              href={game.href}
+              className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-4 transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] shadow-md`}
+            >
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-3">
+                {game.emoji}
+              </div>
+              <div className="text-white font-bold text-sm">{game.name}</div>
+              <div className="text-white/70 text-xs mt-1 line-clamp-2">{game.description}</div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Tip */}
+        <div className="max-w-2xl mx-auto mt-6 p-4 bg-emerald-100 rounded-xl border border-emerald-200">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">💡</span>
+            <div className="text-sm text-emerald-800">
+              <strong>Tip:</strong> Games automatically adapt to each child's reading level. Start with Letter Sounds for beginners!
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
