@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { jsPDF } from 'jspdf';
 import MaterialTypeSelector from './MaterialTypeSelector';
 import MaterialOptions from './MaterialOptions';
 import MaterialPreview from './MaterialPreview';
@@ -14,7 +15,8 @@ export type MaterialType =
   | 'green-series'
   | 'sight-words'
   | 'sentence-strips'
-  | 'phonograms';
+  | 'phonograms'
+  | 'picture-cards';
 
 export type CardSize = 'small' | 'medium' | 'large' | 'jumbo';
 
@@ -29,6 +31,7 @@ export interface GeneratorOptions {
   level?: string;
   group?: string;
   categories?: string[];
+  images?: string[];  // For picture cards - base64 image data
 }
 
 export default function MaterialGenerator() {
@@ -43,6 +46,65 @@ export default function MaterialGenerator() {
   const [filename, setFilename] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
+  // Size mapping in mm
+  const SIZE_MAP: Record<CardSize, number> = {
+    small: 50,
+    medium: 75,
+    large: 100,
+    jumbo: 150,
+  };
+
+  // Generate picture cards PDF client-side
+  const generatePictureCardsPDF = async (images: string[], size: CardSize): Promise<string> => {
+    const cardSize = SIZE_MAP[size];
+    const margin = 10; // mm
+    const gap = 5; // mm between cards
+    
+    // A4 dimensions in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
+    
+    // Calculate how many cards fit per row/column
+    const cardsPerRow = Math.floor((pageWidth - 2 * margin + gap) / (cardSize + gap));
+    const cardsPerCol = Math.floor((pageHeight - 2 * margin + gap) / (cardSize + gap));
+    const cardsPerPage = cardsPerRow * cardsPerCol;
+    
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    
+    for (let i = 0; i < images.length; i++) {
+      if (i > 0 && i % cardsPerPage === 0) {
+        doc.addPage();
+      }
+      
+      const pageIndex = i % cardsPerPage;
+      const row = Math.floor(pageIndex / cardsPerRow);
+      const col = pageIndex % cardsPerRow;
+      
+      const x = margin + col * (cardSize + gap);
+      const y = margin + row * (cardSize + gap);
+      
+      // Draw border
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(x, y, cardSize, cardSize);
+      
+      // Add image
+      try {
+        doc.addImage(images[i], 'JPEG', x + 1, y + 1, cardSize - 2, cardSize - 2);
+      } catch {
+        // If image fails, try as PNG
+        try {
+          doc.addImage(images[i], 'PNG', x + 1, y + 1, cardSize - 2, cardSize - 2);
+        } catch {
+          // Draw placeholder
+          doc.setFillColor(240, 240, 240);
+          doc.rect(x + 1, y + 1, cardSize - 2, cardSize - 2, 'F');
+        }
+      }
+    }
+    
+    return doc.output('datauristring');
+  };
+
   const handleGenerate = async () => {
     if (!selectedType) return;
 
@@ -51,6 +113,19 @@ export default function MaterialGenerator() {
     setPdfData(null);
 
     try {
+      // Handle picture cards client-side
+      if (selectedType === 'picture-cards') {
+        if (!options.images || options.images.length === 0) {
+          throw new Error('Please add some images first');
+        }
+        const pdf = await generatePictureCardsPDF(options.images, options.size);
+        setPdfData(pdf);
+        setFilename(`picture-cards-${options.size}.pdf`);
+        setGenerating(false);
+        return;
+      }
+
+      // All other types use the API
       const res = await fetch('/api/whale/materials/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

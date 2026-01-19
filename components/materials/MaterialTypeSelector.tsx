@@ -41,6 +41,7 @@ const MATERIAL_TYPES = [
     items: [
       { type: 'sight-words', name: 'Sight Words', icon: '👁️', desc: 'Dolch word list' },
       { type: 'sentence-strips', name: 'Sentence Strips', icon: '📝', desc: 'Reading practice' },
+      { type: 'picture-cards', name: 'Picture Cards', icon: '🖼️', desc: 'Match with sentences' },
     ],
   },
 ];
