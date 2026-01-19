@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T01:00:00Z",
+  "lastUpdated": "2026-01-20T01:30:00Z",
   "session": 67,
-  "phase": "Foundation Phase 1",
-  "currentSubPhase": "Step 1 COMPLETE - Audit Done",
-  "phaseStatus": "🔍 AUDIT REVEALS 70% ALREADY BUILT",
+  "phase": "Foundation Phase 1-4",
+  "currentSubPhase": "AUDIT COMPLETE - 95% BUILT",
+  "phaseStatus": "🔍 All code exists, testing deployment",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
@@ -16,98 +16,68 @@
     "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_67_STATUS": {
-    "objective": "Foundation Phase 1 - Audit & Verification",
-    "step_1_audit": "✅ COMPLETE",
-    "step_4_verify_migration": "✅ COMPLETE - All 8 tables exist",
-    "school_curriculum_seeded": "✅ COMPLETE - 5 areas, 316 works",
-    "next_step": "Test full flow via APIs"
+  "SESSION_67_SUMMARY": {
+    "objective": "Foundation audit and verification",
+    "major_discovery": "Foundation is 95% ALREADY BUILT",
+    "commits": ["fc6ab04 - trigger redeploy"],
+    "status": "Waiting for Railway deploy to test /api/montree/ routes"
   },
 
-  "AUDIT_FINDINGS": {
-    "database_schema": {
-      "status": "✅ EXISTS",
-      "file": "supabase/migrations/050_montree_foundation.sql",
-      "tables": [
-        "montree_schools",
-        "montree_classrooms", 
-        "montree_school_curriculum_areas",
-        "montree_school_curriculum_works",
-        "montree_classroom_curriculum_areas",
-        "montree_classroom_curriculum_works",
-        "montree_children (with classroom_id)",
-        "montree_child_assignments"
-      ],
-      "needs_verification": "Has migration been run on Supabase?"
+  "FOUNDATION_STATUS": {
+    "database": {
+      "status": "✅ COMPLETE",
+      "tables": 8,
+      "school_areas": 5,
+      "school_works": 316,
+      "classroom_areas": 5,
+      "classroom_works": 316,
+      "children": 20,
+      "assignments": 506
     },
-    "seed_functions": {
-      "status": "✅ EXISTS",
-      "files": [
-        "lib/montree/seed/seed-school.ts",
-        "lib/montree/seed/seed-classroom.ts"
-      ]
+    "code": {
+      "seed_functions": "✅ EXISTS - lib/montree/seed/",
+      "types": "✅ EXISTS - lib/montree/types/",
+      "master_stem": "✅ EXISTS - lib/montree/stem/",
+      "ai_endpoints": "✅ EXISTS - All 3 built"
     },
-    "types": {
-      "status": "✅ EXISTS",
-      "file": "lib/montree/types/curriculum.ts"
-    },
-    "master_stem": {
-      "status": "✅ EXISTS",
-      "files": [
-        "lib/montree/stem/practical-life.json",
-        "lib/montree/stem/sensorial.json",
-        "lib/montree/stem/math.json",
-        "lib/montree/stem/language.json",
-        "lib/montree/stem/cultural.json"
-      ]
-    },
-    "admin_montree_connections": {
-      "status": "✅ CLEAN",
-      "admin_to_montree_lib": "Safe - admin pages use montree lib",
-      "montree_to_admin": "None - montree is independent"
+    "deployment": {
+      "issue": "/api/montree/* routes returning 404",
+      "action": "Triggered redeploy, waiting to test",
+      "test_url": "https://teacherpotato.xyz/api/montree/schools"
     }
   },
 
-  "FOUNDATION_CHECKLIST": {
-    "phase_1": {
-      "step_1_audit": "✅ COMPLETE",
-      "step_2_master_stem": "✅ ALREADY EXISTS",
-      "step_3_migration": "✅ ALREADY EXISTS",
-      "step_4_run_migration": "⏳ NEED TO VERIFY",
-      "step_5_types": "✅ ALREADY EXISTS"
+  "AI_ENDPOINTS": {
+    "analyze": {
+      "path": "/api/montree/ai/analyze",
+      "file": "app/api/montree/ai/analyze/route.ts",
+      "lines": 306,
+      "purpose": "Developmental insights from progress data"
     },
-    "phase_2": {
-      "step_6_school_seed": "✅ ALREADY EXISTS",
-      "step_7_classroom_seed": "✅ ALREADY EXISTS",
-      "step_8_seed_apis": "⏳ NEED TO VERIFY"
+    "weekly_report": {
+      "path": "/api/montree/ai/weekly-report",
+      "file": "app/api/montree/ai/weekly-report/route.ts",
+      "lines": 332,
+      "purpose": "Parent-friendly narrative report"
     },
-    "phase_3": {
-      "step_9_school_apis": "⏳ NEED TO VERIFY",
-      "step_10_classroom_apis": "⏳ NEED TO VERIFY",
-      "step_11_children_apis": "⏳ NEED TO VERIFY",
-      "step_12_test_flow": "⏳ PENDING"
-    },
-    "phase_4": {
-      "step_13_ai_analyze": "⏳ NEED TO VERIFY",
-      "step_14_weekly_report": "⏳ NEED TO VERIFY",
-      "step_15_suggest_next": "⏳ NEED TO VERIFY",
-      "step_16_integration_test": "⏳ PENDING"
+    "suggest_next": {
+      "path": "/api/montree/ai/suggest-next",
+      "file": "app/api/montree/ai/suggest-next/route.ts",
+      "lines": 431,
+      "purpose": "Recommended next presentations"
     }
+  },
+
+  "WORKING_DASHBOARD": {
+    "url": "https://teacherpotato.xyz/montree/dashboard/student/[id]",
+    "uses_api": "/api/classroom/*",
+    "status": "✅ WORKS - teachers can use this"
   },
 
   "NEXT_ACTIONS": [
-    "1. Verify migration ran - check Supabase for tables",
-    "2. Test school creation + seeding",
-    "3. Test classroom creation + seeding from school",
-    "4. Verify APIs return correct data"
-  ],
-
-  "FILES_AUDITED": [
-    "/app/admin/ - 40+ subdirectories",
-    "/app/montree/ - admin, dashboard, report, welcome",
-    "/app/api/montree/ - schools, classrooms, curriculum, etc.",
-    "/lib/montree/ - seed, stem, types, ai, reports",
-    "/components/montree/ - WorkNavigator, media, reports",
-    "/supabase/migrations/050_montree_foundation.sql"
+    "1. Wait 2-3 mins for Railway deploy",
+    "2. Test https://teacherpotato.xyz/api/montree/schools",
+    "3. If works → Foundation 100% live",
+    "4. If 404 → Debug build issue"
   ]
 }
