@@ -23,6 +23,14 @@ export default function VideoManagerPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editWeek, setEditWeek] = useState('');
   const [editCategory, setEditCategory] = useState('song-of-week');
+  
+  // Upload state
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('song-of-week');
+  const [uploadWeek, setUploadWeek] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchVideos();
@@ -98,6 +106,39 @@ export default function VideoManagerPage() {
     setEditCategory(video.category);
   }
 
+  async function uploadVideo() {
+    if (!uploadFile || !uploadTitle) return;
+    
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      formData.append('title', uploadTitle);
+      formData.append('category', uploadCategory);
+      if (uploadWeek) formData.append('week', uploadWeek);
+
+      const res = await fetch('/api/admin/video-manager', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setVideos(prev => [data.video, ...prev]);
+        setShowUpload(false);
+        setUploadFile(null);
+        setUploadTitle('');
+        setUploadWeek('');
+        setUploadCategory('song-of-week');
+      } else {
+        alert('Failed to upload: ' + data.error);
+      }
+    } catch (err) {
+      alert('Failed to upload video');
+    }
+    setUploading(false);
+  }
+
   // Parse week number from string like "Week 16" or "16"
   function parseWeekNumber(week: string | undefined): number | null {
     if (!week) return null;
@@ -128,12 +169,20 @@ export default function VideoManagerPage() {
             <h1 className="text-3xl font-bold">🎬 Video Manager</h1>
             <p className="text-gray-400 mt-1">Manage homepage videos - edit titles, weeks, categories</p>
           </div>
-          <Link
-            href="/admin"
-            className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            ← Back to Admin
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowUpload(true)}
+              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition-colors font-medium"
+            >
+              ➕ Upload Video
+            </button>
+            <Link
+              href="/admin"
+              className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              ← Back to Admin
+            </Link>
+          </div>
         </div>
 
         {/* Problem Videos Alert */}
@@ -211,6 +260,100 @@ export default function VideoManagerPage() {
             Clear
           </button>
         </div>
+
+        {/* Upload Modal */}
+        {showUpload && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-2xl p-6 max-w-lg w-full mx-4">
+              <h3 className="text-xl font-bold mb-4">📤 Upload Video</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Video File</label>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white hover:file:bg-cyan-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={uploadTitle}
+                    onChange={(e) => setUploadTitle(e.target.value)}
+                    placeholder="e.g. Week 17 Song - Baby Shark"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Week (optional)</label>
+                    <input
+                      type="text"
+                      value={uploadWeek}
+                      onChange={(e) => setUploadWeek(e.target.value)}
+                      placeholder="17"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Category</label>
+                    <select
+                      value={uploadCategory}
+                      onChange={(e) => setUploadCategory(e.target.value)}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                    >
+                      {CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>
+                          {cat === 'song-of-week' ? '🎵 Song of Week' :
+                           cat === 'phonics' ? '📚 Phonics' :
+                           cat === 'weekly-phonics-sound' ? '🔤 Weekly Sound' : '📖 Stories'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Video Preview */}
+                {uploadFile && (
+                  <div className="rounded-lg overflow-hidden bg-black">
+                    <video 
+                      src={URL.createObjectURL(uploadFile)} 
+                      controls 
+                      className="w-full max-h-48"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowUpload(false);
+                    setUploadFile(null);
+                    setUploadTitle('');
+                    setUploadWeek('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={uploadVideo}
+                  disabled={!uploadFile || !uploadTitle || uploading}
+                  className="flex-1 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? '⏳ Uploading...' : '📤 Upload'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Edit Modal */}
         {editingVideo && (
