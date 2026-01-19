@@ -34,7 +34,7 @@ async function logAdminLogin(
     
     await supabase.from('story_admin_login_logs').insert({
       username,
-      login_at: new Date().toISOString(),
+      login_time: new Date().toISOString(),
       session_token: token.substring(0, 50),
       ip_address: ip,
       user_agent: userAgent

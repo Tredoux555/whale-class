@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         .from('story_login_logs')
         .select('id')
         .eq('session_token', sessionToken)
-        .order('login_at', { ascending: false })
+        .order('login_time', { ascending: false })
         .limit(1)
         .single();
       
@@ -55,11 +55,10 @@ export async function POST(req: NextRequest) {
     const { error: historyError } = await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
-      content: encryptedMessage,
+      message_content: encryptedMessage,
       author: msgAuthor,
       expires_at: expiresAt.toISOString(),
-      session_token: sessionToken,
-      login_log_id: loginLogId
+      is_expired: false
     });
 
     if (historyError) {
