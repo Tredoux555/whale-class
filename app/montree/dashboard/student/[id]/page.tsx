@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import WorkNavigator from '@/components/montree/WorkNavigator';
+// WorkNavigator removed - using swipe-only navigation
 
 interface Child {
   id: string;
@@ -264,8 +264,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState(false);
-  const [classroomId, setClassroomId] = useState<string | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
+
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwipeActive, setIsSwipeActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -283,9 +282,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       const data = await res.json();
       setAssignments(data.assignments || []);
       setWeekInfo(data.weekInfo);
-      if (data.classroomId) {
-        setClassroomId(data.classroomId);
-      }
+
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
     } finally {
@@ -317,6 +314,15 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
+  // Get works in same area for swipe navigation
+  const getWorksInSameArea = useCallback(() => {
+    if (expandedIndex === null) return [];
+    const currentArea = assignments[expandedIndex]?.area;
+    return assignments
+      .map((a, idx) => ({ ...a, originalIndex: idx }))
+      .filter(a => a.area === currentArea);
+  }, [expandedIndex, assignments]);
+
   const handleSwipe = (direction: 'left' | 'right') => {
     if (expandedIndex === null) return;
     
@@ -325,12 +331,18 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       return;
     }
     
-    if (direction === 'left' && expandedIndex < assignments.length - 1) {
-      const newIndex = expandedIndex + 1;
+    // Get works in same area
+    const areaWorks = getWorksInSameArea();
+    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === expandedIndex);
+    
+    if (direction === 'left' && currentPosInArea < areaWorks.length - 1) {
+      // Next work in same area
+      const newIndex = areaWorks[currentPosInArea + 1].originalIndex;
       setExpandedIndex(newIndex);
       setEditingNotes(assignments[newIndex]?.notes || '');
-    } else if (direction === 'right' && expandedIndex > 0) {
-      const newIndex = expandedIndex - 1;
+    } else if (direction === 'right' && currentPosInArea > 0) {
+      // Previous work in same area
+      const newIndex = areaWorks[currentPosInArea - 1].originalIndex;
       setExpandedIndex(newIndex);
       setEditingNotes(assignments[newIndex]?.notes || '');
     }
@@ -560,48 +572,6 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
-      {/* Work Navigator - Search & Jump to Any Work */}
-      {classroomId && (
-        <WorkNavigator
-          classroomId={classroomId}
-          childId={childId}
-          assignedWorks={assignments.map(a => ({
-            id: a.work_id || a.id,
-            name: a.work_name,
-            sequence: 0,
-            area: { area_key: a.area, name: a.area, icon: '📋' },
-            status: a.progress_status,
-          }))}
-          onWorkSelect={(work) => {
-            // Find if this work is in assignments
-            const idx = assignments.findIndex(a => 
-              a.work_id === work.id || a.work_name === work.name
-            );
-            if (idx >= 0) {
-              setExpandedIndex(idx);
-              setEditingNotes(assignments[idx]?.notes || '');
-            } else {
-              // Work not assigned - show toast with option
-              toast.info(`${work.name} is not assigned this week. Tap to log a spontaneous session.`);
-            }
-          }}
-          onSessionLog={async (work, type) => {
-            // Log spontaneous session
-            await fetch('/api/montree/sessions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                child_id: childId,
-                work_id: work.id,
-                session_type: type || 'spontaneous',
-              }),
-            });
-            toast.success(`Logged: ${work.name}`);
-          }}
-          currentWorkId={expandedIndex !== null ? (assignments[expandedIndex]?.work_id || assignments[expandedIndex]?.id) : undefined}
-        />
-      )}
-
       {/* Legend - only show when collapsed */}
       {expandedIndex === null && (
         <div className="flex items-center justify-center gap-4 mb-4 text-xs text-gray-500 overflow-x-auto">
@@ -684,71 +654,27 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  {/* Swipe Direction Indicators */}
-                  {isSwipeActive && swipeOffset !== 0 && (
-                    <div className="absolute inset-y-0 flex items-center pointer-events-none z-10">
-                      {swipeOffset > 20 && index > 0 && (
-                        <div className="absolute left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                          ← Prev
-                        </div>
-                      )}
-                      {swipeOffset < -20 && index < assignments.length - 1 && (
-                        <div className="absolute right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                          Next →
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Navigation Row */}
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleSwipe('right'); }}
-                      disabled={index === 0}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        index === 0 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : 'text-gray-600 hover:bg-gray-200 active:scale-95'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Prev
-                    </button>
-                    
-                    {/* Progress dots */}
-                    <div className="flex items-center gap-1">
-                      {assignments.slice(Math.max(0, index - 2), Math.min(assignments.length, index + 3)).map((_, i) => {
-                        const actualIndex = Math.max(0, index - 2) + i;
-                        return (
-                          <div 
-                            key={actualIndex}
-                            className={`rounded-full transition-all ${
-                              actualIndex === index 
-                                ? 'w-6 h-2 bg-emerald-500' 
-                                : 'w-2 h-2 bg-gray-300'
-                            }`}
-                          />
-                        );
-                      })}
-                    </div>
-                    
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleSwipe('left'); }}
-                      disabled={index === assignments.length - 1}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        index === assignments.length - 1 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : 'text-gray-600 hover:bg-gray-200 active:scale-95'
-                      }`}
-                    >
-                      Next
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
+                  {/* Swipe Direction Indicators - same area only */}
+                  {isSwipeActive && swipeOffset !== 0 && (() => {
+                    const areaWorks = getWorksInSameArea();
+                    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
+                    const canGoPrev = currentPosInArea > 0;
+                    const canGoNext = currentPosInArea < areaWorks.length - 1;
+                    return (
+                      <div className="absolute inset-y-0 flex items-center pointer-events-none z-10">
+                        {swipeOffset > 20 && canGoPrev && (
+                          <div className="absolute left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                            ← {areaWorks[currentPosInArea - 1]?.work_name?.slice(0, 15)}...
+                          </div>
+                        )}
+                        {swipeOffset < -20 && canGoNext && (
+                          <div className="absolute right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                            {areaWorks[currentPosInArea + 1]?.work_name?.slice(0, 15)}... →
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Notes Section */}
                   <div className="mb-4">
@@ -799,10 +725,17 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                     </button>
                   </div>
 
-                  {/* Swipe hint on mobile */}
-                  <p className="text-xs text-gray-400 text-center mt-3">
-                    💡 Swipe left/right to navigate between works
-                  </p>
+                  {/* Swipe hint - shows area info */}
+                  {(() => {
+                    const areaWorks = getWorksInSameArea();
+                    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
+                    const areaName = AREA_CONFIG[assignment.area]?.letter || '?';
+                    return (
+                      <p className="text-xs text-gray-400 text-center mt-3">
+                        ← Swipe → {areaName} works ({currentPosInArea + 1}/{areaWorks.length})
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
             </div>
