@@ -24,9 +24,9 @@ type FlowStep = 'select-child' | 'camera' | 'uploading' | 'success' | 'error';
 
 function CaptureLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
       <div className="flex flex-col items-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4" />
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent mb-4" />
         <p className="text-gray-600">Loading...</p>
       </div>
     </div>
@@ -172,9 +172,9 @@ function CaptureContent() {
     const selectedChildren = children.filter(c => selectedChildIds.includes(c.id));
     
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
         {/* Header */}
-        <header className="bg-white shadow-sm px-4 py-3 flex items-center gap-3">
+        <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🐋</span>
           <h1 className="text-lg font-bold text-gray-800">
             {step === 'success' ? 'Photo Saved!' : step === 'error' ? 'Upload Failed' : 'Uploading...'}
@@ -200,9 +200,9 @@ function CaptureContent() {
               {selectedChildren.map(child => (
                 <span
                   key={child.id}
-                  className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                  className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium"
                 >
-                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
+                  <span className="w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs">
                     {child.name.charAt(0)}
                   </span>
                   {child.name}
@@ -237,7 +237,7 @@ function CaptureContent() {
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <button
                   onClick={handleTakeAnother}
-                  className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                  className="w-full py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
                   📷 Take Another Photo
                 </button>
@@ -261,7 +261,7 @@ function CaptureContent() {
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <button
                   onClick={handleRetry}
-                  className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                  className="w-full py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
                   🔄 Try Again
                 </button>
@@ -281,21 +281,24 @@ function CaptureContent() {
 
   // Child selection step
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/montree/dashboard"
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
+            className="w-10 h-10 flex items-center justify-center bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors"
           >
-            ←
+            <span className="text-lg">←</span>
           </Link>
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">Take Photo</h1>
-            <p className="text-xs text-gray-400">
-              {isGroupMode ? 'Select children for group photo' : 'Select a child'}
-            </p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📷</span>
+            <div>
+              <h1 className="text-lg font-bold text-gray-800">Take Photo</h1>
+              <p className="text-xs text-gray-500">
+                {isGroupMode ? 'Select children for group photo' : 'Select a child'}
+              </p>
+            </div>
           </div>
         </div>
         
@@ -304,7 +307,7 @@ function CaptureContent() {
           href={isGroupMode ? '/montree/dashboard/capture' : '/montree/dashboard/capture?group=true'}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             isGroupMode 
-              ? 'bg-blue-100 text-blue-700' 
+              ? 'bg-emerald-100 text-emerald-700' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
@@ -325,14 +328,14 @@ function CaptureContent() {
       </main>
 
       {/* Bottom action bar */}
-      <div className="bg-white border-t border-gray-200 px-4 py-4 safe-area-bottom">
+      <div className="bg-white/80 backdrop-blur-sm border-t border-emerald-100 px-4 py-4 safe-area-bottom">
         <button
           onClick={handleProceedToCamera}
           disabled={selectedChildIds.length === 0}
           className={`
             w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all
             ${selectedChildIds.length > 0
-              ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-98'
+              ? 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-98'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }
           `}
