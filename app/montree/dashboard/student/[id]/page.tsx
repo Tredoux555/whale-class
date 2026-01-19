@@ -3,9 +3,10 @@
 // Uses the same APIs as admin classroom for unified data
 'use client';
 
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import WorkNavigator from '@/components/montree/WorkNavigator';
 
 interface Child {
   id: string;
@@ -263,9 +264,14 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState(false);
+  const [classroomId, setClassroomId] = useState<string | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwipeActive, setIsSwipeActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchAssignments();
@@ -277,6 +283,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       const data = await res.json();
       setAssignments(data.assignments || []);
       setWeekInfo(data.weekInfo);
+      if (data.classroomId) {
+        setClassroomId(data.classroomId);
+      }
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
     } finally {
@@ -329,11 +338,25 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    setIsSwipeActive(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwipeActive) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStartX.current;
+    // Limit swipe offset for visual feedback (max 100px)
+    setSwipeOffset(Math.max(-100, Math.min(100, diff * 0.5)));
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     touchEndX.current = e.changedTouches[0].clientX;
     const diff = touchStartX.current - touchEndX.current;
+    
+    // Animate back to center then navigate
+    setSwipeOffset(0);
+    setIsSwipeActive(false);
+    
     if (Math.abs(diff) > 50) {
       handleSwipe(diff > 0 ? 'left' : 'right');
     }
@@ -348,11 +371,25 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     ));
 
     try {
+      // Update progress status
       await fetch('/api/weekly-planning/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assignmentId: assignment.id, status: nextStatus }),
       });
+      
+      // Log session for history tracking
+      await fetch('/api/montree/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          work_id: assignment.work_id,
+          assignment_id: assignment.id,
+          session_type: nextStatus === 'presented' ? 'presentation' : 'practice',
+        }),
+      });
+      
       toast.success(`${assignment.work_name} → ${nextStatus.replace('_', ' ')}`);
     } catch (error) {
       console.error('Failed to update:', error);
@@ -430,6 +467,20 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
             ? { ...a, mediaCount: (a.mediaCount || 0) + 1 } 
             : a
         ));
+        
+        // Log session with media
+        await fetch('/api/montree/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: childId,
+            work_id: assignment.work_id,
+            assignment_id: assignment.id,
+            session_type: 'practice',
+            media_urls: [data.url || data.media_url],
+          }),
+        });
+        
         onMediaUploaded?.();
       } else {
         toast.error('❌ ' + (data.error || 'Upload failed'));
@@ -509,6 +560,48 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
+      {/* Work Navigator - Search & Jump to Any Work */}
+      {classroomId && (
+        <WorkNavigator
+          classroomId={classroomId}
+          childId={childId}
+          assignedWorks={assignments.map(a => ({
+            id: a.work_id || a.id,
+            name: a.work_name,
+            sequence: 0,
+            area: { area_key: a.area, name: a.area, icon: '📋' },
+            status: a.progress_status,
+          }))}
+          onWorkSelect={(work) => {
+            // Find if this work is in assignments
+            const idx = assignments.findIndex(a => 
+              a.work_id === work.id || a.work_name === work.name
+            );
+            if (idx >= 0) {
+              setExpandedIndex(idx);
+              setEditingNotes(assignments[idx]?.notes || '');
+            } else {
+              // Work not assigned - show toast with option
+              toast.info(`${work.name} is not assigned this week. Tap to log a spontaneous session.`);
+            }
+          }}
+          onSessionLog={async (work, type) => {
+            // Log spontaneous session
+            await fetch('/api/montree/sessions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                child_id: childId,
+                work_id: work.id,
+                session_type: type || 'spontaneous',
+              }),
+            });
+            toast.success(`Logged: ${work.name}`);
+          }}
+          currentWorkId={expandedIndex !== null ? (assignments[expandedIndex]?.work_id || assignments[expandedIndex]?.id) : undefined}
+        />
+      )}
+
       {/* Legend - only show when collapsed */}
       {expandedIndex === null && (
         <div className="flex items-center justify-center gap-4 mb-4 text-xs text-gray-500 overflow-x-auto">
@@ -583,20 +676,39 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
               {/* Expanded Detail Panel */}
               {isExpanded && (
-                <div className="border-t bg-gray-50 p-4">
-                  {/* Swipe area for navigation - separate from content */}
-                  <div 
-                    className="flex items-center justify-between mb-4"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                  >
+                <div 
+                  ref={cardRef}
+                  className="border-t bg-gray-50 p-4 transition-transform duration-150 ease-out"
+                  style={{ transform: `translateX(${swipeOffset}px)` }}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {/* Swipe Direction Indicators */}
+                  {isSwipeActive && swipeOffset !== 0 && (
+                    <div className="absolute inset-y-0 flex items-center pointer-events-none z-10">
+                      {swipeOffset > 20 && index > 0 && (
+                        <div className="absolute left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                          ← Prev
+                        </div>
+                      )}
+                      {swipeOffset < -20 && index < assignments.length - 1 && (
+                        <div className="absolute right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                          Next →
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Navigation Row */}
+                  <div className="flex items-center justify-between mb-4">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleSwipe('right'); }}
                       disabled={index === 0}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                         index === 0 
                           ? 'text-gray-300 cursor-not-allowed' 
-                          : 'text-gray-600 hover:bg-gray-200'
+                          : 'text-gray-600 hover:bg-gray-200 active:scale-95'
                       }`}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -605,17 +717,30 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                       Prev
                     </button>
                     
-                    <span className="text-xs text-gray-500 font-medium">
-                      {index + 1} of {assignments.length}
-                    </span>
+                    {/* Progress dots */}
+                    <div className="flex items-center gap-1">
+                      {assignments.slice(Math.max(0, index - 2), Math.min(assignments.length, index + 3)).map((_, i) => {
+                        const actualIndex = Math.max(0, index - 2) + i;
+                        return (
+                          <div 
+                            key={actualIndex}
+                            className={`rounded-full transition-all ${
+                              actualIndex === index 
+                                ? 'w-6 h-2 bg-emerald-500' 
+                                : 'w-2 h-2 bg-gray-300'
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
                     
                     <button
                       onClick={(e) => { e.stopPropagation(); handleSwipe('left'); }}
                       disabled={index === assignments.length - 1}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                         index === assignments.length - 1 
                           ? 'text-gray-300 cursor-not-allowed' 
-                          : 'text-gray-600 hover:bg-gray-200'
+                          : 'text-gray-600 hover:bg-gray-200 active:scale-95'
                       }`}
                     >
                       Next

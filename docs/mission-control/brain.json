@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-19T20:30:00Z",
-  "session": 64,
+  "lastUpdated": "2026-01-19T22:15:00Z",
+  "session": 65,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "DEEP AUDIT COMPLETE",
-  "phaseStatus": "✅ AUDITED - READY FOR HANDOFF",
+  "currentSubPhase": "MOBILE UX COMPLETE",
+  "phaseStatus": "✅ SWIPE + SNAPBACK POLISHED",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
@@ -16,30 +16,93 @@
     "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_64_AUDIT_COMPLETE": {
-    "status": "✅ ALL SEGMENTS VERIFIED",
+  "SESSION_65_MOBILE_UX": {
+    "status": "✅ ALL SEGMENTS COMPLETE",
     
-    "SEGMENT_1_STORY_SYSTEM": {
+    "SEGMENT_1_DATABASE": {
       "status": "✅ COMPLETE",
-      "issue": "Column name mismatches between code and database",
-      "solution": "Standardized on login_time + message_content",
-      "files_fixed": 7,
-      "commit": "4eae6c9",
-      "sql_file": "FIX_STORY_DEFINITIVE.sql"
+      "table": "montree_work_sessions",
+      "purpose": "Track EVERY work interaction (not just status changes)",
+      "columns": ["child_id", "work_id", "assignment_id", "session_type", "duration_minutes", "notes", "media_urls", "observed_at"],
+      "rationale": "Assignments = current state, Sessions = historical log for AI analysis + parent reports"
     },
     
-    "SEGMENT_2_THEME_CONSISTENCY": {
+    "SEGMENT_2_APIS": {
       "status": "✅ COMPLETE",
-      "teacher_pages": "Emerald gradient (6 pages polished)",
-      "admin_pages": "Dark theme (intentional separation)",
-      "parent_pages": "Blue gradient (intentional brand differentiation)",
-      "commit": "8460d7d + f35da48"
+      "files_created": [
+        "/app/api/montree/sessions/route.ts",
+        "/app/api/montree/works/search/route.ts"
+      ],
+      "endpoints": [
+        "POST /api/montree/sessions - Log work interaction",
+        "GET /api/montree/sessions - Fetch session history",
+        "GET /api/montree/works/search - Search all works with area filter"
+      ]
     },
     
-    "SEGMENT_3_BUGS_FIXED": [
-      "BUG-001: Picture Cards dynamic grid (large/jumbo exceeded A4)",
-      "BUG-002: Weekly Planning wrong curriculum table (CRITICAL)",
-      "BUG-003: Story system column name mismatches (7 files)"
+    "SEGMENT_3_COMPONENT": {
+      "status": "✅ COMPLETE",
+      "file": "/components/montree/WorkNavigator.tsx",
+      "features": [
+        "Search bar (find any work by name)",
+        "Area filter pills [All] [PL] [S] [M] [L] [C]",
+        "Snap-back indicator when deviated from weekly plan",
+        "Status badges on search results"
+      ]
+    },
+    
+    "SEGMENT_4_INTEGRATION": {
+      "status": "✅ COMPLETE",
+      "file": "/app/montree/dashboard/student/[id]/page.tsx",
+      "changes": [
+        "Added WorkNavigator import",
+        "Session logging on status tap",
+        "Session logging on media capture",
+        "WorkNavigator rendered in ThisWeekTab"
+      ]
+    },
+    
+    "SEGMENT_5_SWIPE_POLISH": {
+      "status": "✅ COMPLETE",
+      "file": "/app/montree/dashboard/student/[id]/page.tsx",
+      "features": [
+        "swipeOffset state for visual feedback during drag",
+        "handleTouchMove tracks finger position",
+        "Transform translateX applied to panel during swipe",
+        "Direction indicators (← Prev / Next →) appear while swiping",
+        "Progress dots replace text counter",
+        "Active scale animation on buttons"
+      ]
+    },
+    
+    "SEGMENT_6_SNAPBACK_ANIMATION": {
+      "status": "✅ COMPLETE",
+      "file": "/components/montree/WorkNavigator.tsx",
+      "features": [
+        "snapBackAnimating state for transition feedback",
+        "200ms delay before snap for visual confirmation",
+        "Gradient background (amber-50 to orange-50)",
+        "Bouncing arrow icon when deviated",
+        "Spinner icon during snap transition",
+        "Pulsing glow ring (animate-ping) around button",
+        "Two-line layout: 'Return to' label + work name",
+        "Scale-down effect on click"
+      ]
+    }
+  },
+
+  "NAVIGATION_STATE_MACHINE": {
+    "description": "Smart navigation for Montessori progress tracking",
+    "states": {
+      "RECOMMENDED": "Following weekly assigned works in sequence",
+      "DEVIATED": "Jumped to random work via search",
+      "MANUAL": "User swiped to specific work"
+    },
+    "rules": [
+      "Search/jump → Sets deviation flag",
+      "Log session while deviated → Snap back to recommended",
+      "Swipe → Manual mode, no snap back",
+      "All weekly works done → Show completion message"
     ]
   },
 
@@ -61,23 +124,23 @@
     }
   },
 
-  "ALL_COMMITS_SESSION_64": [
-    "7181772 - Picture Cards format",
-    "f1175c4 - Three-Part Cards blank page fix",
-    "d226fc6 - Weekly Planning sync indicator",
-    "4a6bb78 - Picture Cards dynamic grid",
-    "11b1e57 - CRITICAL: curriculum table fix",
-    "f4e46d8 - Story system column fixes (partial)",
-    "8460d7d - Theme consistency (6 pages)",
-    "f35da48 - Capture page theme",
-    "4eae6c9 - Story system COMPLETE fix (7 files)"
+  "FILES_CREATED_SESSION_65": [
+    "/app/api/montree/sessions/route.ts",
+    "/app/api/montree/works/search/route.ts",
+    "/components/montree/WorkNavigator.tsx"
+  ],
+  
+  "FILES_MODIFIED_SESSION_65": [
+    "/app/montree/dashboard/student/[id]/page.tsx"
   ],
 
-  "NEXT_SESSION_PRIORITIES": [
-    "1. TEST: Run FIX_STORY_DEFINITIVE.sql in Supabase",
-    "2. TEST: Story system - verify messages/logins display",
-    "3. TEST: Weekly Planning upload → sync workflow",
-    "4. DEPRECATE: Remove curriculum_roadmap table usage",
-    "5. START: Montree Foundation Phase 1"
+  "NEXT_STEPS": [
+    "1. TEST: Visit /montree/dashboard/student/[id] on MOBILE device",
+    "2. TEST: Swipe left/right - verify card moves with finger + indicators appear",
+    "3. TEST: Click 'Find Work' - search for any work, select it",
+    "4. TEST: Verify 'Return to' button appears with pulsing animation",
+    "5. TEST: Click 'Return to' - verify snap-back with spinner animation",
+    "6. TEST: Tap status - verify session logged in montree_work_sessions",
+    "7. NEXT: Continue Montree Foundation Phase 1 (remaining steps)"
   ]
 }
