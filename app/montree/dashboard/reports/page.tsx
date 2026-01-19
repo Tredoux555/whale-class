@@ -140,21 +140,24 @@ export default function ReportsPage() {
   // ============================================
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <Link
             href="/montree/dashboard"
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
+            className="w-10 h-10 flex items-center justify-center bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors"
           >
-            ←
+            <span className="text-lg">←</span>
           </Link>
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">Weekly Reports</h1>
-            <p className="text-xs text-gray-400">
-              {reports.length} report{reports.length !== 1 ? 's' : ''}
-            </p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📊</span>
+            <div>
+              <h1 className="text-lg font-bold text-gray-800">Weekly Reports</h1>
+              <p className="text-xs text-gray-500">
+                {reports.length} report{reports.length !== 1 ? 's' : ''}
+              </p>
+            </div>
           </div>
         </div>
       </header>
