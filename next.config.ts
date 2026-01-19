@@ -3,6 +3,8 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // CRITICAL: Required for Docker/Railway deployments to include API routes
+  output: 'standalone',
   // Ignore TypeScript errors during builds (fix later)
   typescript: {
     ignoreBuildErrors: true,

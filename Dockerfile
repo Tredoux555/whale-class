@@ -28,13 +28,18 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260120-session68-fix-api-routes
+ARG CACHEBUST=20260120-session68-standalone-mode-FINAL
 
 # Copy application files
 COPY . .
 
-# Build Next.js app
+# Build Next.js app (creates .next/standalone with output: 'standalone')
 RUN npm run build
+
+# CRITICAL: Copy static files to standalone folder for production
+# Next.js standalone mode requires these to be copied manually
+RUN cp -r .next/static .next/standalone/.next/static
+RUN cp -r public .next/standalone/public
 
 # Expose port
 EXPOSE 3000

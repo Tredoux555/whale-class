@@ -1,83 +1,45 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T01:30:00Z",
-  "session": 67,
+  "lastUpdated": "2026-01-20T02:45:00Z",
+  "session": 68,
   "phase": "Foundation Phase 1-4",
-  "currentSubPhase": "AUDIT COMPLETE - 95% BUILT",
-  "phaseStatus": "🔍 All code exists, testing deployment",
+  "currentSubPhase": "ALL FILES VERIFIED - Ready to commit",
+  "phaseStatus": "✅ Japanese engineer review complete",
   
   "CORE_LAWS": [
-    "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
-    "2. The /montree/ is THE PRODUCT. Standalone, duplicatable per school.",
-    "3. The /admin/ is Tredoux's personal sandbox.",
-    "4. Brain updates MANDATORY after every chunk of work.",
-    "5. READ THIS FILE FIRST - Every session.",
-    "6. JAPANESE ENGINEER MINDSET - Perfection before progress.",
-    "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
+    "1. CURRICULUM BELONGS TO CLASSROOM",
+    "2. The /montree/ is THE PRODUCT",
+    "3. The /admin/ is Tredoux's sandbox",
+    "4. Brain updates MANDATORY after every chunk",
+    "5. READ THIS FILE FIRST",
+    "6. JAPANESE ENGINEER MINDSET",
+    "7. SEGMENT WORK - Bite-size chunks"
   ],
 
-  "SESSION_67_SUMMARY": {
-    "objective": "Foundation audit and verification",
-    "major_discovery": "Foundation is 95% ALREADY BUILT",
-    "commits": ["fc6ab04 - trigger redeploy"],
-    "status": "Waiting for Railway deploy to test /api/montree/ routes"
-  },
-
-  "FOUNDATION_STATUS": {
-    "database": {
-      "status": "✅ COMPLETE",
-      "tables": 8,
-      "school_areas": 5,
-      "school_works": 316,
-      "classroom_areas": 5,
-      "classroom_works": 316,
-      "children": 20,
-      "assignments": 506
+  "SESSION_68_PROGRESS": {
+    "objective": "Debug /api/montree/ 404 issue",
+    "root_cause": "Docker needs output: 'standalone' mode",
+    "verification": {
+      "local_build": "✅ npm run build succeeded",
+      "standalone_folder": "✅ .next/standalone created",
+      "server_js": "✅ server.js exists",
+      "local_server_test": "✅ API route executed",
+      "dockerfile_verified": "✅ cp commands added",
+      "start_sh_verified": "✅ uses standalone server"
     },
-    "code": {
-      "seed_functions": "✅ EXISTS - lib/montree/seed/",
-      "types": "✅ EXISTS - lib/montree/types/",
-      "master_stem": "✅ EXISTS - lib/montree/stem/",
-      "ai_endpoints": "✅ EXISTS - All 3 built"
-    },
-    "deployment": {
-      "issue": "/api/montree/* routes returning 404",
-      "action": "Triggered redeploy, waiting to test",
-      "test_url": "https://teacherpotato.xyz/api/montree/schools"
-    }
-  },
-
-  "AI_ENDPOINTS": {
-    "analyze": {
-      "path": "/api/montree/ai/analyze",
-      "file": "app/api/montree/ai/analyze/route.ts",
-      "lines": 306,
-      "purpose": "Developmental insights from progress data"
-    },
-    "weekly_report": {
-      "path": "/api/montree/ai/weekly-report",
-      "file": "app/api/montree/ai/weekly-report/route.ts",
-      "lines": 332,
-      "purpose": "Parent-friendly narrative report"
-    },
-    "suggest_next": {
-      "path": "/api/montree/ai/suggest-next",
-      "file": "app/api/montree/ai/suggest-next/route.ts",
-      "lines": 431,
-      "purpose": "Recommended next presentations"
-    }
-  },
-
-  "WORKING_DASHBOARD": {
-    "url": "https://teacherpotato.xyz/montree/dashboard/student/[id]",
-    "uses_api": "/api/classroom/*",
-    "status": "✅ WORKS - teachers can use this"
+    "files_modified": [
+      "next.config.ts - Added output: 'standalone'",
+      "start.sh - Changed to node .next/standalone/server.js",
+      "Dockerfile - Added cp commands for static/public"
+    ],
+    "status": "READY TO COMMIT AND DEPLOY"
   },
 
   "NEXT_ACTIONS": [
-    "1. Wait 2-3 mins for Railway deploy",
-    "2. Test https://teacherpotato.xyz/api/montree/schools",
-    "3. If works → Foundation 100% live",
-    "4. If 404 → Debug build issue"
+    "1. Git add and commit",
+    "2. Push to Railway",
+    "3. Wait for deploy (~5 mins)",
+    "4. Test /api/montree/schools",
+    "5. Write handoff if successful"
   ]
 }
