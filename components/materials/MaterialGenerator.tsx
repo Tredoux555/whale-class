@@ -112,24 +112,26 @@ export default function MaterialGenerator() {
     });
   };
 
-  // Generate picture cards PDF client-side
+  // Generate picture cards PDF client-side - matches three-part card format
   const generatePictureCardsPDF = async (images: string[], size: CardSize, seriesColor: string = 'pink'): Promise<string> => {
     const cardSize = SIZE_MAP[size];
-    const margin = 10; // mm - matches pdf-generator
-    const gap = 5; // mm - matches pdf-generator for single-cut separation
-    const cornerRadius = 4; // mm - matches pdf-generator
-    const borderWidth = 3; // mm - thick vibrant border like screenshot
+    const cornerRadius = 4; // mm - matches three-part cards
+    const borderWidth = 5; // mm - thick border like three-part cards (0.5cm)
     
     // A4 dimensions in mm
     const pageWidth = 210;
     const pageHeight = 297;
     
-    // Calculate grid - same formula as pdf-generator
-    const usableWidth = pageWidth - (margin * 2);
-    const usableHeight = pageHeight - (margin * 2) - 15; // 15mm for header
-    const cardsPerRow = Math.floor(usableWidth / (cardSize + gap));
-    const cardsPerCol = Math.floor(usableHeight / (cardSize + gap));
+    // Cards touch each other - no gap (like three-part cards)
+    const cardsPerRow = 2;
+    const cardsPerCol = 3;
     const cardsPerPage = cardsPerRow * cardsPerCol;
+    
+    // Center the grid on the page
+    const gridWidth = cardSize * cardsPerRow;
+    const gridHeight = cardSize * cardsPerCol;
+    const marginLeft = (pageWidth - gridWidth) / 2;
+    const marginTop = (pageHeight - gridHeight) / 2;
     
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
@@ -156,56 +158,30 @@ export default function MaterialGenerator() {
       const row = Math.floor(pageIndex / cardsPerRow);
       const col = pageIndex % cardsPerRow;
       
-      const x = margin + col * (cardSize + gap);
-      const y = 15 + row * (cardSize + gap); // 15mm offset for header area
+      // Cards touch each other - no gap
+      const x = marginLeft + col * cardSize;
+      const y = marginTop + row * cardSize;
       
       // Card with thick colored border and white background
-      doc.setFillColor(255, 255, 255); // White background
-      doc.setDrawColor(r, g, b);
-      doc.setLineWidth(borderWidth);
-      doc.roundedRect(x, y, cardSize, cardSize, cornerRadius, cornerRadius, 'FD');
+      doc.setFillColor(r, g, b); // Colored background (border)
+      doc.roundedRect(x, y, cardSize, cardSize, cornerRadius, cornerRadius, 'F');
       
-      // Add image with padding inside border (image already has rounded corners)
-      const padding = borderWidth + 1; // mm padding inside card
-      const imageSize = cardSize - (padding * 2);
+      // White inner area for image
+      const innerOffset = borderWidth;
+      const innerSize = cardSize - (borderWidth * 2);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x + innerOffset, y + innerOffset, innerSize, innerSize, cornerRadius, cornerRadius, 'F');
       
+      // Add image filling the entire white area
       try {
-        doc.addImage(croppedImages[i], 'JPEG', x + padding, y + padding, imageSize, imageSize);
+        doc.addImage(croppedImages[i], 'JPEG', x + innerOffset, y + innerOffset, innerSize, innerSize);
       } catch {
         try {
-          doc.addImage(croppedImages[i], 'PNG', x + padding, y + padding, imageSize, imageSize);
+          doc.addImage(croppedImages[i], 'PNG', x + innerOffset, y + innerOffset, innerSize, innerSize);
         } catch {
           // placeholder
         }
       }
-    }
-    
-    // Add cutting guides (dotted lines) - same as pdf-generator
-    const totalPages = Math.ceil(croppedImages.length / cardsPerPage);
-    for (let page = 0; page < totalPages; page++) {
-      if (page > 0) continue; // guides on first page only or all pages
-      doc.setPage(page + 1);
-      doc.setDrawColor(200, 200, 200);
-      doc.setLineDashPattern([2, 2], 0);
-      doc.setLineWidth(0.2);
-      
-      // Vertical cutting guides
-      for (let c = 0; c <= cardsPerRow; c++) {
-        const lineX = margin + c * (cardSize + gap) - gap/2;
-        if (c > 0 && c < cardsPerRow) {
-          doc.line(lineX, 12, lineX, pageHeight - margin);
-        }
-      }
-      
-      // Horizontal cutting guides
-      for (let r = 0; r <= cardsPerCol; r++) {
-        const lineY = 15 + r * (cardSize + gap) - gap/2;
-        if (r > 0 && r < cardsPerCol) {
-          doc.line(margin - 2, lineY, pageWidth - margin + 2, lineY);
-        }
-      }
-      
-      doc.setLineDashPattern([], 0);
     }
     
     return doc.output('datauristring');
