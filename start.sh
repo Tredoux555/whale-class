@@ -5,5 +5,7 @@ pip3 install --break-system-packages --upgrade yt-dlp 2>&1 || echo "Warning: yt-
 echo "yt-dlp version: $(yt-dlp --version 2>/dev/null || echo 'not found')"
 echo "=========================================="
 
-# Start Next.js on the port specified by Railway (or default to 3000)
-exec ./node_modules/.bin/next start -p ${PORT:-3000}
+# Start Next.js standalone server on the port specified by Railway (or default to 3000)
+# CRITICAL: Using standalone mode for proper Docker/Railway deployment
+export PORT=${PORT:-3000}
+exec node .next/standalone/server.js
