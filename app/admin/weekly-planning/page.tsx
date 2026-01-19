@@ -20,6 +20,16 @@ interface UploadResult {
     assignments: ParsedAssignment[];
   };
   error?: string;
+  debug?: {
+    childrenCount: number;
+    totalWorks: number;
+    masteredBackfilled: number;
+    curriculumSync: {
+      matched: number;
+      autoAdded: number;
+      childrenSynced: number;
+    };
+  };
 }
 
 interface WeeklyPlan {
@@ -216,7 +226,26 @@ export default function WeeklyPlanningPage() {
             <p className="text-green-700 mb-4">
               {uploadResult.translatedContent?.assignments?.length || 0} children • {' '}
               {uploadResult.translatedContent?.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0} total works assigned
+              {uploadResult.debug?.masteredBackfilled > 0 && (
+                <> • {uploadResult.debug.masteredBackfilled} progress records updated</>
+              )}
             </p>
+
+            {/* Curriculum Sync Indicator */}
+            {uploadResult.debug?.curriculumSync && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm">
+                <span className="font-semibold text-blue-800">🔄 Curriculum Synced:</span>
+                <span className="text-blue-700 ml-2">
+                  {uploadResult.debug.curriculumSync.matched || 0} matched
+                  {uploadResult.debug.curriculumSync.autoAdded > 0 && (
+                    <> • {uploadResult.debug.curriculumSync.autoAdded} auto-added</>
+                  )}
+                  {uploadResult.debug.curriculumSync.childrenSynced > 0 && (
+                    <> • {uploadResult.debug.curriculumSync.childrenSynced} children synced</>
+                  )}
+                </span>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
               {uploadResult.translatedContent?.assignments?.slice(0, 8).map((assignment, i) => (
