@@ -11,37 +11,45 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { assignmentId, status } = await request.json();
+    const { assignmentId, status, notes } = await request.json();
 
-    if (!assignmentId || !status) {
+    if (!assignmentId) {
       return NextResponse.json(
-        { error: 'assignmentId and status required' },
+        { error: 'assignmentId required' },
         { status: 400 }
       );
     }
 
-    // Validate status
-    const validStatuses = ['not_started', 'presented', 'practicing', 'mastered'];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: 'Invalid status' },
-        { status: 400 }
-      );
-    }
-
-    // Update the assignment with timestamp
+    // Build update data
     const updateData: Record<string, any> = {
-      progress_status: status,
       updated_at: new Date().toISOString(),
     };
 
-    // Add timestamp for specific status
-    if (status === 'presented') {
-      updateData.presented_at = new Date().toISOString();
-    } else if (status === 'practicing') {
-      updateData.practicing_at = new Date().toISOString();
-    } else if (status === 'mastered') {
-      updateData.mastered_at = new Date().toISOString();
+    // Handle status update
+    if (status) {
+      const validStatuses = ['not_started', 'presented', 'practicing', 'mastered'];
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json(
+          { error: 'Invalid status' },
+          { status: 400 }
+        );
+      }
+      
+      updateData.progress_status = status;
+
+      // Add timestamp for specific status
+      if (status === 'presented') {
+        updateData.presented_at = new Date().toISOString();
+      } else if (status === 'practicing') {
+        updateData.practicing_at = new Date().toISOString();
+      } else if (status === 'mastered') {
+        updateData.mastered_at = new Date().toISOString();
+      }
+    }
+
+    // Handle notes update
+    if (notes !== undefined) {
+      updateData.notes = notes;
     }
 
     const { error } = await supabase
