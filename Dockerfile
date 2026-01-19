@@ -28,7 +28,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260120-session68-ALL-AI-ENDPOINTS-FIX
+ARG CACHEBUST=20260120-session68-DEBUG-STARTUP
 
 # Copy application files
 COPY . .

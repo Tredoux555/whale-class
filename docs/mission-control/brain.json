@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T03:45:00Z",
+  "lastUpdated": "2026-01-20T04:10:00Z",
   "session": 68,
   "phase": "Foundation Phase 1-4",
-  "currentSubPhase": "Fixing AI endpoints",
-  "phaseStatus": "🔧 Removing name_chinese from queries",
+  "currentSubPhase": "RAILWAY HEALTHCHECK FAILING",
+  "phaseStatus": "🚨 Build succeeds but server won't start",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -16,30 +16,31 @@
     "7. SEGMENT WORK - update brain after EVERY step"
   ],
 
-  "SESSION_68_PROGRESS": {
-    "api_404_fixed": "✅ Use www.teacherpotato.xyz",
-    "ai_analyze": "✅ WORKS",
-    "ai_suggest_next": "🔧 FIXING - name_chinese column doesn't exist",
-    "ai_weekly_report": "🔧 FIXING - same issue"
+  "RAILWAY_BUILD_LOG_ANALYSIS": {
+    "build_status": "✅ SUCCESS - all 13 steps completed",
+    "static_copy": "✅ cp -r .next/static .next/standalone/.next/",
+    "public_copy": "✅ cp -r public .next/standalone/",
+    "healthcheck": "❌ FAILED - 1/1 replicas never became healthy",
+    "error": "Service unavailable on /api/health"
   },
 
-  "ROOT_CAUSE_FOUND": {
-    "problem": "suggest-next and weekly-report return Child not found",
-    "cause": "Queries include name_chinese column that doesn't exist in montree_children",
-    "analyze_works_because": "analyze query doesn't have name_chinese",
-    "fix": "Remove name_chinese from both endpoint queries"
+  "ROOT_CAUSE": {
+    "issue": "Next.js standalone server not starting",
+    "likely_cause": "start.sh cd's into standalone folder but server.js can't find dependencies",
+    "start_sh_does": "cd /app/.next/standalone && node server.js",
+    "problem": "node_modules not in standalone folder path"
   },
 
-  "FIX_STATUS": {
-    "suggest-next": "✅ Fixed - removed name_chinese",
-    "weekly-report": "⏳ Next to fix",
-    "then": "Commit, push, test"
+  "FIX_NEEDED": {
+    "option_1": "Run server from /app with full path to server.js",
+    "option_2": "Copy node_modules to standalone folder",
+    "recommendation": "Option 1 - simpler, more reliable"
   },
 
   "NEXT_STEPS": [
-    "1. Fix weekly-report query (remove name_chinese)",
-    "2. Test locally",
-    "3. Commit and push",
-    "4. Test on www.teacherpotato.xyz"
+    "1. Fix start.sh - run from /app, not from standalone folder",
+    "2. Commit and push",
+    "3. Wait for Railway deploy",
+    "4. Verify healthcheck passes"
   ]
 }

@@ -6,9 +6,17 @@ echo "yt-dlp version: $(yt-dlp --version 2>/dev/null || echo 'not found')"
 echo "=========================================="
 
 # Start Next.js standalone server
-# CRITICAL: Must cd into standalone folder for proper path resolution
 echo "=== Starting Next.js standalone server ==="
+echo "PORT: ${PORT:-3000}"
+
+# CRITICAL: Next.js standalone expects to run from its folder
 cd /app/.next/standalone
-export PORT=${PORT:-3000}
-echo "PORT: $PORT"
+
+# CRITICAL: Railway needs HOSTNAME=0.0.0.0 for external access
+export HOSTNAME="0.0.0.0"
+export PORT="${PORT:-3000}"
+
+echo "Starting server on ${HOSTNAME}:${PORT}..."
+
+# Use exec to replace shell with node process
 exec node server.js
