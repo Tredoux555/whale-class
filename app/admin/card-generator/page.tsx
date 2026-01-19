@@ -477,7 +477,6 @@ const MontessoriCardGenerator = () => {
       page-break-after: always;
       width: ${A4_WIDTH_CM}cm;
       height: ${A4_HEIGHT_CM}cm;
-      padding: ${MARGIN_CM}cm;
       position: relative;
       overflow: hidden;
     }
@@ -498,8 +497,6 @@ const MontessoriCardGenerator = () => {
       display: grid;
       grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
       gap: 0;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${A4_HEIGHT_CM}cm;
       position: relative;
       margin: 0;
       padding: 0;
@@ -829,10 +826,8 @@ const MontessoriCardGenerator = () => {
       grid-template-columns: ${imageSize}cm ${imageSize}cm;
       grid-template-rows: ${imageSize}cm ${imageSize}cm;
       gap: 0;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${A4_HEIGHT_CM}cm;
       position: relative;
-      margin: 0;
+      margin: 0 auto;
       padding: 0;
     }
     
