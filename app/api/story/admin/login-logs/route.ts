@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     const { data: rows, error } = await supabase
       .from('story_login_logs')
-      .select('id, username, login_at, ip_address, user_agent')
-      .order('login_at', { ascending: false })
+      .select('id, username, login_time, ip_address, user_agent')
+      .order('login_time', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const logs = (rows || []).map(row => ({
       id: row.id,
       username: row.username,
-      login_time: row.login_at,
+      login_time: row.login_time,
       ip_address: row.ip_address,
       user_agent: row.user_agent
     }));

@@ -129,14 +129,12 @@ export async function POST(req: NextRequest) {
     await supabase.from('story_message_history').insert({
       week_start_date: weekStartDate,
       message_type: 'image',
-      content: encryptedCaption,
+      message_content: encryptedCaption,
       media_url: mediaUrl,
       media_filename: filename,
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
-      is_from_admin: true,
-      session_token: sessionToken,
-      login_log_id: loginLogId
+      is_expired: false
     });
 
     return NextResponse.json({

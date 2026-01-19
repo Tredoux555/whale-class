@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     try {
       const { error: logError } = await supabase.from('story_login_logs').insert({
         username,
-        login_at: new Date().toISOString(),
+        login_time: new Date().toISOString(),
         ip_address: ip,
         user_agent: userAgent
       });
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
           try {
             const { error: logError } = await supabase.from('story_login_logs').insert({
               username,
-              login_at: new Date().toISOString(),
+              login_time: new Date().toISOString(),
               ip_address: ip,
               user_agent: userAgent
             });

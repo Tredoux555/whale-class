@@ -58,9 +58,9 @@
     "AUDIT_CHECKLIST": {
       "picture_cards": "✅ AUDITED - BUG-001 FIXED: Dynamic grid for all sizes",
       "three_part_cards": "✅ AUDITED - Blank page fix verified correct",
-      "weekly_planning_upload": "⏳ PENDING",
-      "progress_tab": "⏳ PENDING",
-      "integration_check": "⏳ PENDING"
+      "weekly_planning_upload": "✅ AUDITED - CRITICAL BUG-002 FIXED: Curriculum table consistency",
+      "progress_tab": "✅ AUDITED - Uses correct tables, UI clean",
+      "integration_check": "✅ AUDITED - All systems use montree_classroom_curriculum_works"
     },
     
     "BUGS_FOUND_AND_FIXED": [
@@ -70,6 +70,15 @@
         "issue": "Fixed 2x3 grid - large (100mm) and jumbo (150mm) exceeded A4 page",
         "fix": "Dynamic grid calculation: cardsPerRow = Math.floor(usableWidth / cardSize)",
         "commit": "4a6bb78"
+      },
+      {
+        "id": "BUG-002",
+        "severity": "CRITICAL",
+        "component": "Weekly Planning Upload",
+        "issue": "Used curriculum_roadmap (OLD table) while rest of system uses montree_classroom_curriculum_works",
+        "impact": "Mismatched work IDs, orphaned progress records, inconsistent data",
+        "fix": "Removed redundant backfill, sync-all is now single source of truth",
+        "commit": "11b1e57"
       }
     ]
   },
@@ -112,5 +121,10 @@
   "CURRENT_STATS": {
     "curriculum_works": 308,
     "montessori_areas": 5
+  },
+
+  "URGENT_FIX": {
+    "issue": "Story system - messages/logins not showing in admin",
+    "status": "FIXING NOW"
   }
 }
