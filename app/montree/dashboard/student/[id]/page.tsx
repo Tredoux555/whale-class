@@ -684,16 +684,18 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                     const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
                     const canGoPrev = currentPosInArea > 0;
                     const canGoNext = currentPosInArea < areaWorks.length - 1;
+                    const prevName = canGoPrev ? areaWorks[currentPosInArea - 1]?.work_name : '';
+                    const nextName = canGoNext ? areaWorks[currentPosInArea + 1]?.work_name : '';
                     return (
                       <div className="absolute inset-y-0 flex items-center pointer-events-none z-10">
                         {swipeOffset > 20 && canGoPrev && (
                           <div className="absolute left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                            ← {areaWorks[currentPosInArea - 1]?.work_name?.slice(0, 15)}...
+                            ← {prevName.length > 18 ? prevName.slice(0, 18) + '...' : prevName}
                           </div>
                         )}
                         {swipeOffset < -20 && canGoNext && (
                           <div className="absolute right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                            {areaWorks[currentPosInArea + 1]?.work_name?.slice(0, 15)}... →
+                            {nextName.length > 18 ? nextName.slice(0, 18) + '...' : nextName} →
                           </div>
                         )}
                       </div>
@@ -753,10 +755,20 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                   {(() => {
                     const areaWorks = getWorksInSameArea();
                     const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
-                    const areaName = AREA_CONFIG[assignment.area]?.letter || '?';
+                    const areaConfig = AREA_CONFIG[assignment.area];
+                    const areaLetter = areaConfig?.letter || '?';
+                    
+                    if (areaWorks.length <= 1) {
+                      return (
+                        <p className="text-xs text-gray-400 text-center mt-3">
+                          Only {areaLetter} work this week
+                        </p>
+                      );
+                    }
+                    
                     return (
                       <p className="text-xs text-gray-400 text-center mt-3">
-                        ← Swipe → {areaName} works ({currentPosInArea + 1}/{areaWorks.length})
+                        ← Swipe → {areaLetter} works ({currentPosInArea + 1}/{areaWorks.length})
                       </p>
                     );
                   })()}

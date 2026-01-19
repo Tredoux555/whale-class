@@ -50,6 +50,7 @@ export default function WorkNavigator({
   const [selectedArea, setSelectedArea] = useState('all');
   const [allWorks, setAllWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -67,15 +68,19 @@ export default function WorkNavigator({
     if (!classroomId || !isOpen) return;
     
     setLoading(true);
+    setError(null);
     try {
       const areaParam = selectedArea !== 'all' ? `&area=${selectedArea}` : '';
       const res = await fetch(
         `/api/montree/works/search?classroom_id=${classroomId}&child_id=${childId}${areaParam}&limit=200`
       );
+      if (!res.ok) throw new Error('Failed to load works');
       const data = await res.json();
       setAllWorks(data.works || []);
     } catch (err) {
       console.error('Failed to fetch works:', err);
+      setError('Failed to load works. Please try again.');
+      setAllWorks([]);
     } finally {
       setLoading(false);
     }
@@ -171,6 +176,16 @@ export default function WorkNavigator({
             {loading ? (
               <div className="text-center py-8 text-gray-500">
                 <span className="animate-spin inline-block">⏳</span> Loading works...
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-2">❌ {error}</p>
+                <button 
+                  onClick={() => fetchWorks()}
+                  className="text-emerald-600 hover:underline text-sm"
+                >
+                  Try again
+                </button>
               </div>
             ) : filteredWorks.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
