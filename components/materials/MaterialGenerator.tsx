@@ -122,9 +122,14 @@ export default function MaterialGenerator() {
     const pageWidth = 210;
     const pageHeight = 297;
     
-    // Cards touch each other - no gap (like three-part cards)
-    const cardsPerRow = 2;
-    const cardsPerCol = 3;
+    // Dynamically calculate grid based on card size (cards touch - no gap)
+    // Leave small margin for printer tolerance
+    const margin = 10; // mm margin on each side
+    const usableWidth = pageWidth - (margin * 2);
+    const usableHeight = pageHeight - (margin * 2);
+    
+    const cardsPerRow = Math.max(1, Math.floor(usableWidth / cardSize));
+    const cardsPerCol = Math.max(1, Math.floor(usableHeight / cardSize));
     const cardsPerPage = cardsPerRow * cardsPerCol;
     
     // Center the grid on the page

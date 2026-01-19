@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-19T14:45:00Z",
-  "session": 63,
+  "lastUpdated": "2026-01-19T17:30:00Z",
+  "session": 64,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "SESSION 63 COMPLETE",
-  "phaseStatus": "✅ PROGRESS TRACKING UI COMPLETE",
+  "currentSubPhase": "SESSION 64 - DEEP AUDIT IN PROGRESS",
+  "phaseStatus": "🔍 AUDITING TODAY'S WORK",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
@@ -16,94 +16,63 @@
     "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_63_WORK_DETAIL_UI": {
-    "status": "✅ COMPLETE - AUDITED & FIXED",
-    "started": "2026-01-19T13:45:00Z",
-    "audited": "2026-01-19T14:15:00Z",
+  "SESSION_64_WORK": {
+    "status": "🔍 AUDITING",
+    "started": "2026-01-19T17:00:00Z",
     
-    "AUDIT_RESULTS": {
-      "issues_found": 5,
-      "issues_fixed": 3,
-      "issues_deferred": 2,
-      "fixes_applied": [
-        "BUG-001: Moved swipe handlers to nav area only (not whole panel)",
-        "BUG-002: Added unsaved notes confirmation on navigate",
-        "BUG-003: Added stopPropagation to all buttons + textarea"
-      ],
-      "deferred": [
-        "UX-001: Keyboard shortcuts (Escape, Arrow keys) - nice to have",
-        "UX-002: Visual unsaved indicator on row - nice to have"
-      ]
-    },
-    
-    "PROGRESS_TAB_FIX": {
-      "status": "✅ FIXED",
-      "problem": "Showed 0% because it only counted mastered works",
-      "solution": "Now shows X/308 'works started' (presented + practicing + mastered)",
-      "changes": [
-        "Overall Progress: shows works started count instead of mastered %",
-        "Area cards: show X/total works started with color coding",
-        "Removed confusing percentage that was always 0%",
-        "Added Edit Curriculum button → /admin/curriculum-editor"
-      ]
-    },
-    
-    "UX_SIMPLIFICATION": {
-      "status": "✅ COMPLETE",
-      "change": "Progress Tab: one-click mastery toggle",
-      "before": "Click cycled through 4 statuses (confusing)",
-      "after": "Click toggles mastered on/off (simple)",
-      "this_week_tab": "Keeps full P → Pr → M cycle for detailed tracking"
-    },
-    
-    "COMPLETED": {
-      "expandable_row": {
-        "status": "✅ BUILT & FIXED",
-        "file": "/app/montree/dashboard/student/[id]/page.tsx",
-        "features": [
-          "Click row to expand/collapse",
-          "Notes textarea with save button",
-          "Demo button → YouTube search for work presentation",
-          "Capture button (photo/video)",
-          "Prev/Next navigation with stopPropagation",
-          "Swipe navigation (on nav bar only)",
-          "Work counter (1 of 5)",
-          "Chevron indicator",
-          "Unsaved notes confirmation"
-        ]
+    "COMPLETED_ITEMS": [
+      {
+        "item": "Picture Cards Generator - Match Three-Part Card Format",
+        "file": "/components/materials/MaterialGenerator.tsx",
+        "changes": [
+          "Cards now touch (no gap) - single cut separates",
+          "Images fill entire white area within border",
+          "5mm thick border matching three-part cards",
+          "2x3 grid centered on A4",
+          "Rounded corners 4mm"
+        ],
+        "commits": ["7181772"]
       },
-      "notes_api": {
-        "status": "✅ VERIFIED",
-        "file": "/app/api/weekly-planning/progress/route.ts"
+      {
+        "item": "Three-Part Card Generator - Fix Blank Pages",
+        "file": "/app/admin/card-generator/page.tsx",
+        "changes": [
+          "Removed fixed A4 height from grid CSS",
+          "Removed page padding causing overflow",
+          "Added margin: 0 auto for centering"
+        ],
+        "commits": ["f1175c4"]
+      },
+      {
+        "item": "Weekly Planning - Sync Indicator on Upload",
+        "file": "/app/admin/weekly-planning/page.tsx",
+        "changes": [
+          "Added curriculumSync to UploadResult interface",
+          "Shows matched/autoAdded/childrenSynced counts",
+          "Shows progress records updated count"
+        ],
+        "commits": ["d226fc6"]
       }
+    ],
+    
+    "AUDIT_CHECKLIST": {
+      "picture_cards": "⏳ PENDING",
+      "three_part_cards": "⏳ PENDING",
+      "weekly_planning_upload": "⏳ PENDING",
+      "progress_tab": "⏳ PENDING",
+      "integration_check": "⏳ PENDING"
     }
   },
 
-  "SESSION_62_POST_AUDIT": {
-    "status": "✅ COMPLETE",
-    "completed": "2026-01-19T13:30:00Z"
+  "PREVIOUS_SESSION_PRIORITIES": {
+    "1_test_upload_sync": "✅ VERIFIED - auto-sync fires after upload",
+    "2_progress_tab_polish": "✅ ALREADY DONE in Session 63",
+    "3_deprecate_curriculum_roadmap": "⏳ STILL PENDING",
+    "4_sync_indicator": "✅ DONE - shows in upload success"
   },
 
-  "SESSION_61_AUDIT": {
-    "status": "✅ COMPLETE",
-    "issues_found": 4,
-    "issues_fixed": 4,
-    "segments_passed": "5/5"
-  },
-
-  "SESSION_60_CURRICULUM_SYSTEM": {
-    "vision": "Each classroom owns its curriculum. Teachers customize freely.",
-    "whale_classroom_id": "bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6",
-    "correct_tables": [
-      "montree_classroom_curriculum_areas (5 areas)",
-      "montree_classroom_curriculum_works (308 works)"
-    ],
-    "wrong_table": "curriculum_roadmap (global - DO NOT USE)",
-    "phase_1": "✅ Progress API updated",
-    "phase_2": "✅ Sync API with auto-add",
-    "phase_3": "✅ CRUD APIs + Editor UI",
-    "phase_4": "✅ Auto-sync on import",
-    "handoff": "/docs/mission-control/HANDOFF_CURRICULUM_EDITOR.md"
+  "SESSION_63_WORK_DETAIL_UI": {
+    "status": "✅ COMPLETE - AUDITED & FIXED"
   },
 
   "CURRICULUM_APIS": {
@@ -116,6 +85,13 @@
     "editor_ui": "/admin/curriculum-editor"
   },
 
+  "MATERIAL_GENERATORS": {
+    "three_part_cards": "/admin/card-generator",
+    "picture_cards": "/admin/material-generator (select Picture Cards)",
+    "label_maker": "/admin/label-maker",
+    "flashcard_maker": "/admin/flashcard-maker"
+  },
+
   "STATUS_CODES": {
     "0": "not_started (white)",
     "1": "presented (yellow)", 
@@ -125,23 +101,6 @@
 
   "CURRENT_STATS": {
     "curriculum_works": 308,
-    "montessori_areas": 5,
-    "orphaned_works": 0,
-    "linked_progress": 4,
-    "total_progress_records": 26,
-    "works_by_area": {
-      "practical_life": 92,
-      "sensorial": 44,
-      "mathematics": 65,
-      "language": 47,
-      "cultural": 60
-    }
-  },
-
-  "NEXT_SESSION_PRIORITIES": [
-    "1. Test full flow: Upload weekly plan → verify auto-sync fires",
-    "2. Progress Tab UI polish in student view",
-    "3. Consider deprecating curriculum_roadmap table",
-    "4. Add curriculum sync indicator to upload success toast"
-  ]
+    "montessori_areas": 5
+  }
 }
