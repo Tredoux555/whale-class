@@ -64,26 +64,48 @@ export default function MaterialGenerator() {
     green: [34, 197, 94],
   };
 
-  // Crop image to square from center
-  const cropToSquare = (img: HTMLImageElement): HTMLCanvasElement => {
+  // Crop image to square from center with rounded corners
+  const cropToSquare = (img: HTMLImageElement, addRoundedCorners: boolean = true): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     const size = Math.min(img.width, img.height);
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d')!;
+    
+    // Fill with white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, size, size);
+    
+    if (addRoundedCorners) {
+      // Draw rounded rectangle clip path
+      const radius = size * 0.06; // 6% corner radius
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.clip();
+    }
+    
     const offsetX = (img.width - size) / 2;
     const offsetY = (img.height - size) / 2;
     ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
     return canvas;
   };
 
-  // Load image and return cropped base64
+  // Load image and return cropped base64 with rounded corners
   const loadAndCropImage = (src: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        const cropped = cropToSquare(img);
-        resolve(cropped.toDataURL('image/jpeg', 0.95));
+        const cropped = cropToSquare(img, true);
+        resolve(cropped.toDataURL('image/jpeg', 0.92));
       };
       img.onerror = reject;
       img.src = src;
@@ -96,6 +118,7 @@ export default function MaterialGenerator() {
     const margin = 10; // mm
     const gap = 5; // mm between cards
     const borderWidth = 3; // mm
+    const cornerRadius = 4; // mm - rounded corners
     
     // A4 dimensions in mm
     const pageWidth = 210;
@@ -134,12 +157,12 @@ export default function MaterialGenerator() {
       const x = margin + col * (cardSize + gap);
       const y = margin + row * (cardSize + gap);
       
-      // Draw colored border
+      // Draw colored rounded border
       doc.setDrawColor(r, g, b);
       doc.setLineWidth(borderWidth);
-      doc.rect(x + borderWidth/2, y + borderWidth/2, cardSize - borderWidth, cardSize - borderWidth);
+      doc.roundedRect(x + borderWidth/2, y + borderWidth/2, cardSize - borderWidth, cardSize - borderWidth, cornerRadius, cornerRadius, 'S');
       
-      // Add image filling inner area
+      // Add image filling inner area (already has rounded corners baked in)
       const innerOffset = borderWidth;
       const innerSize = cardSize - 2 * borderWidth;
       
@@ -151,7 +174,7 @@ export default function MaterialGenerator() {
         } catch {
           // Draw placeholder
           doc.setFillColor(240, 240, 240);
-          doc.rect(x + innerOffset, y + innerOffset, innerSize, innerSize, 'F');
+          doc.roundedRect(x + innerOffset, y + innerOffset, innerSize, innerSize, cornerRadius - 1, cornerRadius - 1, 'F');
         }
       }
     }
