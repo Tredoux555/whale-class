@@ -15,10 +15,10 @@ export async function GET(req: NextRequest) {
     // Get recent logins (within 10 min, not logged out)
     const { data: rows, error } = await supabase
       .from('story_login_logs')
-      .select('username, login_at')
-      .gt('login_at', tenMinutesAgo)
+      .select('username, login_time')
+      .gt('login_time', tenMinutesAgo)
       .is('logout_at', null)
-      .order('login_at', { ascending: false });
+      .order('login_time', { ascending: false });
 
     if (error) throw error;
 
@@ -27,12 +27,12 @@ export async function GET(req: NextRequest) {
     (rows || []).forEach(row => {
       if (!userMap.has(row.username)) {
         // Parse timestamp - with TIMESTAMPTZ, Supabase returns ISO format
-        const loginTimestamp = new Date(row.login_at).getTime();
+        const loginTimestamp = new Date(row.login_time).getTime();
         const secondsAgo = Math.max(0, Math.floor((now - loginTimestamp) / 1000));
         
         userMap.set(row.username, {
           username: row.username,
-          lastLogin: row.login_at,
+          lastLogin: row.login_time,
           secondsAgo
         });
       }
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       onlineUsers,
       onlineCount: onlineUsers.length,
       totalUsers: uniqueUsers.size,
-      serverTime: new Date().toISOString() // Include server time for debugging
+      serverTime: new Date().toISOString()
     });
   } catch (error) {
     console.error('[OnlineUsers] Error:', error);

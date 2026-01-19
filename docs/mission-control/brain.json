@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-19T17:30:00Z",
+  "lastUpdated": "2026-01-19T20:00:00Z",
   "session": 64,
   "phase": "9 - Test & Polish",
-  "currentSubPhase": "SESSION 64 - DEEP AUDIT IN PROGRESS",
-  "phaseStatus": "🔍 AUDITING TODAY'S WORK",
+  "currentSubPhase": "DEEP AUDIT - Japanese Engineer Review",
+  "phaseStatus": "🔍 AUDITING FOR PERFECTION",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM - Teachers can add/edit/delete works",
@@ -16,122 +16,57 @@
     "7. SEGMENT WORK - Bite-size chunks, update brain after EVERY step."
   ],
 
-  "SESSION_64_WORK": {
-    "status": "🔍 AUDITING",
-    "started": "2026-01-19T17:00:00Z",
-    
-    "COMPLETED_ITEMS": [
-      {
-        "item": "Picture Cards Generator - Match Three-Part Card Format",
-        "file": "/components/materials/MaterialGenerator.tsx",
-        "changes": [
-          "Cards now touch (no gap) - single cut separates",
-          "Images fill entire white area within border",
-          "5mm thick border matching three-part cards",
-          "2x3 grid centered on A4",
-          "Rounded corners 4mm"
-        ],
-        "commits": ["7181772"]
-      },
-      {
-        "item": "Three-Part Card Generator - Fix Blank Pages",
-        "file": "/app/admin/card-generator/page.tsx",
-        "changes": [
-          "Removed fixed A4 height from grid CSS",
-          "Removed page padding causing overflow",
-          "Added margin: 0 auto for centering"
-        ],
-        "commits": ["f1175c4"]
-      },
-      {
-        "item": "Weekly Planning - Sync Indicator on Upload",
-        "file": "/app/admin/weekly-planning/page.tsx",
-        "changes": [
-          "Added curriculumSync to UploadResult interface",
-          "Shows matched/autoAdded/childrenSynced counts",
-          "Shows progress records updated count"
-        ],
-        "commits": ["d226fc6"]
-      }
-    ],
-    
-    "AUDIT_CHECKLIST": {
-      "picture_cards": "✅ AUDITED - BUG-001 FIXED: Dynamic grid for all sizes",
-      "three_part_cards": "✅ AUDITED - Blank page fix verified correct",
-      "weekly_planning_upload": "✅ AUDITED - CRITICAL BUG-002 FIXED: Curriculum table consistency",
-      "progress_tab": "✅ AUDITED - Uses correct tables, UI clean",
-      "integration_check": "✅ AUDITED - All systems use montree_classroom_curriculum_works"
+  "SESSION_64_AUDIT": {
+    "status": "🔍 IN PROGRESS",
+    "segments": {
+      "1_story_system": "🔍 AUDITING - Found more login_at references to fix",
+      "2_theme_consistency": "✅ DONE - 6 pages polished",
+      "3_landing_page": "⏳ PENDING",
+      "4_integration": "⏳ PENDING",
+      "5_vision_alignment": "⏳ PENDING"
     },
     
-    "BUGS_FOUND_AND_FIXED": [
-      {
-        "id": "BUG-001",
-        "component": "Picture Cards Generator",
-        "issue": "Fixed 2x3 grid - large (100mm) and jumbo (150mm) exceeded A4 page",
-        "fix": "Dynamic grid calculation: cardsPerRow = Math.floor(usableWidth / cardSize)",
-        "commit": "4a6bb78"
-      },
-      {
-        "id": "BUG-002",
-        "severity": "CRITICAL",
-        "component": "Weekly Planning Upload",
-        "issue": "Used curriculum_roadmap (OLD table) while rest of system uses montree_classroom_curriculum_works",
-        "impact": "Mismatched work IDs, orphaned progress records, inconsistent data",
-        "fix": "Removed redundant backfill, sync-all is now single source of truth",
-        "commit": "11b1e57"
-      }
+    "CRITICAL_DISCOVERY": {
+      "issue": "Schema conflict between SQL files",
+      "FIX_STORY_TABLES_NOW.sql": "uses login_time, message_content",
+      "FIX_STORY_SYSTEM_JAN19.sql": "uses login_at, content",
+      "solution": "Created FIX_STORY_DEFINITIVE.sql - standardizes on login_time, message_content"
+    },
+    
+    "FILES_STILL_NEED_FIXING": [
+      "/api/story/admin/send-message/route.ts - has login_at reference",
+      "/api/story/admin/send-image/route.ts - has login_at reference",
+      "/api/story/admin/send-audio/route.ts - has login_at reference",
+      "/api/story/admin/auth/route.ts - has login_at reference",
+      "/api/story/admin/online-users/route.ts - FIXED",
+      "/api/story/message/route.ts - FIXED"
     ]
   },
 
-  "PREVIOUS_SESSION_PRIORITIES": {
-    "1_test_upload_sync": "✅ VERIFIED - auto-sync fires after upload",
-    "2_progress_tab_polish": "✅ ALREADY DONE in Session 63",
-    "3_deprecate_curriculum_roadmap": "⏳ STILL PENDING",
-    "4_sync_indicator": "✅ DONE - shows in upload success"
+  "THEME_STANDARD": {
+    "background": "bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50",
+    "header": "bg-white/80 backdrop-blur-sm border-b border-emerald-100",
+    "back_button": "bg-emerald-100 hover:bg-emerald-200 rounded-xl",
+    "primary_button": "bg-emerald-500 hover:bg-emerald-600"
   },
 
-  "SESSION_63_WORK_DETAIL_UI": {
-    "status": "✅ COMPLETE - AUDITED & FIXED"
-  },
+  "PAGES_POLISHED": [
+    "/montree/dashboard/tools",
+    "/montree/dashboard/settings",
+    "/montree/dashboard/games",
+    "/montree/dashboard/reports",
+    "/montree/dashboard/media",
+    "/montree/dashboard/capture"
+  ],
 
-  "CURRICULUM_APIS": {
-    "progress": "/api/classroom/child/[childId]/progress",
-    "sync": "/api/classroom/child/[childId]/progress/sync",
-    "crud": "/api/admin/curriculum",
-    "crud_single": "/api/admin/curriculum/[id]",
-    "orphaned": "/api/admin/curriculum/orphaned",
-    "sync_all": "/api/admin/curriculum/sync-all",
-    "editor_ui": "/admin/curriculum-editor"
-  },
-
-  "MATERIAL_GENERATORS": {
-    "three_part_cards": "/admin/card-generator",
-    "picture_cards": "/admin/material-generator (select Picture Cards)",
-    "label_maker": "/admin/label-maker",
-    "flashcard_maker": "/admin/flashcard-maker"
-  },
-
-  "STATUS_CODES": {
-    "0": "not_started (white)",
-    "1": "presented (yellow)", 
-    "2": "practicing (blue)",
-    "3": "mastered (green)"
-  },
-
-  "CURRENT_STATS": {
-    "curriculum_works": 308,
-    "montessori_areas": 5
-  },
-
-  "URGENT_FIX": {
-    "issue": "Story system - messages/logins not showing in admin",
-    "status": "✅ FIXED - Column name mismatches corrected",
-    "commit": "f4e46d8",
-    "details": {
-      "root_cause": "API code used wrong column names vs database schema",
-      "message_column": "content → message_content",
-      "login_column": "login_at → login_time",
-      "files_fixed": ["send-message", "send-image", "send-audio", "auth", "login-logs"]
-    }
-  }
+  "COMMITS_THIS_SESSION": [
+    "7181772 - Picture Cards format",
+    "f1175c4 - Three-Part Cards blank page fix",
+    "d226fc6 - Weekly Planning sync indicator",
+    "4a6bb78 - Picture Cards dynamic grid",
+    "11b1e57 - CRITICAL: curriculum table fix",
+    "f4e46d8 - Story system column fixes (partial)",
+    "8460d7d - Theme consistency",
+    "f35da48 - Capture page theme"
+  ]
 }
