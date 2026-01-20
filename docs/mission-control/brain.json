@@ -1,9 +1,9 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T14:25:00Z",
+  "lastUpdated": "2026-01-20T15:30:00Z",
   "session": 72,
   "phase": "UI Polish + Bug Fixes",
-  "currentSubPhase": "✅ DEPLOYED - Ready for testing",
+  "currentSubPhase": "✅ v2 DEPLOYED - Swipe added to ThisWeekTab",
   "phaseStatus": "✅ COMPLETE",
   
   "CORE_LAWS": [
@@ -17,67 +17,45 @@
   ],
 
   "SESSION_72_SUMMARY": {
-    "goal": "Fix navigation issues + curriculum not loading in Find Work",
-    "status": "✅ DEPLOYED",
-    "commit": "be87229",
-    "approach": "Japanese Engineer - surgical precision edits",
-    "fixes_applied": [
-      "1. ✅ Removed navigation arrows from ThisWeekTab expanded panel",
-      "2. ✅ Rewrote WorkNavigator API to use STATIC curriculum data (316 works)",
-      "3. ✅ Swipe navigation correctly in WorkNavigator only"
+    "goal": "Fix navigation issues + curriculum not loading",
+    "status": "✅ v2 DEPLOYED",
+    "commits": ["be87229", "c2660d7"],
+    "fixes": [
+      "1. ✅ Fixed curriculum loading in Find Work (uses static 316 works)",
+      "2. ✅ Added swipe navigation to ThisWeekTab expanded panel",
+      "3. ✅ Added ← → arrows with '1 of 5' counter"
     ]
   },
 
-  "SESSION_72_PROGRESS": {
-    "step_1": "✅ COMPLETE - Analyzed code and found root cause",
-    "step_2": "✅ COMPLETE - Removed navigation from ThisWeekTab expanded panel",
-    "step_3": "✅ COMPLETE - Rewrote API to use static curriculum",
-    "step_4": "✅ COMPLETE - Verified swipe works in WorkNavigator",
-    "step_5": "✅ COMPLETE - Deployed to production"
+  "SWIPE_IMPLEMENTATION": {
+    "location": "ThisWeekTab expanded panel",
+    "behavior": "Cycles through ALL 5 weekly works",
+    "features": [
+      "Visual feedback - panel moves during swipe",
+      "← → navigation buttons",
+      "'X of 5' counter",
+      "Threshold: 60px swipe distance",
+      "Checks for unsaved notes before navigating"
+    ],
+    "handlers": ["handleTouchStart", "handleTouchMove", "handleTouchEnd"],
+    "state": ["swipeOffset", "touchStartX ref"]
   },
 
-  "WHAT_CHANGED": {
-    "thisWeekTab": {
-      "before": "Had ← → arrows + swipe cycling through all 5 works",
-      "after": "Clean expanded panel: Notes + Demo + Capture only",
-      "file": "/app/montree/dashboard/student/[id]/page.tsx"
-    },
-    "findWorkPanel": {
-      "before": "Queried empty montree_classroom_curriculum_works table = 'No works found'",
-      "after": "Uses static curriculum from lib/montree/curriculum-data.ts = 316 works",
-      "file": "/app/api/montree/works/search/route.ts"
-    },
-    "swipeNavigation": {
-      "location": "WorkNavigator only (Find Work panel)",
-      "behavior": "Cycles through filtered works (respects area + search filter)"
-    }
+  "TEST_ON_PHONE": {
+    "url": "www.teacherpotato.xyz",
+    "steps": [
+      "1. Login → Click Rachel",
+      "2. This Week tab → Tap any work (e.g., Color Mixing)",
+      "3. See expanded panel with ← → arrows",
+      "4. TAP arrows OR SWIPE left/right",
+      "5. Should navigate to next/prev work",
+      "6. Counter updates (e.g., '2 of 5')"
+    ]
   },
-
-  "TEST_CHECKLIST": [
-    "1. Go to www.teacherpotato.xyz",
-    "2. Login → Click any student (e.g., Rachel)",
-    "3. This Week tab: Tap work → Should NOT have ← → arrows",
-    "4. Tap 'Find Work' → Should load 316 works (not 'No works found')",
-    "5. Select 'Sensorial' filter → Swipe/arrows cycle through Sensorial only",
-    "6. Select different area → Swipe stays within that area"
-  ],
 
   "FILES_MODIFIED": [
-    "/app/montree/dashboard/student/[id]/page.tsx",
-    "/app/api/montree/works/search/route.ts",
+    "/app/montree/dashboard/student/[id]/page.tsx - Swipe navigation",
+    "/app/api/montree/works/search/route.ts - Static curriculum",
     "/docs/mission-control/brain.json"
-  ],
-
-  "CURRICULUM_DATA_SOURCE": {
-    "location": "/lib/montree/curriculum-data.ts",
-    "json_files": [
-      "/lib/curriculum/data/practical-life.json",
-      "/lib/curriculum/data/sensorial.json",
-      "/lib/curriculum/data/math.json",
-      "/lib/curriculum/data/language.json",
-      "/lib/curriculum/data/cultural.json"
-    ],
-    "total_works": 316,
-    "helper_function": "getAllWorks()"
-  }
+  ]
 }
