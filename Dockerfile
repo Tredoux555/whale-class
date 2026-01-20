@@ -1,3 +1,4 @@
+# FORCE REBUILD: 20260120-1813-BUST-ALL-CACHE
 # Use Node.js 20
 FROM node:20-slim
 
@@ -21,6 +22,10 @@ RUN ffmpeg -version && yt-dlp --version
 # Set working directory
 WORKDIR /app
 
+# Force rebuild timestamp - changing this invalidates all following layers
+ARG REBUILD_TS=20260120-1813
+RUN echo "Build timestamp: $REBUILD_TS"
+
 # Copy package files
 COPY package*.json ./
 
@@ -28,7 +33,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260120-1805-FORCE
+ARG CACHEBUST=20260120-1813-V2
 
 # Copy application files
 COPY . .
