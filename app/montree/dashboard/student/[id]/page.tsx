@@ -618,15 +618,65 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
-  // When user selects a work from wheel, update the expanded card
-  const setSelectedWorkFromWheel = (work: CurriculumWork) => {
-    // Find if this work is in assignments, if so expand it
+  // When user selects a work from wheel, add to weekly assignments if needed
+  const setSelectedWorkFromWheel = async (work: CurriculumWork) => {
+    // Find if this work is already in assignments
     const assignmentIndex = assignments.findIndex(a => a.work_id === work.id || a.work_name === work.name);
+    
     if (assignmentIndex >= 0) {
+      // Already in weekly list - just expand it
       setExpandedIndex(assignmentIndex);
       setEditingNotes(assignments[assignmentIndex]?.notes || '');
+      toast.success(`Showing: ${work.name}`);
+    } else {
+      // NOT in weekly list - add it via API
+      if (!weekInfo) {
+        toast.error('Week info not available');
+        return;
+      }
+      
+      try {
+        toast.loading(`Adding ${work.name}...`);
+        
+        const res = await fetch('/api/weekly-planning/assignments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            week: weekInfo.week,
+            year: weekInfo.year,
+            child_id: childId,
+            work_id: work.id,
+            work_name: work.name,
+            area: work.area?.area_key || selectedArea,
+          }),
+        });
+        
+        if (!res.ok) throw new Error('Failed to add work');
+        
+        toast.dismiss();
+        toast.success(`Added: ${work.name}`);
+        
+        // Refresh assignments to get the new one
+        const refreshRes = await fetch(`/api/classroom/child/${childId}/week`);
+        const refreshData = await refreshRes.json();
+        const newAssignments = refreshData.assignments || [];
+        setAssignments(newAssignments);
+        
+        // Find and expand the newly added work
+        const newIndex = newAssignments.findIndex((a: WorkAssignment) => 
+          a.work_id === work.id || a.work_name === work.name
+        );
+        if (newIndex >= 0) {
+          setExpandedIndex(newIndex);
+          setEditingNotes('');
+        }
+        
+      } catch (error) {
+        toast.dismiss();
+        toast.error('Failed to add work');
+        console.error('Failed to add work:', error);
+      }
     }
-    toast.success(`Selected: ${work.name}`);
   };
 
   const handleStatusTap = async (e: React.MouseEvent, assignment: WorkAssignment, index: number) => {
