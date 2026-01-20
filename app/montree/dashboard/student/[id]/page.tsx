@@ -584,25 +584,13 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
-      {/* Work Navigator - Browse all works */}
-      {classroomId && (
-        <WorkNavigator
-          classroomId={classroomId}
-          childId={childId}
-          onWorkSelect={(work) => {
-            // Find if this work is in assignments
-            const idx = assignments.findIndex(a => 
-              a.work_id === work.id || a.work_name === work.name
-            );
-            if (idx >= 0) {
-              setExpandedIndex(idx);
-              setEditingNotes(assignments[idx]?.notes || '');
-            } else {
-              toast.info(`${work.name} is not assigned this week`);
-            }
-          }}
-        />
-      )}
+      {/* Work Navigator - Browse ALL 316 works and update progress */}
+      <WorkNavigator
+        classroomId={classroomId}
+        childId={childId}
+        childName={childName}
+        onProgressUpdated={fetchAssignments}
+      />
 
       {/* Legend - only show when collapsed */}
       {expandedIndex === null && (
