@@ -1,5 +1,6 @@
 // components/montree/WorkNavigator.tsx
 // Simplified work browser - tap status badge to cycle, swipe to navigate
+// BUILD: 20260120-1805
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -344,7 +345,7 @@ export default function WorkNavigator({
 
           {/* Footer */}
           <div className="border-t bg-gray-50 px-4 py-2 flex items-center justify-between">
-            <span className="text-xs text-gray-500">{filteredWorks.length} works</span>
+            <span className="text-xs text-gray-500">{filteredWorks.length} works • v72</span>
             <button
               onClick={() => { setIsOpen(false); setSelectedWork(null); }}
               className="text-sm text-emerald-600 font-medium"
