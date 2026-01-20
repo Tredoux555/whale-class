@@ -3,7 +3,7 @@
 // Uses the same APIs as admin classroom for unified data
 'use client';
 
-import { useState, useEffect, useRef, use, useCallback } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import WorkNavigator from '@/components/montree/WorkNavigator';
@@ -258,8 +258,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 }
 
 // ============================================
-// THIS WEEK TAB - Uses WORKING admin API
-// With expandable work detail + swipe navigation
+// THIS WEEK TAB - Swipe through ALL weekly works
 // ============================================
 function ThisWeekTab({ childId, childName, onMediaUploaded }: { 
   childId: string; 
@@ -275,11 +274,8 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [classroomId, setClassroomId] = useState<string | null>(null);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isSwipeActive, setIsSwipeActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchAssignments();
@@ -294,7 +290,6 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       if (data.classroomId) {
         setClassroomId(data.classroomId);
       }
-
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
     } finally {
@@ -308,81 +303,51 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     return editingNotes !== currentNotes;
   };
 
+  // TAP to expand/collapse a work
   const handleRowClick = (index: number) => {
     if (expandedIndex === index) {
-      // Closing current - check for unsaved
-      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) {
-        return;
-      }
+      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
       setExpandedIndex(null);
       setEditingNotes('');
     } else {
-      // Opening different - check for unsaved on current
-      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) {
-        return;
-      }
+      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
       setExpandedIndex(index);
       setEditingNotes(assignments[index]?.notes || '');
     }
   };
 
-  // Get works in same area for swipe navigation
-  const getWorksInSameArea = useCallback(() => {
-    if (expandedIndex === null) return [];
-    const currentArea = assignments[expandedIndex]?.area;
-    return assignments
-      .map((a, idx) => ({ ...a, originalIndex: idx }))
-      .filter(a => a.area === currentArea);
-  }, [expandedIndex, assignments]);
-
-  const handleSwipe = (direction: 'left' | 'right') => {
+  // Navigate to prev/next work (through ALL works)
+  const navigateWork = (direction: 'prev' | 'next') => {
     if (expandedIndex === null) return;
+    if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
     
-    // Check for unsaved notes before navigating
-    if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) {
-      return;
-    }
+    const newIndex = direction === 'next' 
+      ? Math.min(expandedIndex + 1, assignments.length - 1)
+      : Math.max(expandedIndex - 1, 0);
     
-    // Get works in same area
-    const areaWorks = getWorksInSameArea();
-    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === expandedIndex);
-    
-    if (direction === 'left' && currentPosInArea < areaWorks.length - 1) {
-      // Next work in same area
-      const newIndex = areaWorks[currentPosInArea + 1].originalIndex;
-      setExpandedIndex(newIndex);
-      setEditingNotes(assignments[newIndex]?.notes || '');
-    } else if (direction === 'right' && currentPosInArea > 0) {
-      // Previous work in same area
-      const newIndex = areaWorks[currentPosInArea - 1].originalIndex;
+    if (newIndex !== expandedIndex) {
       setExpandedIndex(newIndex);
       setEditingNotes(assignments[newIndex]?.notes || '');
     }
   };
 
+  // Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
-    setIsSwipeActive(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isSwipeActive) return;
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - touchStartX.current;
-    // Limit swipe offset for visual feedback (max 100px)
-    setSwipeOffset(Math.max(-100, Math.min(100, diff * 0.5)));
+    const diff = e.touches[0].clientX - touchStartX.current;
+    setSwipeOffset(Math.max(-80, Math.min(80, diff * 0.4)));
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX.current;
-    
-    // Animate back to center then navigate
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
     setSwipeOffset(0);
-    setIsSwipeActive(false);
     
-    if (Math.abs(diff) > 50) {
-      handleSwipe(diff > 0 ? 'left' : 'right');
+    // Swipe threshold: 60px
+    if (Math.abs(diff) > 60) {
+      navigateWork(diff > 0 ? 'next' : 'prev');
     }
   };
 
@@ -664,39 +629,40 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                 </svg>
               </div>
 
-              {/* Expanded Detail Panel */}
+              {/* Expanded Detail Panel - Swipeable */}
               {isExpanded && (
                 <div 
-                  ref={cardRef}
-                  className="border-t bg-gray-50 p-4 transition-transform duration-150 ease-out"
+                  className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4 transition-transform duration-150"
                   style={{ transform: `translateX(${swipeOffset}px)` }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
-                  {/* Swipe Direction Indicators - same area only */}
-                  {isSwipeActive && swipeOffset !== 0 && (() => {
-                    const areaWorks = getWorksInSameArea();
-                    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
-                    const canGoPrev = currentPosInArea > 0;
-                    const canGoNext = currentPosInArea < areaWorks.length - 1;
-                    const prevName = canGoPrev ? areaWorks[currentPosInArea - 1]?.work_name : '';
-                    const nextName = canGoNext ? areaWorks[currentPosInArea + 1]?.work_name : '';
-                    return (
-                      <div className="absolute inset-y-0 flex items-center pointer-events-none z-10">
-                        {swipeOffset > 20 && canGoPrev && (
-                          <div className="absolute left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                            ← {prevName.length > 18 ? prevName.slice(0, 18) + '...' : prevName}
-                          </div>
-                        )}
-                        {swipeOffset < -20 && canGoNext && (
-                          <div className="absolute right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                            {nextName.length > 18 ? nextName.slice(0, 18) + '...' : nextName} →
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Navigation Header with ← → buttons */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigateWork('prev'); }}
+                      disabled={index === 0}
+                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
+                    >
+                      ←
+                    </button>
+                    
+                    <div className="flex-1 text-center px-2">
+                      <p className="text-sm font-bold text-emerald-700">
+                        {index + 1} of {assignments.length}
+                      </p>
+                      <p className="text-xs text-gray-500">Swipe or tap arrows</p>
+                    </div>
+                    
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigateWork('next'); }}
+                      disabled={index === assignments.length - 1}
+                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
+                    >
+                      →
+                    </button>
+                  </div>
 
                   {/* Notes Section */}
                   <div className="mb-4">
@@ -746,28 +712,6 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                       <span>Capture</span>
                     </button>
                   </div>
-
-                  {/* Swipe hint - shows area info */}
-                  {(() => {
-                    const areaWorks = getWorksInSameArea();
-                    const currentPosInArea = areaWorks.findIndex(w => w.originalIndex === index);
-                    const areaConfig = AREA_CONFIG[assignment.area];
-                    const areaLetter = areaConfig?.letter || '?';
-                    
-                    if (areaWorks.length <= 1) {
-                      return (
-                        <p className="text-xs text-gray-400 text-center mt-3">
-                          Only {areaLetter} work this week
-                        </p>
-                      );
-                    }
-                    
-                    return (
-                      <p className="text-xs text-gray-400 text-center mt-3">
-                        ← Swipe → {areaLetter} works ({currentPosInArea + 1}/{areaWorks.length})
-                      </p>
-                    );
-                  })()}
                 </div>
               )}
             </div>
