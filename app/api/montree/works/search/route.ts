@@ -40,22 +40,24 @@ export async function GET(request: NextRequest) {
 
     // If no classroom_id but we have child_id, look up classroom from child
     if (!classroomId && childId) {
-      // Try montree_children first
+      // Try montree_children first (use maybeSingle to avoid error if not found)
       const { data: montreeChild } = await supabase
         .from('montree_children')
         .select('classroom_id')
         .eq('id', childId)
-        .single();
+        .maybeSingle();
       
       if (montreeChild?.classroom_id) {
         classroomId = montreeChild.classroom_id;
-      } else {
-        // Fallback: get first montree_classroom (for single-classroom setup like Whale)
+      }
+      
+      // Fallback: get first montree_classroom (for single-classroom setup like Whale)
+      if (!classroomId) {
         const { data: firstClassroom } = await supabase
           .from('montree_classrooms')
           .select('id')
           .limit(1)
-          .single();
+          .maybeSingle();
         
         if (firstClassroom) {
           classroomId = firstClassroom.id;
