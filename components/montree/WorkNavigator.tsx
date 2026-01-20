@@ -1,5 +1,5 @@
 // components/montree/WorkNavigator.tsx
-// Full work browser - search all 316 curriculum works, update progress with swipe navigation
+// Simplified work browser - tap status badge to cycle, swipe to navigate
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -36,24 +36,16 @@ const AREAS = [
   { key: 'cultural', label: 'Cultural', icon: '🌍' },
 ];
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; next: string; level: number }> = {
-  not_started: { label: '○', color: 'bg-gray-200 text-gray-600', bg: 'bg-gray-50 border-gray-200', next: 'presented', level: 0 },
-  presented: { label: 'P', color: 'bg-amber-200 text-amber-800', bg: 'bg-amber-50 border-amber-200', next: 'practicing', level: 1 },
-  practicing: { label: 'Pr', color: 'bg-blue-200 text-blue-800', bg: 'bg-blue-50 border-blue-200', next: 'mastered', level: 2 },
-  mastered: { label: 'M', color: 'bg-green-200 text-green-800', bg: 'bg-green-50 border-green-200', next: 'not_started', level: 3 },
-};
-
-const STATUS_NAMES: Record<string, string> = {
-  not_started: 'Not Started',
-  presented: 'Presented',
-  practicing: 'Practicing',
-  mastered: 'Mastered',
+const STATUS_CONFIG: Record<string, { label: string; color: string; next: string; level: number }> = {
+  not_started: { label: '○', color: 'bg-gray-200 text-gray-600', next: 'presented', level: 0 },
+  presented: { label: 'P', color: 'bg-amber-200 text-amber-800', next: 'practicing', level: 1 },
+  practicing: { label: 'Pr', color: 'bg-blue-200 text-blue-800', next: 'mastered', level: 2 },
+  mastered: { label: 'M', color: 'bg-green-200 text-green-800', next: 'not_started', level: 3 },
 };
 
 export default function WorkNavigator({
   classroomId,
   childId,
-  childName,
   onProgressUpdated,
 }: WorkNavigatorProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,183 +56,128 @@ export default function WorkNavigator({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [tappedStatus, setTappedStatus] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const selectedWorkRef = useRef<HTMLButtonElement>(null);
+  const touchStartX = useRef(0);
 
-  // Focus search when panel opens
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [isOpen]);
 
-  // Scroll selected work into view
-  useEffect(() => {
-    if (selectedWork && selectedWorkRef.current) {
-      selectedWorkRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [selectedWork?.id]);
-
-  // Fetch all works
   const fetchWorks = useCallback(async () => {
     if (!isOpen) return;
-
     setLoading(true);
     setError(null);
     
     try {
-      // Build URL - classroom_id optional, API auto-detects
       const params = new URLSearchParams();
       params.set('child_id', childId);
       params.set('limit', '400');
       if (classroomId) params.set('classroom_id', classroomId);
       if (selectedArea !== 'all') params.set('area', selectedArea);
 
-      const url = `/api/montree/works/search?${params.toString()}`;
-      console.log('WorkNavigator fetching:', url);
-
-      const res = await fetch(url);
+      const res = await fetch(`/api/montree/works/search?${params.toString()}`);
       const data = await res.json();
 
-      console.log('WorkNavigator response:', {
-        ok: res.ok,
-        status: res.status,
-        worksCount: data.works?.length,
-        error: data.error,
-        debug: data.debug,
-      });
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
-      if (!res.ok) {
-        throw new Error(data.error || `HTTP ${res.status}`);
-      }
-
-      if (data.works && data.works.length > 0) {
+      if (data.works?.length > 0) {
         setAllWorks(data.works);
         setError(null);
       } else {
         setAllWorks([]);
-        const debugInfo = data.debug ? `\n\nDebug: ${data.debug.join(', ')}` : '';
-        setError(`No works found.${debugInfo}`);
+        setError('No works found.');
       }
-
       setSelectedWork(null);
     } catch (err) {
-      console.error('WorkNavigator fetch error:', err);
-      const msg = err instanceof Error ? err.message : 'Failed to load';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Failed to load');
       setAllWorks([]);
     } finally {
       setLoading(false);
     }
   }, [classroomId, childId, selectedArea, isOpen]);
 
-  // Fetch when panel opens or area changes
   useEffect(() => {
-    if (isOpen) {
-      fetchWorks();
-    }
+    if (isOpen) fetchWorks();
   }, [isOpen, selectedArea, fetchWorks]);
 
-  // Filter by search (client-side for instant results)
   const filteredWorks = searchQuery.trim()
     ? allWorks.filter(work =>
         work.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (work.name_chinese && work.name_chinese.includes(searchQuery)) ||
-        (work.category_name && work.category_name.toLowerCase().includes(searchQuery.toLowerCase()))
+        (work.name_chinese && work.name_chinese.includes(searchQuery))
       )
     : allWorks;
 
-  // Current index in filtered list
   const currentIndex = selectedWork
     ? filteredWorks.findIndex(w => w.id === selectedWork.id)
     : -1;
 
-  // Clear selection when filtered out
   useEffect(() => {
-    if (selectedWork && currentIndex < 0) {
-      setSelectedWork(null);
-    }
+    if (selectedWork && currentIndex < 0) setSelectedWork(null);
   }, [searchQuery, currentIndex, selectedWork]);
 
-  // Navigate works
   const navigateWork = (direction: 'prev' | 'next') => {
     if (filteredWorks.length === 0) return;
     
     let newIndex: number;
     if (currentIndex < 0) {
-      // Nothing selected, select first/last
       newIndex = direction === 'next' ? 0 : filteredWorks.length - 1;
     } else {
       newIndex = direction === 'next'
         ? Math.min(currentIndex + 1, filteredWorks.length - 1)
         : Math.max(currentIndex - 1, 0);
     }
-
-    if (filteredWorks[newIndex]) {
-      setSelectedWork(filteredWorks[newIndex]);
-    }
+    if (filteredWorks[newIndex]) setSelectedWork(filteredWorks[newIndex]);
   };
 
-  // Update progress
-  const updateProgress = async (newStatus: string) => {
+  // TAP status badge to cycle
+  const cycleStatus = async () => {
     if (!selectedWork || updatingStatus) return;
+    
+    const current = selectedWork.status || 'not_started';
+    const next = STATUS_CONFIG[current].next;
+    const config = STATUS_CONFIG[next];
 
-    setTappedStatus(newStatus);
     setUpdatingStatus(true);
 
     try {
-      const config = STATUS_CONFIG[newStatus];
-      const apiStatus = newStatus === 'mastered' ? 'completed'
-                      : newStatus === 'not_started' ? 'not_started'
+      const apiStatus = next === 'mastered' ? 'completed'
+                      : next === 'not_started' ? 'not_started'
                       : 'in_progress';
 
       const res = await fetch(`/api/montree/progress/${childId}/${selectedWork.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: newStatus === 'not_started' ? 'reset' : 'update',
+          action: next === 'not_started' ? 'reset' : 'update',
           status: apiStatus,
           currentLevel: config.level,
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to update');
+      if (!res.ok) throw new Error('Failed');
 
-      // Update local state
-      const updatedWork = { ...selectedWork, status: newStatus as any };
+      const updatedWork = { ...selectedWork, status: next as any };
       setSelectedWork(updatedWork);
       setAllWorks(prev => prev.map(w => w.id === selectedWork.id ? updatedWork : w));
-
-      toast.success(`${selectedWork.name} → ${STATUS_NAMES[newStatus]}`);
+      toast.success(`→ ${next.replace('_', ' ')}`);
       onProgressUpdated?.();
-    } catch (err) {
-      console.error('Progress update error:', err);
+    } catch {
       toast.error('Failed to update');
     } finally {
       setUpdatingStatus(false);
-      setTappedStatus(null);
     }
   };
 
-  // Cycle to next status
-  const cycleStatus = () => {
-    if (!selectedWork) return;
-    const current = selectedWork.status || 'not_started';
-    updateProgress(STATUS_CONFIG[current].next);
-  };
-
-  // Handle swipe gestures
-  const touchStartX = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      navigateWork(diff > 0 ? 'next' : 'prev');
-    }
+    if (Math.abs(diff) > 50) navigateWork(diff > 0 ? 'next' : 'prev');
   };
 
   return (
@@ -259,7 +196,6 @@ export default function WorkNavigator({
         {!isOpen && <span className="text-sm text-emerald-500 ml-1">Browse all works</span>}
       </button>
 
-      {/* Work Browser Panel */}
       {isOpen && (
         <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           {/* Search + Area Filters */}
@@ -302,111 +238,79 @@ export default function WorkNavigator({
             </div>
           </div>
 
-          {/* Selected Work Detail - Swipeable */}
+          {/* Selected Work - SIMPLIFIED */}
           {selectedWork && (
             <div
-              className="border-b bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 p-4"
+              className="border-b bg-gradient-to-r from-emerald-50 to-teal-50 p-4"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              {/* Header with nav */}
-              <div className="flex items-center justify-between mb-4">
+              {/* Navigation + Status in one row */}
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigateWork('prev')}
                   disabled={currentIndex <= 0}
-                  className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 active:scale-95 border text-lg"
+                  className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center disabled:opacity-30 active:scale-95 border text-lg"
                 >
                   ←
                 </button>
 
-                <div className="flex-1 text-center px-3">
-                  <h3 className="font-bold text-gray-900 text-lg">{selectedWork.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedWork.area?.name || selectedWork.category_name}</p>
+                {/* Tappable Status Badge - THE MAIN INTERACTION */}
+                <button
+                  onClick={cycleStatus}
+                  disabled={updatingStatus}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shadow-lg transition-transform active:scale-90 ${
+                    STATUS_CONFIG[selectedWork.status || 'not_started'].color
+                  } ${updatingStatus ? 'animate-pulse' : ''}`}
+                >
+                  {STATUS_CONFIG[selectedWork.status || 'not_started'].label}
+                </button>
+
+                {/* Work Name */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-gray-900 truncate">{selectedWork.name}</h3>
+                  <p className="text-xs text-gray-500">{currentIndex + 1} of {filteredWorks.length}</p>
                 </div>
 
                 <button
                   onClick={() => navigateWork('next')}
                   disabled={currentIndex >= filteredWorks.length - 1}
-                  className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 active:scale-95 border text-lg"
+                  className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center disabled:opacity-30 active:scale-95 border text-lg"
                 >
                   →
                 </button>
               </div>
 
-              {/* Status Buttons 2x2 */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
-                  const isActive = (selectedWork.status || 'not_started') === key;
-                  const isTapped = tappedStatus === key;
-
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => updateProgress(key)}
-                      disabled={updatingStatus}
-                      className={`py-3 px-2 rounded-xl font-bold text-sm transition-all relative overflow-hidden ${
-                        isActive
-                          ? `${config.color} ring-2 ring-offset-2 ring-emerald-500 shadow-md`
-                          : `border ${config.bg} hover:shadow-sm active:scale-95`
-                      } ${updatingStatus && !isTapped ? 'opacity-50' : ''}`}
-                    >
-                      {isTapped && (
-                        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                          <span className="animate-spin">⏳</span>
-                        </div>
-                      )}
-                      <div className="text-xl mb-1">{config.label}</div>
-                      <div className="text-xs opacity-80">{STATUS_NAMES[key]}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Quick Actions */}
-              <div className="flex gap-2">
-                <button
-                  onClick={cycleStatus}
-                  disabled={updatingStatus}
-                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
-                >
-                  ⏭️ Next Status
-                </button>
+              {/* Demo button - optional, small */}
+              <div className="mt-3 flex justify-center">
                 <button
                   onClick={() => {
-                    const q = encodeURIComponent(`${selectedWork.name} Montessori presentation`);
+                    const q = encodeURIComponent(`${selectedWork.name} Montessori`);
                     window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
                   }}
-                  className="py-3 px-5 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 active:scale-[0.98] shadow-md"
+                  className="text-sm text-red-500 hover:text-red-600 font-medium"
                 >
-                  ▶️ Demo
+                  ▶️ Watch Demo
                 </button>
               </div>
-
-              <p className="text-xs text-gray-400 text-center mt-3">
-                {currentIndex + 1} of {filteredWorks.length} • Swipe or tap ← → to navigate
-              </p>
             </div>
           )}
 
           {/* Work List */}
           <div className="max-h-64 overflow-y-auto">
             {loading ? (
-              <div className="text-center py-10 text-gray-500">
-                <span className="animate-bounce text-3xl block mb-2">🐋</span>
-                <p className="font-medium">Loading works...</p>
+              <div className="text-center py-8 text-gray-500">
+                <span className="animate-bounce text-2xl block mb-2">🐋</span>
+                <p className="text-sm">Loading...</p>
               </div>
             ) : error ? (
-              <div className="text-center py-10 px-4">
-                <span className="text-3xl block mb-2">⚠️</span>
-                <p className="text-amber-700 font-medium mb-2 whitespace-pre-wrap text-sm">{error}</p>
-                <button onClick={fetchWorks} className="text-emerald-600 hover:underline text-sm font-medium">
-                  Try again
-                </button>
+              <div className="text-center py-8 px-4">
+                <p className="text-amber-700 text-sm mb-2">{error}</p>
+                <button onClick={fetchWorks} className="text-emerald-600 text-sm">Try again</button>
               </div>
             ) : filteredWorks.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">
-                <span className="text-3xl block mb-2">🔍</span>
-                <p>{searchQuery ? `No works match "${searchQuery}"` : 'No works found'}</p>
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No works found
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -418,26 +322,19 @@ export default function WorkNavigator({
                   return (
                     <button
                       key={work.id}
-                      ref={isSelected ? selectedWorkRef : null}
                       onClick={() => setSelectedWork(isSelected ? null : work)}
-                      className={`w-full flex items-center gap-3 p-3.5 transition-all text-left ${
+                      className={`w-full flex items-center gap-3 p-3 transition-all text-left ${
                         isSelected
                           ? 'bg-emerald-100 border-l-4 border-emerald-500'
-                          : 'hover:bg-gray-50 active:bg-emerald-50 border-l-4 border-transparent'
+                          : 'hover:bg-gray-50 border-l-4 border-transparent'
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm ${config.color}`}>
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${config.color}`}>
                         {config.label}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold text-sm ${isSelected ? 'text-emerald-900' : 'text-gray-900'}`}>
-                          {work.name}
-                        </p>
-                        {work.category_name && (
-                          <p className="text-xs text-gray-500 truncate">{work.category_name}</p>
-                        )}
-                      </div>
-                      <div className="text-xl opacity-60">{work.area?.icon || '📋'}</div>
+                      <span className={`flex-1 text-sm truncate ${isSelected ? 'text-emerald-900 font-medium' : 'text-gray-900'}`}>
+                        {work.name}
+                      </span>
                     </button>
                   );
                 })}
@@ -446,13 +343,11 @@ export default function WorkNavigator({
           </div>
 
           {/* Footer */}
-          <div className="border-t bg-gray-50 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-600 font-medium">
-              {filteredWorks.length} work{filteredWorks.length !== 1 ? 's' : ''}
-            </span>
+          <div className="border-t bg-gray-50 px-4 py-2 flex items-center justify-between">
+            <span className="text-xs text-gray-500">{filteredWorks.length} works</span>
             <button
               onClick={() => { setIsOpen(false); setSelectedWork(null); }}
-              className="text-sm text-emerald-600 font-semibold hover:text-emerald-700"
+              className="text-sm text-emerald-600 font-medium"
             >
               Done
             </button>
