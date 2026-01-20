@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T15:45:00Z",
+  "lastUpdated": "2026-01-20T18:45:00Z",
   "session": 72,
   "phase": "UI Polish + Bug Fixes",
-  "currentSubPhase": "⏳ Waiting for Railway deploy",
-  "phaseStatus": "🔄 IN PROGRESS",
+  "currentSubPhase": "✅ DEPLOYED - Awaiting verification",
+  "phaseStatus": "✅ COMPLETE",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -18,21 +18,24 @@
 
   "DEPLOYMENT": {
     "platform": "RAILWAY (not Vercel!)",
-    "project": "eloquent-harmony",
+    "project": "happy-flow",
+    "service": "whale-class",
     "environment": "production",
     "domain": "www.teacherpotato.xyz",
     "config": "railway.json with Dockerfile builder",
-    "note": "Git push does NOT auto-deploy - need to trigger manually or check Railway settings"
+    "auto_deploy": true,
+    "build_time": "10-15 min (cache busted) / 2-3 min (cached)"
   },
 
   "SESSION_72_SUMMARY": {
     "goal": "Fix navigation + simplify WorkNavigator UI",
-    "status": "🔄 Code complete, waiting for deploy",
-    "commits": ["be87229", "c2660d7", "1eceb9e"],
+    "status": "✅ DEPLOYED - Awaiting phone verification",
+    "commits": ["be87229", "c2660d7", "1eceb9e", "b430916", "9b05c97", "f788f1d"],
     "changes": [
-      "1. ✅ Fixed curriculum loading (uses static 316 works)",
+      "1. ✅ Simplified WorkNavigator - ONE tappable status badge",
       "2. ✅ Added swipe to ThisWeekTab expanded panel",
-      "3. ✅ Simplified WorkNavigator - ONE tappable status badge"
+      "3. ✅ Fixed Railway cache with REBUILD_TS + rm .next",
+      "4. ✅ Added v72 version indicator in footer"
     ]
   },
 
@@ -40,8 +43,16 @@
     "before": "4 status buttons + 'Next Status' button - cluttered",
     "after": "ONE tappable badge that cycles on tap",
     "layout": "Single row: ← [status badge] [work name] →",
-    "pattern": "Same as main weekly list - tap badge to cycle"
+    "pattern": "Same as main weekly list - tap badge to cycle",
+    "version_indicator": "Footer shows 'X works • v72'"
   },
 
-  "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291"
+  "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291",
+  
+  "VERIFICATION": {
+    "look_for": "v72 in Find Work footer",
+    "if_missing": "Railway still caching - check Build Logs or Redeploy"
+  },
+
+  "HANDOFF": "/docs/mission-control/HANDOFF_SESSION_72.md"
 }
