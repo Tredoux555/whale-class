@@ -89,30 +89,38 @@ export default function WorkNavigator({
   const fetchWorks = useCallback(async () => {
     if (!isOpen) return;
     
-    // Need classroomId to fetch works
-    if (!classroomId) {
-      setError('Classroom not found. Please try refreshing.');
-      return;
-    }
-    
     setLoading(true);
     setError(null);
     try {
-      let url = `/api/montree/works/search?classroom_id=${classroomId}&child_id=${childId}&limit=400`;
+      // Build URL - classroom_id is optional, API can detect from child_id
+      let url = `/api/montree/works/search?child_id=${childId}&limit=400`;
+      if (classroomId) {
+        url += `&classroom_id=${classroomId}`;
+      }
       if (selectedArea !== 'all') {
         url += `&area=${selectedArea}`;
       }
       
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to load works');
       const data = await res.json();
-      setAllWorks(data.works || []);
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to load works');
+      }
+      
+      if (data.works && data.works.length > 0) {
+        setAllWorks(data.works);
+        setError(null);
+      } else {
+        setAllWorks([]);
+        setError('No curriculum found. Please set up the Montree curriculum first.');
+      }
       
       // Clear selection when area changes
       setSelectedWork(null);
     } catch (err) {
       console.error('Failed to fetch works:', err);
-      setError('Failed to load works. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load works');
       setAllWorks([]);
     } finally {
       setLoading(false);
@@ -126,18 +134,7 @@ export default function WorkNavigator({
     }
   }, [isOpen, selectedArea, fetchWorks]);
 
-  // Clear selection when search changes significantly
-  useEffect(() => {
-    // Only clear if the selected work is no longer in filtered results
-    if (selectedWork) {
-      const stillVisible = filteredWorks.some(w => w.id === selectedWork.id);
-      if (!stillVisible) {
-        setSelectedWork(null);
-      }
-    }
-  }, [searchQuery]);
-
-  // Filter works by search query
+  // Filter works by search query (client-side for instant results)
   const filteredWorks = searchQuery.trim()
     ? allWorks.filter(work =>
         work.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -151,10 +148,16 @@ export default function WorkNavigator({
     ? filteredWorks.findIndex(w => w.id === selectedWork.id)
     : -1;
 
+  // Clear selection when search filters it out
+  useEffect(() => {
+    if (selectedWork && currentIndex < 0) {
+      setSelectedWork(null);
+    }
+  }, [searchQuery, currentIndex, selectedWork]);
+
   // Handle work selection
   const handleWorkClick = (work: Work) => {
     if (selectedWork?.id === work.id) {
-      // Clicking same work - deselect
       setSelectedWork(null);
     } else {
       setSelectedWork(work);
@@ -179,14 +182,12 @@ export default function WorkNavigator({
   const updateProgress = async (newStatus: string) => {
     if (!selectedWork || updatingStatus) return;
     
-    // Immediate visual feedback
     setTappedStatus(newStatus);
     setUpdatingStatus(true);
     
     try {
       const config = STATUS_CONFIG[newStatus];
       
-      // Map to API format
       const apiStatus = newStatus === 'mastered' ? 'completed' 
                       : newStatus === 'not_started' ? 'not_started'
                       : 'in_progress';
@@ -235,19 +236,6 @@ export default function WorkNavigator({
     setSelectedWork(null);
     setSearchQuery('');
   };
-
-  // Show helpful message if no classroomId
-  if (!classroomId) {
-    return (
-      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-        <p className="text-amber-700 text-sm">
-          <span className="font-semibold">🔍 Work search unavailable</span>
-          <br />
-          <span className="text-amber-600">Classroom not linked yet. Use the Progress tab to browse works.</span>
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="mb-4">
@@ -347,7 +335,7 @@ export default function WorkNavigator({
                 </button>
               </div>
 
-              {/* Status Buttons - 2x2 grid on mobile, 4 columns on larger */}
+              {/* Status Buttons - 2x2 on mobile */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                   const isActive = (selectedWork.status || 'not_started') === key;
@@ -364,7 +352,6 @@ export default function WorkNavigator({
                           : `${config.bg} hover:shadow-sm active:scale-95`
                       } ${updatingStatus && !isTapped ? 'opacity-50' : ''}`}
                     >
-                      {/* Loading overlay */}
                       {isTapped && (
                         <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
                           <span className="animate-spin">⏳</span>
@@ -403,7 +390,7 @@ export default function WorkNavigator({
 
               {/* Navigation hint */}
               <p className="text-xs text-gray-400 text-center mt-3">
-                {currentIndex + 1} of {filteredWorks.length} works • Tap ← → to browse
+                {currentIndex + 1} of {filteredWorks.length} • Tap ← → to browse
               </p>
             </div>
           )}
@@ -418,11 +405,11 @@ export default function WorkNavigator({
                 <p className="font-medium">Loading works...</p>
               </div>
             ) : error ? (
-              <div className="text-center py-10">
-                <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">❌</span>
+              <div className="text-center py-10 px-4">
+                <div className="w-12 h-12 mx-auto mb-3 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">⚠️</span>
                 </div>
-                <p className="text-red-600 font-medium mb-2">{error}</p>
+                <p className="text-amber-700 font-medium mb-2">{error}</p>
                 <button 
                   onClick={() => fetchWorks()}
                   className="text-emerald-600 hover:underline text-sm font-medium"
