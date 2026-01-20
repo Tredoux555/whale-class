@@ -753,6 +753,30 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     fileInputRef.current?.click();
   };
 
+  // Simple remove work from this week
+  const handleRemoveWork = async (assignmentId: string, workName: string) => {
+    if (!confirm(`Remove "${workName}" from this week?`)) return;
+    
+    try {
+      toast.loading('Removing...');
+      
+      await fetch(`/api/weekly-planning/assignments/${assignmentId}`, {
+        method: 'DELETE',
+      });
+      
+      toast.dismiss();
+      toast.success('Work removed');
+      
+      setAssignments(prev => prev.filter(a => a.id !== assignmentId));
+      setExpandedIndex(null);
+      
+    } catch (error) {
+      console.error('Failed to delete:', error);
+      toast.dismiss();
+      toast.error('Failed to remove');
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || expandedIndex === null) return;
@@ -1052,7 +1076,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               >
                 ✓ Select This Work
               </button>
-              <p className="text-center text-xs text-gray-400 mt-3">v76 • Hold area icon</p>
+              <p className="text-center text-xs text-gray-400 mt-3">v77 • Remove button</p>
             </div>
           </div>
         </div>
@@ -1070,19 +1094,19 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
             >
               {/* Main Row - THREE separate touch targets */}
-              <div className="flex items-center p-3 gap-3">
-                
-                {/* 1. AREA ICON - HOLD to open wheel */}
-                <div 
-                  className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300`}
-                  onTouchStart={() => handleLongPressStart(assignment.area)}
-                  onTouchEnd={handleLongPressEnd}
-                  onTouchCancel={handleLongPressEnd}
-                  onMouseDown={() => handleLongPressStart(assignment.area)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                >
-                  {area.letter}
+                <div className="flex items-center p-3 gap-3">
+                  
+                  {/* 1. AREA ICON - HOLD to open wheel */}
+                  <div 
+                    className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300`}
+                    onTouchStart={() => handleLongPressStart(assignment.area)}
+                    onTouchEnd={handleLongPressEnd}
+                    onTouchCancel={handleLongPressEnd}
+                    onMouseDown={() => handleLongPressStart(assignment.area)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                  >
+                    {area.letter}
                 </div>
 
                 {/* 2. STATUS BADGE - TAP to cycle status */}
@@ -1180,6 +1204,17 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                       <span>Capture</span>
                     </button>
                   </div>
+
+                  {/* Remove Work Button */}
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleRemoveWork(assignment.id, assignment.work_name);
+                    }}
+                    className="w-full mt-3 py-2 text-red-500 text-sm font-medium hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    🗑️ Remove from this week
+                  </button>
                 </div>
               )}
             </div>
