@@ -424,12 +424,11 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
   const handleWheelTouchEnd = () => {
     // Calculate which item to snap to based on scroll distance
-    const itemHeight = 56; // h-14 = 3.5rem = 56px
+    const itemHeight = 48;
     const indexChange = Math.round(swipeOffset / itemHeight);
     const newIndex = Math.max(0, Math.min(allWorks.length - 1, currentWorkIndex + indexChange));
     
     setCurrentWorkIndex(newIndex);
-    setWheelOffset((Math.floor(allWorks.length / 2) - newIndex) * itemHeight);
     setSwipeOffset(0);
   };
 
@@ -755,45 +754,51 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               </div>
             ) : (
               <div 
-                className="relative h-64 overflow-hidden"
+                className="relative h-72 overflow-hidden"
                 onTouchStart={handleWheelTouchStart}
                 onTouchMove={handleWheelTouchMove}
                 onTouchEnd={handleWheelTouchEnd}
               >
                 {/* Gradient overlays for fade effect */}
-                <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
                 
                 {/* Center highlight bar */}
-                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-14 bg-emerald-100 rounded-xl border-2 border-emerald-300 z-0" />
+                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-12 bg-emerald-100 rounded-xl border-2 border-emerald-300 z-0" />
 
-                {/* Scrolling items */}
-                <div 
-                  className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-150"
-                  style={{ transform: `translateY(${wheelOffset + (swipeOffset * -1)}px)` }}
-                >
+                {/* Scrolling items - positioned relative to center */}
+                <div className="absolute inset-0 overflow-hidden">
                   {allWorks.map((work, idx) => {
+                    // Position each item relative to current selection
+                    const offset = (idx - currentWorkIndex) * 48; // 48px per item
+                    const centerY = 144 - 24; // h-72/2 - item height/2
+                    const itemY = centerY + offset + (swipeOffset * -0.5);
+                    
+                    // Only render visible items (within viewport)
+                    if (Math.abs(offset) > 150) return null;
+                    
                     const distance = Math.abs(idx - currentWorkIndex);
-                    const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.25;
-                    const scale = distance === 0 ? 1 : distance === 1 ? 0.9 : 0.8;
+                    const opacity = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
+                    const scale = distance === 0 ? 1 : 0.85;
                     
                     return (
                       <div
                         key={work.id}
-                        className="h-14 flex items-center justify-center w-full px-6 transition-all duration-150"
-                        style={{ opacity, transform: `scale(${scale})` }}
-                        onClick={() => {
-                          setCurrentWorkIndex(idx);
-                          setWheelOffset((allWorks.length / 2 - idx) * 56);
+                        className="absolute left-0 right-0 h-12 flex items-center px-6 transition-all duration-100"
+                        style={{ 
+                          top: itemY,
+                          opacity, 
+                          transform: `scale(${scale})`,
                         }}
+                        onClick={() => setCurrentWorkIndex(idx)}
                       >
                         <div className="flex items-center gap-3 w-full">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
                             STATUS_CONFIG[work.status || 'not_started'].color
                           }`}>
                             {STATUS_CONFIG[work.status || 'not_started'].label}
                           </span>
-                          <span className={`font-medium truncate ${distance === 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                          <span className={`font-medium truncate ${distance === 0 ? 'text-gray-900 text-base' : 'text-gray-500 text-sm'}`}>
                             {work.name}
                           </span>
                         </div>
@@ -857,10 +862,26 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               key={assignment.id} 
               className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
             >
-              {/* Main Row - clickable */}
+              {/* Main Row - TAP to expand, HOLD to open wheel */}
               <div 
-                className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => handleRowClick(index)}
+                className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                onTouchStart={() => handleLongPressStart(assignment.area)}
+                onTouchEnd={() => {
+                  handleLongPressEnd();
+                  // Only trigger click if long press didn't fire
+                  if (!longPressTriggered) {
+                    handleRowClick(index);
+                  }
+                }}
+                onTouchCancel={handleLongPressEnd}
+                onMouseDown={() => handleLongPressStart(assignment.area)}
+                onMouseUp={() => {
+                  handleLongPressEnd();
+                  if (!longPressTriggered) {
+                    handleRowClick(index);
+                  }
+                }}
+                onMouseLeave={handleLongPressEnd}
               >
                 <div className={`w-8 h-8 rounded-lg ${area.bg} flex items-center justify-center ${area.color} font-bold text-sm`}>
                   {area.letter}
@@ -868,6 +889,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
                 <button
                   onClick={(e) => handleStatusTap(e, assignment, index)}
+                  onTouchStart={(e) => e.stopPropagation()}
                   className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90`}
                 >
                   {status.label}
@@ -896,30 +918,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                 </svg>
               </div>
 
-              {/* Expanded Detail Panel - Swipeable */}
+              {/* Expanded Detail Panel */}
               {isExpanded && (
-                <div 
-                  className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4"
-                >
-                  {/* Work Name with LONG PRESS to open wheel - NO TEXT SELECTION */}
-                  <div 
-                    className="bg-white rounded-xl p-4 mb-4 shadow-inner border-2 border-dashed border-emerald-300 cursor-pointer active:scale-[0.97] active:bg-emerald-50 transition-all select-none touch-none"
-                    onTouchStart={(e) => { e.preventDefault(); handleLongPressStart(assignment.area); }}
-                    onTouchEnd={(e) => { e.preventDefault(); handleLongPressEnd(); }}
-                    onTouchCancel={handleLongPressEnd}
-                    onMouseDown={() => handleLongPressStart(assignment.area)}
-                    onMouseUp={handleLongPressEnd}
-                    onMouseLeave={handleLongPressEnd}
-                    onContextMenu={(e) => e.preventDefault()}
-                  >
-                    <p className="font-bold text-gray-900 text-lg text-center pointer-events-none">
-                      {assignment.work_name}
-                    </p>
-                    <p className="text-xs text-emerald-600 text-center mt-1 pointer-events-none">
-                      👆 Hold to browse {AREA_CONFIG[assignment.area]?.letter || '?'} area works
-                    </p>
-                  </div>
-
+                <div className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
                   {/* Notes Section */}
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -945,9 +946,13 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                     )}
                   </div>
 
+                  {/* Hint for scroll wheel */}
+                  <p className="text-xs text-center text-gray-400 mb-3">
+                    💡 Hold the row above to browse all {AREA_CONFIG[assignment.area]?.letter || ''} works
+                  </p>
+
                   {/* Action Buttons Row */}
                   <div className="flex gap-3">
-                    {/* Demo Button */}
                     <button
                       onClick={(e) => { 
                         e.stopPropagation(); 
@@ -960,7 +965,6 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                       <span>Demo</span>
                     </button>
 
-                    {/* Capture Button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleCapture(); }}
                       className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
