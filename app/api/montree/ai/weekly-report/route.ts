@@ -90,15 +90,16 @@ export async function POST(request: NextRequest) {
 
     // ========================================
     // STEP 1: Fetch child with classroom info
+    // Using 'children' table (classroom system) - NOT montree_children!
     // ========================================
     const { data: rawChild, error: childError } = await supabase
-      .from('montree_children')
+      .from('children')
       .select(`
         id,
         name,
-        age,
+        date_of_birth,
         classroom_id,
-        classroom:montree_classrooms(id, name)
+        classroom:classrooms(id, name)
       `)
       .eq('id', child_id)
       .single();
@@ -110,7 +111,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const childContext = transformChildContext(rawChild as Parameters<typeof transformChildContext>[0]);
+    // Calculate age from date_of_birth
+    const age = rawChild.date_of_birth 
+      ? Math.floor((Date.now() - new Date(rawChild.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000) * 10) / 10
+      : null;
+
+    const childContext = transformChildContext({
+      ...rawChild,
+      age,
+      classroom: rawChild.classroom
+    } as Parameters<typeof transformChildContext>[0]);
     
     if (!childContext) {
       return NextResponse.json(
