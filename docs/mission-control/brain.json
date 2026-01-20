@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T18:45:00Z",
-  "session": 72,
-  "phase": "UI Polish + Bug Fixes",
-  "currentSubPhase": "✅ DEPLOYED - Awaiting verification",
-  "phaseStatus": "✅ COMPLETE",
+  "lastUpdated": "2026-01-20T19:30:00Z",
+  "session": 73,
+  "phase": "UI Unification - Vertical Swipe Navigation",
+  "currentSubPhase": "✅ CODE COMPLETE - Ready for test/deploy",
+  "phaseStatus": "READY FOR TESTING",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -23,36 +23,43 @@
     "environment": "production",
     "domain": "www.teacherpotato.xyz",
     "config": "railway.json with Dockerfile builder",
-    "auto_deploy": true,
-    "build_time": "10-15 min (cache busted) / 2-3 min (cached)"
+    "auto_deploy": true
   },
 
-  "SESSION_72_SUMMARY": {
-    "goal": "Fix navigation + simplify WorkNavigator UI",
-    "status": "✅ DEPLOYED - Awaiting phone verification",
-    "commits": ["be87229", "c2660d7", "1eceb9e", "b430916", "9b05c97", "f788f1d"],
+  "SESSION_73_CHANGES": {
+    "file_modified": "/app/montree/dashboard/student/[id]/page.tsx",
     "changes": [
-      "1. ✅ Simplified WorkNavigator - ONE tappable status badge",
-      "2. ✅ Added swipe to ThisWeekTab expanded panel",
-      "3. ✅ Fixed Railway cache with REBUILD_TS + rm .next",
-      "4. ✅ Added v72 version indicator in footer"
+      "1. ✅ Removed WorkNavigator import",
+      "2. ✅ Added CurriculumWork interface + AREA_FILTERS",
+      "3. ✅ Added browseMode, allWorks, currentWorkIndex, selectedArea state",
+      "4. ✅ Added fetchAllWorks() using same API as WorkNavigator",
+      "5. ✅ Changed touchStartX to touchStartY for VERTICAL swipe",
+      "6. ✅ Added navigateAllWorks() for UP/DOWN navigation",
+      "7. ✅ Added cycleAllWorksStatus() for tap-to-cycle",
+      "8. ✅ Replaced <WorkNavigator/> with inline Browse Panel",
+      "9. ✅ Added area filter chips, vertical arrows, v73 indicator"
     ]
   },
 
-  "SIMPLIFIED_WORKNAVIGATOR": {
-    "before": "4 status buttons + 'Next Status' button - cluttered",
-    "after": "ONE tappable badge that cycles on tap",
-    "layout": "Single row: ← [status badge] [work name] →",
-    "pattern": "Same as main weekly list - tap badge to cycle",
-    "version_indicator": "Footer shows 'X works • v72'"
+  "NEW_UI_FLOW": {
+    "step1": "Tap 'Browse All Works' button",
+    "step2": "Area filter chips appear at top",
+    "step3": "Work card shows with ↑ ↓ arrows",
+    "step4": "Swipe UP/DOWN or tap arrows to navigate",
+    "step5": "Tap status badge to cycle: ○ → P → Pr → M → ○",
+    "step6": "Demo button opens YouTube search",
+    "step7": "Look for 'v73' in footer to confirm deployment"
   },
 
   "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291",
   
-  "VERIFICATION": {
-    "look_for": "v72 in Find Work footer",
-    "if_missing": "Railway still caching - check Build Logs or Redeploy"
-  },
+  "NEXT_STEPS": [
+    "1. Run local test to verify no TypeScript errors",
+    "2. Commit and push to GitHub",
+    "3. Wait for Railway auto-deploy (~3-15 min)",
+    "4. Verify v73 appears in Browse panel footer",
+    "5. Test vertical swipe on phone"
+  ],
 
-  "HANDOFF": "/docs/mission-control/HANDOFF_SESSION_72.md"
+  "HANDOFF": "/docs/mission-control/HANDOFF_SESSION_73.md"
 }

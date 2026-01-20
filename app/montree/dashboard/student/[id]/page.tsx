@@ -3,11 +3,36 @@
 // Uses the same APIs as admin classroom for unified data
 'use client';
 
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import WorkNavigator from '@/components/montree/WorkNavigator';
 import AIInsightsTab from '@/components/montree/AIInsightsTab';
+
+// Interface for ALL curriculum works (from search API)
+interface CurriculumWork {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  category_name?: string;
+  sequence: number;
+  area?: {
+    area_key: string;
+    name: string;
+    color?: string;
+    icon?: string;
+  };
+  status?: 'not_started' | 'presented' | 'practicing' | 'mastered';
+}
+
+// Area filter options for browsing all works
+const AREA_FILTERS = [
+  { key: 'all', label: 'All', icon: '📋' },
+  { key: 'practical_life', label: 'P', icon: '🧹' },
+  { key: 'sensorial', label: 'S', icon: '👁️' },
+  { key: 'math', label: 'M', icon: '🔢' },
+  { key: 'language', label: 'L', icon: '📖' },
+  { key: 'cultural', label: 'C', icon: '🌍' },
+];
 
 interface Child {
   id: string;
@@ -258,13 +283,15 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 }
 
 // ============================================
-// THIS WEEK TAB - Swipe through ALL weekly works
+// THIS WEEK TAB - Now with VERTICAL swipe through ALL works!
+// Session 73: Merged WorkNavigator into this component
 // ============================================
 function ThisWeekTab({ childId, childName, onMediaUploaded }: { 
   childId: string; 
   childName: string;
   onMediaUploaded?: () => void;
 }) {
+  // Weekly assignments (original)
   const [assignments, setAssignments] = useState<WorkAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekInfo, setWeekInfo] = useState<{ week: number; year: number } | null>(null);
@@ -273,9 +300,17 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [savingNotes, setSavingNotes] = useState(false);
   const [classroomId, setClassroomId] = useState<string | null>(null);
 
+  // NEW: Browse ALL curriculum works with vertical swipe
+  const [browseMode, setBrowseMode] = useState(false);
+  const [allWorks, setAllWorks] = useState<CurriculumWork[]>([]);
+  const [currentWorkIndex, setCurrentWorkIndex] = useState(0);
+  const [selectedArea, setSelectedArea] = useState('all');
+  const [loadingAllWorks, setLoadingAllWorks] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const [swipeOffset, setSwipeOffset] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0); // Changed to Y for vertical swipe
 
   useEffect(() => {
     fetchAssignments();
@@ -297,6 +332,39 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
+  // NEW: Fetch ALL curriculum works for browse mode
+  const fetchAllWorks = useCallback(async () => {
+    setLoadingAllWorks(true);
+    try {
+      const params = new URLSearchParams();
+      params.set('child_id', childId);
+      params.set('limit', '400');
+      if (classroomId) params.set('classroom_id', classroomId);
+      if (selectedArea !== 'all') params.set('area', selectedArea);
+
+      const res = await fetch(`/api/montree/works/search?${params.toString()}`);
+      const data = await res.json();
+
+      if (data.works?.length > 0) {
+        setAllWorks(data.works);
+      } else {
+        setAllWorks([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch all works:', err);
+      setAllWorks([]);
+    } finally {
+      setLoadingAllWorks(false);
+    }
+  }, [childId, classroomId, selectedArea]);
+
+  // Fetch all works when browse mode opens or area changes
+  useEffect(() => {
+    if (browseMode) {
+      fetchAllWorks();
+    }
+  }, [browseMode, selectedArea, fetchAllWorks]);
+
   const hasUnsavedNotes = () => {
     if (expandedIndex === null) return false;
     const currentNotes = assignments[expandedIndex]?.notes || '';
@@ -316,7 +384,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
-  // Navigate to prev/next work
+  // Navigate to prev/next work (for weekly list)
   const navigateWork = (direction: 'prev' | 'next') => {
     if (expandedIndex === null) return;
     if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
@@ -331,24 +399,85 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
-  // Swipe handlers
+  // NEW: Navigate ALL works in browse mode (VERTICAL)
+  const navigateAllWorks = (direction: 'prev' | 'next') => {
+    if (allWorks.length === 0) return;
+    
+    const newIndex = direction === 'next'
+      ? Math.min(currentWorkIndex + 1, allWorks.length - 1)
+      : Math.max(currentWorkIndex - 1, 0);
+    
+    setCurrentWorkIndex(newIndex);
+  };
+
+  // VERTICAL Swipe handlers for browse mode
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    const diff = e.touches[0].clientX - touchStartX.current;
-    setSwipeOffset(Math.max(-100, Math.min(100, diff * 0.5)));
+    const diff = touchStartY.current - e.touches[0].clientY; // Positive = swipe up
+    setSwipeOffset(Math.max(-80, Math.min(80, diff * 0.4)));
   };
 
   const handleTouchEnd = () => {
-    const threshold = 60;
-    if (swipeOffset > threshold) {
-      navigateWork('prev');
-    } else if (swipeOffset < -threshold) {
-      navigateWork('next');
+    const threshold = 40;
+    if (browseMode) {
+      // In browse mode: vertical swipe through ALL works
+      if (swipeOffset > threshold) navigateAllWorks('next');  // Swipe UP = next
+      if (swipeOffset < -threshold) navigateAllWorks('prev'); // Swipe DOWN = prev
+    } else if (expandedIndex !== null) {
+      // In weekly mode: horizontal-style but using vertical now
+      if (swipeOffset > threshold) navigateWork('next');
+      if (swipeOffset < -threshold) navigateWork('prev');
     }
     setSwipeOffset(0);
+  };
+
+  // NEW: Cycle status in browse mode
+  const cycleAllWorksStatus = async () => {
+    if (allWorks.length === 0 || updatingStatus) return;
+    
+    const currentWork = allWorks[currentWorkIndex];
+    const current = currentWork.status || 'not_started';
+    const nextMap: Record<string, string> = {
+      'not_started': 'presented',
+      'presented': 'practicing',
+      'practicing': 'mastered',
+      'mastered': 'not_started'
+    };
+    const next = nextMap[current];
+
+    setUpdatingStatus(true);
+
+    try {
+      const apiStatus = next === 'mastered' ? 'completed'
+                      : next === 'not_started' ? 'not_started'
+                      : 'in_progress';
+
+      const res = await fetch(`/api/montree/progress/${childId}/${currentWork.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: next === 'not_started' ? 'reset' : 'update',
+          status: apiStatus,
+          currentLevel: next === 'mastered' ? 3 : next === 'practicing' ? 2 : next === 'presented' ? 1 : 0,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed');
+
+      // Update local state
+      setAllWorks(prev => prev.map((w, i) => 
+        i === currentWorkIndex ? { ...w, status: next as any } : w
+      ));
+      toast.success(`→ ${next.replace('_', ' ')}`);
+      fetchAssignments(); // Refresh weekly list too
+    } catch {
+      toast.error('Failed to update');
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   const handleStatusTap = async (e: React.MouseEvent, assignment: WorkAssignment, index: number) => {
@@ -549,13 +678,140 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
-      {/* Work Navigator - Browse ALL 316 works and update progress */}
-      <WorkNavigator
-        classroomId={classroomId}
-        childId={childId}
-        childName={childName}
-        onProgressUpdated={fetchAssignments}
-      />
+      {/* NEW: Browse All Works Button + Panel (replaces WorkNavigator) */}
+      <div className="mb-4">
+        <button
+          onClick={() => setBrowseMode(!browseMode)}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center ${
+            browseMode
+              ? 'bg-emerald-600 text-white shadow-lg'
+              : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm'
+          }`}
+        >
+          <span className="text-xl">{browseMode ? '✕' : '🔍'}</span>
+          <span className="font-semibold">{browseMode ? 'Close Browser' : 'Browse All Works'}</span>
+          {!browseMode && <span className="text-sm text-emerald-500 ml-1">↕ Swipe to find any work</span>}
+        </button>
+
+        {/* Browse Mode Panel */}
+        {browseMode && (
+          <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            {/* Area Filter Chips */}
+            <div className="bg-gray-50 border-b p-3">
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {AREA_FILTERS.map((area) => (
+                  <button
+                    key={area.key}
+                    onClick={() => { setSelectedArea(area.key); setCurrentWorkIndex(0); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                      selectedArea === area.key
+                        ? 'bg-emerald-600 text-white shadow-md'
+                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    <span>{area.icon}</span>
+                    <span>{area.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Vertical Swipe Work Browser */}
+            {loadingAllWorks ? (
+              <div className="text-center py-12 text-gray-500">
+                <span className="animate-bounce text-2xl block mb-2">🐋</span>
+                <p className="text-sm">Loading works...</p>
+              </div>
+            ) : allWorks.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 text-sm">
+                No works found for this area
+              </div>
+            ) : (
+              <div 
+                className="p-4 touch-pan-y"
+                style={{ transform: `translateY(${-swipeOffset * 0.5}px)` }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {/* UP arrow */}
+                <button 
+                  onClick={() => navigateAllWorks('prev')} 
+                  disabled={currentWorkIndex === 0}
+                  className="w-full py-2 text-center text-2xl text-gray-400 disabled:opacity-20 active:scale-95"
+                >
+                  ↑
+                </button>
+                
+                {/* Current Work Card */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 shadow-inner">
+                  <div className="flex items-center gap-3 mb-3">
+                    {/* Tappable Status Badge */}
+                    <button
+                      onClick={cycleAllWorksStatus}
+                      disabled={updatingStatus}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shadow-lg transition-transform active:scale-90 ${
+                        STATUS_CONFIG[allWorks[currentWorkIndex]?.status || 'not_started'].color
+                      } ${updatingStatus ? 'animate-pulse' : ''}`}
+                    >
+                      {STATUS_CONFIG[allWorks[currentWorkIndex]?.status || 'not_started'].label}
+                    </button>
+                    
+                    {/* Work Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-900 truncate">{allWorks[currentWorkIndex]?.name}</h4>
+                      {allWorks[currentWorkIndex]?.name_chinese && (
+                        <p className="text-sm text-gray-500 truncate">{allWorks[currentWorkIndex].name_chinese}</p>
+                      )}
+                      <p className="text-xs text-emerald-600 font-medium mt-1">
+                        {currentWorkIndex + 1} of {allWorks.length}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Demo + Capture Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        const q = encodeURIComponent(`${allWorks[currentWorkIndex]?.name} Montessori`);
+                        window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
+                      }}
+                      className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>▶️</span>
+                      <span>Demo</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Set up capture for this work
+                        toast.info('💡 Tap a weekly work below to capture media');
+                      }}
+                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>📸</span>
+                      <span>Capture</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* DOWN arrow */}
+                <button 
+                  onClick={() => navigateAllWorks('next')} 
+                  disabled={currentWorkIndex >= allWorks.length - 1}
+                  className="w-full py-2 text-center text-2xl text-gray-400 disabled:opacity-20 active:scale-95"
+                >
+                  ↓
+                </button>
+                
+                {/* Swipe hint */}
+                <p className="text-center text-xs text-gray-400 mt-2">
+                  ↕ Swipe up/down to browse • Tap badge to change status • v73
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Legend - only show when collapsed */}
       {expandedIndex === null && (
