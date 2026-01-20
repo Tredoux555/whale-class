@@ -1,141 +1,134 @@
-# Session 72 Handoff: Navigation Fix + Curriculum Loading
+# Session 72 Handoff - WorkNavigator Simplified UI
 
 **Date:** January 20, 2026  
-**Status:** ✅ Deployed to Production  
-**Commit:** `be87229`  
-**URL:** www.teacherpotato.xyz
+**Status:** ✅ DEPLOYED (pending verification)  
+**Deploy Platform:** Railway (NOT Vercel!)  
+**Project:** eloquent-harmony / whale-class  
+**Domain:** www.teacherpotato.xyz
 
 ---
 
-## Summary
+## What Was Done
 
-Fixed two issues identified from screenshots:
-1. Removed useless navigation arrows from ThisWeekTab expanded panel
-2. Fixed "No works found" in Find Work panel by connecting to actual curriculum data
+### 1. Simplified WorkNavigator UI
+**Problem:** Find Work panel was too cluttered - had 4 status buttons + "Next Status" button
 
----
-
-## Issues Fixed
-
-### Issue 1: ThisWeekTab Navigation (Screenshot 1)
-
-**Problem:** Expanded work panel had ← → arrows cycling through all 5 works - useless and confusing
-
-**Solution:** Removed navigation entirely from ThisWeekTab expanded panel
+**Solution:** Replaced with ONE tappable status badge that cycles on tap
 
 **Before:**
-- ← → arrows
-- "1 of 5" counter
-- Swipe gestures
+```
+[Not Started] [Presented]
+[Practicing]  [Mastered]
+[⏭️ Next Status] [▶️ Demo]
+```
 
 **After:**
-- Clean panel with just: Notes, Demo button, Capture button
-- Tap work to expand/collapse (unchanged)
-- Tap status badge to cycle (unchanged)
+```
+← [○] Work Name                    →
+         ▶️ Watch Demo
+```
 
----
+- Single row layout: `← [status badge] [work name] →`
+- Tap badge to cycle: ○ → P → Pr → M → ○
+- Swipe left/right to navigate works
+- Small "Watch Demo" link below
+- Footer shows: `"X works • v72"` (version indicator)
 
-### Issue 2: Find Work "No works found" (Screenshot 2)
+### 2. ThisWeekTab Swipe Navigation
+Added swipe functionality to the expanded work panel in This Week tab:
+- ← → arrow buttons with counter ("1 of 5")
+- Swipe left/right gestures
+- Visual feedback during swipe (panel moves)
 
-**Problem:** Clicking area filter in Find Work showed "No works found"
-
-**Root Cause:** API queried `montree_classroom_curriculum_works` table which was **EMPTY**
-
-**Solution:** Rewrote API to use static curriculum data from `lib/montree/curriculum-data.ts`
-
-**Data Source:**
-- `/lib/curriculum/data/practical-life.json`
-- `/lib/curriculum/data/sensorial.json`
-- `/lib/curriculum/data/math.json`
-- `/lib/curriculum/data/language.json`
-- `/lib/curriculum/data/cultural.json`
-- **Total: 316 works**
-
----
-
-## Swipe Navigation - WHERE IT BELONGS
-
-| Location | Swipe? | Behavior |
-|----------|--------|----------|
-| ThisWeekTab expanded | ❌ NO | Removed - was cycling through all works |
-| Find Work panel | ✅ YES | Cycles through FILTERED works only |
-
-When you select "Sensorial" in Find Work → swipe/arrows only go through Sensorial works ✅
-
----
-
-## Test Checklist
-
-1. Go to **www.teacherpotato.xyz**
-2. Login → Click any student (Rachel)
-3. **This Week tab:**
-   - Tap a work to expand
-   - ✅ Should NOT have ← → navigation arrows
-   - ✅ Should have Notes, Demo, Capture
-4. **Find Work panel:**
-   - Tap "🔍 Find Work"
-   - ✅ Should load works (not "No works found")
-   - Select "Practical" filter
-   - ✅ Should show only Practical Life works
-   - Tap a work → Swipe left/right
-   - ✅ Should cycle through Practical Life works only
+### 3. Fixed Railway Deployment Cache
+Railway was caching old Docker builds. Fixed by:
+- Adding `ARG REBUILD_TS` with RUN echo to bust cache
+- Adding `rm -rf .next` before build
+- Manual redeploy via Railway dashboard
 
 ---
 
 ## Files Modified
 
-```
-app/montree/dashboard/student/[id]/page.tsx  # Removed nav from ThisWeekTab
-app/api/montree/works/search/route.ts        # Use static curriculum data
-docs/mission-control/brain.json              # Session tracking
+| File | Change |
+|------|--------|
+| `/components/montree/WorkNavigator.tsx` | Simplified to one tappable status badge |
+| `/app/montree/dashboard/student/[id]/page.tsx` | Added swipe navigation to ThisWeekTab |
+| `/Dockerfile` | Cache busting with REBUILD_TS and rm .next |
+| `/docs/mission-control/brain.json` | Session tracking |
+
+---
+
+## Commits
+
+| Hash | Message |
+|------|---------|
+| `be87229` | fix: remove nav from ThisWeekTab, use static curriculum |
+| `c2660d7` | fix: add swipe navigation to ThisWeekTab expanded panel |
+| `1eceb9e` | fix: simplify WorkNavigator - one tappable status badge |
+| `b430916` | chore: force rebuild with new CACHEBUST |
+| `9b05c97` | fix: force clean rebuild - rm .next, add v72 indicator |
+| `f788f1d` | fix: aggressive cache bust with RUN echo timestamp |
+
+---
+
+## Test Checklist
+
+1. Go to: `https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291`
+2. **This Week tab:**
+   - Tap any work to expand
+   - Should see ← → arrows with "1 of 5" counter
+   - Swipe or tap arrows to navigate
+3. **Find Work panel:**
+   - Tap "🔍 Find Work"
+   - Footer should show **"X works • v72"** ← confirms new code
+   - Tap any work
+   - Should see single row: `← [status badge] [name] →`
+   - **TAP the status badge** → cycles through statuses
+   - Demo link is small text below
+
+---
+
+## Deployment Notes
+
+### Railway (NOT Vercel!)
+- **Project:** happy-flow
+- **Service:** whale-class
+- **Auto-deploy:** Yes, from GitHub main branch
+- **Build time:** ~10-15 min when cache is busted, ~2-3 min normally
+
+### How to Force Rebuild
+1. Change `ARG REBUILD_TS=YYYYMMDD-HHMM` in Dockerfile
+2. Push to GitHub
+3. Or: Railway Dashboard → Deployments → 3 dots → Redeploy
+
+### Cache Busting Strategy
+```dockerfile
+# In Dockerfile:
+ARG REBUILD_TS=20260120-1813
+RUN echo "Build timestamp: $REBUILD_TS"
 ```
 
 ---
 
-## Technical Notes
+## Known Issues
 
-### API Changes
-
-**Old:** Query empty database tables
-```sql
-SELECT * FROM montree_classroom_curriculum_works
--- Returns 0 rows
-```
-
-**New:** Use static curriculum + fetch progress from DB
-```typescript
-import { getAllWorks } from '@/lib/montree/curriculum-data';
-// Returns 316 works
-```
-
-Progress still fetched from:
-- `child_work_completion` table
-- `weekly_assignments` table
+None currently - pending verification that v72 is live.
 
 ---
 
-## Japanese Engineer Checklist
+## Next Steps
 
-- [x] Root cause identified before fixing
-- [x] Surgical edits - minimal changes
-- [x] Build passed
-- [x] Swipe in correct location only
-- [x] Static curriculum always available (no DB dependency)
-- [x] Progress tracking preserved
-- [x] Brain updated after every step
+1. **Verify deployment** - Check for "v72" in Find Work footer
+2. **Test on phone** - Confirm simplified UI works
+3. **If issues persist** - Check Railway Build Logs for errors
 
 ---
 
-## Next Session Suggestions
+## Brain Location
 
-1. **Verify on phone** - Test swipe feels natural
-2. **Consider:** Auto-select first work when opening Find Work?
-3. **Optional:** Add work count badge to area filter pills
+`/docs/mission-control/brain.json`
 
 ---
 
-## Quick Links
-
-- **Production:** https://www.teacherpotato.xyz
-- **Student Page:** /montree/dashboard/student/[id]
-- **Curriculum Data:** /lib/montree/curriculum-data.ts
+*Session 72 complete. Japanese engineering standards maintained.*
