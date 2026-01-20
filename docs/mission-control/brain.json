@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T19:30:00Z",
-  "session": 73,
-  "phase": "UI Unification - Vertical Swipe Navigation",
-  "currentSubPhase": "✅ CODE COMPLETE - Ready for test/deploy",
-  "phaseStatus": "READY FOR TESTING",
+  "lastUpdated": "2026-01-20T19:50:00Z",
+  "session": 74,
+  "phase": "UI Unification - Scroll Wheel Picker",
+  "currentSubPhase": "✅ READY TO DEPLOY",
+  "phaseStatus": "DEPLOYING",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -16,50 +16,27 @@
     "7. SEGMENT WORK - update brain after EVERY step"
   ],
 
-  "DEPLOYMENT": {
-    "platform": "RAILWAY (not Vercel!)",
-    "project": "happy-flow",
-    "service": "whale-class",
-    "environment": "production",
-    "domain": "www.teacherpotato.xyz",
-    "config": "railway.json with Dockerfile builder",
-    "auto_deploy": true
+  "SESSION_74_FEATURE": {
+    "name": "Scroll Wheel Picker",
+    "trigger": "Long-press (500ms) on work name in expanded card",
+    "feedback": "Vibration + wheel overlay appears",
+    "wheel_shows": "Works from SAME AREA only (Cultural → Cultural works)",
+    "navigation": "Scroll/swipe wheel, items snap to center",
+    "actions": "Demo, Status cycle, Select work",
+    "close": "Tap outside or Select button"
   },
 
-  "SESSION_73_CHANGES": {
-    "file_modified": "/app/montree/dashboard/student/[id]/page.tsx",
-    "changes": [
-      "1. ✅ Removed WorkNavigator import",
-      "2. ✅ Added CurriculumWork interface + AREA_FILTERS",
-      "3. ✅ Added browseMode, allWorks, currentWorkIndex, selectedArea state",
-      "4. ✅ Added fetchAllWorks() using same API as WorkNavigator",
-      "5. ✅ Changed touchStartX to touchStartY for VERTICAL swipe",
-      "6. ✅ Added navigateAllWorks() for UP/DOWN navigation",
-      "7. ✅ Added cycleAllWorksStatus() for tap-to-cycle",
-      "8. ✅ Replaced <WorkNavigator/> with inline Browse Panel",
-      "9. ✅ Added area filter chips, vertical arrows, v73 indicator"
-    ]
+  "HOW_IT_WORKS": {
+    "step1": "Expand any weekly work (tap it)",
+    "step2": "See work name in dashed box: 'Color Mixing'",
+    "step3": "LONG PRESS on work name (500ms)",
+    "step4": "Phone vibrates, wheel overlay appears",
+    "step5": "Scroll through all Cultural area works",
+    "step6": "Tap Demo for YouTube, or ⟳ Status to cycle",
+    "step7": "Tap 'Select This Work' or tap outside to close"
   },
 
-  "NEW_UI_FLOW": {
-    "step1": "Tap 'Browse All Works' button",
-    "step2": "Area filter chips appear at top",
-    "step3": "Work card shows with ↑ ↓ arrows",
-    "step4": "Swipe UP/DOWN or tap arrows to navigate",
-    "step5": "Tap status badge to cycle: ○ → P → Pr → M → ○",
-    "step6": "Demo button opens YouTube search",
-    "step7": "Look for 'v73' in footer to confirm deployment"
-  },
+  "VERSION_INDICATOR": "v74 in wheel footer",
 
-  "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291",
-  
-  "NEXT_STEPS": [
-    "1. Run local test to verify no TypeScript errors",
-    "2. Commit and push to GitHub",
-    "3. Wait for Railway auto-deploy (~3-15 min)",
-    "4. Verify v73 appears in Browse panel footer",
-    "5. Test vertical swipe on phone"
-  ],
-
-  "HANDOFF": "/docs/mission-control/HANDOFF_SESSION_73.md"
+  "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291"
 }

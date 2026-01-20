@@ -24,16 +24,6 @@ interface CurriculumWork {
   status?: 'not_started' | 'presented' | 'practicing' | 'mastered';
 }
 
-// Area filter options for browsing all works
-const AREA_FILTERS = [
-  { key: 'all', label: 'All', icon: '📋' },
-  { key: 'practical_life', label: 'P', icon: '🧹' },
-  { key: 'sensorial', label: 'S', icon: '👁️' },
-  { key: 'math', label: 'M', icon: '🔢' },
-  { key: 'language', label: 'L', icon: '📖' },
-  { key: 'cultural', label: 'C', icon: '🌍' },
-];
-
 interface Child {
   id: string;
   name: string;
@@ -300,17 +290,20 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [savingNotes, setSavingNotes] = useState(false);
   const [classroomId, setClassroomId] = useState<string | null>(null);
 
-  // NEW: Browse ALL curriculum works with vertical swipe
-  const [browseMode, setBrowseMode] = useState(false);
+  // NEW: Scroll wheel for browsing works in same area
+  const [wheelOpen, setWheelOpen] = useState(false);
   const [allWorks, setAllWorks] = useState<CurriculumWork[]>([]);
   const [currentWorkIndex, setCurrentWorkIndex] = useState(0);
   const [selectedArea, setSelectedArea] = useState('all');
   const [loadingAllWorks, setLoadingAllWorks] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [wheelOffset, setWheelOffset] = useState(0);
+  const [longPressTriggered, setLongPressTriggered] = useState(false);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const touchStartY = useRef<number>(0); // Changed to Y for vertical swipe
+  const touchStartY = useRef<number>(0);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchAssignments();
@@ -358,12 +351,12 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   }, [childId, classroomId, selectedArea]);
 
-  // Fetch all works when browse mode opens or area changes
+  // Fetch all works when wheel opens
   useEffect(() => {
-    if (browseMode) {
+    if (wheelOpen) {
       fetchAllWorks();
     }
-  }, [browseMode, selectedArea, fetchAllWorks]);
+  }, [wheelOpen, selectedArea, fetchAllWorks]);
 
   const hasUnsavedNotes = () => {
     if (expandedIndex === null) return false;
@@ -399,18 +392,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
-  // NEW: Navigate ALL works in browse mode (VERTICAL)
-  const navigateAllWorks = (direction: 'prev' | 'next') => {
-    if (allWorks.length === 0) return;
-    
-    const newIndex = direction === 'next'
-      ? Math.min(currentWorkIndex + 1, allWorks.length - 1)
-      : Math.max(currentWorkIndex - 1, 0);
-    
-    setCurrentWorkIndex(newIndex);
-  };
-
-  // VERTICAL Swipe handlers for browse mode
+  // VERTICAL Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   };
@@ -422,20 +404,59 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
   const handleTouchEnd = () => {
     const threshold = 40;
-    if (browseMode) {
-      // In browse mode: vertical swipe through ALL works
-      if (swipeOffset > threshold) navigateAllWorks('next');  // Swipe UP = next
-      if (swipeOffset < -threshold) navigateAllWorks('prev'); // Swipe DOWN = prev
-    } else if (expandedIndex !== null) {
-      // In weekly mode: horizontal-style but using vertical now
+    if (expandedIndex !== null && !wheelOpen) {
+      // Weekly mode swipe navigation
       if (swipeOffset > threshold) navigateWork('next');
       if (swipeOffset < -threshold) navigateWork('prev');
     }
     setSwipeOffset(0);
   };
 
-  // NEW: Cycle status in browse mode
-  const cycleAllWorksStatus = async () => {
+  // WHEEL touch handlers - for scrolling the picker
+  const handleWheelTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleWheelTouchMove = (e: React.TouchEvent) => {
+    const diff = touchStartY.current - e.touches[0].clientY;
+    setSwipeOffset(diff);
+  };
+
+  const handleWheelTouchEnd = () => {
+    // Calculate which item to snap to based on scroll distance
+    const itemHeight = 56; // h-14 = 3.5rem = 56px
+    const indexChange = Math.round(swipeOffset / itemHeight);
+    const newIndex = Math.max(0, Math.min(allWorks.length - 1, currentWorkIndex + indexChange));
+    
+    setCurrentWorkIndex(newIndex);
+    setWheelOffset((Math.floor(allWorks.length / 2) - newIndex) * itemHeight);
+    setSwipeOffset(0);
+  };
+
+  // LONG PRESS handlers - to open wheel from expanded card
+  const handleLongPressStart = (area: string) => {
+    setLongPressTriggered(false);
+    longPressTimer.current = setTimeout(() => {
+      setLongPressTriggered(true);
+      // Vibration feedback if available
+      if (navigator.vibrate) navigator.vibrate(50);
+      // Set area filter based on expanded work's area
+      setSelectedArea(area);
+      setCurrentWorkIndex(0);
+      setWheelOffset(0);
+      setWheelOpen(true);
+    }, 500); // 500ms long press
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  // Cycle status for wheel-selected work
+  const cycleWheelWorkStatus = async () => {
     if (allWorks.length === 0 || updatingStatus) return;
     
     const currentWork = allWorks[currentWorkIndex];
@@ -467,17 +488,27 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
       if (!res.ok) throw new Error('Failed');
 
-      // Update local state
       setAllWorks(prev => prev.map((w, i) => 
         i === currentWorkIndex ? { ...w, status: next as any } : w
       ));
       toast.success(`→ ${next.replace('_', ' ')}`);
-      fetchAssignments(); // Refresh weekly list too
+      fetchAssignments();
     } catch {
       toast.error('Failed to update');
     } finally {
       setUpdatingStatus(false);
     }
+  };
+
+  // When user selects a work from wheel, update the expanded card
+  const setSelectedWorkFromWheel = (work: CurriculumWork) => {
+    // Find if this work is in assignments, if so expand it
+    const assignmentIndex = assignments.findIndex(a => a.work_id === work.id || a.work_name === work.name);
+    if (assignmentIndex >= 0) {
+      setExpandedIndex(assignmentIndex);
+      setEditingNotes(assignments[assignmentIndex]?.notes || '');
+    }
+    toast.success(`Selected: ${work.name}`);
   };
 
   const handleStatusTap = async (e: React.MouseEvent, assignment: WorkAssignment, index: number) => {
@@ -678,143 +709,8 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
-      {/* NEW: Browse All Works Button + Panel (replaces WorkNavigator) */}
-      <div className="mb-4">
-        <button
-          onClick={() => setBrowseMode(!browseMode)}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center ${
-            browseMode
-              ? 'bg-emerald-600 text-white shadow-lg'
-              : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm'
-          }`}
-        >
-          <span className="text-xl">{browseMode ? '✕' : '🔍'}</span>
-          <span className="font-semibold">{browseMode ? 'Close Browser' : 'Browse All Works'}</span>
-          {!browseMode && <span className="text-sm text-emerald-500 ml-1">↕ Swipe to find any work</span>}
-        </button>
-
-        {/* Browse Mode Panel */}
-        {browseMode && (
-          <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            {/* Area Filter Chips */}
-            <div className="bg-gray-50 border-b p-3">
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {AREA_FILTERS.map((area) => (
-                  <button
-                    key={area.key}
-                    onClick={() => { setSelectedArea(area.key); setCurrentWorkIndex(0); }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                      selectedArea === area.key
-                        ? 'bg-emerald-600 text-white shadow-md'
-                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                    }`}
-                  >
-                    <span>{area.icon}</span>
-                    <span>{area.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Vertical Swipe Work Browser */}
-            {loadingAllWorks ? (
-              <div className="text-center py-12 text-gray-500">
-                <span className="animate-bounce text-2xl block mb-2">🐋</span>
-                <p className="text-sm">Loading works...</p>
-              </div>
-            ) : allWorks.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 text-sm">
-                No works found for this area
-              </div>
-            ) : (
-              <div 
-                className="p-4 touch-pan-y"
-                style={{ transform: `translateY(${-swipeOffset * 0.5}px)` }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                {/* UP arrow */}
-                <button 
-                  onClick={() => navigateAllWorks('prev')} 
-                  disabled={currentWorkIndex === 0}
-                  className="w-full py-2 text-center text-2xl text-gray-400 disabled:opacity-20 active:scale-95"
-                >
-                  ↑
-                </button>
-                
-                {/* Current Work Card */}
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 shadow-inner">
-                  <div className="flex items-center gap-3 mb-3">
-                    {/* Tappable Status Badge */}
-                    <button
-                      onClick={cycleAllWorksStatus}
-                      disabled={updatingStatus}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shadow-lg transition-transform active:scale-90 ${
-                        STATUS_CONFIG[allWorks[currentWorkIndex]?.status || 'not_started'].color
-                      } ${updatingStatus ? 'animate-pulse' : ''}`}
-                    >
-                      {STATUS_CONFIG[allWorks[currentWorkIndex]?.status || 'not_started'].label}
-                    </button>
-                    
-                    {/* Work Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 truncate">{allWorks[currentWorkIndex]?.name}</h4>
-                      {allWorks[currentWorkIndex]?.name_chinese && (
-                        <p className="text-sm text-gray-500 truncate">{allWorks[currentWorkIndex].name_chinese}</p>
-                      )}
-                      <p className="text-xs text-emerald-600 font-medium mt-1">
-                        {currentWorkIndex + 1} of {allWorks.length}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Demo + Capture Buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        const q = encodeURIComponent(`${allWorks[currentWorkIndex]?.name} Montessori`);
-                        window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
-                      }}
-                      className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>▶️</span>
-                      <span>Demo</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        // Set up capture for this work
-                        toast.info('💡 Tap a weekly work below to capture media');
-                      }}
-                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>📸</span>
-                      <span>Capture</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* DOWN arrow */}
-                <button 
-                  onClick={() => navigateAllWorks('next')} 
-                  disabled={currentWorkIndex >= allWorks.length - 1}
-                  className="w-full py-2 text-center text-2xl text-gray-400 disabled:opacity-20 active:scale-95"
-                >
-                  ↓
-                </button>
-                
-                {/* Swipe hint */}
-                <p className="text-center text-xs text-gray-400 mt-2">
-                  ↕ Swipe up/down to browse • Tap badge to change status • v73
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Legend - only show when collapsed */}
-      {expandedIndex === null && (
+      {expandedIndex === null && !wheelOpen && (
         <div className="flex items-center justify-center gap-4 mb-4 text-xs text-gray-500 overflow-x-auto">
           <span className="flex items-center gap-1 whitespace-nowrap">
             <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">○</span>
@@ -832,6 +728,121 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
             <span className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center text-green-800 font-bold text-xs">M</span>
             Mastered
           </span>
+        </div>
+      )}
+
+      {/* SCROLL WHEEL OVERLAY - appears on long-press */}
+      {wheelOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setWheelOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 text-center">
+              <p className="text-sm opacity-80">Browsing {AREA_CONFIG[selectedArea]?.letter || 'All'} Area Works</p>
+              <p className="font-bold">{currentWorkIndex + 1} of {allWorks.length}</p>
+            </div>
+
+            {/* Wheel Container */}
+            {loadingAllWorks ? (
+              <div className="py-16 text-center">
+                <span className="animate-bounce text-3xl block mb-2">🎡</span>
+                <p className="text-gray-500">Loading works...</p>
+              </div>
+            ) : (
+              <div 
+                className="relative h-64 overflow-hidden"
+                onTouchStart={handleWheelTouchStart}
+                onTouchMove={handleWheelTouchMove}
+                onTouchEnd={handleWheelTouchEnd}
+              >
+                {/* Gradient overlays for fade effect */}
+                <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+                
+                {/* Center highlight bar */}
+                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-14 bg-emerald-100 rounded-xl border-2 border-emerald-300 z-0" />
+
+                {/* Scrolling items */}
+                <div 
+                  className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-150"
+                  style={{ transform: `translateY(${wheelOffset + (swipeOffset * -1)}px)` }}
+                >
+                  {allWorks.map((work, idx) => {
+                    const distance = Math.abs(idx - currentWorkIndex);
+                    const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.25;
+                    const scale = distance === 0 ? 1 : distance === 1 ? 0.9 : 0.8;
+                    
+                    return (
+                      <div
+                        key={work.id}
+                        className="h-14 flex items-center justify-center w-full px-6 transition-all duration-150"
+                        style={{ opacity, transform: `scale(${scale})` }}
+                        onClick={() => {
+                          setCurrentWorkIndex(idx);
+                          setWheelOffset((allWorks.length / 2 - idx) * 56);
+                        }}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                            STATUS_CONFIG[work.status || 'not_started'].color
+                          }`}>
+                            {STATUS_CONFIG[work.status || 'not_started'].label}
+                          </span>
+                          <span className={`font-medium truncate ${distance === 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                            {work.name}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="p-4 bg-gray-50 border-t">
+              <div className="flex gap-3 mb-3">
+                <button
+                  onClick={() => {
+                    const work = allWorks[currentWorkIndex];
+                    if (work) {
+                      const q = encodeURIComponent(`${work.name} Montessori`);
+                      window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
+                    }
+                  }}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                >
+                  <span>▶️</span> Demo
+                </button>
+                <button
+                  onClick={cycleWheelWorkStatus}
+                  disabled={updatingStatus}
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {updatingStatus ? '...' : '⟳'} Status
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  // Select this work and close wheel
+                  const work = allWorks[currentWorkIndex];
+                  if (work) {
+                    setSelectedWorkFromWheel(work);
+                  }
+                  setWheelOpen(false);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all"
+              >
+                ✓ Select This Work
+              </button>
+              <p className="text-center text-xs text-gray-400 mt-3">v74 • Scroll wheel</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -894,6 +905,23 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
+                  {/* Work Name with LONG PRESS to open wheel */}
+                  <div 
+                    className="bg-white rounded-xl p-3 mb-4 shadow-inner border-2 border-dashed border-emerald-300 cursor-pointer active:scale-[0.98] transition-transform select-none"
+                    onTouchStart={() => handleLongPressStart(assignment.area)}
+                    onTouchEnd={handleLongPressEnd}
+                    onMouseDown={() => handleLongPressStart(assignment.area)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                  >
+                    <p className="font-bold text-gray-900 text-lg text-center">
+                      {assignment.work_name}
+                    </p>
+                    <p className="text-xs text-emerald-600 text-center mt-1">
+                      👆 Hold to browse {AREA_CONFIG[assignment.area]?.letter || '?'} area works
+                    </p>
+                  </div>
+
                   {/* Navigation Header */}
                   <div className="flex items-center justify-between mb-4">
                     <button
@@ -906,9 +934,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                     
                     <div className="flex-1 text-center px-2">
                       <p className="text-sm font-bold text-emerald-700">
-                        {index + 1} of {assignments.length}
+                        {index + 1} of {assignments.length} weekly
                       </p>
-                      <p className="text-xs text-gray-500">Swipe or tap arrows</p>
+                      <p className="text-xs text-gray-500">← → navigate weekly list</p>
                     </div>
                     
                     <button
