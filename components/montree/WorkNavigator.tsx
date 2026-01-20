@@ -1,5 +1,5 @@
 // components/montree/WorkNavigator.tsx
-// Full work browser - search all 316 works, update progress directly
+// Full work browser - search all curriculum works, update progress directly
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -37,11 +37,11 @@ const AREAS = [
   { key: 'cultural', label: 'Cultural', icon: '🌍' },
 ];
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; next: string }> = {
-  not_started: { label: '○', color: 'bg-gray-200 text-gray-600', bg: 'bg-gray-50', next: 'presented' },
-  presented: { label: 'P', color: 'bg-amber-200 text-amber-800', bg: 'bg-amber-50', next: 'practicing' },
-  practicing: { label: 'Pr', color: 'bg-blue-200 text-blue-800', bg: 'bg-blue-50', next: 'mastered' },
-  mastered: { label: 'M', color: 'bg-green-200 text-green-800', bg: 'bg-green-50', next: 'not_started' },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; next: string; level: number }> = {
+  not_started: { label: '○', color: 'bg-gray-200 text-gray-600', bg: 'bg-gray-50 border border-gray-200', next: 'presented', level: 0 },
+  presented: { label: 'P', color: 'bg-amber-200 text-amber-800', bg: 'bg-amber-50 border border-amber-200', next: 'practicing', level: 1 },
+  practicing: { label: 'Pr', color: 'bg-blue-200 text-blue-800', bg: 'bg-blue-50 border border-blue-200', next: 'mastered', level: 2 },
+  mastered: { label: 'M', color: 'bg-green-200 text-green-800', bg: 'bg-green-50 border border-green-200', next: 'not_started', level: 3 },
 };
 
 const STATUS_NAMES: Record<string, string> = {
@@ -66,9 +66,10 @@ export default function WorkNavigator({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [tappedStatus, setTappedStatus] = useState<string | null>(null);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const selectedWorkRef = useRef<HTMLButtonElement>(null);
 
   // Focus search input when panel opens
   useEffect(() => {
@@ -77,18 +78,27 @@ export default function WorkNavigator({
     }
   }, [isOpen]);
 
+  // Scroll selected work into view
+  useEffect(() => {
+    if (selectedWork && selectedWorkRef.current) {
+      selectedWorkRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [selectedWork?.id]);
+
   // Fetch all works when panel opens or area changes
   const fetchWorks = useCallback(async () => {
     if (!isOpen) return;
     
+    // Need classroomId to fetch works
+    if (!classroomId) {
+      setError('Classroom not found. Please try refreshing.');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      // Build URL - classroomId is optional now
-      let url = `/api/montree/works/search?child_id=${childId}&limit=400`;
-      if (classroomId) {
-        url += `&classroom_id=${classroomId}`;
-      }
+      let url = `/api/montree/works/search?classroom_id=${classroomId}&child_id=${childId}&limit=400`;
       if (selectedArea !== 'all') {
         url += `&area=${selectedArea}`;
       }
@@ -97,6 +107,9 @@ export default function WorkNavigator({
       if (!res.ok) throw new Error('Failed to load works');
       const data = await res.json();
       setAllWorks(data.works || []);
+      
+      // Clear selection when area changes
+      setSelectedWork(null);
     } catch (err) {
       console.error('Failed to fetch works:', err);
       setError('Failed to load works. Please try again.');
@@ -113,6 +126,17 @@ export default function WorkNavigator({
     }
   }, [isOpen, selectedArea, fetchWorks]);
 
+  // Clear selection when search changes significantly
+  useEffect(() => {
+    // Only clear if the selected work is no longer in filtered results
+    if (selectedWork) {
+      const stillVisible = filteredWorks.some(w => w.id === selectedWork.id);
+      if (!stillVisible) {
+        setSelectedWork(null);
+      }
+    }
+  }, [searchQuery]);
+
   // Filter works by search query
   const filteredWorks = searchQuery.trim()
     ? allWorks.filter(work =>
@@ -122,11 +146,20 @@ export default function WorkNavigator({
       )
     : allWorks;
 
-  // Handle work selection - show detail card
-  const handleWorkClick = (work: Work, index: number) => {
-    setSelectedWork(work);
-    setCurrentIndex(index);
-    onWorkSelect?.(work);
+  // Get current index of selected work in filtered list
+  const currentIndex = selectedWork 
+    ? filteredWorks.findIndex(w => w.id === selectedWork.id)
+    : -1;
+
+  // Handle work selection
+  const handleWorkClick = (work: Work) => {
+    if (selectedWork?.id === work.id) {
+      // Clicking same work - deselect
+      setSelectedWork(null);
+    } else {
+      setSelectedWork(work);
+      onWorkSelect?.(work);
+    }
   };
 
   // Navigate between works
@@ -137,40 +170,44 @@ export default function WorkNavigator({
       ? Math.min(currentIndex + 1, filteredWorks.length - 1)
       : Math.max(currentIndex - 1, 0);
     
-    if (newIndex !== currentIndex) {
+    if (newIndex !== currentIndex && filteredWorks[newIndex]) {
       setSelectedWork(filteredWorks[newIndex]);
-      setCurrentIndex(newIndex);
     }
   };
 
   // Update work progress
   const updateProgress = async (newStatus: string) => {
-    if (!selectedWork) return;
+    if (!selectedWork || updatingStatus) return;
     
+    // Immediate visual feedback
+    setTappedStatus(newStatus);
     setUpdatingStatus(true);
+    
     try {
-      // Update via the montree progress API
+      const config = STATUS_CONFIG[newStatus];
+      
+      // Map to API format
+      const apiStatus = newStatus === 'mastered' ? 'completed' 
+                      : newStatus === 'not_started' ? 'not_started'
+                      : 'in_progress';
+      
       const res = await fetch(`/api/montree/progress/${childId}/${selectedWork.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'update',
-          status: newStatus === 'not_started' ? 'not_started' 
-                : newStatus === 'presented' ? 'in_progress'
-                : newStatus === 'practicing' ? 'in_progress'  
-                : 'completed',
-          currentLevel: newStatus === 'presented' ? 1 
-                      : newStatus === 'practicing' ? 2 
-                      : newStatus === 'mastered' ? 3 : 0,
+          action: newStatus === 'not_started' ? 'reset' : 'update',
+          status: apiStatus,
+          currentLevel: config.level,
         }),
       });
 
       if (!res.ok) throw new Error('Failed to update');
 
       // Update local state
-      setSelectedWork({ ...selectedWork, status: newStatus as any });
+      const updatedWork = { ...selectedWork, status: newStatus as any };
+      setSelectedWork(updatedWork);
       setAllWorks(prev => prev.map(w => 
-        w.id === selectedWork.id ? { ...w, status: newStatus as any } : w
+        w.id === selectedWork.id ? updatedWork : w
       ));
       
       toast.success(`${selectedWork.name} → ${STATUS_NAMES[newStatus]}`);
@@ -180,6 +217,7 @@ export default function WorkNavigator({
       toast.error('Failed to update progress');
     } finally {
       setUpdatingStatus(false);
+      setTappedStatus(null);
     }
   };
 
@@ -191,27 +229,47 @@ export default function WorkNavigator({
     updateProgress(nextStatus);
   };
 
+  // Close panel
+  const closePanel = () => {
+    setIsOpen(false);
+    setSelectedWork(null);
+    setSearchQuery('');
+  };
+
+  // Show helpful message if no classroomId
+  if (!classroomId) {
+    return (
+      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+        <p className="text-amber-700 text-sm">
+          <span className="font-semibold">🔍 Work search unavailable</span>
+          <br />
+          <span className="text-amber-600">Classroom not linked yet. Use the Progress tab to browse works.</span>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-4">
-      {/* Toggle Button - Always visible */}
+      {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center ${
           isOpen 
             ? 'bg-emerald-600 text-white shadow-lg' 
-            : 'bg-white border-2 border-dashed border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400'
+            : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 shadow-sm'
         }`}
       >
-        <span className="text-xl">🔍</span>
-        <span className="font-semibold">{isOpen ? 'Close Search' : 'Find Work'}</span>
-        {!isOpen && <span className="text-sm text-emerald-500 ml-1">(All 316 works)</span>}
+        <span className="text-xl">{isOpen ? '✕' : '🔍'}</span>
+        <span className="font-semibold">{isOpen ? 'Close' : 'Find Work'}</span>
+        {!isOpen && <span className="text-sm text-emerald-500 ml-1">Browse all works</span>}
       </button>
 
       {/* Work Browser Panel */}
       {isOpen && (
-        <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          {/* Search + Filters - Sticky Header */}
-          <div className="sticky top-0 bg-white border-b p-3 z-10">
+        <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* Search + Filters */}
+          <div className="bg-gray-50 border-b p-3">
             {/* Search Input */}
             <div className="relative mb-3">
               <input
@@ -219,16 +277,17 @@ export default function WorkNavigator({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search works by name..."
-                className="w-full px-4 py-3 pl-10 bg-gray-50 border border-gray-200 rounded-xl text-base
-                           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                placeholder="Search by work name..."
+                className="w-full px-4 py-3 pl-10 bg-white border border-gray-200 rounded-xl text-base
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent
+                           shadow-sm"
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-200 rounded-full 
-                             flex items-center justify-center text-gray-500 hover:bg-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 bg-gray-100 rounded-full 
+                             flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
                 >
                   ✕
                 </button>
@@ -236,16 +295,16 @@ export default function WorkNavigator({
             </div>
 
             {/* Area Filter Pills */}
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               {AREAS.map((area) => (
                 <button
                   key={area.key}
                   onClick={() => setSelectedArea(area.key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium 
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium 
                              whitespace-nowrap transition-all ${
                     selectedArea === area.key
-                      ? 'bg-emerald-600 text-white shadow'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   <span>{area.icon}</span>
@@ -257,51 +316,62 @@ export default function WorkNavigator({
 
           {/* Selected Work Detail Card */}
           {selectedWork && (
-            <div className="border-b bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="border-b bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 p-4">
+              {/* Header with navigation */}
+              <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => navigateWork('prev')}
                   disabled={currentIndex <= 0}
-                  className="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center
-                             disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center
+                             disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 
+                             active:scale-95 transition-all border border-gray-100 text-lg"
                 >
                   ←
                 </button>
                 
-                <div className="flex-1 text-center px-2">
-                  <h3 className="font-bold text-gray-900 text-lg">{selectedWork.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {selectedWork.area?.name || selectedWork.category_name}
+                <div className="flex-1 text-center px-3">
+                  <h3 className="font-bold text-gray-900 text-lg leading-tight">{selectedWork.name}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {selectedWork.area?.name || selectedWork.category_name || 'Curriculum Work'}
                   </p>
                 </div>
                 
                 <button
                   onClick={() => navigateWork('next')}
                   disabled={currentIndex >= filteredWorks.length - 1}
-                  className="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center
-                             disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center
+                             disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 
+                             active:scale-95 transition-all border border-gray-100 text-lg"
                 >
                   →
                 </button>
               </div>
 
-              {/* Status Buttons */}
-              <div className="grid grid-cols-4 gap-2 mb-3">
+              {/* Status Buttons - 2x2 grid on mobile, 4 columns on larger */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                   const isActive = (selectedWork.status || 'not_started') === key;
+                  const isTapped = tappedStatus === key;
+                  
                   return (
                     <button
                       key={key}
                       onClick={() => updateProgress(key)}
                       disabled={updatingStatus}
-                      className={`py-3 rounded-xl font-bold text-sm transition-all ${
+                      className={`py-3 px-2 rounded-xl font-bold text-sm transition-all relative overflow-hidden ${
                         isActive 
-                          ? `${config.color} ring-2 ring-offset-2 ring-emerald-500 scale-105` 
-                          : `${config.bg} hover:scale-102`
-                      } ${updatingStatus ? 'opacity-50' : ''}`}
+                          ? `${config.color} ring-2 ring-offset-2 ring-emerald-500 shadow-md` 
+                          : `${config.bg} hover:shadow-sm active:scale-95`
+                      } ${updatingStatus && !isTapped ? 'opacity-50' : ''}`}
                     >
-                      <div className="text-lg mb-0.5">{config.label}</div>
-                      <div className="text-xs opacity-75">{STATUS_NAMES[key]}</div>
+                      {/* Loading overlay */}
+                      {isTapped && (
+                        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                          <span className="animate-spin">⏳</span>
+                        </div>
+                      )}
+                      <div className="text-xl mb-1">{config.label}</div>
+                      <div className="text-xs opacity-80">{STATUS_NAMES[key]}</div>
                     </button>
                   );
                 })}
@@ -312,8 +382,9 @@ export default function WorkNavigator({
                 <button
                   onClick={cycleStatus}
                   disabled={updatingStatus}
-                  className="flex-1 py-2 bg-emerald-600 text-white rounded-xl font-semibold
-                             hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-base
+                             hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 
+                             flex items-center justify-center gap-2 shadow-md transition-all"
                 >
                   <span>⏭️</span>
                   <span>Next Status</span>
@@ -323,43 +394,62 @@ export default function WorkNavigator({
                     const query = encodeURIComponent(`${selectedWork.name} Montessori presentation`);
                     window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
                   }}
-                  className="py-2 px-4 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600"
+                  className="py-3 px-5 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 
+                             active:scale-[0.98] shadow-md transition-all"
                 >
                   ▶️ Demo
                 </button>
               </div>
 
               {/* Navigation hint */}
-              <p className="text-xs text-gray-400 text-center mt-2">
-                Work {currentIndex + 1} of {filteredWorks.length} • Use ← → to navigate
+              <p className="text-xs text-gray-400 text-center mt-3">
+                {currentIndex + 1} of {filteredWorks.length} works • Tap ← → to browse
               </p>
             </div>
           )}
 
-          {/* Work List - Scrollable */}
-          <div className="max-h-72 overflow-y-auto">
+          {/* Work List */}
+          <div className="max-h-64 overflow-y-auto">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">
-                <span className="animate-spin inline-block text-2xl">🐋</span>
-                <p className="mt-2">Loading works...</p>
+              <div className="text-center py-10 text-gray-500">
+                <div className="w-12 h-12 mx-auto mb-3 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="animate-bounce text-2xl">🐋</span>
+                </div>
+                <p className="font-medium">Loading works...</p>
               </div>
             ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-500 mb-2">❌ {error}</p>
+              <div className="text-center py-10">
+                <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">❌</span>
+                </div>
+                <p className="text-red-600 font-medium mb-2">{error}</p>
                 <button 
                   onClick={() => fetchWorks()}
-                  className="text-emerald-600 hover:underline text-sm"
+                  className="text-emerald-600 hover:underline text-sm font-medium"
                 >
                   Try again
                 </button>
               </div>
             ) : filteredWorks.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchQuery ? `No works match "${searchQuery}"` : 'No works found'}
+              <div className="text-center py-10 text-gray-500">
+                <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🔍</span>
+                </div>
+                <p className="font-medium">
+                  {searchQuery ? `No works match "${searchQuery}"` : 'No works found'}
+                </p>
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="text-emerald-600 hover:underline text-sm mt-2"
+                  >
+                    Clear search
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
-                {filteredWorks.map((work, index) => {
+              <div className="divide-y divide-gray-100">
+                {filteredWorks.map((work) => {
                   const status = work.status || 'not_started';
                   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.not_started;
                   const isSelected = selectedWork?.id === work.id;
@@ -367,30 +457,31 @@ export default function WorkNavigator({
                   return (
                     <button
                       key={work.id}
-                      onClick={() => handleWorkClick(work, index)}
-                      className={`w-full flex items-center gap-3 p-3 transition-colors text-left
+                      ref={isSelected ? selectedWorkRef : null}
+                      onClick={() => handleWorkClick(work)}
+                      className={`w-full flex items-center gap-3 p-3.5 transition-all text-left
                                  ${isSelected 
                                    ? 'bg-emerald-100 border-l-4 border-emerald-500' 
-                                   : 'hover:bg-gray-50 active:bg-emerald-50'}`}
+                                   : 'hover:bg-gray-50 active:bg-emerald-50 border-l-4 border-transparent'}`}
                     >
                       {/* Status Badge */}
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center 
-                                       text-sm font-bold flex-shrink-0 ${statusConfig.color}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center 
+                                       text-sm font-bold flex-shrink-0 shadow-sm ${statusConfig.color}`}>
                         {statusConfig.label}
                       </div>
                       
                       {/* Work Info */}
                       <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-sm truncate ${isSelected ? 'text-emerald-900' : 'text-gray-900'}`}>
+                        <p className={`font-semibold text-sm leading-tight ${isSelected ? 'text-emerald-900' : 'text-gray-900'}`}>
                           {work.name}
                         </p>
                         {work.category_name && (
-                          <p className="text-xs text-gray-500 truncate">{work.category_name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{work.category_name}</p>
                         )}
                       </div>
                       
                       {/* Area Icon */}
-                      <div className="text-lg flex-shrink-0">{work.area?.icon || '📋'}</div>
+                      <div className="text-xl flex-shrink-0 opacity-60">{work.area?.icon || '📋'}</div>
                     </button>
                   );
                 })}
@@ -398,9 +489,18 @@ export default function WorkNavigator({
             )}
           </div>
 
-          {/* Footer with count */}
-          <div className="border-t bg-gray-50 px-3 py-2 text-sm text-gray-600 text-center font-medium">
-            {filteredWorks.length} works {searchQuery && `matching "${searchQuery}"`}
+          {/* Footer */}
+          <div className="border-t bg-gray-50 px-4 py-3 flex items-center justify-between">
+            <span className="text-sm text-gray-600 font-medium">
+              {filteredWorks.length} work{filteredWorks.length !== 1 ? 's' : ''}
+              {searchQuery && ` for "${searchQuery}"`}
+            </span>
+            <button
+              onClick={closePanel}
+              className="text-sm text-emerald-600 font-semibold hover:text-emerald-700"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}
