@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { AISuggestionsPanel } from '@/components/classroom/AISuggestionsPanel';
 
 interface Child {
   id: string;
@@ -224,6 +225,7 @@ export default function StudentDetailPage() {
           <ThisWeekTab 
             childId={studentId} 
             childName={student.name}
+            childAge={student.age || 4.0}
             onMediaUploaded={handleMediaUploaded}
           />
         )}
@@ -248,9 +250,10 @@ export default function StudentDetailPage() {
 // ============================================
 // THIS WEEK TAB
 // ============================================
-function ThisWeekTab({ childId, childName, onMediaUploaded }: { 
+function ThisWeekTab({ childId, childName, childAge, onMediaUploaded }: { 
   childId: string; 
   childName: string;
+  childAge: number;
   onMediaUploaded?: () => void;
 }) {
   const [assignments, setAssignments] = useState<WorkAssignment[]>([]);
@@ -441,6 +444,14 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
           <span className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center text-green-800 font-bold text-xs">M</span>
           Mastered
         </span>
+      </div>
+
+      {/* AI Suggestions Panel */}
+      <div className="mb-4">
+        <AISuggestionsPanel 
+          childAge={childAge}
+          childName={childName}
+        />
       </div>
 
       <div className="space-y-2">
