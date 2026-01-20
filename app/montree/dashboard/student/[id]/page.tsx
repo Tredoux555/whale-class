@@ -297,13 +297,32 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [selectedArea, setSelectedArea] = useState('all');
   const [loadingAllWorks, setLoadingAllWorks] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [wheelOffset, setWheelOffset] = useState(0);
   const [longPressTriggered, setLongPressTriggered] = useState(false);
+
+  // iOS-style wheel physics state
+  const wheelPhysics = useRef({
+    offset: 0,           // Current scroll offset in pixels
+    velocity: 0,         // Current velocity px/s
+    amplitude: 0,        // Momentum launch amplitude
+    target: 0,           // Target snap position
+    timestamp: 0,        // For velocity tracking
+    frame: 0,            // Last frame offset
+    reference: 0,        // Touch start Y position
+    animationId: null as number | null,
+    ticker: null as NodeJS.Timeout | null,
+  });
+  const [wheelDisplayOffset, setWheelDisplayOffset] = useState(0);
 
   const [swipeOffset, setSwipeOffset] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const touchStartY = useRef<number>(0);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // iOS physics constants
+  const ITEM_HEIGHT = 44;        // iOS standard row height
+  const TIME_CONSTANT = 325;     // iOS momentum decay constant
+  const VELOCITY_THRESHOLD = 10; // Min velocity to trigger momentum
+  const VISIBLE_ITEMS = 5;       // Items visible in wheel
 
   useEffect(() => {
     fetchAssignments();
@@ -355,6 +374,16 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   useEffect(() => {
     if (wheelOpen) {
       fetchAllWorks();
+    } else {
+      // Cleanup physics when wheel closes
+      if (wheelPhysics.current.animationId) {
+        cancelAnimationFrame(wheelPhysics.current.animationId);
+        wheelPhysics.current.animationId = null;
+      }
+      if (wheelPhysics.current.ticker) {
+        clearInterval(wheelPhysics.current.ticker);
+        wheelPhysics.current.ticker = null;
+      }
     }
   }, [wheelOpen, selectedArea, fetchAllWorks]);
 
@@ -412,25 +441,112 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     setSwipeOffset(0);
   };
 
-  // WHEEL touch handlers - for scrolling the picker
-  const handleWheelTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleWheelTouchMove = (e: React.TouchEvent) => {
-    const diff = touchStartY.current - e.touches[0].clientY;
-    setSwipeOffset(diff);
-  };
-
-  const handleWheelTouchEnd = () => {
-    // Calculate which item to snap to based on scroll distance
-    const itemHeight = 48;
-    const indexChange = Math.round(swipeOffset / itemHeight);
-    const newIndex = Math.max(0, Math.min(allWorks.length - 1, currentWorkIndex + indexChange));
+  // WHEEL touch handlers - iOS-style physics
+  const wheelScroll = useCallback((newOffset: number) => {
+    // Clamp to bounds with rubber band effect at edges
+    const maxOffset = (allWorks.length - 1) * ITEM_HEIGHT;
+    const clampedOffset = Math.max(-ITEM_HEIGHT * 0.3, Math.min(maxOffset + ITEM_HEIGHT * 0.3, newOffset));
     
-    setCurrentWorkIndex(newIndex);
-    setSwipeOffset(0);
-  };
+    wheelPhysics.current.offset = clampedOffset;
+    setWheelDisplayOffset(clampedOffset);
+    
+    // Update current index based on offset
+    const newIndex = Math.round(clampedOffset / ITEM_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(allWorks.length - 1, newIndex));
+    if (clampedIndex !== currentWorkIndex) {
+      setCurrentWorkIndex(clampedIndex);
+      // Haptic feedback on item change
+      if (navigator.vibrate) navigator.vibrate(1);
+    }
+  }, [allWorks.length, currentWorkIndex, ITEM_HEIGHT]);
+
+  // Track velocity every 100ms (iOS style)
+  const trackVelocity = useCallback(() => {
+    const now = Date.now();
+    const elapsed = now - wheelPhysics.current.timestamp;
+    const delta = wheelPhysics.current.offset - wheelPhysics.current.frame;
+    
+    wheelPhysics.current.timestamp = now;
+    wheelPhysics.current.frame = wheelPhysics.current.offset;
+    
+    // Moving average: 80% new, 20% old
+    const instantVelocity = (1000 * delta) / (1 + elapsed);
+    wheelPhysics.current.velocity = 0.8 * instantVelocity + 0.2 * wheelPhysics.current.velocity;
+  }, []);
+
+  // Momentum animation with exponential decay
+  const autoScroll = useCallback(() => {
+    const { amplitude, target, timestamp } = wheelPhysics.current;
+    const elapsed = Date.now() - timestamp;
+    const delta = -amplitude * Math.exp(-elapsed / TIME_CONSTANT);
+    
+    if (Math.abs(delta) > 0.5) {
+      wheelScroll(target + delta);
+      wheelPhysics.current.animationId = requestAnimationFrame(autoScroll);
+    } else {
+      // Snap to final position
+      wheelScroll(target);
+      wheelPhysics.current.animationId = null;
+    }
+  }, [wheelScroll, TIME_CONSTANT]);
+
+  const handleWheelTouchStart = useCallback((e: React.TouchEvent) => {
+    // Cancel any running animation
+    if (wheelPhysics.current.animationId) {
+      cancelAnimationFrame(wheelPhysics.current.animationId);
+      wheelPhysics.current.animationId = null;
+    }
+    if (wheelPhysics.current.ticker) {
+      clearInterval(wheelPhysics.current.ticker);
+    }
+    
+    wheelPhysics.current.reference = e.touches[0].clientY;
+    wheelPhysics.current.velocity = 0;
+    wheelPhysics.current.frame = wheelPhysics.current.offset;
+    wheelPhysics.current.timestamp = Date.now();
+    
+    // Start velocity tracking at 100ms intervals
+    wheelPhysics.current.ticker = setInterval(trackVelocity, 100);
+  }, [trackVelocity]);
+
+  const handleWheelTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent page scroll
+    const y = e.touches[0].clientY;
+    const delta = wheelPhysics.current.reference - y;
+    wheelPhysics.current.reference = y;
+    wheelScroll(wheelPhysics.current.offset + delta);
+  }, [wheelScroll]);
+
+  const handleWheelTouchEnd = useCallback(() => {
+    // Stop velocity tracking
+    if (wheelPhysics.current.ticker) {
+      clearInterval(wheelPhysics.current.ticker);
+      wheelPhysics.current.ticker = null;
+    }
+    
+    const maxOffset = (allWorks.length - 1) * ITEM_HEIGHT;
+    
+    if (Math.abs(wheelPhysics.current.velocity) > VELOCITY_THRESHOLD) {
+      // Launch momentum
+      wheelPhysics.current.amplitude = 0.8 * wheelPhysics.current.velocity;
+      wheelPhysics.current.target = wheelPhysics.current.offset + wheelPhysics.current.amplitude;
+      
+      // Snap target to item grid
+      wheelPhysics.current.target = Math.round(wheelPhysics.current.target / ITEM_HEIGHT) * ITEM_HEIGHT;
+      
+      // Clamp to bounds
+      wheelPhysics.current.target = Math.max(0, Math.min(maxOffset, wheelPhysics.current.target));
+      
+      wheelPhysics.current.timestamp = Date.now();
+      wheelPhysics.current.animationId = requestAnimationFrame(autoScroll);
+    } else {
+      // No momentum - just snap to nearest
+      const nearestIndex = Math.round(wheelPhysics.current.offset / ITEM_HEIGHT);
+      const clampedIndex = Math.max(0, Math.min(allWorks.length - 1, nearestIndex));
+      const snapOffset = clampedIndex * ITEM_HEIGHT;
+      wheelScroll(snapOffset);
+    }
+  }, [allWorks.length, autoScroll, wheelScroll, ITEM_HEIGHT, VELOCITY_THRESHOLD]);
 
   // LONG PRESS handlers - to open wheel from expanded card
   const handleLongPressStart = (area: string) => {
@@ -442,7 +558,10 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       // Set area filter based on expanded work's area
       setSelectedArea(area);
       setCurrentWorkIndex(0);
-      setWheelOffset(0);
+      // Reset physics state
+      wheelPhysics.current.offset = 0;
+      wheelPhysics.current.velocity = 0;
+      setWheelDisplayOffset(0);
       setWheelOpen(true);
     }, 500); // 500ms long press
   };
@@ -730,7 +849,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
         </div>
       )}
 
-      {/* SCROLL WHEEL OVERLAY - appears on long-press */}
+      {/* SCROLL WHEEL OVERLAY - iOS-style picker */}
       {wheelOpen && (
         <div 
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -743,10 +862,10 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
             {/* Header */}
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 text-center">
               <p className="text-sm opacity-80">Browsing {AREA_CONFIG[selectedArea]?.letter || 'All'} Area Works</p>
-              <p className="font-bold">{currentWorkIndex + 1} of {allWorks.length}</p>
+              <p className="font-bold text-lg">{currentWorkIndex + 1} of {allWorks.length}</p>
             </div>
 
-            {/* Wheel Container */}
+            {/* Wheel Container - iOS style with 3D perspective */}
             {loadingAllWorks ? (
               <div className="py-16 text-center">
                 <span className="animate-bounce text-3xl block mb-2">🎡</span>
@@ -754,51 +873,99 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               </div>
             ) : (
               <div 
-                className="relative h-72 overflow-hidden"
+                className="relative overflow-hidden touch-none select-none"
+                style={{ 
+                  height: ITEM_HEIGHT * VISIBLE_ITEMS,
+                  perspective: '1000px',
+                  perspectiveOrigin: 'center center',
+                }}
                 onTouchStart={handleWheelTouchStart}
                 onTouchMove={handleWheelTouchMove}
                 onTouchEnd={handleWheelTouchEnd}
               >
                 {/* Gradient overlays for fade effect */}
-                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/80 to-transparent z-20 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent z-20 pointer-events-none" />
                 
-                {/* Center highlight bar */}
-                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-12 bg-emerald-100 rounded-xl border-2 border-emerald-300 z-0" />
+                {/* Center selection indicator - glass effect */}
+                <div 
+                  className="absolute inset-x-3 z-10 pointer-events-none rounded-xl"
+                  style={{
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    height: ITEM_HEIGHT,
+                    background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.15), rgba(20, 184, 166, 0.15))',
+                    border: '2px solid rgba(16, 185, 129, 0.4)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
+                  }}
+                />
 
-                {/* Scrolling items - positioned relative to center */}
-                <div className="absolute inset-0 overflow-hidden">
+                {/* 3D Wheel with items */}
+                <div 
+                  className="absolute inset-0"
+                  style={{ transformStyle: 'preserve-3d' }}
+                >
                   {allWorks.map((work, idx) => {
-                    // Position each item relative to current selection
-                    const offset = (idx - currentWorkIndex) * 48; // 48px per item
-                    const centerY = 144 - 24; // h-72/2 - item height/2
-                    const itemY = centerY + offset + (swipeOffset * -0.5);
+                    // Calculate position relative to current selection
+                    const itemOffset = idx * ITEM_HEIGHT - wheelDisplayOffset;
+                    const centerY = (ITEM_HEIGHT * VISIBLE_ITEMS) / 2 - ITEM_HEIGHT / 2;
+                    const y = centerY + itemOffset;
                     
-                    // Only render visible items (within viewport)
-                    if (Math.abs(offset) > 150) return null;
+                    // Skip items too far from view
+                    if (Math.abs(itemOffset) > ITEM_HEIGHT * 3) return null;
                     
-                    const distance = Math.abs(idx - currentWorkIndex);
-                    const opacity = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
-                    const scale = distance === 0 ? 1 : 0.85;
+                    // Calculate 3D rotation for barrel effect
+                    const rotation = (itemOffset / ITEM_HEIGHT) * 18; // 18 degrees per item
+                    const radius = 120; // Barrel radius
+                    const translateZ = Math.cos(rotation * Math.PI / 180) * 10 - 10;
+                    
+                    // Opacity and scale based on distance from center
+                    const normalizedDistance = Math.abs(itemOffset) / (ITEM_HEIGHT * 2.5);
+                    const opacity = Math.max(0.2, 1 - normalizedDistance * 0.8);
+                    const scale = Math.max(0.8, 1 - normalizedDistance * 0.15);
+                    
+                    const isSelected = idx === currentWorkIndex;
                     
                     return (
                       <div
                         key={work.id}
-                        className="absolute left-0 right-0 h-12 flex items-center px-6 transition-all duration-100"
+                        className="absolute left-0 right-0 flex items-center px-4"
                         style={{ 
-                          top: itemY,
-                          opacity, 
-                          transform: `scale(${scale})`,
+                          height: ITEM_HEIGHT,
+                          top: y,
+                          opacity,
+                          transform: `
+                            scale(${scale})
+                            rotateX(${-rotation}deg)
+                            translateZ(${translateZ}px)
+                          `,
+                          transformOrigin: 'center center',
+                          transition: 'none', // No CSS transition - handled by JS physics
+                          willChange: 'transform, opacity',
                         }}
-                        onClick={() => setCurrentWorkIndex(idx)}
+                        onClick={() => {
+                          // Animate to clicked item
+                          const targetOffset = idx * ITEM_HEIGHT;
+                          wheelPhysics.current.target = targetOffset;
+                          wheelPhysics.current.amplitude = targetOffset - wheelPhysics.current.offset;
+                          wheelPhysics.current.timestamp = Date.now();
+                          if (wheelPhysics.current.animationId) {
+                            cancelAnimationFrame(wheelPhysics.current.animationId);
+                          }
+                          wheelPhysics.current.animationId = requestAnimationFrame(autoScroll);
+                        }}
                       >
                         <div className="flex items-center gap-3 w-full">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                          <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-sm ${
                             STATUS_CONFIG[work.status || 'not_started'].color
                           }`}>
                             {STATUS_CONFIG[work.status || 'not_started'].label}
                           </span>
-                          <span className={`font-medium truncate ${distance === 0 ? 'text-gray-900 text-base' : 'text-gray-500 text-sm'}`}>
+                          <span className={`truncate transition-all ${
+                            isSelected 
+                              ? 'font-semibold text-gray-900 text-base' 
+                              : 'font-medium text-gray-500 text-sm'
+                          }`}>
                             {work.name}
                           </span>
                         </div>
@@ -809,43 +976,21 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Single Select Button - Clean and Simple */}
             <div className="p-4 bg-gray-50 border-t">
-              <div className="flex gap-3 mb-3">
-                <button
-                  onClick={() => {
-                    const work = allWorks[currentWorkIndex];
-                    if (work) {
-                      const q = encodeURIComponent(`${work.name} Montessori`);
-                      window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
-                    }
-                  }}
-                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                >
-                  <span>▶️</span> Demo
-                </button>
-                <button
-                  onClick={cycleWheelWorkStatus}
-                  disabled={updatingStatus}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {updatingStatus ? '...' : '⟳'} Status
-                </button>
-              </div>
               <button
                 onClick={() => {
-                  // Select this work and close wheel
                   const work = allWorks[currentWorkIndex];
                   if (work) {
                     setSelectedWorkFromWheel(work);
                   }
                   setWheelOpen(false);
                 }}
-                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow active:scale-[0.98] transition-all"
+                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-transform text-lg"
               >
                 ✓ Select This Work
               </button>
-              <p className="text-center text-xs text-gray-400 mt-3">v74 • Scroll wheel</p>
+              <p className="text-center text-xs text-gray-400 mt-3">v75 • iOS-style wheel</p>
             </div>
           </div>
         </div>
