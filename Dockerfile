@@ -28,10 +28,13 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260120-session72-SIMPLIFIED-UI
+ARG CACHEBUST=20260120-1805-FORCE
 
 # Copy application files
 COPY . .
+
+# Remove any cached build artifacts
+RUN rm -rf .next
 
 # Build Next.js app (creates .next/standalone with output: 'standalone')
 RUN npm run build
