@@ -618,64 +618,76 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     }
   };
 
-  // When user selects a work from wheel, add to weekly assignments if needed
+  // When user selects a work from wheel, REPLACE the work in that area
   const setSelectedWorkFromWheel = async (work: CurriculumWork) => {
-    // Find if this work is already in assignments
-    const assignmentIndex = assignments.findIndex(a => a.work_id === work.id || a.work_name === work.name);
+    // Find if this exact work is already in assignments
+    const existingIndex = assignments.findIndex(a => a.work_id === work.id || a.work_name === work.name);
     
-    if (assignmentIndex >= 0) {
-      // Already in weekly list - just expand it
-      setExpandedIndex(assignmentIndex);
-      setEditingNotes(assignments[assignmentIndex]?.notes || '');
-      toast.success(`Showing: ${work.name}`);
-    } else {
-      // NOT in weekly list - add it via API
-      if (!weekInfo) {
-        toast.error('Week info not available');
-        return;
+    if (existingIndex >= 0) {
+      // Already showing this exact work - just expand it
+      setExpandedIndex(existingIndex);
+      setEditingNotes(assignments[existingIndex]?.notes || '');
+      toast.success(`Already showing: ${work.name}`);
+      return;
+    }
+    
+    // Find the current work in this area (to replace it)
+    const workArea = work.area?.area_key || selectedArea;
+    const currentAreaAssignment = assignments.find(a => a.area === workArea);
+    
+    if (!weekInfo) {
+      toast.error('Week info not available');
+      return;
+    }
+    
+    try {
+      toast.loading(`Switching to ${work.name}...`);
+      
+      // If there's an existing work in this area, delete it first
+      if (currentAreaAssignment) {
+        await fetch(`/api/weekly-planning/assignments/${currentAreaAssignment.id}`, {
+          method: 'DELETE',
+        });
       }
       
-      try {
-        toast.loading(`Adding ${work.name}...`);
-        
-        const res = await fetch('/api/weekly-planning/assignments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            week: weekInfo.week,
-            year: weekInfo.year,
-            child_id: childId,
-            work_id: work.id,
-            work_name: work.name,
-            area: work.area?.area_key || selectedArea,
-          }),
-        });
-        
-        if (!res.ok) throw new Error('Failed to add work');
-        
-        toast.dismiss();
-        toast.success(`Added: ${work.name}`);
-        
-        // Refresh assignments to get the new one
-        const refreshRes = await fetch(`/api/classroom/child/${childId}/week`);
-        const refreshData = await refreshRes.json();
-        const newAssignments = refreshData.assignments || [];
-        setAssignments(newAssignments);
-        
-        // Find and expand the newly added work
-        const newIndex = newAssignments.findIndex((a: WorkAssignment) => 
-          a.work_id === work.id || a.work_name === work.name
-        );
-        if (newIndex >= 0) {
-          setExpandedIndex(newIndex);
-          setEditingNotes('');
-        }
-        
-      } catch (error) {
-        toast.dismiss();
-        toast.error('Failed to add work');
-        console.error('Failed to add work:', error);
+      // Add the new work
+      const res = await fetch('/api/weekly-planning/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          week: weekInfo.week,
+          year: weekInfo.year,
+          child_id: childId,
+          work_id: work.id,
+          work_name: work.name,
+          area: workArea,
+        }),
+      });
+      
+      if (!res.ok) throw new Error('Failed to add work');
+      
+      toast.dismiss();
+      toast.success(`Now showing: ${work.name}`);
+      
+      // Refresh assignments
+      const refreshRes = await fetch(`/api/classroom/child/${childId}/week`);
+      const refreshData = await refreshRes.json();
+      const newAssignments = refreshData.assignments || [];
+      setAssignments(newAssignments);
+      
+      // Find and expand the new work
+      const newIndex = newAssignments.findIndex((a: WorkAssignment) => 
+        a.work_id === work.id || a.work_name === work.name
+      );
+      if (newIndex >= 0) {
+        setExpandedIndex(newIndex);
+        setEditingNotes('');
       }
+      
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to switch work');
+      console.error('Failed to switch work:', error);
     }
   };
 
@@ -1040,7 +1052,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               >
                 ✓ Select This Work
               </button>
-              <p className="text-center text-xs text-gray-400 mt-3">v75 • iOS-style wheel</p>
+              <p className="text-center text-xs text-gray-400 mt-3">v76 • Hold area icon</p>
             </div>
           </div>
         </div>
@@ -1057,60 +1069,60 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               key={assignment.id} 
               className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
             >
-              {/* Main Row - TAP to expand, HOLD to open wheel */}
-              <div 
-                className="flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
-                onTouchStart={() => handleLongPressStart(assignment.area)}
-                onTouchEnd={() => {
-                  handleLongPressEnd();
-                  // Only trigger click if long press didn't fire
-                  if (!longPressTriggered) {
-                    handleRowClick(index);
-                  }
-                }}
-                onTouchCancel={handleLongPressEnd}
-                onMouseDown={() => handleLongPressStart(assignment.area)}
-                onMouseUp={() => {
-                  handleLongPressEnd();
-                  if (!longPressTriggered) {
-                    handleRowClick(index);
-                  }
-                }}
-                onMouseLeave={handleLongPressEnd}
-              >
-                <div className={`w-8 h-8 rounded-lg ${area.bg} flex items-center justify-center ${area.color} font-bold text-sm`}>
+              {/* Main Row - THREE separate touch targets */}
+              <div className="flex items-center p-3 gap-3">
+                
+                {/* 1. AREA ICON - HOLD to open wheel */}
+                <div 
+                  className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300`}
+                  onTouchStart={() => handleLongPressStart(assignment.area)}
+                  onTouchEnd={handleLongPressEnd}
+                  onTouchCancel={handleLongPressEnd}
+                  onMouseDown={() => handleLongPressStart(assignment.area)}
+                  onMouseUp={handleLongPressEnd}
+                  onMouseLeave={handleLongPressEnd}
+                >
                   {area.letter}
                 </div>
 
+                {/* 2. STATUS BADGE - TAP to cycle status */}
                 <button
-                  onClick={(e) => handleStatusTap(e, assignment, index)}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStatusTap(e, assignment, index);
+                  }}
+                  className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90 shadow-sm`}
                 >
                   {status.label}
                 </button>
 
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{assignment.work_name}</p>
-                  {!isExpanded && assignment.notes && (
-                    <p className="text-xs text-gray-500 truncate">📝 {assignment.notes}</p>
-                  )}
-                </div>
-
-                {assignment.mediaCount && assignment.mediaCount > 0 && (
-                  <div className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-medium">
-                    📷 {assignment.mediaCount}
-                  </div>
-                )}
-
-                <svg 
-                  className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
+                {/* 3. WORK NAME & REST - TAP to expand/collapse */}
+                <div 
+                  className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer"
+                  onClick={() => handleRowClick(index)}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{assignment.work_name}</p>
+                    {!isExpanded && assignment.notes && (
+                      <p className="text-xs text-gray-500 truncate">📝 {assignment.notes}</p>
+                    )}
+                  </div>
+
+                  {assignment.mediaCount && assignment.mediaCount > 0 && (
+                    <div className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-medium shrink-0">
+                      📷 {assignment.mediaCount}
+                    </div>
+                  )}
+
+                  <svg 
+                    className={`w-5 h-5 text-gray-400 transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
 
               {/* Expanded Detail Panel */}
@@ -1143,7 +1155,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
                   {/* Hint for scroll wheel */}
                   <p className="text-xs text-center text-gray-400 mb-3">
-                    💡 Hold the row above to browse all {AREA_CONFIG[assignment.area]?.letter || ''} works
+                    💡 Hold the <span className="font-bold">{AREA_CONFIG[assignment.area]?.letter || '?'}</span> icon to browse other works
                   </p>
 
                   {/* Action Buttons Row */}
