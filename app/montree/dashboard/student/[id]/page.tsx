@@ -899,53 +899,25 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
               {/* Expanded Detail Panel - Swipeable */}
               {isExpanded && (
                 <div 
-                  className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4 transition-transform duration-150"
-                  style={{ transform: `translateX(${swipeOffset}px)` }}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
+                  className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4"
                 >
-                  {/* Work Name with LONG PRESS to open wheel */}
+                  {/* Work Name with LONG PRESS to open wheel - NO TEXT SELECTION */}
                   <div 
-                    className="bg-white rounded-xl p-3 mb-4 shadow-inner border-2 border-dashed border-emerald-300 cursor-pointer active:scale-[0.98] transition-transform select-none"
-                    onTouchStart={() => handleLongPressStart(assignment.area)}
-                    onTouchEnd={handleLongPressEnd}
+                    className="bg-white rounded-xl p-4 mb-4 shadow-inner border-2 border-dashed border-emerald-300 cursor-pointer active:scale-[0.97] active:bg-emerald-50 transition-all select-none touch-none"
+                    onTouchStart={(e) => { e.preventDefault(); handleLongPressStart(assignment.area); }}
+                    onTouchEnd={(e) => { e.preventDefault(); handleLongPressEnd(); }}
+                    onTouchCancel={handleLongPressEnd}
                     onMouseDown={() => handleLongPressStart(assignment.area)}
                     onMouseUp={handleLongPressEnd}
                     onMouseLeave={handleLongPressEnd}
+                    onContextMenu={(e) => e.preventDefault()}
                   >
-                    <p className="font-bold text-gray-900 text-lg text-center">
+                    <p className="font-bold text-gray-900 text-lg text-center pointer-events-none">
                       {assignment.work_name}
                     </p>
-                    <p className="text-xs text-emerald-600 text-center mt-1">
+                    <p className="text-xs text-emerald-600 text-center mt-1 pointer-events-none">
                       👆 Hold to browse {AREA_CONFIG[assignment.area]?.letter || '?'} area works
                     </p>
-                  </div>
-
-                  {/* Navigation Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigateWork('prev'); }}
-                      disabled={index === 0}
-                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
-                    >
-                      ←
-                    </button>
-                    
-                    <div className="flex-1 text-center px-2">
-                      <p className="text-sm font-bold text-emerald-700">
-                        {index + 1} of {assignments.length} weekly
-                      </p>
-                      <p className="text-xs text-gray-500">← → navigate weekly list</p>
-                    </div>
-                    
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigateWork('next'); }}
-                      disabled={index === assignments.length - 1}
-                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
-                    >
-                      →
-                    </button>
                   </div>
 
                   {/* Notes Section */}
@@ -957,8 +929,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                       value={editingNotes}
                       onChange={(e) => setEditingNotes(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       placeholder="Add observation notes..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none bg-white text-gray-900"
                       rows={3}
                     />
                     {editingNotes !== (assignment.notes || '') && (
@@ -973,7 +946,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="flex gap-3 mb-3">
+                  <div className="flex gap-3">
                     {/* Demo Button */}
                     <button
                       onClick={(e) => { 
