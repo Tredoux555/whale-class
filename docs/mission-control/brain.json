@@ -1,10 +1,10 @@
 {
-  "project": "montree",
-  "lastUpdated": "2026-01-20T19:50:00Z",
-  "session": 74,
-  "phase": "UI Unification - Scroll Wheel Picker",
-  "currentSubPhase": "✅ READY TO DEPLOY",
-  "phaseStatus": "DEPLOYING",
+  "project": "whale",
+  "lastUpdated": "2025-01-21T12:00:00Z",
+  "session": 39,
+  "phase": "AI Suggestions Panel WIRED",
+  "currentSubPhase": "Testing & Bug Fixes",
+  "phaseStatus": "DEPLOYED ✅",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -16,27 +16,84 @@
     "7. SEGMENT WORK - update brain after EVERY step"
   ],
 
-  "SESSION_74_FEATURE": {
-    "name": "Scroll Wheel Picker",
-    "trigger": "Long-press (500ms) on work name in expanded card",
-    "feedback": "Vibration + wheel overlay appears",
-    "wheel_shows": "Works from SAME AREA only (Cultural → Cultural works)",
-    "navigation": "Scroll/swipe wheel, items snap to center",
-    "actions": "Demo, Status cycle, Select work",
-    "close": "Tap outside or Select button"
+  "MONTESSORI_BRAIN_STATUS": {
+    "status": "COMPLETE ✅",
+    "works": 213,
+    "sensitive_periods": 11,
+    "api_endpoints": 6,
+    "works_by_area": {
+      "practical_life": 67,
+      "mathematics": 42,
+      "language": 37,
+      "sensorial": 36,
+      "cultural": 31
+    }
   },
 
-  "HOW_IT_WORKS": {
-    "step1": "Expand any weekly work (tap it)",
-    "step2": "See work name in dashed box: 'Color Mixing'",
-    "step3": "LONG PRESS on work name (500ms)",
-    "step4": "Phone vibrates, wheel overlay appears",
-    "step5": "Scroll through all Cultural area works",
-    "step6": "Tap Demo for YouTube, or ⟳ Status to cycle",
-    "step7": "Tap 'Select This Work' or tap outside to close"
+  "AI_SUGGESTIONS_PANEL": {
+    "status": "WIRED ✅",
+    "location": "Student detail page → This Week tab",
+    "component": "components/classroom/AISuggestionsPanel.tsx",
+    "api_endpoint": "/api/brain/recommend",
+    "features": [
+      "Age-based recommendations",
+      "Sensitive period alignment",
+      "Gateway work priority",
+      "Collapsible panel",
+      "Refresh button"
+    ]
   },
 
-  "VERSION_INDICATOR": "v74 in wheel footer",
+  "NEXT_SESSION_PROMPT": "Test the AI Suggestions panel on teacherpotato.xyz. Fix any bugs. Then tackle: 1) React state race condition (rapid taps), 2) Add toast notifications for API feedback, 3) PWA setup for tablet.",
 
-  "TEST_URL": "https://www.teacherpotato.xyz/montree/dashboard/student/c23afdf4-847b-4269-9eaa-a3a03b299291"
+  "KEY_DISCOVERIES": {
+    "red_rods_number_rods": "Physically identical - only color differs",
+    "pink_tower_cubing": "Cubes are 1³ to 10³ (sensorial → math)",
+    "writing_before_reading": "Encoding first, then decoding",
+    "three_finger_grip": "Spooning grip = pencil grip",
+    "no_boundaries": "Every work serves multiple areas"
+  },
+
+  "DATABASE_LIVE": {
+    "tables": [
+      "sensitive_periods (11 records)",
+      "montessori_works (213 records)",
+      "work_prerequisites",
+      "work_sensitive_periods",
+      "work_cross_benefits",
+      "work_unlocks"
+    ],
+    "functions": [
+      "get_available_works(child_age, completed_work_ids)",
+      "get_recommended_works(child_age, completed_work_ids, limit)"
+    ],
+    "migrations_run": [
+      "040_montessori_brain.sql",
+      "041_montessori_brain_seed.sql",
+      "042_montessori_brain_additional_works.sql"
+    ]
+  },
+
+  "API_ENDPOINTS_LIVE": {
+    "GET /api/brain/works": "List/filter all works",
+    "GET /api/brain/available": "Works child is ready for",
+    "GET /api/brain/recommend": "Smart AI recommendations",
+    "GET /api/brain/work/[id]": "Full work details",
+    "GET /api/brain/sensitive-periods": "Period data by age",
+    "POST /api/brain/explain": "Claude-generated parent explanations"
+  },
+
+  "FILE_LOCATIONS": {
+    "research": "/docs/montessori-brain/",
+    "migrations": "/supabase/migrations/040_*.sql, 041_*.sql, 042_*.sql",
+    "api": "/app/api/brain/",
+    "handoff": "/docs/mission-control/HANDOFF_MONTESSORI_BRAIN.md",
+    "ai_panel": "/components/classroom/AISuggestionsPanel.tsx",
+    "student_page": "/app/admin/classroom/student/[id]/page.tsx"
+  },
+
+  "REPLACES_OLD_CURRICULUM": {
+    "old": "Montree linear stages (0-11), ~100 works, no sensitive periods",
+    "new": "213 works, 11 sensitive periods, prerequisite chains, smart recommendations"
+  }
 }
