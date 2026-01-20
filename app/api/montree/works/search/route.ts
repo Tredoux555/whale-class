@@ -1,9 +1,22 @@
 // app/api/montree/works/search/route.ts
-// GET /api/montree/works/search - Search all works in a classroom
-// Auto-detects classroom for single-classroom setups (like Whale Class)
+// GET /api/montree/works/search - Search all curriculum works
+// Uses STATIC curriculum data from lib/montree/curriculum-data.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { CURRICULUM, getAllWorks } from '@/lib/montree/curriculum-data';
+
+// Area key mapping (handle variations)
+const AREA_KEY_MAP: Record<string, string> = {
+  'practical_life': 'practical_life',
+  'practical': 'practical_life',
+  'sensorial': 'sensorial',
+  'math': 'mathematics',
+  'mathematics': 'mathematics',
+  'language': 'language',
+  'cultural': 'cultural',
+  'culture': 'cultural',
+};
 
 // Map database status to display status
 function mapStatusFromDb(dbStatus: string | null, currentLevel: number | null): string {
@@ -26,170 +39,135 @@ export async function GET(request: NextRequest) {
   
   try {
     const { searchParams } = new URL(request.url);
-    let classroomId = searchParams.get('classroom_id');
     const childId = searchParams.get('child_id');
     const query = searchParams.get('q')?.toLowerCase() || '';
     const areaKey = searchParams.get('area');
     const limit = parseInt(searchParams.get('limit') || '400');
 
-    debug.push(`Params: classroomId=${classroomId}, childId=${childId}, area=${areaKey}`);
+    debug.push(`Params: childId=${childId}, area=${areaKey}, query=${query}`);
 
-    const supabase = await createServerClient();
-
-    // ALWAYS get the first montree_classroom as fallback (for single-classroom setups)
-    if (!classroomId) {
-      // First try: look up child's classroom
-      if (childId) {
-        const { data: montreeChild } = await supabase
-          .from('montree_children')
-          .select('classroom_id')
-          .eq('id', childId)
-          .maybeSingle();
-        
-        if (montreeChild?.classroom_id) {
-          classroomId = montreeChild.classroom_id;
-          debug.push(`Found classroom from montree_children: ${classroomId}`);
-        }
-      }
-      
-      // Second try: get first/only classroom (Whale Class setup)
-      if (!classroomId) {
-        const { data: allClassrooms, error: classroomError } = await supabase
-          .from('montree_classrooms')
-          .select('id, name')
-          .order('created_at', { ascending: true })
-          .limit(1);
-        
-        if (classroomError) {
-          debug.push(`Classroom query error: ${classroomError.message}`);
-        } else if (allClassrooms && allClassrooms.length > 0) {
-          classroomId = allClassrooms[0].id;
-          debug.push(`Using first classroom: ${allClassrooms[0].name} (${classroomId})`);
-        } else {
-          debug.push('No montree_classrooms found in database');
-        }
-      }
-    }
-
-    if (!classroomId) {
-      return NextResponse.json({
-        error: 'No classroom found. Please set up a Montree classroom first.',
-        works: [],
-        total: 0,
-        debug,
-      }, { status: 400 });
-    }
-
-    // Get all works for classroom with area info
-    let worksQuery = supabase
-      .from('montree_classroom_curriculum_works')
-      .select(`
-        id,
-        work_key,
-        name,
-        name_chinese,
-        description,
-        category_key,
-        category_name,
-        sequence,
-        area_id,
-        area:montree_classroom_curriculum_areas(
-          id,
-          area_key,
-          name,
-          color,
-          icon
-        )
-      `)
-      .eq('classroom_id', classroomId)
-      .eq('is_active', true)
-      .order('sequence');
+    // Get all works from STATIC curriculum data
+    let allWorks = getAllWorks();
+    debug.push(`Static curriculum: ${allWorks.length} total works`);
 
     // Filter by area if specified
-    if (areaKey && areaKey !== 'all') {
-      const { data: areaData } = await supabase
-        .from('montree_classroom_curriculum_areas')
-        .select('id')
-        .eq('classroom_id', classroomId)
-        .eq('area_key', areaKey)
-        .maybeSingle();
-
+    const normalizedArea = areaKey ? AREA_KEY_MAP[areaKey.toLowerCase()] : null;
+    if (normalizedArea && normalizedArea !== 'all') {
+      const areaData = CURRICULUM.find(a => a.id === normalizedArea);
       if (areaData) {
-        worksQuery = worksQuery.eq('area_id', areaData.id);
-        debug.push(`Filtering by area: ${areaKey}`);
+        allWorks = areaData.categories.flatMap(cat => cat.works);
+        debug.push(`Filtered to area ${normalizedArea}: ${allWorks.length} works`);
       }
     }
 
-    const { data: works, error: worksError } = await worksQuery.limit(limit);
-
-    if (worksError) {
-      debug.push(`Works query error: ${worksError.message}`);
-      return NextResponse.json({
-        error: `Database error: ${worksError.message}`,
-        works: [],
-        total: 0,
-        debug,
-      }, { status: 500 });
-    }
-
-    debug.push(`Found ${works?.length || 0} works`);
-
-    // Filter by search query
-    let filteredWorks = works || [];
+    // Filter by search query (client-side search)
     if (query) {
-      filteredWorks = filteredWorks.filter(work =>
+      allWorks = allWorks.filter(work =>
         work.name.toLowerCase().includes(query) ||
-        (work.name_chinese && work.name_chinese.includes(query)) ||
-        (work.category_name && work.category_name.toLowerCase().includes(query))
+        (work.chineseName && work.chineseName.includes(query)) ||
+        (work.description && work.description.toLowerCase().includes(query))
       );
-      debug.push(`After search filter: ${filteredWorks.length} works`);
+      debug.push(`After search filter: ${allWorks.length} works`);
     }
+
+    // Find area info for each work
+    const worksWithArea = allWorks.map((work, index) => {
+      // Find which area this work belongs to
+      let areaInfo = null;
+      let categoryName = '';
+      
+      for (const area of CURRICULUM) {
+        for (const category of area.categories) {
+          if (category.works.some(w => w.id === work.id)) {
+            areaInfo = {
+              area_key: area.id,
+              name: area.name,
+              color: area.color,
+              icon: area.icon,
+            };
+            categoryName = category.name;
+            break;
+          }
+        }
+        if (areaInfo) break;
+      }
+
+      return {
+        id: work.id,
+        work_key: work.id,
+        name: work.name,
+        name_chinese: work.chineseName,
+        description: work.description,
+        category_name: categoryName,
+        sequence: index,
+        area: areaInfo,
+        status: 'not_started' as const,
+      };
+    });
 
     // Get progress for child if provided
-    if (childId && filteredWorks.length > 0) {
-      const workIds = filteredWorks.map(w => w.id);
+    if (childId && worksWithArea.length > 0) {
+      const supabase = await createServerClient();
+      const workIds = worksWithArea.map(w => w.id);
 
-      // Check both progress tables
+      // Check child_work_completion table
       const { data: progressData } = await supabase
         .from('child_work_completion')
         .select('work_id, status, current_level')
         .eq('child_id', childId)
         .in('work_id', workIds);
 
+      // Check weekly_assignments for progress
       const { data: assignmentData } = await supabase
-        .from('montree_child_assignments')
-        .select('work_id, status, current_level')
+        .from('weekly_assignments')
+        .select('work_id, progress_status')
         .eq('child_id', childId)
         .in('work_id', workIds);
 
+      // Build progress map
       const progressMap = new Map<string, any>();
-      (progressData || []).forEach(p => progressMap.set(p.work_id, p));
+      
+      (progressData || []).forEach(p => {
+        progressMap.set(p.work_id, {
+          status: p.status,
+          current_level: p.current_level
+        });
+      });
+      
+      // Weekly assignments override
       (assignmentData || []).forEach(a => {
-        if (a.status && a.status !== 'not_started') {
-          progressMap.set(a.work_id, a);
+        if (a.progress_status && a.progress_status !== 'not_started') {
+          progressMap.set(a.work_id, {
+            status: a.progress_status,
+            current_level: null
+          });
         }
       });
 
-      filteredWorks = filteredWorks.map(work => ({
-        ...work,
-        progress: progressMap.get(work.id) || null,
-        status: mapStatusFromDb(
-          progressMap.get(work.id)?.status,
-          progressMap.get(work.id)?.current_level
-        ),
-      }));
+      debug.push(`Found progress for ${progressMap.size} works`);
+
+      // Apply progress to works
+      worksWithArea.forEach(work => {
+        const progress = progressMap.get(work.id);
+        if (progress) {
+          work.status = mapStatusFromDb(progress.status, progress.current_level) as any;
+        }
+      });
     }
 
+    // Apply limit
+    const limitedWorks = worksWithArea.slice(0, limit);
+
     return NextResponse.json({
-      works: filteredWorks,
-      total: filteredWorks.length,
-      classroomId,
+      works: limitedWorks,
+      total: limitedWorks.length,
       debug,
     });
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     debug.push(`Exception: ${errorMsg}`);
+    console.error('Works search error:', error);
     return NextResponse.json({
       error: errorMsg,
       works: [],

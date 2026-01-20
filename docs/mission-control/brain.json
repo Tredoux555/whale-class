@@ -1,10 +1,10 @@
 {
   "project": "montree",
-  "lastUpdated": "2026-01-20T09:15:00Z",
-  "session": 70,
-  "phase": "Quality Audit",
-  "currentSubPhase": "✅ CODE REVIEW COMPLETE",
-  "phaseStatus": "🎌 JAPANESE ENGINEER INSPECTION PASSED",
+  "lastUpdated": "2026-01-20T14:15:00Z",
+  "session": 72,
+  "phase": "UI Polish + Bug Fixes",
+  "currentSubPhase": "Step 3 COMPLETE - WorkNavigator API fixed",
+  "phaseStatus": "🔄 IN PROGRESS",
   
   "CORE_LAWS": [
     "1. CURRICULUM BELONGS TO CLASSROOM",
@@ -16,90 +16,55 @@
     "7. SEGMENT WORK - update brain after EVERY step"
   ],
 
-  "SESSION_70_SUMMARY": {
-    "goal": "Quality audit of AI Insights tab before independence",
-    "status": "✅ CODE REVIEW COMPLETE",
-    "approach": "Japanese Engineer - inspect before celebrating",
-    "result": "PRODUCTION READY - minor improvements documented"
+  "SESSION_72_SUMMARY": {
+    "goal": "Fix navigation issues + curriculum not loading in Find Work",
+    "status": "🔄 STEP 3 COMPLETE",
+    "approach": "Japanese Engineer - surgical precision edits",
+    "fixes_applied": [
+      "1. ✅ Removed navigation arrows from ThisWeekTab expanded panel",
+      "2. ✅ Rewrote WorkNavigator API to use STATIC curriculum data",
+      "3. ⏳ Need to verify swipe works in WorkNavigator"
+    ]
   },
 
-  "SESSION_70_PROGRESS": {
-    "step_1": "✅ COMPLETE - Read brain.json and Session 69 handoff",
-    "step_2": "✅ COMPLETE - Full code review of AIInsightsTab.tsx (711 lines)",
-    "step_3": "✅ COMPLETE - Verified student page integration",
-    "step_4": "✅ COMPLETE - Reviewed AI endpoint (analyze/route.ts)",
-    "step_5": "✅ COMPLETE - Documented findings",
-    "step_6": "🔄 PENDING - Live browser test (Chrome reconnecting)"
+  "SESSION_72_PROGRESS": {
+    "step_1": "✅ COMPLETE - Analyzed code and found root cause",
+    "step_2": "✅ COMPLETE - Removed navigation from ThisWeekTab expanded panel",
+    "step_3": "✅ COMPLETE - Rewrote API to use static curriculum (316 works)",
+    "step_4": "🔄 NEXT - Verify WorkNavigator swipe works within area",
+    "step_5": "⏳ PENDING - Test on phone + write handoff"
   },
 
-  "QUALITY_AUDIT_RESULTS": {
-    "overall_verdict": "✅ PRODUCTION READY",
-    "typescript_types": "✅ All interfaces explicit, no any leaks",
-    "error_handling": "✅ Try/catch on all API calls",
-    "loading_states": "✅ idle → loading → success/error flow",
-    "code_organization": "✅ 711 lines, well-commented, modular",
-    "integration_risk": "✅ Only 3 edits to existing code",
-    "theme_consistency": "✅ Emerald gradients, whale spinner",
-    "ai_fallback": "✅ Works even if Claude API unavailable",
-    "defensive_programming": "✅ Double-click prevention on buttons"
+  "STEP_3_CHANGES": {
+    "file": "/app/api/montree/works/search/route.ts",
+    "problem": "API queried EMPTY database tables (montree_classroom_curriculum_works)",
+    "solution": "Rewrote API to use static curriculum from lib/montree/curriculum-data.ts",
+    "data_source": "lib/curriculum/data/*.json (practical-life, sensorial, math, language, cultural)",
+    "helper_used": "getAllWorks() from lib/montree/curriculum-data.ts",
+    "progress_source": "Still fetches from child_work_completion + weekly_assignments tables"
   },
 
-  "MINOR_ISSUES_DOCUMENTED": [
-    {
-      "issue": "Print prints entire page including header/tabs",
-      "severity": "Low",
-      "fix": "Add @media print CSS to hide non-report elements",
-      "blocking": false
-    },
-    {
-      "issue": "No localStorage cache for AI results",
-      "severity": "Low", 
-      "fix": "Cache results in localStorage with TTL",
-      "blocking": false
-    },
-    {
-      "issue": "Vague empty suggestions message",
-      "severity": "Low",
-      "fix": "Be more specific about why no suggestions",
-      "blocking": false
-    }
-  ],
-
-  "PREVIOUS_SESSION_SUMMARY": {
-    "session": 69,
-    "goal": "Wire AI endpoints into dashboard UI",
-    "result": "AI Insights tab deployed to production",
-    "commit": "0dc2c0b"
+  "API_REWRITE_DETAILS": {
+    "imports": ["CURRICULUM", "getAllWorks from lib/montree/curriculum-data"],
+    "area_filtering": "Uses AREA_KEY_MAP to normalize area keys",
+    "search": "Client-side filter on name, chineseName, description",
+    "progress": "Fetches from child_work_completion + weekly_assignments",
+    "output_format": "Same structure expected by WorkNavigator component"
   },
 
-  "WHALE_PRODUCTION_STATUS": {
-    "curriculum_tracking": "✅ 316 works",
-    "progress_tracking": "✅ Visual UI with tap-to-cycle",
-    "media_capture": "✅ Photos/videos with portfolio",
-    "ai_insights": "✅ Analyze + Suggest + Weekly Report",
-    "teacher_login": "✅ /teacher/login (any name/123)",
-    "tablet_ready": "✅ Touch-optimized UI"
+  "NEXT_STEP": {
+    "action": "Verify WorkNavigator component works correctly",
+    "checks": [
+      "1. Find Work button opens panel",
+      "2. Area filter pills work",
+      "3. Search filters works",
+      "4. Swipe navigation works within filtered works",
+      "5. Status update saves correctly"
+    ]
   },
 
-  "HOW_TO_TEST": {
-    "url": "https://www.teacherpotato.xyz/montree/dashboard",
-    "steps": [
-      "1. Login (Teacher: any name/123)",
-      "2. Click any student card (e.g., Rachel)",
-      "3. See 4 tabs: This Week, Progress, Portfolio, 🧠 AI Insights",
-      "4. Click AI Insights tab",
-      "5. Click 'Analyze' - verify developmental analysis loads",
-      "6. Click 'Suggest' - verify 5 work recommendations",
-      "7. Click 'Generate' - verify weekly parent report",
-      "8. Click 'Print' - verify print layout"
-    ],
-    "test_child": "Rachel (9a771bd2-7ab7-43c0-986b-758280b100fd)",
-    "direct_url": "https://www.teacherpotato.xyz/montree/dashboard/student/9a771bd2-7ab7-43c0-986b-758280b100fd"
-  },
-
-  "NEXT_STEPS": [
-    "1. Live browser test when Chrome reconnects",
-    "2. If all passes → Write Session 70 handoff",
-    "3. Declare Whale INDEPENDENT or continue polish"
+  "FILES_MODIFIED_THIS_SESSION": [
+    "/app/montree/dashboard/student/[id]/page.tsx - Removed nav from ThisWeekTab",
+    "/app/api/montree/works/search/route.ts - Rewrote to use static curriculum"
   ]
 }
