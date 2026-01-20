@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import WorkNavigator from '@/components/montree/WorkNavigator';
+import AIInsightsTab from '@/components/montree/AIInsightsTab';
 
 interface Child {
   id: string;
@@ -48,6 +49,7 @@ const TABS = [
   { id: 'week', label: 'This Week', icon: '📋' },
   { id: 'progress', label: 'Progress', icon: '📊' },
   { id: 'portfolio', label: 'Portfolio', icon: '📷' },
+  { id: 'ai', label: 'AI Insights', icon: '🧠' },
 ];
 
 const STATUS_CONFIG = {
@@ -240,6 +242,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         {activeTab === 'portfolio' && (
           <PortfolioTab 
             key={mediaRefreshKey}
+            childId={studentId} 
+            childName={student.name}
+          />
+        )}
+        {activeTab === 'ai' && (
+          <AIInsightsTab 
             childId={studentId} 
             childName={student.name}
           />
