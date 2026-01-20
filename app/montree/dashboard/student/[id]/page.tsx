@@ -273,9 +273,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [savingNotes, setSavingNotes] = useState(false);
   const [classroomId, setClassroomId] = useState<string | null>(null);
 
-  const [swipeOffset, setSwipeOffset] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const touchStartX = useRef<number>(0);
 
   useEffect(() => {
     fetchAssignments();
@@ -313,41 +311,6 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
       setExpandedIndex(index);
       setEditingNotes(assignments[index]?.notes || '');
-    }
-  };
-
-  // Navigate to prev/next work (through ALL works)
-  const navigateWork = (direction: 'prev' | 'next') => {
-    if (expandedIndex === null) return;
-    if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
-    
-    const newIndex = direction === 'next' 
-      ? Math.min(expandedIndex + 1, assignments.length - 1)
-      : Math.max(expandedIndex - 1, 0);
-    
-    if (newIndex !== expandedIndex) {
-      setExpandedIndex(newIndex);
-      setEditingNotes(assignments[newIndex]?.notes || '');
-    }
-  };
-
-  // Swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const diff = e.touches[0].clientX - touchStartX.current;
-    setSwipeOffset(Math.max(-80, Math.min(80, diff * 0.4)));
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    setSwipeOffset(0);
-    
-    // Swipe threshold: 60px
-    if (Math.abs(diff) > 60) {
-      navigateWork(diff > 0 ? 'next' : 'prev');
     }
   };
 
@@ -629,41 +592,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
                 </svg>
               </div>
 
-              {/* Expanded Detail Panel - Swipeable */}
+              {/* Expanded Detail Panel */}
               {isExpanded && (
-                <div 
-                  className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4 transition-transform duration-150"
-                  style={{ transform: `translateX(${swipeOffset}px)` }}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  {/* Navigation Header with ← → buttons */}
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigateWork('prev'); }}
-                      disabled={index === 0}
-                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
-                    >
-                      ←
-                    </button>
-                    
-                    <div className="flex-1 text-center px-2">
-                      <p className="text-sm font-bold text-emerald-700">
-                        {index + 1} of {assignments.length}
-                      </p>
-                      <p className="text-xs text-gray-500">Swipe or tap arrows</p>
-                    </div>
-                    
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigateWork('next'); }}
-                      disabled={index === assignments.length - 1}
-                      className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center text-lg font-bold text-emerald-600 disabled:opacity-30 disabled:text-gray-400 hover:bg-emerald-50 active:scale-95 transition-all"
-                    >
-                      →
-                    </button>
-                  </div>
-
+                <div className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
                   {/* Notes Section */}
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
