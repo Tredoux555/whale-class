@@ -21,6 +21,7 @@ const TOOLS: Tool[] = [
   { id: 'classroom', title: 'Classroom', href: '/admin/classroom', icon: '🎯', color: 'bg-emerald-500', description: 'iPad progress tracking' },
   { id: 'weekly-planning', title: 'Weekly Planning', href: '/admin/weekly-planning', icon: '📅', color: 'bg-cyan-500', description: 'Upload & manage plans' },
   { id: 'circle-planner', title: 'Circle Time', href: '/admin/circle-planner', icon: '⭕', color: 'bg-amber-500', description: 'Plan activities' },
+  { id: 'handbook', title: 'Handbook', href: '/admin/handbook', icon: '📚', color: 'bg-indigo-500', description: '213 Montessori works' },
   { id: 'english-guide', title: 'English Guide', href: '/admin/english-guide', icon: '📖', color: 'bg-blue-500', description: 'How to teach' },
   { id: 'english-setup', title: 'English Setup', href: '/admin/english-setup', icon: '🗄️', color: 'bg-teal-500', description: 'Shelf layout' },
   { id: 'english-progress', title: 'English Progress', href: '/admin/english-progress', icon: '📊', color: 'bg-indigo-500', description: 'Parent reports' },
