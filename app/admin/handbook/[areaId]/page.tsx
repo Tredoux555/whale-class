@@ -29,6 +29,17 @@ interface SensitivePeriod {
   relevance_score: number;
 }
 
+interface RelatedGame {
+  id: string;
+  name: string;
+  slug: string;
+  game_type: string;
+  description: string;
+  component_path: string;
+  thumbnail_url: string | null;
+  relationship_type: string;
+}
+
 interface Work {
   id: string;
   name: string;
@@ -50,6 +61,7 @@ interface Work {
   sensitive_periods: SensitivePeriod[];
   prerequisites: PrerequisiteWork[];
   unlocks: UnlockedWork[];
+  related_games: RelatedGame[];
 }
 
 const AREA_INFO: Record<string, { 
@@ -487,6 +499,39 @@ export default function AreaPage() {
                     <span key={unlock.id} className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
                       {unlock.name}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Related Digital Games */}
+            {selectedWork.related_games?.length > 0 && (
+              <div className="mb-5 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                <h4 className="font-semibold text-indigo-400 mb-2 flex items-center gap-2 text-sm">
+                  <span>🎮</span> Digital Games
+                </h4>
+                <div className="space-y-2">
+                  {selectedWork.related_games.map((game) => (
+                    <Link
+                      key={game.id}
+                      href={`/games/${game.slug}`}
+                      className="flex items-center gap-3 p-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-lg transition-colors group"
+                    >
+                      <div className="w-10 h-10 bg-indigo-500/30 rounded-lg flex items-center justify-center text-xl">
+                        🎮
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-indigo-200 font-medium text-sm group-hover:text-indigo-100 truncate">
+                          {game.name}
+                        </p>
+                        <p className="text-indigo-400/60 text-xs capitalize">
+                          {game.relationship_type} • {game.game_type.replace('_', ' ')}
+                        </p>
+                      </div>
+                      <span className="text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        →
+                      </span>
+                    </Link>
                   ))}
                 </div>
               </div>
