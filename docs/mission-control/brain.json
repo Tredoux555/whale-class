@@ -1,49 +1,49 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-21T14:15:00Z",
-  "session": 43,
-  "phase": "PHASE 2 FIX COMPLETE",
-  "currentSubPhase": "Pushing to Railway",
-  "phaseStatus": "✅ BUILD PASSED",
+  "lastUpdated": "2026-01-21T15:30:00Z",
+  "session": 44,
+  "phase": "PHASE 1 - ENGLISH AREA GUIDE COMPLETE",
+  "currentSubPhase": "Priority 1 Done, Moving to Priority 2",
+  "phaseStatus": "✅ English Setup Guide Created",
 
   "CORE_LAWS": {
     "LAW_001": "CHECKPOINT EVERY 5 MINUTES: During development, update brain.json with progress every 5 minutes maximum. Never lose major chunks of work. THIS IS MANDATORY.",
     "LAW_002": "CHUNK SAVE ANALYZE PROCEED: Mandatory workflow for all builds."
   },
 
-  "SESSION_43_PROGRESS": {
-    "started": "2026-01-21T13:50:00Z",
+  "SESSION_44_PROGRESS": {
+    "started": "2026-01-21T15:00:00Z",
     "checkpoints": [
-      "13:50 - Triggered redeploy via empty commit",
-      "13:52 - Railway build FAILED - parse errors",
-      "13:53 - Ran local npm build - confirmed 3 errors",
-      "13:54 - Found root cause: bead-frame + sensorial-sort truncated",
-      "13:55 - Brain updated, starting rebuild",
-      "14:00 - Bead Frame REBUILT ✅",
-      "14:05 - Sensorial Sort REBUILT ✅",
-      "14:06 - Build test revealed NEW issue: multi-line classNames",
-      "14:10 - BRAIN CHECKPOINT",
-      "14:12 - Fixed ALL multi-line classNames",
-      "14:15 - BUILD PASSED ✅ - pushing to git"
+      "15:00 - Session start, reviewed MONTREE_MASTER_GAMEPLAN.md",
+      "15:10 - Identified original Phase 1 priorities NOT complete",
+      "15:15 - Starting Priority 1: English Area Setup Guide",
+      "15:30 - ✅ COMPLETE: Tredoux English Area Setup Guide created"
     ]
   },
 
-  "ALL_FIXES_COMPLETED": {
-    "bead_frame": "✅ REBUILT from scratch",
-    "sensorial_sort": "✅ REBUILT from scratch", 
-    "sentence_scramble": "✅ Fixed 2 multi-line classNames",
-    "word_builder_new": "✅ Fixed 2 multi-line classNames",
-    "quantity_match": "✅ Fixed 8 multi-line classNames"
+  "PHASE_1_PRIORITIES_STATUS": {
+    "priority_1_english_guide": "✅ COMPLETE - /docs/guides/TREDOUX_ENGLISH_AREA_SETUP.md",
+    "priority_2_ai_suggestions_404": "❌ NOT STARTED - /api/brain/recommend returns 404",
+    "priority_3_digital_handbook": "❌ NOT STARTED - DB fields + content needed",
+    "priority_4_game_mapping": "❌ NOT STARTED - Work→Game DB mapping"
   },
 
-  "PHASE_STATUS": {
-    "phase_1": "99% - AI Suggestions needs test after deploy",
-    "phase_2": "✅ 10/10 games complete, build passing"
+  "ENGLISH_GUIDE_DELIVERABLES": {
+    "guide_doc": "/docs/guides/TREDOUX_ENGLISH_AREA_SETUP.md",
+    "visual_diagram": "english_area_diagram.html (delivered to user)",
+    "contents": [
+      "3-shelf recommendation with specifications",
+      "Tier-by-tier material placement",
+      "ESL adaptations for Chinese learners",
+      "Classroom flow diagram",
+      "Readiness indicators",
+      "Daily rhythm suggestions"
+    ]
   },
 
   "NEXT_STEPS": [
-    "1. Git push",
-    "2. Wait for Railway deploy",
-    "3. Test all games on teacherpotato.xyz"
+    "1. Priority 2: Debug 404 on /api/brain/recommend",
+    "2. Read HANDOFF_AI_SUGGESTIONS_PANEL.md first",
+    "3. Test endpoint on Railway production"
   ]
 }

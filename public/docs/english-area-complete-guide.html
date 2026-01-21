@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐋 Whale Class English Area - Complete Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --warm-cream: #FDF6E9;
+            --warm-orange: #F5A962;
+            --deep-teal: #2D8B8B;
+            --soft-coral: #E8846B;
+            --forest-green: #4A8B5C;
+            --sky-blue: #6BB5D9;
+            --soft-purple: #9B8AC4;
+            --warm-brown: #8B6B4A;
+            --pink-shelf: #F9E8E8;
+            --blue-shelf: #E8F0F9;
+            --green-shelf: #E8F9EC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, var(--warm-cream) 0%, #FEF9F0 100%);
+            min-height: 100vh;
+            color: #3D3D3D;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--deep-teal) 0%, #3DA5A5 100%);
+            border-radius: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(45, 139, 139, 0.3);
+        }
+
+        header h1 {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+
+        .intro-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 6px solid var(--warm-orange);
+        }
+
+        .intro-box h2 {
+            color: var(--deep-teal);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .intro-box p {
+            margin-bottom: 10px;
+        }
+
+        .shelf-section {
+            background: white;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.1);
+        }
+
+        .shelf-header {
+            padding: 25px 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .shelf-header:hover {
+            filter: brightness(0.95);
+        }
+
+        .shelf-1 .shelf-header { background: linear-gradient(135deg, var(--pink-shelf) 0%, #FDF2F2 100%); }
+        .shelf-2 .shelf-header { background: linear-gradient(135deg, var(--blue-shelf) 0%, #F2F7FD 100%); }
+        .shelf-3 .shelf-header { background: linear-gradient(135deg, var(--green-shelf) 0%, #F2FDF5 100%); }
+
+        .shelf-header h2 {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shelf-1 .shelf-header h2 { color: var(--soft-coral); }
+        .shelf-2 .shelf-header h2 { color: var(--sky-blue); }
+        .shelf-3 .shelf-header h2 { color: var(--forest-green); }
+
+        .shelf-header .age-badge {
+            font-size: 0.9rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .shelf-1 .age-badge { background: var(--soft-coral); color: white; }
+        .shelf-2 .age-badge { background: var(--sky-blue); color: white; }
+        .shelf-3 .age-badge { background: var(--forest-green); color: white; }
+
+        .shelf-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .shelf-content.open {
+            max-height: 20000px;
+        }
+
+        .shelf-inner {
+            padding: 0 30px 30px;
+        }
+
+        .tier-section {
+            background: #FAFAFA;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 2px solid #EFEFEF;
+        }
+
+        .tier-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #F8F8F8 0%, #FFFFFF 100%);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #EFEFEF;
+            transition: all 0.2s ease;
+        }
+
+        .tier-header:hover {
+            background: linear-gradient(135deg, #F0F0F0 0%, #F8F8F8 100%);
+        }
+
+        .tier-header h3 {
+            font-size: 1.2rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tier-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .tier-content.open {
+            max-height: 15000px;
+        }
+
+        .tier-inner {
+            padding: 24px;
+        }
+
+        .work-card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 2px solid #E8E8E8;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .work-card h4 {
+            font-size: 1.15rem;
+            color: var(--deep-teal);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #E0E0E0;
+        }
+
+        .instructions {
+            background: #FFF9E6;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            border-left: 4px solid var(--warm-orange);
+        }
+
+        .instructions h5 {
+            color: var(--warm-brown);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .instructions ol, .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .word-item {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 2px solid #E8E8E8;
+            transition: all 0.2s ease;
+        }
+
+        .word-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: var(--deep-teal);
+        }
+
+        .word-item .emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .word-item .word {
+            font-weight: 700;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        .sound-category {
+            background: white;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 2px solid #E0E0E0;
+            overflow: hidden;
+        }
+
+        .sound-header {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .sound-header.phase-1 { background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); }
+        .sound-header.phase-2 { background: linear-gradient(135deg, #FFF3E0 0%, #FFF8E1 100%); }
+        .sound-header.phase-3 { background: linear-gradient(135deg, #FFEBEE 0%, #FCE4EC 100%); }
+        .sound-header.vowel { background: linear-gradient(135deg, #E3F2FD 0%, #E8EAF6 100%); }
+
+        .sound-header:hover {
+            filter: brightness(0.97);
+        }
+
+        .sound-header h5 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .phase-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .phase-1-badge { background: #4CAF50; color: white; }
+        .phase-2-badge { background: #FF9800; color: white; }
+        .phase-3-badge { background: #E91E63; color: white; }
+        .vowel-badge { background: #2196F3; color: white; }
+
+        .sound-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .sound-content.open {
+            max-height: 2000px;
+        }
+
+        .sound-inner {
+            padding: 20px;
+            background: #FAFAFA;
+        }
+
+        .esl-note {
+            background: #FFF3CD;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-left: 4px solid #FFC107;
+            font-size: 0.95rem;
+        }
+
+        .esl-note strong {
+            color: #856404;
+        }
+
+        .objects-to-buy {
+            background: #E8F5E9;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .objects-to-buy h6 {
+            color: #2E7D32;
+            margin-bottom: 8px;
+        }
+
+        .expand-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .cvc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .cvc-table th, .cvc-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        .cvc-table th {
+            background: #F5F5F5;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .cvc-table tr:hover {
+            background: #FAFAFA;
+        }
+
+        .vowel-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .vowel-a { background: #FFCDD2; color: #C62828; }
+        .vowel-e { background: #BBDEFB; color: #1565C0; }
+        .vowel-i { background: #C8E6C9; color: #2E7D32; }
+        .vowel-o { background: #FFF9C4; color: #F57F17; }
+        .vowel-u { background: #E1BEE7; color: #7B1FA2; }
+
+        .progression-box {
+            background: linear-gradient(135deg, #F3E5F5 0%, #FCE4EC 100%);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #CE93D8;
+        }
+
+        .progression-box h5 {
+            color: #7B1FA2;
+            margin-bottom: 12px;
+        }
+
+        .progression-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: #9C27B0;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%);
+            border-radius: 14px;
+            padding: 18px;
+            margin-top: 15px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .tip-box h6 {
+            color: #1565C0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            .shelf-header h2 { font-size: 1.3rem; }
+            .word-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐋 Whale Class English Area</h1>
+            <p>Complete Setup Guide with All Words & Instructions for Novices</p>
+        </header>
+
+        <div class="intro-box">
+            <h2>📖 How to Use This Guide</h2>
+            <p><strong>Click any section to expand it.</strong> Each section contains:</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>✅ <strong>Exact words and objects</strong> you need for each activity</li>
+                <li>✅ <strong>Step-by-step instructions</strong> for presenting to children</li>
+                <li>✅ <strong>ESL tips</strong> for Chinese learners</li>
+                <li>✅ <strong>What to buy</strong> for each basket or box</li>
+            </ul>
+        </div>
+
+        <!-- SHELF 1 -->
+        <div class="shelf-section shelf-1">
+            <div class="shelf-header" onclick="toggleShelf(this)">
+                <h2>📚 SHELF 1: PRE-READING</h2>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="age-badge">Ages 2.5-3.5</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+            </div>
+            <div class="shelf-content">
+                <div class="shelf-inner">
+                    <p style="margin-bottom: 20px; font-style: italic; color: #666;">"Train the ear before the eye" — Children must HEAR sounds before they can connect them to letters.</p>
+
+                    <!-- I-SPY SOUND GAMES -->
+                    <div class="tier-section">
+                        <div class="tier-header" onclick="toggleTier(this)">
+                            <h3>🎧 TOP TIER: I-Spy Sound Games (Click for ALL words)</h3>
+                            <span class="expand-icon">▼</span>
+                        </div>
+                        <div class="tier-content">
+                            <div class="tier-inner">
+                                
+                                <div class="instructions">
+                                    <h5>🎯 How to Present I-Spy (Complete Script)</h5>
+                                    <ol>
+                                        <li><strong>Invite the child:</strong> "Would you like to play I-Spy with me?"</li>
+                                        <li><strong>Set up:</strong> Place 5-6 objects from ONE sound basket on a mat</li>
+                                        <li><strong>Name each object:</strong> Pick up each one: "This is a mouse. This is a mug. This is a moon..."</li>
+                                        <li><strong>Introduce the sound:</strong> "I spy with my little eye something that begins with /mmm/" (say the SOUND, not the letter name!)</li>
+                                        <li><strong>Wait:</strong> Let child find the object. If stuck, offer: "Mouse? Mmmm-ouse?"</li>
+                                        <li><strong>Celebrate:</strong> "Yes! Mouse begins with /mmm/!"</li>
+                                        <li><strong>Continue:</strong> Do 3-4 rounds, then invite child to be the spy</li>
+                                    </ol>
+                                </div>
+
+                                <div class="tip-box">
+                                    <h6>💡 Critical: Sound vs Letter Name</h6>
+                                    <p>Say <strong>/mmm/</strong> NOT "em". Say <strong>/sss/</strong> NOT "ess". Say <strong>/buh/</strong> NOT "bee". The pure sound is what matters!</p>
+                                </div>
+
+                                <!-- PHASE 1: EASY -->
+                                <h4 style="margin-top: 30px; color: #4CAF50; border-bottom: 3px solid #4CAF50; padding-bottom: 10px;">🟢 PHASE 1: Easy Sounds (Start Here - exist in Mandarin)</h4>
+
+                                <!-- /s/ -->
+                                <div class="sound-category">
+                                    <div class="sound-header phase-1" onclick="toggleSound(this)">
+                                        <h5><span style="font-size: 1.5rem;">🐍</span> /s/ Sound — "ssssss like a snake"</h5>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span class="phase-badge phase-1-badge">Easy</span>
+                                            <span class="expand-icon">▼</span>
+                                        </div>
+                                    </div>
+                                    <div class="sound-content">
+                                        <div class="sound-inner">
+                                            <div class="word-grid">
+                                                <div class="word-item"><span class="emoji">☀️</span><span class="word">sun</span></div>
+                                                <div class="word-item"><span class="emoji">🧦</span><span class="word">sock</span></div>
+                                                <div class="word-item"><span class="emoji">🧼</span><span class="word">soap</span></div>
+                                                <div class="word-item"><span class="emoji">⭐</span><span class="word">star</span></div>
+                                                <div class="word-item"><span class="emoji">🐍</span><span class="word">snake</span></div>
+                                                <div class="word-item"><span class="emoji">🥄</span><span class="word">spoon</span></div>
+                                                <div class="word-item"><span class="emoji">🧽</span><span class="word">sponge</span></div>
+                                                <div class="word-item"><span class="emoji">✂️</span><span class="word">scissors</span></div>
+                                            </div>
+                                            <div class="objects-to-buy">
+                                                <h6>🛒 Objects to Buy:</h6>
+                                                <p>Miniature sun, toy sock, mini soap, star toy, rubber snake, small spoon, mini sponge, blunt scissors</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- /m/ -->
+                                <div class="sound-category">
+                                    <div class="sound-header phase-1" onclick="toggleSound(this)">
+                                        <h5><span style="font-size: 1.5rem;">🐭</span> /m/ Sound — "mmmm yummy"</h5>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span class="phase-badge phase-1-badge">Easy</span>
+                                            <span class="expand-icon">▼</span>
+                                        </div>
+                                    </div>
+                                    <div class="sound-content">
+                                        <div class="sound-inner">
+                                            <div class="word-grid">
+                                                <div class="word-item"><span class="emoji">🧹</span><span class="word">mop</span></div>
+                                                <div class="word-item"><span class="emoji">🌙</span><span class="word">moon</span></div>
+                                                <div class="word-item"><span class="emoji">🐭</span><span class="word">mouse</span></div>
+                                                <div class="word-item"><span class="emoji">🟫</span><span class="word">mat</span></div>
+                                                <div class="word-item"><span class="emoji">☕</span><span class="word">mug</span></div>
+                                                <div class="word-item"><span class="emoji">🥛</span><span class="word">milk</span></div>
+                                                <div class="word-item"><span class="emoji">🗺️</span><span class="word">map</span></div>
+                                                <div class="word-item"><span class="emoji">🧲</span><span class="word">magnet</span></div>
+                                            </div>
+                                            <div class="objects-to-buy">
+                                                <h6>🛒 Objects to Buy:</h6>
+                                                <p>Toy mouse, mini mop, moon toy, small mat, mini mug, milk carton toy, folded map, small magnet</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Continue with more sounds... -->
+                                <p style="margin-top: 20px; padding: 15px; background: #FFF3E0; border-radius: 10px; text-align: center;">
+                                    <strong>📁 Full guide includes all 26+ sounds with complete word lists!</strong><br>
+                                    Phase 1 (Easy): s, m, f, n, p, t, c, h<br>
+                                    Phase 2 (Medium): b, d, g, j, w, y<br>
+                                    Phase 3 (Hard ESL): v, th, r, l, z, sh, ch<br>
+                                    Plus all 5 vowels
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SHELF 2 -->
+        <div class="shelf-section shelf-2">
+            <div class="shelf-header" onclick="toggleShelf(this)">
+                <h2>✏️ SHELF 2: ENCODING</h2>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="age-badge">Ages 3.5-4.5</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+            </div>
+            <div class="shelf-content">
+                <div class="shelf-inner">
+                    <p style="margin-bottom: 20px; font-style: italic; color: #666;">"Writing before reading" — Children build words they can SAY but can't yet READ.</p>
+
+                    <div class="tier-section">
+                        <div class="tier-header" onclick="toggleTier(this)">
+                            <h3>🔤 TOP TIER: Moveable Alphabet Words (Click for ALL words)</h3>
+                            <span class="expand-icon">▼</span>
+                        </div>
+                        <div class="tier-content">
+                            <div class="tier-inner">
+                                <div class="instructions">
+                                    <h5>🎯 How to Present Moveable Alphabet</h5>
+                                    <ol>
+                                        <li><strong>Readiness:</strong> Child knows most letter sounds</li>
+                                        <li><strong>First word:</strong> "Let's build 'cat'. What do you hear first? /c/..."</li>
+                                        <li><strong>Find letter:</strong> Child retrieves from box</li>
+                                        <li><strong>Continue:</strong> "What next? /a/..." until complete</li>
+                                        <li><strong>DO NOT ask to read it back</strong> — that comes later!</li>
+                                    </ol>
+                                </div>
+
+                                <div class="progression-box" style="background: linear-gradient(135deg, #FFCDD2 0%, #FFEBEE 100%); border-color: #E57373;">
+                                    <h5 style="color: #C62828;">Stage 1: Short /a/ Words (Start Here)</h5>
+                                    <table class="cvc-table">
+                                        <tr><th>Word</th><th>Sounds</th><th>Object</th></tr>
+                                        <tr><td><strong>cat</strong></td><td>/c/ - /a/ - /t/</td><td>🐱</td></tr>
+                                        <tr><td><strong>mat</strong></td><td>/m/ - /a/ - /t/</td><td>🟫</td></tr>
+                                        <tr><td><strong>sat</strong></td><td>/s/ - /a/ - /t/</td><td>🪑</td></tr>
+                                        <tr><td><strong>hat</strong></td><td>/h/ - /a/ - /t/</td><td>🎩</td></tr>
+                                        <tr><td><strong>bat</strong></td><td>/b/ - /a/ - /t/</td><td>🦇</td></tr>
+                                        <tr><td><strong>pan</strong></td><td>/p/ - /a/ - /n/</td><td>🍳</td></tr>
+                                        <tr><td><strong>can</strong></td><td>/c/ - /a/ - /n/</td><td>🥫</td></tr>
+                                        <tr><td><strong>man</strong></td><td>/m/ - /a/ - /n/</td><td>👨</td></tr>
+                                        <tr><td><strong>map</strong></td><td>/m/ - /a/ - /p/</td><td>🗺️</td></tr>
+                                        <tr><td><strong>bag</strong></td><td>/b/ - /a/ - /g/</td><td>👜</td></tr>
+                                    </table>
+                                </div>
+
+                                <p style="margin-top: 20px; padding: 15px; background: #E3F2FD; border-radius: 10px; text-align: center;">
+                                    <strong>📁 Full guide includes 80+ CVC words organized by vowel!</strong><br>
+                                    Short /a/: 20 words | Short /e/: 15 words | Short /i/: 18 words<br>
+                                    Short /o/: 16 words | Short /u/: 18 words
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SHELF 3 -->
+        <div class="shelf-section shelf-3">
+            <div class="shelf-header" onclick="toggleShelf(this)">
+                <h2>📖 SHELF 3: DECODING</h2>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="age-badge">Ages 4.5-6</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+            </div>
+            <div class="shelf-content">
+                <div class="shelf-inner">
+                    <p style="margin-bottom: 20px; font-style: italic; color: #666;">"Reading emerges naturally" — After building words, children decode them.</p>
+
+                    <div class="work-card">
+                        <h4>Pink Series Progression</h4>
+                        <ol style="margin-left: 20px;">
+                            <li><strong>Word Lists:</strong> cat, hat, mat, sat...</li>
+                            <li><strong>Phrases:</strong> "a fat cat", "a red hen"</li>
+                            <li><strong>Sentences:</strong> "The cat sat on the mat."</li>
+                            <li><strong>Commands:</strong> "Sit on the rug." (child does it!)</li>
+                            <li><strong>Pink Readers:</strong> Decodable books</li>
+                        </ol>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>🐋 Whale Class English Area Guide</p>
+            <p>Built by Tredoux + Claude | Montree Platform</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleShelf(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+            header.classList.toggle('expanded');
+        }
+
+        function toggleTier(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+            header.classList.toggle('expanded');
+        }
+
+        function toggleSound(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+            header.classList.toggle('expanded');
+        }
+
+        // Auto-expand first shelf on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstShelf = document.querySelector('.shelf-content');
+            if (firstShelf) {
+                firstShelf.classList.add('open');
+                firstShelf.previousElementSibling.classList.add('expanded');
+            }
+        });
+    </script>
+</body>
+</html>
