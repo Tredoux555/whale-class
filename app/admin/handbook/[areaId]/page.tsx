@@ -1,12 +1,33 @@
 // app/admin/handbook/[areaId]/page.tsx
 // Dynamic area page v2 - Deep audit improvements
 // Features: Gateway badges, prerequisites, sensitive periods, age filter, sequence numbers, "what's next"
+// UPDATED: Now handles full object data from API joins
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+
+interface PrerequisiteWork {
+  id: string;
+  name: string;
+  slug: string;
+  is_required: boolean;
+}
+
+interface UnlockedWork {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface SensitivePeriod {
+  id: string;
+  name: string;
+  slug: string;
+  relevance_score: number;
+}
 
 interface Work {
   id: string;
@@ -25,9 +46,10 @@ interface Work {
   materials_needed: string[];
   parent_explanation_simple: string;
   parent_explanation_detailed: string;
-  sensitive_periods?: string[];
-  prerequisites?: string[];
-  unlocks?: string[];
+  // New object-based fields from API joins
+  sensitive_periods: SensitivePeriod[];
+  prerequisites: PrerequisiteWork[];
+  unlocks: UnlockedWork[];
 }
 
 const AREA_INFO: Record<string, { 
@@ -99,7 +121,6 @@ export default function AreaPage() {
   const params = useParams();
   const areaId = params.areaId as string;
   const [works, setWorks] = useState<Work[]>([]);
-  const [allWorks, setAllWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,8 +141,6 @@ export default function AreaPage() {
       .then(res => res.json())
       .then(data => {
         const allData = data.data || [];
-        setAllWorks(allData);
-        
         const filtered = allData.filter((w: Work) => w.curriculum_area === areaId);
         filtered.sort((a: Work, b: Work) => (a.sequence_order || 0) - (b.sequence_order || 0));
         setWorks(filtered);
@@ -164,12 +183,6 @@ export default function AreaPage() {
 
   const formatSubArea = (subArea: string) => {
     return subArea.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  };
-
-  // Find work name by ID from all works
-  const getWorkName = (workId: string) => {
-    const work = allWorks.find(w => w.id === workId || w.slug === workId);
-    return work?.name || workId;
   };
 
   if (loading) {
@@ -307,6 +320,13 @@ export default function AreaPage() {
                                 🌟 Gateway
                               </span>
                             )}
+
+                            {/* Prerequisite count badge */}
+                            {work.prerequisites?.length > 0 && (
+                              <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-300 rounded text-xs">
+                                {work.prerequisites.length} prereq
+                              </span>
+                            )}
                           </div>
                           
                           {/* First Direct Aim Preview */}
@@ -377,17 +397,17 @@ export default function AreaPage() {
               </div>
             </div>
 
-            {/* Sensitive Periods */}
-            {selectedWork.sensitive_periods && selectedWork.sensitive_periods.length > 0 && (
+            {/* Sensitive Periods - Now uses object data */}
+            {selectedWork.sensitive_periods?.length > 0 && (
               <div className="mb-4 p-3 bg-slate-700/30 rounded-xl">
-                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active During</h4>
+                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active During Sensitive Periods</h4>
                 <div className="flex flex-wrap gap-2">
-                  {selectedWork.sensitive_periods.map((period, i) => (
+                  {selectedWork.sensitive_periods.map((period) => (
                     <span 
-                      key={i} 
-                      className={`px-2 py-1 rounded-lg text-xs text-white ${SENSITIVE_PERIOD_COLORS[period] || 'bg-slate-600'}`}
+                      key={period.id} 
+                      className={`px-2 py-1 rounded-lg text-xs text-white ${SENSITIVE_PERIOD_COLORS[period.slug] || 'bg-slate-600'}`}
                     >
-                      {period.replace(/_/g, ' ')}
+                      {period.name}
                     </span>
                   ))}
                 </div>
@@ -399,19 +419,28 @@ export default function AreaPage() {
               <p className="text-slate-300 mb-5 leading-relaxed">{selectedWork.parent_explanation_simple}</p>
             )}
 
-            {/* Prerequisites */}
-            {selectedWork.prerequisites && selectedWork.prerequisites.length > 0 && (
+            {/* Prerequisites - Now uses object data with names */}
+            {selectedWork.prerequisites?.length > 0 && (
               <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                 <h4 className="font-semibold text-amber-400 mb-2 flex items-center gap-2 text-sm">
                   <span>⬅️</span> Prerequisites (do these first)
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {selectedWork.prerequisites.map((prereq, i) => (
-                    <span key={i} className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded text-xs">
-                      {getWorkName(prereq)}
+                  {selectedWork.prerequisites.map((prereq) => (
+                    <span 
+                      key={prereq.id} 
+                      className={`px-2 py-1 rounded text-xs ${
+                        prereq.is_required 
+                          ? 'bg-amber-500/30 text-amber-200' 
+                          : 'bg-amber-500/10 text-amber-400'
+                      }`}
+                    >
+                      {prereq.name}
+                      {prereq.is_required && <span className="ml-1 opacity-60">*</span>}
                     </span>
                   ))}
                 </div>
+                <p className="text-amber-500/50 text-xs mt-2">* = required</p>
               </div>
             )}
             
@@ -447,16 +476,16 @@ export default function AreaPage() {
               </div>
             )}
 
-            {/* What This Unlocks */}
-            {selectedWork.unlocks && selectedWork.unlocks.length > 0 && (
+            {/* What This Unlocks - Now uses object data with names */}
+            {selectedWork.unlocks?.length > 0 && (
               <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <h4 className="font-semibold text-green-400 mb-2 flex items-center gap-2 text-sm">
                   <span>➡️</span> Unlocks (what comes next)
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {selectedWork.unlocks.map((unlock, i) => (
-                    <span key={i} className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
-                      {getWorkName(unlock)}
+                  {selectedWork.unlocks.map((unlock) => (
+                    <span key={unlock.id} className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
+                      {unlock.name}
                     </span>
                   ))}
                 </div>
