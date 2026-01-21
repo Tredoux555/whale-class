@@ -122,6 +122,30 @@ const BRAIN_DATA = {
     materials: ['Pink series word lists'],
     description: 'Child reads lists of CVC words organized by word family.',
     readiness: ['Picture match solid'],
+    wordLists: {
+      '-at family': ['cat', 'bat', 'hat', 'mat', 'sat', 'rat', 'fat', 'pat', 'vat'],
+      '-an family': ['can', 'pan', 'man', 'fan', 'ran', 'tan', 'van', 'ban', 'dan'],
+      '-ap family': ['cap', 'map', 'tap', 'nap', 'gap', 'lap', 'rap', 'sap', 'zap'],
+      '-ag family': ['bag', 'tag', 'rag', 'wag', 'sag', 'lag', 'nag', 'gag'],
+      '-ad family': ['bad', 'dad', 'had', 'mad', 'sad', 'lad', 'pad'],
+      '-am family': ['ham', 'jam', 'ram', 'yam', 'dam', 'Sam'],
+      '-ed family': ['bed', 'red', 'fed', 'led', 'wed', 'Ted'],
+      '-en family': ['pen', 'hen', 'ten', 'men', 'den', 'Ben', 'Ken'],
+      '-et family': ['pet', 'net', 'wet', 'jet', 'set', 'get', 'let', 'met', 'bet', 'vet'],
+      '-eg family': ['leg', 'peg', 'beg', 'keg'],
+      '-ig family': ['pig', 'big', 'dig', 'wig', 'jig', 'fig', 'rig'],
+      '-in family': ['pin', 'bin', 'fin', 'win', 'tin', 'sin', 'kin', 'din'],
+      '-it family': ['sit', 'hit', 'bit', 'fit', 'kit', 'pit', 'lit', 'wit'],
+      '-ip family': ['lip', 'tip', 'zip', 'hip', 'dip', 'sip', 'rip', 'nip'],
+      '-og family': ['dog', 'log', 'fog', 'hog', 'jog', 'bog', 'cog'],
+      '-ot family': ['pot', 'hot', 'cot', 'dot', 'lot', 'got', 'not', 'rot'],
+      '-op family': ['mop', 'top', 'hop', 'pop', 'cop', 'bop', 'sop'],
+      '-ob family': ['job', 'rob', 'sob', 'mob', 'cob', 'Bob'],
+      '-ug family': ['cup', 'pup', 'bug', 'rug', 'hug', 'mug', 'jug', 'tug', 'dug'],
+      '-un family': ['sun', 'run', 'fun', 'bun', 'gun', 'nun', 'pun'],
+      '-ut family': ['nut', 'hut', 'cut', 'but', 'gut', 'jut', 'rut'],
+      '-ud family': ['bud', 'mud', 'dud', 'cud'],
+    },
   },
   pinkPhrases: {
     name: 'Pink Series - Phrases',
@@ -129,9 +153,15 @@ const BRAIN_DATA = {
     directAims: ['Read simple phrases', 'Comprehension'],
     indirectAims: ['Sentence preparation', 'Meaning'],
     materials: ['Pink series phrase cards'],
-    description: 'Child reads short phrases like "a fat cat", "the red bed", "a big pig".',
+    description: 'Child reads short phrases (2-3 words) using only CVC words.',
     readiness: ['List reading success'],
-    examples: ['a fat cat', 'the red bed', 'a big pig', 'the hot pot', 'a fun run'],
+    phrases: [
+      'a fat cat', 'a red bed', 'a big pig', 'a hot pot', 'a fun run',
+      'the sad man', 'the wet pet', 'the tan van', 'the top mop', 'the mud hut',
+      'a bad dog', 'a bit hot', 'a fat hen', 'a red fox', 'a big bus',
+      'on the mat', 'in the bag', 'at the top', 'up the hill', 'to the hut',
+      'sit on it', 'run to him', 'get the cup', 'pet the dog', 'hug the pup',
+    ],
   },
   pinkSentences: {
     name: 'Pink Series - Sentences',
@@ -139,9 +169,25 @@ const BRAIN_DATA = {
     directAims: ['Read full sentences', 'Complete thoughts'],
     indirectAims: ['Reading comprehension', 'Book preparation'],
     materials: ['Pink series sentence cards'],
-    description: 'Child reads complete sentences using only CVC words.',
+    description: 'Child reads complete sentences using only CVC words and sight words (the, a, is, on, in).',
     readiness: ['Phrase reading solid'],
-    examples: ['The cat sat on the mat.', 'The dog ran in the fog.', 'The pig is big and fat.'],
+    sentences: [
+      'The cat sat on the mat.',
+      'The dog ran in the fog.',
+      'The pig is big and fat.',
+      'The sun is hot.',
+      'A rat hid in the box.',
+      'The man had a red hat.',
+      'The cup is on the rug.',
+      'The hen can peck.',
+      'The fox hid in the den.',
+      'The pup dug in the mud.',
+      'I can sit on the log.',
+      'He got a big hug.',
+      'She ran to the bus.',
+      'The pot is hot, do not tap it.',
+      'The cat and dog sat in the sun.',
+    ],
   },
   pinkBooks: {
     name: 'Pink Series - Books',
@@ -160,15 +206,34 @@ const BRAIN_DATA = {
     directAims: ['Decode consonant blends', 'Read 4-6 letter words'],
     indirectAims: ['Reading fluency', 'Phonics patterns'],
     materials: ['Blue Series materials with blend words'],
-    description: 'Blue Series introduces consonant blends (bl, cl, fl, st, sp, etc.) while maintaining short vowel sounds. This bridges simple CVC words and complex phonograms.',
-    readiness: ['Pink Series mastered', 'Can read CVC words fluently', 'Interest in longer words'],
-    blends: {
-      'Initial L-blends': ['bl', 'cl', 'fl', 'gl', 'pl', 'sl'],
-      'Initial R-blends': ['br', 'cr', 'dr', 'fr', 'gr', 'pr', 'tr'],
-      'Initial S-blends': ['sc', 'sk', 'sm', 'sn', 'sp', 'st', 'sw'],
-      'Final blends': ['-nd', '-nt', '-nk', '-mp', '-sk', '-sp', '-st', '-lt', '-lk', '-lp'],
+    description: 'Blue Series introduces consonant blends while maintaining short vowel sounds.',
+    readiness: ['Pink Series mastered', 'Can read CVC words fluently'],
+    blendLists: {
+      'bl- words': ['black', 'blank', 'blast', 'bled', 'blend', 'bless', 'blip', 'blob', 'block', 'blot', 'bluff'],
+      'cl- words': ['clad', 'clam', 'clamp', 'clan', 'clap', 'clash', 'clasp', 'class', 'click', 'cliff', 'clip', 'clock', 'cloth', 'club', 'clump'],
+      'fl- words': ['flag', 'flam', 'flap', 'flash', 'flask', 'flat', 'fled', 'flesh', 'flex', 'flick', 'flip', 'flit', 'flock', 'flop', 'floss', 'fluff'],
+      'gl- words': ['glad', 'glam', 'glass', 'glen', 'glob', 'gloss', 'glum'],
+      'pl- words': ['plan', 'plank', 'plant', 'plat', 'pled', 'plod', 'plop', 'plot', 'pluck', 'plug', 'plum', 'plump', 'plus'],
+      'sl- words': ['slab', 'slack', 'slam', 'slant', 'slap', 'slash', 'slat', 'sled', 'slept', 'slick', 'slid', 'slim', 'slit', 'slob', 'slop', 'slot', 'slug', 'slum', 'slump'],
+      'br- words': ['brag', 'bran', 'brand', 'brass', 'brat', 'bred', 'brick', 'brim', 'brisk', 'brit', 'brunt', 'brush'],
+      'cr- words': ['crab', 'crack', 'craft', 'cram', 'cramp', 'crest', 'crib', 'crisp', 'crop', 'cross', 'crush', 'crust'],
+      'dr- words': ['drab', 'draft', 'drag', 'drank', 'dress', 'drift', 'drill', 'drink', 'drip', 'drop', 'drug', 'drum', 'drunk'],
+      'fr- words': ['frog', 'from', 'frost', 'fresh', 'frill', 'fret'],
+      'gr- words': ['grab', 'gram', 'grand', 'grant', 'grass', 'grid', 'grill', 'grim', 'grin', 'grip', 'grit', 'grub', 'grump'],
+      'pr- words': ['pram', 'prank', 'press', 'prick', 'prim', 'print', 'prod', 'prom', 'prompt', 'prop'],
+      'tr- words': ['track', 'tract', 'trap', 'trash', 'trek', 'trend', 'trick', 'trim', 'trip', 'trod', 'trot', 'truck', 'trump', 'trunk', 'trust'],
+      'sc- words': ['scab', 'scald', 'scalp', 'scamp', 'scan', 'scant', 'scat', 'scoff', 'scold', 'scout', 'scuff'],
+      'sk- words': ['skeleton', 'sketch', 'skid', 'skill', 'skim', 'skin', 'skip', 'skit', 'skull', 'skunk'],
+      'sm- words': ['smack', 'small', 'smart', 'smash', 'smell', 'smelt', 'smock', 'smog', 'snack'],
+      'sn- words': ['snack', 'snag', 'snap', 'snare', 'sneak', 'sniff', 'snip', 'snob', 'snot', 'snub', 'snug'],
+      'sp- words': ['span', 'spar', 'spat', 'spec', 'sped', 'spell', 'spend', 'spent', 'spill', 'spin', 'spit', 'spot', 'spun'],
+      'st- words': ['stack', 'staff', 'stag', 'stamp', 'stand', 'stem', 'step', 'stick', 'stiff', 'still', 'stock', 'stomp', 'stop', 'stuck', 'stuff', 'stump', 'stun', 'stung', 'stunk'],
+      'sw- words': ['swam', 'swan', 'swap', 'swat', 'swell', 'swept', 'swift', 'swim', 'swing', 'swish', 'swum', 'swung'],
+      '-nd words': ['and', 'band', 'hand', 'land', 'sand', 'brand', 'stand', 'bend', 'blend', 'end', 'lend', 'mend', 'send', 'spend', 'tend', 'trend', 'wind', 'bind', 'find', 'kind', 'mind', 'bond', 'fond', 'pond', 'fund'],
+      '-nk words': ['bank', 'blank', 'clank', 'crank', 'drank', 'frank', 'plank', 'prank', 'rank', 'sank', 'shrank', 'spank', 'stank', 'tank', 'thank', 'yank', 'blink', 'brink', 'drink', 'ink', 'link', 'mink', 'pink', 'rink', 'shrink', 'sink', 'stink', 'think', 'wink', 'chunk', 'drunk', 'dunk', 'flunk', 'hunk', 'junk', 'plunk', 'shrunk', 'skunk', 'slunk', 'spunk', 'stunk', 'sunk', 'trunk'],
+      '-mp words': ['camp', 'champ', 'clamp', 'cramp', 'damp', 'lamp', 'ramp', 'scamp', 'stamp', 'tramp', 'vamp', 'bump', 'dump', 'hump', 'jump', 'lump', 'pump', 'slump', 'stump', 'thump', 'trump'],
+      '-st words': ['best', 'chest', 'crest', 'fest', 'guest', 'jest', 'nest', 'pest', 'quest', 'rest', 'test', 'vest', 'west', 'zest', 'fist', 'gist', 'list', 'mist', 'twist', 'wrist', 'cost', 'frost', 'lost', 'most', 'post', 'bust', 'crust', 'dust', 'gust', 'just', 'must', 'rust', 'trust'],
     },
-    examples: ['flag', 'stop', 'frog', 'drum', 'trip', 'jump', 'desk', 'help'],
   },
   blueDigraphs: {
     name: 'Blue Series - Digraphs',
@@ -176,10 +241,16 @@ const BRAIN_DATA = {
     directAims: ['Decode digraphs', 'sh, ch, th sounds'],
     indirectAims: ['Phonics patterns', 'Reading expansion'],
     materials: ['Blue series digraph materials'],
-    description: 'Child reads words with sh, ch, th, and other digraphs where two letters make one sound.',
+    description: 'Two letters make ONE sound. Child learns to read these as single sounds.',
     readiness: ['Blend success'],
-    digraphs: ['sh', 'ch', 'th', 'wh', 'ph', 'ck'],
-    examples: ['ship', 'chat', 'thin', 'when', 'phone', 'duck'],
+    digraphLists: {
+      'sh words': ['shack', 'shaft', 'shall', 'sham', 'shank', 'shape', 'shed', 'shell', 'shift', 'shin', 'ship', 'shock', 'shop', 'shot', 'shrub', 'shrug', 'shuck', 'shun', 'shut', 'ash', 'bash', 'cash', 'clash', 'crash', 'dash', 'flash', 'gash', 'gnash', 'hash', 'lash', 'mash', 'rash', 'slash', 'smash', 'splash', 'stash', 'thrash', 'trash', 'dish', 'fish', 'swish', 'wish', 'brush', 'blush', 'crush', 'flush', 'gush', 'hush', 'mush', 'plush', 'rush', 'slush'],
+      'ch words': ['chap', 'chat', 'check', 'chess', 'chest', 'chick', 'chill', 'chimp', 'chin', 'chip', 'chomp', 'chop', 'chuck', 'chug', 'chum', 'chunk', 'much', 'such', 'rich', 'which', 'bench', 'bunch', 'clench', 'crunch', 'drench', 'french', 'hunch', 'lunch', 'munch', 'punch', 'ranch', 'stench', 'trench', 'wrench'],
+      'th words (voiced)': ['than', 'that', 'the', 'them', 'then', 'this', 'thus', 'with', 'bathe', 'clothe', 'soothe'],
+      'th words (unvoiced)': ['thatch', 'theft', 'thick', 'thin', 'thing', 'think', 'thirst', 'thong', 'thrash', 'three', 'thresh', 'thrift', 'thrill', 'throat', 'throb', 'throne', 'throng', 'throw', 'thrust', 'thud', 'thug', 'thumb', 'thump', 'bath', 'math', 'path', 'wrath', 'breath', 'death', 'health', 'stealth', 'wealth', 'filth', 'tilth', 'birth', 'fifth', 'growth', 'moth', 'cloth', 'broth', 'froth', 'sloth', 'truth', 'youth', 'both', 'depth', 'length', 'strength', 'width'],
+      'wh words': ['whack', 'whale', 'wharf', 'what', 'wheat', 'wheel', 'whelp', 'when', 'where', 'whet', 'which', 'whiff', 'while', 'whim', 'whine', 'whip', 'whir', 'whisk', 'whisper', 'whit', 'white', 'whiz'],
+      'ck words': ['back', 'black', 'clack', 'crack', 'hack', 'jack', 'knack', 'lack', 'pack', 'quack', 'rack', 'sack', 'shack', 'slack', 'smack', 'snack', 'stack', 'tack', 'track', 'whack', 'wrack', 'beck', 'check', 'deck', 'fleck', 'neck', 'peck', 'speck', 'wreck', 'brick', 'chick', 'click', 'flick', 'kick', 'lick', 'nick', 'pick', 'prick', 'quick', 'sick', 'slick', 'stick', 'thick', 'tick', 'trick', 'wick', 'block', 'clock', 'cock', 'dock', 'flock', 'frock', 'knock', 'lock', 'mock', 'rock', 'shock', 'smock', 'sock', 'stock', 'buck', 'chuck', 'cluck', 'duck', 'luck', 'muck', 'pluck', 'puck', 'shuck', 'snuck', 'struck', 'stuck', 'suck', 'truck', 'tuck'],
+    },
   },
   blueBooks: {
     name: 'Blue Series - Books',
@@ -198,10 +269,21 @@ const BRAIN_DATA = {
     directAims: ['Decode phonograms', 'Read complex words'],
     indirectAims: ['Reading fluency', 'Spelling mastery'],
     materials: ['Green Series materials with phonogram words'],
-    description: 'Green Series introduces phonograms - letter combinations that create unique sounds (ai in rain, oa in boat, ee in feet). This is the final key to reading fluency.',
-    readiness: ['Blue Series mastered', 'Reads blends fluently', 'Interest in complex words'],
-    phonograms: ['ai', 'ay', 'ee', 'ea', 'ie', 'igh', 'oa', 'ow', 'oo', 'ou', 'ew', 'aw', 'ar', 'or', 'er', 'ir', 'ur'],
-    examples: ['rain', 'play', 'tree', 'boat', 'night', 'moon', 'star', 'bird'],
+    description: 'Phonograms are letter combinations that make unique sounds. This is the final key to reading fluency.',
+    readiness: ['Blue Series mastered', 'Reads blends fluently'],
+    phonogramLists: {
+      'ai (long a)': ['aid', 'aim', 'bail', 'braid', 'brain', 'chain', 'claim', 'drain', 'fail', 'faint', 'faith', 'frail', 'gain', 'grain', 'hail', 'jail', 'laid', 'maid', 'mail', 'main', 'nail', 'paid', 'pail', 'pain', 'paint', 'plain', 'praise', 'rain', 'rail', 'raise', 'sail', 'snail', 'sprain', 'stain', 'strain', 'tail', 'trail', 'train', 'waist', 'wait'],
+      'ay (long a)': ['bay', 'bray', 'clay', 'day', 'decay', 'delay', 'display', 'fray', 'gay', 'gray', 'hay', 'jay', 'lay', 'may', 'okay', 'pay', 'play', 'pray', 'ray', 'relay', 'repay', 'say', 'slay', 'spray', 'stay', 'stray', 'sway', 'tray', 'way'],
+      'ee (long e)': ['bee', 'beef', 'been', 'beet', 'bleed', 'breed', 'breeze', 'cheek', 'cheese', 'creep', 'deed', 'deep', 'fee', 'feed', 'feel', 'feet', 'flee', 'free', 'geese', 'greed', 'green', 'greet', 'heel', 'jeep', 'jeer', 'keen', 'keep', 'knee', 'meek', 'meet', 'need', 'peek', 'peel', 'reed', 'reef', 'seed', 'seek', 'seem', 'seen', 'seep', 'sheep', 'sheet', 'sleek', 'sleep', 'sleet', 'sneeze', 'speed', 'steel', 'steep', 'steed', 'steer', 'street', 'sweep', 'sweet', 'tee', 'teeth', 'tree', 'wee', 'weed', 'week', 'wheel'],
+      'ea (long e)': ['beach', 'bead', 'beak', 'beam', 'bean', 'beast', 'beat', 'breach', 'breathe', 'cheap', 'cheat', 'clean', 'clear', 'cream', 'deal', 'dream', 'each', 'ear', 'ease', 'east', 'eat', 'feast', 'fear', 'feat', 'flea', 'gleam', 'grease', 'heap', 'hear', 'heat', 'jeans', 'lead', 'leaf', 'leak', 'lean', 'leap', 'least', 'leave', 'meal', 'mean', 'meat', 'near', 'neat', 'pea', 'peace', 'peach', 'peak', 'peal', 'plead', 'please', 'reach', 'read', 'real', 'ream', 'reap', 'rear', 'reason', 'sea', 'seal', 'seam', 'seat', 'sneak', 'speak', 'spear', 'squeak', 'steal', 'steam', 'stream', 'tea', 'teach', 'teak', 'team', 'tease', 'treat', 'weak', 'weave', 'wheat', 'year', 'yeast', 'zeal'],
+      'oa (long o)': ['boat', 'boast', 'cloak', 'coach', 'coal', 'coast', 'coat', 'croak', 'float', 'foam', 'gloat', 'goal', 'goat', 'groan', 'load', 'loaf', 'loan', 'moan', 'moat', 'oak', 'oat', 'poach', 'road', 'roam', 'roast', 'soak', 'soap', 'throat', 'toad', 'toast'],
+      'ow (long o)': ['blow', 'bow', 'bowl', 'crow', 'flow', 'glow', 'grow', 'grown', 'know', 'known', 'low', 'mow', 'own', 'row', 'show', 'shown', 'slow', 'snow', 'sow', 'stow', 'throw', 'thrown', 'tow'],
+      'oo (long)': ['boo', 'boom', 'boon', 'boot', 'booth', 'brood', 'broom', 'choose', 'cool', 'coop', 'drool', 'droop', 'food', 'fool', 'goof', 'goose', 'groom', 'hoof', 'hoop', 'hoot', 'loom', 'loon', 'loop', 'loose', 'mood', 'moon', 'moose', 'noon', 'ooze', 'pool', 'poof', 'proof', 'root', 'room', 'scoop', 'school', 'scoot', 'shoot', 'smooth', 'snoop', 'snooze', 'soon', 'soot', 'spook', 'spool', 'spoon', 'stool', 'stoop', 'swoop', 'too', 'tool', 'tooth', 'troop', 'zoo', 'zoom'],
+      'oo (short)': ['book', 'brook', 'cook', 'crook', 'foot', 'good', 'hood', 'hook', 'look', 'nook', 'shook', 'stood', 'took', 'wood', 'wool'],
+      'ar words': ['bar', 'car', 'far', 'jar', 'mar', 'par', 'scar', 'star', 'tar', 'arch', 'ark', 'arm', 'art', 'bark', 'barn', 'card', 'cart', 'carve', 'charge', 'charm', 'chart', 'dark', 'dart', 'farm', 'hard', 'harm', 'harp', 'harsh', 'large', 'lark', 'march', 'mark', 'marsh', 'mart', 'park', 'part', 'scar', 'scarf', 'shark', 'sharp', 'smart', 'spark', 'start', 'stark', 'yard', 'yarn'],
+      'or words': ['or', 'for', 'nor', 'born', 'corn', 'cork', 'cord', 'core', 'fork', 'form', 'fort', 'forth', 'horn', 'horse', 'lord', 'more', 'morn', 'north', 'ore', 'porch', 'pork', 'port', 'scorch', 'score', 'scorn', 'short', 'snore', 'snort', 'sore', 'sort', 'sport', 'stork', 'storm', 'store', 'swore', 'thorn', 'torn', 'torch', 'wore', 'worm', 'worn', 'worse', 'worth'],
+      'er/ir/ur words': ['her', 'herd', 'jerk', 'nerve', 'perch', 'perk', 'serve', 'stern', 'term', 'verb', 'verse', 'bird', 'birth', 'dirt', 'firm', 'first', 'fir', 'girl', 'gird', 'sir', 'skirt', 'squirm', 'squirt', 'stir', 'swirl', 'third', 'thirst', 'twirl', 'whir', 'blur', 'blurt', 'burn', 'burst', 'church', 'churn', 'curb', 'curd', 'curl', 'curse', 'curve', 'fur', 'hurl', 'hurt', 'lurch', 'lurk', 'nurse', 'purse', 'slur', 'spur', 'spurt', 'surf', 'turn', 'turf', 'urge'],
+    },
   },
   greenLongVowels: {
     name: 'Green Series - Long Vowels',
@@ -209,9 +291,14 @@ const BRAIN_DATA = {
     directAims: ['Long vowel patterns', 'Silent e'],
     indirectAims: ['Advanced phonics', 'Spelling patterns'],
     materials: ['Green series long vowel materials'],
-    description: 'Child learns long vowel patterns including silent e (cake, bike, home, cute).',
+    description: 'Silent e makes the vowel say its name. "The e is silent but it makes the vowel SHOUT!"',
     readiness: ['Blue mastery'],
-    patterns: ['a-e (cake)', 'i-e (bike)', 'o-e (home)', 'u-e (cute)', 'e-e (these)'],
+    silentELists: {
+      'a-e words': ['ace', 'age', 'ape', 'ate', 'awake', 'bake', 'base', 'blade', 'blame', 'blaze', 'brake', 'brave', 'cage', 'cake', 'came', 'cane', 'cape', 'case', 'cave', 'chase', 'crane', 'crate', 'craze', 'date', 'daze', 'drake', 'drape', 'face', 'fade', 'fake', 'fame', 'fate', 'flame', 'flake', 'frame', 'gale', 'game', 'gate', 'gave', 'gaze', 'grace', 'grade', 'grape', 'grate', 'grave', 'graze', 'haste', 'hate', 'haze', 'jade', 'jake', 'Jane', 'Kate', 'lace', 'lake', 'lame', 'lane', 'late', 'made', 'make', 'male', 'mane', 'mate', 'maze', 'name', 'pace', 'page', 'pale', 'pane', 'paste', 'pave', 'place', 'plane', 'plate', 'race', 'rage', 'rake', 'range', 'rate', 'rave', 'safe', 'sage', 'sake', 'sale', 'same', 'sane', 'save', 'scale', 'scrape', 'shade', 'shake', 'shame', 'shape', 'shave', 'skate', 'snake', 'space', 'spade', 'stage', 'stake', 'stale', 'state', 'stave', 'take', 'tale', 'tame', 'tape', 'taste', 'trace', 'trade', 'vane', 'wade', 'wage', 'wake', 'waste', 'wave'],
+      'i-e words': ['bike', 'bile', 'bite', 'bride', 'brine', 'chide', 'chime', 'cite', 'dime', 'dine', 'dire', 'dive', 'drive', 'file', 'fine', 'fire', 'five', 'glide', 'grime', 'gripe', 'hide', 'hike', 'hire', 'hive', 'ice', 'kite', 'knife', 'life', 'like', 'lime', 'line', 'live', 'mice', 'mike', 'mile', 'mime', 'mine', 'mite', 'nice', 'nine', 'pike', 'pile', 'pine', 'pipe', 'price', 'pride', 'prime', 'prize', 'rice', 'ride', 'rife', 'rile', 'rime', 'ripe', 'rise', 'rite', 'shine', 'shire', 'side', 'site', 'size', 'slice', 'slide', 'slime', 'smile', 'snipe', 'spike', 'spine', 'spite', 'splice', 'spice', 'stride', 'strife', 'strike', 'stripe', 'strive', 'swine', 'thrice', 'thrive', 'tide', 'tile', 'time', 'tire', 'tribe', 'trice', 'trite', 'twice', 'twine', 'vice', 'vile', 'vine', 'white', 'wide', 'wife', 'wile', 'wine', 'wipe', 'wire', 'wise', 'write'],
+      'o-e words': ['awoke', 'bloke', 'bone', 'bore', 'broke', 'choke', 'chose', 'chrome', 'clone', 'close', 'clove', 'code', 'coke', 'cole', 'come', 'cone', 'cope', 'core', 'cove', 'dome', 'done', 'dope', 'dose', 'dote', 'dove', 'doze', 'drone', 'drove', 'fore', 'froze', 'globe', 'gnome', 'gone', 'gore', 'grove', 'hole', 'home', 'hone', 'hope', 'hose', 'joke', 'lobe', 'lone', 'lore', 'lose', 'mode', 'mole', 'mope', 'more', 'mote', 'node', 'none', 'nose', 'note', 'ode', 'poke', 'pole', 'pone', 'pope', 'pore', 'pose', 'probe', 'prone', 'prose', 'quote', 'robe', 'rode', 'role', 'rope', 'rose', 'rote', 'rove', 'scope', 'score', 'shone', 'shore', 'slope', 'smoke', 'snore', 'sole', 'some', 'sore', 'spoke', 'spore', 'stoke', 'stole', 'stone', 'store', 'stove', 'strobe', 'stroke', 'swore', 'those', 'throne', 'tone', 'tore', 'vote', 'woke', 'woke', 'wore', 'wove', 'wrote', 'yoke', 'zone'],
+      'u-e words': ['brute', 'chute', 'crude', 'cube', 'cute', 'dude', 'duke', 'dune', 'dupe', 'fume', 'fuse', 'huge', 'June', 'jute', 'lube', 'lure', 'lute', 'mule', 'muse', 'mute', 'nude', 'prude', 'prune', 'pure', 'rude', 'rule', 'ruse', 'sure', 'tube', 'tune', 'use'],
+    },
   },
   greenBooks: {
     name: 'Green Series - Books',
@@ -500,7 +587,7 @@ export default function EnglishSetupPage() {
           onClick={() => setSelectedItem(null)}
         >
           <div 
-            className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[85vh] overflow-y-auto"
+            className="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl max-h-[85vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -659,9 +746,118 @@ export default function EnglishSetupPage() {
                 <h4 className="font-semibold text-gray-700 mb-2">🔤 All 26 Sounds:</h4>
                 <div className="flex flex-wrap gap-1">
                   {selectedItem.sounds.map((s: string, i: number) => (
-                    <span key={i} className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 rounded font-bold">/{s}/</span>
+                    <span key={i} className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 rounded font-bold">{`/${s}/`}</span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Word Lists by Family (for Pink Lists) */}
+            {selectedItem.wordLists && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Word Lists by Family:</h4>
+                {Object.entries(selectedItem.wordLists).map(([family, words]) => (
+                  <div key={family} className="mb-3">
+                    <div className="text-sm font-bold text-pink-700 mb-1">{family}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(words as string[]).map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-pink-50 text-pink-700 rounded text-xs">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Phrases (for Pink Phrases) */}
+            {selectedItem.phrases && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Phrases to Read:</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedItem.phrases.map((phrase: string, i: number) => (
+                    <div key={i} className="px-3 py-2 bg-pink-50 text-pink-800 rounded text-sm font-medium">{phrase}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sentences (for Pink Sentences) */}
+            {selectedItem.sentences && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📖 Sentences to Read:</h4>
+                <div className="space-y-2">
+                  {selectedItem.sentences.map((sentence: string, i: number) => (
+                    <div key={i} className="px-3 py-2 bg-pink-50 text-pink-800 rounded text-sm">{sentence}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Blend Word Lists (for Blue Blends) */}
+            {selectedItem.blendLists && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Blend Word Lists:</h4>
+                {Object.entries(selectedItem.blendLists).map(([blend, words]) => (
+                  <div key={blend} className="mb-3">
+                    <div className="text-sm font-bold text-blue-700 mb-1">{blend}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(words as string[]).map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Digraph Word Lists (for Blue Digraphs) */}
+            {selectedItem.digraphLists && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Digraph Word Lists:</h4>
+                {Object.entries(selectedItem.digraphLists).map(([digraph, words]) => (
+                  <div key={digraph} className="mb-3">
+                    <div className="text-sm font-bold text-blue-700 mb-1">{digraph}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(words as string[]).map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Phonogram Word Lists (for Green Phonograms) */}
+            {selectedItem.phonogramLists && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Phonogram Word Lists:</h4>
+                {Object.entries(selectedItem.phonogramLists).map(([phonogram, words]) => (
+                  <div key={phonogram} className="mb-3">
+                    <div className="text-sm font-bold text-green-700 mb-1">{phonogram}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(words as string[]).map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Silent E Word Lists (for Green Long Vowels) */}
+            {selectedItem.silentELists && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-700 mb-2">📝 Silent E Word Lists:</h4>
+                {Object.entries(selectedItem.silentELists).map(([pattern, words]) => (
+                  <div key={pattern} className="mb-3">
+                    <div className="text-sm font-bold text-green-700 mb-1">{pattern}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(words as string[]).map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
