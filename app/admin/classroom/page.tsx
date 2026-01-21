@@ -22,11 +22,19 @@ function useAuthCheck() {
   return authorized;
 }
 
+interface ChildProgress {
+  total: number;
+  practiced: number;
+  mastered: number;
+  percent: number;
+}
+
 interface Child {
   id: string;
   name: string;
   display_order: number;
   date_of_birth?: string;
+  progress?: ChildProgress;
 }
 
 interface School {
@@ -240,6 +248,7 @@ function ClassroomTab({
 // Student Card Component
 function StudentCard({ child, schoolSlug }: { child: Child; schoolSlug?: string }) {
   const initials = child.name.charAt(0).toUpperCase();
+  const progress = child.progress || { total: 0, practiced: 0, mastered: 0, percent: 0 };
   
   // Color based on first letter
   const colors: Record<string, string> = {
@@ -257,6 +266,15 @@ function StudentCard({ child, schoolSlug }: { child: Child; schoolSlug?: string 
   };
   
   const colorClass = colors[initials] || 'bg-gray-100 text-gray-600';
+  
+  // Progress bar color based on percentage
+  const progressColor = progress.percent >= 75 
+    ? 'bg-emerald-500' 
+    : progress.percent >= 50 
+      ? 'bg-teal-500' 
+      : progress.percent >= 25 
+        ? 'bg-amber-500' 
+        : 'bg-gray-300';
 
   return (
     <Link
@@ -271,15 +289,25 @@ function StudentCard({ child, schoolSlug }: { child: Child; schoolSlug?: string 
           <p className="font-medium text-gray-900 truncate group-hover:text-teal-600 transition-colors">
             {child.name}
           </p>
-          <p className="text-xs text-gray-400">#{child.display_order}</p>
+          <p className="text-xs text-gray-400">
+            {progress.total > 0 ? `${progress.practiced}/${progress.total} works` : 'No assignments'}
+          </p>
         </div>
       </div>
       
-      {/* Progress bar placeholder */}
+      {/* Progress bar */}
       <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full bg-teal-500 rounded-full" style={{ width: '0%' }} />
+        <div 
+          className={`h-full ${progressColor} rounded-full transition-all duration-500`} 
+          style={{ width: `${progress.percent}%` }} 
+        />
       </div>
-      <p className="text-xs text-gray-400 mt-1">0% progress</p>
+      <div className="flex justify-between items-center mt-1">
+        <p className="text-xs text-gray-400">{progress.percent}% progress</p>
+        {progress.mastered > 0 && (
+          <p className="text-xs text-emerald-500">⭐ {progress.mastered} mastered</p>
+        )}
+      </div>
     </Link>
   );
 }
