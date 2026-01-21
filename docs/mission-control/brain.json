@@ -1,52 +1,58 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-21T21:00:00Z",
+  "lastUpdated": "2026-01-21T22:00:00Z",
   "session": 44,
   "phase": "PHASE 1 - ENGLISH TOOLS COMPLETE",
   "currentSubPhase": "Session 45 Handoff Ready",
-  "phaseStatus": "✅ English Setup + Guide Complete",
 
   "CORE_LAWS": {
-    "LAW_001": "CHECKPOINT EVERY 5 MINUTES: During development, update brain.json with progress every 5 minutes maximum. Never lose major chunks of work. THIS IS MANDATORY.",
-    "LAW_002": "CHUNK SAVE ANALYZE PROCEED: Mandatory workflow for all builds."
+    "LAW_001": "CHECKPOINT EVERY 5 MINUTES during builds. Never lose progress.",
+    "LAW_002": "CHUNK SAVE ANALYZE PROCEED: Mandatory workflow."
   },
 
   "SESSION_44_FINAL": {
     "started": "2026-01-21T15:00:00Z",
-    "ended": "2026-01-21T21:00:00Z",
+    "ended": "2026-01-21T22:00:00Z",
     "deliverables": [
-      "✅ /admin/english-guide (1859 lines) - Teaching guide with I-Spy, Moveable Alphabet",
-      "✅ /admin/english-setup (680 lines) - 3-shelf visual diagram, click-to-reveal, Brain-audited data",
-      "✅ HANDOFF_SESSION_45.md (286 lines) - Digital Handbook build instructions"
+      "✅ /admin/english-guide (1859 lines) - Teaching guide",
+      "✅ /admin/english-setup (800 lines) - 3-shelf diagram with word lists",
+      "✅ Practical word lists (~550 words, trimmed from 1500+)",
+      "✅ HANDOFF_SESSION_45.md - Digital Handbook instructions"
     ]
   },
 
-  "PHASE_1_STATUS": {
+  "WORD_LIST_AUDIT": {
+    "before": "1500+ words including obscure vocabulary",
+    "after": "~550 practical classroom words",
+    "removed": "vat, keg, din, drab, scant, plod, etc.",
+    "kept": "Words kids know and can picture"
+  },
+
+  "PHASE_STATUS": {
     "english_guide": "✅ COMPLETE",
     "english_setup": "✅ COMPLETE",
-    "digital_handbook": "⏳ HANDOFF READY",
-    "ai_suggestions_api": "❌ NOT STARTED",
-    "game_mapping": "❌ NOT STARTED"
+    "digital_handbook": "⏳ SESSION 45",
+    "ai_suggestions_api": "❌ FUTURE",
+    "game_mapping": "❌ FUTURE"
   },
 
   "SESSION_45_INSTRUCTIONS": {
-    "mission": "Build Digital Handbook - browse all 213 Montessori works by area",
+    "mission": "Build Digital Handbook - browse all 213 works by area",
     "handoff": "/docs/mission-control/HANDOFF_SESSION_45.md",
     "files_to_create": [
       "/app/admin/handbook/page.tsx",
       "/app/admin/handbook/[areaId]/page.tsx"
     ],
     "start_command": "Read /docs/mission-control/HANDOFF_SESSION_45.md and build the Digital Handbook",
-    "estimated_time": "1-2 hours"
+    "estimated_time": "1 hour"
   },
 
   "ADMIN_TOOLS_COMPLETE": [
-    "/admin/english-guide - Teaching methodology",
-    "/admin/english-setup - Shelf physical layout"
+    "/admin/english-guide",
+    "/admin/english-setup"
   ],
 
   "ADMIN_TOOLS_PENDING": [
-    "/admin/handbook - Browse all 213 works (SESSION 45)",
-    "/admin/brain - AI recommendations (FUTURE)"
+    "/admin/handbook (SESSION 45)"
   ]
 }

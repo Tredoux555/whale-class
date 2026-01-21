@@ -1,48 +1,43 @@
 # 🐋 SESSION 45 HANDOFF: Digital Handbook
 
-**Created:** 2026-01-21 21:00
+**Created:** 2026-01-21 22:00
 **For:** Fresh Claude session
 **Priority:** Build Digital Handbook (browse all 213 Montessori works)
 
 ---
 
-## 🎯 MISSION
+## ✅ SESSION 44 COMPLETE
 
-Build `/admin/handbook` - A browsable reference of ALL 213 Montessori works from the Brain database.
-
-**Why:** Teachers need to browse works by area, see details, understand progression, and know when children are ready.
+**Delivered:**
+1. `/admin/english-setup` - 3-shelf visual diagram with click-to-reveal modals
+2. **Practical word lists** - ~550 classroom-ready words (trimmed from 1500+)
+   - Pink Series: Word families, phrases, sentences
+   - Blue Series: Blends, digraphs (practical words only)
+   - Green Series: Phonograms, silent-e patterns
+3. All obscure/unusable words removed (vat, keg, drab, scant, etc.)
 
 ---
 
-## ✅ WHAT'S ALREADY DONE
+## 🎯 SESSION 45 MISSION
 
-1. **Brain API exists and works:**
-   - `GET /api/brain/works` → Returns all 213 works
-   - Data includes: name, area, sub_area, age_min/max, direct_aims, indirect_aims, materials, readiness_indicators, parent explanations
+Build `/admin/handbook` - A browsable reference of ALL 213 Montessori works from the Brain database.
 
-2. **English Setup page complete:**
-   - `/admin/english-setup` → 3-shelf visual diagram with click-to-reveal details
-   - Shows how to display Brain data cleanly
-
-3. **English Guide complete:**
-   - `/admin/english-guide` → Teaching guide with I-Spy words, Moveable Alphabet data
+**Why:** Teachers need to browse works by area, see details, understand progression, and know when children are ready. This completes the admin toolset.
 
 ---
 
 ## 📁 FILES TO CREATE
 
 ```
-/app/admin/handbook/page.tsx          # Landing page - 6 area cards
-/app/admin/handbook/[areaId]/page.tsx # Dynamic area page - works list
+/app/admin/handbook/page.tsx          # Landing - 6 area cards
+/app/admin/handbook/[areaId]/page.tsx # Dynamic - works list by area
 ```
 
 ---
 
 ## 🏗️ BUILD STEPS
 
-### Step 1: Create Landing Page `/app/admin/handbook/page.tsx`
-
-Simple grid of 6 curriculum areas:
+### Step 1: Landing Page `/app/admin/handbook/page.tsx`
 
 ```tsx
 'use client';
@@ -50,12 +45,12 @@ Simple grid of 6 curriculum areas:
 import Link from 'next/link';
 
 const AREAS = [
-  { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: 'bg-amber-500', description: 'Care of self, environment, grace & courtesy' },
-  { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: 'bg-pink-500', description: 'Refining the senses' },
-  { id: 'language', name: 'Language', icon: '📖', color: 'bg-blue-500', description: 'Reading, writing, oral language' },
-  { id: 'mathematics', name: 'Mathematics', icon: '🔢', color: 'bg-green-500', description: 'Numbers, operations, geometry' },
-  { id: 'cultural', name: 'Cultural', icon: '🌍', color: 'bg-purple-500', description: 'Geography, science, history' },
-  { id: 'art_music', name: 'Art & Music', icon: '🎨', color: 'bg-red-500', description: 'Creative expression' },
+  { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: 'bg-amber-500', count: 45 },
+  { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: 'bg-pink-500', count: 35 },
+  { id: 'language', name: 'Language', icon: '📖', color: 'bg-blue-500', count: 37 },
+  { id: 'mathematics', name: 'Mathematics', icon: '🔢', color: 'bg-green-500', count: 52 },
+  { id: 'cultural', name: 'Cultural', icon: '🌍', color: 'bg-purple-500', count: 32 },
+  { id: 'art_music', name: 'Art & Music', icon: '🎨', color: 'bg-red-500', count: 12 },
 ];
 
 export default function HandbookPage() {
@@ -72,11 +67,11 @@ export default function HandbookPage() {
               href={`/admin/handbook/${area.id}`}
               className="bg-white rounded-xl p-6 shadow hover:shadow-lg transition"
             >
-              <div className={`w-12 h-12 ${area.color} rounded-xl flex items-center justify-center text-2xl text-white mb-3`}>
+              <div className={`w-12 h-12 ${area.color} rounded-xl flex items-center justify-center text-2xl mb-3`}>
                 {area.icon}
               </div>
               <h2 className="font-bold text-lg">{area.name}</h2>
-              <p className="text-gray-500 text-sm">{area.description}</p>
+              <p className="text-gray-500 text-sm">{area.count} works</p>
             </Link>
           ))}
         </div>
@@ -86,9 +81,7 @@ export default function HandbookPage() {
 }
 ```
 
-### Step 2: Create Dynamic Area Page `/app/admin/handbook/[areaId]/page.tsx`
-
-Fetches works from Brain API, displays as list with click-to-expand details:
+### Step 2: Dynamic Area Page `/app/admin/handbook/[areaId]/page.tsx`
 
 ```tsx
 'use client';
@@ -109,7 +102,6 @@ export default function AreaPage() {
       .then(res => res.json())
       .then(data => {
         const filtered = data.data.filter((w: any) => w.curriculum_area === areaId);
-        // Sort by sequence_order
         filtered.sort((a: any, b: any) => (a.sequence_order || 0) - (b.sequence_order || 0));
         setWorks(filtered);
         setLoading(false);
@@ -138,11 +130,10 @@ export default function AreaPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-bold">{work.name}</h3>
-                  <p className="text-sm text-gray-500">{work.sub_area?.replace('_', ' ')}</p>
+                  <p className="text-sm text-gray-500">{work.sub_area?.replace(/_/g, ' ')}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">Ages {work.age_min}-{work.age_max}</div>
-                  <div className="text-xs text-gray-400">Seq: {work.sequence_order}</div>
                 </div>
               </div>
             </button>
@@ -150,12 +141,12 @@ export default function AreaPage() {
         </div>
       </div>
 
-      {/* Modal - copy pattern from english-setup */}
+      {/* Modal */}
       {selectedWork && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedWork(null)}>
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-bold mb-2">{selectedWork.name}</h3>
-            <div className="text-sm text-gray-500 mb-4">Ages {selectedWork.age_min}-{selectedWork.age_max} • Typical: {selectedWork.age_typical}</div>
+            <div className="text-sm text-gray-500 mb-4">Ages {selectedWork.age_min}-{selectedWork.age_max}</div>
             
             {selectedWork.parent_explanation_simple && (
               <p className="text-gray-600 mb-4">{selectedWork.parent_explanation_simple}</p>
@@ -206,7 +197,7 @@ export default function AreaPage() {
 In `/app/admin/page.tsx`, add to TOOLS array:
 
 ```tsx
-{ id: 'handbook', title: 'Handbook', href: '/admin/handbook', icon: '📚', color: 'bg-indigo-500', description: '213 Montessori works' },
+{ id: 'handbook', title: 'Handbook', href: '/admin/handbook', icon: '📚', color: 'bg-indigo-500' },
 ```
 
 ---
@@ -215,40 +206,19 @@ In `/app/admin/page.tsx`, add to TOOLS array:
 
 **Endpoint:** `GET /api/brain/works`
 
-**Response:**
-```json
-{
-  "success": true,
-  "count": 213,
-  "data": [
-    {
-      "id": "uuid",
-      "name": "Sandpaper Letters",
-      "slug": "sandpaper-letters",
-      "curriculum_area": "language",
-      "sub_area": "writing_preparation",
-      "age_min": 3,
-      "age_max": 5,
-      "age_typical": 3.5,
-      "sequence_order": 3,
-      "direct_aims": ["Letter-sound association", "Letter formation"],
-      "indirect_aims": ["Writing preparation", "Reading foundation"],
-      "readiness_indicators": ["Sound Games mastered", "Metal Insets started"],
-      "materials_needed": ["Sandpaper Letters (lowercase on colored boards)"],
-      "parent_explanation_simple": "Your child traces letters...",
-      "parent_explanation_detailed": "Sandpaper Letters engage three senses..."
-    }
-  ]
-}
-```
-
 **Curriculum Areas in DB:**
-- `practical_life`
-- `sensorial`
-- `language`
-- `mathematics`
-- `cultural`
-- `art_music`
+- `practical_life` (45 works)
+- `sensorial` (35 works)
+- `language` (37 works)
+- `mathematics` (52 works)
+- `cultural` (32 works)
+- `art_music` (12 works)
+
+**Work Fields:**
+- name, slug, curriculum_area, sub_area
+- age_min, age_max, age_typical, sequence_order
+- direct_aims[], indirect_aims[], readiness_indicators[]
+- materials_needed[], parent_explanation_simple, parent_explanation_detailed
 
 ---
 
@@ -258,7 +228,6 @@ In `/app/admin/page.tsx`, add to TOOLS array:
 - [ ] Create `/app/admin/handbook/[areaId]/page.tsx` (dynamic)
 - [ ] Add handbook to admin dashboard
 - [ ] Test all 6 areas load correctly
-- [ ] Test work detail modal shows all fields
 - [ ] Verify works sorted by sequence_order
 - [ ] Build passes: `npm run build`
 - [ ] Deploy: `git add . && git commit -m "Add Digital Handbook" && git push`
@@ -273,12 +242,16 @@ Read /docs/mission-control/HANDOFF_SESSION_45.md and build the Digital Handbook
 
 ---
 
-## 📊 BRAIN.JSON UPDATE NEEDED
+## 📊 AFTER COMPLETION
 
-After completing, update brain.json:
+Update brain.json:
 - Session: 45
 - Mark Digital Handbook as COMPLETE
-- Note files created
+
+**Future options after handbook:**
+1. Fix AI Suggestions API (404 error on /api/brain/recommend)
+2. Game Mapping (connect 10 games to related works)
+3. Parent Portal enhancements
 
 ---
 
