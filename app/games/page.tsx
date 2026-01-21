@@ -52,9 +52,16 @@ const GRAMMAR_GAMES: Game[] = [
   { id: 'sentence-match', name: 'Sentence Match', description: 'Match sentences to pictures', icon: '🖼️', route: '/games/sentence-match', color: 'emerald', gradient: 'from-emerald-500 to-teal-500' },
 ];
 
+const MATH_GAMES: Game[] = [
+  { id: 'number-tracer', name: 'Number Tracer', description: 'Practice writing numbers 0-9 (Sandpaper Numerals)', icon: '✏️', route: '/games/number-tracer', color: 'purple', gradient: 'from-purple-500 to-pink-500' },
+  { id: 'quantity-match', name: 'Quantity Match', description: 'Cards & Counters - match quantities to numerals', icon: '🔢', route: '/games/quantity-match', color: 'red', gradient: 'from-red-500 to-orange-500' },
+  { id: 'bead-frame', name: 'Bead Frame', description: 'Small Bead Frame - place value & operations', icon: '🧮', route: '/games/bead-frame', color: 'amber', gradient: 'from-amber-500 to-orange-500', isNew: true },
+];
+
 const GAME_CATEGORIES: GameCategory[] = [
   { id: 'sound-games', name: 'Sound Games', icon: '👂', description: 'Learn phonics and letter sounds', games: SOUND_GAMES },
   { id: 'reading-games', name: 'Reading Games', icon: '📖', description: 'Build reading skills', games: READING_GAMES },
+  { id: 'math-games', name: 'Math Games', icon: '🔢', description: 'Numbers, quantities & operations', games: MATH_GAMES },
   { id: 'vocabulary-games', name: 'Vocabulary', icon: '📚', description: 'Expand your word knowledge', games: VOCABULARY_GAMES },
   { id: 'grammar-games', name: 'Grammar', icon: '✏️', description: 'Master parts of speech', games: GRAMMAR_GAMES },
 ];
