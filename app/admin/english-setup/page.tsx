@@ -1,445 +1,457 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 // ============================================
-// SHELF DATA
+// SHELF DATA - Physical Classroom Setup
 // ============================================
 
-const SHELVES = [
-  {
-    id: 'shelf1',
-    name: 'SHELF 1: PRE-READING',
-    subtitle: 'Ages 2.5-3.5 • "Train the ear before the eye"',
-    color: 'from-green-500 to-emerald-600',
-    bgLight: 'bg-green-50',
-    borderColor: 'border-green-500',
-    tiers: [
-      {
-        name: 'Top Tier: Sound Games',
-        items: [
-          { icon: '🧺', name: 'I-Spy Basket /m/', detail: 'mouse, mug, mitten, moon, map' },
-          { icon: '🧺', name: 'I-Spy Basket /s/', detail: 'sun, sock, soap, seal, sand' },
-          { icon: '🧺', name: 'I-Spy Basket /a/', detail: 'apple, ant, ax, alligator' },
-        ],
-        note: 'Rotate 3-6 baskets weekly. Cover all 26 sounds over time.',
-        eslTip: 'START with sounds in Mandarin: /m/, /n/, /s/, /l/, /f/. DELAY: /v/, /th/, /r/'
-      },
-      {
-        name: 'Middle Tier: Sandpaper Letters',
-        items: [
-          { icon: '📦', name: 'Box 1: a-i', detail: 'lowercase only' },
-          { icon: '📦', name: 'Box 2: j-r', detail: 'lowercase only' },
-          { icon: '📦', name: 'Box 3: s-z', detail: 'lowercase only' },
-        ],
-        note: 'Vowels on BLUE. Consonants on PINK. Teach by SOUND not alphabet order.',
-        eslTip: 'Extra time on: v, th, r, l (phonemes absent in Mandarin)'
-      },
-      {
-        name: 'Bottom Tier: Metal Insets',
-        items: [
-          { icon: '🔷', name: 'Metal Insets Frame', detail: '10 geometric shapes' },
-          { icon: '📝', name: 'Inset Paper Stack', detail: '14cm squares' },
-          { icon: '✏️', name: 'Colored Pencils', detail: '3-4 colors in holder' },
-        ],
-        note: 'Prepares hand for writing. Child traces shapes for pencil control.',
-        eslTip: 'Chinese children excel at careful strokes - use this strength!'
-      }
-    ]
-  },
-  {
-    id: 'shelf2',
-    name: 'SHELF 2: ENCODING',
-    subtitle: 'Ages 3.5-4.5 • "Writing before reading"',
-    color: 'from-blue-500 to-indigo-600',
-    bgLight: 'bg-blue-50',
-    borderColor: 'border-blue-500',
-    tiers: [
-      {
-        name: 'Top Tier: Moveable Alphabet',
-        items: [
-          { icon: '🔤', name: 'Large Moveable Alphabet', detail: 'Blue vowels, Red consonants, 5cm+ letters' },
-        ],
-        note: 'Child builds words they can SAY but cannot yet READ. This is encoding.',
-        eslTip: 'This is where reading clicks. Build LOTS of words without reading pressure.'
-      },
-      {
-        name: 'Middle Tier: Object Boxes (Pink Series)',
-        items: [
-          { icon: '📦', name: 'Short /a/ Box', detail: 'cat, bat, map, hat, bag, pan' },
-          { icon: '📦', name: 'Short /e/ Box', detail: 'bed, pen, net, jet, hen, web' },
-          { icon: '📦', name: 'Short /i/ Box', detail: 'pig, pin, kit, lip, wig, bib' },
-          { icon: '📦', name: 'Short /o/ Box', detail: 'pot, dog, log, mop, box, cot' },
-          { icon: '📦', name: 'Short /u/ Box', detail: 'cup, bug, rug, sun, bus, nut' },
-        ],
-        note: 'CVC = Consonant-Vowel-Consonant. 6-10 miniature objects per box.',
-        eslTip: 'Use objects familiar from both cultures - animals, food, household items.'
-      },
-      {
-        name: 'Bottom Tier: Picture-Word Matching',
-        items: [
-          { icon: '🖼️', name: 'Picture Cards', detail: 'Clear CVC images' },
-          { icon: '📄', name: 'Word Cards', detail: 'Matching CVC words' },
-          { icon: '🧺', name: 'Matching Basket', detail: 'Activity tray' },
-        ],
-        note: 'Control card (picture + word) on back for self-correction.',
-        eslTip: 'Pictures are more abstract than objects. Ensure vocabulary is known first.'
-      }
-    ]
-  },
-  {
-    id: 'shelf3',
-    name: 'SHELF 3: DECODING',
-    subtitle: 'Ages 4.5-6 • "Reading emerges naturally"',
-    color: 'from-purple-500 to-violet-600',
-    bgLight: 'bg-purple-50',
-    borderColor: 'border-purple-500',
-    tiers: [
-      {
-        name: 'Top Tier: Pink Reading Cards',
-        items: [
-          { icon: '📁', name: 'Pink Word Lists', detail: 'Single CVC words' },
-          { icon: '📁', name: 'Pink Phrases', detail: '"a red cat", "the big dog"' },
-          { icon: '📁', name: 'Pink Sentences', detail: '"The cat sat on the mat."' },
-        ],
-        note: 'Progression: Words → Phrases → Sentences → Command Cards → Readers',
-        eslTip: 'Articles (the, a, an) don\'t exist in Chinese. Teach explicitly.'
-      },
-      {
-        name: 'Middle Tier: Blue Series (Blends)',
-        items: [
-          { icon: '📁', name: 'Blend Cards', detail: 'bl, cr, st, fr, sp...' },
-          { icon: '📁', name: 'Blue Word Lists', detail: 'stop, frog, clap, trip' },
-          { icon: '📁', name: 'Blue Phrases', detail: '"a black crab"' },
-        ],
-        note: 'Only introduce when Pink is MASTERED. Beginning + Ending blends.',
-        eslTip: 'Consonant clusters are VERY hard for Chinese speakers. Go slowly.'
-      },
-      {
-        name: 'Bottom Tier: Sentence Building',
-        items: [
-          { icon: '⚫', name: 'Grammar Symbols', detail: 'Noun (black), Verb (red), Article (blue)' },
-          { icon: '📝', name: 'Sentence Cards', detail: 'Word cards by part of speech' },
-          { icon: '📚', name: 'Story Sequencing', detail: 'Picture story cards' },
-        ],
-        note: 'Child physically builds sentences by arranging colored word cards.',
-        eslTip: 'Chinese word order differs. Model correct English order constantly.'
-      }
-    ]
-  }
-];
+const SHELF_1_DATA = {
+  name: 'PRE-READING',
+  subtitle: '"Train the ear"',
+  ageRange: 'Ages 2.5-3.5',
+  color: 'amber',
+  headerGradient: 'from-amber-700 to-amber-800',
+  tiers: [
+    {
+      name: 'TOP TIER: SOUND GAMES',
+      color: 'green',
+      items: [
+        { icon: '🧺', name: 'I-Spy /m/', sub: 'mouse, mug, moon, mat, mop, milk', objects: ['mouse', 'mug', 'moon', 'mat', 'mop', 'milk', 'map', 'magnet'] },
+        { icon: '🧺', name: 'I-Spy /s/', sub: 'sun, sock, soap, star, snake', objects: ['sun', 'sock', 'soap', 'star', 'snake', 'spoon', 'sponge', 'scissors'] },
+        { icon: '🧺', name: 'I-Spy /a/', sub: 'apple, ant, ax, anchor', objects: ['apple', 'ant', 'ax', 'alligator', 'astronaut', 'anchor'] },
+        { icon: '🧺', name: 'I-Spy /f/', sub: 'fish, fan, fork, frog, fox', objects: ['fish', 'fan', 'fork', 'frog', 'fox', 'feather', 'flag', 'flower'] },
+        { icon: '🧺', name: 'I-Spy /t/', sub: 'top, tent, tiger, tape', objects: ['top', 'tent', 'tiger', 'tape', 'tooth', 'toy', 'table', 'tree'] },
+        { icon: '🧺', name: 'I-Spy /p/', sub: 'pen, pig, pot, pin, pan', objects: ['pen', 'pig', 'pot', 'pin', 'pear', 'pan', 'pencil', 'piano'] },
+      ]
+    },
+    {
+      name: 'MIDDLE TIER: SANDPAPER LETTERS',
+      color: 'pink',
+      items: [
+        { icon: '✋', name: 'a - i', sub: 'lowercase', letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] },
+        { icon: '✋', name: 'j - r', sub: 'lowercase', letters: ['j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r'] },
+        { icon: '✋', name: 's - z', sub: 'lowercase', letters: ['s', 't', 'u', 'v', 'w', 'x', 'y', 'z'] },
+      ]
+    },
+    {
+      name: 'BOTTOM TIER: METAL INSETS',
+      color: 'blue',
+      items: [
+        { icon: '💎', name: 'Metal Insets', sub: '10 shapes', details: 'Circle, square, triangle, rectangle, oval, ellipse, quatrefoil, curvilinear triangle, pentagon, trapezoid' },
+        { icon: '📄', name: 'Paper', sub: 'inset squares', details: 'Pre-cut squares that fit the metal inset frames' },
+        { icon: '✏️', name: 'Pencils', sub: 'colored pencils', details: '12 colors minimum, good quality for control' },
+      ]
+    }
+  ]
+};
 
-const READINESS_INDICATORS = [
-  {
-    phase: 'Ready for Shelf 2 (Encoding)',
-    color: 'bg-blue-500',
-    checks: [
-      'Identifies beginning sounds consistently',
-      'Identifies ending sounds in words',
-      'Traces sandpaper letters correctly',
-      'Associates most letter sounds with symbols',
-      'Shows interest in "writing" words'
-    ]
-  },
-  {
-    phase: 'Ready for Shelf 3 (Decoding)',
-    color: 'bg-purple-500',
-    checks: [
-      'Builds CVC words with moveable alphabet',
-      'Sounds out words they\'ve built',
-      'Matches objects to word cards',
-      'Shows interest in environmental print',
-      'Blends sounds smoothly (not choppy)'
-    ]
-  },
-  {
-    phase: 'Success Looks Like',
-    color: 'bg-green-500',
-    checks: [
-      'Reads CVC words fluently',
-      'Reads simple sentences',
-      'Picks up books and attempts to read',
-      'Writes spontaneously',
-      'Enjoys literacy activities'
-    ]
-  }
-];
+const SHELF_2_DATA = {
+  name: 'ENCODING',
+  subtitle: '"Writing before reading"',
+  ageRange: 'Ages 3.5-4.5',
+  color: 'blue',
+  headerGradient: 'from-blue-600 to-indigo-700',
+  tiers: [
+    {
+      name: 'TOP TIER: MOVEABLE ALPHABET',
+      color: 'amber',
+      items: [
+        { icon: '🔤', name: 'Large MA', sub: 'red consonants', details: 'Consonants in RED/PINK - multiple of each letter' },
+        { icon: '🔤', name: 'Blue Vowels', sub: 'a, e, i, o, u', details: 'Vowels in BLUE - need many copies (used constantly)' },
+        { icon: '🧺', name: 'CVC Objects', sub: 'cat, dog, pen...', objects: ['cat', 'dog', 'pen', 'cup', 'hat', 'pig', 'bed', 'sun', 'mop', 'bus'] },
+      ]
+    },
+    {
+      name: 'MIDDLE TIER: WORD BUILDING BOXES',
+      color: 'purple',
+      items: [
+        { icon: '📦', name: 'Short A Box', sub: 'cat, hat, mat, bag, pan', color: '#EF4444', words: ['cat', 'mat', 'sat', 'hat', 'bat', 'rat', 'pan', 'can', 'man', 'fan', 'map', 'bag'] },
+        { icon: '📦', name: 'Short E Box', sub: 'bed, pen, hen, net, leg', color: '#F59E0B', words: ['bed', 'red', 'pen', 'hen', 'men', 'ten', 'net', 'wet', 'pet', 'jet', 'leg', 'web'] },
+        { icon: '📦', name: 'Short I Box', sub: 'pig, pin, bin, lip, wig', color: '#10B981', words: ['pig', 'big', 'dig', 'wig', 'pin', 'bin', 'fin', 'win', 'sit', 'hit', 'lip', 'zip'] },
+        { icon: '📦', name: 'Short O Box', sub: 'dog, pot, mop, box, fox', color: '#3B82F6', words: ['dog', 'log', 'fog', 'pot', 'hot', 'cot', 'mop', 'top', 'hop', 'box', 'fox', 'sock'] },
+        { icon: '📦', name: 'Short U Box', sub: 'cup, bug, rug, sun, bus', color: '#8B5CF6', words: ['cup', 'pup', 'bus', 'nut', 'hut', 'cut', 'bug', 'rug', 'hug', 'mug', 'sun', 'run'] },
+      ]
+    }
+  ]
+};
 
-const ESL_CHALLENGES = [
-  { sound: '/v/', challenge: "Doesn't exist in Mandarin", strategy: 'Pair with /f/, exaggerate lip position' },
-  { sound: '/θ/ (th)', challenge: "Doesn't exist", strategy: 'Use mirror, show tongue between teeth' },
-  { sound: '/r/', challenge: 'Different from Mandarin r', strategy: 'Start with "er" sound they know' },
-  { sound: '/l/ vs /r/', challenge: 'Often confused', strategy: 'Explicit contrast activities' },
-  { sound: '/b/ vs /p/', challenge: 'Aspiration difference', strategy: 'Feel breath on hand' },
-  { sound: 'Final consonants', challenge: 'Often dropped', strategy: 'Emphasize ending sounds' },
-];
+const SHELF_3_DATA = {
+  name: 'DECODING',
+  subtitle: '"Reading emerges naturally"',
+  ageRange: 'Ages 4.5-6',
+  color: 'green',
+  headerGradient: 'from-green-600 to-emerald-700',
+  tiers: [
+    {
+      name: 'TOP TIER: PINK SERIES (CVC)',
+      color: 'red',
+      bookColor: '📕',
+      items: [
+        { icon: '📕', name: 'Object Box', sub: 'miniatures + word cards', details: 'Real tiny objects with matching word labels' },
+        { icon: '📕', name: 'Picture Cards', sub: 'image + word matching', details: 'Photos with separate word cards to match' },
+        { icon: '📕', name: 'Word Lists', sub: 'cat, hat, mat...', details: 'Lists of CVC words sorted by word family' },
+        { icon: '📕', name: 'Phrases', sub: '"a fat cat"', details: 'Simple 2-3 word phrases using CVC words' },
+        { icon: '📕', name: 'Sentences', sub: '"The cat sat."', details: 'Full sentences using only CVC words' },
+        { icon: '📕', name: 'Readers', sub: 'decodable books', details: 'Simple books using only Pink Series words' },
+      ]
+    },
+    {
+      name: 'MIDDLE TIER: BLUE SERIES (BLENDS)',
+      color: 'blue',
+      bookColor: '📘',
+      items: [
+        { icon: '📘', name: 'Object Box', sub: 'frog, crab, drum...', details: 'Objects with consonant blends' },
+        { icon: '📘', name: 'Picture Cards', sub: 'CCVC & CVCC words', details: 'Words like: stop, flag, milk, best' },
+        { icon: '📘', name: 'Word Lists', sub: 'blend families', details: 'bl-, br-, cl-, cr-, st-, -nd, -mp, -lk' },
+        { icon: '📘', name: 'Phrases', sub: '"a black flag"', details: 'Phrases with blend words' },
+        { icon: '📘', name: 'Sentences', sub: '"The frog jumps."', details: 'Sentences with blend words' },
+        { icon: '📘', name: 'Readers', sub: 'decodable books', details: 'Books using Pink + Blue Series words' },
+      ]
+    },
+    {
+      name: 'BOTTOM TIER: GREEN SERIES (PHONOGRAMS)',
+      color: 'emerald',
+      bookColor: '📗',
+      items: [
+        { icon: '📗', name: 'Phonogram Cards', sub: 'ai, ay, ee, ea...', details: 'Sandpaper phonograms on green cards' },
+        { icon: '📗', name: 'Object Box', sub: 'rain, tree, boat...', details: 'Objects with long vowel sounds' },
+        { icon: '📗', name: 'Word Lists', sub: 'phonogram families', details: 'ai/ay, ee/ea, oa/ow, ou/ow, ar, or, er' },
+        { icon: '📗', name: 'Phrases', sub: '"the green tree"', details: 'Phrases with phonogram words' },
+        { icon: '📗', name: 'Sentences', sub: '"I see the boat."', details: 'Sentences with phonogram words' },
+        { icon: '📗', name: 'Readers', sub: 'decodable books', details: 'Books using all three series' },
+      ]
+    }
+  ]
+};
+
+// ============================================
+// COMPONENT
+// ============================================
 
 export default function EnglishSetupPage() {
-  const [activeShelf, setActiveShelf] = useState<string | null>(null);
-  const [showEslTips, setShowEslTips] = useState(true);
+  const router = useRouter();
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [expandedShelf, setExpandedShelf] = useState<number | null>(1);
+
+  const toggleShelf = (shelf: number) => {
+    setExpandedShelf(expandedShelf === shelf ? null : shelf);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <Link href="/admin" className="text-amber-200 hover:text-white text-sm mb-2 inline-block">
-                ← Back to Admin
-              </Link>
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                🐋 Tredoux&apos;s English Area Setup
-              </h1>
-              <p className="text-amber-100 mt-1">3-Shelf System for Whale Class • Ages 2-6 • Chinese ESL</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={showEslTips} 
-                  onChange={(e) => setShowEslTips(e.target.checked)}
-                  className="rounded"
-                />
-                Show ESL Tips
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Philosophy Banner */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 mb-8 border border-slate-600">
-          <h2 className="text-xl font-bold text-white mb-3">📚 The Philosophy</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-green-500/20 rounded-lg p-4 border border-green-500/30">
-              <div className="text-green-400 font-bold">Phase 1: Pre-Reading</div>
-              <div className="text-green-200 text-sm">Ages 2.5-3.5 → Ears before eyes</div>
-            </div>
-            <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-500/30">
-              <div className="text-blue-400 font-bold">Phase 2: Encoding</div>
-              <div className="text-blue-200 text-sm">Ages 3.5-4.5 → Writing before reading</div>
-            </div>
-            <div className="bg-purple-500/20 rounded-lg p-4 border border-purple-500/30">
-              <div className="text-purple-400 font-bold">Phase 3: Decoding</div>
-              <div className="text-purple-200 text-sm">Ages 4.5-6 → Reading emerges naturally</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Room Layout Diagram */}
-        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4">🗺️ Room Layout - Top View</h2>
-          <div className="bg-amber-50 rounded-lg p-4 max-w-2xl mx-auto">
-            <div className="text-center mb-4">
-              <div className="inline-block bg-amber-200 px-8 py-2 rounded-t-lg border-2 border-b-0 border-amber-400 font-semibold text-amber-800">
-                🚪 ENTRANCE
+            <div className="flex items-center gap-3">
+              <div className="text-5xl">🐋</div>
+              <div>
+                <h1 className="text-3xl font-bold">Tredoux's English Area</h1>
+                <p className="text-teal-100">Whale Class • 3 Shelf Setup</p>
               </div>
             </div>
-            
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="bg-green-100 border-2 border-green-500 rounded p-3 text-center">
-                <div className="font-bold text-green-800">SHELF 1</div>
-                <div className="text-xs text-green-600">Pre-Reading</div>
-                <div className="text-lg">📗</div>
-              </div>
-              <div className="bg-blue-100 border-2 border-blue-500 rounded p-3 text-center">
-                <div className="font-bold text-blue-800">SHELF 2</div>
-                <div className="text-xs text-blue-600">Encoding</div>
-                <div className="text-lg">📘</div>
-              </div>
-              <div className="bg-purple-100 border-2 border-purple-500 rounded p-3 text-center">
-                <div className="font-bold text-purple-800">SHELF 3</div>
-                <div className="text-xs text-purple-600">Decoding</div>
-                <div className="text-lg">📙</div>
-              </div>
-            </div>
-            
-            <div className="text-center text-amber-600 mb-3 text-sm font-medium">
-              ← ← ← Progression Flow → → →
-            </div>
-            
-            <div className="bg-orange-100 border-2 border-dashed border-orange-400 rounded-lg p-3 mb-3 text-center">
-              <div className="font-semibold text-orange-800">🧘 FLOOR WORK AREA</div>
-              <div className="text-xs text-orange-600">Rugs for individual work</div>
-            </div>
-            
-            <div className="bg-yellow-100 border-2 border-yellow-500 rounded-lg p-2 text-center">
-              <div className="font-semibold text-yellow-800">📚 READING NOOK</div>
-              <div className="text-xs text-yellow-600">Soft seating • Natural light</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Three Shelves */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {SHELVES.map((shelf) => (
-            <div 
-              key={shelf.id}
-              className={`bg-slate-800 rounded-xl overflow-hidden border-2 ${shelf.borderColor} transition-all ${
-                activeShelf === shelf.id ? 'ring-4 ring-white/20' : ''
-              }`}
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition"
             >
-              {/* Shelf Header */}
-              <div 
-                className={`bg-gradient-to-r ${shelf.color} p-4 cursor-pointer`}
-                onClick={() => setActiveShelf(activeShelf === shelf.id ? null : shelf.id)}
-              >
-                <h3 className="text-lg font-bold text-white">{shelf.name}</h3>
-                <p className="text-white/80 text-sm">{shelf.subtitle}</p>
-              </div>
+              ← Back
+            </button>
+          </div>
+          
+          {/* Flow indicators */}
+          <div className="flex justify-center gap-4 mt-4">
+            <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium flex items-center gap-2">
+              ← Progression Flow →
+            </span>
+            <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium">
+              Ages 2.5 → 6
+            </span>
+            <Link 
+              href="/admin/english-guide"
+              className="px-4 py-2 bg-white/30 hover:bg-white/40 rounded-full text-sm font-medium transition"
+            >
+              📖 Teaching Guide →
+            </Link>
+          </div>
+        </div>
+      </header>
 
-              {/* Tiers */}
-              <div className="p-4 space-y-4">
-                {shelf.tiers.map((tier, tierIdx) => (
-                  <div key={tierIdx} className="bg-slate-700/50 rounded-lg p-3">
-                    <div className="text-xs text-slate-400 uppercase font-semibold mb-2">
-                      {tier.name}
-                    </div>
-                    <div className="space-y-2">
-                      {tier.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex items-start gap-2 bg-slate-600/50 rounded p-2">
-                          <span className="text-xl">{item.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-white text-sm font-medium">{item.name}</div>
-                            <div className="text-slate-400 text-xs truncate">{item.detail}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-xs text-slate-300 bg-slate-800/50 rounded p-2">
-                      💡 {tier.note}
-                    </div>
-                    {showEslTips && tier.eslTip && (
-                      <div className="mt-2 text-xs text-amber-300 bg-amber-500/10 rounded p-2 border border-amber-500/30">
-                        🇨🇳 ESL: {tier.eslTip}
-                      </div>
-                    )}
+      <main className="max-w-4xl mx-auto p-4 space-y-4">
+        
+        {/* SHELF 1: PRE-READING */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <button 
+            onClick={() => toggleShelf(1)}
+            className={`w-full bg-gradient-to-r ${SHELF_1_DATA.headerGradient} text-white p-5 text-center transition-all hover:brightness-110`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold">SHELF 1: {SHELF_1_DATA.name}</h2>
+                <p className="text-amber-200">{SHELF_1_DATA.ageRange} • {SHELF_1_DATA.subtitle}</p>
+              </div>
+              <span className="text-3xl">{expandedShelf === 1 ? '▼' : '▶'}</span>
+            </div>
+          </button>
+          
+          {expandedShelf === 1 && (
+            <div className="p-5 space-y-5">
+              {SHELF_1_DATA.tiers.map((tier, tierIdx) => (
+                <div key={tierIdx} className={`bg-${tier.color}-50 rounded-xl p-4`}>
+                  <h3 className={`text-${tier.color}-700 font-bold text-sm mb-3 uppercase tracking-wide`}>
+                    {tier.name}
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {tier.items.map((item, itemIdx) => (
+                      <button
+                        key={itemIdx}
+                        onClick={() => setSelectedItem({ ...item, tier: tier.name })}
+                        className={`bg-white rounded-xl p-4 text-center border-2 border-${tier.color}-200 hover:border-${tier.color}-400 hover:shadow-lg transition-all cursor-pointer`}
+                      >
+                        <div className="text-3xl mb-2">{item.icon}</div>
+                        <div className="font-bold text-sm text-gray-800">{item.name}</div>
+                        <div className="text-xs text-gray-500 mt-1">{item.sub}</div>
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Readiness Indicators */}
-        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4">✅ Readiness Indicators</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {READINESS_INDICATORS.map((indicator, idx) => (
-              <div key={idx} className={`rounded-lg p-4 border-l-4 ${indicator.color} bg-slate-700/50`}>
-                <h3 className="font-bold text-white mb-3">{indicator.phase}</h3>
-                <ul className="space-y-2">
-                  {indicator.checks.map((check, checkIdx) => (
-                    <li key={checkIdx} className="flex items-start gap-2 text-sm text-slate-300">
-                      <span className="text-green-400 mt-0.5">✓</span>
-                      {check}
-                    </li>
-                  ))}
-                </ul>
+        {/* SHELF 2: ENCODING */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <button 
+            onClick={() => toggleShelf(2)}
+            className={`w-full bg-gradient-to-r ${SHELF_2_DATA.headerGradient} text-white p-5 text-center transition-all hover:brightness-110`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold">SHELF 2: {SHELF_2_DATA.name}</h2>
+                <p className="text-blue-200">{SHELF_2_DATA.ageRange} • {SHELF_2_DATA.subtitle}</p>
               </div>
-            ))}
-          </div>
+              <span className="text-3xl">{expandedShelf === 2 ? '▼' : '▶'}</span>
+            </div>
+          </button>
+          
+          {expandedShelf === 2 && (
+            <div className="p-5 space-y-5">
+              {SHELF_2_DATA.tiers.map((tier, tierIdx) => (
+                <div key={tierIdx} className={`bg-${tier.color}-50 rounded-xl p-4`}>
+                  <h3 className={`text-${tier.color}-700 font-bold text-sm mb-3 uppercase tracking-wide`}>
+                    {tier.name}
+                  </h3>
+                  <div className={`grid ${tier.items.length > 3 ? 'grid-cols-5' : 'grid-cols-3'} gap-3`}>
+                    {tier.items.map((item, itemIdx) => (
+                      <button
+                        key={itemIdx}
+                        onClick={() => setSelectedItem({ ...item, tier: tier.name })}
+                        className={`bg-white rounded-xl p-4 text-center border-2 border-${tier.color}-200 hover:border-${tier.color}-400 hover:shadow-lg transition-all cursor-pointer`}
+                      >
+                        <div className="text-3xl mb-2">{item.icon}</div>
+                        <div className="font-bold text-sm text-gray-800">{item.name}</div>
+                        <div className="text-xs text-gray-500 mt-1">{item.sub}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* ESL Challenges Table */}
-        {showEslTips && (
-          <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-amber-500/30">
-            <h2 className="text-xl font-bold text-white mb-4">🇨🇳 ESL Challenges for Chinese Learners</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-600">
-                    <th className="text-left py-2 px-3 text-amber-400">Sound</th>
-                    <th className="text-left py-2 px-3 text-amber-400">Challenge</th>
-                    <th className="text-left py-2 px-3 text-amber-400">Strategy</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ESL_CHALLENGES.map((item, idx) => (
-                    <tr key={idx} className="border-b border-slate-700/50">
-                      <td className="py-2 px-3 text-white font-mono">{item.sound}</td>
-                      <td className="py-2 px-3 text-slate-300">{item.challenge}</td>
-                      <td className="py-2 px-3 text-green-300">{item.strategy}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* SHELF 3: DECODING */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <button 
+            onClick={() => toggleShelf(3)}
+            className={`w-full bg-gradient-to-r ${SHELF_3_DATA.headerGradient} text-white p-5 text-center transition-all hover:brightness-110`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold">SHELF 3: {SHELF_3_DATA.name}</h2>
+                <p className="text-green-200">{SHELF_3_DATA.ageRange} • {SHELF_3_DATA.subtitle}</p>
+              </div>
+              <span className="text-3xl">{expandedShelf === 3 ? '▼' : '▶'}</span>
+            </div>
+          </button>
+          
+          {expandedShelf === 3 && (
+            <div className="p-5 space-y-5">
+              {SHELF_3_DATA.tiers.map((tier, tierIdx) => (
+                <div key={tierIdx} className={`bg-${tier.color}-50 rounded-xl p-4`}>
+                  <h3 className={`text-${tier.color}-700 font-bold text-sm mb-3 uppercase tracking-wide`}>
+                    {tier.name}
+                  </h3>
+                  <div className="grid grid-cols-6 gap-2">
+                    {tier.items.map((item, itemIdx) => (
+                      <button
+                        key={itemIdx}
+                        onClick={() => setSelectedItem({ ...item, tier: tier.name })}
+                        className={`bg-white rounded-xl p-3 text-center border-2 border-${tier.color}-200 hover:border-${tier.color}-400 hover:shadow-lg transition-all cursor-pointer`}
+                      >
+                        <div className="text-2xl mb-1">{item.icon}</div>
+                        <div className="font-bold text-xs text-gray-800">{item.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Setup Tips */}
+        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-2xl p-6 border-2 border-yellow-200">
+          <h3 className="font-bold text-yellow-800 mb-4 flex items-center gap-2 text-lg">
+            <span className="text-2xl">💡</span> Classroom Setup Tips
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 text-yellow-700 text-sm">
+            <div className="bg-white/60 rounded-xl p-4">
+              <h4 className="font-bold mb-2">📍 Shelf Placement</h4>
+              <ul className="space-y-1">
+                <li>• Shelves at child height (90-120cm)</li>
+                <li>• Left to right = reading direction</li>
+                <li>• Natural light, not facing windows</li>
+              </ul>
+            </div>
+            <div className="bg-white/60 rounded-xl p-4">
+              <h4 className="font-bold mb-2">🏷️ Labeling</h4>
+              <ul className="space-y-1">
+                <li>• Photo + word on each container</li>
+                <li>• Color-coded by series (Pink/Blue/Green)</li>
+                <li>• Outline on shelf where item belongs</li>
+              </ul>
+            </div>
+            <div className="bg-white/60 rounded-xl p-4">
+              <h4 className="font-bold mb-2">🧺 Containers</h4>
+              <ul className="space-y-1">
+                <li>• Baskets for sound objects</li>
+                <li>• Boxes for word building materials</li>
+                <li>• Trays for moveable alphabet</li>
+              </ul>
+            </div>
+            <div className="bg-white/60 rounded-xl p-4">
+              <h4 className="font-bold mb-2">✅ Work Cycle</h4>
+              <ul className="space-y-1">
+                <li>• Child chooses work from shelf</li>
+                <li>• Works on mat or table</li>
+                <li>• Returns to exact spot when done</li>
+              </ul>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Quick Reference */}
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4">📋 Quick Reference: What Goes Where</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left py-2 px-3 text-slate-400">Shelf</th>
-                  <th className="text-left py-2 px-3 text-slate-400">Tier</th>
-                  <th className="text-left py-2 px-3 text-slate-400">Materials</th>
-                </tr>
-              </thead>
-              <tbody className="text-slate-300">
-                <tr className="border-b border-slate-700/50 bg-green-500/10">
-                  <td className="py-2 px-3 font-medium text-green-400">1</td>
-                  <td className="py-2 px-3">Top</td>
-                  <td className="py-2 px-3">I-Spy Sound Baskets (3-6 rotating)</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-green-500/5">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Middle</td>
-                  <td className="py-2 px-3">Sandpaper Letters (3 boxes, lowercase)</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-green-500/10">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Bottom</td>
-                  <td className="py-2 px-3">Metal Insets + paper + pencils</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-blue-500/10">
-                  <td className="py-2 px-3 font-medium text-blue-400">2</td>
-                  <td className="py-2 px-3">Top</td>
-                  <td className="py-2 px-3">Large Moveable Alphabet</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-blue-500/5">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Middle</td>
-                  <td className="py-2 px-3">Object Boxes (5 boxes, CVC by vowel)</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-blue-500/10">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Bottom</td>
-                  <td className="py-2 px-3">Picture-Word Matching Cards</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-purple-500/10">
-                  <td className="py-2 px-3 font-medium text-purple-400">3</td>
-                  <td className="py-2 px-3">Top</td>
-                  <td className="py-2 px-3">Pink Reading Cards (words → phrases → sentences)</td>
-                </tr>
-                <tr className="border-b border-slate-700/50 bg-purple-500/5">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Middle</td>
-                  <td className="py-2 px-3">Blue Series (blends)</td>
-                </tr>
-                <tr className="bg-purple-500/10">
-                  <td className="py-2 px-3"></td>
-                  <td className="py-2 px-3">Bottom</td>
-                  <td className="py-2 px-3">Sentence Building + Grammar Symbols</td>
-                </tr>
-              </tbody>
-            </table>
+        {/* Quick Links */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="font-bold text-gray-800 mb-4">🔗 Related Tools</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Link href="/admin/english-guide" className="bg-indigo-50 hover:bg-indigo-100 rounded-xl p-4 text-center transition">
+              <div className="text-2xl mb-1">📖</div>
+              <div className="font-medium text-sm text-indigo-700">Teaching Guide</div>
+            </Link>
+            <Link href="/admin/card-generator" className="bg-pink-50 hover:bg-pink-100 rounded-xl p-4 text-center transition">
+              <div className="text-2xl mb-1">🃏</div>
+              <div className="font-medium text-sm text-pink-700">Card Generator</div>
+            </Link>
+            <Link href="/admin/english-procurement" className="bg-amber-50 hover:bg-amber-100 rounded-xl p-4 text-center transition">
+              <div className="text-2xl mb-1">🛒</div>
+              <div className="font-medium text-sm text-amber-700">Shopping List</div>
+            </Link>
+            <Link href="/admin/english-progress" className="bg-green-50 hover:bg-green-100 rounded-xl p-4 text-center transition">
+              <div className="text-2xl mb-1">📊</div>
+              <div className="font-medium text-sm text-green-700">Student Progress</div>
+            </Link>
           </div>
         </div>
+      </main>
 
-        {/* Footer */}
-        <div className="text-center mt-8 text-slate-500 text-sm">
-          <p>🐋 Whale Class - Making Readers</p>
-          <p>Built by Tredoux + Claude</p>
+      {/* Detail Modal */}
+      {selectedItem && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl">{selectedItem.icon}</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">{selectedItem.name}</h3>
+                  <p className="text-sm text-gray-500">{selectedItem.tier}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedItem(null)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {selectedItem.objects && (
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-700 mb-2">Objects to Include:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedItem.objects.map((obj: string, idx: number) => (
+                    <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                      {obj}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {selectedItem.words && (
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-700 mb-2">Words in this Box:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedItem.words.map((word: string, idx: number) => (
+                    <span 
+                      key={idx} 
+                      className="px-3 py-1 rounded-full text-sm text-white font-medium"
+                      style={{ backgroundColor: selectedItem.color || '#6B7280' }}
+                    >
+                      {word}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {selectedItem.letters && (
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-700 mb-2">Letters:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedItem.letters.map((letter: string, idx: number) => (
+                    <span key={idx} className="w-10 h-10 flex items-center justify-center bg-pink-100 text-pink-700 rounded-lg text-lg font-bold">
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {selectedItem.details && (
+              <div className="p-4 bg-gray-50 rounded-xl text-sm text-gray-700">
+                <span className="font-medium">Details: </span>{selectedItem.details}
+              </div>
+            )}
+            
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="mt-4 w-full py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-medium transition"
+            >
+              Got it!
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

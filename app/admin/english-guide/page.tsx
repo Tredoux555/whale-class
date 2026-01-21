@@ -1287,7 +1287,7 @@ export default function EnglishGuidePage() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const [showVocabGuide, setShowVocabGuide] = useState(false);
-  const [activeView, setActiveView] = useState<'guide' | 'ispy' | 'moveable'>('guide');
+  const [activeView, setActiveView] = useState<'guide' | 'ispy' | 'moveable' | 'shelf'>('guide');
   const [expandedPhases, setExpandedPhases] = useState<string[]>([]);
   const [expandedStages, setExpandedStages] = useState<number[]>([]);
 
@@ -1344,6 +1344,12 @@ export default function EnglishGuidePage() {
               className={`px-4 py-2 rounded-lg font-medium transition ${activeView === 'moveable' ? 'bg-white text-amber-600' : 'text-white hover:bg-white/20'}`}
             >
               🔤 Moveable Alphabet
+            </button>
+            <button
+              onClick={() => setActiveView('shelf')}
+              className={`px-4 py-2 rounded-lg font-medium transition ${activeView === 'shelf' ? 'bg-white text-teal-600' : 'text-white hover:bg-white/20'}`}
+            >
+              🗄️ Shelf Setup
             </button>
           </div>
         </div>
@@ -1552,6 +1558,236 @@ export default function EnglishGuidePage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* SHELF SETUP VIEW */}
+        {activeView === 'shelf' && (
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center">
+              <div className="text-5xl mb-2">🐋</div>
+              <h2 className="text-3xl font-bold mb-1">Tredoux's English Area</h2>
+              <p className="text-teal-100">Whale Class - 3 Shelf Setup</p>
+              <div className="flex justify-center gap-3 mt-4">
+                <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium">← Progression Flow →</span>
+                <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium">Ages 2.5 → 6</span>
+              </div>
+            </div>
+
+            {/* SHELF 1: PRE-READING */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-amber-700 to-amber-800 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">SHELF 1: PRE-READING</h3>
+                <p className="text-amber-200 text-sm">Ages 2.5-3.5 • "Train the ear"</p>
+              </div>
+              <div className="p-4 space-y-4">
+                {/* Top Tier: Sound Games */}
+                <div className="bg-green-50 rounded-lg p-4">
+                  <h4 className="text-green-700 font-bold text-sm mb-3">TOP TIER: SOUND GAMES</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-green-200 hover:border-green-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🧺</div>
+                      <div className="font-bold text-sm">I-Spy /m/</div>
+                      <div className="text-xs text-gray-500">mouse, mug...</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-green-200 hover:border-green-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🧺</div>
+                      <div className="font-bold text-sm">I-Spy /s/</div>
+                      <div className="text-xs text-gray-500">sun, sock...</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-green-200 hover:border-green-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🧺</div>
+                      <div className="font-bold text-sm">I-Spy /a/</div>
+                      <div className="text-xs text-gray-500">apple, ant...</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Middle Tier: Sandpaper Letters */}
+                <div className="bg-pink-50 rounded-lg p-4">
+                  <h4 className="text-pink-700 font-bold text-sm mb-3">MIDDLE TIER: SANDPAPER LETTERS</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-pink-200 hover:border-pink-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">✋</div>
+                      <div className="font-bold text-sm">a - i</div>
+                      <div className="text-xs text-gray-500">lowercase</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-pink-200 hover:border-pink-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">✋</div>
+                      <div className="font-bold text-sm">j - r</div>
+                      <div className="text-xs text-gray-500">lowercase</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-pink-200 hover:border-pink-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">✋</div>
+                      <div className="font-bold text-sm">s - z</div>
+                      <div className="text-xs text-gray-500">lowercase</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Bottom Tier: Metal Insets */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="text-blue-700 font-bold text-sm mb-3">BOTTOM TIER: METAL INSETS</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">💎</div>
+                      <div className="font-bold text-sm">Metal Insets</div>
+                      <div className="text-xs text-gray-500">10 shapes</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📄</div>
+                      <div className="font-bold text-sm">Paper</div>
+                      <div className="text-xs text-gray-500">inset squares</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">✏️</div>
+                      <div className="font-bold text-sm">Pencils</div>
+                      <div className="text-xs text-gray-500">colored pencils</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SHELF 2: ENCODING */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">SHELF 2: ENCODING</h3>
+                <p className="text-blue-200 text-sm">Ages 3.5-4.5 • "Writing before reading"</p>
+              </div>
+              <div className="p-4 space-y-4">
+                {/* Top Tier: Moveable Alphabet */}
+                <div className="bg-amber-50 rounded-lg p-4">
+                  <h4 className="text-amber-700 font-bold text-sm mb-3">TOP TIER: MOVEABLE ALPHABET</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-amber-200 hover:border-amber-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🔤</div>
+                      <div className="font-bold text-sm">Large MA</div>
+                      <div className="text-xs text-gray-500">red consonants</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-amber-200 hover:border-amber-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🔤</div>
+                      <div className="font-bold text-sm">Blue Vowels</div>
+                      <div className="text-xs text-gray-500">a, e, i, o, u</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-amber-200 hover:border-amber-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🧺</div>
+                      <div className="font-bold text-sm">CVC Objects</div>
+                      <div className="text-xs text-gray-500">cat, dog, pen...</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Middle Tier: Word Building */}
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <h4 className="text-purple-700 font-bold text-sm mb-3">MIDDLE TIER: WORD BUILDING</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-purple-200 hover:border-purple-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📋</div>
+                      <div className="font-bold text-sm">Short A Box</div>
+                      <div className="text-xs text-gray-500">cat, hat, mat...</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-purple-200 hover:border-purple-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📋</div>
+                      <div className="font-bold text-sm">Short E Box</div>
+                      <div className="text-xs text-gray-500">bed, pen, hen...</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-purple-200 hover:border-purple-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📋</div>
+                      <div className="font-bold text-sm">Short I/O/U</div>
+                      <div className="text-xs text-gray-500">pig, dog, cup...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SHELF 3: DECODING */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">SHELF 3: DECODING</h3>
+                <p className="text-green-200 text-sm">Ages 4.5-6 • "Reading emerges naturally"</p>
+              </div>
+              <div className="p-4 space-y-4">
+                {/* Top Tier: Pink Series */}
+                <div className="bg-red-50 rounded-lg p-4">
+                  <h4 className="text-red-700 font-bold text-sm mb-3">TOP TIER: PINK SERIES (CVC)</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-red-200 hover:border-red-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📕</div>
+                      <div className="font-bold text-sm">Word Lists</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-red-200 hover:border-red-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🏷️</div>
+                      <div className="font-bold text-sm">Phrases</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-red-200 hover:border-red-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📜</div>
+                      <div className="font-bold text-sm">Sentences</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-red-200 hover:border-red-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📚</div>
+                      <div className="font-bold text-sm">Readers</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Middle Tier: Blue Series */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="text-blue-700 font-bold text-sm mb-3">MIDDLE TIER: BLUE SERIES (BLENDS)</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📘</div>
+                      <div className="font-bold text-sm">Word Lists</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🏷️</div>
+                      <div className="font-bold text-sm">Phrases</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📜</div>
+                      <div className="font-bold text-sm">Sentences</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-blue-200 hover:border-blue-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📚</div>
+                      <div className="font-bold text-sm">Readers</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Bottom Tier: Green Series */}
+                <div className="bg-emerald-50 rounded-lg p-4">
+                  <h4 className="text-emerald-700 font-bold text-sm mb-3">BOTTOM TIER: GREEN SERIES (PHONOGRAMS)</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-emerald-200 hover:border-emerald-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📗</div>
+                      <div className="font-bold text-sm">Word Lists</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-emerald-200 hover:border-emerald-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">🏷️</div>
+                      <div className="font-bold text-sm">Phrases</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-emerald-200 hover:border-emerald-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📜</div>
+                      <div className="font-bold text-sm">Sentences</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center border-2 border-emerald-200 hover:border-emerald-400 transition cursor-pointer">
+                      <div className="text-2xl mb-1">📚</div>
+                      <div className="font-bold text-sm">Readers</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Setup Instructions */}
+            <div className="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200">
+              <h3 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+                <span className="text-2xl">💡</span> Setup Instructions
+              </h3>
+              <ul className="text-yellow-700 space-y-2 text-sm">
+                <li>• <strong>3 physical shelves</strong> - Left to right = top to bottom reading direction</li>
+                <li>• <strong>Color-coded containers</strong> - Green for sounds, Pink for CVC, Blue for blends, Green for phonograms</li>
+                <li>• <strong>Labels on everything</strong> - Children return materials to correct spot</li>
+                <li>• <strong>Work mats at child level</strong> - Easy access encourages independence</li>
+              </ul>
             </div>
           </div>
         )}
