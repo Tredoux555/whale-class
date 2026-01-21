@@ -11,6 +11,7 @@ import InProgressWorks from './InProgressWorks';
 import RecommendationsPanel from './RecommendationsPanel';
 import MilestonesPanel from './MilestonesPanel';
 import WeeklyReportCard from './WeeklyReportCard';
+import GamesPanel from './GamesPanel';
 
 export default function ParentDashboard() {
   const { children, loading: childrenLoading } = useParentChildren();
@@ -106,6 +107,11 @@ export default function ParentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <RecommendationsPanel childId={selectedChildId!} />
               <WeeklyReportCard childId={selectedChildId!} />
+            </div>
+
+            {/* Games Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <GamesPanel childId={selectedChildId!} />
             </div>
           </div>
         ) : null}
