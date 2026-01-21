@@ -1,99 +1,92 @@
 {
   "project": "whale",
-  "lastUpdated": "2025-01-21T12:00:00Z",
-  "session": 39,
-  "phase": "AI Suggestions Panel CODE COMPLETE",
-  "currentSubPhase": "Needs API testing on production",
-  "phaseStatus": "ON HOLD ⏸️",
+  "lastUpdated": "2025-01-21T20:00:00Z",
+  "session": 41,
+  "phase": "PHASE 2 - Gamification",
+  "currentSubPhase": "5 Language Games Complete",
+  "phaseStatus": "ROLLING 🎮",
   
-  "CORE_LAWS": [
-    "1. CURRICULUM BELONGS TO CLASSROOM",
-    "2. The /montree/ is THE PRODUCT", 
-    "3. The /admin/ is Tredoux's sandbox",
-    "4. Brain updates MANDATORY after every chunk",
-    "5. READ THIS FILE FIRST",
-    "6. JAPANESE ENGINEER MINDSET",
-    "7. SEGMENT WORK - update brain after EVERY step"
-  ],
-
-  "MONTESSORI_BRAIN_STATUS": {
-    "status": "COMPLETE ✅",
-    "works": 213,
-    "sensitive_periods": 11,
-    "api_endpoints": 6,
-    "works_by_area": {
-      "practical_life": 67,
-      "mathematics": 42,
-      "language": 37,
-      "sensorial": 36,
-      "cultural": 31
+  "PHASE_STRUCTURE": {
+    "phase_1": {
+      "name": "Montree School Platform",
+      "status": "COMPLETE ✅"
+    },
+    "phase_2": {
+      "name": "Gamification + Montree Home",
+      "status": "ACTIVE 🎮",
+      "components": {
+        "games_architecture": "✅ COMPLETE",
+        "sound_safari": "✅ BUILT",
+        "word_builder": "✅ BUILT",
+        "match_attack": "✅ BUILT",
+        "read_and_reveal": "✅ BUILT",
+        "sentence_scramble": "✅ BUILT",
+        "quantity_match": "📋 NEXT",
+        "bead_frame": "📋 PLANNED",
+        "sensorial_sort": "📋 PLANNED"
+      }
     }
   },
 
-  "AI_SUGGESTIONS_PANEL": {
-    "status": "WIRED ✅",
-    "location": "Student detail page → This Week tab",
-    "component": "components/classroom/AISuggestionsPanel.tsx",
-    "api_endpoint": "/api/brain/recommend",
-    "features": [
-      "Age-based recommendations",
-      "Sensitive period alignment",
-      "Gateway work priority",
-      "Collapsible panel",
-      "Refresh button"
-    ]
+  "GAMES_STATUS": {
+    "total_planned": 10,
+    "built": 7,
+    "language_games_complete": true,
+    "games": {
+      "letter_tracer": "✅ EXISTS",
+      "number_tracer": "✅ EXISTS",
+      "sound_safari": "✅ /app/games/sound-safari/",
+      "word_builder": "✅ /app/games/word-builder-new/",
+      "match_attack": "✅ /app/games/match-attack-new/",
+      "read_and_reveal": "✅ /app/games/read-and-reveal/",
+      "sentence_scramble": "✅ /app/games/sentence-scramble/",
+      "quantity_match": "📋 NEXT (Math)",
+      "bead_frame": "📋 PLANNED (Math)",
+      "sensorial_sort": "📋 PLANNED (Sensorial)"
+    }
   },
 
-  "NEXT_SESSION_PROMPT": "Test the AI Suggestions Panel - API returned 404 during testing. Debug Railway deployment, verify /api/brain/recommend works, then test panel at /admin/classroom/student/[id]. Read HANDOFF_AI_SUGGESTIONS_PANEL.md first.",
-
-  "KEY_DISCOVERIES": {
-    "red_rods_number_rods": "Physically identical - only color differs",
-    "pink_tower_cubing": "Cubes are 1³ to 10³ (sensorial → math)",
-    "writing_before_reading": "Encoding first, then decoding",
-    "three_finger_grip": "Spooning grip = pencil grip",
-    "no_boundaries": "Every work serves multiple areas"
+  "ENGLISH_AREA_GAMES_MAPPING": {
+    "pre_reading": {
+      "work": "Sound Games / I-Spy",
+      "game": "Sound Safari",
+      "skills": ["Phonemic awareness", "Beginning sounds"]
+    },
+    "encoding": {
+      "work": "Moveable Alphabet",
+      "game": "Word Builder",
+      "skills": ["Sound-symbol", "Spelling"]
+    },
+    "decoding_speed": {
+      "work": "Pink Series Object Box",
+      "game": "Match Attack",
+      "skills": ["Reading fluency", "Word recognition"]
+    },
+    "decoding_confidence": {
+      "work": "Pink Reading Cards",
+      "game": "Read & Reveal",
+      "skills": ["Reading confidence", "Self-checking"]
+    },
+    "comprehension": {
+      "work": "Sentence Building",
+      "game": "Sentence Scramble",
+      "skills": ["Syntax awareness", "Sentence structure"]
+    }
   },
 
-  "DATABASE_LIVE": {
-    "tables": [
-      "sensitive_periods (11 records)",
-      "montessori_works (213 records)",
-      "work_prerequisites",
-      "work_sensitive_periods",
-      "work_cross_benefits",
-      "work_unlocks"
-    ],
-    "functions": [
-      "get_available_works(child_age, completed_work_ids)",
-      "get_recommended_works(child_age, completed_work_ids, limit)"
-    ],
-    "migrations_run": [
-      "040_montessori_brain.sql",
-      "041_montessori_brain_seed.sql",
-      "042_montessori_brain_additional_works.sql"
-    ]
-  },
+  "MIGRATIONS_TO_RUN": [
+    "050_digital_handbook.sql",
+    "051_english_handbook_seed.sql",
+    "052_gamification_architecture.sql"
+  ],
 
-  "API_ENDPOINTS_LIVE": {
-    "GET /api/brain/works": "List/filter all works",
-    "GET /api/brain/available": "Works child is ready for",
-    "GET /api/brain/recommend": "Smart AI recommendations",
-    "GET /api/brain/work/[id]": "Full work details",
-    "GET /api/brain/sensitive-periods": "Period data by age",
-    "POST /api/brain/explain": "Claude-generated parent explanations"
-  },
+  "NEXT_SESSION_PROMPT": "5 language games built! English Area is digitized. Run migrations, test all games, then build Quantity Match (Math area). After that: wire games to works in DB.",
 
   "FILE_LOCATIONS": {
-    "research": "/docs/montessori-brain/",
-    "migrations": "/supabase/migrations/040_*.sql, 041_*.sql, 042_*.sql",
-    "api": "/app/api/brain/",
-    "handoff": "/docs/mission-control/HANDOFF_MONTESSORI_BRAIN.md",
-    "ai_panel": "/components/classroom/AISuggestionsPanel.tsx",
-    "student_page": "/app/admin/classroom/student/[id]/page.tsx"
-  },
-
-  "REPLACES_OLD_CURRICULUM": {
-    "old": "Montree linear stages (0-11), ~100 works, no sensitive periods",
-    "new": "213 works, 11 sensitive periods, prerequisite chains, smart recommendations"
+    "sound_safari": "/app/games/sound-safari/page.tsx",
+    "word_builder": "/app/games/word-builder-new/page.tsx",
+    "match_attack": "/app/games/match-attack-new/page.tsx",
+    "read_and_reveal": "/app/games/read-and-reveal/page.tsx",
+    "sentence_scramble": "/app/games/sentence-scramble/page.tsx"
   }
 }
