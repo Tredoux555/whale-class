@@ -1,6 +1,6 @@
 // app/api/brain/works/route.ts
 // List all Montessori works from the brain with full relationship data
-// UPDATED: Now joins prerequisites, unlocks, and sensitive periods
+// UPDATED: Now joins prerequisites, unlocks, sensitive periods, AND games
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
@@ -98,10 +98,22 @@ export async function GET(request: NextRequest) {
         period:sensitive_periods(id, name, slug)
       `);
 
-    // 5. Build lookup maps for efficient joining
+    // 5. Get all game mappings with game details
+    const { data: workGames } = await supabase
+      .from('work_games')
+      .select(`
+        work_id,
+        relationship_type,
+        display_order,
+        game:montessori_games(id, name, slug, game_type, description, component_path, thumbnail_url)
+      `)
+      .order('display_order');
+
+    // 6. Build lookup maps for efficient joining
     const prerequisiteMap = new Map<string, { id: string; name: string; slug: string; is_required: boolean }[]>();
     const unlockMap = new Map<string, { id: string; name: string; slug: string }[]>();
     const periodMap = new Map<string, { id: string; name: string; slug: string; relevance_score: number }[]>();
+    const gameMap = new Map<string, { id: string; name: string; slug: string; game_type: string; description: string; component_path: string; thumbnail_url: string | null; relationship_type: string }[]>();
 
     // Populate prerequisites map
     if (prerequisites) {
@@ -147,12 +159,32 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 6. Combine all data
+    // Populate games map
+    if (workGames) {
+      for (const wg of workGames) {
+        if (!wg.game) continue;
+        const existing = gameMap.get(wg.work_id) || [];
+        existing.push({
+          id: wg.game.id,
+          name: wg.game.name,
+          slug: wg.game.slug,
+          game_type: wg.game.game_type,
+          description: wg.game.description,
+          component_path: wg.game.component_path,
+          thumbnail_url: wg.game.thumbnail_url,
+          relationship_type: wg.relationship_type,
+        });
+        gameMap.set(wg.work_id, existing);
+      }
+    }
+
+    // 7. Combine all data
     const enrichedWorks = works.map(work => ({
       ...work,
       prerequisites: prerequisiteMap.get(work.id) || [],
       unlocks: unlockMap.get(work.id) || [],
       sensitive_periods: periodMap.get(work.id) || [],
+      related_games: gameMap.get(work.id) || [],
     }));
 
     return NextResponse.json({
