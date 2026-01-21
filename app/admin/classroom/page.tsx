@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import AISuggestions from './AISuggestions';
 
 // SECURITY: Only Tredoux can access classroom data
 function useAuthCheck() {
@@ -45,7 +46,7 @@ function getWeekNumber(date: Date): number {
 
 export default function ClassroomPage() {
   const authorized = useAuthCheck();
-  const [activeTab, setActiveTab] = useState<'classroom' | 'tools'>('classroom');
+  const [activeTab, setActiveTab] = useState<'classroom' | 'ai' | 'tools'>('classroom');
   const [children, setChildren] = useState<Child[]>([]);
   const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +77,12 @@ export default function ClassroomPage() {
   const filteredChildren = children.filter(child =>
     child.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Handle AI suggestion selection
+  function handleAISelect(workId: string, childId: string, workName: string) {
+    // For now, just show an alert. Later can navigate to assignment page.
+    alert(`Assign "${workName}" to child? (Feature coming soon)`);
+  }
 
   // SECURITY: Block unauthorized access
   if (!authorized) {
@@ -125,7 +132,7 @@ export default function ClassroomPage() {
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs - Now with AI tab */}
           <div className="flex gap-1 mt-4 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('classroom')}
@@ -135,7 +142,17 @@ export default function ClassroomPage() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Classroom
+              Students
+            </button>
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'ai'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              🧠 AI
             </button>
             <button
               onClick={() => setActiveTab('tools')}
@@ -160,6 +177,17 @@ export default function ClassroomPage() {
             setSearch={setSearch}
             school={school}
           />
+        ) : activeTab === 'ai' ? (
+          <div className="space-y-4">
+            <AISuggestions children={children} onSelectWork={handleAISelect} />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                <strong>Tip:</strong> AI suggestions are based on the Montessori Brain - 213 works, 
+                11 sensitive periods, and prerequisite chains. Select a student to see personalized 
+                recommendations based on their age and development stage.
+              </p>
+            </div>
+          </div>
         ) : (
           <ToolsTab school={school} />
         )}
@@ -260,6 +288,13 @@ function StudentCard({ child, schoolSlug }: { child: Child; schoolSlug?: string 
 function ToolsTab({ school }: { school: School | null }) {
   const tools = [
     {
+      name: 'Digital Handbook',
+      icon: '📖',
+      description: 'Browse 213 Montessori works',
+      href: '/admin/handbook',
+      color: 'bg-indigo-50 text-indigo-600',
+    },
+    {
       name: 'Weekly Reports',
       icon: '📝',
       description: 'Generate English progress reports',
@@ -267,18 +302,18 @@ function ToolsTab({ school }: { school: School | null }) {
       color: 'bg-blue-50 text-blue-600',
     },
     {
-      name: 'English Progression',
-      icon: '📊',
-      description: 'View reading sequence & levels',
-      href: `/admin/schools/${school?.slug || 'beijing-international'}/english`,
-      color: 'bg-green-50 text-green-600',
+      name: 'English Guide',
+      icon: '📚',
+      description: 'Teaching methodology',
+      href: '/admin/english-guide',
+      color: 'bg-teal-50 text-teal-600',
     },
     {
-      name: 'Curriculum',
-      icon: '📚',
-      description: 'Montessori works library',
-      href: `/admin/schools/${school?.slug || 'beijing-international'}/curriculum`,
-      color: 'bg-purple-50 text-purple-600',
+      name: 'English Setup',
+      icon: '🔤',
+      description: '3-shelf word lists',
+      href: '/admin/english-setup',
+      color: 'bg-cyan-50 text-cyan-600',
     },
     {
       name: 'Learning Games',
@@ -288,18 +323,11 @@ function ToolsTab({ school }: { school: School | null }) {
       color: 'bg-orange-50 text-orange-600',
     },
     {
-      name: 'Newsletter',
-      icon: '📰',
-      description: 'Weekly parent updates',
-      href: `/admin/schools/${school?.slug || 'beijing-international'}/newsletter`,
-      color: 'bg-pink-50 text-pink-600',
-    },
-    {
-      name: 'Settings',
-      icon: '⚙️',
-      description: 'School & account settings',
-      href: '/admin/settings',
-      color: 'bg-gray-50 text-gray-600',
+      name: 'Weekly Planning',
+      icon: '📋',
+      description: 'Upload weekly plans',
+      href: '/admin/weekly-planning',
+      color: 'bg-green-50 text-green-600',
     },
   ];
 
