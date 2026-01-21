@@ -1,87 +1,104 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-22T07:45:00Z",
+  "lastUpdated": "2026-01-22T08:30:00Z",
   "session": 45,
-  "phase": "PHASE 1 - DIGITAL HANDBOOK v2",
-  "currentSubPhase": "Deep Audit Complete - Major Upgrades",
+  "mode": "AUTONOMOUS_OVERNIGHT",
+  "phase": "EXECUTING TASK LIST",
 
   "CORE_LAWS": {
     "LAW_001": "CHECKPOINT EVERY 5 MINUTES during builds. Never lose progress.",
-    "LAW_002": "CHUNK SAVE ANALYZE PROCEED: Mandatory workflow."
+    "LAW_002": "CHUNK SAVE ANALYZE PROCEED: Mandatory workflow.",
+    "LAW_003": "AUTONOMOUS MODE: No questions, make decisions, save progress."
   },
 
-  "SESSION_45_PROGRESS": {
-    "started": "2026-01-22T07:00:00Z",
-    "checkpoints": [
-      {
-        "time": "07:15",
-        "status": "✅ Basic files created",
-        "completed": [
-          "/app/admin/handbook/page.tsx (landing - 6 area cards)",
-          "/app/admin/handbook/[areaId]/page.tsx (dynamic - works list + modal)",
-          "Added handbook to admin dashboard TOOLS array"
-        ]
-      },
-      {
-        "time": "07:45",
-        "status": "✅ DEEP AUDIT COMPLETE - v2 built",
-        "audit_findings": [
-          "❌ Hardcoded work counts → ✅ Now dynamic from API",
-          "❌ No prerequisites shown → ✅ Added with 'do these first' section",
-          "❌ No sensitive periods → ✅ Added color-coded badges",
-          "❌ No gateway badges → ✅ Added 🌟 Gateway Work markers",
-          "❌ No age filter → ✅ Added age toggle (2.5-5.5)",
-          "❌ No sequence numbers → ✅ Added in work list",
-          "❌ Missing 'what's next' → ✅ Added 'Unlocks' section",
-          "❌ Sub-areas alphabetical → ✅ Now sorted by Montessori order",
-          "❌ No typical age → ✅ Added age_typical display",
-          "❌ Missing philosophy → ✅ Added area philosophy intros"
-        ],
-        "completed": [
-          "Landing page v2 - dynamic counts, 3 master threads, sensitive periods ref",
-          "Area page v2 - gateway filter, age filter, collapsible sub-areas, sequence numbers",
-          "Modal v2 - prerequisites, unlocks, sensitive periods, typical age"
-        ]
-      }
-    ],
-    "next_step": "Build test, then deploy"
+  "AUTONOMOUS_TASK_LIST": {
+    "status": "IN_PROGRESS",
+    "started": "2026-01-22T08:30:00Z",
+    
+    "TASK_1": {
+      "name": "Deploy Session 45",
+      "status": "PENDING",
+      "priority": 1,
+      "estimated_time": "5 min",
+      "steps": [
+        "Run npm run build",
+        "Fix any build errors",
+        "Git commit and push"
+      ]
+    },
+    
+    "TASK_2": {
+      "name": "API Joins - Prerequisites, Unlocks, Sensitive Periods",
+      "status": "PENDING",
+      "priority": 2,
+      "estimated_time": "30-60 min",
+      "steps": [
+        "Update /api/brain/works/route.ts",
+        "Join work_prerequisites table",
+        "Join work_unlocks table", 
+        "Join work_sensitive_periods + sensitive_periods",
+        "Test API returns full data",
+        "Verify handbook modal shows data"
+      ]
+    },
+    
+    "TASK_3": {
+      "name": "AI Suggestions Panel in Weekly Planning",
+      "status": "PENDING",
+      "priority": 3,
+      "estimated_time": "2-3 hours",
+      "steps": [
+        "Add AI Suggestions component",
+        "Fetch child ages from classroom",
+        "Call /api/brain/recommend for each child",
+        "Display recommendations with reasons",
+        "Add to weekly planning page"
+      ]
+    },
+    
+    "TASK_4": {
+      "name": "Game → Brain Mapping",
+      "status": "PENDING",
+      "priority": 4,
+      "estimated_time": "2 hours",
+      "steps": [
+        "Create game_work_mappings migration",
+        "Run migration in Supabase",
+        "Create /api/games/mappings endpoint",
+        "Add Related Games to handbook modal",
+        "Add Related Works to game pages"
+      ]
+    },
+    
+    "TASK_5": {
+      "name": "Classroom Progress Bars",
+      "status": "PENDING", 
+      "priority": 5,
+      "estimated_time": "1 hour",
+      "steps": [
+        "Check child_curriculum_progress table",
+        "Calculate real progress percentages",
+        "Update student cards in classroom",
+        "Show actual progress instead of 0%"
+      ]
+    },
+    
+    "TASK_6": {
+      "name": "Final Audit & Polish",
+      "status": "PENDING",
+      "priority": 6,
+      "estimated_time": "30 min",
+      "steps": [
+        "Test all new features",
+        "Fix any bugs found",
+        "Update documentation",
+        "Final deploy"
+      ]
+    }
   },
 
-  "HANDBOOK_V2_FEATURES": {
-    "landing_page": [
-      "Dynamic work counts from API",
-      "Area philosophy descriptions",
-      "The 3 Master Threads visualization",
-      "11 Sensitive Periods reference",
-      "Montessori quote"
-    ],
-    "area_page": [
-      "Age filter (2.5, 3, 3.5, 4, 4.5, 5, 5.5)",
-      "Gateway works filter",
-      "Search within area",
-      "Collapsible sub-area groups",
-      "Sequence numbers",
-      "Montessori-ordered sub-areas (not alphabetical)",
-      "Gateway work badges 🌟"
-    ],
-    "work_modal": [
-      "Sensitive period badges (color-coded)",
-      "Prerequisites with 'do these first' label",
-      "Unlocks with 'what comes next' label",
-      "Typical introduction age (not just range)",
-      "Direct aims",
-      "Indirect aims with 'prepares for later' label",
-      "Materials needed",
-      "Readiness indicators",
-      "Parent explanation"
-    ]
-  },
-
-  "PHASE_STATUS": {
-    "english_guide": "✅ COMPLETE",
-    "english_setup": "✅ COMPLETE",
-    "digital_handbook": "✅ v2 COMPLETE (Session 45)",
-    "ai_suggestions_api": "❌ FUTURE",
-    "game_mapping": "❌ FUTURE"
-  }
+  "CURRENT_TASK": "TASK_1",
+  "CHECKPOINT_COUNT": 0,
+  "ERRORS_ENCOUNTERED": [],
+  "DECISIONS_MADE": []
 }
