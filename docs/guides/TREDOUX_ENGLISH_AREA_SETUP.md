@@ -1,474 +1,368 @@
-# 🔤 Tredoux's English Area Setup Guide
+# 🐋 Tredoux's English Area Setup Guide
 
-> **For:** PreK 3-6 Montessori Classrooms (ESL-friendly)  
-> **Created:** January 21, 2025  
-> **Status:** PRODUCTION READY
+> **Created:** January 21, 2026  
+> **Author:** Tredoux + Claude  
+> **For:** Whale Class (PreK 4, Ages 2-6, Chinese ESL Learners)
 
 ---
 
 ## THE PHILOSOPHY
 
-Keep it **simple**. Not 1000 different works—just the essential progression as Montessori designed it.
+**Simple. Clean. Executable.**
 
-Three phases. Three shelves. Clear progression.
+This is NOT 1000 different works. This is the essential Montessori English progression as Maria designed it, adapted for Chinese ESL learners.
+
+**The Three Phases:**
+1. **Pre-Reading** (2.5-3.5) → Ears before eyes
+2. **Encoding** (3.5-4.5) → Writing before reading
+3. **Decoding** (4.5-6) → Reading emerges naturally
 
 ---
 
-## PHYSICAL SHELF LAYOUT
+## SHELF RECOMMENDATION: 3 Units
 
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║                    ENGLISH AREA - 3 SHELF UNIT                     ║
-╠═══════════════════════════════════════════════════════════════════╣
-║                                                                    ║
-║  TOP SHELF: PHASE 1 - PRE-READING (Age 2.5-3.5)                   ║
-║  ┌─────────────┬─────────────────────┬──────────────────────────┐ ║
-║  │ I-Spy Basket│  Sandpaper Letters  │     Metal Insets         │ ║
-║  │  (Objects)  │   (Box of 26)       │   (2-3 frames + paper)   │ ║
-║  └─────────────┴─────────────────────┴──────────────────────────┘ ║
-║                                                                    ║
-║  MIDDLE SHELF: PHASE 2 - ENCODING (Age 3.5-4.5)                   ║
-║  ┌─────────────────────┬────────────────┬───────────────────────┐ ║
-║  │  Moveable Alphabet  │  Object Boxes  │  Picture-Word Cards   │ ║
-║  │   (Large wooden)    │  (Pink Series) │     (Matching)        │ ║
-║  └─────────────────────┴────────────────┴───────────────────────┘ ║
-║                                                                    ║
-║  BOTTOM SHELF: PHASE 3 - DECODING (Age 4.5-6)                     ║
-║  ┌────────────────────┬─────────────────┬───────────────────────┐ ║
-║  │  Pink Reading Box  │  Blue Series    │  Sentence Building    │ ║
-║  │  (CVC cards)       │  (Intro box)    │     (Strips)          │ ║
-║  └────────────────────┴─────────────────┴───────────────────────┘ ║
-║                                                                    ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
+**Why 3 shelves?**
+- One shelf per phase
+- Left-to-right progression (Montessori standard)
+- Child can visually see their journey
+- Clean, uncluttered, purposeful
 
 **Shelf Specifications:**
-- Width: 120cm minimum (150cm ideal)
-- Height: 90cm (child-accessible)
-- Depth: 35cm
-- Material: Natural wood or white laminate
-- NO doors or barriers—everything visible
+- Width: 90-120cm each
+- Height: 3-4 tiers per unit
+- Depth: 30-40cm (fits trays)
+
+**Room Placement:**
+- Against a wall, away from high-traffic areas
+- Natural light preferred (reading area nearby)
+- Floor mat/rug space in front for work
 
 ---
 
-## MATERIALS LIST
+## SHELF 1: PRE-READING (Ages 2.5-3.5)
 
-### PHASE 1: Pre-Reading Materials
+*"Train the ear before the eye"*
 
-| Item | Quantity | Source | Est. Cost |
-|------|----------|--------|-----------|
-| **I-Spy Basket** | 1 | Woven basket (local) | $5 |
-| Miniature objects (3-letter CVC focus) | 20-30 | 1688/Aliexpress/Dollar store | $15 |
-| **Sandpaper Letters Box** | 1 set (26) | 1688: "montessori sandpaper letters" | $25 |
-| Wooden box for letters | 1 | Custom or Taobao | $10 |
-| **Metal Insets** | Full set (10) | 1688: "montessori metal insets" | $35 |
-| Metal inset paper (14cm squares) | 500 sheets | Local print shop | $5 |
-| Colored pencils (thick grip) | 12 | Supermarket | $8 |
-| Metal inset stand | 1 | 1688 or DIY wood | $12 |
-
-**Phase 1 Total: ~$115**
-
----
-
-### PHASE 2: Encoding Materials
-
-| Item | Quantity | Source | Est. Cost |
-|------|----------|--------|-----------|
-| **Large Moveable Alphabet** | 1 set | 1688: "montessori moveable alphabet wooden" | $45 |
-| Alphabet mat (green felt) | 1 | Fabric store, 60x90cm | $8 |
-| **Object Box - Pink Series** | 3 boxes | DIY wooden boxes + miniatures | $25 |
-| Pink CVC objects (bat, cat, hat, etc.) | 30+ objects | 1688/Dollar store/Toys | $20 |
-| **Picture-Word Matching Cards** | 3 sets (20 cards each) | Print + laminate (DIY) | $15 |
-| Pink card stock | 50 sheets | Print shop | $5 |
-
-**Phase 2 Total: ~$118**
-
----
-
-### PHASE 3: Decoding Materials
-
-| Item | Quantity | Source | Est. Cost |
-|------|----------|--------|-----------|
-| **Pink Reading Cards** | Full set | Print + laminate (DIY) | $20 |
-| Pink word lists (CVC) | 60 words | Whale generator | FREE |
-| 3-part cards (Pink) | 20 sets | Whale Label Maker | FREE |
-| **Blue Series Intro Box** | 1 box | DIY wooden box | $10 |
-| Blue objects (4-letter blends) | 20 | Miniatures from 1688 | $15 |
-| Blue word cards | 40 | Print + laminate | $10 |
-| **Sentence Building Strips** | 50 | DIY (pink paper) | $5 |
-| Sentence strip holder | 1 | Wood craft or 1688 | $8 |
-
-**Phase 3 Total: ~$68**
-
----
-
-### TOTAL SETUP COST: ~$301
-
-**Budget Version:** $180 (skip metal insets, use printable alternatives)  
-**Premium Version:** $450 (add extra materials, professional boxes)
-
----
-
-## I-SPY OBJECT COLLECTION
-
-The heart of Phase 1. Collect miniatures that represent CVC words.
-
-### Essential Objects (Start with these)
-
-**Short A words:**
-- cat, hat, bat, rat, mat, bag, can, pan, fan, man
-
-**Short E words:**
-- bed, red, pen, hen, net, jet, pet, leg, peg, web
-
-**Short I words:**
-- pig, wig, fig, big, pin, bin, tin, fin, lid, kid
-
-**Short O words:**
-- dog, log, fog, hog, box, fox, pot, cot, dot, mop
-
-**Short U words:**
-- bug, mug, rug, jug, cup, pup, sun, bun, nut, hut
-
-### Sourcing Tips
-
-**1688 Search Terms (Chinese):**
-- 微型动物玩具 (miniature animal toys)
-- 早教认知玩具 (early education cognitive toys)
-- 蒙特梭利语言教具 (Montessori language teaching aids)
-
-**Dollar Store Gold:**
-- Party favors section
-- Craft miniatures
-- Doll house accessories
-- Animal tube sets
-
-**Homemade Options:**
-- Print and laminate 3D images
-- Clay miniatures (parent project)
-- Felt cutouts
-
----
-
-## CLASSROOM FLOW DIAGRAM
-
+### Top Tier: Sound Games Materials
 ```
-                    ┌──────────────────┐
-                    │   ENTRANCE       │
-                    └────────┬─────────┘
-                             │
-           ┌─────────────────┼─────────────────┐
-           │                 │                 │
-           ▼                 ▼                 ▼
-    ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-    │  PRACTICAL  │   │  SENSORIAL  │   │   ENGLISH   │◄── You are here
-    │    LIFE     │   │    AREA     │   │    AREA     │
-    └─────────────┘   └─────────────┘   └─────────────┘
-           │                 │                 │
-           │                 │                 │
-           ▼                 ▼                 ▼
-    ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-    │    MATH     │   │  CULTURAL   │   │    RUGS     │
-    │    AREA     │   │    AREA     │   │   STORAGE   │
-    └─────────────┘   └─────────────┘   └─────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  🧺 I-Spy Basket    🧺 I-Spy Basket    🧺 I-Spy Basket  │
+│  (Beginning /m/)    (Beginning /s/)    (Beginning /a/)  │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### English Area Placement Rules
+**What's in each basket:**
+- 5-8 small objects starting with that sound
+- Objects should be concrete, familiar, 3D
+- Example /m/ basket: mouse, mug, mitten, moon, map, mat
 
-1. **Near natural light** - Reading needs good lighting
-2. **Away from noisy areas** - Sound games need quiet
-3. **Near sensorial** - Many cross-connections
-4. **Floor space in front** - For rug work with Moveable Alphabet
-5. **Wall space behind** - For alphabet frieze at child height
+**Rotation:** Start with 3-4 baskets, rotate weekly. Cover all 26 sounds over time.
+
+**ESL Note for Chinese Learners:**
+- START with sounds that exist in Mandarin: /m/, /n/, /s/, /l/, /f/
+- DELAY difficult sounds: /v/, /th/, /r/ (these don't exist in Mandarin)
+- Use extra objects for: /b/ vs /p/, /d/ vs /t/ (aspiration differences)
+
+### Middle Tier: Sandpaper Letters
+```
+┌─────────────────────────────────────────────────────────┐
+│  📦 Box 1: a-i     📦 Box 2: j-r     📦 Box 3: s-z     │
+│  (lowercase)       (lowercase)        (lowercase)       │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Organization:**
+- Lowercase ONLY (uppercase comes much later)
+- Vowels on BLUE backgrounds
+- Consonants on PINK/RED backgrounds
+- Stored in 3 boxes or a single compartmentalized tray
+
+**Presentation Order (NOT alphabetical):**
+1. Start with letters the child can HEAR in their name
+2. Then visually distinct letters: c, m, a, t, s, r, i, p
+3. Avoid similar letters together: b/d, p/q, m/n, u/v
+
+**ESL Adaptation:**
+- Spend EXTRA time on: v, th, r, l (phonemes absent in Mandarin)
+- Connect to Pinyin where helpful: "This /s/ is like 's' in 'sī'"
+
+### Bottom Tier: Metal Insets
+```
+┌─────────────────────────────────────────────────────────┐
+│  🔷 Metal Insets Frame (10 shapes)                      │
+│  📝 Paper Tray    ✏️ Colored Pencils    📋 Completed Work│
+└─────────────────────────────────────────────────────────┘
+```
+
+**Setup:**
+- Metal insets displayed in their wooden frame
+- Stack of inset paper (14cm squares with frame line)
+- Colored pencils in a holder (3-4 colors)
+- Small tray for finished work
+
+**Why here?** Metal insets prepare the hand for writing. The child traces shapes, building pencil control before letter formation.
 
 ---
 
-## MATERIAL CREATION GUIDE
+## SHELF 2: ENCODING (Ages 3.5-4.5)
 
-### DIY Sandpaper Letters (Budget Option)
+*"Writing before reading"*
 
-**Materials:**
-- 26 wooden boards (10x12cm, 5mm thick)
-- Fine sandpaper (120-150 grit)
-- Wood stain (light) or paint (pink for vowels, blue for consonants)
-- PVA glue
-- Letter templates
-
-**Steps:**
-1. Sand boards smooth, round corners
-2. Stain/paint boards (let dry 24h)
-3. Print letter templates (lowercase, Sassoon font)
-4. Trace letters onto sandpaper
-5. Cut sandpaper letters carefully
-6. Glue sandpaper to boards (centered)
-7. Press under books overnight
-8. Store in wooden box with dividers
-
----
-
-### DIY Object Boxes (Pink Series)
-
-**Box Specifications:**
-- Size: 15x20x8cm
-- Material: Pine wood or bamboo
-- Divider: 2 compartments (objects | cards)
-- Color: Natural wood or pink stain
-
-**Contents per box (Example: Short A Box):**
+### Top Tier: Large Moveable Alphabet
 ```
-LEFT SIDE: Objects          RIGHT SIDE: Cards
-- cat (miniature)           - CAT card
-- hat (doll hat)            - HAT card  
-- bat (toy)                 - BAT card
-- mat (felt square)         - MAT card
-- bag (tiny bag)            - BAG card
-- can (mini tin)            - CAN card
-```
-
-**Printing Cards:**
-- Use Whale Label Maker (3-part card style)
-- Pink cardstock (160gsm)
-- Laminate for durability
-- Cut with rounded corners
-
----
-
-### DIY Picture-Word Matching Cards
-
-**Design:**
-```
-┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │
-│    [IMAGE]      │     │      cat        │
-│      🐱         │     │                 │
-│                 │     │                 │
-└─────────────────┘     └─────────────────┘
-    Picture Card            Word Card
+┌─────────────────────────────────────────────────────────┐
+│  🔤 LARGE MOVEABLE ALPHABET BOX                         │
+│  (Blue vowels, Red/Pink consonants, lowercase)          │
+└─────────────────────────────────────────────────────────┘
 ```
 
 **Specifications:**
-- Card size: 8x10cm
-- Pink border (2mm)
-- Image: Simple, realistic (no cartoons)
-- Font: Sassoon Primary, 48pt, lowercase
-- Control card: Picture + word together (for self-checking)
+- Letters: 5-7cm tall (large enough for small hands)
+- Multiple copies of each letter (5+ vowels, 3+ consonants)
+- Compartmentalized box with alphabet order
+- Working mat that rolls out
 
----
+**Key Principle:** Child builds words they can SAY but cannot yet READ. This is encoding - translating known sounds into symbols.
 
-### DIY Moveable Alphabet Tray
-
-If buying full set is expensive, make a starter set:
-
-**Materials:**
-- MDF board (60x45cm)
-- 26 small compartments (craft organizer)
-- Wooden letters (2.5cm height) - multiple of each
-- Blue paint (consonants), Red paint (vowels)
-
-**Letter Quantities:**
-| Letter | Qty | Letter | Qty |
-|--------|-----|--------|-----|
-| a | 10 | n | 6 |
-| e | 10 | r | 4 |
-| i | 8 | s | 4 |
-| o | 8 | t | 6 |
-| u | 6 | Others | 2-3 each |
-
----
-
-## PRESENTATION SEQUENCE
-
-### Week-by-Week Progression
-
-**PHASE 1 (Weeks 1-12)**
-
-| Week | Work | Presentation Focus |
-|------|------|-------------------|
-| 1-2 | I-Spy (Beginning) | "I spy something that starts with /s/" |
-| 3-4 | I-Spy (Ending) | "I spy something that ends with /t/" |
-| 5-6 | Sandpaper Letters (s,m,a,t) | First 4 letters, trace and say |
-| 7-8 | Sandpaper Letters (p,i,n,c) | Next 4, review first 4 |
-| 9-10 | Metal Insets | Circle, square—focus on pencil control |
-| 11-12 | Sandpaper Letters (continue) | Add 4 more, informal I-Spy continues |
-
-**PHASE 2 (Weeks 13-24)**
-
-| Week | Work | Presentation Focus |
-|------|------|-------------------|
-| 13-14 | Moveable Alphabet Intro | Carry tray, find letters, build name |
-| 15-16 | Building CVC words | "cat", "mat", "sat"—sound it out |
-| 17-18 | Object Box 1 (Short A) | Match objects to words |
-| 19-20 | Object Box 2 (Short I) | New vowel sound |
-| 21-22 | Picture-Word Matching | Independent work |
-| 23-24 | Review and extend | Mix boxes, challenge cards |
-
-**PHASE 3 (Weeks 25-36)**
-
-| Week | Work | Presentation Focus |
-|------|------|-------------------|
-| 25-26 | Pink Reading Cards | Reading (decoding) vs writing (encoding) |
-| 27-28 | Pink 3-Part Cards | Object-picture-word matching |
-| 29-30 | Pink Sentence Strips | "The cat sat." |
-| 31-32 | Blue Series Intro | 4-letter blends (lamp, hand) |
-| 33-34 | Blue Object Box | New challenge level |
-| 35-36 | Sentence Building | Longer sentences, punctuation |
-
----
-
-## ESL ADAPTATIONS (For Chinese Students)
-
-### Key Challenges
-
-1. **No phonemic awareness in L1** - Chinese is logographic, not phonetic
-2. **Final consonants** - Often dropped (cat → ca)
-3. **Consonant clusters** - Difficult (st, bl, tr)
-4. **Short vowel confusion** - a/e/i sound similar to Chinese ears
-
-### Adaptations
-
-**Extended I-Spy Phase:**
-- Spend 4-6 weeks instead of 2-4
-- Focus heavily on final sounds
-- Use objects with clear, distinct endings
-
-**Exaggerated Pronunciation:**
-- Slow, clear articulation
-- Hold final consonants longer
-- Use mouth mirror for positioning
-
-**Visual Supports:**
-- Color-code vowels (always red)
-- Mouth position photos for each sound
-- Phoneme gesture system (Jolly Phonics compatible)
-
-**Whale Games Integration:**
-- Letter Tracer with sound feedback
-- Sound sorting games
-- Phoneme discrimination exercises
-
----
-
-## WHALE PLATFORM INTEGRATION
-
-### Current Tools Available
-
-| Tool | Location | Purpose |
-|------|----------|---------|
-| 3-Part Card Generator | /admin/tools | Create Pink/Blue/Green cards |
-| Label Maker | /admin/tools | Material labels, matching cards |
-| Letter Tracer Game | /teacher/games | Digital sandpaper letter practice |
-| Number Tracer Game | /teacher/games | Writing prep (cross-area) |
-
-### Phase 2: Games Roadmap
-
-| Physical Work | Digital Game (Coming) |
-|--------------|----------------------|
-| I-Spy | Sound Safari—find objects by sound |
-| Sandpaper Letters | Letter Tracer Pro—multi-letter |
-| Moveable Alphabet | Word Builder—drag letters to build |
-| Object Boxes | Match Attack—object to word speed |
-| Reading Cards | Read & Reveal—decode for picture |
-| Sentence Strips | Sentence Scramble—reorder words |
-
----
-
-## MAINTENANCE & ORGANIZATION
-
-### Daily Check
-- [ ] All objects in correct boxes
-- [ ] Cards not bent or torn
-- [ ] Sandpaper letters clean (no pencil marks)
-- [ ] Metal insets have paper and pencils
-- [ ] Moveable Alphabet letters returned to compartments
-
-### Weekly Reset
-- [ ] Wipe all materials with damp cloth
-- [ ] Replace damaged cards
-- [ ] Rotate I-Spy objects for interest
-- [ ] Check pencil sharpness
-- [ ] Refill metal inset paper
-
-### Monthly Inventory
-- [ ] Count all small objects
-- [ ] Check sandpaper adhesion
-- [ ] Assess card lamination
-- [ ] Order replacement materials
-- [ ] Update object collection
-
----
-
-## QUICK REFERENCE CARD
-
-Print this for your shelf:
-
+### Middle Tier: Object Boxes (Pink Series)
 ```
-╔═════════════════════════════════════════╗
-║     ENGLISH AREA QUICK REFERENCE        ║
-╠═════════════════════════════════════════╣
-║                                         ║
-║  PHASE 1: PRE-READING (2.5-3.5)        ║
-║  • I-Spy: sounds, not letter names     ║
-║  • Sandpaper: trace, say sound         ║
-║  • Metal Insets: pencil control        ║
-║                                         ║
-║  PHASE 2: ENCODING (3.5-4.5)           ║
-║  • Child BUILDS words from sounds      ║
-║  • Objects → sounds → letters          ║
-║  • Writing before reading!             ║
-║                                         ║
-║  PHASE 3: DECODING (4.5-6)             ║
-║  • Child READS words already built     ║
-║  • Letters → sounds → meaning          ║
-║  • Pink → Blue → Green series          ║
-║                                         ║
-║  KEY PRINCIPLE:                        ║
-║  "Follow the child's interest"         ║
-║                                         ║
-╚═════════════════════════════════════════╝
+┌─────────────────────────────────────────────────────────┐
+│  📦 CVC Objects    📦 CVC Objects    📦 CVC Objects     │
+│  (a words)         (e words)         (i words)          │
+│  cat, bat, map     bed, pen, net     pig, pin, kit      │
+└─────────────────────────────────────────────────────────┘
 ```
 
----
+**What's inside each box:**
+- 6-10 miniature objects (CVC words only)
+- Objects must be concrete and recognizable
+- Corresponding word cards (for later matching)
 
-## SOURCING CONTACTS
+**CVC = Consonant-Vowel-Consonant** (cat, bed, pig, hot, cup)
 
-### 1688 Recommended Sellers (Tredoux Verified)
+**The 5 Object Boxes:**
+1. Short /a/: cat, bat, map, hat, bag, pan, rat, van
+2. Short /e/: bed, pen, net, jet, hen, web, leg, peg
+3. Short /i/: pig, pin, kit, lip, wig, bib, fin, sit
+4. Short /o/: pot, dog, log, mop, box, cot, fox, hop
+5. Short /u/: cup, bug, rug, sun, bus, nut, jug, mud
 
-*To be added as specific sellers are vetted*
+### Bottom Tier: Picture-Word Matching
+```
+┌─────────────────────────────────────────────────────────┐
+│  📁 Picture Cards     📁 Word Cards      🧺 Matching    │
+│  (CVC images)         (CVC words)        Basket         │
+└─────────────────────────────────────────────────────────┘
+```
 
-### Taobao Alternatives
-
-*To be added*
-
-### Local Beijing Options
-
-- **Ikea Siyuanqiao:** Wooden boxes, felt, organizers
-- **Muji:** Paper, pencil cases, storage
-- **Flying Tiger:** Miniatures, craft supplies
-- **Decathlon:** Small balls, objects for I-Spy
-
----
-
-## APPENDIX: WORD LISTS
-
-### Pink Series (CVC Words by Vowel)
-
-**Short A (40 words):**
-cat, hat, bat, rat, mat, sat, fat, pat, vat, cab, dab, jab, tab, bad, dad, had, lad, mad, pad, sad, bag, gag, lag, nag, rag, sag, tag, wag, jam, ham, ram, can, ban, fan, man, pan, ran, tan, van, cap, gap, lap, map, nap, rap, sap, tap, zap
-
-**Short E (30 words):**
-bed, fed, led, red, wed, beg, leg, peg, ben, den, hen, men, pen, ten, bet, get, jet, let, met, net, pet, set, vet, wet, yet, dew, few, new, pew, sew
-
-**Short I (35 words):**
-bib, fib, rib, bid, did, hid, kid, lid, big, dig, fig, gig, jig, pig, rig, wig, bin, din, fin, kin, pin, sin, tin, win, bit, fit, hit, kit, lit, pit, sit, wit, dip, hip, lip, rip, sip, tip, zip
-
-**Short O (30 words):**
-bob, cob, gob, job, mob, rob, sob, cod, god, nod, pod, rod, bog, cog, dog, fog, hog, jog, log, cop, hop, mop, pop, top, cot, dot, got, hot, lot, not, pot, rot
-
-**Short U (25 words):**
-bub, cub, hub, pub, rub, sub, tub, bud, cud, dud, mud, bug, dug, hug, jug, mug, pug, rug, tug, bun, fun, gun, nun, pun, run, sun, but, cut, gut, hut, jut, nut, rut, tut, cup, pup, sup
+**Setup:**
+- Picture cards (clear images, one per card)
+- Corresponding word cards (same size, plain font)
+- Small basket or tray for the activity
+- Control card (picture + word together) for self-correction
 
 ---
 
-*This guide is a living document. Update as Whale platform features expand.*
+## SHELF 3: DECODING (Ages 4.5-6)
 
-**Built for the Whale Class. Ready for the world.** 🐋📚
+*"Reading emerges naturally"*
+
+### Top Tier: Pink Reading Cards
+```
+┌─────────────────────────────────────────────────────────┐
+│  📁 Pink Word       📁 Pink Phrase     📁 Pink Sentence │
+│     Lists              Cards              Cards         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Pink Series Progression:**
+1. **Word Lists:** Single CVC words to decode
+2. **Phrase Cards:** "a red cat" / "the big dog"
+3. **Sentence Cards:** "The cat sat on the mat."
+4. **Command Cards:** "Sit on the rug." (child reads and acts)
+5. **Pink Readers:** Small decodable books (CVC only)
+
+### Middle Tier: Blue Series Introduction
+```
+┌─────────────────────────────────────────────────────────┐
+│  📁 Blend Cards     📁 Blue Word       📁 Blue Phrase   │
+│  (bl, cr, st...)    Lists              Cards            │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Blue Series = Consonant Blends**
+
+Beginning Blends: bl, cl, fl, gl, pl, sl, br, cr, dr, fr, gr, pr, tr, sc, sk, sm, sn, sp, st, sw
+
+Ending Blends: -ck, -ft, -lk, -mp, -nd, -nk, -nt, -pt, -sk, -st
+
+**Only introduce Blue when Pink is MASTERED** (child reads CVC fluently)
+
+### Bottom Tier: Sentence Building
+```
+┌─────────────────────────────────────────────────────────┐
+│  📦 Grammar Symbols    📁 Sentence      📦 Story        │
+│  (noun, verb, adj)     Building Cards   Sequencing      │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Sentence Building Materials:**
+- Word cards on colored backgrounds by part of speech
+- Noun = black, Verb = red, Article = light blue, Adjective = dark blue
+- Child physically builds sentences by arranging cards
+
+---
+
+## CLASSROOM FLOW
+
+```
+                    ┌─────────────────┐
+                    │   ENTRANCE      │
+                    └────────┬────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+   ┌────▼────┐         ┌─────▼─────┐        ┌────▼────┐
+   │ SHELF 1 │         │  SHELF 2  │        │ SHELF 3 │
+   │Pre-Read │         │ Encoding  │        │Decoding │
+   │2.5-3.5  │         │  3.5-4.5  │        │ 4.5-6   │
+   └────┬────┘         └─────┬─────┘        └────┬────┘
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   WORK RUGS     │
+                    │  (Floor Space)  │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  READING NOOK   │
+                    │ (Soft seating,  │
+                    │  natural light) │
+                    └─────────────────┘
+```
+
+**Flow Principles:**
+1. Child moves LEFT → RIGHT through the shelves (natural progression)
+2. Floor space in front of shelves for rug work
+3. Reading nook nearby for comfortable book time
+4. Materials return to EXACT same spot (order!)
+
+---
+
+## ESL ADAPTATIONS FOR CHINESE LEARNERS
+
+### Sounds That Need Extra Attention
+
+| English Sound | Challenge for Mandarin Speakers | Strategy |
+|---------------|--------------------------------|----------|
+| /v/ | Doesn't exist in Mandarin | Pair with /f/, exaggerate lip position |
+| /θ/ (th) | Doesn't exist | Use mirror, show tongue position |
+| /r/ | Different from Mandarin r | Start with "er" sound they know |
+| /l/ vs /r/ | Often confused | Explicit contrast activities |
+| /b/ vs /p/ | Aspiration difference | Feel breath on hand |
+| /d/ vs /t/ | Aspiration difference | Feel breath on hand |
+| Final consonants | Often dropped | Emphasize ending sounds |
+
+### Adaptation Strategies
+
+1. **Sound Games First** - Spend MORE time on I-Spy than typical. Chinese learners need extra phonemic awareness training.
+
+2. **Pinyin Bridge** - When helpful, connect English sounds to Pinyin: "This /s/ sound is like the 's' in sī (four)"
+
+3. **Final Sounds Emphasis** - Mandarin has few final consonants. Use objects that emphasize endings: "cat" - really hear that /t/!
+
+4. **Blend Work** - Mandarin is syllable-timed. English blends (bl-, str-) are challenging. Extra practice needed.
+
+5. **Minimal Pairs** - Use object pairs that differ by one sound: bat/pat, bet/bed, pin/bin
+
+---
+
+## DAILY RHYTHM
+
+### Morning Work Cycle (Suggested)
+
+```
+8:30-9:00   Free choice from all shelves
+9:00-9:15   Small group Sound Games (I-Spy)
+9:15-10:00  Free choice - encourage progression
+10:00-10:15 Story time in Reading Nook
+```
+
+### Teacher's Role
+
+1. **Observe** - Which shelf is each child drawn to?
+2. **Present** - Give individual lessons when child is ready
+3. **Connect** - "I see you know all the sounds! Let's try the Sandpaper Letters."
+4. **Record** - Track which works each child has been presented/mastered
+
+---
+
+## READINESS INDICATORS
+
+### Ready for Shelf 2 (Encoding) when child can:
+- ✅ Identify beginning sounds in words consistently
+- ✅ Identify ending sounds in words
+- ✅ Trace sandpaper letters with correct formation
+- ✅ Associate most letter sounds with symbols
+- ✅ Show interest in "writing" words
+
+### Ready for Shelf 3 (Decoding) when child can:
+- ✅ Build CVC words with moveable alphabet
+- ✅ Sound out words they've built
+- ✅ Match objects to word cards
+- ✅ Show interest in "reading" environmental print
+- ✅ Blend sounds smoothly (not choppy: "c-a-t" → "cat")
+
+---
+
+## QUICK REFERENCE: What Goes Where
+
+| Shelf | Tier | Materials |
+|-------|------|-----------|
+| 1 | Top | I-Spy Sound Baskets (3-6 rotating) |
+| 1 | Middle | Sandpaper Letters (3 boxes, lowercase) |
+| 1 | Bottom | Metal Insets + paper + pencils |
+| 2 | Top | Large Moveable Alphabet |
+| 2 | Middle | Object Boxes (5 boxes, CVC by vowel) |
+| 2 | Bottom | Picture-Word Matching Cards |
+| 3 | Top | Pink Reading Cards (words → phrases → sentences) |
+| 3 | Middle | Blue Series (blends) |
+| 3 | Bottom | Sentence Building + Grammar Symbols |
+
+---
+
+## COMMON MISTAKES TO AVOID
+
+❌ **Teaching alphabet order** - Montessori teaches by SOUND, not A-B-C
+❌ **Uppercase first** - Always lowercase first (it's what they'll read)
+❌ **Pushing reading before encoding** - Writing MUST come first
+❌ **Skipping Sound Games** - The foundation for everything
+❌ **Too many materials at once** - Keep it sparse and purposeful
+❌ **Correcting during work** - Child self-corrects with control cards
+
+---
+
+## SUCCESS LOOKS LIKE
+
+**Phase 1 Success:**
+- Child plays Sound Games independently
+- Child traces letters while saying sounds
+- Child shows interest in letter sounds everywhere
+
+**Phase 2 Success:**
+- Child builds words unprompted
+- Child sounds out words they've built
+- Child matches objects to words with control card
+
+**Phase 3 Success:**
+- Child reads CVC words fluently
+- Child reads simple sentences
+- Child picks up books and attempts to read
+
+---
+
+*This guide represents Tredoux's English Area methodology for Whale Class.*
+*Built on Montessori principles, adapted for Chinese ESL learners.*
+
+🐋 **Whale Class - Making Readers**
