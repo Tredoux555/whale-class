@@ -306,8 +306,7 @@ export default function QuantityMatchGame() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
                 onClick={() => removeCounter(counter.id)}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 
-                  shadow-lg hover:shadow-xl active:scale-90 transition-all"
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg hover:shadow-xl active:scale-90 transition-all"
               />
             ))}
             {pair.length === 1 && (
@@ -502,8 +501,7 @@ export default function QuantityMatchGame() {
 
               {/* Number Card Display */}
               <div className="flex justify-center">
-                <div className="w-24 h-32 bg-white rounded-2xl shadow-xl flex items-center justify-center
-                  text-5xl font-bold text-gray-800 border-4 border-blue-200">
+                <div className="w-24 h-32 bg-white rounded-2xl shadow-xl flex items-center justify-center text-5xl font-bold text-gray-800 border-4 border-blue-200">
                   {gameState.currentNumber}
                 </div>
               </div>
@@ -525,8 +523,7 @@ export default function QuantityMatchGame() {
                   onClick={placeCounter}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl
-                    font-bold text-lg shadow-lg flex items-center gap-2"
+                  className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-bold text-lg shadow-lg flex items-center gap-2"
                 >
                   <span className="text-2xl">🔴</span>
                   Add Counter ({gameState.counters.length})
@@ -535,8 +532,7 @@ export default function QuantityMatchGame() {
                   onClick={checkCounterAnswer}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl
-                    font-bold text-lg shadow-lg"
+                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-lg shadow-lg"
                 >
                   Check ✓
                 </motion.button>
@@ -573,8 +569,7 @@ export default function QuantityMatchGame() {
 
               {/* Number Display with Visual Counters */}
               <div className="bg-white/60 rounded-2xl p-8 shadow-lg flex flex-col items-center gap-6">
-                <div className="w-28 h-36 bg-white rounded-2xl shadow-xl flex items-center justify-center
-                  text-6xl font-bold text-gray-800 border-4 border-purple-200">
+                <div className="w-28 h-36 bg-white rounded-2xl shadow-xl flex items-center justify-center text-6xl font-bold text-gray-800 border-4 border-purple-200">
                   {gameState.currentNumber}
                 </div>
                 
@@ -602,8 +597,7 @@ export default function QuantityMatchGame() {
                   onClick={() => checkOddEven('odd')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl
-                    font-bold text-xl shadow-lg"
+                  className="px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold text-xl shadow-lg"
                 >
                   ☝️ ODD
                 </motion.button>
@@ -611,8 +605,7 @@ export default function QuantityMatchGame() {
                   onClick={() => checkOddEven('even')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-10 py-5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl
-                    font-bold text-xl shadow-lg"
+                  className="px-10 py-5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl font-bold text-xl shadow-lg"
                 >
                   👫 EVEN
                 </motion.button>
@@ -692,8 +685,7 @@ export default function QuantityMatchGame() {
                   onClick={() => startGame(gameState.mode)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl
-                    font-bold text-lg shadow-lg"
+                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-lg shadow-lg"
                 >
                   Play Again 🔄
                 </motion.button>
@@ -701,8 +693,7 @@ export default function QuantityMatchGame() {
                   onClick={() => setGameState(getInitialState())}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-gray-700 rounded-2xl
-                    font-bold text-lg shadow-lg border-2 border-gray-200"
+                  className="px-8 py-4 bg-white text-gray-700 rounded-2xl font-bold text-lg shadow-lg border-2 border-gray-200"
                 >
                   Choose Mode
                 </motion.button>
