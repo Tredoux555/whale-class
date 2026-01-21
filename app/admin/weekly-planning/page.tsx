@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import AISuggestions from './AISuggestions';
 
 interface ParsedAssignment {
   childName: string;
@@ -167,6 +168,11 @@ export default function WeeklyPlanningPage() {
           >
             🐋 Open Classroom View →
           </Link>
+        </div>
+
+        {/* AI Suggestions Panel */}
+        <div className="mb-6">
+          <AISuggestions />
         </div>
 
         {/* Upload Zone */}
