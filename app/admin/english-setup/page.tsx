@@ -860,6 +860,81 @@ export default function EnglishSetupPage() {
               </div>
             )}
 
+            {/* PRINT TOOLS SECTION */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h4 className="font-semibold text-gray-700 mb-3">🖨️ Print Materials:</h4>
+              <div className="flex flex-wrap gap-2">
+                
+                {/* Word Lists → Label Maker */}
+                {(selectedItem.wordLists || selectedItem.wordsByVowel || selectedItem.blendLists || selectedItem.digraphLists || selectedItem.phonogramLists || selectedItem.silentELists) && (
+                  <a 
+                    href="/admin/label-maker" 
+                    target="_blank"
+                    className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center gap-2"
+                  >
+                    🏷️ Print Word Labels
+                  </a>
+                )}
+                
+                {/* Phrases/Sentences → Material Generator (sentence strips) */}
+                {(selectedItem.phrases || selectedItem.sentences) && (
+                  <a 
+                    href="/admin/material-generator" 
+                    target="_blank"
+                    className="px-3 py-2 bg-pink-500 text-white rounded-lg text-sm font-medium hover:bg-pink-600 transition flex items-center gap-2"
+                  >
+                    📜 Print Sentence Strips
+                  </a>
+                )}
+                
+                {/* Pink Series → Material Generator */}
+                {selectedItem.key?.startsWith('pink') && (
+                  <a 
+                    href="/admin/material-generator" 
+                    target="_blank"
+                    className="px-3 py-2 bg-pink-400 text-white rounded-lg text-sm font-medium hover:bg-pink-500 transition flex items-center gap-2"
+                  >
+                    🩷 Pink Series Cards
+                  </a>
+                )}
+                
+                {/* Blue Series → Material Generator */}
+                {selectedItem.key?.startsWith('blue') && (
+                  <a 
+                    href="/admin/material-generator" 
+                    target="_blank"
+                    className="px-3 py-2 bg-blue-400 text-white rounded-lg text-sm font-medium hover:bg-blue-500 transition flex items-center gap-2"
+                  >
+                    💙 Blue Series Cards
+                  </a>
+                )}
+                
+                {/* Green Series → Material Generator */}
+                {selectedItem.key?.startsWith('green') && (
+                  <a 
+                    href="/admin/material-generator" 
+                    target="_blank"
+                    className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center gap-2"
+                  >
+                    💚 Green Series Cards
+                  </a>
+                )}
+                
+                {/* Three-Part Cards (for object matching) */}
+                {(selectedItem.key === 'pinkObjectBox' || selectedItem.key === 'pinkPictureMatch') && (
+                  <a 
+                    href="/admin/card-generator" 
+                    target="_blank"
+                    className="px-3 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition flex items-center gap-2"
+                  >
+                    🃏 Three-Part Cards
+                  </a>
+                )}
+                
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Opens in new tab • Copy words from above</p>
+            </div>
+
             <button
               onClick={() => setSelectedItem(null)}
               className="mt-4 w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition"
