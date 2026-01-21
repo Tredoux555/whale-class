@@ -627,9 +627,7 @@ export default function WordBuilderGame() {
                 key={letter}
                 onClick={() => handleLetterClick(letter)}
                 disabled={isPlaying || feedback?.type === 'correct'}
-                className="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-xl text-2xl font-bold 
-                  shadow-md hover:shadow-lg hover:scale-110 active:scale-95 transition-all
-                  disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-xl text-2xl font-bold shadow-md hover:shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {letter}
               </button>
@@ -643,9 +641,7 @@ export default function WordBuilderGame() {
                 key={letter}
                 onClick={() => handleLetterClick(letter)}
                 disabled={isPlaying || feedback?.type === 'correct'}
-                className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xl font-bold 
-                  shadow-md hover:shadow-lg hover:scale-110 active:scale-95 transition-all
-                  disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xl font-bold shadow-md hover:shadow-lg hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {letter}
               </button>

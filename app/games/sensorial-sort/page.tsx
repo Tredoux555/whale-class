@@ -1,4 +1,256 @@
+// app/games/sensorial-sort/page.tsx
+// Sensorial Sort - Color Tablets / Pink Tower / Brown Stairs
+// Montessori sensorial: Visual discrimination through sorting
+// 3 Modes: 1) Sort by Size 2) Sort by Color 3) Sort by Shape
 
+'use client';
+
+import React, { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
+
+// ============================================
+// TYPES
+// ============================================
+type GameMode = 'size' | 'color' | 'shape';
+type GamePhase = 'menu' | 'playing' | 'feedback' | 'complete';
+type FeedbackType = 'correct' | 'incorrect' | 'perfect' | null;
+
+interface SortItem {
+  id: string;
+  value: number;
+  color: string;
+  size: number;
+  shape: 'circle' | 'square' | 'triangle';
+  label: string;
+}
+
+interface GameState {
+  mode: GameMode;
+  phase: GamePhase;
+  items: SortItem[];
+  score: number;
+  streak: number;
+  bestStreak: number;
+  xp: number;
+  round: number;
+  totalRounds: number;
+  feedback: FeedbackType;
+  sortDirection: 'asc' | 'desc';
+}
+
+// ============================================
+// CONSTANTS
+// ============================================
+const GAME_MODES = {
+  size: {
+    name: 'Sort by Size',
+    description: 'Arrange from smallest to largest',
+    icon: '📏',
+    color: 'from-pink-500 to-rose-500',
+    rounds: 8,
+    montessoriWork: 'Pink Tower / Brown Stairs',
+  },
+  color: {
+    name: 'Sort by Color',
+    description: 'Arrange colors light to dark',
+    icon: '🎨',
+    color: 'from-blue-500 to-indigo-500',
+    rounds: 8,
+    montessoriWork: 'Color Tablets Box 2',
+  },
+  shape: {
+    name: 'Sort by Shape',
+    description: 'Group matching shapes together',
+    icon: '🔷',
+    color: 'from-purple-500 to-violet-500',
+    rounds: 8,
+    montessoriWork: 'Geometric Cabinet',
+  },
+};
+
+const COLORS = [
+  { name: 'Light Pink', value: 1, bg: 'bg-pink-200' },
+  { name: 'Pink', value: 2, bg: 'bg-pink-400' },
+  { name: 'Rose', value: 3, bg: 'bg-rose-500' },
+  { name: 'Dark Rose', value: 4, bg: 'bg-rose-700' },
+  { name: 'Light Blue', value: 1, bg: 'bg-blue-200' },
+  { name: 'Blue', value: 2, bg: 'bg-blue-400' },
+  { name: 'Indigo', value: 3, bg: 'bg-indigo-500' },
+  { name: 'Dark Indigo', value: 4, bg: 'bg-indigo-700' },
+];
+
+const SIZES = [
+  { label: 'Tiny', value: 1, size: 32 },
+  { label: 'Small', value: 2, size: 48 },
+  { label: 'Medium', value: 3, size: 64 },
+  { label: 'Large', value: 4, size: 80 },
+  { label: 'XL', value: 5, size: 96 },
+];
+
+// ============================================
+// HELPERS
+// ============================================
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+const generateSizeItems = (): SortItem[] => {
+  const count = 4 + Math.floor(Math.random() * 2);
+  return shuffleArray(SIZES.slice(0, count)).map((s, i) => ({
+    id: `size-${i}`,
+    value: s.value,
+    color: 'bg-pink-400',
+    size: s.size,
+    shape: 'square' as const,
+    label: s.label,
+  }));
+};
+
+const generateColorItems = (): SortItem[] => {
+  const colorSet = Math.random() > 0.5 ? COLORS.slice(0, 4) : COLORS.slice(4, 8);
+  return shuffleArray(colorSet).map((c, i) => ({
+    id: `color-${i}`,
+    value: c.value,
+    color: c.bg,
+    size: 64,
+    shape: 'square' as const,
+    label: c.name,
+  }));
+};
+
+const generateShapeItems = (): SortItem[] => {
+  const shapes: Array<'circle' | 'square' | 'triangle'> = ['circle', 'square', 'triangle'];
+  const items: SortItem[] = [];
+  shapes.forEach((shape, si) => {
+    for (let i = 0; i < 2; i++) {
+      items.push({
+        id: `shape-${si}-${i}`,
+        value: si + 1,
+        color: ['bg-red-400', 'bg-blue-400', 'bg-yellow-400'][si],
+        size: 56,
+        shape,
+        label: shape,
+      });
+    }
+  });
+  return shuffleArray(items);
+};
+
+const getInitialState = (): GameState => ({
+  mode: 'size',
+  phase: 'menu',
+  items: [],
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  xp: 0,
+  round: 1,
+  totalRounds: 8,
+  feedback: null,
+  sortDirection: 'asc',
+});
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+export default function SensorialSortGame() {
+  const [gameState, setGameState] = useState<GameState>(getInitialState());
+
+  const generateItems = useCallback((mode: GameMode): SortItem[] => {
+    switch (mode) {
+      case 'size': return generateSizeItems();
+      case 'color': return generateColorItems();
+      case 'shape': return generateShapeItems();
+    }
+  }, []);
+
+  const startGame = useCallback((mode: GameMode) => {
+    const config = GAME_MODES[mode];
+    setGameState({
+      ...getInitialState(),
+      mode,
+      phase: 'playing',
+      totalRounds: config.rounds,
+      items: generateItems(mode),
+      sortDirection: Math.random() > 0.5 ? 'asc' : 'desc',
+    });
+  }, [generateItems]);
+
+  const handleReorder = useCallback((newItems: SortItem[]) => {
+    setGameState(prev => ({ ...prev, items: newItems }));
+  }, []);
+
+  const checkAnswer = useCallback(() => {
+    const { items, mode, sortDirection } = gameState;
+    let isCorrect = false;
+
+    if (mode === 'shape') {
+      // Check if shapes are grouped together
+      const grouped = items.reduce((acc, item, i) => {
+        if (i === 0) return true;
+        const prevShape = items[i - 1].shape;
+        const currShape = item.shape;
+        return acc && (prevShape === currShape || items.filter(it => it.shape === prevShape).every(it => items.indexOf(it) < i));
+      }, true);
+      isCorrect = items.every((item, i) => {
+        if (i === 0) return true;
+        return item.shape === items[i-1].shape || 
+               items.slice(0, i).filter(it => it.shape === item.shape).length === 0;
+      });
+      // Simpler check: just verify shapes are grouped
+      const shapeOrder = items.map(i => i.shape);
+      const uniqueInOrder = shapeOrder.filter((s, i) => i === 0 || s !== shapeOrder[i-1]);
+      isCorrect = uniqueInOrder.length === 3;
+    } else {
+      // Check ascending or descending order
+      isCorrect = items.every((item, i) => {
+        if (i === 0) return true;
+        return sortDirection === 'asc' 
+          ? item.value >= items[i - 1].value
+          : item.value <= items[i - 1].value;
+      });
+    }
+
+    setGameState(prev => {
+      const newStreak = isCorrect ? prev.streak + 1 : 0;
+      const xpGain = isCorrect ? (10 + newStreak * 2) : 0;
+      return {
+        ...prev,
+        phase: 'feedback',
+        feedback: isCorrect ? (newStreak >= 3 ? 'perfect' : 'correct') : 'incorrect',
+        score: isCorrect ? prev.score + 1 : prev.score,
+        streak: newStreak,
+        bestStreak: Math.max(prev.bestStreak, newStreak),
+        xp: prev.xp + xpGain,
+      };
+    });
+  }, [gameState]);
+
+  const nextRound = useCallback(() => {
+    setGameState(prev => {
+      if (prev.round >= prev.totalRounds) {
+        return { ...prev, phase: 'complete' };
+      }
+      return {
+        ...prev,
+        phase: 'playing',
+        round: prev.round + 1,
+        items: generateItems(prev.mode),
+        feedback: null,
+        sortDirection: Math.random() > 0.5 ? 'asc' : 'desc',
+      };
+    });
+  }, [generateItems]);
+
+  const backToMenu = useCallback(() => {
+    setGameState(getInitialState());
+  }, []);
 
   // ============================================
   // RENDER
@@ -12,7 +264,7 @@
             <span className="text-xl">←</span>
             <span className="font-medium">Games</span>
           </Link>
-          <h1 className="text-xl font-bold text-rose-600">👁️ Sensorial Sort</h1>
+          <h1 className="text-xl font-bold text-rose-600">🎨 Sensorial Sort</h1>
           {gameState.phase !== 'menu' && (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-600">⭐ {gameState.xp} XP</span>
@@ -25,9 +277,7 @@
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
-          {/* ============================================ */}
           {/* MENU SCREEN */}
-          {/* ============================================ */}
           {gameState.phase === 'menu' && (
             <motion.div
               key="menu"
@@ -37,31 +287,26 @@
               className="space-y-6"
             >
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Sensorial Training</h2>
-                <p className="text-gray-600">Train your eyes to see colors and sizes!</p>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">Sensorial Sorting</h2>
+                <p className="text-gray-600">Train your senses through sorting!</p>
               </div>
 
+              {/* Mode Selection */}
               <div className="grid gap-4">
-                {(Object.entries(GAME_MODES) as [GameMode, typeof GAME_MODES[GameMode]][]).map(([key, mode]) => (
+                {(Object.entries(GAME_MODES) as [GameMode, typeof GAME_MODES.size][]).map(([mode, config]) => (
                   <motion.button
-                    key={key}
-                    onClick={() => startGame(key)}
+                    key={mode}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`p-6 rounded-2xl bg-gradient-to-r ${mode.color} text-white shadow-lg
-                      flex items-center gap-4 text-left`}
+                    onClick={() => startGame(mode)}
+                    className={`p-4 rounded-xl bg-gradient-to-r ${config.color} text-white text-left`}
                   >
-                    <span className="text-4xl">{mode.icon}</span>
-                    <div>
-                      <h3 className="text-xl font-bold">{mode.name}</h3>
-                      <p className="text-white/80 text-sm">{mode.description}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-white/20 rounded text-xs">
-                          {mode.material}
-                        </span>
-                        <span className="px-2 py-0.5 bg-white/20 rounded text-xs">
-                          Level {mode.montessoriLevel}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{config.icon}</span>
+                      <div>
+                        <h3 className="font-bold text-lg">{config.name}</h3>
+                        <p className="text-white/80 text-sm">{config.description}</p>
+                        <p className="text-white/60 text-xs mt-1">Based on: {config.montessoriWork}</p>
                       </div>
                     </div>
                   </motion.button>
@@ -70,323 +315,96 @@
             </motion.div>
           )}
 
-          {/* ============================================ */}
-          {/* COLOR MATCH MODE */}
-          {/* ============================================ */}
-          {gameState.phase === 'playing' && gameState.mode === 'color-match' && (
+          {/* PLAYING SCREEN */}
+          {gameState.phase === 'playing' && (
             <motion.div
-              key="color-match"
+              key="playing"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
               {/* Progress */}
-              <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-pink-500 to-rose-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                />
-              </div>
-
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Find the matching colors!</h2>
-                <p className="text-gray-500">
-                  Round {gameState.round + 1} of {gameState.totalRounds} • 
-                  Pairs found: {gameState.matchedPairs.length}/{gameState.colorPairs.length / 2}
-                </p>
-              </div>
-
-              {/* Color Grid */}
-              <div className={`grid gap-3 ${
-                gameState.colorPairs.length <= 6 ? 'grid-cols-3' :
-                gameState.colorPairs.length <= 12 ? 'grid-cols-4' : 'grid-cols-4 sm:grid-cols-6'
-              }`}>
-                {gameState.colorPairs.map((color) => {
-                  const isMatched = gameState.matchedPairs.includes(color.name);
-                  const isSelected = gameState.selectedColor?.id === color.id;
-                  
-                  return (
-                    <motion.button
-                      key={color.id}
-                      onClick={() => selectColor(color)}
-                      whileHover={{ scale: isMatched ? 1 : 1.05 }}
-                      whileTap={{ scale: isMatched ? 1 : 0.95 }}
-                      animate={{
-                        rotateY: isMatched ? 180 : 0,
-                        scale: isMatched ? 0.9 : 1,
-                      }}
-                      className={`aspect-square rounded-2xl shadow-lg transition-all
-                        ${isMatched 
-                          ? 'bg-gray-200 cursor-default' 
-                          : isSelected
-                            ? 'ring-4 ring-yellow-400 ring-offset-2'
-                            : 'hover:shadow-xl cursor-pointer'
-                        }`}
-                      style={{ 
-                        backgroundColor: isMatched ? '#E5E7EB' : color.hex,
-                        border: color.hex === '#FAFAFA' ? '2px solid #E5E7EB' : 'none'
-                      }}
-                    >
-                      {isMatched && (
-                        <span className="text-2xl">✓</span>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* ============================================ */}
-          {/* COLOR GRADE MODE */}
-          {/* ============================================ */}
-          {gameState.phase === 'playing' && gameState.mode === 'color-grade' && (
-            <motion.div
-              key="color-grade"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Progress */}
-              <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                />
-              </div>
-
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Sort the <span className="capitalize">{currentGradeColor}</span> shades
-                </h2>
-                <p className="text-gray-500">
-                  Lightest → Darkest • Round {gameState.round + 1} of {gameState.totalRounds}
-                </p>
-              </div>
-
-              {/* Placement Slots */}
-              <div className="bg-white/60 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm text-gray-400">Light</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-gray-400" />
-                  <span className="text-sm text-gray-400">Dark</span>
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {gameState.placedColors.map((color, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => placeGradeColor(index)}
-                      whileHover={{ scale: color ? 1 : 1.05 }}
-                      className={`aspect-square rounded-xl border-3 flex items-center justify-center
-                        transition-all text-xs font-bold
-                        ${color 
-                          ? 'shadow-md' 
-                          : gameState.selectedGradeColor
-                            ? 'border-dashed border-purple-400 bg-purple-50 cursor-pointer'
-                            : 'border-dashed border-gray-300 bg-gray-50'
-                        }`}
-                      style={{ backgroundColor: color?.hex || undefined }}
-                    >
-                      {!color && <span className="text-gray-300">{index + 1}</span>}
-                    </motion.button>
-                  ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-gray-500">Round {gameState.round}/{gameState.totalRounds}</span>
+                <div className="flex-1 mx-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-rose-500 transition-all"
+                    style={{ width: `${(gameState.round / gameState.totalRounds) * 100}%` }}
+                  />
                 </div>
               </div>
 
-              {/* Available Colors */}
-              {gameState.gradeColors.length > 0 && (
-                <div className="bg-white/60 rounded-2xl p-6 shadow-lg">
-                  <p className="text-sm text-gray-500 mb-3 text-center">Tap a shade, then tap where it goes:</p>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {gameState.gradeColors.map((color) => (
-                      <motion.button
-                        key={color.id}
-                        onClick={() => selectGradeColor(color)}
+              {/* Instructions */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+                <p className="text-gray-500 mb-2">
+                  {gameState.mode === 'shape' ? 'Group the shapes together!' :
+                   `Sort ${gameState.sortDirection === 'asc' ? 'smallest to largest' : 'largest to smallest'}`}
+                </p>
+                <p className="text-2xl font-bold text-rose-600">
+                  {gameState.mode === 'size' && '📏 Drag to arrange by size'}
+                  {gameState.mode === 'color' && '🎨 Drag to arrange by shade'}
+                  {gameState.mode === 'shape' && '🔷 Drag to group shapes'}
+                </p>
+              </div>
+
+              {/* Sortable Area */}
+              <div className="bg-rose-100 rounded-2xl p-6 min-h-[200px]">
+                <Reorder.Group
+                  axis="x"
+                  values={gameState.items}
+                  onReorder={handleReorder}
+                  className="flex flex-wrap justify-center gap-4"
+                >
+                  {gameState.items.map((item) => (
+                    <Reorder.Item
+                      key={item.id}
+                      value={item}
+                      className="cursor-grab active:cursor-grabbing"
+                    >
+                      <motion.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`w-14 h-14 rounded-xl shadow-lg transition-all
-                          ${gameState.selectedGradeColor?.id === color.id
-                            ? 'ring-4 ring-yellow-400 ring-offset-2 scale-110'
-                            : ''
-                          }`}
-                        style={{ backgroundColor: color.hex }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Check Button */}
-              {gameState.placedColors.every(c => c !== null) && (
-                <div className="flex justify-center">
-                  <motion.button
-                    onClick={checkGradeAnswer}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 
-                      text-white rounded-2xl font-bold text-lg shadow-lg"
-                  >
-                    Check ✓
-                  </motion.button>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* ============================================ */}
-          {/* SIZE SORT MODE */}
-          {/* ============================================ */}
-          {gameState.phase === 'playing' && gameState.mode === 'size-sort' && (
-            <motion.div
-              key="size-sort"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Progress */}
-              <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                />
-              </div>
-
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Sort by size: Smallest → Largest
-                </h2>
-                <p className="text-gray-500">
-                  Round {gameState.round + 1} of {gameState.totalRounds}
-                </p>
-              </div>
-
-              {/* Size Slots - Tower Style */}
-              <div className="bg-gradient-to-b from-amber-100 to-orange-100 rounded-2xl p-8 shadow-lg">
-                <div className="flex items-end justify-center gap-1 min-h-[200px]">
-                  {gameState.placedSizes.map((item, index) => {
-                    const slotSize = ((index + 1) / gameState.placedSizes.length) * 100;
-                    return (
-                      <motion.button
-                        key={index}
-                        onClick={() => placeSize(index)}
-                        whileHover={{ scale: item ? 1 : 1.05 }}
-                        className={`rounded-lg transition-all flex items-center justify-center
-                          ${item 
-                            ? 'shadow-lg' 
-                            : gameState.selectedSize
-                              ? 'border-2 border-dashed border-orange-400 bg-orange-50/50 cursor-pointer'
-                              : 'border-2 border-dashed border-gray-300 bg-white/50'
-                          }`}
-                        style={{
-                          width: `${slotSize}%`,
-                          maxWidth: '80px',
-                          minWidth: '30px',
-                          height: item 
-                            ? `${(item.size / gameState.placedSizes.length) * 150 + 30}px`
-                            : `${slotSize + 30}px`,
-                          backgroundColor: item?.color || undefined,
+                        className={`${item.color} shadow-lg flex items-center justify-center text-white font-bold
+                          ${item.shape === 'circle' ? 'rounded-full' : item.shape === 'triangle' ? 'clip-triangle' : 'rounded-lg'}`}
+                        style={{ 
+                          width: item.size, 
+                          height: item.size,
+                          clipPath: item.shape === 'triangle' ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : undefined
                         }}
                       >
-                        {!item && (
-                          <span className="text-xs text-gray-400">{index + 1}</span>
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                        {gameState.mode === 'size' && item.label.charAt(0)}
+                      </motion.div>
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
               </div>
 
-              {/* Available Sizes */}
-              {gameState.sizeItems.length > 0 && (
-                <div className="bg-white/60 rounded-2xl p-6 shadow-lg">
-                  <p className="text-sm text-gray-500 mb-3 text-center">Tap a block, then tap where it goes:</p>
-                  <div className="flex flex-wrap justify-center items-end gap-2">
-                    {gameState.sizeItems.map((item) => {
-                      const displaySize = (item.size / 10) * 60 + 30;
-                      return (
-                        <motion.button
-                          key={item.id}
-                          onClick={() => selectSize(item)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`rounded-lg shadow-lg transition-all
-                            ${gameState.selectedSize?.id === item.id
-                              ? 'ring-4 ring-yellow-400 ring-offset-2'
-                              : ''
-                            }`}
-                          style={{
-                            backgroundColor: item.color,
-                            width: `${displaySize}px`,
-                            height: `${displaySize}px`,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* Hint */}
+              <p className="text-center text-gray-500 text-sm">
+                💡 Drag items to reorder them
+              </p>
 
               {/* Check Button */}
-              {gameState.placedSizes.every(s => s !== null) && (
-                <div className="flex justify-center">
-                  <motion.button
-                    onClick={checkSizeAnswer}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 
-                      text-white rounded-2xl font-bold text-lg shadow-lg"
-                  >
-                    Check ✓
-                  </motion.button>
-                </div>
-              )}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={checkAnswer}
+                className="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xl font-bold rounded-xl shadow-lg"
+              >
+                Check Order ✓
+              </motion.button>
             </motion.div>
           )}
 
-          {/* ============================================ */}
-          {/* FEEDBACK OVERLAY */}
-          {/* ============================================ */}
+          {/* FEEDBACK SCREEN */}
           {gameState.phase === 'feedback' && (
             <motion.div
               key="feedback"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center z-50 bg-black/20"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className={`p-8 rounded-3xl shadow-2xl text-center
-                  ${feedback === 'perfect' ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                    feedback === 'correct' ? 'bg-gradient-to-br from-green-400 to-green-500' :
-                    'bg-gradient-to-br from-red-400 to-red-500'}`}
-              >
-                <span className="text-6xl">
-                  {feedback === 'perfect' ? '🌟' : feedback === 'correct' ? '✓' : '✗'}
-                </span>
-                <p className="text-white text-2xl font-bold mt-2">
-                  {feedback === 'perfect' ? 'Perfect!' : feedback === 'correct' ? 'Correct!' : 'Try again!'}
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {/* ============================================ */}
-          {/* COMPLETE SCREEN */}
-          {/* ============================================ */}
-          {gameState.phase === 'complete' && (
-            <motion.div
-              key="complete"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center space-y-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="text-center space-y-6"
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -394,46 +412,87 @@
                 transition={{ type: 'spring', bounce: 0.5 }}
                 className="text-8xl"
               >
+                {gameState.feedback === 'perfect' ? '🌟' : gameState.feedback === 'correct' ? '✅' : '❌'}
+              </motion.div>
+              
+              <h2 className="text-3xl font-bold">
+                {gameState.feedback === 'perfect' ? 'Perfect Streak!' : 
+                 gameState.feedback === 'correct' ? 'Well Sorted!' : 'Try again next time!'}
+              </h2>
+
+              {gameState.feedback === 'correct' && (
+                <p className="text-gray-600">Great sensorial discrimination!</p>
+              )}
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={nextRound}
+                className="px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xl font-bold rounded-xl"
+              >
+                {gameState.round >= gameState.totalRounds ? 'See Results' : 'Next Round →'}
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* COMPLETE SCREEN */}
+          {gameState.phase === 'complete' && (
+            <motion.div
+              key="complete"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center space-y-6"
+            >
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', bounce: 0.5 }}
+                className="text-8xl"
+              >
                 🏆
               </motion.div>
-
-              <h2 className="text-4xl font-bold text-gray-800">Amazing Work!</h2>
-
-              <div className="bg-white rounded-2xl p-8 shadow-lg space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-rose-50 rounded-xl p-4">
-                    <p className="text-3xl font-bold text-rose-600">{gameState.score}</p>
-                    <p className="text-sm text-gray-500">Score</p>
+              
+              <h2 className="text-3xl font-bold text-gray-800">Sorting Master!</h2>
+              
+              <div className="bg-white rounded-2xl p-6 shadow-lg space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-rose-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-sm">Score</p>
+                    <p className="text-3xl font-bold text-rose-600">{gameState.score}/{gameState.totalRounds}</p>
                   </div>
-                  <div className="bg-yellow-50 rounded-xl p-4">
-                    <p className="text-3xl font-bold text-yellow-600">+{gameState.xp}</p>
-                    <p className="text-sm text-gray-500">XP Earned</p>
+                  <div className="bg-pink-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-sm">XP Earned</p>
+                    <p className="text-3xl font-bold text-pink-600">+{gameState.xp}</p>
                   </div>
-                  <div className="bg-orange-50 rounded-xl p-4">
-                    <p className="text-3xl font-bold text-orange-600">{gameState.bestStreak}</p>
-                    <p className="text-sm text-gray-500">Best Streak</p>
+                  <div className="bg-orange-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-sm">Best Streak</p>
+                    <p className="text-3xl font-bold text-orange-600">🔥 {gameState.bestStreak}</p>
+                  </div>
+                  <div className="bg-green-100 rounded-xl p-4">
+                    <p className="text-gray-500 text-sm">Accuracy</p>
+                    <p className="text-3xl font-bold text-green-600">
+                      {Math.round((gameState.score / gameState.totalRounds) * 100)}%
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-4">
+              <div className="flex gap-4 justify-center">
                 <motion.button
-                  onClick={() => startGame(gameState.mode)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl
-                    font-bold text-lg shadow-lg"
+                  onClick={backToMenu}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl"
                 >
-                  Play Again 🔄
+                  Back to Menu
                 </motion.button>
                 <motion.button
-                  onClick={() => setGameState(getInitialState())}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-gray-700 rounded-2xl
-                    font-bold text-lg shadow-lg border-2 border-gray-200"
+                  onClick={() => startGame(gameState.mode)}
+                  className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl"
                 >
-                  Choose Mode
+                  Play Again
                 </motion.button>
               </div>
             </motion.div>

@@ -481,8 +481,7 @@ export default function SentenceScrambleGame() {
                 key={`scrambled-${index}`}
                 onClick={() => handleWordClick(word, index)}
                 disabled={!!feedback}
-                className="px-4 py-2 bg-white rounded-xl font-bold text-lg text-gray-800 
-                  shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+                className="px-4 py-2 bg-white rounded-xl font-bold text-lg text-gray-800 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
               >
                 {word}
               </button>
@@ -498,8 +497,7 @@ export default function SentenceScrambleGame() {
           <button
             onClick={resetSentence}
             disabled={!!feedback || placedWords.length === 0}
-            className="flex-1 p-3 bg-white/20 text-white rounded-xl font-bold text-lg 
-              disabled:opacity-50 hover:bg-white/30 transition-colors"
+            className="flex-1 p-3 bg-white/20 text-white rounded-xl font-bold text-lg disabled:opacity-50 hover:bg-white/30 transition-colors"
           >
             🔄 Reset
           </button>
