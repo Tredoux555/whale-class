@@ -58,10 +58,15 @@ const MATH_GAMES: Game[] = [
   { id: 'bead-frame', name: 'Bead Frame', description: 'Small Bead Frame - place value & operations', icon: '🧮', route: '/games/bead-frame', color: 'amber', gradient: 'from-amber-500 to-orange-500', isNew: true },
 ];
 
+const SENSORIAL_GAMES: Game[] = [
+  { id: 'sensorial-sort', name: 'Sensorial Sort', description: 'Color matching, grading & size sorting', icon: '👁️', route: '/games/sensorial-sort', color: 'rose', gradient: 'from-rose-500 to-pink-500', isNew: true },
+];
+
 const GAME_CATEGORIES: GameCategory[] = [
   { id: 'sound-games', name: 'Sound Games', icon: '👂', description: 'Learn phonics and letter sounds', games: SOUND_GAMES },
   { id: 'reading-games', name: 'Reading Games', icon: '📖', description: 'Build reading skills', games: READING_GAMES },
   { id: 'math-games', name: 'Math Games', icon: '🔢', description: 'Numbers, quantities & operations', games: MATH_GAMES },
+  { id: 'sensorial-games', name: 'Sensorial', icon: '👁️', description: 'Train your senses - colors & sizes', games: SENSORIAL_GAMES },
   { id: 'vocabulary-games', name: 'Vocabulary', icon: '📚', description: 'Expand your word knowledge', games: VOCABULARY_GAMES },
   { id: 'grammar-games', name: 'Grammar', icon: '✏️', description: 'Master parts of speech', games: GRAMMAR_GAMES },
 ];
