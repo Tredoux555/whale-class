@@ -226,6 +226,72 @@ A comprehensive Montessori teacher training manual integrated into the platform:
 - Video links for presentations
 - Step-by-step guides for every work
 
+### ✅ FRAMEWORK DESIGNED (January 21, 2025)
+
+**Key Insight:** NO DEEP DIVES NEEDED - Pull from existing curriculum JSON files!
+
+**Existing Data Sources:**
+```
+/lib/curriculum/data/
+├── practical-life.json   (~45 works)
+├── sensorial.json        (~35 works)
+├── math.json             (~50 works)
+├── language.json         (~45 works)
+└── cultural.json         (~38 works)
+```
+
+**Each work already contains:**
+- Direct Aims & Indirect Aims
+- Control of Error
+- Materials list
+- Prerequisites
+- Chinese translations
+- Age ranges
+- Levels with YouTube search terms
+
+### Admin Page Structure
+
+```
+/admin/handbook/                    ← Main landing (5 area cards)
+/admin/handbook/[areaId]/           ← Area detail (categories accordion)
+/admin/english-guide/               ← Dedicated English page (special)
+```
+
+### UI Component Structure
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  📚 DIGITAL HANDBOOK                                    │
+├─────────────────────────────────────────────────────────┤
+│  🌱 Practical Life    (clickable → expands)             │
+│  👁️ Sensorial         (clickable → expands)             │
+│  🔢 Mathematics       (clickable → expands)             │
+│  📖 Language          (clickable → expands)             │
+│  🌍 Culture           (clickable → expands)             │
+└─────────────────────────────────────────────────────────┘
+         ↓ Click Area
+┌─────────────────────────────────────────────────────────┐
+│  📁 CATEGORY (expandable accordion)                     │
+│    └─ 📄 WORK (expandable)                              │
+│         ├─ 🎯 Direct Aims                               │
+│         ├─ 🌱 Indirect Aims                             │
+│         ├─ ⚠️ Control of Error                          │
+│         ├─ 🛒 Materials                                 │
+│         ├─ 🔗 Prerequisites                             │
+│         ├─ 🇨🇳 Chinese Name                             │
+│         └─ 📊 Levels (with YouTube links)               │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Build Phases
+
+| Phase | Task | Status |
+|-------|------|--------|
+| 1 | English Guide React page (/admin/english-guide) | 🔨 BUILDING |
+| 2 | Handbook landing page (/admin/handbook) | 📋 NEXT |
+| 3 | Dynamic area pages (/admin/handbook/[areaId]) | 📋 QUEUED |
+| 4 | Add presentation scripts incrementally | 📋 FUTURE |
+
 ### Structure Per Work
 ```
 1. PREPARATION
@@ -255,11 +321,11 @@ A comprehensive Montessori teacher training manual integrated into the platform:
 ```
 
 ### Video Strategy
-- **Phase 1:** Link to existing YouTube videos
+- **Phase 1:** Link to existing YouTube videos (already have search terms!)
 - **Phase 2:** Create our own videos for each work
 - Written instructions accompany all videos
 
-### Database Addition
+### Database Addition (Future - When Adding Presentation Scripts)
 ```sql
 ALTER TABLE montessori_works ADD COLUMN presentation_steps JSONB;
 ALTER TABLE montessori_works ADD COLUMN points_of_interest TEXT[];
