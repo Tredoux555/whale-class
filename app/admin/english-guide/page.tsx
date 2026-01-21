@@ -1182,11 +1182,122 @@ const SOUND_OBJECTS_SHOPPING = {
 // MAIN COMPONENT
 // ============================================
 
+// ============================================
+// COMPLETE I-SPY WORD LISTS (Expandable)
+// ============================================
+
+const ISPY_COMPLETE = {
+  phase1_easy: [
+    { sound: '/s/', words: ['sun ☀️', 'sock 🧦', 'soap 🧼', 'star ⭐', 'snake 🐍', 'spoon 🥄', 'sponge', 'scissors ✂️', 'seal', 'sand'], note: 'Exists in Mandarin - START HERE' },
+    { sound: '/m/', words: ['mouse 🐭', 'mop', 'moon 🌙', 'mat', 'mug', 'milk 🥛', 'map', 'magnet', 'monkey 🐒', 'mirror'], note: 'Exists in Mandarin' },
+    { sound: '/f/', words: ['fish 🐟', 'fan', 'fork 🍴', 'frog 🐸', 'fox 🦊', 'feather 🪶', 'foot 🦶', 'finger', 'flag 🚩', 'flower 🌸'], note: 'Exists in Mandarin' },
+    { sound: '/n/', words: ['net', 'nut 🥜', 'nail', 'nest 🪺', 'nose 👃', 'necklace', 'nine 9️⃣', 'notebook 📓', 'napkin', 'nurse'], note: 'Exists in Mandarin' },
+    { sound: '/p/', words: ['pen 🖊️', 'pig 🐷', 'pot', 'pin', 'pear 🍐', 'pan', 'pencil ✏️', 'piano 🎹', 'pizza 🍕', 'panda 🐼'], note: 'Exists in Mandarin' },
+    { sound: '/t/', words: ['top', 'tent ⛺', 'tiger 🐯', 'tape', 'tooth 🦷', 'toy', 'table', 'tree 🌳', 'train 🚂', 'truck 🚚'], note: 'Exists in Mandarin' },
+    { sound: '/c/ or /k/', words: ['cup ☕', 'cat 🐱', 'car 🚗', 'cap 🧢', 'can', 'key 🔑', 'king 👑', 'kite 🪁', 'cake 🎂', 'carrot 🥕'], note: 'Exists in Mandarin' },
+    { sound: '/h/', words: ['hat 🎩', 'hen 🐔', 'horse 🐴', 'house 🏠', 'hammer 🔨', 'hand ✋', 'heart ❤️', 'hippo 🦛', 'hot dog 🌭', 'helicopter 🚁'], note: 'Exists in Mandarin' },
+  ],
+  phase2_medium: [
+    { sound: '/b/', words: ['ball ⚽', 'bat 🦇', 'bed 🛏️', 'bus 🚌', 'bug 🐛', 'box 📦', 'book 📖', 'boat ⛵', 'bird 🐦', 'banana 🍌'], note: 'Voiced - practice aspiration' },
+    { sound: '/d/', words: ['dog 🐕', 'doll', 'duck 🦆', 'door 🚪', 'drum 🥁', 'dish', 'desk', 'deer 🦌', 'dragon 🐲', 'dress 👗'], note: 'Voiced - harder than /t/' },
+    { sound: '/g/', words: ['goat 🐐', 'gift 🎁', 'glass', 'grape 🍇', 'guitar 🎸', 'gold', 'game 🎮', 'girl 👧', 'gorilla 🦍', 'grass'], note: 'Voiced stop' },
+    { sound: '/j/', words: ['jet ✈️', 'jam', 'jug', 'jar', 'jeep 🚙', 'juice 🧃', 'jacket', 'jellyfish 🪼', 'jeans 👖', 'jewel 💎'], note: 'Affricate sound' },
+    { sound: '/w/', words: ['wig', 'web 🕸️', 'watch ⌚', 'worm 🪱', 'wagon', 'wolf 🐺', 'water 💧', 'window', 'whale 🐋', 'watermelon 🍉'], note: 'Lips rounded' },
+    { sound: '/y/', words: ['yak', 'yarn 🧶', 'yawn', 'yogurt', 'yo-yo 🪀', 'yell', 'yellow 💛', 'yes', 'yam', 'yacht'], note: 'Tongue high' },
+  ],
+  phase3_hard: [
+    { sound: '/v/', words: ['van 🚐', 'vest', 'vase', 'violin 🎻', 'vine 🌿', 'vet', 'volcano 🌋', 'vegetable 🥬', 'vacuum', 'video 📹'], eslNote: '⚠️ HARD: Teeth bite bottom lip, feel buzz. Chinese speakers say /w/ instead!' },
+    { sound: '/th/', words: ['thumb 👍', 'thorn', 'three 3️⃣', 'thread', 'thunder ⛈️', 'thermometer', 'thick', 'thin', 'think 💭', 'thank'], eslNote: '⚠️ HARD: Tongue between teeth, blow air. Chinese speakers say /s/ or /f/ instead!' },
+    { sound: '/r/', words: ['ring 💍', 'rug', 'rat 🐀', 'rain 🌧️', 'rabbit 🐰', 'rocket 🚀', 'robot 🤖', 'rainbow 🌈', 'rose 🌹', 'river'], eslNote: '⚠️ HARD: Tongue curls BACK, doesn\'t touch. Different from Mandarin r!' },
+    { sound: '/l/', words: ['leg 🦵', 'lamp 💡', 'lid', 'log', 'leaf 🍃', 'lemon 🍋', 'lion 🦁', 'ladder', 'lock 🔒', 'lollipop 🍭'], eslNote: '⚠️ HARD: Tongue touches roof. Practice /l/ vs /r/ minimal pairs!' },
+    { sound: '/z/', words: ['zip', 'zoo 🦓', 'zebra 🦓', 'zero 0️⃣', 'zigzag', 'zipper', 'zucchini', 'zone', 'zoom', 'zombie 🧟'], eslNote: 'Voice the /s/ sound' },
+    { sound: '/sh/', words: ['ship 🚢', 'shell 🐚', 'sheep 🐑', 'shoe 👟', 'shark 🦈', 'shirt 👕', 'shower 🚿', 'shop', 'shadow', 'shampoo'], eslNote: 'Lips rounded, tongue back' },
+    { sound: '/ch/', words: ['chair 🪑', 'cheese 🧀', 'cherry 🍒', 'chicken 🐔', 'chips', 'chocolate 🍫', 'church ⛪', 'chest', 'chin', 'chick 🐤'], eslNote: 'Stop + fricative' },
+  ],
+  vowels: [
+    { sound: '/a/ (short)', words: ['apple 🍎', 'ant 🐜', 'ax', 'alligator 🐊', 'astronaut 👨‍🚀', 'anchor ⚓', 'ambulance 🚑', 'arrow ➡️', 'avocado 🥑', 'angel 👼'], keyPic: '🍎 apple', mouthTip: 'Jaw drops open wide' },
+    { sound: '/e/ (short)', words: ['egg 🥚', 'elf 🧝', 'elephant 🐘', 'elbow', 'envelope ✉️', 'engine', 'elevator', 'exit 🚪', 'exercise', 'eskimo'], keyPic: '🥚 egg', mouthTip: 'Smile slightly, tongue mid' },
+    { sound: '/i/ (short)', words: ['igloo', 'insect 🐛', 'ink', 'iguana 🦎', 'inch', 'infant 👶', 'invitation', 'instrument 🎺', 'indian', 'index'], keyPic: '🏠 igloo', mouthTip: 'Big smile, tongue high' },
+    { sound: '/o/ (short)', words: ['octopus 🐙', 'ox 🐂', 'olive', 'otter 🦦', 'ostrich', 'orange 🍊', 'office', 'omelette', 'opera', 'opposum'], keyPic: '🐙 octopus', mouthTip: 'Round lips, tongue low-back' },
+    { sound: '/u/ (short)', words: ['umbrella ☂️', 'umpire', 'unicorn 🦄', 'up ⬆️', 'under', 'undo', 'uncle', 'uniform', 'unusual', 'utensil'], keyPic: '☂️ umbrella', mouthTip: 'Relaxed, jaw slightly dropped' },
+  ]
+};
+
+// ============================================
+// COMPLETE MOVEABLE ALPHABET PROGRESSIONS
+// ============================================
+
+const MOVEABLE_ALPHABET_COMPLETE = [
+  {
+    stage: 1,
+    vowel: 'Short /a/',
+    color: '#EF4444',
+    words: ['cat', 'mat', 'sat', 'hat', 'bat', 'rat', 'pan', 'can', 'man', 'fan', 'map', 'bag', 'tag', 'wag', 'jam', 'ham', 'dad', 'sad', 'cap', 'tap'],
+    phrases: ['a fat cat', 'a sad dad', 'the tan van', 'a bad rat'],
+    objects: ['cat', 'hat', 'bat', 'pan', 'can', 'map', 'bag', 'jam', 'cap', 'fan']
+  },
+  {
+    stage: 2,
+    vowel: 'Short /e/',
+    color: '#F59E0B',
+    words: ['bed', 'red', 'pen', 'hen', 'men', 'ten', 'net', 'wet', 'pet', 'jet', 'leg', 'peg', 'web', 'bell', 'shell'],
+    phrases: ['a red bed', 'the wet pet', 'ten men', 'a jet set'],
+    objects: ['bed', 'pen', 'hen', 'net', 'jet', 'leg', 'web']
+  },
+  {
+    stage: 3,
+    vowel: 'Short /i/',
+    color: '#10B981',
+    words: ['pig', 'big', 'dig', 'wig', 'pin', 'bin', 'fin', 'win', 'sit', 'hit', 'bit', 'kit', 'lip', 'tip', 'sip', 'zip', 'bib', 'rib'],
+    phrases: ['a big pig', 'the tin bin', 'a sip and a zip', 'sit and hit'],
+    objects: ['pig', 'wig', 'pin', 'bin', 'fin', 'lip', 'bib']
+  },
+  {
+    stage: 4,
+    vowel: 'Short /o/',
+    color: '#3B82F6',
+    words: ['dog', 'log', 'fog', 'hog', 'pot', 'hot', 'cot', 'dot', 'mop', 'top', 'hop', 'pop', 'box', 'fox', 'sock', 'rock'],
+    phrases: ['a hot pot', 'the dog on the log', 'a fox in a box', 'hop on top'],
+    objects: ['dog', 'log', 'pot', 'mop', 'top', 'box', 'fox', 'sock']
+  },
+  {
+    stage: 5,
+    vowel: 'Short /u/',
+    color: '#8B5CF6',
+    words: ['cup', 'pup', 'bus', 'nut', 'hut', 'cut', 'bug', 'rug', 'hug', 'mug', 'jug', 'tug', 'sun', 'run', 'fun', 'bun', 'mud', 'bud'],
+    phrases: ['a fun run', 'the pup in mud', 'a bug on a rug', 'hug the cup'],
+    objects: ['cup', 'bus', 'nut', 'bug', 'rug', 'mug', 'jug', 'sun', 'bun']
+  }
+];
+
+// ============================================
+// PINK SERIES OBJECT BOXES
+// ============================================
+
+const PINK_BOXES = [
+  { vowel: 'a', objects: ['cat', 'bat', 'rat', 'hat', 'map', 'pan', 'can', 'bag', 'tag', 'fan'], color: '#EF4444' },
+  { vowel: 'e', objects: ['bed', 'pen', 'hen', 'net', 'jet', 'leg', 'web', 'bell'], color: '#F59E0B' },
+  { vowel: 'i', objects: ['pig', 'pin', 'bin', 'fin', 'lip', 'kit', 'rib', 'lid'], color: '#10B981' },
+  { vowel: 'o', objects: ['dog', 'log', 'pot', 'mop', 'box', 'fox', 'dot', 'top'], color: '#3B82F6' },
+  { vowel: 'u', objects: ['cup', 'bus', 'nut', 'bug', 'rug', 'sun', 'jug', 'bun'], color: '#8B5CF6' }
+];
+
 export default function EnglishGuidePage() {
   const router = useRouter();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const [showVocabGuide, setShowVocabGuide] = useState(false);
+  const [activeView, setActiveView] = useState<'guide' | 'ispy' | 'moveable'>('guide');
+  const [expandedPhases, setExpandedPhases] = useState<string[]>([]);
+  const [expandedStages, setExpandedStages] = useState<number[]>([]);
+
+  const togglePhase = (phase: string) => {
+    setExpandedPhases(prev => prev.includes(phase) ? prev.filter(p => p !== phase) : [...prev, phase]);
+  };
+
+  const toggleStage = (stage: number) => {
+    setExpandedStages(prev => prev.includes(stage) ? prev.filter(s => s !== stage) : [...prev, stage]);
+  };
 
   const stage = ENGLISH_GUIDE.find(s => s.id === selectedStage);
   const skill = stage && selectedSkill !== null ? stage.skills[selectedSkill] : null;
@@ -1212,9 +1323,242 @@ export default function EnglishGuidePage() {
             </button>
           </div>
         </div>
+
+        {/* View Tabs */}
+        <div className="bg-indigo-700/50 px-4 py-2">
+          <div className="max-w-6xl mx-auto flex gap-2">
+            <button
+              onClick={() => setActiveView('guide')}
+              className={`px-4 py-2 rounded-lg font-medium transition ${activeView === 'guide' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/20'}`}
+            >
+              📖 Teaching Guide
+            </button>
+            <button
+              onClick={() => setActiveView('ispy')}
+              className={`px-4 py-2 rounded-lg font-medium transition ${activeView === 'ispy' ? 'bg-white text-purple-600' : 'text-white hover:bg-white/20'}`}
+            >
+              👂 I-Spy Words
+            </button>
+            <button
+              onClick={() => setActiveView('moveable')}
+              className={`px-4 py-2 rounded-lg font-medium transition ${activeView === 'moveable' ? 'bg-white text-amber-600' : 'text-white hover:bg-white/20'}`}
+            >
+              🔤 Moveable Alphabet
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-4">
+        {/* I-SPY COMPLETE WORD LISTS VIEW */}
+        {activeView === 'ispy' && (
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
+              <h2 className="text-2xl font-bold mb-2">👂 Complete I-Spy Word Lists</h2>
+              <p className="text-purple-100">200+ words organized by sound. Click to expand each phase. Start with Phase 1 (Easy) for Chinese ESL learners!</p>
+            </div>
+
+            {/* Phase 1: Easy */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <button onClick={() => togglePhase('easy')} className="w-full p-4 flex items-center justify-between bg-green-50 hover:bg-green-100 transition">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🟢</span>
+                  <div className="text-left">
+                    <h3 className="font-bold text-green-700">Phase 1: Easy Sounds (Start Here!)</h3>
+                    <p className="text-sm text-green-600">Sounds that exist in Mandarin: /s/, /m/, /f/, /n/, /p/, /t/, /c/, /h/</p>
+                  </div>
+                </div>
+                <span className="text-2xl text-green-500">{expandedPhases.includes('easy') ? '▼' : '▶'}</span>
+              </button>
+              {expandedPhases.includes('easy') && (
+                <div className="p-4 grid gap-3">
+                  {ISPY_COMPLETE.phase1_easy.map((item, idx) => (
+                    <div key={idx} className="border-l-4 border-green-400 pl-4 py-2 bg-green-50/50 rounded-r-lg">
+                      <h4 className="font-bold text-green-700">{item.sound}</h4>
+                      <p className="text-xs text-green-600 mb-2">✅ {item.note}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {item.words.map((word, i) => (
+                          <span key={i} className="px-3 py-1 bg-white rounded-full text-sm shadow-sm">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Phase 2: Medium */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <button onClick={() => togglePhase('medium')} className="w-full p-4 flex items-center justify-between bg-orange-50 hover:bg-orange-100 transition">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🟠</span>
+                  <div className="text-left">
+                    <h3 className="font-bold text-orange-700">Phase 2: Medium Sounds</h3>
+                    <p className="text-sm text-orange-600">Need practice: /b/, /d/, /g/, /j/, /w/, /y/</p>
+                  </div>
+                </div>
+                <span className="text-2xl text-orange-500">{expandedPhases.includes('medium') ? '▼' : '▶'}</span>
+              </button>
+              {expandedPhases.includes('medium') && (
+                <div className="p-4 grid gap-3">
+                  {ISPY_COMPLETE.phase2_medium.map((item, idx) => (
+                    <div key={idx} className="border-l-4 border-orange-400 pl-4 py-2 bg-orange-50/50 rounded-r-lg">
+                      <h4 className="font-bold text-orange-700">{item.sound}</h4>
+                      <p className="text-xs text-orange-600 mb-2">⚡ {item.note}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {item.words.map((word, i) => (
+                          <span key={i} className="px-3 py-1 bg-white rounded-full text-sm shadow-sm">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Phase 3: Hard */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <button onClick={() => togglePhase('hard')} className="w-full p-4 flex items-center justify-between bg-red-50 hover:bg-red-100 transition">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🔴</span>
+                  <div className="text-left">
+                    <h3 className="font-bold text-red-700">Phase 3: Hard Sounds (ESL Focus!)</h3>
+                    <p className="text-sm text-red-600">Don't exist in Mandarin: /v/, /th/, /r/, /l/, /z/, /sh/, /ch/</p>
+                  </div>
+                </div>
+                <span className="text-2xl text-red-500">{expandedPhases.includes('hard') ? '▼' : '▶'}</span>
+              </button>
+              {expandedPhases.includes('hard') && (
+                <div className="p-4 grid gap-3">
+                  {ISPY_COMPLETE.phase3_hard.map((item, idx) => (
+                    <div key={idx} className="border-l-4 border-red-400 pl-4 py-2 bg-red-50/50 rounded-r-lg">
+                      <h4 className="font-bold text-red-700">{item.sound}</h4>
+                      <p className="text-xs text-red-600 mb-2 font-medium">{item.eslNote}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {item.words.map((word, i) => (
+                          <span key={i} className="px-3 py-1 bg-white rounded-full text-sm shadow-sm">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Vowels */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <button onClick={() => togglePhase('vowels')} className="w-full p-4 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🔵</span>
+                  <div className="text-left">
+                    <h3 className="font-bold text-blue-700">Short Vowels</h3>
+                    <p className="text-sm text-blue-600">/a/, /e/, /i/, /o/, /u/ - Essential for CVC words</p>
+                  </div>
+                </div>
+                <span className="text-2xl text-blue-500">{expandedPhases.includes('vowels') ? '▼' : '▶'}</span>
+              </button>
+              {expandedPhases.includes('vowels') && (
+                <div className="p-4 grid gap-3">
+                  {ISPY_COMPLETE.vowels.map((item, idx) => (
+                    <div key={idx} className="border-l-4 border-blue-400 pl-4 py-2 bg-blue-50/50 rounded-r-lg">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="font-bold text-blue-700">{item.sound}</h4>
+                        <span className="text-2xl">{item.keyPic}</span>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{item.mouthTip}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {item.words.map((word, i) => (
+                          <span key={i} className="px-3 py-1 bg-white rounded-full text-sm shadow-sm">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MOVEABLE ALPHABET VIEW */}
+        {activeView === 'moveable' && (
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-6 text-white">
+              <h2 className="text-2xl font-bold mb-2">🔤 Moveable Alphabet Progressions</h2>
+              <p className="text-amber-100">80+ CVC words organized by vowel. Build these words with the Moveable Alphabet BEFORE reading them!</p>
+            </div>
+
+            {MOVEABLE_ALPHABET_COMPLETE.map((stage) => (
+              <div key={stage.stage} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <button 
+                  onClick={() => toggleStage(stage.stage)} 
+                  className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition"
+                  style={{ backgroundColor: stage.color + '15' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: stage.color }}>
+                      {stage.stage}
+                    </span>
+                    <div className="text-left">
+                      <h3 className="font-bold" style={{ color: stage.color }}>Stage {stage.stage}: {stage.vowel}</h3>
+                      <p className="text-sm text-gray-600">{stage.words.length} words • Click to expand</p>
+                    </div>
+                  </div>
+                  <span className="text-2xl" style={{ color: stage.color }}>{expandedStages.includes(stage.stage) ? '▼' : '▶'}</span>
+                </button>
+                {expandedStages.includes(stage.stage) && (
+                  <div className="p-4 border-t">
+                    <div className="mb-4">
+                      <h4 className="font-medium text-gray-700 mb-2">📝 Words to Build:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {stage.words.map((word, i) => (
+                          <span key={i} className="px-3 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: stage.color }}>{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h4 className="font-medium text-gray-700 mb-2">💬 Practice Phrases:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {stage.phrases.map((phrase, i) => (
+                          <span key={i} className="px-3 py-2 bg-gray-100 rounded-lg text-gray-700 italic">"{phrase}"</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-700 mb-2">🧺 Objects to Buy:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {stage.objects.map((obj, i) => (
+                          <span key={i} className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">{obj}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Pink Series Boxes */}
+            <div className="bg-gradient-to-r from-red-400 to-pink-500 rounded-xl p-6 text-white">
+              <h2 className="text-xl font-bold mb-4">📕 Pink Series Object Boxes</h2>
+              <p className="text-red-100 mb-4">Create 5 boxes, one for each vowel. Each box contains miniature objects + word cards + control cards.</p>
+              <div className="grid gap-3 md:grid-cols-5">
+                {PINK_BOXES.map((box, idx) => (
+                  <div key={idx} className="bg-white/20 backdrop-blur rounded-lg p-3">
+                    <h4 className="font-bold text-lg mb-2">Box {idx + 1}: Short /{box.vowel}/</h4>
+                    <div className="text-sm space-y-1">
+                      {box.objects.map((obj, i) => (
+                        <div key={i}>• {obj}</div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TEACHING GUIDE VIEW (Original Content) */}
+        {activeView === 'guide' && (
+          <>
         {/* Stage Selection */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Select Stage</h2>
@@ -1505,6 +1849,8 @@ export default function EnglishGuidePage() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </main>
     </div>
