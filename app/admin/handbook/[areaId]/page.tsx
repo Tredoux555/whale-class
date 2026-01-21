@@ -1,5 +1,6 @@
 // app/admin/handbook/[areaId]/page.tsx
-// Dynamic area page - lists all works with click-to-open details modal
+// Dynamic area page v2 - Deep audit improvements
+// Features: Gateway badges, prerequisites, sensitive periods, age filter, sequence numbers, "what's next"
 
 'use client';
 
@@ -17,38 +18,111 @@ interface Work {
   age_max: number;
   age_typical: number;
   sequence_order: number;
+  is_gateway: boolean;
   direct_aims: string[];
   indirect_aims: string[];
   readiness_indicators: string[];
   materials_needed: string[];
   parent_explanation_simple: string;
   parent_explanation_detailed: string;
+  sensitive_periods?: string[];
+  prerequisites?: string[];
+  unlocks?: string[];
 }
 
-const AREA_INFO: Record<string, { name: string; icon: string; color: string; gradient: string }> = {
-  practical_life: { name: 'Practical Life', icon: '🧹', color: 'bg-amber-500', gradient: 'from-amber-500 to-yellow-500' },
-  sensorial: { name: 'Sensorial', icon: '👁️', color: 'bg-pink-500', gradient: 'from-pink-500 to-rose-500' },
-  language: { name: 'Language', icon: '📖', color: 'bg-blue-500', gradient: 'from-blue-500 to-cyan-500' },
-  mathematics: { name: 'Mathematics', icon: '🔢', color: 'bg-green-500', gradient: 'from-green-500 to-emerald-500' },
-  cultural: { name: 'Cultural', icon: '🌍', color: 'bg-purple-500', gradient: 'from-purple-500 to-violet-500' },
-  art_music: { name: 'Art & Music', icon: '🎨', color: 'bg-red-500', gradient: 'from-red-500 to-orange-500' },
+const AREA_INFO: Record<string, { 
+  name: string; 
+  icon: string; 
+  gradient: string;
+  philosophy: string;
+  subAreaOrder: string[];
+}> = {
+  practical_life: { 
+    name: 'Practical Life', 
+    icon: '🧹', 
+    gradient: 'from-amber-500 to-yellow-500',
+    philosophy: 'Foundation for all learning. Builds concentration, coordination, independence, and order.',
+    subAreaOrder: ['preliminary_exercises', 'transfer', 'care_of_self', 'care_of_environment', 'grace_and_courtesy', 'food_preparation']
+  },
+  sensorial: { 
+    name: 'Sensorial', 
+    icon: '👁️', 
+    gradient: 'from-pink-500 to-rose-500',
+    philosophy: 'Refines the senses and prepares the mathematical mind through isolation of qualities.',
+    subAreaOrder: ['visual_dimension', 'visual_color', 'visual_form', 'tactile', 'auditory', 'olfactory', 'gustatory', 'stereognostic']
+  },
+  language: { 
+    name: 'Language', 
+    icon: '📖', 
+    gradient: 'from-blue-500 to-cyan-500',
+    philosophy: 'Writing before reading. Sound awareness → composition → decoding.',
+    subAreaOrder: ['oral_language', 'sound_awareness', 'writing_preparation', 'composition', 'reading_pink', 'reading_blue', 'reading_green', 'grammar']
+  },
+  mathematics: { 
+    name: 'Mathematics', 
+    icon: '🔢', 
+    gradient: 'from-green-500 to-emerald-500',
+    philosophy: 'Concrete to abstract. Handle quantities before symbols.',
+    subAreaOrder: ['numeration', 'decimal_system', 'teens_tens', 'linear_counting', 'memorization', 'abstraction', 'fractions', 'geometry']
+  },
+  cultural: { 
+    name: 'Cultural', 
+    icon: '🌍', 
+    gradient: 'from-purple-500 to-violet-500',
+    philosophy: 'The whole before the parts. Giving children a cosmic perspective.',
+    subAreaOrder: ['geography', 'botany', 'zoology', 'physical_science', 'history_time']
+  },
+  art_music: { 
+    name: 'Art & Music', 
+    icon: '🎨', 
+    gradient: 'from-red-500 to-orange-500',
+    philosophy: 'Creative expression and aesthetic appreciation.',
+    subAreaOrder: ['art', 'music', 'movement']
+  },
+};
+
+const SENSITIVE_PERIOD_COLORS: Record<string, string> = {
+  order: 'bg-amber-500',
+  movement: 'bg-blue-500',
+  small_objects: 'bg-pink-500',
+  refinement_of_senses: 'bg-purple-500',
+  language: 'bg-cyan-500',
+  social: 'bg-green-500',
+  mathematics: 'bg-emerald-500',
+  writing: 'bg-indigo-500',
+  reading: 'bg-violet-500',
+  music: 'bg-rose-500',
+  spatial: 'bg-orange-500',
 };
 
 export default function AreaPage() {
   const params = useParams();
   const areaId = params.areaId as string;
   const [works, setWorks] = useState<Work[]>([]);
+  const [allWorks, setAllWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [ageFilter, setAgeFilter] = useState<number | null>(null);
+  const [showGatewayOnly, setShowGatewayOnly] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
-  const area = AREA_INFO[areaId] || { name: areaId, icon: '📁', color: 'bg-slate-500', gradient: 'from-slate-500 to-slate-600' };
+  const area = AREA_INFO[areaId] || { 
+    name: areaId, 
+    icon: '📁', 
+    gradient: 'from-slate-500 to-slate-600',
+    philosophy: '',
+    subAreaOrder: []
+  };
 
   useEffect(() => {
     fetch('/api/brain/works')
       .then(res => res.json())
       .then(data => {
-        const filtered = (data.data || []).filter((w: Work) => w.curriculum_area === areaId);
+        const allData = data.data || [];
+        setAllWorks(allData);
+        
+        const filtered = allData.filter((w: Work) => w.curriculum_area === areaId);
         filtered.sort((a: Work, b: Work) => (a.sequence_order || 0) - (b.sequence_order || 0));
         setWorks(filtered);
         setLoading(false);
@@ -56,23 +130,47 @@ export default function AreaPage() {
       .catch(() => setLoading(false));
   }, [areaId]);
 
-  // Group works by sub_area
-  const groupedWorks = works.reduce((acc, work) => {
-    const subArea = work.sub_area || 'General';
+  // Filter works
+  const filteredWorks = works.filter(w => {
+    if (searchQuery && !w.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (ageFilter && (w.age_min > ageFilter || w.age_max < ageFilter)) return false;
+    if (showGatewayOnly && !w.is_gateway) return false;
+    return true;
+  });
+
+  // Group works by sub_area (in Montessori order)
+  const groupedWorks = filteredWorks.reduce((acc, work) => {
+    const subArea = work.sub_area || 'general';
     if (!acc[subArea]) acc[subArea] = [];
     acc[subArea].push(work);
     return acc;
   }, {} as Record<string, Work[]>);
 
-  // Filter works by search
-  const filteredGroups = Object.entries(groupedWorks).reduce((acc, [subArea, subWorks]) => {
-    const filtered = subWorks.filter(w => 
-      w.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.sub_area?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    if (filtered.length > 0) acc[subArea] = filtered;
-    return acc;
-  }, {} as Record<string, Work[]>);
+  // Sort groups by Montessori order
+  const sortedGroups = Object.entries(groupedWorks).sort(([a], [b]) => {
+    const orderA = area.subAreaOrder.indexOf(a);
+    const orderB = area.subAreaOrder.indexOf(b);
+    if (orderA === -1 && orderB === -1) return a.localeCompare(b);
+    if (orderA === -1) return 1;
+    if (orderB === -1) return -1;
+    return orderA - orderB;
+  });
+
+  const gatewayCount = works.filter(w => w.is_gateway).length;
+
+  const toggleGroup = (subArea: string) => {
+    setCollapsedGroups(prev => ({ ...prev, [subArea]: !prev[subArea] }));
+  };
+
+  const formatSubArea = (subArea: string) => {
+    return subArea.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
+  // Find work name by ID from all works
+  const getWorkName = (workId: string) => {
+    const work = allWorks.find(w => w.id === workId || w.slug === workId);
+    return work?.name || workId;
+  };
 
   if (loading) {
     return (
@@ -90,70 +188,151 @@ export default function AreaPage() {
           <Link href="/admin/handbook" className="text-slate-400 hover:text-white transition-colors">
             ← Handbook
           </Link>
+          <span className="text-slate-500 text-sm">{filteredWorks.length} of {works.length} works</span>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto p-6">
         {/* Hero */}
-        <div className="flex items-start gap-4 mb-8">
+        <div className="flex items-start gap-4 mb-4">
           <div className={`w-16 h-16 bg-gradient-to-br ${area.gradient} rounded-xl flex items-center justify-center text-3xl shadow-lg`}>
             {area.icon}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">{area.name}</h1>
-            <p className="text-slate-400">{works.length} works</p>
+            <p className="text-slate-400 text-sm mt-1">{area.philosophy}</p>
           </div>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
+        {/* Stats Bar */}
+        <div className="flex gap-4 mb-6 text-sm">
+          <span className="text-slate-400">
+            <strong className="text-white">{works.length}</strong> works
+          </span>
+          <span className="text-slate-400">
+            <strong className="text-amber-400">{gatewayCount}</strong> gateway works
+          </span>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-4 mb-6 space-y-3">
+          {/* Search */}
           <input
             type="text"
             placeholder="Search works..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-slate-600"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-slate-600 text-sm"
           />
-        </div>
-        
-        {/* Works by Sub-Area */}
-        <div className="space-y-8">
-          {Object.entries(filteredGroups).map(([subArea, subWorks]) => (
-            <div key={subArea}>
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
-                {subArea.replace(/_/g, ' ')}
-              </h2>
-              <div className="space-y-2">
-                {subWorks.map(work => (
+          
+          {/* Filter Row */}
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Age Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 text-sm">Age:</span>
+              <div className="flex gap-1">
+                {[null, 2.5, 3, 3.5, 4, 4.5, 5, 5.5].map((age) => (
                   <button
-                    key={work.id}
-                    onClick={() => setSelectedWork(work)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-slate-600 hover:bg-slate-800 transition-all text-left group"
+                    key={age ?? 'all'}
+                    onClick={() => setAgeFilter(age)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      ageFilter === age 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                    }`}
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">{work.name}</h3>
-                        {work.direct_aims?.length > 0 && (
-                          <p className="text-slate-500 text-sm mt-1 line-clamp-1">{work.direct_aims[0]}</p>
-                        )}
-                      </div>
-                      <div className="text-right flex-shrink-0 ml-4">
-                        <div className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-400">
-                          Ages {work.age_min}-{work.age_max}
-                        </div>
-                      </div>
-                    </div>
+                    {age ?? 'All'}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Gateway Filter */}
+            <button
+              onClick={() => setShowGatewayOnly(!showGatewayOnly)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                showGatewayOnly 
+                  ? 'bg-amber-500 text-white' 
+                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              }`}
+            >
+              <span>🌟</span>
+              Gateway Only
+            </button>
+          </div>
+        </div>
+        
+        {/* Works by Sub-Area */}
+        <div className="space-y-4">
+          {sortedGroups.map(([subArea, subWorks]) => (
+            <div key={subArea} className="bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden">
+              {/* Sub-Area Header (Collapsible) */}
+              <button
+                onClick={() => toggleGroup(subArea)}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-slate-600">{collapsedGroups[subArea] ? '▶' : '▼'}</span>
+                  <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+                    {formatSubArea(subArea)}
+                  </h2>
+                </div>
+                <span className="text-slate-500 text-sm">{subWorks.length} works</span>
+              </button>
+
+              {/* Works List */}
+              {!collapsedGroups[subArea] && (
+                <div className="border-t border-slate-700">
+                  {subWorks.map((work, index) => (
+                    <button
+                      key={work.id}
+                      onClick={() => setSelectedWork(work)}
+                      className="w-full px-4 py-3 hover:bg-slate-800/50 transition-colors text-left border-b border-slate-700/50 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Sequence Number */}
+                        <span className="w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center text-xs text-slate-400 flex-shrink-0">
+                          {work.sequence_order || index + 1}
+                        </span>
+                        
+                        {/* Work Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-white">{work.name}</h3>
+                            
+                            {/* Gateway Badge */}
+                            {work.is_gateway && (
+                              <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">
+                                🌟 Gateway
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* First Direct Aim Preview */}
+                          {work.direct_aims?.length > 0 && (
+                            <p className="text-slate-500 text-sm mt-0.5 line-clamp-1">{work.direct_aims[0]}</p>
+                          )}
+                        </div>
+                        
+                        {/* Age Badge */}
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <div className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-400">
+                            {work.age_typical ? `~${work.age_typical}y` : `${work.age_min}-${work.age_max}`}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
 
-        {Object.keys(filteredGroups).length === 0 && (
+        {sortedGroups.length === 0 && (
           <div className="text-center py-12 text-slate-500">
-            No works found matching "{searchQuery}"
+            No works found matching your filters
           </div>
         )}
       </main>
@@ -165,7 +344,7 @@ export default function AreaPage() {
           onClick={() => setSelectedWork(null)}
         >
           <div 
-            className="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto" 
+            className="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto" 
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -173,22 +352,67 @@ export default function AreaPage() {
               <div className={`w-12 h-12 bg-gradient-to-br ${area.gradient} rounded-xl flex items-center justify-center text-xl flex-shrink-0`}>
                 {area.icon}
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">{selectedWork.name}</h3>
-                <div className="flex gap-2 mt-1">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-xl font-bold text-white">{selectedWork.name}</h3>
+                  {selectedWork.is_gateway && (
+                    <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">
+                      🌟 Gateway
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2 mt-2 flex-wrap">
                   <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-400">
                     Ages {selectedWork.age_min}-{selectedWork.age_max}
                   </span>
+                  {selectedWork.age_typical && (
+                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+                      Typical intro: ~{selectedWork.age_typical}y
+                    </span>
+                  )}
                   <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-400 capitalize">
-                    {selectedWork.sub_area?.replace(/_/g, ' ')}
+                    {formatSubArea(selectedWork.sub_area || '')}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* Sensitive Periods */}
+            {selectedWork.sensitive_periods && selectedWork.sensitive_periods.length > 0 && (
+              <div className="mb-4 p-3 bg-slate-700/30 rounded-xl">
+                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active During</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedWork.sensitive_periods.map((period, i) => (
+                    <span 
+                      key={i} 
+                      className={`px-2 py-1 rounded-lg text-xs text-white ${SENSITIVE_PERIOD_COLORS[period] || 'bg-slate-600'}`}
+                    >
+                      {period.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Description */}
             {selectedWork.parent_explanation_simple && (
               <p className="text-slate-300 mb-5 leading-relaxed">{selectedWork.parent_explanation_simple}</p>
+            )}
+
+            {/* Prerequisites */}
+            {selectedWork.prerequisites && selectedWork.prerequisites.length > 0 && (
+              <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <h4 className="font-semibold text-amber-400 mb-2 flex items-center gap-2 text-sm">
+                  <span>⬅️</span> Prerequisites (do these first)
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedWork.prerequisites.map((prereq, i) => (
+                    <span key={i} className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded text-xs">
+                      {getWorkName(prereq)}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
             
             {/* Direct Aims */}
@@ -211,12 +435,28 @@ export default function AreaPage() {
             {selectedWork.indirect_aims?.length > 0 && (
               <div className="mb-5">
                 <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                  <span className="text-lg">✨</span> Indirect Aims
+                  <span className="text-lg">✨</span> Indirect Aims (prepares for later)
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedWork.indirect_aims.map((aim, i) => (
                     <span key={i} className="px-3 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-lg text-sm">
                       {aim}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* What This Unlocks */}
+            {selectedWork.unlocks && selectedWork.unlocks.length > 0 && (
+              <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <h4 className="font-semibold text-green-400 mb-2 flex items-center gap-2 text-sm">
+                  <span>➡️</span> Unlocks (what comes next)
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedWork.unlocks.map((unlock, i) => (
+                    <span key={i} className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
+                      {getWorkName(unlock)}
                     </span>
                   ))}
                 </div>
@@ -240,7 +480,7 @@ export default function AreaPage() {
               </div>
             )}
             
-            {/* Readiness */}
+            {/* Readiness Indicators */}
             {selectedWork.readiness_indicators?.length > 0 && (
               <div className="mb-5">
                 <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
@@ -261,7 +501,7 @@ export default function AreaPage() {
             {selectedWork.parent_explanation_detailed && (
               <div className="mb-5">
                 <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                  <span className="text-lg">📝</span> Detailed Explanation
+                  <span className="text-lg">📝</span> For Parents
                 </h4>
                 <p className="text-slate-400 text-sm leading-relaxed">{selectedWork.parent_explanation_detailed}</p>
               </div>
