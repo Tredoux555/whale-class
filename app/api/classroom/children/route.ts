@@ -1,5 +1,5 @@
-// API: Get children directly from THE STEM (children table)
-// No weekly assignments needed - just the students
+// API: Get children with progress summary
+// Returns children list with curriculum progress percentages
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -40,10 +40,57 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Get progress summary for all children in one query
+    // Count assignments by status for each child
+    const childIds = (children || []).map(c => c.id);
+    
+    let progressMap: Record<string, { total: number; practiced: number; mastered: number }> = {};
+    
+    if (childIds.length > 0) {
+      const { data: assignments } = await supabase
+        .from('weekly_assignments')
+        .select('child_id, progress_status')
+        .in('child_id', childIds);
+
+      // Aggregate progress by child
+      if (assignments) {
+        for (const a of assignments) {
+          if (!progressMap[a.child_id]) {
+            progressMap[a.child_id] = { total: 0, practiced: 0, mastered: 0 };
+          }
+          progressMap[a.child_id].total++;
+          if (a.progress_status === 'practicing' || a.progress_status === 'mastered') {
+            progressMap[a.child_id].practiced++;
+          }
+          if (a.progress_status === 'mastered') {
+            progressMap[a.child_id].mastered++;
+          }
+        }
+      }
+    }
+
+    // Enrich children with progress
+    const enrichedChildren = (children || []).map(child => {
+      const progress = progressMap[child.id] || { total: 0, practiced: 0, mastered: 0 };
+      const progressPercent = progress.total > 0 
+        ? Math.round((progress.practiced / progress.total) * 100) 
+        : 0;
+      
+      return {
+        ...child,
+        progress: {
+          total: progress.total,
+          practiced: progress.practiced,
+          mastered: progress.mastered,
+          percent: progressPercent,
+        }
+      };
+    });
+
     return NextResponse.json({
       school,
-      children: children || [],
-      total: children?.length || 0
+      children: enrichedChildren,
+      total: enrichedChildren.length
     });
 
   } catch (error) {
