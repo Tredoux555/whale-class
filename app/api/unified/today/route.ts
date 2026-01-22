@@ -107,6 +107,7 @@ export async function GET(request: NextRequest) {
       game_url: string;
       game_icon: string;
       reason: string;
+      relevance: number;
     }> = [];
 
     if (languageUpdates.length > 0) {
@@ -134,9 +135,62 @@ export async function GET(request: NextRequest) {
             game_name: m.game_name,
             game_url: m.game_url,
             game_icon: m.game_icon || '🎮',
-            reason: `Practice "${update?.work_name || m.work_name}"`
+            reason: `Practice "${update?.work_name || m.work_name}"`,
+            relevance: m.relevance || 5
           };
         });
+    }
+
+    // If no specific mappings found, suggest default language games
+    if (gameRecommendations.length === 0 && languageUpdates.length > 0) {
+      gameRecommendations = [
+        {
+          game_id: 'letter-sounds',
+          game_name: 'Letter Sounds',
+          game_url: '/games/letter-sounds',
+          game_icon: '🔤',
+          reason: 'Learn letter-sound connections',
+          relevance: 10
+        },
+        {
+          game_id: 'letter-tracer',
+          game_name: 'Letter Tracer',
+          game_url: '/games/letter-tracer',
+          game_icon: '✏️',
+          reason: 'Practice writing letters',
+          relevance: 9
+        },
+        {
+          game_id: 'word-builder',
+          game_name: 'Word Builder',
+          game_url: '/games/word-builder',
+          game_icon: '🧱',
+          reason: 'Build words from sounds',
+          relevance: 8
+        }
+      ];
+    }
+
+    // If no language work today, suggest general games
+    if (gameRecommendations.length === 0 && learningUpdates.length > 0) {
+      gameRecommendations = [
+        {
+          game_id: 'letter-sounds',
+          game_name: 'Letter Sounds',
+          game_url: '/games/letter-sounds',
+          game_icon: '🔤',
+          reason: 'Great for any day!',
+          relevance: 7
+        },
+        {
+          game_id: 'quantity-match',
+          game_name: 'Quantity Match',
+          game_url: '/games/quantity-match',
+          game_icon: '🔢',
+          reason: 'Practice counting',
+          relevance: 6
+        }
+      ];
     }
 
     // Group by area for nice display
