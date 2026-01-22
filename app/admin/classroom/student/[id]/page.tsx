@@ -193,6 +193,16 @@ export default function StudentDetailPage() {
               <span className="text-xs">🔵 {student.progress?.practicing || 0}</span>
               <span className="text-xs">🟢 {student.progress?.mastered || 0}</span>
             </div>
+
+            {/* Report Button */}
+            <Link
+              href={`/admin/classroom/report/${studentId}`}
+              target="_blank"
+              className="hidden sm:flex items-center gap-2 bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-colors"
+            >
+              <span>📄</span>
+              <span className="text-sm">Report</span>
+            </Link>
           </div>
         </div>
       </header>
