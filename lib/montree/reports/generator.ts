@@ -191,9 +191,59 @@ export async function generateWeeklyReport(params: {
       }
     }
 
+    // 4b. Fetch work sessions for this week (Session 49 enhancement)
+    const { data: sessions, error: sessionsError } = await supabase
+      .from('montree_work_sessions')
+      .select('*')
+      .eq('child_id', child_id)
+      .gte('observed_at', weekStartDate.toISOString())
+      .lte('observed_at', weekEndDate.toISOString());
+
+    // Count repetitions per work
+    const workRepetitions: Record<string, number> = {};
+    const sessionNotes: Record<string, string[]> = {};
+    
+    if (sessions && sessions.length > 0) {
+      sessions.forEach(s => {
+        if (s.work_id) {
+          workRepetitions[s.work_id] = (workRepetitions[s.work_id] || 0) + 1;
+          // Collect any notes from sessions
+          if (s.notes && s.notes.trim()) {
+            if (!sessionNotes[s.work_id]) sessionNotes[s.work_id] = [];
+            sessionNotes[s.work_id].push(s.notes);
+          }
+        }
+      });
+      
+      // Add session work_ids to translations lookup
+      const sessionWorkIds = Object.keys(workRepetitions);
+      const newWorkIds = sessionWorkIds.filter(id => !workIds.includes(id));
+      
+      if (newWorkIds.length > 0) {
+        const { data: moreTranslations } = await supabase
+          .from('montree_work_translations')
+          .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template')
+          .in('work_id', newWorkIds);
+          
+        if (moreTranslations) {
+          moreTranslations.forEach(t => {
+            workTranslations[t.work_id] = {
+              display_name: t.display_name,
+              area: t.area as CurriculumArea,
+              developmental_context: t.developmental_context,
+              home_extension: t.home_extension,
+              photo_caption_template: t.photo_caption_template,
+            };
+          });
+        }
+      }
+    }
+
     // 5. Build highlights from media
     const highlights: ReportHighlight[] = allMedia.map(media => {
       const work = media.work_id ? workTranslations[media.work_id] : null;
+      const repetitions = media.work_id ? (workRepetitions[media.work_id] || 1) : 1;
+      const notes = media.work_id ? (sessionNotes[media.work_id] || []) : [];
       
       return {
         media_id: media.id,
@@ -202,11 +252,13 @@ export async function generateWeeklyReport(params: {
         work_id: media.work_id,
         work_name: work?.display_name || null,
         area: work?.area || null,
-        observation: media.caption || 'Working with concentration.',
+        observation: media.caption || notes[0] || 'Working with concentration.',
         developmental_note: work?.developmental_context || 'Developing independence and focus.',
         home_extension: work?.home_extension || null,
         captured_at: media.captured_at,
         caption: media.caption,
+        repetitions, // Session 49: How many times this week
+        session_notes: notes.length > 0 ? notes : undefined, // Session 49: Any notes
       };
     });
 
@@ -219,12 +271,18 @@ export async function generateWeeklyReport(params: {
 
     // 7. Build initial content
     const childName = child.name;
+    const totalSessions = sessions?.length || 0;
+    const uniqueWorksThisWeek = Object.keys(workRepetitions).length;
+    
     const content: ReportContent = {
-      summary: generateBasicSummary(childName, child.gender, highlights, areas_explored),
+      summary: generateBasicSummary(childName, child.gender, highlights, areas_explored, totalSessions, uniqueWorksThisWeek),
       highlights,
       areas_explored,
       total_activities: highlights.length,
       total_photos: allMedia.length,
+      total_sessions: totalSessions, // Session 49: Total work interactions
+      unique_works: uniqueWorksThisWeek, // Session 49: Different works explored
+      work_repetitions: workRepetitions, // Session 49: Count per work
       milestones: [],
       teacher_notes: report_type === 'teacher' ? '' : undefined,
       parent_message: report_type === 'parent' 
@@ -307,13 +365,16 @@ function generateBasicSummary(
   name: string, 
   gender: 'he' | 'she' | 'they',
   highlights: ReportHighlight[],
-  areas: CurriculumArea[]
+  areas: CurriculumArea[],
+  totalSessions: number,
+  uniqueWorks: number
 ): string {
   const pronoun = gender === 'they' ? 'they' : gender;
   const verb = gender === 'they' ? 'were' : 'was';
   const possessive = gender === 'he' ? 'his' : gender === 'she' ? 'her' : 'their';
+  const showedVerb = gender === 'they' ? 'They showed' : gender === 'he' ? 'He showed' : 'She showed';
   
-  if (highlights.length === 0) {
+  if (highlights.length === 0 && totalSessions === 0) {
     return `This week, ${name} continued ${possessive} learning journey in the classroom.`;
   }
 
@@ -328,13 +389,21 @@ function generateBasicSummary(
     }
   });
 
-  const areaText = areaNames.length === 1 
-    ? areaNames[0]
-    : areaNames.length === 2
-      ? `${areaNames[0]} and ${areaNames[1]}`
-      : `${areaNames.slice(0, -1).join(', ')}, and ${areaNames[areaNames.length - 1]}`;
+  const areaText = areaNames.length === 0 
+    ? 'various activities'
+    : areaNames.length === 1 
+      ? areaNames[0]
+      : areaNames.length === 2
+        ? `${areaNames[0]} and ${areaNames[1]}`
+        : `${areaNames.slice(0, -1).join(', ')}, and ${areaNames[areaNames.length - 1]}`;
 
-  return `This week, ${name} ${verb} actively engaged in ${possessive} learning, exploring ${highlights.length} ${highlights.length === 1 ? 'activity' : 'activities'} across ${areaText}. ${pronoun === 'they' ? 'They showed' : pronoun === 'he' ? 'He showed' : 'She showed'} wonderful focus and curiosity throughout the week.`;
+  // Session 49: Enhanced summary with session data
+  const activityCount = uniqueWorks || highlights.length;
+  const sessionNote = totalSessions > activityCount 
+    ? `, returning to favorite works ${totalSessions - activityCount} times` 
+    : '';
+
+  return `This week, ${name} ${verb} actively engaged in ${possessive} learning, exploring ${activityCount} ${activityCount === 1 ? 'activity' : 'activities'} across ${areaText}${sessionNote}. ${showedVerb} wonderful focus and curiosity throughout the week.`;
 }
 
 /**
