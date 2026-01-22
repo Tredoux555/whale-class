@@ -3,45 +3,38 @@
     "Update brain.json every 5 MIN during builds",
     "NEVER lose progress"
   ],
-  "lastUpdated": "2026-01-22T19:55:00Z",
-  "currentSession": "SESSION-50-PARENT-PORTAL",
-  "handoffFile": "/HANDOFF_SESSION_50.md",
+  "lastUpdated": "2026-01-22T20:35:00Z",
+  "currentSession": "SESSION-50-PARENT-PORTAL-AUDIT",
   
-  "status": "✅ PARENT PORTAL COMPLETE - READY FOR SQL",
+  "status": "✅ DEEP AUDIT COMPLETE - ALL ISSUES FIXED",
   
-  "completedSteps": [
-    "✅ /montree/parent/page.tsx - Parent login page (phone + access code tabs)",
-    "✅ /montree/parent/dashboard/page.tsx - Parent dashboard with progress, media, reports",
-    "✅ /api/montree/parent/auth/access-code - Validate teacher codes",
-    "✅ /api/montree/parent/auth/logout/route.ts - Logout endpoint",
-    "✅ /api/montree/parent/dashboard - Fetch child data for parent",
-    "✅ /api/montree/parent/generate-code - Teacher generates access codes",
-    "✅ /components/montree/ParentAccessModal.tsx - QR + code sharing modal",
-    "✅ PARENT_PORTAL_MIGRATION.sql - Database tables ready",
-    "✅ Added floating parent share button to student detail page",
-    "✅ Integrated ParentAccessModal into student detail page"
+  "auditFindings": {
+    "issue1_FIXED": "Parent login page now auto-fills code from URL param AND auto-submits",
+    "issue2_FIXED": "Removed broken 'See All' media link, added inline toggle instead",
+    "issue3_VERIFIED": "showParentModal state was correctly defined (false alarm from truncated search)",
+    "issue4_FIXED": "Added parent-codes link to admin page with highlight styling",
+    "issue5_FIXED": "Created report_share_tokens table migration",
+    "issue6_FIXED": "Share token generator now creates 64-char hex (matches API validation)",
+    "issue7_FIXED": "Parent dashboard now queries BOTH media tables (child_work_media + montree_media)"
+  },
+  
+  "filesModified": [
+    "/app/montree/parent/page.tsx - Auto-fill code from URL, auto-submit, Suspense wrapper",
+    "/app/montree/parent/dashboard/page.tsx - Fixed media section, added inline toggle",
+    "/app/montree/admin/page.tsx - Added parent-codes link with highlight styling",
+    "/app/api/montree/parent/dashboard/route.ts - Query both media tables correctly",
+    "/lib/montree/reports/generator.ts - Fixed share token to 64-char hex format"
   ],
   
-  "pendingSteps": [
-    "⏳ Run PARENT_PORTAL_MIGRATION.sql in Supabase",
-    "⏳ Test full flow: Generate code → Scan QR → Parent sees dashboard"
+  "sqlToRun": "/COMPLETE_PARENT_PORTAL_SQL.sql - Run this ONE file for ALL tables",
+  
+  "teacherFlow": [
+    "1. Go to /montree/admin/parent-codes",
+    "2. Click 'Generate Missing Codes'",
+    "3. Click 'Print Cards'",
+    "4. Hand cards to parents",
+    "5. Parents scan QR → auto-login → see dashboard"
   ],
   
-  "sqlToRun": "/PARENT_PORTAL_MIGRATION.sql",
-  
-  "fullFlow": [
-    "1. Teacher opens student detail page",
-    "2. Taps floating 👨‍👩‍👧 button",
-    "3. Clicks 'Generate Access Code'",
-    "4. Gets QR code + 8-char code",
-    "5. Parent scans QR or visits teacherpotato.xyz/montree/parent",
-    "6. Parent enters code OR scans QR which auto-fills",
-    "7. Parent sees dashboard with child progress, media, reports"
-  ],
-  
-  "nextSteps": [
-    "1. Run SQL migration in Supabase",
-    "2. Deploy to production",
-    "3. Test end-to-end flow"
-  ]
+  "deployCommand": "cd ~/Desktop/whale && git add . && git commit -m 'Parent portal audit fixes' && git push"
 }

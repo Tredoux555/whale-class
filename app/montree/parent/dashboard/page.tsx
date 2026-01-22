@@ -54,6 +54,7 @@ export default function ParentDashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [showAllMedia, setShowAllMedia] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -61,12 +62,10 @@ export default function ParentDashboardPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch parent's child data
       const res = await fetch('/api/montree/parent/dashboard');
       const data = await res.json();
 
       if (!data.success) {
-        // Not authenticated, redirect to login
         router.push('/montree/parent');
         return;
       }
@@ -95,10 +94,10 @@ export default function ParentDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-bounce">🌳</span>
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl animate-bounce">🐋</span>
           </div>
           <p className="text-gray-600 font-medium">Loading...</p>
         </div>
@@ -108,7 +107,7 @@ export default function ParentDashboardPage() {
 
   if (!child) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-6xl mb-4">😕</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">No Child Found</h2>
@@ -122,31 +121,30 @@ export default function ParentDashboardPage() {
   }
 
   const progressPercent = progress ? Math.round(((progress.mastered) / Math.max(progress.total, 1)) * 100) : 0;
+  const displayMedia = showAllMedia ? recentMedia : recentMedia.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden">
                 {child.photo_url ? (
-                  <img src={child.photo_url} alt={child.name} className="w-full h-full rounded-full object-cover" />
+                  <img src={child.photo_url} alt={child.name} className="w-full h-full object-cover" />
                 ) : (
-                  child.name.charAt(0)
+                  <span className="text-xl">🐋</span>
                 )}
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">{child.name}</h1>
-                <p className="text-sm text-gray-500">
-                  {child.classroom_name || 'Montessori Class'}
-                </p>
+                <p className="text-sm text-gray-500">Whale Class</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600 p-2"
+              className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               title="Logout"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +157,7 @@ export default function ParentDashboardPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Progress Overview Card */}
-        <div className="bg-white rounded-2xl shadow-sm p-5">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900">Learning Progress</h2>
             <div className="text-right">
@@ -172,7 +170,7 @@ export default function ParentDashboardPage() {
           <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-4">
             <div className="h-full flex">
               <div 
-                className="bg-green-500 transition-all" 
+                className="bg-emerald-500 transition-all" 
                 style={{ width: `${(progress?.mastered || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
               />
               <div 
@@ -180,7 +178,7 @@ export default function ParentDashboardPage() {
                 style={{ width: `${(progress?.practicing || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
               />
               <div 
-                className="bg-yellow-400 transition-all" 
+                className="bg-amber-400 transition-all" 
                 style={{ width: `${(progress?.presented || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
               />
             </div>
@@ -189,7 +187,7 @@ export default function ParentDashboardPage() {
           {/* Legend */}
           <div className="flex justify-between text-sm">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-yellow-400" />
+              <span className="w-3 h-3 rounded-full bg-amber-400" />
               <span className="text-gray-600">{progress?.presented || 0} Presented</span>
             </span>
             <span className="flex items-center gap-1.5">
@@ -197,7 +195,7 @@ export default function ParentDashboardPage() {
               <span className="text-gray-600">{progress?.practicing || 0} Practicing</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="w-3 h-3 rounded-full bg-emerald-500" />
               <span className="text-gray-600">{progress?.mastered || 0} Mastered</span>
             </span>
           </div>
@@ -205,7 +203,7 @@ export default function ParentDashboardPage() {
 
         {/* Area Progress */}
         {areaProgress.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <h2 className="font-bold text-gray-900 mb-4">Progress by Area</h2>
             <div className="space-y-3">
               {areaProgress.map((area) => {
@@ -237,17 +235,22 @@ export default function ParentDashboardPage() {
           </div>
         )}
 
-        {/* Recent Photos */}
+        {/* Recent Photos - Now inline with "Show All" toggle */}
         {recentMedia.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900">Recent Photos</h2>
-              <Link href={`/montree/parent/media`} className="text-sm text-emerald-600 hover:underline">
-                See All →
-              </Link>
+              <h2 className="font-bold text-gray-900">Photos & Videos</h2>
+              {recentMedia.length > 6 && (
+                <button 
+                  onClick={() => setShowAllMedia(!showAllMedia)}
+                  className="text-sm text-emerald-600 hover:underline"
+                >
+                  {showAllMedia ? 'Show Less' : `See All (${recentMedia.length})`}
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {recentMedia.slice(0, 6).map((item) => (
+              {displayMedia.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setSelectedMedia(item)}
@@ -257,11 +260,11 @@ export default function ParentDashboardPage() {
                     <>
                       <video src={item.media_url} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <span className="text-white text-xl">▶</span>
+                        <span className="text-white text-2xl">▶</span>
                       </div>
                     </>
                   ) : (
-                    <img src={item.media_url} alt={item.work_name || ''} className="w-full h-full object-cover" />
+                    <img src={item.media_url} alt={item.work_name || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   )}
                 </button>
               ))}
@@ -271,14 +274,14 @@ export default function ParentDashboardPage() {
 
         {/* Weekly Reports */}
         {reports.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <h2 className="font-bold text-gray-900 mb-4">Weekly Reports</h2>
             <div className="space-y-2">
               {reports.slice(0, 4).map((report) => (
                 <Link
                   key={report.id}
                   href={report.share_token ? `/montree/report/${report.share_token}` : '#'}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  className={`flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors ${!report.share_token ? 'opacity-50 pointer-events-none' : ''}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
@@ -288,10 +291,10 @@ export default function ParentDashboardPage() {
                       <p className="font-medium text-gray-900">
                         Week of {new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-500">{report.status}</p>
+                      <p className="text-xs text-gray-500 capitalize">{report.status}</p>
                     </div>
                   </div>
-                  <span className="text-gray-400">→</span>
+                  <span className="text-emerald-500">→</span>
                 </Link>
               ))}
             </div>
@@ -299,7 +302,7 @@ export default function ParentDashboardPage() {
         )}
 
         {/* Games Section */}
-        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl shadow-lg p-5 text-white">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg p-5 text-white">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
               <span className="text-3xl">🎮</span>
@@ -311,7 +314,7 @@ export default function ParentDashboardPage() {
           </div>
           <Link
             href="/games"
-            className="mt-4 block w-full py-3 bg-white text-purple-600 font-bold rounded-xl text-center hover:bg-purple-50 transition-colors"
+            className="mt-4 block w-full py-3 bg-white text-emerald-600 font-bold rounded-xl text-center hover:bg-emerald-50 transition-colors"
           >
             Play Games →
           </Link>
@@ -374,7 +377,7 @@ export default function ParentDashboardPage() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-gray-400">
-        <p>Montree • Montessori Progress Tracking</p>
+        <p>🐋 Whale Class • Montessori Progress Tracking</p>
       </footer>
     </div>
   );

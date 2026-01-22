@@ -7,6 +7,14 @@ import Link from 'next/link';
 
 const TOOLS = [
   {
+    href: '/montree/admin/parent-codes',
+    icon: '👨‍👩‍👧',
+    title: 'Parent Access Codes',
+    description: 'Generate & print parent login codes',
+    gradient: 'from-emerald-500 to-teal-600',
+    hoverGradient: 'hover:from-emerald-600 hover:to-teal-700',
+  },
+  {
     href: '/montree/dashboard/videos/preview',
     icon: '🎬',
     title: 'Weekly Videos',
@@ -27,8 +35,8 @@ const TOOLS = [
     icon: '🎮',
     title: 'English Games',
     description: 'Interactive learning activities',
-    gradient: 'from-emerald-500 to-teal-600',
-    hoverGradient: 'hover:from-emerald-600 hover:to-teal-700',
+    gradient: 'from-cyan-500 to-blue-600',
+    hoverGradient: 'hover:from-cyan-600 hover:to-blue-700',
   },
   {
     href: '/admin/curriculum-editor',

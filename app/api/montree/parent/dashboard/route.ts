@@ -101,13 +101,45 @@ export async function GET(request: NextRequest) {
       ...areaStats[a.id],
     })).filter(a => a.total > 0);
 
-    // Fetch recent media
-    const { data: media } = await supabase
-      .from('child_media')
-      .select('id, media_url, media_type, work_name, taken_at')
+    // Fetch recent media from BOTH tables (same as classroom API)
+    
+    // 1. child_work_media (legacy system)
+    const { data: legacyMedia } = await supabase
+      .from('child_work_media')
+      .select('id, media_type, media_url, work_name, taken_at')
       .eq('child_id', childId)
       .order('taken_at', { ascending: false })
       .limit(12);
+
+    // 2. montree_media (new system)
+    const { data: montreeMedia } = await supabase
+      .from('montree_media')
+      .select('id, media_type, storage_path, caption, captured_at')
+      .eq('child_id', childId)
+      .order('captured_at', { ascending: false })
+      .limit(12);
+
+    // Convert montree_media to same format with public URLs
+    const montreeWithUrls = (montreeMedia || []).map(m => {
+      const { data: urlData } = supabase.storage
+        .from('whale-media')
+        .getPublicUrl(m.storage_path);
+      
+      return {
+        id: m.id,
+        media_type: m.media_type || 'image',
+        media_url: urlData.publicUrl,
+        work_name: m.caption || 'Learning moment',
+        taken_at: m.captured_at,
+      };
+    });
+
+    // Combine both sources
+    const allMedia = [...(legacyMedia || []), ...montreeWithUrls];
+    
+    // Sort by date and limit
+    allMedia.sort((a, b) => new Date(b.taken_at || 0).getTime() - new Date(a.taken_at || 0).getTime());
+    const recentMedia = allMedia.slice(0, 12);
 
     // Fetch recent reports
     const { data: reports } = await supabase
@@ -147,7 +179,7 @@ export async function GET(request: NextRequest) {
       },
       progress,
       areaProgress,
-      recentMedia: media || [],
+      recentMedia,
       reports: reportsWithTokens,
     });
 

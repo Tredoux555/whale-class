@@ -10,6 +10,16 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold text-white mb-6">School Administration</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Parent Access Codes - TOP PRIORITY */}
+        <Link 
+          href="/montree/admin/parent-codes"
+          className="bg-gradient-to-br from-emerald-900 to-teal-900 border border-emerald-700 rounded-xl p-6 hover:border-emerald-400 transition-colors"
+        >
+          <div className="text-3xl mb-3">👨‍👩‍👧</div>
+          <h2 className="text-lg font-bold text-white mb-2">Parent Access Codes</h2>
+          <p className="text-emerald-300 text-sm">Generate QR codes for parents to view their child&apos;s progress. Print cards to hand out.</p>
+        </Link>
+
         {/* Students/Import Card */}
         <Link 
           href="/montree/admin/students"
