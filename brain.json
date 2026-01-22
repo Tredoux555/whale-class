@@ -3,28 +3,45 @@
     "Update brain.json every 5 MIN during builds",
     "NEVER lose progress"
   ],
-  "lastUpdated": "2026-01-22T16:15:00Z",
-  "currentSession": "SESSION-49-COMPLETE",
-  "handoffFile": "/HANDOFF_SESSION_49_COMPLETE.md",
+  "lastUpdated": "2026-01-22T19:55:00Z",
+  "currentSession": "SESSION-50-PARENT-PORTAL",
+  "handoffFile": "/HANDOFF_SESSION_50.md",
   
-  "status": "✅ ALL STEPS COMPLETE - HANDOFF WRITTEN",
+  "status": "✅ PARENT PORTAL COMPLETE - READY FOR SQL",
   
   "completedSteps": [
-    "✅ Photo-work linking",
-    "✅ Session history table",
-    "✅ Reports tab + Generate button",
-    "✅ Share link UI",
-    "✅ Session data in reports",
-    "✅ 50 work translations",
-    "✅ Observation notes prompt"
+    "✅ /montree/parent/page.tsx - Parent login page (phone + access code tabs)",
+    "✅ /montree/parent/dashboard/page.tsx - Parent dashboard with progress, media, reports",
+    "✅ /api/montree/parent/auth/access-code - Validate teacher codes",
+    "✅ /api/montree/parent/auth/logout/route.ts - Logout endpoint",
+    "✅ /api/montree/parent/dashboard - Fetch child data for parent",
+    "✅ /api/montree/parent/generate-code - Teacher generates access codes",
+    "✅ /components/montree/ParentAccessModal.tsx - QR + code sharing modal",
+    "✅ PARENT_PORTAL_MIGRATION.sql - Database tables ready",
+    "✅ Added floating parent share button to student detail page",
+    "✅ Integrated ParentAccessModal into student detail page"
   ],
   
-  "sqlToRun": "/migrations/061_seed_work_translations_FULL.sql",
+  "pendingSteps": [
+    "⏳ Run PARENT_PORTAL_MIGRATION.sql in Supabase",
+    "⏳ Test full flow: Generate code → Scan QR → Parent sees dashboard"
+  ],
+  
+  "sqlToRun": "/PARENT_PORTAL_MIGRATION.sql",
+  
+  "fullFlow": [
+    "1. Teacher opens student detail page",
+    "2. Taps floating 👨‍👩‍👧 button",
+    "3. Clicks 'Generate Access Code'",
+    "4. Gets QR code + 8-char code",
+    "5. Parent scans QR or visits teacherpotato.xyz/montree/parent",
+    "6. Parent enters code OR scans QR which auto-fills",
+    "7. Parent sees dashboard with child progress, media, reports"
+  ],
   
   "nextSteps": [
-    "Run SQL migrations",
-    "Test full flow",
-    "Deploy to production",
-    "Consider AI enhancement or move to Jeffy"
+    "1. Run SQL migration in Supabase",
+    "2. Deploy to production",
+    "3. Test end-to-end flow"
   ]
 }

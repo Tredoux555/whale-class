@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import AIInsightsTab from '@/components/montree/AIInsightsTab';
 import WorkNavigator from '@/components/montree/WorkNavigator';
+import ParentAccessModal from '@/components/montree/ParentAccessModal';
 
 // Interface for ALL curriculum works (from search API)
 interface CurriculumWork {
@@ -112,6 +113,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const [activeTab, setActiveTab] = useState('week');
   const [loading, setLoading] = useState(true);
   const [mediaRefreshKey, setMediaRefreshKey] = useState(0);
+  const [showParentModal, setShowParentModal] = useState(false);
 
   useEffect(() => {
     if (studentId) {
@@ -276,6 +278,23 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           />
         )}
       </main>
+
+      {/* Floating Share with Parent button */}
+      <button
+        onClick={() => setShowParentModal(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-40"
+        title="Share with Parent"
+      >
+        <span className="text-2xl">👨‍👩‍👧</span>
+      </button>
+
+      {/* Parent Access Modal */}
+      <ParentAccessModal
+        childId={studentId}
+        childName={student.name}
+        isOpen={showParentModal}
+        onClose={() => setShowParentModal(false)}
+      />
     </div>
   );
 }
