@@ -338,9 +338,33 @@ export async function generateWeeklyReport(params: {
 
     const generationTime = Date.now() - startTime;
 
+    // AUTO-SHARE: Generate share token automatically so parents can see it
+    const shareToken = generateShareToken();
+    const shareExpiresAt = new Date();
+    shareExpiresAt.setDate(shareExpiresAt.getDate() + 90); // 90-day expiry
+
+    const { error: shareError } = await supabase
+      .from('report_share_tokens')
+      .insert({
+        report_id: report.id,
+        token: shareToken,
+        expires_at: shareExpiresAt.toISOString(),
+        revoked: false,
+      });
+
+    if (shareError) {
+      console.error('Auto-share token error:', shareError);
+      // Don't fail - report is still created
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://teacherpotato.xyz';
+    const shareUrl = `${baseUrl}/montree/report/${shareToken}`;
+
     return {
       success: true,
       report: report as MontreeWeeklyReport,
+      share_url: shareUrl,
+      share_token: shareToken,
       stats: {
         photos_included: allMedia.length,
         activities_detected: highlights.length,
@@ -360,6 +384,20 @@ export async function generateWeeklyReport(params: {
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
+
+function generateShareToken(): string {
+  // Generate 64-character hex token (matches API validation)
+  const array = new Uint8Array(32);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(array);
+  } else {
+    // Fallback for Node.js
+    for (let i = 0; i < 32; i++) {
+      array[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
 
 function generateBasicSummary(
   name: string, 
