@@ -98,6 +98,75 @@ export async function GET(
       updated_at: w.updated_at
     }));
 
+    // Generate game recommendations based on language works
+    const languageWorks = works.filter(w => w.area === 'language');
+    const hasLanguage = languageWorks.length > 0;
+    
+    // Smart game recommendations based on child's work
+    const gameRecommendations = [];
+    
+    if (hasLanguage) {
+      // Check for specific work types
+      const workNames = languageWorks.map(w => w.work_name.toLowerCase());
+      
+      if (workNames.some(n => n.includes('sandpaper') || n.includes('letter'))) {
+        gameRecommendations.push({
+          id: 'letter-tracer',
+          name: 'Letter Tracer',
+          url: '/games/letter-tracer',
+          icon: '✏️',
+          reason: 'Practice letter formation'
+        });
+      }
+      
+      if (workNames.some(n => n.includes('sound') || n.includes('phonetic'))) {
+        gameRecommendations.push({
+          id: 'letter-sounds',
+          name: 'Letter Sounds',
+          url: '/games/letter-sounds',
+          icon: '🔤',
+          reason: 'Match letters to sounds'
+        });
+        gameRecommendations.push({
+          id: 'beginning-sounds',
+          name: 'Beginning Sounds',
+          url: '/games/sound-games/beginning',
+          icon: '👂',
+          reason: 'I Spy sound games'
+        });
+      }
+      
+      if (workNames.some(n => n.includes('moveable') || n.includes('word'))) {
+        gameRecommendations.push({
+          id: 'word-builder',
+          name: 'Word Builder',
+          url: '/games/word-builder',
+          icon: '🧱',
+          reason: 'Build CVC words'
+        });
+      }
+    }
+    
+    // Add default language games if child has language work but no specific matches
+    if (hasLanguage && gameRecommendations.length === 0) {
+      gameRecommendations.push(
+        { id: 'letter-sounds', name: 'Letter Sounds', url: '/games/letter-sounds', icon: '🔤', reason: 'Learn letter-sound connections' },
+        { id: 'letter-tracer', name: 'Letter Tracer', url: '/games/letter-tracer', icon: '✏️', reason: 'Practice writing letters' }
+      );
+    }
+    
+    // Add math games if child has math work
+    const mathWorks = works.filter(w => w.area === 'math' || w.area === 'mathematics');
+    if (mathWorks.length > 0) {
+      gameRecommendations.push({
+        id: 'quantity-match',
+        name: 'Quantity Match',
+        url: '/games/quantity-match',
+        icon: '🔢',
+        reason: 'Practice number recognition'
+      });
+    }
+
     return NextResponse.json({
       child,
       areaProgress,
@@ -106,7 +175,8 @@ export async function GET(
       weekInfo: {
         week: weekNumber,
         year
-      }
+      },
+      gameRecommendations: gameRecommendations.slice(0, 4)
     });
 
   } catch (error) {
