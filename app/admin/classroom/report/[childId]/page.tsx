@@ -20,6 +20,14 @@ interface RecentWork {
   updated_at: string;
 }
 
+interface GameRecommendation {
+  id: string;
+  name: string;
+  url: string;
+  icon: string;
+  reason: string;
+}
+
 interface Child {
   id: string;
   name: string;
@@ -43,6 +51,7 @@ interface ReportData {
     week: number;
     year: number;
   };
+  gameRecommendations: GameRecommendation[];
 }
 
 const AREA_CONFIG: Record<string, { label: string; labelChinese: string; icon: string; color: string; gradient: string; bg: string }> = {
@@ -445,6 +454,40 @@ export default function ParentReportPage({ params }: { params: Promise<{ childId
             })}
           </div>
         </div>
+
+        {/* Games to Play at Home */}
+        {data.gameRecommendations && data.gameRecommendations.length > 0 && (
+          <div className="p-6 border-t bg-gradient-to-r from-purple-50 to-indigo-50">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span>🎮</span> Games to Play at Home 家庭游戏推荐
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              These games reinforce what {child.name} is learning at school!
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {data.gameRecommendations.map(game => (
+                <div 
+                  key={game.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white border border-purple-200 shadow-sm"
+                >
+                  <span className="text-3xl">{game.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800">{game.name}</p>
+                    <p className="text-xs text-purple-600">{game.reason}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-3 bg-white rounded-xl border border-purple-200 text-center">
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold">Play online:</span>{' '}
+                <span className="text-purple-600">www.teacherpotato.xyz/games</span>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-6 bg-gray-50 border-t">
