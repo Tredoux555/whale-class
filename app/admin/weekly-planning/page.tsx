@@ -272,12 +272,21 @@ export default function WeeklyPlanningPage() {
               </p>
             )}
 
-            <Link
-              href={`/admin/classroom?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
-              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              🐋 View Week {uploadResult.translatedContent?.weekNumber} in Classroom →
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/admin/classroom/print?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
+                target="_blank"
+                className="inline-block px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                🖨️ Print
+              </Link>
+              <Link
+                href={`/admin/classroom?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                🐋 View Week {uploadResult.translatedContent?.weekNumber} in Classroom →
+              </Link>
+            </div>
           </div>
         )}
 
@@ -302,12 +311,21 @@ export default function WeeklyPlanningPage() {
                       {plan.original_filename || 'Manual entry'}
                     </p>
                   </div>
-                  <Link
-                    href={`/admin/classroom?week=${plan.week_number}&year=${plan.year}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Open →
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/admin/classroom/print?week=${plan.week_number}&year=${plan.year}`}
+                      target="_blank"
+                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+                    >
+                      🖨️ Print
+                    </Link>
+                    <Link
+                      href={`/admin/classroom?week=${plan.week_number}&year=${plan.year}`}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Open →
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
