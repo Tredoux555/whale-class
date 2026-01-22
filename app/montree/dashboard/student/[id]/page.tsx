@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import AIInsightsTab from '@/components/montree/AIInsightsTab';
+import WorkNavigator from '@/components/montree/WorkNavigator';
 
 // Interface for ALL curriculum works (from search API)
 interface CurriculumWork {
@@ -64,6 +65,7 @@ const TABS = [
   { id: 'week', label: 'This Week', icon: '📋' },
   { id: 'progress', label: 'Progress', icon: '📊' },
   { id: 'portfolio', label: 'Portfolio', icon: '📷' },
+  { id: 'reports', label: 'Reports', icon: '📄' },
   { id: 'ai', label: 'AI Insights', icon: '🧠' },
 ];
 
@@ -257,6 +259,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         {activeTab === 'portfolio' && (
           <PortfolioTab 
             key={mediaRefreshKey}
+            childId={studentId} 
+            childName={student.name}
+          />
+        )}
+        {activeTab === 'reports' && (
+          <ReportsTab 
             childId={studentId} 
             childName={student.name}
           />
@@ -912,6 +920,17 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
           </div>
         </div>
       )}
+
+      {/* WORK NAVIGATOR - Browse ALL works with camera capture */}
+      <WorkNavigator
+        classroomId={classroomId}
+        childId={childId}
+        childName={childName}
+        onProgressUpdated={() => {
+          fetchAssignments();
+          onMediaUploaded?.();
+        }}
+      />
 
       {/* Legend - only show when collapsed */}
       {expandedIndex === null && !wheelOpen && (
@@ -1575,7 +1594,10 @@ function PortfolioTab({ childId, childName }: { childId: string; childName: stri
             ) : (
               <img src={item.media_url} alt={item.work_name} className="w-full h-full object-cover" />
             )}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+            {/* Work name overlay - shows on hover/touch */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-white text-xs font-medium truncate">{item.work_name || 'Untitled'}</p>
+            </div>
           </button>
         ))}
       </div>
@@ -1618,6 +1640,329 @@ function PortfolioTab({ childId, childName }: { childId: string; childName: stri
               })}
             </p>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// REPORTS TAB - Generate & Share Parent Reports
+// Session 49 - Record Keeping System
+// ============================================
+function ReportsTab({ childId, childName }: { childId: string; childName: string }) {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<any | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
+
+  // Calculate week dates
+  const getWeekDates = () => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return {
+      week_start: monday.toISOString().split('T')[0],
+      week_end: sunday.toISOString().split('T')[0],
+      display: `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    };
+  };
+
+  const weekDates = getWeekDates();
+
+  useEffect(() => {
+    fetchReports();
+  }, [childId]);
+
+  const fetchReports = async () => {
+    try {
+      const res = await fetch(`/api/montree/reports?child_id=${childId}&limit=10`);
+      const data = await res.json();
+      setReports(data.reports || []);
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateReport = async () => {
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/montree/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          week_start: weekDates.week_start,
+          week_end: weekDates.week_end,
+          report_type: 'parent',
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Report generated! 🎉');
+        fetchReports();
+        if (data.report) {
+          setSelectedReport(data.report);
+        }
+      } else {
+        toast.error(data.error || 'Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Report generation failed:', error);
+      toast.error('Failed to generate report');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const createShareLink = async (reportId: string) => {
+    try {
+      const res = await fetch(`/api/montree/reports/${reportId}/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expires_in_days: 30 }),
+      });
+
+      const data = await res.json();
+      
+      if (data.success && data.share_url) {
+        setShareUrl(data.share_url);
+        toast.success('Share link created!');
+      } else {
+        toast.error(data.error || 'Failed to create share link');
+      }
+    } catch (error) {
+      console.error('Share link creation failed:', error);
+      toast.error('Failed to create share link');
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    setCopying(true);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Link copied! 📋');
+    } catch (error) {
+      toast.error('Failed to copy');
+    } finally {
+      setCopying(false);
+    }
+  };
+
+  const shareToWeChat = (url: string) => {
+    // WeChat doesn't have a direct share URL, but we can copy the link
+    // and show instructions
+    copyToClipboard(url);
+    toast.success('Link copied! Paste in WeChat to share 💚');
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center mx-auto mb-3">
+          <span className="text-2xl animate-pulse">📄</span>
+        </div>
+        <p className="text-gray-500">Loading reports...</p>
+      </div>
+    );
+  }
+
+  // Check if report exists for current week
+  const currentWeekReport = reports.find(r => r.week_start === weekDates.week_start);
+
+  return (
+    <div className="space-y-4">
+      {/* Generate This Week's Report */}
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-5 shadow-lg text-white">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">
+            📄
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg">Parent Report</h3>
+            <p className="text-white/80 text-sm">{weekDates.display}</p>
+          </div>
+        </div>
+
+        {currentWeekReport ? (
+          <div className="mt-4 space-y-3">
+            <div className="bg-white/20 rounded-xl p-3 flex items-center gap-3">
+              <span className="text-2xl">✅</span>
+              <div className="flex-1">
+                <p className="font-medium">Report Ready!</p>
+                <p className="text-sm text-white/80">
+                  Generated {new Date(currentWeekReport.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setSelectedReport(currentWeekReport);
+                createShareLink(currentWeekReport.id);
+              }}
+              className="w-full py-3 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <span>🔗</span>
+              <span>Share with Parents</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={generateReport}
+            disabled={generating}
+            className="mt-4 w-full py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+          >
+            {generating ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <span>✨</span>
+                <span>Generate Report</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Share Modal */}
+      {selectedReport && shareUrl && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => {
+          setSelectedReport(null);
+          setShareUrl(null);
+        }}>
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-5">
+              <h3 className="text-xl font-bold">Share with Parents</h3>
+              <p className="text-white/80 text-sm mt-1">{childName}'s Weekly Report</p>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* Link Display */}
+              <div className="bg-gray-50 rounded-xl p-3 border">
+                <p className="text-xs text-gray-500 mb-1">Share Link</p>
+                <p className="text-sm font-mono text-gray-700 truncate">{shareUrl}</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => copyToClipboard(shareUrl)}
+                  disabled={copying}
+                  className="py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>📋</span>
+                  <span>Copy Link</span>
+                </button>
+
+                <button
+                  onClick={() => shareToWeChat(shareUrl)}
+                  className="py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>💚</span>
+                  <span>WeChat</span>
+                </button>
+              </div>
+
+              {/* View Report */}
+              <a
+                href={shareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-center transition-colors"
+              >
+                👁️ Preview Report
+              </a>
+
+              {/* Link Info */}
+              <p className="text-xs text-gray-400 text-center">
+                Link expires in 30 days
+              </p>
+            </div>
+
+            <div className="border-t p-4">
+              <button
+                onClick={() => {
+                  setSelectedReport(null);
+                  setShareUrl(null);
+                }}
+                className="w-full py-2 text-gray-500 hover:text-gray-700 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Previous Reports */}
+      {reports.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b">
+            <h3 className="font-bold text-gray-900">Previous Reports</h3>
+          </div>
+          
+          <div className="divide-y">
+            {reports.map(report => (
+              <div 
+                key={report.id}
+                className="p-4 flex items-center gap-3 hover:bg-gray-50 cursor-pointer"
+                onClick={() => {
+                  setSelectedReport(report);
+                  createShareLink(report.id);
+                }}
+              >
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                  📄
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">
+                    Week of {new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {report.report_type === 'parent' ? 'Parent Report' : 'Teacher Report'}
+                  </p>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  report.status === 'published' 
+                    ? 'bg-green-100 text-green-700' 
+                    : report.status === 'draft'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {report.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {reports.length === 0 && !currentWeekReport && (
+        <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">📄</span>
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No Reports Yet</h3>
+          <p className="text-gray-500 text-sm">
+            Generate your first parent report above to share {childName}'s progress!
+          </p>
         </div>
       )}
     </div>

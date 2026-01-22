@@ -58,6 +58,11 @@ export interface ReportContent {
   total_activities: number;
   total_photos: number;
   
+  // Session 49: Work session tracking
+  total_sessions?: number;           // Total work interactions this week
+  unique_works?: number;             // Number of different works explored
+  work_repetitions?: Record<string, number>; // Count per work_id
+  
   // Optional sections
   milestones?: string[];
   teacher_notes?: string;  // Private - only in teacher report
@@ -84,6 +89,10 @@ export interface ReportHighlight {
   observation: string;           // What the child did
   developmental_note: string;    // Why it matters (Montessori perspective)
   home_extension: string | null; // Activity suggestion for parents
+  
+  // Session 49: Repetition tracking
+  repetitions?: number;          // How many times this work this week
+  session_notes?: string[];      // Teacher observation notes
   
   // Metadata
   captured_at: string;

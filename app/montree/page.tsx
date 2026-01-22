@@ -54,6 +54,7 @@ export default function MontreeLandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How It Works</a>
             <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
+            <a href="#security" className="text-gray-600 hover:text-gray-900 transition-colors">Security</a>
             <a href="#demo" className="text-gray-600 hover:text-gray-900 transition-colors">Demo</a>
             <Link 
               href="/montree/dashboard"
@@ -75,6 +76,7 @@ export default function MontreeLandingPage() {
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-3">
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">How It Works</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">Pricing</a>
+            <a href="#security" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">Security</a>
             <a href="#demo" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">Demo</a>
             <Link href="/montree/dashboard" className="block w-full text-center px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-medium">
               Sign In
@@ -420,6 +422,106 @@ export default function MontreeLandingPage() {
                 Start Free Trial →
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECURITY SECTION */}
+      <section id="security" className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
+              <span>🔒</span>
+              <span>Enterprise-grade security</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Your data is protected</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Student privacy is our top priority. We use industry-standard security to keep your data safe.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {[
+              { 
+                icon: '🔐', 
+                title: 'Encrypted Data', 
+                desc: 'All data encrypted in transit (HTTPS) and at rest (AES-256)' 
+              },
+              { 
+                icon: '👥', 
+                title: 'Role-Based Access', 
+                desc: 'Parents only see their own children. Teachers only see their classes.' 
+              },
+              { 
+                icon: '🔑', 
+                title: 'Secure Authentication', 
+                desc: 'Passwords hashed with bcrypt. Secure session tokens.' 
+              },
+              { 
+                icon: '🚫', 
+                title: 'No Data Selling', 
+                desc: 'Student data is never sold, shared, or used for advertising.' 
+              },
+            ].map((item, i) => (
+              <div key={i} className="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100">
+                <div className="text-4xl mb-3">{item.icon}</div>
+                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Infrastructure badges */}
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-8 border border-slate-200">
+            <div className="grid md:grid-cols-3 gap-8 items-center">
+              <div className="text-center md:text-left">
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Trusted Infrastructure</h3>
+                <p className="text-gray-600 text-sm">
+                  Hosted on Supabase &amp; AWS — the same infrastructure trusted by thousands of companies worldwide.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-4">
+                <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                  <span className="text-sm font-medium text-gray-700">🛡️ Supabase</span>
+                </div>
+                <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                  <span className="text-sm font-medium text-gray-700">☁️ AWS</span>
+                </div>
+                <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                  <span className="text-sm font-medium text-gray-700">🔒 Row Level Security</span>
+                </div>
+              </div>
+              
+              <div className="text-center md:text-right">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                  <span>✓</span>
+                  <span>SOC 2 compliant infrastructure</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Photo security callout */}
+          <div className="mt-8 p-6 bg-amber-50 rounded-2xl border border-amber-200">
+            <div className="flex items-start gap-4">
+              <div className="text-3xl">📸</div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">Photo &amp; Media Protection</h3>
+                <p className="text-gray-600 text-sm">
+                  Student photos are stored securely with access controls. They&apos;re never publicly accessible — 
+                  parents only see photos of their own children, and photos are never shared with third parties.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact for security */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm">
+              Questions about security? Contact us at{' '}
+              <span className="text-emerald-600 font-medium">security@teacherpotato.xyz</span>
+            </p>
           </div>
         </div>
       </section>
