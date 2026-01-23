@@ -1,39 +1,23 @@
 {
-  "lastUpdated": "2026-01-23T21:55:00Z",
-  "currentSession": "SESSION-57-FIX-SESSIONS-AND-REPORTS",
-  "status": "🟡 WAITING - SQL needs to run in Supabase",
+  "lastUpdated": "2026-01-23T22:16:00Z",
+  "currentSession": "SESSION-57-COMPLETE",
+  "status": "🟢 ALL FIXED",
   
-  "summary": "Found 2 database issues. Created combined SQL fix file.",
+  "summary": "Fixed sessions API and report preview. Both working.",
   
-  "issuesFound": [
-    {
-      "issue": "Sessions API returns 500 when updating work progress",
-      "cause": "montree_work_sessions.work_id column is UUID but should be TEXT",
-      "console": "Multiple 500 errors on /api/montree/sessions",
-      "status": "FIX CREATED"
-    },
-    {
-      "issue": "Report preview shows 'Not Found'",
-      "cause": "report_share_tokens table missing or RLS blocking",
-      "url": "https://teacherpotato.xyz/montree/report/...",
-      "status": "FIX CREATED"
-    }
+  "fixesApplied": [
+    "ALTER work_id from UUID to TEXT (dropped FK first)",
+    "DROP child_id FK constraint (was pointing to wrong table)",
+    "Created report_share_tokens table with proper RLS"
   ],
   
-  "completedThisSession": [
-    "✅ Fixed school_id UUID error (commit 9144f7d)",
-    "✅ Confirmed report generation works via API",
-    "✅ Diagnosed sessions 500 = work_id column type mismatch",
-    "✅ Diagnosed report preview = tokens table missing",
-    "✅ Created FIX-SESSION-57-COMBINED.sql"
-  ],
-  
-  "actionRequired": {
-    "who": "TREDOUX",
-    "what": "Run FIX-SESSION-57-COMBINED.sql in Supabase SQL Editor",
-    "file": "/FIX-SESSION-57-COMBINED.sql",
-    "then": "Test progress updates and report preview"
+  "verified": {
+    "sessionsAPI": "✅ POST /api/montree/sessions returns success",
+    "reportPreview": "✅ /api/montree/parent/view/[token] returns report data"
   },
   
-  "handoff": "/docs/SESSION-57-HANDOFF.md"
+  "testInBrowser": [
+    "1. Update work progress → should save",
+    "2. Report preview → should show report"
+  ]
 }

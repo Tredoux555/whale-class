@@ -125,9 +125,9 @@ export async function validateTokenAndGetReport(
   try {
     const supabase = await createServerClient();
 
-    // 1. Find token - using report_share_tokens table
+    // 1. Find token - using montree_report_tokens table (same as create)
     const { data: tokenRecord, error: tokenError } = await supabase
-      .from('report_share_tokens')
+      .from('montree_report_tokens')
       .select('*')
       .eq('token', token)
       .single();
@@ -142,7 +142,7 @@ export async function validateTokenAndGetReport(
     }
 
     // 2. Check if revoked
-    if (tokenRecord.revoked) {
+    if (tokenRecord.is_revoked) {
       return {
         success: false,
         valid: false,
