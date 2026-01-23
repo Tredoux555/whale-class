@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       week_start, 
       week_end, 
       report_type = 'parent',
-      school_id = 'default-school',
+      school_id,  // Optional - will use default UUID if not provided
       include_ai_content = false  // AI content is optional for now
     } = body;
 
