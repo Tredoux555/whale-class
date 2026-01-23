@@ -9,6 +9,9 @@ import { toast } from 'sonner';
 import AIInsightsTab from '@/components/montree/AIInsightsTab';
 import WorkNavigator from '@/components/montree/WorkNavigator';
 import ParentAccessModal from '@/components/montree/ParentAccessModal';
+import PortfolioTabNew from '@/components/montree/PortfolioTab';
+import SyncStatus from '@/components/media/SyncStatus';
+import { initSync } from '@/lib/media';
 
 // Interface for ALL curriculum works (from search API)
 interface CurriculumWork {
@@ -116,6 +119,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const [showParentModal, setShowParentModal] = useState(false);
 
   useEffect(() => {
+    // Initialize offline sync
+    if (typeof window !== 'undefined') {
+      initSync();
+    }
+    
     if (studentId) {
       fetchStudent();
     }
@@ -259,10 +267,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           />
         )}
         {activeTab === 'portfolio' && (
-          <PortfolioTab 
+          <PortfolioTabNew 
             key={mediaRefreshKey}
             childId={studentId} 
             childName={student.name}
+            onMediaUploaded={handleMediaUploaded}
           />
         )}
         {activeTab === 'reports' && (
