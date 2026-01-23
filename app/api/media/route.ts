@@ -78,8 +78,20 @@ export async function POST(request: NextRequest) {
     const mediaUrl = urlData.publicUrl;
 
     // Save to database
-    // Note: work_id must be null if empty/invalid to avoid FK constraint violation
-    const validWorkId = workId && workId.length > 10 ? workId : null;
+    // Note: work_id must be null if it doesn't exist in works table to avoid FK constraint violation
+    let validWorkId = null;
+    if (workId && workId.length > 10) {
+      // Verify work_id exists in works table
+      const { data: workExists } = await supabase
+        .from('works')
+        .select('id')
+        .eq('id', workId)
+        .single();
+      
+      if (workExists) {
+        validWorkId = workId;
+      }
+    }
     
     const { data: media, error: dbError } = await supabase
       .from('child_work_media')
