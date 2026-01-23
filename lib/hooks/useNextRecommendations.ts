@@ -11,6 +11,9 @@ interface RecommendedWork {
   age_range: string;
   materials: string[];
   levels: any[];
+  parent_description: string | null;
+  why_it_matters: string | null;
+  home_connection: string | null;
   curriculum_areas: {
     name: string;
     color: string;

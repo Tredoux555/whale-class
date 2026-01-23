@@ -57,7 +57,7 @@ export async function GET(
     if (workIds.length > 0) {
       const { data: works } = await supabase
         .from('curriculum_roadmap')
-        .select('id, name, area_id, category_id, levels')
+        .select('id, name, area_id, category_id, levels, parent_description, why_it_matters, home_connection')
         .in('id', workIds);
 
       const { data: areas } = await supabase
@@ -98,7 +98,7 @@ export async function GET(
     if (inProgressWorkIds.length > 0) {
       const { data: works } = await supabase
         .from('curriculum_roadmap')
-        .select('id, name, area_id, category_id, levels')
+        .select('id, name, area_id, category_id, levels, parent_description, why_it_matters, home_connection')
         .in('id', inProgressWorkIds);
 
       const { data: areas } = await supabase

@@ -57,7 +57,10 @@ export async function GET(
         prerequisites,
         sequence,
         materials,
-        levels
+        levels,
+        parent_description,
+        why_it_matters,
+        home_connection
       `)
       .in('age_range', ageRanges)
       .order('sequence');

@@ -1,11 +1,14 @@
 // /montree/dashboard/page.tsx
-// Clean student grid with auto-resize tiles, progress indicators, and media capture
-// Updated Phase 2 - Session 53
+// Classroom dashboard with offline-first Quick Capture
+// Session 54: Rock-solid, instant, never loses photos
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import QuickCapture from '@/components/media/QuickCapture';
+import SyncStatus from '@/components/media/SyncStatus';
+import { initSync } from '@/lib/media';
 
 interface Student {
   id: string;
@@ -27,11 +30,18 @@ export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [gridCols, setGridCols] = useState(2);
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const week = getCurrentWeek();
   const year = new Date().getFullYear();
 
+  // Initialize offline sync system
+  useEffect(() => {
+    initSync();
+  }, []);
+
+  // Fetch students
   useEffect(() => {
     fetch('/api/montree/children')
       .then(r => r.json())
@@ -42,7 +52,7 @@ export default function DashboardPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Auto-resize grid to fill screen
+  // Auto-resize grid
   useEffect(() => {
     const calculateGrid = () => {
       if (!containerRef.current || students.length === 0) return;
@@ -52,20 +62,18 @@ export default function DashboardPage() {
       const height = container.clientHeight;
       const count = students.length;
 
-      // Find optimal columns to fill screen nicely
       let bestCols = 2;
       let bestScore = 0;
 
       for (let cols = 2; cols <= 6; cols++) {
         const rows = Math.ceil(count / cols);
-        const cellWidth = (width - (cols - 1) * 12) / cols; // 12px gap
+        const cellWidth = (width - (cols - 1) * 12) / cols;
         const cellHeight = (height - (rows - 1) * 12) / rows;
         
-        // Score based on how well cells fill space and aspect ratio
         const aspectRatio = cellWidth / cellHeight;
-        const idealAspect = 2.5; // Wide cards look better
+        const idealAspect = 2.5;
         const aspectScore = 1 - Math.abs(aspectRatio - idealAspect) / idealAspect;
-        const fillScore = (cols * rows) / count; // Closer to 1 = less wasted cells
+        const fillScore = (cols * rows) / count;
         
         const score = aspectScore * 0.6 + (1 / fillScore) * 0.4;
         
@@ -83,17 +91,23 @@ export default function DashboardPage() {
     return () => window.removeEventListener('resize', calculateGrid);
   }, [students]);
 
-  // Handle camera button click without triggering parent link
-  const handleCameraClick = (e: React.MouseEvent, childId: string) => {
+  const handleCameraClick = useCallback((e: React.MouseEvent, childId: string) => {
     e.preventDefault();
     e.stopPropagation();
     router.push(`/montree/dashboard/capture?child=${childId}`);
-  };
+  }, [router]);
+
+  const handleQuickCapture = useCallback(() => {
+    setQuickCaptureOpen(true);
+  }, []);
 
   if (loading) {
     return (
       <div className="h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent" />
+          <span className="text-gray-500 text-sm">Loading classroom...</span>
+        </div>
       </div>
     );
   }
@@ -107,77 +121,77 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <span className="text-2xl">🐋</span>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">Classroom View</h1>
-            <p className="text-xs text-gray-400">Week {week}, {year}</p>
+            <h1 className="text-lg font-bold text-gray-800">Classroom</h1>
+            <p className="text-xs text-gray-400">Week {week}</p>
           </div>
         </div>
         
         {/* Header actions */}
         <div className="flex items-center gap-2">
-          {/* Curriculum Editor link */}
-          <Link
-            href="/admin/curriculum-editor"
-            className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center justify-center transition-colors"
-            title="Curriculum Editor"
-          >
-            <span className="text-lg">📚</span>
-          </Link>
+          <SyncStatus showLabel={false} />
           
-          {/* Reports link */}
           <Link
             href="/montree/dashboard/reports"
             className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            title="Weekly Reports"
+            title="Reports"
           >
             <span className="text-lg">📊</span>
           </Link>
           
-          {/* Gallery link */}
           <Link
             href="/montree/dashboard/media"
             className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            title="Photo Gallery"
+            title="Gallery"
           >
             <span className="text-lg">🖼️</span>
           </Link>
           
-          {/* Settings */}
           <Link
             href="/montree/dashboard/tools"
             className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            title="Settings"
+            title="Tools"
           >
             <span className="text-lg">⚙️</span>
           </Link>
         </div>
       </header>
 
-      {/* Student Count & Quick Actions */}
-      <div className="px-4 py-2 flex items-center justify-between shrink-0">
+      {/* Quick Actions Bar */}
+      <div className="px-4 py-2 flex items-center justify-between shrink-0 bg-white border-b">
         <h2 className="font-semibold text-gray-700">{students.length} Children</h2>
         
-        {/* Quick capture buttons */}
         <div className="flex items-center gap-2">
+          {/* QUICK CAPTURE - Main action */}
+          <button
+            onClick={handleQuickCapture}
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 active:scale-95 transition-all shadow-sm"
+          >
+            <span>⚡</span>
+            <span>Quick Snap</span>
+          </button>
+          
           <Link
             href="/montree/dashboard/capture?group=true"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
           >
             <span>👥</span>
-            <span className="hidden sm:inline">Group Photo</span>
+            <span className="hidden sm:inline">Group</span>
           </Link>
         </div>
       </div>
 
-      {/* Student Grid - Fills remaining space */}
+      {/* Student Grid */}
       <main
         ref={containerRef}
-        className="flex-1 px-4 pb-20 overflow-hidden"
+        className="flex-1 px-4 pb-20 pt-2 overflow-hidden"
       >
         {students.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
             <div className="text-4xl mb-3">🐋</div>
             <p className="text-gray-600 mb-2">No students yet</p>
-            <Link href="/montree/admin/students" className="text-blue-500">+ Add students</Link>
+            <Link href="/montree/admin/students" className="text-emerald-600 font-medium">
+              + Add students
+            </Link>
           </div>
         ) : (
           <div
@@ -191,32 +205,31 @@ export default function DashboardPage() {
               <Link
                 key={student.id}
                 href={`/montree/dashboard/student/${student.id}`}
-                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all active:scale-98 flex flex-col justify-center relative group"
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98] flex flex-col justify-center relative group"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm">
                     {student.name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-800 truncate">{student.name}</p>
                   </div>
                   
-                  {/* Quick camera button - use button instead of Link to avoid nesting */}
+                  {/* Per-child camera button */}
                   <button
                     onClick={(e) => handleCameraClick(e, student.id)}
-                    className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-blue-600"
+                    className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-emerald-600 active:scale-90"
                     title="Take photo"
                   >
                     📷
                   </button>
                 </div>
 
-                {/* Progress Bar */}
+                {/* Progress bar */}
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 rounded-full transition-all"
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all"
                       style={{ width: `${student.progress || 0}%` }}
                     />
                   </div>
@@ -229,13 +242,23 @@ export default function DashboardPage() {
       </main>
 
       {/* Floating Camera Button */}
-      <Link
-        href="/montree/dashboard/capture"
-        className="fixed bottom-6 right-6 w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 z-50"
-        title="Take Photo"
+      <button
+        onClick={handleQuickCapture}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-emerald-600 transition-all hover:scale-105 active:scale-95 z-50"
+        title="Quick Capture"
       >
         <span className="text-3xl">📷</span>
-      </Link>
+      </button>
+
+      {/* Quick Capture Modal */}
+      <QuickCapture
+        isOpen={quickCaptureOpen}
+        onClose={() => setQuickCaptureOpen(false)}
+        students={students}
+        onCapture={(mediaId) => {
+          console.log('Captured:', mediaId);
+        }}
+      />
     </div>
   );
 }
