@@ -1,6 +1,6 @@
 // lib/montree/reports/generator.ts
 // Report generation logic - aggregates photos and creates report
-// Phase 3 - Session 54
+// Phase 3 - Session 54 | Updated Session 55 for parent descriptions
 
 import { createServerClient } from '@/lib/supabase/server';
 import type { 
@@ -16,28 +16,16 @@ import type {
 // TYPES FOR INTERNAL USE
 // ============================================
 
-interface MediaWithWork {
-  id: string;
-  storage_path: string;
-  thumbnail_path: string | null;
-  child_id: string | null;
-  work_id: string | null;
-  caption: string | null;
-  tags: string[];
-  captured_at: string;
-  
-  // Joined from work_translations
-  work_name?: string;
-  area?: CurriculumArea;
-  developmental_context?: string;
-  home_extension?: string;
-  photo_caption_template?: string;
-}
-
-interface ChildInfo {
-  id: string;
-  name: string;
-  gender: 'he' | 'she' | 'they';
+interface WorkTranslation {
+  display_name: string;
+  area: CurriculumArea;
+  developmental_context: string;
+  home_extension: string | null;
+  photo_caption_template: string | null;
+  // Session 55: Parent-friendly descriptions
+  parent_description: string | null;
+  why_it_matters: string | null;
+  home_connection: string | null;
 }
 
 // ============================================
@@ -47,8 +35,8 @@ interface ChildInfo {
 export async function generateWeeklyReport(params: {
   child_id: string;
   school_id: string;
-  week_start: string;  // YYYY-MM-DD
-  week_end: string;    // YYYY-MM-DD
+  week_start: string;
+  week_end: string;
   report_type: ReportType;
   generated_by: string;
   use_ai?: boolean;
@@ -68,7 +56,7 @@ export async function generateWeeklyReport(params: {
   try {
     const supabase = await createServerClient();
 
-    // 1. Get child info (from montree_children table)
+    // 1. Get child info
     const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select('id, name, gender')
@@ -91,7 +79,7 @@ export async function generateWeeklyReport(params: {
     if (existingReport) {
       return { 
         success: false, 
-        error: `A ${report_type} report already exists for this week. Edit the existing report instead.` 
+        error: `A ${report_type} report already exists for this week.` 
       };
     }
 
@@ -102,16 +90,7 @@ export async function generateWeeklyReport(params: {
 
     const { data: mediaItems, error: mediaError } = await supabase
       .from('montree_media')
-      .select(`
-        id,
-        storage_path,
-        thumbnail_path,
-        child_id,
-        work_id,
-        caption,
-        tags,
-        captured_at
-      `)
+      .select('id, storage_path, thumbnail_path, child_id, work_id, caption, tags, captured_at')
       .eq('child_id', child_id)
       .gte('captured_at', weekStartDate.toISOString())
       .lte('captured_at', weekEndDate.toISOString())
@@ -122,10 +101,9 @@ export async function generateWeeklyReport(params: {
       return { success: false, error: 'Failed to fetch media' };
     }
 
-    // Initialize as empty array if null
     const allMedia = mediaItems || [];
 
-    // Also check for group photos that include this child
+    // Also check for group photos
     const { data: groupMediaLinks } = await supabase
       .from('montree_media_children')
       .select('media_id')
@@ -134,25 +112,14 @@ export async function generateWeeklyReport(params: {
     if (groupMediaLinks && groupMediaLinks.length > 0) {
       const groupMediaIds = groupMediaLinks.map(l => l.media_id);
       
-      // Fetch group photos within date range
       const { data: groupMedia } = await supabase
         .from('montree_media')
-        .select(`
-          id,
-          storage_path,
-          thumbnail_path,
-          child_id,
-          work_id,
-          caption,
-          tags,
-          captured_at
-        `)
+        .select('id, storage_path, thumbnail_path, child_id, work_id, caption, tags, captured_at')
         .in('id', groupMediaIds)
         .gte('captured_at', weekStartDate.toISOString())
         .lte('captured_at', weekEndDate.toISOString());
 
       if (groupMedia) {
-        // Add group photos that aren't already in the list
         const existingIds = new Set(allMedia.map(m => m.id));
         groupMedia.forEach(gm => {
           if (!existingIds.has(gm.id)) {
@@ -162,20 +129,14 @@ export async function generateWeeklyReport(params: {
       }
     }
 
-    // 4. Get work translations for any tagged works
+    // 4. Get work translations INCLUDING new parent description fields
     const workIds = [...new Set(allMedia.filter(m => m.work_id).map(m => m.work_id))];
-    let workTranslations: Record<string, {
-      display_name: string;
-      area: CurriculumArea;
-      developmental_context: string;
-      home_extension: string | null;
-      photo_caption_template: string | null;
-    }> = {};
+    let workTranslations: Record<string, WorkTranslation> = {};
 
     if (workIds.length > 0) {
       const { data: translations } = await supabase
         .from('montree_work_translations')
-        .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template')
+        .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template, parent_description, why_it_matters, home_connection')
         .in('work_id', workIds);
 
       if (translations) {
@@ -186,20 +147,22 @@ export async function generateWeeklyReport(params: {
             developmental_context: t.developmental_context,
             home_extension: t.home_extension,
             photo_caption_template: t.photo_caption_template,
+            parent_description: t.parent_description,
+            why_it_matters: t.why_it_matters,
+            home_connection: t.home_connection,
           };
         });
       }
     }
 
-    // 4b. Fetch work sessions for this week (Session 49 enhancement)
-    const { data: sessions, error: sessionsError } = await supabase
+    // 4b. Fetch work sessions for this week
+    const { data: sessions } = await supabase
       .from('montree_work_sessions')
       .select('*')
       .eq('child_id', child_id)
       .gte('observed_at', weekStartDate.toISOString())
       .lte('observed_at', weekEndDate.toISOString());
 
-    // Count repetitions per work
     const workRepetitions: Record<string, number> = {};
     const sessionNotes: Record<string, string[]> = {};
     
@@ -207,7 +170,6 @@ export async function generateWeeklyReport(params: {
       sessions.forEach(s => {
         if (s.work_id) {
           workRepetitions[s.work_id] = (workRepetitions[s.work_id] || 0) + 1;
-          // Collect any notes from sessions
           if (s.notes && s.notes.trim()) {
             if (!sessionNotes[s.work_id]) sessionNotes[s.work_id] = [];
             sessionNotes[s.work_id].push(s.notes);
@@ -215,14 +177,14 @@ export async function generateWeeklyReport(params: {
         }
       });
       
-      // Add session work_ids to translations lookup
+      // Fetch translations for session works not in media
       const sessionWorkIds = Object.keys(workRepetitions);
       const newWorkIds = sessionWorkIds.filter(id => !workIds.includes(id));
       
       if (newWorkIds.length > 0) {
         const { data: moreTranslations } = await supabase
           .from('montree_work_translations')
-          .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template')
+          .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template, parent_description, why_it_matters, home_connection')
           .in('work_id', newWorkIds);
           
         if (moreTranslations) {
@@ -233,17 +195,34 @@ export async function generateWeeklyReport(params: {
               developmental_context: t.developmental_context,
               home_extension: t.home_extension,
               photo_caption_template: t.photo_caption_template,
+              parent_description: t.parent_description,
+              why_it_matters: t.why_it_matters,
+              home_connection: t.home_connection,
             };
           });
         }
       }
     }
 
-    // 5. Build highlights from media
+    // 5. Build highlights - NOW USING PARENT DESCRIPTIONS
+    const childName = child.name;
     const highlights: ReportHighlight[] = allMedia.map(media => {
       const work = media.work_id ? workTranslations[media.work_id] : null;
       const repetitions = media.work_id ? (workRepetitions[media.work_id] || 1) : 1;
       const notes = media.work_id ? (sessionNotes[media.work_id] || []) : [];
+      
+      // Session 55: Use parent_description if available, personalize with child name
+      let observation = media.caption || notes[0] || 'Working with concentration.';
+      if (work?.parent_description) {
+        // Replace "Your child" with actual name
+        observation = work.parent_description.replace(/Your child/g, childName);
+      }
+      
+      // Use why_it_matters for developmental note
+      const developmental_note = work?.why_it_matters || work?.developmental_context || 'Developing independence and focus.';
+      
+      // Use home_connection for home extension
+      const home_ext = work?.home_connection || work?.home_extension || null;
       
       return {
         media_id: media.id,
@@ -252,13 +231,13 @@ export async function generateWeeklyReport(params: {
         work_id: media.work_id,
         work_name: work?.display_name || null,
         area: work?.area || null,
-        observation: media.caption || notes[0] || 'Working with concentration.',
-        developmental_note: work?.developmental_context || 'Developing independence and focus.',
-        home_extension: work?.home_extension || null,
+        observation,
+        developmental_note,
+        home_extension: home_ext,
         captured_at: media.captured_at,
         caption: media.caption,
-        repetitions, // Session 49: How many times this week
-        session_notes: notes.length > 0 ? notes : undefined, // Session 49: Any notes
+        repetitions,
+        session_notes: notes.length > 0 ? notes : undefined,
       };
     });
 
@@ -269,8 +248,7 @@ export async function generateWeeklyReport(params: {
     });
     const areas_explored = Array.from(areasSet);
 
-    // 7. Build initial content
-    const childName = child.name;
+    // 7. Build content
     const totalSessions = sessions?.length || 0;
     const uniqueWorksThisWeek = Object.keys(workRepetitions).length;
     
@@ -280,9 +258,9 @@ export async function generateWeeklyReport(params: {
       areas_explored,
       total_activities: highlights.length,
       total_photos: allMedia.length,
-      total_sessions: totalSessions, // Session 49: Total work interactions
-      unique_works: uniqueWorksThisWeek, // Session 49: Different works explored
-      work_repetitions: workRepetitions, // Session 49: Count per work
+      total_sessions: totalSessions,
+      unique_works: uniqueWorksThisWeek,
+      work_repetitions: workRepetitions,
       milestones: [],
       teacher_notes: report_type === 'teacher' ? '' : undefined,
       parent_message: report_type === 'parent' 
@@ -293,22 +271,20 @@ export async function generateWeeklyReport(params: {
     };
 
     // 8. Create report record
-    const reportRecord = {
-      school_id,
-      classroom_id: null,  // Could be added later
-      child_id,
-      week_start,
-      week_end,
-      report_type,
-      status: 'draft' as const,
-      content,
-      generated_at: new Date().toISOString(),
-      generated_by,
-    };
-
     const { data: report, error: insertError } = await supabase
       .from('montree_weekly_reports')
-      .insert(reportRecord)
+      .insert({
+        school_id,
+        classroom_id: null,
+        child_id,
+        week_start,
+        week_end,
+        report_type,
+        status: 'draft' as const,
+        content,
+        generated_at: new Date().toISOString(),
+        generated_by,
+      })
       .select()
       .single();
 
@@ -326,36 +302,20 @@ export async function generateWeeklyReport(params: {
         caption: m.caption,
       }));
 
-      const { error: linkError } = await supabase
-        .from('montree_report_media')
-        .insert(mediaLinks);
-
-      if (linkError) {
-        console.error('Report media link error:', linkError);
-        // Don't fail the whole operation, just log it
-      }
+      await supabase.from('montree_report_media').insert(mediaLinks);
     }
 
-    const generationTime = Date.now() - startTime;
-
-    // AUTO-SHARE: Generate share token automatically so parents can see it
+    // 10. Auto-generate share token
     const shareToken = generateShareToken();
     const shareExpiresAt = new Date();
-    shareExpiresAt.setDate(shareExpiresAt.getDate() + 90); // 90-day expiry
+    shareExpiresAt.setDate(shareExpiresAt.getDate() + 90);
 
-    const { error: shareError } = await supabase
-      .from('report_share_tokens')
-      .insert({
-        report_id: report.id,
-        token: shareToken,
-        expires_at: shareExpiresAt.toISOString(),
-        revoked: false,
-      });
-
-    if (shareError) {
-      console.error('Auto-share token error:', shareError);
-      // Don't fail - report is still created
-    }
+    await supabase.from('report_share_tokens').insert({
+      report_id: report.id,
+      token: shareToken,
+      expires_at: shareExpiresAt.toISOString(),
+      revoked: false,
+    });
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://teacherpotato.xyz';
     const shareUrl = `${baseUrl}/montree/report/${shareToken}`;
@@ -368,7 +328,7 @@ export async function generateWeeklyReport(params: {
       stats: {
         photos_included: allMedia.length,
         activities_detected: highlights.length,
-        ai_generation_time_ms: use_ai ? generationTime : undefined,
+        ai_generation_time_ms: use_ai ? Date.now() - startTime : undefined,
       },
     };
 
@@ -386,12 +346,10 @@ export async function generateWeeklyReport(params: {
 // ============================================
 
 function generateShareToken(): string {
-  // Generate 64-character hex token (matches API validation)
   const array = new Uint8Array(32);
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     crypto.getRandomValues(array);
   } else {
-    // Fallback for Node.js
     for (let i = 0; i < 32; i++) {
       array[i] = Math.floor(Math.random() * 256);
     }
@@ -407,7 +365,6 @@ function generateBasicSummary(
   totalSessions: number,
   uniqueWorks: number
 ): string {
-  const pronoun = gender === 'they' ? 'they' : gender;
   const verb = gender === 'they' ? 'were' : 'was';
   const possessive = gender === 'he' ? 'his' : gender === 'she' ? 'her' : 'their';
   const showedVerb = gender === 'they' ? 'They showed' : gender === 'he' ? 'He showed' : 'She showed';
@@ -435,7 +392,6 @@ function generateBasicSummary(
         ? `${areaNames[0]} and ${areaNames[1]}`
         : `${areaNames.slice(0, -1).join(', ')}, and ${areaNames[areaNames.length - 1]}`;
 
-  // Session 49: Enhanced summary with session data
   const activityCount = uniqueWorks || highlights.length;
   const sessionNote = totalSessions > activityCount 
     ? `, returning to favorite works ${totalSessions - activityCount} times` 
@@ -444,9 +400,6 @@ function generateBasicSummary(
   return `This week, ${name} ${verb} actively engaged in ${possessive} learning, exploring ${activityCount} ${activityCount === 1 ? 'activity' : 'activities'} across ${areaText}${sessionNote}. ${showedVerb} wonderful focus and curiosity throughout the week.`;
 }
 
-/**
- * Regenerate content for an existing report (e.g., after adding AI content)
- */
 export async function regenerateReportContent(
   report_id: string,
   new_content: Partial<ReportContent>
@@ -464,15 +417,10 @@ export async function regenerateReportContent(
       return { success: false, error: 'Report not found' };
     }
 
-    const mergedContent = {
-      ...existing.content,
-      ...new_content,
-    };
-
     const { error } = await supabase
       .from('montree_weekly_reports')
       .update({ 
-        content: mergedContent,
+        content: { ...existing.content, ...new_content },
         updated_at: new Date().toISOString(),
       })
       .eq('id', report_id);
