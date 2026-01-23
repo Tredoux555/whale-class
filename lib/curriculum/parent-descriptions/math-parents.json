@@ -1,0 +1,405 @@
+{
+  "area": "math",
+  "generated": "2026-01-23",
+  "descriptions": [
+    {
+      "work_id": "ma_number_rods",
+      "area": "math",
+      "parent_description": "Your child arranges ten red and blue rods from shortest to longest, learning that each rod represents a specific quantity from 1 to 10.",
+      "why_it_matters": "Builds concrete understanding that numbers represent real quantities.",
+      "home_connection": "Count stairs, blocks, or steps together while walking."
+    },
+    {
+      "work_id": "ma_sandpaper_numerals",
+      "area": "math",
+      "parent_description": "Your child traces textured numerals 0-9 with their fingers, learning how to form each number while feeling its shape.",
+      "why_it_matters": "Connects the symbol to muscle memory before writing.",
+      "home_connection": "Trace numbers in sand, shaving cream, or flour at home."
+    },
+    {
+      "work_id": "ma_number_rods_numerals",
+      "area": "math",
+      "parent_description": "Your child matches numeral cards to the correct rods, connecting the written symbol to the quantity it represents.",
+      "why_it_matters": "Links abstract symbols to concrete quantities.",
+      "home_connection": "Label groups of toys with sticky note numbers."
+    },
+    {
+      "work_id": "ma_spindle_box",
+      "area": "math",
+      "parent_description": "Your child counts loose spindles into compartments labeled 0-9, discovering that zero means 'none' - an empty space.",
+      "why_it_matters": "Introduces zero and counting loose objects one by one.",
+      "home_connection": "Sort small items into egg carton compartments by number."
+    },
+    {
+      "work_id": "ma_cards_counters",
+      "area": "math",
+      "parent_description": "Your child arranges counters in pairs under numeral cards, discovering the pattern of odd and even numbers.",
+      "why_it_matters": "Reveals mathematical patterns through hands-on arrangement.",
+      "home_connection": "Pair socks together and notice which numbers have leftovers."
+    },
+    {
+      "work_id": "ma_memory_game",
+      "area": "math",
+      "parent_description": "Your child looks at a numeral, walks across the room, and brings back exactly that many objects from memory.",
+      "why_it_matters": "Strengthens number memory and counting accuracy.",
+      "home_connection": "Ask your child to fetch specific quantities from another room."
+    },
+    {
+      "work_id": "ma_number_puzzles",
+      "area": "math",
+      "parent_description": "Your child completes puzzles matching numerals to quantities, reinforcing number recognition through play.",
+      "why_it_matters": "Builds number fluency through enjoyable repetition.",
+      "home_connection": "Play number matching games or simple dominoes together."
+    },
+    {
+      "work_id": "ma_short_bead_stair",
+      "area": "math",
+      "parent_description": "Your child works with colored bead bars representing 1-9, building a stair pattern and learning each quantity's unique color.",
+      "why_it_matters": "Creates visual and tactile memory for quantities 1-9.",
+      "home_connection": "Stack different colored blocks in size order at home."
+    },
+    {
+      "work_id": "ma_golden_beads_intro",
+      "area": "math",
+      "parent_description": "Your child holds a single bead (unit), a ten-bar, a hundred-square, and a thousand-cube, feeling how our number system grows.",
+      "why_it_matters": "Makes place value tangible through physical materials.",
+      "home_connection": "Notice groups of 10 in everyday life - toes, fingers, egg cartons."
+    },
+    {
+      "work_id": "ma_golden_beads_tray",
+      "area": "math",
+      "parent_description": "Your child practices fetching and organizing golden beads by category, building independence with the decimal system materials.",
+      "why_it_matters": "Develops organization skills and material familiarity.",
+      "home_connection": "Practice sorting items into categories at home."
+    },
+    {
+      "work_id": "ma_large_numeral_cards",
+      "area": "math",
+      "parent_description": "Your child works with color-coded cards for units, tens, hundreds, and thousands, learning to build and read large numbers.",
+      "why_it_matters": "Shows how multi-digit numbers are constructed layer by layer.",
+      "home_connection": "Point out large numbers on signs, prices, or addresses."
+    },
+    {
+      "work_id": "ma_formation_quantity",
+      "area": "math",
+      "parent_description": "Your child builds numbers like 2,345 using golden beads - 2 thousand-cubes, 3 hundred-squares, 4 ten-bars, and 5 units.",
+      "why_it_matters": "Develops deep understanding of what large numbers actually mean.",
+      "home_connection": "Ask 'how many hundreds?' when you see large numbers."
+    },
+    {
+      "work_id": "ma_formation_symbol",
+      "area": "math",
+      "parent_description": "Your child stacks numeral cards to form multi-digit numbers, seeing how 2000+300+40+5 becomes 2,345.",
+      "why_it_matters": "Reveals the structure hidden inside every large number.",
+      "home_connection": "Break apart numbers verbally: '52 is fifty and two.'"
+    },
+    {
+      "work_id": "ma_association_quantity_symbol",
+      "area": "math",
+      "parent_description": "Your child matches golden bead quantities to their numeral cards, connecting what they can hold to what they can write.",
+      "why_it_matters": "Bridges concrete materials to abstract written numbers.",
+      "home_connection": "Count collections and write the total together."
+    },
+    {
+      "work_id": "ma_exchange_game",
+      "area": "math",
+      "parent_description": "Your child discovers that 10 units can be exchanged for one ten-bar, understanding the foundation of carrying in addition.",
+      "why_it_matters": "Makes the concept of 'carrying' visible and logical.",
+      "home_connection": "Trade 10 pennies for a dime to show equal value."
+    },
+    {
+      "work_id": "ma_golden_beads_addition",
+      "area": "math",
+      "parent_description": "Your child combines two quantities of golden beads, exchanging when needed, and discovers the sum through hands-on addition.",
+      "why_it_matters": "Makes addition a concrete, understandable process.",
+      "home_connection": "Combine two small groups and count the total together."
+    },
+    {
+      "work_id": "ma_golden_beads_subtraction",
+      "area": "math",
+      "parent_description": "Your child takes away beads from a larger quantity, exchanging when necessary, to understand subtraction concretely.",
+      "why_it_matters": "Makes borrowing in subtraction visible and sensible.",
+      "home_connection": "Share snacks by taking away and counting what's left."
+    },
+    {
+      "work_id": "ma_golden_beads_multiplication",
+      "area": "math",
+      "parent_description": "Your child takes the same quantity multiple times, combining them to discover that multiplication is repeated addition.",
+      "why_it_matters": "Builds understanding of multiplication before memorizing facts.",
+      "home_connection": "Set the table: '4 plates, 3 times means 12 total.'"
+    },
+    {
+      "work_id": "ma_golden_beads_division",
+      "area": "math",
+      "parent_description": "Your child shares golden beads equally among small figures, discovering division as fair sharing with possible remainders.",
+      "why_it_matters": "Makes division concrete through the act of sharing.",
+      "home_connection": "Divide snacks fairly among family members or toys."
+    },
+    {
+      "work_id": "ma_teen_board_1",
+      "area": "math",
+      "parent_description": "Your child builds teen numbers by placing a colored bead bar next to a ten-bar, learning names like 'thirteen' means 'three and ten.'",
+      "why_it_matters": "Demystifies confusing teen number names.",
+      "home_connection": "Count objects in the teens and emphasize 'ten and three more.'"
+    },
+    {
+      "work_id": "ma_teen_board_2",
+      "area": "math",
+      "parent_description": "Your child practices teen numerals without beads, building confidence in recognizing and naming 11-19.",
+      "why_it_matters": "Moves from concrete to abstract teen number recognition.",
+      "home_connection": "Point out teen numbers on clocks, pages, or addresses."
+    },
+    {
+      "work_id": "ma_ten_board_1",
+      "area": "math",
+      "parent_description": "Your child learns the decade names - ten, twenty, thirty - by matching ten-bars to numerals, counting by tens to 90.",
+      "why_it_matters": "Establishes skip counting by tens as a foundation skill.",
+      "home_connection": "Count by tens together while doing jumping jacks."
+    },
+    {
+      "work_id": "ma_ten_board_2",
+      "area": "math",
+      "parent_description": "Your child builds any number from 11-99 using ten-bars and unit beads, understanding two-digit number composition.",
+      "why_it_matters": "Provides complete understanding of numbers under 100.",
+      "home_connection": "Ask 'How many tens? How many ones?' with two-digit numbers."
+    },
+    {
+      "work_id": "ma_hundred_board",
+      "area": "math",
+      "parent_description": "Your child places tiles 1-100 on a grid, discovering patterns like counting by 2s, 5s, and 10s.",
+      "why_it_matters": "Reveals number patterns that support mental math.",
+      "home_connection": "Find patterns on a number chart or calendar together."
+    },
+    {
+      "work_id": "ma_hundred_chain",
+      "area": "math",
+      "parent_description": "Your child counts 100 beads laid out in a long chain, placing arrow markers at each ten to reach 100.",
+      "why_it_matters": "Makes 100 tangible as a real, countable quantity.",
+      "home_connection": "Count 100 small objects like cereal pieces or buttons."
+    },
+    {
+      "work_id": "ma_thousand_chain",
+      "area": "math",
+      "parent_description": "Your child undertakes the big work of counting 1,000 beads in a chain, developing patience and a sense of large numbers.",
+      "why_it_matters": "Creates genuine understanding of how large 1,000 really is.",
+      "home_connection": "Discuss how long it takes to count to 1,000."
+    },
+    {
+      "work_id": "ma_short_chains",
+      "area": "math",
+      "parent_description": "Your child counts bead chains that form squares - the chain of 4 has 16 beads (4×4), discovering square numbers.",
+      "why_it_matters": "Introduces multiplication patterns through skip counting.",
+      "home_connection": "Count by 2s, 3s, or 5s during car rides or walks."
+    },
+    {
+      "work_id": "ma_long_chains",
+      "area": "math",
+      "parent_description": "Your child counts extended chains representing cubes - the chain of 5 has 125 beads (5×5×5), building persistence.",
+      "why_it_matters": "Develops patience while exploring larger number patterns.",
+      "home_connection": "Celebrate completing long counting projects together."
+    },
+    {
+      "work_id": "ma_bead_cabinet",
+      "area": "math",
+      "parent_description": "Your child works independently with the complete bead cabinet, selecting chains and cubes for self-directed exploration.",
+      "why_it_matters": "Supports independent mathematical discovery.",
+      "home_connection": "Provide open-ended math materials for exploration at home."
+    },
+    {
+      "work_id": "ma_addition_snake_game",
+      "area": "math",
+      "parent_description": "Your child arranges colored bead bars in a 'snake' and transforms them into golden tens, practicing addition facts.",
+      "why_it_matters": "Makes memorizing addition facts engaging and visual.",
+      "home_connection": "Practice 'making ten' with fingers or small objects."
+    },
+    {
+      "work_id": "ma_subtraction_snake_game",
+      "area": "math",
+      "parent_description": "Your child uses gray bead bars to 'take away' from colored bars, practicing subtraction in a hands-on way.",
+      "why_it_matters": "Builds subtraction fact fluency through manipulation.",
+      "home_connection": "Practice subtraction with snacks: 'You had 8, ate 3, now...'"
+    },
+    {
+      "work_id": "ma_addition_strip_board",
+      "area": "math",
+      "parent_description": "Your child places colored strips on a board to find sums, systematically learning all addition facts from 1+1 to 9+9.",
+      "why_it_matters": "Provides organized path to addition fact mastery.",
+      "home_connection": "Practice addition facts in short, fun sessions daily."
+    },
+    {
+      "work_id": "ma_addition_charts",
+      "area": "math",
+      "parent_description": "Your child uses progressively abstract charts to practice and memorize addition facts until they're automatic.",
+      "why_it_matters": "Develops quick recall needed for complex math.",
+      "home_connection": "Quiz addition facts during everyday moments."
+    },
+    {
+      "work_id": "ma_subtraction_strip_board",
+      "area": "math",
+      "parent_description": "Your child uses strips to work through all subtraction facts systematically, building toward memorization.",
+      "why_it_matters": "Creates systematic path to subtraction mastery.",
+      "home_connection": "Practice subtraction facts alongside addition facts."
+    },
+    {
+      "work_id": "ma_subtraction_charts",
+      "area": "math",
+      "parent_description": "Your child practices subtraction facts with charts that gradually remove support, building automatic recall.",
+      "why_it_matters": "Develops fluent mental subtraction skills.",
+      "home_connection": "Play subtraction games: 'I'm thinking of a number...'"
+    },
+    {
+      "work_id": "ma_multiplication_bead_board",
+      "area": "math",
+      "parent_description": "Your child places beads in rows on a board to discover multiplication facts, seeing that 4×3 means '4 taken 3 times.'",
+      "why_it_matters": "Makes times tables concrete before memorization.",
+      "home_connection": "Point out multiplication in real life: '3 rows of 4 chairs.'"
+    },
+    {
+      "work_id": "ma_multiplication_charts",
+      "area": "math",
+      "parent_description": "Your child works through multiplication charts, progressing from reading facts to recalling them from memory.",
+      "why_it_matters": "Builds the times table fluency essential for later math.",
+      "home_connection": "Practice times tables in the car or during routines."
+    },
+    {
+      "work_id": "ma_unit_division_board",
+      "area": "math",
+      "parent_description": "Your child distributes beads equally among small figures on a board, discovering division as fair sharing.",
+      "why_it_matters": "Grounds division facts in concrete sharing actions.",
+      "home_connection": "Practice division by sharing items equally among people."
+    },
+    {
+      "work_id": "ma_division_charts",
+      "area": "math",
+      "parent_description": "Your child uses division charts to practice facts, connecting division to its multiplication relationships.",
+      "why_it_matters": "Builds division fluency through pattern recognition.",
+      "home_connection": "Connect division to multiplication: '12÷3 is 4 because 4×3=12.'"
+    },
+    {
+      "work_id": "ma_stamp_game",
+      "area": "math",
+      "parent_description": "Your child uses small colored stamps representing units, tens, hundreds, and thousands to solve all four operations.",
+      "why_it_matters": "Bridges from golden beads toward written math.",
+      "home_connection": "Notice your child becoming more confident with larger numbers."
+    },
+    {
+      "work_id": "ma_dot_game",
+      "area": "math",
+      "parent_description": "Your child draws dots in place value columns to represent numbers and operations, moving toward written algorithms.",
+      "why_it_matters": "Connects manipulatives to paper-and-pencil methods.",
+      "home_connection": "Encourage drawing to solve math problems at home."
+    },
+    {
+      "work_id": "ma_small_bead_frame",
+      "area": "math",
+      "parent_description": "Your child slides beads on a 4-wire frame to add, subtract, and multiply, working with numbers up to 9,999.",
+      "why_it_matters": "Provides kinesthetic practice for larger calculations.",
+      "home_connection": "An abacus at home can reinforce these skills."
+    },
+    {
+      "work_id": "ma_large_bead_frame",
+      "area": "math",
+      "parent_description": "Your child works with a 7-wire frame to calculate with numbers into the millions, building confidence with big numbers.",
+      "why_it_matters": "Extends place value understanding to very large numbers.",
+      "home_connection": "Discuss millions in real contexts: population, distances."
+    },
+    {
+      "work_id": "ma_checkerboard",
+      "area": "math",
+      "parent_description": "Your child places bead bars on a colored checkerboard to multiply multi-digit numbers, seeing partial products clearly.",
+      "why_it_matters": "Demystifies the long multiplication algorithm.",
+      "home_connection": "Appreciate that your child understands why multiplication works."
+    },
+    {
+      "work_id": "ma_racks_tubes",
+      "area": "math",
+      "parent_description": "Your child uses test tubes and beads to work through long division step by step, understanding the complete process.",
+      "why_it_matters": "Makes long division logical rather than mysterious.",
+      "home_connection": "Be patient - long division is advanced work your child is mastering."
+    },
+    {
+      "work_id": "ma_fraction_circles",
+      "area": "math",
+      "parent_description": "Your child fits fraction pieces into frames, learning that one whole can be divided into halves, thirds, fourths, and more.",
+      "why_it_matters": "Makes fractions tangible through hands-on exploration.",
+      "home_connection": "Cut food into halves, quarters, or thirds while cooking."
+    },
+    {
+      "work_id": "ma_fraction_addition",
+      "area": "math",
+      "parent_description": "Your child combines fraction pieces to add fractions, discovering that 1/4 + 1/4 equals 2/4 or 1/2.",
+      "why_it_matters": "Builds understanding before fraction computation rules.",
+      "home_connection": "Add fractions with pizza slices or pie pieces."
+    },
+    {
+      "work_id": "ma_fraction_subtraction",
+      "area": "math",
+      "parent_description": "Your child removes fraction pieces to subtract, understanding the process through physical manipulation.",
+      "why_it_matters": "Makes fraction subtraction concrete and sensible.",
+      "home_connection": "Subtract fractions while sharing food: 'We had 3/4, ate 1/4...'"
+    },
+    {
+      "work_id": "ma_fraction_multiplication",
+      "area": "math",
+      "parent_description": "Your child discovers what '1/2 of 1/2' means by manipulating fraction pieces, understanding fraction multiplication.",
+      "why_it_matters": "Grounds complex operations in physical reality.",
+      "home_connection": "Ask 'What's half of this half?' with real objects."
+    },
+    {
+      "work_id": "ma_fraction_division",
+      "area": "math",
+      "parent_description": "Your child explores how many times one fraction fits into another, making sense of fraction division.",
+      "why_it_matters": "Prepares for advanced fraction work with understanding.",
+      "home_connection": "Ask 'How many quarters fit in one half?' with coins."
+    },
+    {
+      "work_id": "ma_fraction_skittles",
+      "area": "math",
+      "parent_description": "Your child uses 3D figures to connect fractions to division, seeing that 1÷2 equals 1/2.",
+      "why_it_matters": "Reveals the deep connection between fractions and division.",
+      "home_connection": "Discuss how division creates fractions in everyday sharing."
+    },
+    {
+      "work_id": "ma_geometry_sticks",
+      "area": "math",
+      "parent_description": "Your child constructs triangles, squares, and other shapes using colored sticks, learning about sides and angles.",
+      "why_it_matters": "Develops spatial reasoning through construction.",
+      "home_connection": "Build shapes with straws, sticks, or craft supplies."
+    },
+    {
+      "work_id": "ma_classified_nomenclature",
+      "area": "math",
+      "parent_description": "Your child learns geometry vocabulary through classified cards - names for types of lines, angles, triangles, and quadrilaterals.",
+      "why_it_matters": "Builds precise mathematical vocabulary.",
+      "home_connection": "Point out geometric shapes and angles in your environment."
+    },
+    {
+      "work_id": "ma_area_introduction",
+      "area": "math",
+      "parent_description": "Your child covers shapes with triangles to discover area, learning that area measures how much space a shape covers.",
+      "why_it_matters": "Introduces area concept before formulas.",
+      "home_connection": "Cover surfaces with sticky notes to explore area at home."
+    },
+    {
+      "work_id": "ma_clock",
+      "area": "math",
+      "parent_description": "Your child learns to tell time by moving clock hands, progressing from hours to half hours to minutes.",
+      "why_it_matters": "Connects skip counting to practical time-telling.",
+      "home_connection": "Point out times throughout the day on analog clocks."
+    },
+    {
+      "work_id": "ma_money",
+      "area": "math",
+      "parent_description": "Your child learns to recognize coins, count mixed currency, and make change through classroom shop activities.",
+      "why_it_matters": "Applies math skills to real-world transactions.",
+      "home_connection": "Let your child handle money during small purchases."
+    },
+    {
+      "work_id": "ma_calendar",
+      "area": "math",
+      "parent_description": "Your child learns days of the week, months of the year, and how to read dates on a calendar.",
+      "why_it_matters": "Builds understanding of time cycles and sequencing.",
+      "home_connection": "Maintain a family calendar and discuss upcoming events."
+    }
+  ]
+}

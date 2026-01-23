@@ -3,38 +3,53 @@
     "Update brain.json every 5 MIN during builds",
     "NEVER lose progress"
   ],
-  "lastUpdated": "2026-01-22T20:35:00Z",
-  "currentSession": "SESSION-50-PARENT-PORTAL-AUDIT",
+  "lastUpdated": "2026-01-23T11:00:00Z",
+  "currentSession": "SESSION-54-BULLETPROOF-MEDIA",
   
-  "status": "✅ DEEP AUDIT COMPLETE - ALL ISSUES FIXED",
+  "status": "✅ CORE SYSTEM BUILT - Ready for testing",
   
-  "auditFindings": {
-    "issue1_FIXED": "Parent login page now auto-fills code from URL param AND auto-submits",
-    "issue2_FIXED": "Removed broken 'See All' media link, added inline toggle instead",
-    "issue3_VERIFIED": "showParentModal state was correctly defined (false alarm from truncated search)",
-    "issue4_FIXED": "Added parent-codes link to admin page with highlight styling",
-    "issue5_FIXED": "Created report_share_tokens table migration",
-    "issue6_FIXED": "Share token generator now creates 64-char hex (matches API validation)",
-    "issue7_FIXED": "Parent dashboard now queries BOTH media tables (child_work_media + montree_media)"
+  "architecture": {
+    "summary": "Offline-first media capture - photos save locally first, sync in background",
+    "keyPrinciple": "NEVER lose a photo",
+    "tables": {
+      "PRIMARY": "montree_media",
+      "LEGACY": "child_work_media (fixed)"
+    }
   },
   
+  "filesCreated": [
+    "/lib/media/types.ts",
+    "/lib/media/db.ts",
+    "/lib/media/sync.ts",
+    "/lib/media/capture.ts",
+    "/lib/media/useMedia.ts",
+    "/lib/media/index.ts",
+    "/components/media/QuickCapture.tsx",
+    "/components/media/SyncStatus.tsx",
+    "/migrations/064_unified_media_system.sql"
+  ],
+  
   "filesModified": [
-    "/app/montree/parent/page.tsx - Auto-fill code from URL, auto-submit, Suspense wrapper",
-    "/app/montree/parent/dashboard/page.tsx - Fixed media section, added inline toggle",
-    "/app/montree/admin/page.tsx - Added parent-codes link with highlight styling",
-    "/app/api/montree/parent/dashboard/route.ts - Query both media tables correctly",
-    "/lib/montree/reports/generator.ts - Fixed share token to 64-char hex format"
+    "/app/montree/dashboard/page.tsx",
+    "/app/api/montree/media/upload/route.ts"
   ],
   
-  "sqlToRun": "/COMPLETE_PARENT_PORTAL_SQL.sql - Run this ONE file for ALL tables",
-  
-  "teacherFlow": [
-    "1. Go to /montree/admin/parent-codes",
-    "2. Click 'Generate Missing Codes'",
-    "3. Click 'Print Cards'",
-    "4. Hand cards to parents",
-    "5. Parents scan QR → auto-login → see dashboard"
+  "actionRequired": [
+    "1. Run SQL in Supabase: migrations/064_unified_media_system.sql",
+    "2. Ensure whale-media bucket exists in Supabase Storage",
+    "3. Deploy: git push",
+    "4. Test Quick Capture on phone"
   ],
   
-  "deployCommand": "cd ~/Desktop/whale && git add . && git commit -m 'Parent portal audit fixes' && git push"
+  "captureFlow": [
+    "User taps Quick Snap",
+    "Camera opens instantly",
+    "Tap to capture photo",
+    "Select child from grid",
+    "Photo saved to IndexedDB INSTANTLY",
+    "Toast shows success immediately",
+    "Background sync uploads to Supabase",
+    "If offline - photo queued for later",
+    "Retry up to 5x with exponential backoff"
+  ]
 }

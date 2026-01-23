@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useParentChildren } from '@/lib/hooks/useParentChildren';
 import { useParentDashboard } from '@/lib/hooks/useParentDashboard';
 import ChildSwitcher from './ChildSwitcher';
@@ -56,11 +57,42 @@ export default function ParentDashboard() {
               <h1 className="text-2xl font-bold text-slate-800">Parent Dashboard</h1>
               <p className="text-sm text-slate-500">Track your child's Montessori journey</p>
             </div>
-            <ChildSwitcher
-              children={children}
-              selectedId={selectedChildId}
-              onSelect={setSelectedChildId}
-            />
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex gap-2">
+                <Link
+                  href="/parent/dashboard/home-activities"
+                  className="px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-100 rounded-full hover:bg-amber-200 transition-colors"
+                >
+                  🏠 Home Activities
+                </Link>
+                <Link
+                  href="/parent/dashboard/glossary"
+                  className="px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-full hover:bg-indigo-200 transition-colors"
+                >
+                  📖 Glossary
+                </Link>
+              </div>
+              <ChildSwitcher
+                children={children}
+                selectedId={selectedChildId}
+                onSelect={setSelectedChildId}
+              />
+            </div>
+          </div>
+          {/* Mobile links */}
+          <div className="flex sm:hidden gap-2 mt-3">
+            <Link
+              href="/parent/dashboard/home-activities"
+              className="flex-1 px-3 py-2 text-sm font-medium text-center text-amber-700 bg-amber-100 rounded-lg"
+            >
+              🏠 Home Activities
+            </Link>
+            <Link
+              href="/parent/dashboard/glossary"
+              className="flex-1 px-3 py-2 text-sm font-medium text-center text-indigo-700 bg-indigo-100 rounded-lg"
+            >
+              📖 Glossary
+            </Link>
           </div>
         </div>
       </header>

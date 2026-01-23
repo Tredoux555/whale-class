@@ -35,6 +35,9 @@ interface WorkCompletion {
     area_id: string;
     category_id: string;
     levels: any[];
+    parent_description: string | null;
+    why_it_matters: string | null;
+    home_connection: string | null;
     curriculum_areas: { name: string; color: string; icon: string };
     curriculum_categories: { name: string };
   };
