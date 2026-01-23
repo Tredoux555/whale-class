@@ -78,12 +78,15 @@ export async function POST(request: NextRequest) {
     const mediaUrl = urlData.publicUrl;
 
     // Save to database
+    // Note: work_id must be null if empty/invalid to avoid FK constraint violation
+    const validWorkId = workId && workId.length > 10 ? workId : null;
+    
     const { data: media, error: dbError } = await supabase
       .from('child_work_media')
       .insert({
         child_id: childId,
         assignment_id: assignmentId || null,
-        work_id: workId || null,
+        work_id: validWorkId,
         work_name: workName,
         category: category,
         media_type: mediaType,
