@@ -1,76 +1,72 @@
 # 🐋 WHALE SESSION 54 HANDOFF
-## January 23, 2026 - Bulletproof Media System
+## January 23, 2026 - Bulletproof Offline-First Media System
 
 ---
 
 ## 🎯 SUMMARY
 
-Built a **complete offline-first media capture system** with:
-- Photos save locally INSTANTLY (IndexedDB)
-- Background sync to Supabase
-- Auto-retry on failures (up to 5x)
-- **Never loses a photo**
-
-Then did a **deep audit** and fixed:
-- Camera cleanup issues
-- Loading states
-- UI/UX improvements
-- Error handling
+**Built a complete offline-first photo capture system** that:
+- Saves photos to IndexedDB **instantly** (no network wait)
+- Syncs to Supabase in the background
+- Auto-retries failed uploads (up to 5x)
+- **Never loses a photo** - even offline or server down
 
 ---
 
-## 📱 NEW USER EXPERIENCE
+## ✅ WHAT WAS BUILT
 
-### Quick Capture Flow:
-1. Tap **📷 Quick Photo** (big button at top)
-2. Camera opens → **Loading spinner while starting**
-3. Tap shutter button to capture
-4. **White bottom sheet** slides up with child avatars
-5. Tap a child → **Instant save + close**
-6. Photo syncs in background
+### Phase 1: Core Media System (`/lib/media/`)
+| File | Purpose |
+|------|---------|
+| `types.ts` | TypeScript types |
+| `db.ts` | IndexedDB wrapper (3 stores: media, blobs, queue) |
+| `sync.ts` | Background sync with retry logic |
+| `capture.ts` | High-level capture API |
+| `useMedia.ts` | React hooks |
+| `index.ts` | Public exports |
 
-### Dashboard:
-- **Clean list view** (no complex grid)
-- Each child = one row with gradient avatar
-- Tap anywhere on row to open child profile
-- Sync status badges in header (if pending/offline)
+### Phase 2: Components (`/components/media/`)
+| File | Purpose |
+|------|---------|
+| `QuickCapture.tsx` | Full-screen camera modal |
+| `SyncStatus.tsx` | Sync status badge |
 
----
-
-## 🔧 BUGS FIXED IN AUDIT
-
-| Issue | Fix |
-|-------|-----|
-| Camera not stopping on close | Use `useRef` for stream, not state |
-| No loading state | Added spinner while camera initializes |
-| Child grid too small | Changed to 3-column, larger avatars |
-| Complex grid algorithm | Replaced with simple list |
-| Double init of sync | Added `initialized` flag |
-| Listener errors crash app | Wrapped in try-catch |
+### Phase 3: UI Updates
+| File | Change |
+|------|--------|
+| `/app/montree/dashboard/page.tsx` | Clean list view + Quick Photo button |
+| `/components/montree/PortfolioTab.tsx` | NEW: Offline-first portfolio |
+| `/app/montree/dashboard/student/[id]/page.tsx` | Uses new PortfolioTab |
 
 ---
 
-## 📁 FILES
+## 🚀 HOW IT WORKS
 
-### Core System (`/lib/media/`)
+### User Flow:
 ```
-types.ts    - Type definitions
-db.ts       - IndexedDB wrapper
-sync.ts     - Background sync (FIXED: error handling)
-capture.ts  - High-level API
-useMedia.ts - React hooks
-index.ts    - Exports
-```
-
-### Components (`/components/media/`)
-```
-QuickCapture.tsx  - REBUILT: cleaner 3-step flow
-SyncStatus.tsx    - REBUILT: smaller, subtle
+Tap "Quick Photo" → Camera opens → Snap → Select child → INSTANT save
+                                                            ↓
+                                              Saved to IndexedDB
+                                                            ↓
+                                              Background sync to Supabase
+                                                            ↓
+                                              If fails → Auto retry
 ```
 
-### Pages
+### Technical Flow:
 ```
-/app/montree/dashboard/page.tsx - REBUILT: clean list view
+captureMedia(blob, options)
+  → Compress image (85% quality, max 1920px)
+  → Generate preview (base64)
+  → Save to IndexedDB (instant)
+  → Queue for upload
+  → Return immediately
+  
+Background:
+  → Pick from queue
+  → Upload to /api/montree/media/upload
+  → Update record on success
+  → Retry on failure (exponential backoff)
 ```
 
 ---
@@ -80,7 +76,7 @@ SyncStatus.tsx    - REBUILT: smaller, subtle
 Run this SQL in **Supabase → SQL Editor**:
 
 ```sql
--- Add missing category column
+-- Add missing category column (fixes error from old API)
 ALTER TABLE child_work_media 
 ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'work' 
 CHECK (category IN ('work', 'life', 'shared'));
@@ -91,71 +87,76 @@ ON child_work_media(category);
 
 ---
 
+## 🧪 TEST CHECKLIST
+
+### Classroom Dashboard
+- [ ] Open `/montree/dashboard`
+- [ ] See clean list of students
+- [ ] Tap "Quick Photo" button
+- [ ] Camera opens with loading spinner
+- [ ] Snap photo
+- [ ] Select child → saves instantly
+- [ ] Toast shows "Saved to [name]!"
+
+### Student Profile
+- [ ] Tap a student from dashboard
+- [ ] Go to Portfolio tab
+- [ ] Tap "Add Photo"
+- [ ] Take photo → instant save
+- [ ] See sync indicator on thumbnail
+- [ ] Photo shows in grid
+
+### Offline Mode
+- [ ] Turn on airplane mode
+- [ ] Take a photo
+- [ ] Photo saves (no error!)
+- [ ] Turn off airplane mode
+- [ ] Photo syncs automatically
+
+---
+
+## 📁 FILES CREATED/MODIFIED
+
+### New Files:
+```
+/lib/media/types.ts
+/lib/media/db.ts
+/lib/media/sync.ts
+/lib/media/capture.ts
+/lib/media/useMedia.ts
+/lib/media/index.ts
+/components/media/QuickCapture.tsx
+/components/media/SyncStatus.tsx
+/components/montree/PortfolioTab.tsx
+```
+
+### Modified Files:
+```
+/app/montree/dashboard/page.tsx
+/app/montree/dashboard/student/[id]/page.tsx
+/app/api/montree/media/upload/route.ts
+```
+
+---
+
 ## 🚀 DEPLOY
 
 ```bash
 cd ~/Desktop/whale
 git add .
-git commit -m "Session 54: Bulletproof offline-first media + deep audit"
+git commit -m "Session 54: Complete offline-first media system"
 git push
 ```
 
 ---
 
-## 🧪 TEST CHECKLIST
+## 🔮 NEXT STEPS
 
-### Quick Capture
-- [ ] Tap Quick Photo button
-- [ ] Camera starts with loading spinner
-- [ ] Tap shutter to capture
-- [ ] White sheet slides up with children
-- [ ] Tap child → saves instantly
-- [ ] Toast appears "Saved to [name]!"
-- [ ] Modal closes
-
-### Offline Mode
-- [ ] Turn on airplane mode
-- [ ] Take a photo
-- [ ] Photo saves locally (no error)
-- [ ] Turn off airplane mode
-- [ ] Photo syncs automatically
-
-### Dashboard
-- [ ] Clean list of students
-- [ ] Gradient avatars
-- [ ] Tap row → opens student profile
-- [ ] Sync badges appear when needed
-
----
-
-## 🎨 DESIGN DECISIONS
-
-| Element | Choice | Why |
-|---------|--------|-----|
-| Layout | Simple list | Easier to scan, works on all screens |
-| Avatars | Gradient colors | Beautiful, unique for each child |
-| Quick Photo | Big button at top | Most important action, always visible |
-| Child selection | White bottom sheet | iOS-style, clean contrast |
-| Sync status | Small badges | Don't distract, but visible when needed |
-
----
-
-## ⚠️ KNOWN LIMITATIONS
-
-1. **Video not tested** - Photo-focused for now
-2. **Group photos** - Not in Quick Capture (use /capture?group=true)
-3. **Work linking** - Quick captures are just "Quick Capture", no work ID
-
----
-
-## 📍 NEXT STEPS
-
-1. **Test on real iPad** in classroom
-2. Migrate student profile page to new system
-3. Add work selection to Quick Capture (optional)
-4. Progressive Web App setup for true offline
+1. **Work Click Behavior** - Fix clicking a work to open modal with video + capture
+2. **Authentication** - Add teacher login check to /montree/dashboard
+3. **PWA Setup** - For true offline experience with install prompt
 
 ---
 
 *Session 54 Complete*
-*Bulletproof media + Deep audit + Beautiful UI*
+*Never lose a photo again.*
