@@ -1,6 +1,7 @@
 // /montree/dashboard/student/[id]/page.tsx
 // PORTED FROM WORKING: /admin/classroom/student/[id]/page.tsx
 // Uses the same APIs as admin classroom for unified data
+// v78 - Fixed expand tap issue
 'use client';
 
 import { useState, useEffect, useRef, use, useCallback } from 'react';
