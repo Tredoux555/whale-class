@@ -1745,6 +1745,7 @@ function ReportsTab({ childId, childName }: { childId: string; childName: string
   const [selectedReport, setSelectedReport] = useState<any | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // Calculate week dates
   const getWeekDates = () => {
@@ -1851,6 +1852,35 @@ function ReportsTab({ childId, childName }: { childId: string; childName: string
     // and show instructions
     copyToClipboard(url);
     toast.success('Link copied! Paste in WeChat to share 💚');
+  };
+
+  const deleteReport = async (reportId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the row click
+    
+    if (!confirm('Delete this report? This cannot be undone.')) {
+      return;
+    }
+    
+    setDeleting(reportId);
+    try {
+      const res = await fetch(`/api/montree/reports?id=${reportId}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Report deleted');
+        setReports(reports.filter(r => r.id !== reportId));
+      } else {
+        toast.error(data.error || 'Failed to delete report');
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete report');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   if (loading) {
@@ -2009,32 +2039,44 @@ function ReportsTab({ childId, childName }: { childId: string; childName: string
             {reports.map(report => (
               <div 
                 key={report.id}
-                className="p-4 flex items-center gap-3 hover:bg-gray-50 cursor-pointer"
-                onClick={() => {
-                  setSelectedReport(report);
-                  createShareLink(report.id);
-                }}
+                className="p-4 flex items-center gap-3 hover:bg-gray-50"
               >
-                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                  📄
+                <div 
+                  className="flex-1 flex items-center gap-3 cursor-pointer"
+                  onClick={() => {
+                    setSelectedReport(report);
+                    createShareLink(report.id);
+                  }}
+                >
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                    📄
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">
+                      Week of {new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {report.report_type === 'parent' ? 'Parent Report' : 'Teacher Report'}
+                    </p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    report.status === 'published' 
+                      ? 'bg-green-100 text-green-700' 
+                      : report.status === 'draft'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {report.status}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">
-                    Week of {new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {report.report_type === 'parent' ? 'Parent Report' : 'Teacher Report'}
-                  </p>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  report.status === 'published' 
-                    ? 'bg-green-100 text-green-700' 
-                    : report.status === 'draft'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {report.status}
-                </span>
+                <button
+                  onClick={(e) => deleteReport(report.id, e)}
+                  disabled={deleting === report.id}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                  title="Delete report"
+                >
+                  {deleting === report.id ? '⏳' : '🗑️'}
+                </button>
               </div>
             ))}
           </div>

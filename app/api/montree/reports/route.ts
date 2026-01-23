@@ -181,3 +181,62 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// ============================================
+// DELETE - Delete a report by ID
+// ============================================
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const teacherName = cookieStore.get('teacherName')?.value;
+    
+    if (!teacherName) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const report_id = searchParams.get('id');
+
+    if (!report_id) {
+      return NextResponse.json(
+        { success: false, error: 'Report ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createServerClient();
+
+    // First delete any tokens for this report
+    await supabase
+      .from('montree_report_tokens')
+      .delete()
+      .eq('report_id', report_id);
+
+    // Then delete the report
+    const { error } = await supabase
+      .from('montree_weekly_reports')
+      .delete()
+      .eq('id', report_id);
+
+    if (error) {
+      console.error('Report delete error:', error);
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Report delete API error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
