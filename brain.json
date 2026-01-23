@@ -1,30 +1,28 @@
 {
-  "lastUpdated": "2026-01-23T19:35:00Z",
-  "currentSession": "SESSION-55-PARENT-DESCRIPTIONS",
-  "status": "🚀 DEPLOYING",
+  "lastUpdated": "2026-01-23T20:15:00Z",
+  "currentSession": "SESSION-56-FIX-REPORT-GENERATION",
+  "status": "🟢 FIX APPLIED - Ready to test",
   
-  "summary": "Parent-friendly descriptions complete! Code updated to use new fields. Deploying now.",
+  "summary": "Fixed 'Child not found' 400 error by switching from montree_children to children table in report generator.",
   
-  "completedToday": [
-    "✅ Fixed work item expand/collapse (commit 34ca1f6)",
-    "✅ Fixed FK constraint on media capture (commit 9b1db4f)",
-    "✅ Added DB columns: parent_description, why_it_matters, home_connection",
-    "✅ Created /lib/montree/seed/parent-descriptions.ts",
-    "✅ SQL Parts 1-6: ~100 works imported to database",
-    "✅ Updated generator.ts to use new parent description fields"
-  ],
-  
-  "keyChanges": {
-    "generator.ts": [
-      "Now fetches parent_description, why_it_matters, home_connection",
-      "Replaces 'Your child' with actual child name in descriptions",
-      "Uses why_it_matters for developmental_note",
-      "Uses home_connection for home_extension"
-    ]
+  "fixApplied": {
+    "file": "/lib/montree/reports/generator.ts",
+    "change": "Use 'children' table instead of 'montree_children' - they have different IDs!",
+    "genderFix": "Added default gender='they' since children table doesn't have gender column"
   },
   
+  "completedToday": [
+    "✅ Diagnosed child_id mismatch: UI uses 'children' table, generator was using 'montree_children'",
+    "✅ Fixed generator.ts to query 'children' table",
+    "✅ Added gender='they' default since children table lacks gender column"
+  ],
+  
   "nextSteps": [
-    "Deploy to Railway",
-    "Test parent report generation on phone"
-  ]
+    "1. git commit & push changes",
+    "2. Railway auto-deploy",
+    "3. Test report generation on Rachel (or any child)",
+    "4. Verify parent report shows properly"
+  ],
+  
+  "handoff": "/docs/SESSION-56-HANDOFF.md"
 }

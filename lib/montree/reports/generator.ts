@@ -57,15 +57,21 @@ export async function generateWeeklyReport(params: {
     const supabase = await createServerClient();
 
     // 1. Get child info
-    const { data: child, error: childError } = await supabase
-      .from('montree_children')
-      .select('id, name, gender')
+    // FIX Session 56: Use 'children' table not 'montree_children' - they have different IDs!
+    // Note: 'children' table doesn't have gender column, so we default to 'they'
+    const { data: childData, error: childError } = await supabase
+      .from('children')
+      .select('id, name')
       .eq('id', child_id)
       .single();
 
-    if (childError || !child) {
+    if (childError || !childData) {
+      console.error('Child lookup error:', childError?.message, 'for child_id:', child_id);
       return { success: false, error: 'Child not found' };
     }
+
+    // Add gender as 'they' since the children table doesn't have it
+    const child = { ...childData, gender: 'they' as const };
 
     // 2. Check if report already exists
     const { data: existingReport } = await supabase
