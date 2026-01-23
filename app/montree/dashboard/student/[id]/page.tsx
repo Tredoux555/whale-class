@@ -435,7 +435,11 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
   // TAP to open work detail modal
   const handleRowClick = (index: number) => {
-    setSelectedWorkIndex(index);
+    // Toggle expand - if already expanded, collapse; otherwise expand
+    setExpandedIndex(prev => prev === index ? null : index);
+    if (expandedIndex !== index) {
+      setEditingNotes(assignments[index]?.notes || '');
+    }
   };
 
   // Navigate to prev/next work (for weekly list)
