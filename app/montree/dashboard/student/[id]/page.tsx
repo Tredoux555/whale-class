@@ -11,6 +11,7 @@ import WorkNavigator from '@/components/montree/WorkNavigator';
 import ParentAccessModal from '@/components/montree/ParentAccessModal';
 import PortfolioTabNew from '@/components/montree/PortfolioTab';
 import SyncStatus from '@/components/media/SyncStatus';
+import WorkDetailModal from '@/components/montree/WorkDetailModal';
 import { initSync } from '@/lib/media';
 
 // Interface for ALL curriculum works (from search API)
@@ -335,6 +336,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [longPressTriggered, setLongPressTriggered] = useState(false);
 
+  // Work Detail Modal state
+  const [selectedWorkIndex, setSelectedWorkIndex] = useState<number | null>(null);
+
   // iOS-style wheel physics state
   const wheelPhysics = useRef({
     offset: 0,           // Current scroll offset in pixels
@@ -429,17 +433,9 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
     return editingNotes !== currentNotes;
   };
 
-  // TAP to expand/collapse a work
+  // TAP to open work detail modal
   const handleRowClick = (index: number) => {
-    if (expandedIndex === index) {
-      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
-      setExpandedIndex(null);
-      setEditingNotes('');
-    } else {
-      if (hasUnsavedNotes() && !confirm('You have unsaved notes. Discard changes?')) return;
-      setExpandedIndex(index);
-      setEditingNotes(assignments[index]?.notes || '');
-    }
+    setSelectedWorkIndex(index);
   };
 
   // Navigate to prev/next work (for weekly list)
@@ -760,6 +756,65 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
       console.error('Failed to update:', error);
       fetchAssignments();
     }
+  };
+
+  // Modal handlers
+  const handleModalStatusChange = async (assignmentId: string, newStatus: string) => {
+    const index = assignments.findIndex(a => a.id === assignmentId);
+    if (index === -1) return;
+    
+    setAssignments(prev => prev.map((a, i) => 
+      i === index ? { ...a, progress_status: newStatus as any } : a
+    ));
+
+    try {
+      await fetch('/api/weekly-planning/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId, status: newStatus }),
+      });
+      
+      await fetch('/api/montree/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          work_id: assignments[index].work_id,
+          assignment_id: assignmentId,
+          session_type: newStatus === 'presented' ? 'presentation' : 'practice',
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      fetchAssignments();
+    }
+  };
+
+  const handleModalNotesChange = async (assignmentId: string, notes: string) => {
+    const index = assignments.findIndex(a => a.id === assignmentId);
+    if (index === -1) return;
+    
+    try {
+      await fetch('/api/weekly-planning/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId, notes }),
+      });
+      setAssignments(prev => prev.map((a, i) => 
+        i === index ? { ...a, notes } : a
+      ));
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+    }
+  };
+
+  const handleModalMediaCaptured = () => {
+    if (selectedWorkIndex !== null) {
+      setAssignments(prev => prev.map((a, i) => 
+        i === selectedWorkIndex ? { ...a, mediaCount: (a.mediaCount || 0) + 1 } : a
+      ));
+    }
+    onMediaUploaded?.();
   };
 
   const handleSaveNotes = async () => {
