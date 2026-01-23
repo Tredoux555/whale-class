@@ -1,6 +1,6 @@
 // components/media/QuickCapture.tsx
-// Instant photo capture modal - snap first, link to child after
-// Session 54: Offline-first, instant feedback
+// REBUILT: Cleaner, simpler, more beautiful
+// Session 54: Deep audit fixes
 
 'use client';
 
@@ -20,6 +20,8 @@ interface QuickCaptureProps {
   onCapture?: (mediaId: string) => void;
 }
 
+type CaptureStep = 'camera' | 'select' | 'saving';
+
 export default function QuickCapture({ 
   isOpen, 
   onClose, 
@@ -28,93 +30,117 @@ export default function QuickCapture({
 }: QuickCaptureProps) {
   const { capture, isOnline, pendingCount } = useMedia();
   
-  // Camera state
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  // State
+  const [step, setStep] = useState<CaptureStep>('camera');
+  const [cameraReady, setCameraReady] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   
+  // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // ==========================================
+  // CAMERA MANAGEMENT
+  // ==========================================
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setCameraReady(false);
+  }, []);
+
+  const startCamera = useCallback(async () => {
+    setCameraReady(false);
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
+      
+      streamRef.current = stream;
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setCameraReady(true);
+      }
+    } catch (err) {
+      console.error('Camera error:', err);
+      toast.error('Could not access camera. Try selecting from gallery.');
+    }
+  }, []);
 
   // Start camera when modal opens
   useEffect(() => {
-    if (isOpen && !capturedImage) {
+    if (isOpen && step === 'camera') {
       startCamera();
     }
     
     return () => {
       stopCamera();
     };
-  }, [isOpen]);
+  }, [isOpen, step, startCamera, stopCamera]);
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        },
-        audio: false
-      });
-      setCameraStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-    } catch (err) {
-      console.error('Camera error:', err);
-      toast.error('Could not access camera');
-    }
-  };
+  // ==========================================
+  // ACTIONS
+  // ==========================================
 
-  const stopCamera = useCallback(() => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      setCameraStream(null);
-    }
-  }, [cameraStream]);
-
-  const handleClose = useCallback(() => {
-    stopCamera();
+  const reset = useCallback(() => {
     setCapturedImage(null);
     setCapturedBlob(null);
     setSelectedChildId(null);
+    setStep('camera');
+  }, []);
+
+  const handleClose = useCallback(() => {
+    stopCamera();
+    reset();
     onClose();
-  }, [stopCamera, onClose]);
+  }, [stopCamera, reset, onClose]);
 
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || !cameraReady) return;
     
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
+    // Set canvas size to video size
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    // Draw video frame to canvas
     ctx.drawImage(video, 0, 0);
     
-    // Get preview
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    // Get preview image
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedImage(dataUrl);
     
     // Get blob for saving
     canvas.toBlob((blob) => {
-      if (blob) setCapturedBlob(blob);
-    }, 'image/jpeg', 0.85);
-    
-    // Stop camera
-    stopCamera();
+      if (blob) {
+        setCapturedBlob(blob);
+        setStep('select');
+        stopCamera();
+      }
+    }, 'image/jpeg', 0.9);
     
     // Haptic feedback
-    if (navigator.vibrate) navigator.vibrate(50);
-  }, [stopCamera]);
+    if (navigator.vibrate) navigator.vibrate(30);
+  }, [cameraReady, stopCamera]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -123,88 +149,63 @@ export default function QuickCapture({
     const reader = new FileReader();
     reader.onload = (event) => {
       setCapturedImage(event.target?.result as string);
+      setCapturedBlob(file);
+      setStep('select');
+      stopCamera();
     };
     reader.readAsDataURL(file);
-    
-    setCapturedBlob(file);
-    stopCamera();
     
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [stopCamera]);
 
   const retakePhoto = useCallback(() => {
-    setCapturedImage(null);
-    setCapturedBlob(null);
-    setSelectedChildId(null);
+    reset();
     startCamera();
-  }, []);
+  }, [reset, startCamera]);
 
-  const savePhoto = useCallback(async () => {
-    if (!capturedBlob || !selectedChildId) {
-      toast.error('Please select a child');
-      return;
-    }
+  const selectChildAndSave = useCallback(async (childId: string) => {
+    if (!capturedBlob) return;
     
-    setSaving(true);
+    setSelectedChildId(childId);
+    setStep('saving');
     
-    const child = students.find(s => s.id === selectedChildId);
+    const child = students.find(s => s.id === childId);
     const childName = child?.name || 'child';
     
-    // INSTANT feedback
-    toast.success(`📷 Saved to ${childName}!`);
-    
     try {
-      // This saves locally and queues for sync
       const media = await capture(capturedBlob, {
-        childId: selectedChildId,
+        childId,
         childName,
         workName: 'Quick Capture',
       });
       
+      // Success!
+      toast.success(`Saved to ${childName}!`, { duration: 2000 });
       onCapture?.(media.id);
       handleClose();
       
     } catch (error) {
       console.error('Capture error:', error);
-      toast.error('Failed to save photo');
-    } finally {
-      setSaving(false);
+      toast.error('Failed to save. Tap to retry.');
+      setStep('select');
+      setSelectedChildId(null);
     }
-  }, [capturedBlob, selectedChildId, students, capture, onCapture, handleClose]);
+  }, [capturedBlob, students, capture, onCapture, handleClose]);
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black z-[100] flex flex-col">
-      {/* Header */}
-      <div className="bg-black/80 px-4 py-3 flex items-center justify-between safe-area-top">
-        <button
-          onClick={handleClose}
-          className="text-white text-lg px-3 py-1 active:opacity-70"
-        >
-          ✕ Cancel
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="text-white font-bold">⚡ Quick Capture</span>
-          {!isOnline && (
-            <span className="bg-amber-500 text-black text-xs px-2 py-0.5 rounded-full font-medium">
-              Offline
-            </span>
-          )}
-          {pendingCount > 0 && (
-            <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
-              {pendingCount} pending
-            </span>
-          )}
-        </div>
-        <div className="w-20" />
-      </div>
-
-      {/* Camera / Preview */}
-      <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
-        {!capturedImage ? (
-          // CAMERA MODE
-          <>
+      
+      {/* ==================== CAMERA STEP ==================== */}
+      {step === 'camera' && (
+        <>
+          {/* Camera View */}
+          <div className="flex-1 relative bg-black">
             <video
               ref={videoRef}
               autoPlay
@@ -213,108 +214,149 @@ export default function QuickCapture({
               className="w-full h-full object-cover"
             />
             
-            {/* Camera controls */}
-            <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-8 safe-area-bottom">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-14 h-14 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white text-2xl active:scale-95 transition-transform"
-              >
-                🖼️
-              </button>
-              
-              <button
-                onClick={capturePhoto}
-                className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-              >
-                <div className="w-16 h-16 bg-white border-4 border-gray-300 rounded-full" />
-              </button>
-              
-              <div className="w-14 h-14" />
-            </div>
-          </>
-        ) : (
-          // PREVIEW + CHILD SELECTION
-          <div className="w-full h-full flex flex-col">
-            <div className="flex-1 relative">
-              <img
-                src={capturedImage}
-                alt="Captured"
-                className="w-full h-full object-contain"
-              />
-              
-              <button
-                onClick={retakePhoto}
-                className="absolute top-4 left-4 bg-black/50 backdrop-blur text-white px-4 py-2 rounded-full text-sm font-medium active:scale-95"
-              >
-                🔄 Retake
-              </button>
-            </div>
+            {/* Loading overlay */}
+            {!cameraReady && (
+              <div className="absolute inset-0 bg-black flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-white/70">Starting camera...</p>
+                </div>
+              </div>
+            )}
 
-            {/* Child selection */}
-            <div className="bg-gray-900 p-4 safe-area-bottom">
-              <p className="text-white text-sm mb-3 text-center">Tap a child to save:</p>
+            {/* Top bar */}
+            <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
+              <button
+                onClick={handleClose}
+                className="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+              >
+                ✕
+              </button>
               
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-32 overflow-y-auto">
-                {students.map((student) => (
+              <div className="flex items-center gap-2">
+                {!isOnline && (
+                  <span className="px-2 py-1 bg-amber-500 text-black text-xs font-medium rounded-full">
+                    Offline
+                  </span>
+                )}
+                {pendingCount > 0 && (
+                  <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                    {pendingCount} syncing
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Bottom controls */}
+            <div className="absolute bottom-0 left-0 right-0 pb-10 pt-6 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="flex items-center justify-center gap-12">
+                {/* Gallery */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+                >
+                  <span className="text-xl">🖼️</span>
+                </button>
+                
+                {/* Capture button */}
+                <button
+                  onClick={capturePhoto}
+                  disabled={!cameraReady}
+                  className="w-20 h-20 rounded-full bg-white flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50"
+                >
+                  <div className="w-16 h-16 rounded-full border-4 border-gray-300" />
+                </button>
+                
+                {/* Spacer */}
+                <div className="w-12 h-12" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ==================== SELECT CHILD STEP ==================== */}
+      {(step === 'select' || step === 'saving') && capturedImage && (
+        <div className="flex-1 flex flex-col bg-gray-900">
+          {/* Preview image - top half */}
+          <div className="flex-1 relative min-h-0">
+            <img
+              src={capturedImage}
+              alt="Captured"
+              className="w-full h-full object-contain"
+            />
+            
+            {/* Retake button */}
+            <button
+              onClick={retakePhoto}
+              disabled={step === 'saving'}
+              className="absolute top-4 left-4 px-4 py-2 bg-black/50 backdrop-blur-sm text-white rounded-full text-sm font-medium disabled:opacity-50"
+            >
+              ↻ Retake
+            </button>
+            
+            {/* Close button */}
+            <button
+              onClick={handleClose}
+              disabled={step === 'saving'}
+              className="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center disabled:opacity-50"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Child selection - bottom */}
+          <div className="bg-white rounded-t-3xl p-6 pb-10 shadow-2xl">
+            <h3 className="text-center text-gray-600 font-medium mb-4">
+              {step === 'saving' ? 'Saving...' : 'Who is this?'}
+            </h3>
+            
+            {/* Child grid - larger, easier to tap */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto">
+              {students.map((student) => {
+                const isSelected = selectedChildId === student.id;
+                const isSaving = step === 'saving' && isSelected;
+                
+                return (
                   <button
                     key={student.id}
-                    onClick={() => setSelectedChildId(student.id)}
-                    disabled={saving}
+                    onClick={() => step !== 'saving' && selectChildAndSave(student.id)}
+                    disabled={step === 'saving'}
                     className={`
-                      flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95
-                      ${selectedChildId === student.id 
-                        ? 'bg-emerald-500 scale-105' 
-                        : 'bg-gray-800 hover:bg-gray-700'
+                      flex flex-col items-center gap-2 p-3 rounded-2xl transition-all
+                      ${isSelected 
+                        ? 'bg-emerald-500 scale-105 shadow-lg' 
+                        : 'bg-gray-100 hover:bg-gray-200 active:scale-95'
                       }
-                      ${saving ? 'opacity-50' : ''}
+                      ${step === 'saving' && !isSelected ? 'opacity-40' : ''}
                     `}
                   >
                     <div className={`
-                      w-10 h-10 rounded-full flex items-center justify-center text-white font-bold
-                      ${selectedChildId === student.id ? 'bg-emerald-600' : 'bg-blue-500'}
+                      w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shadow-sm
+                      ${isSelected 
+                        ? 'bg-white text-emerald-600' 
+                        : 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white'
+                      }
                     `}>
-                      {student.name.charAt(0)}
+                      {isSaving ? (
+                        <span className="animate-spin">⏳</span>
+                      ) : (
+                        student.name.charAt(0)
+                      )}
                     </div>
-                    <span className="text-white text-xs truncate max-w-full">
+                    <span className={`
+                      text-sm font-medium truncate max-w-full
+                      ${isSelected ? 'text-white' : 'text-gray-700'}
+                    `}>
                       {student.name.split(' ')[0]}
                     </span>
                   </button>
-                ))}
-              </div>
-
-              <button
-                onClick={savePhoto}
-                disabled={!selectedChildId || saving}
-                className={`
-                  w-full mt-4 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2
-                  transition-all active:scale-98
-                  ${selectedChildId && !saving
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-700 text-gray-400'
-                  }
-                `}
-              >
-                {saving ? (
-                  <>
-                    <span className="animate-spin">⏳</span>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>💾</span>
-                    <span>
-                      {selectedChildId 
-                        ? `Save to ${students.find(s => s.id === selectedChildId)?.name.split(' ')[0]}`
-                        : 'Select a child'
-                      }
-                    </span>
-                  </>
-                )}
-              </button>
+                );
+              })}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Hidden elements */}
       <input
