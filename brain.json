@@ -1,28 +1,39 @@
 {
-  "lastUpdated": "2026-01-23T20:15:00Z",
-  "currentSession": "SESSION-56-FIX-REPORT-GENERATION",
-  "status": "🟢 FIX APPLIED - Ready to test",
+  "lastUpdated": "2026-01-23T21:55:00Z",
+  "currentSession": "SESSION-57-FIX-SESSIONS-AND-REPORTS",
+  "status": "🟡 WAITING - SQL needs to run in Supabase",
   
-  "summary": "Fixed 'Child not found' 400 error by switching from montree_children to children table in report generator.",
+  "summary": "Found 2 database issues. Created combined SQL fix file.",
   
-  "fixApplied": {
-    "file": "/lib/montree/reports/generator.ts",
-    "change": "Use 'children' table instead of 'montree_children' - they have different IDs!",
-    "genderFix": "Added default gender='they' since children table doesn't have gender column"
+  "issuesFound": [
+    {
+      "issue": "Sessions API returns 500 when updating work progress",
+      "cause": "montree_work_sessions.work_id column is UUID but should be TEXT",
+      "console": "Multiple 500 errors on /api/montree/sessions",
+      "status": "FIX CREATED"
+    },
+    {
+      "issue": "Report preview shows 'Not Found'",
+      "cause": "report_share_tokens table missing or RLS blocking",
+      "url": "https://teacherpotato.xyz/montree/report/...",
+      "status": "FIX CREATED"
+    }
+  ],
+  
+  "completedThisSession": [
+    "✅ Fixed school_id UUID error (commit 9144f7d)",
+    "✅ Confirmed report generation works via API",
+    "✅ Diagnosed sessions 500 = work_id column type mismatch",
+    "✅ Diagnosed report preview = tokens table missing",
+    "✅ Created FIX-SESSION-57-COMBINED.sql"
+  ],
+  
+  "actionRequired": {
+    "who": "TREDOUX",
+    "what": "Run FIX-SESSION-57-COMBINED.sql in Supabase SQL Editor",
+    "file": "/FIX-SESSION-57-COMBINED.sql",
+    "then": "Test progress updates and report preview"
   },
   
-  "completedToday": [
-    "✅ Diagnosed child_id mismatch: UI uses 'children' table, generator was using 'montree_children'",
-    "✅ Fixed generator.ts to query 'children' table",
-    "✅ Added gender='they' default since children table lacks gender column"
-  ],
-  
-  "nextSteps": [
-    "1. git commit & push changes",
-    "2. Railway auto-deploy",
-    "3. Test report generation on Rachel (or any child)",
-    "4. Verify parent report shows properly"
-  ],
-  
-  "handoff": "/docs/SESSION-56-HANDOFF.md"
+  "handoff": "/docs/SESSION-57-HANDOFF.md"
 }

@@ -125,9 +125,9 @@ export async function validateTokenAndGetReport(
   try {
     const supabase = await createServerClient();
 
-    // 1. Find token
+    // 1. Find token - using report_share_tokens table
     const { data: tokenRecord, error: tokenError } = await supabase
-      .from('montree_report_tokens')
+      .from('report_share_tokens')
       .select('*')
       .eq('token', token)
       .single();
@@ -142,7 +142,7 @@ export async function validateTokenAndGetReport(
     }
 
     // 2. Check if revoked
-    if (tokenRecord.is_revoked) {
+    if (tokenRecord.revoked) {
       return {
         success: false,
         valid: false,
@@ -185,19 +185,30 @@ export async function validateTokenAndGetReport(
       };
     }
 
-    // 5. Fetch child info (from montree_children table)
+    // 5. Fetch child info (from children table - same as admin uses)
     const { data: child } = await supabase
-      .from('montree_children')
+      .from('children')
       .select('id, name, photo_url')
       .eq('id', report.child_id)
       .single();
 
-    // 6. Fetch school info
-    const { data: school } = await supabase
-      .from('montree_schools')
-      .select('name, logo_url')
-      .eq('id', report.school_id)
-      .single();
+    // 6. Fetch school info (optional - may not exist for default school)
+    let schoolName = 'Whale Class';
+    let schoolLogoUrl: string | undefined;
+    
+    // Only try to fetch if it's not our default placeholder UUID
+    if (report.school_id !== '00000000-0000-0000-0000-000000000001') {
+      const { data: school } = await supabase
+        .from('schools')
+        .select('name, logo_url')
+        .eq('id', report.school_id)
+        .single();
+      
+      if (school) {
+        schoolName = school.name;
+        schoolLogoUrl = school.logo_url;
+      }
+    }
 
     // 7. Get media URLs for highlights
     const content = report.content as ReportContent;
@@ -220,21 +231,9 @@ export async function validateTokenAndGetReport(
       }
     }
 
-    // 8. Update access tracking (non-blocking, log errors)
-    const isFirstAccess = !tokenRecord.first_accessed_at;
-    const { error: trackingError } = await supabase
-      .from('montree_report_tokens')
-      .update({
-        first_accessed_at: isFirstAccess ? new Date().toISOString() : tokenRecord.first_accessed_at,
-        last_accessed_at: new Date().toISOString(),
-        access_count: (tokenRecord.access_count || 0) + 1,
-      })
-      .eq('id', tokenRecord.id);
-    
-    if (trackingError) {
-      console.error('Access tracking update failed:', trackingError);
-      // Non-blocking - continue to return report
-    }
+    // 8. Access tracking not available in simplified report_share_tokens table
+    // The original montree_report_tokens had tracking columns, but report_share_tokens doesn't
+    // This is fine for MVP - tracking can be added later if needed
 
     // 9. Build parent-friendly report view
     const parentReport: ParentViewReport = {
@@ -256,8 +255,8 @@ export async function validateTokenAndGetReport(
       parent_message: content.parent_message,
       total_photos: content.total_photos || content.highlights.length,
       generated_with_ai: content.generated_with_ai || false,
-      school_name: school?.name || 'Montessori School',
-      school_logo_url: school?.logo_url,
+      school_name: schoolName,
+      school_logo_url: schoolLogoUrl,
     };
 
     const parentChild: ParentViewChild = {
