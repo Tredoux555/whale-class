@@ -43,13 +43,17 @@ export async function generateWeeklyReport(params: {
 }): Promise<GenerateReportResponse> {
   const { 
     child_id, 
-    school_id, 
     week_start, 
     week_end, 
     report_type, 
     generated_by,
     use_ai = true 
   } = params;
+
+  // Use a deterministic UUID for default school
+  // This is a fixed UUID that represents "default school" in our system
+  const DEFAULT_SCHOOL_UUID = '00000000-0000-0000-0000-000000000001';
+  const school_id = params.school_id || DEFAULT_SCHOOL_UUID;
 
   const startTime = Date.now();
 
