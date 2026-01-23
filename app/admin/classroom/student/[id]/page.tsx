@@ -270,6 +270,7 @@ function ThisWeekTab({ childId, childName, childAge, onMediaUploaded }: {
   const [loading, setLoading] = useState(true);
   const [weekInfo, setWeekInfo] = useState<{ week: number; year: number } | null>(null);
   const [activeCapture, setActiveCapture] = useState<WorkAssignment | null>(null);
+  const [expandedWork, setExpandedWork] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -468,41 +469,103 @@ function ThisWeekTab({ childId, childName, childAge, onMediaUploaded }: {
         {assignments.map(assignment => {
           const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'text-gray-600', bg: 'bg-gray-100' };
           const status = STATUS_CONFIG[assignment.progress_status];
+          const isExpanded = expandedWork === assignment.id;
           
           return (
             <div key={assignment.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="flex items-center p-3 gap-3">
+              {/* Main row - tap to expand */}
+              <button
+                onClick={() => setExpandedWork(isExpanded ? null : assignment.id)}
+                className="w-full flex items-center p-3 gap-3 hover:bg-gray-50 transition-colors"
+              >
                 <div className={`w-8 h-8 rounded-lg ${area.bg} flex items-center justify-center ${area.color} font-bold text-sm`}>
                   {area.letter}
                 </div>
 
-                <button
-                  onClick={() => handleStatusTap(assignment)}
-                  className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90`}
-                >
+                <div className={`w-8 h-8 rounded-full ${status.color} flex items-center justify-center font-bold text-xs`}>
                   {status.label}
-                </button>
+                </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <p className="font-medium text-gray-900 truncate">{assignment.work_name}</p>
-                  {assignment.notes && (
-                    <p className="text-xs text-gray-500 truncate">{assignment.notes}</p>
-                  )}
                 </div>
 
                 {assignment.mediaCount && assignment.mediaCount > 0 && (
-                  <div className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-medium">
+                  <div className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-medium">
                     📷 {assignment.mediaCount}
                   </div>
                 )}
 
-                <button
-                  onClick={() => handleCaptureTap(assignment)}
-                  className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+                <svg 
+                  className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  📸
-                </button>
-              </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Expanded content */}
+              {isExpanded && (
+                <div className="border-t bg-gray-50 p-4">
+                  <p className="text-xs text-gray-500 mb-3">Tap a status to update:</p>
+                  
+                  {/* Status buttons */}
+                  <div className="flex gap-2 mb-4">
+                    {(['not_started', 'presented', 'practicing', 'mastered'] as const).map(statusKey => {
+                      const statusConfig = STATUS_CONFIG[statusKey];
+                      const isActive = assignment.progress_status === statusKey;
+                      return (
+                        <button
+                          key={statusKey}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isActive) {
+                              handleStatusTap({ ...assignment, progress_status: assignment.progress_status });
+                              // Update to specific status
+                              setAssignments(prev => prev.map(a => 
+                                a.id === assignment.id ? { ...a, progress_status: statusKey } : a
+                              ));
+                              fetch('/api/weekly-planning/progress', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ assignmentId: assignment.id, status: statusKey }),
+                              });
+                              toast.success(`${assignment.work_name} → ${statusKey.replace('_', ' ')}`);
+                            }
+                          }}
+                          className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${
+                            isActive 
+                              ? `${statusConfig.color} ring-2 ring-offset-2 ring-gray-400` 
+                              : `${statusConfig.color} opacity-50 hover:opacity-100`
+                          }`}
+                        >
+                          {statusConfig.label}
+                          <span className="block text-[10px] font-normal mt-0.5">
+                            {statusKey.replace('_', ' ')}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Camera button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCaptureTap(assignment);
+                    }}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-lg active:scale-[0.98] transition-all"
+                  >
+                    📸 Take Photo / Video
+                  </button>
+
+                  {assignment.notes && (
+                    <p className="text-xs text-gray-500 mt-3 italic">Note: {assignment.notes}</p>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -578,7 +641,9 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
   };
 
   const handleWorkClick = async (work: any) => {
-    const newStatus = work.status === 3 ? 0 : 3;
+    // Cycle through: 0 → 1 → 2 → 3 → 0
+    const newStatus = (work.status + 1) % 4;
+    toast.success(`${work.name} → ${STATUS_LABELS[newStatus]}`);
     try {
       await fetch(`/api/classroom/child/${childId}/progress/${work.id}`, {
         method: 'PATCH',
@@ -588,6 +653,7 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
       fetchProgress();
     } catch (error) {
       console.error('Update error:', error);
+      toast.error('Failed to update');
     }
   };
 
