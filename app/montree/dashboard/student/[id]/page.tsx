@@ -10,7 +10,6 @@ import DemoTutorial, { STUDENT_STEPS } from '@/components/montree/DemoTutorial';
 import { toast } from 'sonner';
 import WorkNavigator from '@/components/montree/WorkNavigator';
 import ParentAccessModal from '@/components/montree/ParentAccessModal';
-import PortfolioTabNew from '@/components/montree/PortfolioTab';
 import SyncStatus from '@/components/media/SyncStatus';
 import WorkDetailModal from '@/components/montree/WorkDetailModal';
 import { initSync } from '@/lib/media';
@@ -70,7 +69,6 @@ interface AreaProgress {
 const TABS = [
   { id: 'week', label: 'This Week', icon: '📋' },
   { id: 'progress', label: 'Progress', icon: '📊' },
-  { id: 'portfolio', label: 'Portfolio', icon: '📷' },
   { id: 'reports', label: 'Reports', icon: '📄' },
 ];
 
@@ -322,14 +320,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           <ProgressTab 
             childId={studentId} 
             childName={student.name}
-          />
-        )}
-        {activeTab === 'portfolio' && (
-          <PortfolioTabNew 
-            key={mediaRefreshKey}
-            childId={studentId} 
-            childName={student.name}
-            onMediaUploaded={handleMediaUploaded}
           />
         )}
         {activeTab === 'reports' && (
@@ -1901,7 +1891,9 @@ function ReportsTab({ childId, childName }: { childId: string; childName: string
       const data = await res.json();
       
       if (data.success && data.share_url) {
-        setShareUrl(data.share_url);
+        // Construct full URL using current origin
+        const fullUrl = `${window.location.origin}${data.share_url}`;
+        setShareUrl(fullUrl);
         toast.success('Share link created!');
       } else {
         toast.error(data.error || 'Failed to create share link');

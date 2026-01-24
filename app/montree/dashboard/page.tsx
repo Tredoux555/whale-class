@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import QuickCapture from '@/components/media/QuickCapture';
 import SyncStatus from '@/components/media/SyncStatus';
@@ -28,7 +29,10 @@ function getAvatarColor(index: number): [string, string] {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get('demo') === 'zohan';
+  
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -52,6 +56,9 @@ export default function DashboardPage() {
   const openQuickCapture = useCallback(() => {
     setQuickCaptureOpen(true);
   }, []);
+
+  // Build URL with demo param if in demo mode
+  const buildUrl = (path: string) => isDemo ? `${path}?demo=zohan` : path;
 
   if (loading) {
     return (
@@ -98,14 +105,14 @@ export default function DashboardPage() {
             <SyncStatus showLabel={false} />
             
             <Link
-              href="/montree/dashboard/reports"
+              href={buildUrl('/montree/dashboard/reports')}
               className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
             >
               <span className="text-base">📊</span>
             </Link>
             
             <Link
-              href="/montree/dashboard/media"
+              href={buildUrl('/montree/dashboard/media')}
               className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
             >
               <span className="text-base">🖼️</span>
@@ -114,16 +121,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Quick Actions */}
-      <div className="px-4 py-3 max-w-4xl mx-auto">
-        <button
-          onClick={openQuickCapture}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
-        >
-          <span className="text-xl">📷</span>
-          <span>Quick Photo</span>
-        </button>
-      </div>
+      {/* Quick Actions - hide in demo for cleaner look */}
+      {!isDemo && (
+        <div className="px-4 py-3 max-w-4xl mx-auto">
+          <button
+            onClick={openQuickCapture}
+            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
+          >
+            <span className="text-xl">📷</span>
+            <span>Quick Photo</span>
+          </button>
+        </div>
+      )}
 
       {/* Student Grid */}
       <main className="px-4 py-6 max-w-4xl mx-auto pb-40">
@@ -143,7 +152,7 @@ export default function DashboardPage() {
               return (
                 <Link
                   key={student.id}
-                  href={`/montree/dashboard/student/${student.id}`}
+                  href={buildUrl(`/montree/dashboard/student/${student.id}`)}
                   className="relative flex flex-col items-center p-4 rounded-2xl transition-all bg-white/70 hover:bg-white hover:shadow-md"
                 >
                   <div 
@@ -166,13 +175,15 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* Floating Camera Button */}
-      <button
-        onClick={openQuickCapture}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-90 transition-transform z-50"
-      >
-        <span className="text-2xl">📷</span>
-      </button>
+      {/* Floating Camera Button - hide in demo */}
+      {!isDemo && (
+        <button
+          onClick={openQuickCapture}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-90 transition-transform z-50"
+        >
+          <span className="text-2xl">📷</span>
+        </button>
+      )}
 
       {/* Quick Capture Modal */}
       <QuickCapture
@@ -181,10 +192,20 @@ export default function DashboardPage() {
         students={students}
       />
 
-      {/* Demo Tutorial - only shows when ?demo=zohan is in URL */}
-      <Suspense fallback={null}>
-        <DemoTutorial steps={CLASSROOM_STEPS} />
-      </Suspense>
+      {/* Demo Tutorial */}
+      <DemoTutorial steps={CLASSROOM_STEPS} />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <span className="text-4xl animate-pulse">🐋</span>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
