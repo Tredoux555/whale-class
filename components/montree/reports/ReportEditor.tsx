@@ -135,19 +135,31 @@ export default function ReportEditor({
               className="border border-gray-100 rounded-xl p-3 hover:border-gray-200 transition-colors"
             >
               <div className="flex gap-3">
-                {/* Thumbnail */}
+                {/* Thumbnail - Session 80 FIX: Handle full URLs directly */}
                 <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                  {thumbnailUrls[highlight.storage_path || ''] ? (
-                    <img
-                      src={thumbnailUrls[highlight.storage_path || '']}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">
-                      📷
-                    </div>
-                  )}
+                  {(() => {
+                    const path = highlight.storage_path;
+                    // If path is already a full URL, use it directly
+                    const imageUrl = path?.startsWith('http://') || path?.startsWith('https://')
+                      ? path
+                      : thumbnailUrls[path || ''];
+                    
+                    return imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={highlight.work_name || ''}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-2xl">📷</div>';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl">
+                        📷
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Content */}

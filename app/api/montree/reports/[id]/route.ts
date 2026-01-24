@@ -62,10 +62,10 @@ export async function GET(
       .eq('report_id', id)
       .order('display_order', { ascending: true });
 
-    // Fetch child info (from montree_children table)
+    // Fetch child info (from children table - same as generator uses)
     const { data: child } = await supabase
-      .from('montree_children')
-      .select('id, name, gender')
+      .from('children')
+      .select('id, name, gender, photo_url')
       .eq('id', report.child_id)
       .single();
 
