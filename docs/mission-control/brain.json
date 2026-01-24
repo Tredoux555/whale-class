@@ -1,80 +1,60 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-22T12:00:00Z",
-  "session": 48,
+  "lastUpdated": "2026-01-24T12:00:00Z",
+  "session": 49,
   "mode": "COMPLETE",
-  "phase": "SESSION 48 FINISHED",
+  "phase": "SESSION 49 FINISHED",
 
-  "SESSION_48_SUMMARY": {
-    "duration": "75 minutes",
-    "mode": "AUTOPILOT - fully autonomous",
-    "glitches": 0,
-    "build_failures": 0,
-    "commits": 4
+  "SESSION_49_SUMMARY": {
+    "duration": "45 minutes",
+    "focus": "Montree Games System - Complete Separation from Whale",
+    "commits": 1,
+    "games_copied": 27
   },
 
-  "COMMITS": [
-    {
-      "hash": "5b7784b",
-      "title": "🖨️ Print Weekly Plans",
-      "features": ["3 modes: Grid/Cards/Wall", "Color-coded areas", "Status badges"]
-    },
-    {
-      "hash": "4d7ddf4",
-      "title": "📄 Parent Progress Report",
-      "features": ["Progress circle", "Area bars", "Bilingual", "Print-ready"]
-    },
-    {
-      "hash": "2667dc9",
-      "title": "🎮 Game Recommendations",
-      "features": ["Smart curriculum linking", "Fallback recommendations", "Parent report integration"]
-    },
-    {
-      "hash": "7050e56",
-      "title": "✨ Admin Dashboard",
-      "features": ["Quick stats", "Personalized greeting", "Print shortcuts", "Dark theme"]
-    }
-  ],
+  "CRITICAL_RULE": {
+    "memory_19": "🚨 Montree ≠ Whale. MONTREE=/montree/* (SaaS for schools). WHALE=/admin/* (Tredoux internal). Same codebase, SEPARATE products. NEVER mix them."
+  },
 
-  "NEW_FEATURES": {
-    "print_weekly_plans": {
-      "url": "/admin/classroom/print?week=X&year=Y&mode=grid",
-      "modes": ["grid - 2 column compact", "cards - 4 per page", "wall - 1 per page large"],
-      "features": ["Color-coded areas", "Status badges", "Chinese names", "Stats header"]
-    },
-    "parent_progress_report": {
-      "url": "/admin/classroom/report/{childId}",
-      "features": ["Progress circle %", "Area progress bars", "Recent works", "Game recommendations", "Bilingual", "Print button"]
-    },
-    "game_recommendations": {
-      "smart_linking": "Based on child's current curriculum works",
-      "fallbacks": "Default recommendations when no specific mappings",
-      "locations": ["Parent report", "Parent app today tab", "Progress tab"]
-    },
-    "admin_dashboard": {
-      "url": "/admin",
-      "features": ["Quick stats grid", "Personalized greeting", "Quick action cards", "Print & Reports section"]
+  "MONTREE_GAMES": {
+    "hub_url": "/montree/games",
+    "total_games": 27,
+    "categories": {
+      "phonics": ["letter-sounds", "beginning-sounds", "middle-sounds", "ending-sounds", "combined-i-spy", "sound-blending", "sound-segmenting", "sound-safari"],
+      "reading": ["letter-match", "letter-tracer", "capital-letter-tracer", "word-builder", "vocabulary-builder", "read-and-reveal"],
+      "math": ["number-tracer", "quantity-match", "bead-frame", "hundred-board", "odd-even"],
+      "sensorial": ["sensorial-sort", "color-match", "color-grade"],
+      "grammar": ["grammar-symbols", "sentence-builder", "sentence-match", "sentence-scramble"]
     }
+  },
+
+  "MONTREE_URLS": {
+    "hub": "/montree",
+    "admin": "/montree/admin",
+    "games": "/montree/games",
+    "parent": "/montree/parent",
+    "dashboard": "/montree/dashboard",
+    "student": "/montree/dashboard/student/[id]",
+    "reports": "/montree/dashboard/reports"
+  },
+
+  "WHALE_URLS": {
+    "admin": "/admin",
+    "classroom": "/admin/classroom",
+    "handbook": "/admin/handbook",
+    "print": "/admin/classroom/print",
+    "games": "/games"
   },
 
   "PLATFORM_STATE": {
     "Montessori Brain": "213 works with full relationship graph",
     "Digital Handbook": "Prerequisites, unlocks, sensitive periods, games",
     "Weekly Planning": "AI suggestions + Print buttons",
-    "Games Hub": "20+ learning games linked to curriculum",
+    "Games Hub (Whale)": "/games - 27+ learning games",
+    "Games Hub (Montree)": "/montree/games - 27 games copied, self-contained",
     "Classroom": "Real progress tracking + Print/Report support",
     "Parent App": "Today at School + Game Recommendations",
     "Print System": "3 beautiful modes for classroom display",
     "Report System": "Individual student progress PDFs"
-  },
-
-  "ACCESS_URLS": {
-    "admin_dashboard": "www.teacherpotato.xyz/admin",
-    "classroom": "www.teacherpotato.xyz/admin/classroom",
-    "print_weekly": "www.teacherpotato.xyz/admin/classroom/print?week=4&year=2026&mode=grid",
-    "student_report": "www.teacherpotato.xyz/admin/classroom/report/{childId}",
-    "handbook": "www.teacherpotato.xyz/admin/handbook",
-    "games": "www.teacherpotato.xyz/games",
-    "parent_app": "www.teacherpotato.xyz/parent/home"
   }
 }
