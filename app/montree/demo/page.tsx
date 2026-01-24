@@ -1,13 +1,15 @@
 // /montree/demo/page.tsx
 // Welcome page - personalized for Zohan
 // Session 80: Zohan Demo Experience
+// Session 81: Fixed Suspense boundary for Next.js 16.1
 
 'use client';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function DemoWelcomePage() {
+function DemoWelcomeContent() {
   const searchParams = useSearchParams();
   const name = searchParams.get('name') || 'Zohan';
 
@@ -68,5 +70,17 @@ export default function DemoWelcomePage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function DemoWelcomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+        <div className="animate-bounce text-6xl">🐋</div>
+      </div>
+    }>
+      <DemoWelcomeContent />
+    </Suspense>
   );
 }
