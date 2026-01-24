@@ -1,37 +1,45 @@
 {
-  "lastUpdated": "2026-01-24T12:10:00Z",
-  "currentSession": "SESSION-60-SKELETON-LOADERS",
-  "status": "🟢 SKELETON LOADERS ADDED",
+  "lastUpdated": "2026-01-24T16:35:00Z",
+  "currentSession": "SESSION-61-REPORT-DEFINITIONS-FIX",
+  "status": "🟢 PRODUCTION READY",
   
-  "summary": "Added instant-feel skeleton loading to Montree dashboard, student detail, and reports pages. Also added file sharing feature to Story system.",
+  "summary": "Fixed parent report preview - smart work definition matching now uses fuzzy name matching instead of exact ID match. Added definitions for Knitting, Color Mixing, Word Building. Fixed hydration errors in skeleton loaders.",
   
+  "session61Changes": {
+    "reportDefinitions": {
+      "problem": "Reports showed generic area fallbacks instead of specific work definitions",
+      "cause": "work_id in DB are UUIDs, but definitions used keys like pl_knitting",
+      "solution": "Smart fuzzy matching by work name - 'Knitting' now matches pl_knitting",
+      "newDefinitions": ["pl_knitting", "pl_sewing", "pl_weaving", "se_color_mixing", "la_word_building"]
+    },
+    "hydrationFix": {
+      "problem": "Math.random() in skeleton loaders caused server/client mismatch",
+      "solution": "Use deterministic widths based on index: 65 + (i % 3) * 10",
+      "files": ["dashboard/page.tsx", "student/[id]/page.tsx", "reports/page.tsx"]
+    },
+    "envFix": {
+      "added": "NEXT_PUBLIC_APP_URL=http://localhost:3001 for dev share links"
+    }
+  },
+
   "skeletonLoaders": {
-    "added": [
-      "/app/montree/dashboard/page.tsx - Main dashboard with 8 student placeholders",
-      "/app/montree/dashboard/student/[id]/page.tsx - Student detail with tabs, header, work items",
-      "/app/montree/dashboard/reports/page.tsx - Reports list with cards"
-    ],
-    "benefit": "UI appears instantly, data loads in background - feels much faster"
+    "status": "Fixed and working",
+    "pages": ["dashboard", "student detail", "reports"]
   },
 
   "storyFilesFeature": {
     "status": "Pushed, needs migration",
-    "files": [
-      "/migrations/065_story_shared_files.sql",
-      "/app/api/story/admin/files/* (upload, list, delete)",
-      "/app/api/story/shared-files/route.ts (student-facing)",
-      "/app/story/admin/dashboard/page.tsx (Files tab)",
-      "/app/story/[session]/page.tsx (Documents section)"
-    ],
+    "migrationFile": "/migrations/065_story_shared_files.sql",
     "migrationRequired": true
-  },
-
-  "previousSession": {
-    "session59": "100+ work definitions, critical ID prefix bug fixed"
   },
 
   "deploymentStatus": {
     "pushed": true,
-    "railwayDeploying": true
+    "railwayAutoDeploying": true,
+    "commits": [
+      "aeb5a12 - Improve work definition matching",
+      "270a808 - Fix hydration mismatch in skeleton loaders",
+      "3532212 - Add skeleton loading screens"
+    ]
   }
 }
