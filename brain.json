@@ -1,42 +1,47 @@
 {
-  "lastUpdated": "2026-01-24T10:20:00Z",
-  "currentSession": "SESSION-63-GAMES-PARENT-PORTAL",
-  "status": "🟢 COMPLETE - PUSHED",
+  "lastUpdated": "2026-01-24T11:15:00Z",
+  "currentSession": "SESSION-64-IN-PROGRESS",
+  "status": "🟡 IN PROGRESS",
   
-  "summary": "Session 63 COMPLETE! 4 new games, parent portal redesigned, committed and pushed.",
+  "summary": "Session 64: Added document upload to QuickCapture (photo/document toggle).",
   
-  "gitCommit": {
-    "hash": "d0f7827",
-    "message": "Session 63: 4 new games + parent portal redesign",
-    "pushed": true,
-    "filesChanged": 11,
-    "insertions": 3061,
-    "deletions": 402
-  },
-
-  "session63Completed": {
-    "newGames": [
-      {"name": "Color Matching", "url": "/games/color-match", "icon": "🎨", "area": "sensorial"},
-      {"name": "Color Grading", "url": "/games/color-grade", "icon": "🌈", "area": "sensorial"},
-      {"name": "Hundred Board", "url": "/games/hundred-board", "icon": "💯", "area": "mathematics"},
-      {"name": "Odd & Even", "url": "/games/odd-even", "icon": "🔴", "area": "mathematics"}
+  "session64Progress": {
+    "feature": "Document Upload in Story System",
+    "filesModified": [
+      "lib/media/types.ts - added 'document' mediaType + fileName/mimeType fields",
+      "lib/media/capture.ts - skip compression for documents",
+      "lib/media/sync.ts - handle document filenames in upload",
+      "components/media/QuickCapture.tsx - Photo/Document toggle UI",
+      "app/api/montree/media/upload/route.ts - accept PDF/DOCX, store file_name/mime_type"
     ],
-    "parentPortal": "Redesigned - Today's Activities + Recommended Games instead of progress bars",
-    "migration": "066_session63_new_games.sql - run in Supabase"
+    "migrationNeeded": "migrations/SESSION_64_DOCUMENT_SUPPORT.sql",
+    "status": "Code complete, needs DB migration + testing"
   },
 
-  "todoForNextSession": [
-    "Run migration 066 in Supabase to wire games to curriculum",
-    "Test parent portal: localhost:3001/montree/parent/dashboard?test=Rachel",
-    "Test new games on tablet",
-    "Consider adding: World Puzzle Map, Land/Water Forms, Geometric Cabinet"
-  ],
+  "session63Complete": {
+    "newGames": ["Color Match", "Color Grade", "Hundred Board", "Odd/Even"],
+    "parentPortal": {
+      "testUrl": "localhost:3001/montree/parent/dashboard?test=Rachel",
+      "features": ["Today's Activities", "Recommended Games", "Weekly Reports", "Recent Photos"],
+      "removed": ["Progress bars", "Daily reports"]
+    }
+  },
 
-  "gamesTotal": {
-    "before": 18,
-    "after": 22,
-    "sensorial": 3,
-    "mathematics": 5,
-    "language": 14
-  }
+  "parentPortalBypass": {
+    "usage": "?test=Rachel (or YueZe, Lucky, Austin)",
+    "hardcodedIds": {
+      "rachel": "c23afdf4-847b-4269-9eaa-a3a03b299291",
+      "yueze": "12d91cbf-6830-41a6-b4f9-adeeee85186a",
+      "lucky": "79c574f8-827c-4bc6-9086-b71ca8338d9d",
+      "austin": "02e04915-9f28-4eb1-afaa-29f6fc7e2b8b"
+    }
+  },
+
+  "gamesTotal": 22,
+
+  "nextSteps": [
+    "Run SESSION_64_DOCUMENT_SUPPORT.sql in Supabase",
+    "Test document upload on tablet",
+    "Add document display in parent portal story view"
+  ]
 }

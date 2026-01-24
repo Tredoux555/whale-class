@@ -18,6 +18,10 @@ const ALLOWED_TYPES = [
   'video/mp4',
   'video/webm',
   'video/quicktime',
+  // Documents
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
 function generateStoragePath(params: {
@@ -91,6 +95,8 @@ export async function POST(request: NextRequest) {
       tags,
       width,
       height,
+      file_name,
+      mime_type,
     } = meta;
 
     const supabase = await createServerClient();
@@ -181,12 +187,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine media type for DB
+    let dbMediaType = 'photo';
+    if (media_type === 'video') dbMediaType = 'video';
+    else if (media_type === 'document') dbMediaType = 'document';
+    
     // Create database record
     const mediaRecord = {
       school_id: resolvedSchoolId,
       classroom_id: classroom_id || null,
       child_id: targetChildId || null,
-      media_type: media_type === 'video' ? 'video' : 'photo',
+      media_type: dbMediaType,
       storage_path: storagePath,
       thumbnail_path: thumbnailPath,
       file_size_bytes: file.size,
@@ -197,7 +208,9 @@ export async function POST(request: NextRequest) {
       uploaded_at: new Date().toISOString(),
       tags: tags || [],
       work_id: work_id || null,
-      caption: caption || 'Quick Capture',
+      caption: caption || (media_type === 'document' ? 'Document' : 'Quick Capture'),
+      file_name: file_name || null,
+      mime_type: mime_type || file.type || null,
       sync_status: 'synced',
       processing_status: 'complete',
     };

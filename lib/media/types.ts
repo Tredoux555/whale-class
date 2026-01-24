@@ -9,7 +9,7 @@ export interface MediaRecord {
   // Required
   childId: string;
   childName?: string;
-  mediaType: 'photo' | 'video';
+  mediaType: 'photo' | 'video' | 'document';
   
   // Content
   dataUrl?: string;      // Local preview (base64)
@@ -33,6 +33,8 @@ export interface MediaRecord {
   width?: number;
   height?: number;
   durationSeconds?: number;  // For video
+  fileName?: string;         // For documents
+  mimeType?: string;         // For documents
   
   // Sync status
   syncStatus: 'pending' | 'uploading' | 'synced' | 'failed';
@@ -67,6 +69,10 @@ export interface CaptureOptions {
   workName?: string;
   caption?: string;
   tags?: string[];
+  // Document-specific
+  mediaType?: 'photo' | 'video' | 'document';
+  fileName?: string;
+  mimeType?: string;
 }
 
 export interface UploadResult {

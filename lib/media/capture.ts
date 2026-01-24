@@ -87,19 +87,32 @@ export async function captureMedia(
 ): Promise<MediaRecord> {
   const id = uuidv4();
   const now = new Date().toISOString();
+  const isDocument = options.mediaType === 'document';
   
-  // Compress for storage
-  const { blob: compressed, width, height } = await compressImage(blob);
+  let finalBlob: Blob;
+  let width = 0;
+  let height = 0;
+  let dataUrl: string | undefined;
   
-  // Generate preview for instant UI
-  const dataUrl = await blobToDataUrl(compressed);
+  if (isDocument) {
+    // Documents: no compression, no preview image
+    finalBlob = blob;
+    dataUrl = undefined; // Documents don't need base64 preview
+  } else {
+    // Photos: compress and generate preview
+    const compressed = await compressImage(blob);
+    finalBlob = compressed.blob;
+    width = compressed.width;
+    height = compressed.height;
+    dataUrl = await blobToDataUrl(finalBlob);
+  }
   
   // Create media record
   const media: MediaRecord = {
     id,
     childId: options.childId,
     childName: options.childName,
-    mediaType: 'photo',
+    mediaType: isDocument ? 'document' : 'photo',
     dataUrl,
     capturedAt: now,
     workId: options.workId,
@@ -108,13 +121,15 @@ export async function captureMedia(
     tags: options.tags,
     width,
     height,
-    fileSizeBytes: compressed.size,
+    fileSizeBytes: finalBlob.size,
+    fileName: options.fileName,
+    mimeType: options.mimeType,
     syncStatus: 'pending',
     syncAttempts: 0,
   };
   
   // Queue for upload (saves to IndexedDB + queues sync)
-  await queueUpload(media, compressed, 2); // Priority 2 = normal
+  await queueUpload(media, finalBlob, 2); // Priority 2 = normal
   
   return media;
 }
