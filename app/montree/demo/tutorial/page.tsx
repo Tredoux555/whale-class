@@ -1,11 +1,12 @@
 // /montree/demo/tutorial/page.tsx
 // Interactive Tutorial - walks through the REAL system
 // Session 80: Zohan Demo Experience
+// Session 81: Fixed Suspense boundary for Next.js 16.1
 // Uses REAL data, REAL APIs - the only "demo" part is the guided overlay
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -237,7 +238,7 @@ function getGradient(index: number) {
 // MAIN COMPONENT
 // ============================================
 
-export default function TutorialPage() {
+function TutorialContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const viewerName = searchParams.get('name') || 'Zohan';
@@ -626,6 +627,24 @@ export default function TutorialPage() {
         />
       )}
     </div>
+  );
+}
+
+// Wrap with Suspense for useSearchParams
+export default function TutorialPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-3xl">🐋</span>
+          </div>
+          <p className="text-slate-500">Loading tutorial...</p>
+        </div>
+      </div>
+    }>
+      <TutorialContent />
+    </Suspense>
   );
 }
 
