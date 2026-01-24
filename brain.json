@@ -1,49 +1,48 @@
 {
-  "lastUpdated": "2026-01-24T12:45:00Z",
-  "currentSession": "SESSION-81-ZOHAN-DEMO",
-  "status": "🟡 DESIGN COMPLETE - READY TO BUILD",
+  "lastUpdated": "2026-01-24T13:20:00Z",
+  "currentSession": "SESSION-81-BUILD-FIX-COMPLETE",
+  "status": "✅ BUILD FIXED - DEMO AUDITED",
   
-  "summary": "Session 81: Zohan demo system designed. Reports preview bug FIXED. Handoff written.",
+  "summary": "Session 81: Fixed 2 Suspense boundary errors blocking Railway build. Audited demo to match real page.",
   
   "session81Progress": {
-    "feature": "Zohan Personalized Demo",
-    "designComplete": true,
-    "handoffDocument": "docs/HANDOFF_ZOHAN_DEMO.md",
-    
-    "bugFixed": {
-      "issue": "Reports generate but don't display",
-      "rootCause": "API fetched child from wrong table (montree_children instead of children)",
-      "filesFixed": [
-        "app/api/montree/reports/[id]/route.ts - changed table from montree_children to children",
-        "app/montree/dashboard/reports/[id]/page.tsx - added null safety for highlights array"
+    "buildFixes": {
+      "status": "✅ FIXED & PUSHED",
+      "commits": [
+        "c55de08 Fix: Suspense boundary for /montree/demo/tutorial page",
+        "e33e28a Demo audit: Match tutorial to real student detail page",
+        "a0178ff Fix: Suspense boundary for /montree/demo page"
       ],
-      "status": "✅ FIXED"
+      "issue": "useSearchParams() should be wrapped in a suspense boundary",
+      "filesFixed": [
+        "/app/montree/demo/page.tsx",
+        "/app/montree/demo/tutorial/page.tsx"
+      ]
     },
-    
-    "demoStructure": {
-      "welcome": "/montree/demo/zohan/page.tsx",
-      "disclaimer": "/montree/demo/zohan/disclaimer/page.tsx",
-      "tutorial": "/montree/demo/zohan/tutorial/page.tsx",
-      "setup": "/montree/demo/zohan/setup/page.tsx (Phase 2)"
-    },
-    
-    "tutorialSteps": 14,
-    "keyPrinciple": "Uses REAL system, not fake data. Personalization creates trust."
+
+    "demoAudit": {
+      "status": "✅ COMPLETE",
+      "file": "/app/montree/demo/zohan/tutorial/page.tsx",
+      "changes": [
+        "Added 4th Portfolio tab (matches real)",
+        "Added WorkNavigator 'Find Work' button",
+        "Header shows quick stats (🟡/🔵/🟢)",
+        "Progress tab has expandable areas",
+        "Added floating parent share button",
+        "Copied constants from real page"
+      ]
+    }
   },
 
-  "uiChangesNeeded": [
-    "ClassroomGrid.tsx - Convert list view to tile grid",
-    "Hide Portfolio tab icon from navigation",
-    "TutorialOverlay.tsx - Guided walkthrough engine"
-  ],
+  "deployStatus": "🟡 WAITING FOR RAILWAY BUILD",
+  "testUrl": "https://teacherpotato.xyz/montree/demo/zohan",
 
-  "filesToCreate": [
-    "/app/montree/demo/zohan/page.tsx",
-    "/app/montree/demo/zohan/disclaimer/page.tsx",
-    "/app/montree/demo/zohan/tutorial/page.tsx",
-    "/components/montree/demo/TutorialOverlay.tsx",
-    "/components/montree/ClassroomGrid.tsx"
-  ],
+  "demoStructure": {
+    "welcome": "/montree/demo/zohan/page.tsx ✅",
+    "disclaimer": "inline modal ✅",
+    "tutorial": "/montree/demo/zohan/tutorial/page.tsx ✅ (14 steps)",
+    "setup": "/montree/demo/zohan/setup/page.tsx (Phase 2)"
+  },
 
   "parentPortalBypass": {
     "usage": "?test=Rachel (or YueZe, Lucky, Austin)",
@@ -55,16 +54,11 @@
     }
   },
 
-  "gamesTotal": 22,
-
   "nextSteps": [
-    "1. Build welcome page (/montree/demo/zohan)",
-    "2. Build disclaimer page",
-    "3. Build TutorialOverlay component",
-    "4. Build ClassroomGrid (tiles not list)",
-    "5. Wire up tutorial flow with 14 steps",
-    "6. Add classroom photos (Tredoux to provide)",
-    "7. Test full demo end-to-end"
+    "1. ⏳ Wait for Railway build (~2 min)",
+    "2. Test demo at /montree/demo/zohan",
+    "3. Walk through 14-step tutorial",
+    "4. Verify it matches real /montree/dashboard/student/[id]"
   ],
 
   "demoTarget": "Zohan (Montessori principal)",
