@@ -36,12 +36,11 @@ function generateSecureToken(): string {
 }
 
 /**
- * Build the full share URL for a token
+ * Build the share URL path for a token
+ * Returns relative path - client will construct full URL
  */
 export function buildShareUrl(token: string): string {
-  // Use environment variable or fallback to localhost for dev
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  return `${baseUrl}/montree/report/${token}`;
+  return `/montree/report/${token}`;
 }
 
 // ============================================
