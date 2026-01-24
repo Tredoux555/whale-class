@@ -7,8 +7,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import CameraCapture from '@/components/montree/media/CameraCapture';
+import dynamic from 'next/dynamic';
 import type { CapturedPhoto } from '@/lib/montree/media/types';
+
+// Dynamic import for camera to avoid SSR issues on mobile
+const CameraCapture = dynamic(() => import('@/components/montree/media/CameraCapture'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center text-white">Loading camera...</div>
+});
 
 // ============================================
 // TYPES - Copied from real page
@@ -401,8 +407,13 @@ export default function ZohanTutorialPage() {
   };
 
   const handlePhotoCapture = (photo: CapturedPhoto) => {
+    console.log('Photo captured for work:', activePhotoWorkId);
     if (activePhotoWorkId) {
-      setCapturedPhotos(prev => ({ ...prev, [activePhotoWorkId]: photo.dataUrl }));
+      setCapturedPhotos(prev => {
+        const updated = { ...prev, [activePhotoWorkId]: photo.dataUrl };
+        console.log('Updated capturedPhotos:', Object.keys(updated));
+        return updated;
+      });
       toast.success('📸 Photo captured!');
       if (step.targetType === 'camera') nextStep();
     }
@@ -1103,6 +1114,7 @@ export default function ZohanTutorialPage() {
                 <button
                   onClick={() => {
                     const work = allWorks[currentWorkIndex];
+                    console.log('Adding work from wheel:', { work, currentWorkIndex, allWorksLength: allWorks.length, selectedStudent: selectedStudent?.id });
                     if (work && selectedStudent) {
                       // Add work to assignments
                       const newAssignment: WorkAssignment = {
@@ -1117,9 +1129,15 @@ export default function ZohanTutorialPage() {
                         notes: '',
                         media_count: 0
                       };
-                      setAssignments(prev => [...prev, newAssignment]);
+                      console.log('New assignment created:', newAssignment);
+                      setAssignments(prev => {
+                        console.log('Previous assignments count:', prev.length);
+                        return [...prev, newAssignment];
+                      });
                       toast.success(`✅ Added: ${work.name}`);
                       if (step.targetType === 'longpress') nextStep();
+                    } else {
+                      console.error('Cannot add work: work or selectedStudent missing', { work, selectedStudent });
                     }
                     setWheelOpen(false);
                   }}
@@ -1316,6 +1334,9 @@ function BeautifulReportPreview({ studentName, assignments, capturedPhotos, onCl
               practicing: 'Practicing',
               mastered: '⭐ Mastered'
             };
+
+            // Debug photo lookup
+            console.log('Report photo lookup:', { assignmentId: assignment.id, hasPhoto: !!capturedPhotos[assignment.id], allPhotoKeys: Object.keys(capturedPhotos) });
 
             // Curated explanations by area
             const whyItMatters: Record<string, string> = {
