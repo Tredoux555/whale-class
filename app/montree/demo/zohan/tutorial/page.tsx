@@ -732,7 +732,7 @@ export default function ZohanTutorialPage() {
                         {/* Area Icon - LONG PRESS for wheel */}
                         <div 
                           className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300 ${
-                            step.targetType === 'longpress' && isFirst ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-110' : ''
+                            step.targetType === 'longpress' && isFirst ? 'ring-4 ring-yellow-400 ring-offset-2 animate-pulse scale-125 shadow-lg shadow-yellow-400/50' : ''
                           }`}
                           onTouchStart={() => handleLongPressStart(assignment.area)}
                           onTouchEnd={handleLongPressEnd}
