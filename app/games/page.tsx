@@ -55,11 +55,15 @@ const GRAMMAR_GAMES: Game[] = [
 const MATH_GAMES: Game[] = [
   { id: 'number-tracer', name: 'Number Tracer', description: 'Practice writing numbers 0-9 (Sandpaper Numerals)', icon: '✏️', route: '/games/number-tracer', color: 'purple', gradient: 'from-purple-500 to-pink-500' },
   { id: 'quantity-match', name: 'Quantity Match', description: 'Cards & Counters - match quantities to numerals', icon: '🔢', route: '/games/quantity-match', color: 'red', gradient: 'from-red-500 to-orange-500' },
-  { id: 'bead-frame', name: 'Bead Frame', description: 'Small Bead Frame - place value & operations', icon: '🧮', route: '/games/bead-frame', color: 'amber', gradient: 'from-amber-500 to-orange-500', isNew: true },
+  { id: 'bead-frame', name: 'Bead Frame', description: 'Small Bead Frame - place value & operations', icon: '🧮', route: '/games/bead-frame', color: 'amber', gradient: 'from-amber-500 to-orange-500' },
+  { id: 'hundred-board', name: 'Hundred Board', description: 'Place numbers 1-100 on the grid', icon: '💯', route: '/games/hundred-board', color: 'blue', gradient: 'from-blue-500 to-indigo-500', isNew: true },
+  { id: 'odd-even', name: 'Odd & Even', description: 'Discover odd/even patterns with counters', icon: '🔴', route: '/games/odd-even', color: 'orange', gradient: 'from-orange-500 to-red-500', isNew: true },
 ];
 
 const SENSORIAL_GAMES: Game[] = [
-  { id: 'sensorial-sort', name: 'Sensorial Sort', description: 'Color matching, grading & size sorting', icon: '👁️', route: '/games/sensorial-sort', color: 'rose', gradient: 'from-rose-500 to-pink-500', isNew: true },
+  { id: 'sensorial-sort', name: 'Sensorial Sort', description: 'Color matching, grading & size sorting', icon: '👁️', route: '/games/sensorial-sort', color: 'rose', gradient: 'from-rose-500 to-pink-500' },
+  { id: 'color-match', name: 'Color Matching', description: 'Match pairs of identical colors (Box I & II)', icon: '🎨', route: '/games/color-match', color: 'pink', gradient: 'from-pink-500 to-purple-500', isNew: true },
+  { id: 'color-grade', name: 'Color Grading', description: 'Arrange shades light to dark (Box III)', icon: '🌈', route: '/games/color-grade', color: 'violet', gradient: 'from-violet-500 to-purple-500', isNew: true },
 ];
 
 const GAME_CATEGORIES: GameCategory[] = [

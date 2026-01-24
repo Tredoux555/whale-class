@@ -1,10 +1,12 @@
 // /montree/parent/dashboard/page.tsx
-// Parent Dashboard - View child's progress, media, and reports
+// Parent Dashboard - Simple, actionable view for parents
+// Redesigned: Session 63 - Jan 24, 2026
+// Focus: What did my child do today? What games can we play at home?
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Child {
   id: string;
@@ -14,11 +16,31 @@ interface Child {
   classroom_name?: string;
 }
 
-interface ProgressStats {
-  presented: number;
-  practicing: number;
-  mastered: number;
-  total: number;
+interface TodayActivity {
+  work_id: string;
+  work_name: string;
+  area: string;
+  area_name: string;
+  area_icon: string;
+  total_minutes: number;
+  session_count: number;
+}
+
+interface RecommendedGame {
+  game_id: string;
+  game_name: string;
+  game_url: string;
+  game_icon?: string;
+  game_description?: string;
+}
+
+interface Report {
+  id: string;
+  week_start: string;
+  week_end: string;
+  status: string;
+  share_token?: string;
+  summary_preview?: string;
 }
 
 interface MediaItem {
@@ -29,32 +51,37 @@ interface MediaItem {
   taken_at: string;
 }
 
-interface Report {
-  id: string;
-  week_start: string;
-  week_end: string;
-  status: string;
-  share_token?: string;
+export default function ParentDashboardPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <ParentDashboardContent />
+    </Suspense>
+  );
 }
 
-const AREA_COLORS: Record<string, { bg: string; border: string; text: string; icon: string }> = {
-  practical_life: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: '🧹' },
-  sensorial: { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700', icon: '👁️' },
-  mathematics: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: '🔢' },
-  language: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', icon: '📖' },
-  cultural: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', icon: '🌍' },
-};
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl animate-bounce">🐋</span>
+        </div>
+        <p className="text-gray-600 font-medium">Loading...</p>
+      </div>
+    </div>
+  );
+}
 
-export default function ParentDashboardPage() {
+function ParentDashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [child, setChild] = useState<Child | null>(null);
-  const [progress, setProgress] = useState<ProgressStats | null>(null);
-  const [areaProgress, setAreaProgress] = useState<any[]>([]);
-  const [recentMedia, setRecentMedia] = useState<MediaItem[]>([]);
+  const [todayActivities, setTodayActivities] = useState<TodayActivity[]>([]);
+  const [recommendedGames, setRecommendedGames] = useState<RecommendedGame[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [recentMedia, setRecentMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const [showAllMedia, setShowAllMedia] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -62,7 +89,12 @@ export default function ParentDashboardPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/montree/parent/dashboard');
+      const testChild = searchParams.get('test');
+      const url = testChild 
+        ? `/api/montree/parent/dashboard?test=${encodeURIComponent(testChild)}`
+        : '/api/montree/parent/dashboard';
+      
+      const res = await fetch(url);
       const data = await res.json();
 
       if (!data.success) {
@@ -71,10 +103,10 @@ export default function ParentDashboardPage() {
       }
 
       setChild(data.child);
-      setProgress(data.progress);
-      setAreaProgress(data.areaProgress || []);
-      setRecentMedia(data.recentMedia || []);
+      setTodayActivities(data.todayActivities || []);
+      setRecommendedGames(data.recommendedGames || []);
       setReports(data.reports || []);
+      setRecentMedia(data.recentMedia || []);
     } catch (error) {
       console.error('Failed to fetch dashboard:', error);
       router.push('/montree/parent');
@@ -92,18 +124,22 @@ export default function ParentDashboardPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-bounce">🐋</span>
-          </div>
-          <p className="text-gray-600 font-medium">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getTodayDateString = () => {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) return <LoadingScreen />;
 
   if (!child) {
     return (
@@ -120,265 +156,242 @@ export default function ParentDashboardPage() {
     );
   }
 
-  const progressPercent = progress ? Math.round(((progress.mastered) / Math.max(progress.total, 1)) * 100) : 0;
-  const displayMedia = showAllMedia ? recentMedia : recentMedia.slice(0, 6);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden">
-                {child.photo_url ? (
-                  <img src={child.photo_url} alt={child.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl">🐋</span>
-                )}
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">{child.name}</h1>
-                <p className="text-sm text-gray-500">Whale Class</p>
-              </div>
+      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl shadow-md flex items-center justify-center">
+              <span className="text-2xl">🐋</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title="Logout"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">{child.name}&apos;s Journey</h1>
+              <p className="text-sm text-gray-500">{child.classroom_name || 'Whale Class'}</p>
+            </div>
           </div>
+          <button
+            onClick={handleLogout}
+            className="text-gray-400 hover:text-gray-600 text-sm"
+          >
+            Log out
+          </button>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Progress Overview Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-gray-900">Learning Progress</h2>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-emerald-600">{progressPercent}%</div>
-              <p className="text-xs text-gray-500">mastered</p>
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        
+        {/* TODAY'S ACTIVITIES */}
+        <section className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-emerald-50 bg-gradient-to-r from-emerald-50 to-teal-50">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📅</span>
+              <div>
+                <h2 className="font-bold text-gray-900">Today</h2>
+                <p className="text-sm text-gray-500">{getTodayDateString()}</p>
+              </div>
             </div>
           </div>
-
-          {/* Progress Bar */}
-          <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-4">
-            <div className="h-full flex">
-              <div 
-                className="bg-emerald-500 transition-all" 
-                style={{ width: `${(progress?.mastered || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
-              />
-              <div 
-                className="bg-blue-400 transition-all" 
-                style={{ width: `${(progress?.practicing || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
-              />
-              <div 
-                className="bg-amber-400 transition-all" 
-                style={{ width: `${(progress?.presented || 0) / Math.max(progress?.total || 1, 1) * 100}%` }} 
-              />
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="flex justify-between text-sm">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-amber-400" />
-              <span className="text-gray-600">{progress?.presented || 0} Presented</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-blue-400" />
-              <span className="text-gray-600">{progress?.practicing || 0} Practicing</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-gray-600">{progress?.mastered || 0} Mastered</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Area Progress */}
-        {areaProgress.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 className="font-bold text-gray-900 mb-4">Progress by Area</h2>
-            <div className="space-y-3">
-              {areaProgress.map((area) => {
-                const colors = AREA_COLORS[area.id] || AREA_COLORS.practical_life;
-                const areaPercent = area.total > 0 ? Math.round((area.mastered / area.total) * 100) : 0;
-                
-                return (
-                  <div key={area.id} className={`${colors.bg} ${colors.border} border rounded-xl p-4`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{colors.icon}</span>
-                        <span className={`font-medium ${colors.text}`}>{area.name}</span>
-                      </div>
-                      <span className={`text-sm font-bold ${colors.text}`}>{areaPercent}%</span>
+          
+          <div className="p-5">
+            {todayActivities.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-gray-600 font-medium mb-3">{child.name} worked on:</p>
+                {todayActivities.map((activity, idx) => (
+                  <div 
+                    key={activity.work_id}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                  >
+                    <span className="text-2xl">{activity.area_icon}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{activity.work_name}</p>
+                      <p className="text-sm text-gray-500">{activity.area_name}</p>
                     </div>
-                    <div className="h-2 bg-white/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-current opacity-60 transition-all rounded-full"
-                        style={{ width: `${areaPercent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {area.mastered} of {area.total} works mastered
-                    </p>
+                    {activity.total_minutes > 0 && (
+                      <span className="text-sm text-gray-400">
+                        {activity.total_minutes} min
+                      </span>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Recent Photos - Now inline with "Show All" toggle */}
-        {recentMedia.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900">Photos & Videos</h2>
-              {recentMedia.length > 6 && (
-                <button 
-                  onClick={() => setShowAllMedia(!showAllMedia)}
-                  className="text-sm text-emerald-600 hover:underline"
-                >
-                  {showAllMedia ? 'Show Less' : `See All (${recentMedia.length})`}
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {displayMedia.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setSelectedMedia(item)}
-                  className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group"
-                >
-                  {item.media_type === 'video' ? (
-                    <>
-                      <video src={item.media_url} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <span className="text-white text-2xl">▶</span>
-                      </div>
-                    </>
-                  ) : (
-                    <img src={item.media_url} alt={item.work_name || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Weekly Reports */}
-        {reports.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 className="font-bold text-gray-900 mb-4">Weekly Reports</h2>
-            <div className="space-y-2">
-              {reports.slice(0, 4).map((report) => (
-                <Link
-                  key={report.id}
-                  href={report.share_token ? `/montree/report/${report.share_token}` : '#'}
-                  className={`flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors ${!report.share_token ? 'opacity-50 pointer-events-none' : ''}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                      <span className="text-emerald-600">📄</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        Week of {new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </p>
-                      <p className="text-xs text-gray-500 capitalize">{report.status}</p>
-                    </div>
-                  </div>
-                  <span className="text-emerald-500">→</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Games Section */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg p-5 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
-              <span className="text-3xl">🎮</span>
-            </div>
-            <div className="flex-1">
-              <h2 className="font-bold text-lg">Learning Games</h2>
-              <p className="text-white/80 text-sm">Practice at home with fun activities</p>
-            </div>
-          </div>
-          <Link
-            href="/games"
-            className="mt-4 block w-full py-3 bg-white text-emerald-600 font-bold rounded-xl text-center hover:bg-emerald-50 transition-colors"
-          >
-            Play Games →
-          </Link>
-        </div>
-
-        {/* Contact Teacher */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">💬</span>
-            <div>
-              <h3 className="font-bold text-amber-900">Questions?</h3>
-              <p className="text-sm text-amber-700 mt-1">
-                Contact your child&apos;s teacher for more information about their progress.
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Media Viewer Modal */}
-      {selectedMedia && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
-          onClick={() => setSelectedMedia(null)}
-        >
-          <button 
-            onClick={() => setSelectedMedia(null)} 
-            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white text-xl z-10"
-          >
-            ✕
-          </button>
-
-          <div className="flex-1 flex items-center justify-center p-4" onClick={e => e.stopPropagation()}>
-            {selectedMedia.media_type === 'video' ? (
-              <video 
-                src={selectedMedia.media_url} 
-                controls 
-                autoPlay
-                className="max-w-full max-h-[70vh] rounded-xl"
-              />
+                ))}
+              </div>
             ) : (
-              <img 
-                src={selectedMedia.media_url} 
-                alt={selectedMedia.work_name || ''} 
-                className="max-w-full max-h-[70vh] object-contain rounded-xl"
-              />
+              <div className="text-center py-8">
+                <span className="text-4xl mb-3 block">🌟</span>
+                <p className="text-gray-500">No activities recorded yet today.</p>
+                <p className="text-sm text-gray-400 mt-1">Check back later!</p>
+              </div>
             )}
           </div>
+        </section>
 
-          <div className="bg-black/50 p-4 text-white text-center" onClick={e => e.stopPropagation()}>
-            <p className="font-semibold">{selectedMedia.work_name || 'Learning Moment'}</p>
-            <p className="text-sm text-white/70">
-              {new Date(selectedMedia.taken_at).toLocaleDateString('en-US', { 
-                weekday: 'short', month: 'short', day: 'numeric'
-              })}
-            </p>
+        {/* PRACTICE AT HOME - GAMES */}
+        <section className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-emerald-50 bg-gradient-to-r from-purple-50 to-pink-50">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎮</span>
+              <div>
+                <h2 className="font-bold text-gray-900">Practice at Home</h2>
+                <p className="text-sm text-gray-500">Games that reinforce classroom learning</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-5">
+            {recommendedGames.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {recommendedGames.map((game) => (
+                  <Link
+                    key={game.game_id}
+                    href={game.game_url}
+                    className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:shadow-md transition-all hover:scale-[1.02] border border-purple-100"
+                  >
+                    <span className="text-3xl mb-2">{game.game_icon || '🎯'}</span>
+                    <span className="font-medium text-gray-900 text-center text-sm">
+                      {game.game_name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <span className="text-3xl mb-2 block">🎲</span>
+                <p className="text-gray-500 text-sm">Games will appear here based on classroom activities</p>
+                <Link 
+                  href="/games" 
+                  className="inline-block mt-3 text-emerald-600 hover:underline text-sm font-medium"
+                >
+                  Browse all games →
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* WEEKLY REPORTS */}
+        <section className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-emerald-50 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📊</span>
+              <div>
+                <h2 className="font-bold text-gray-900">Weekly Reports</h2>
+                <p className="text-sm text-gray-500">Teacher summaries of {child.name}&apos;s progress</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-5">
+            {reports.length > 0 ? (
+              <div className="space-y-3">
+                {reports.map((report, idx) => (
+                  <div 
+                    key={report.id}
+                    className={`p-4 rounded-xl border ${
+                      idx === 0 
+                        ? 'bg-blue-50 border-blue-200' 
+                        : 'bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900">
+                        Week of {formatDate(report.week_start)} - {formatDate(report.week_end)}
+                      </span>
+                      {report.status === 'published' && report.share_token && (
+                        <Link
+                          href={`/montree/reports/${report.share_token}`}
+                          className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+                        >
+                          View
+                        </Link>
+                      )}
+                      {report.status !== 'published' && (
+                        <span className="text-xs text-gray-400 bg-gray-200 px-2 py-1 rounded">
+                          {report.status}
+                        </span>
+                      )}
+                    </div>
+                    {report.summary_preview && idx === 0 && (
+                      <p className="text-sm text-gray-600 italic">
+                        &ldquo;{report.summary_preview}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <span className="text-3xl mb-2 block">📝</span>
+                <p className="text-gray-500 text-sm">No reports available yet</p>
+                <p className="text-xs text-gray-400 mt-1">Reports are generated weekly</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* RECENT PHOTOS */}
+        {recentMedia.length > 0 && (
+          <section className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-emerald-50 bg-gradient-to-r from-amber-50 to-orange-50">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📸</span>
+                <div>
+                  <h2 className="font-bold text-gray-900">Recent Photos</h2>
+                  <p className="text-sm text-gray-500">{child.name} at work</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <div className="grid grid-cols-3 gap-2">
+                {recentMedia.map((media) => (
+                  <button
+                    key={media.id}
+                    onClick={() => setSelectedMedia(media)}
+                    className="aspect-square rounded-xl overflow-hidden bg-gray-100 hover:ring-2 ring-emerald-400 transition-all"
+                  >
+                    <img
+                      src={media.media_url}
+                      alt={media.work_name || 'Activity photo'}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Footer spacing */}
+        <div className="h-8" />
+      </main>
+
+      {/* Media Modal */}
+      {selectedMedia && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedMedia(null)}
+        >
+          <div className="max-w-2xl max-h-[80vh] relative">
+            <img
+              src={selectedMedia.media_url}
+              alt={selectedMedia.work_name || 'Activity photo'}
+              className="max-w-full max-h-[80vh] rounded-xl"
+            />
+            {selectedMedia.work_name && (
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3 rounded-b-xl">
+                <p className="font-medium">{selectedMedia.work_name}</p>
+                <p className="text-sm text-gray-300">{formatDate(selectedMedia.taken_at)}</p>
+              </div>
+            )}
+            <button
+              onClick={() => setSelectedMedia(null)}
+              className="absolute top-2 right-2 w-10 h-10 bg-black/50 rounded-full text-white text-xl hover:bg-black/70"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="py-6 text-center text-xs text-gray-400">
-        <p>🐋 Whale Class • Montessori Progress Tracking</p>
-      </footer>
     </div>
   );
 }
