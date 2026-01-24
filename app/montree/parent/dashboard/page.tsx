@@ -85,7 +85,7 @@ function ParentDashboardContent() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   const fetchData = async () => {
     try {
@@ -98,7 +98,9 @@ function ParentDashboardContent() {
       const data = await res.json();
 
       if (!data.success) {
-        router.push('/montree/parent');
+        if (!testChild) {
+          router.push('/montree/parent');
+        }
         return;
       }
 
@@ -107,9 +109,8 @@ function ParentDashboardContent() {
       setRecommendedGames(data.recommendedGames || []);
       setReports(data.reports || []);
       setRecentMedia(data.recentMedia || []);
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
-      router.push('/montree/parent');
+    } catch (err) {
+      console.error('Failed to fetch dashboard:', err);
     } finally {
       setLoading(false);
     }
