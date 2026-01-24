@@ -130,7 +130,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { id: 'watch-demo', title: 'Need a Refresher?', instruction: 'Tap Demo to open YouTube and see how to present this work.', emoji: '▶️', targetType: 'demo' },
   { id: 'take-photo', title: 'Capture the Moment', instruction: 'Photos go directly into parent reports!', emoji: '📸', targetType: 'camera' },
   { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly. A child picks up something not on their plan.', emoji: '😮', targetType: 'none', autoAdvance: false, celebratory: true },
-  { id: 'browse-works', title: 'Browse Any Work', instruction: 'Tap "Browse Works" to spin through the entire curriculum. Try it!', emoji: '🎡', targetType: 'wheel' },
+  { id: 'browse-works', title: 'Browse Any Work', instruction: 'Tap the green "Browse Works" button above to spin through the entire curriculum!', emoji: '🎡', targetType: 'wheel' },
   { id: 'progress-tab', title: 'Progress Overview', instruction: 'The Progress tab shows mastery across all curriculum areas.', emoji: '📊', targetType: 'tab', targetId: 'progress' },
   { id: 'grand-finale-intro', title: '🎉 THE GRAND FINALE 🎉', instruction: 'Now for the magic—where all this data becomes a beautiful report...', emoji: '✨', targetType: 'none', autoAdvance: false, celebratory: true },
   { id: 'generate-report', title: 'Generate a Report', instruction: 'Tap "Generate Report" to create a weekly summary for parents.', emoji: '📄', targetType: 'report' },
@@ -990,6 +990,7 @@ export default function ZohanTutorialPage() {
         {reportPreviewOpen && (
           <BeautifulReportPreview 
             studentName={selectedStudent.name}
+            assignments={assignments}
             onClose={handleCloseReportPreview}
           />
         )}
@@ -1195,7 +1196,35 @@ export default function ZohanTutorialPage() {
 // BEAUTIFUL REPORT PREVIEW
 // ============================================
 
-function BeautifulReportPreview({ studentName, onClose }: { studentName: string; onClose: () => void }) {
+function BeautifulReportPreview({ studentName, assignments, onClose }: { studentName: string; assignments: WorkAssignment[]; onClose: () => void }) {
+  // Group assignments by area
+  const areaColors: Record<string, { bg: string; text: string; gradient: string }> = {
+    practical_life: { bg: 'bg-pink-100', text: 'text-pink-700', gradient: 'from-pink-100 to-rose-100' },
+    sensorial: { bg: 'bg-purple-100', text: 'text-purple-700', gradient: 'from-purple-100 to-pink-100' },
+    math: { bg: 'bg-blue-100', text: 'text-blue-700', gradient: 'from-blue-100 to-indigo-100' },
+    language: { bg: 'bg-green-100', text: 'text-green-700', gradient: 'from-green-100 to-teal-100' },
+    cultural: { bg: 'bg-amber-100', text: 'text-amber-700', gradient: 'from-amber-100 to-yellow-100' },
+  };
+
+  const areaLabels: Record<string, string> = {
+    practical_life: 'Practical Life',
+    sensorial: 'Sensorial',
+    math: 'Mathematics',
+    language: 'Language',
+    cultural: 'Cultural',
+  };
+
+  const areaEmojis: Record<string, string> = {
+    practical_life: '🧹',
+    sensorial: '👁️',
+    math: '📊',
+    language: '📚',
+    cultural: '🌍',
+  };
+
+  // Get unique areas from assignments
+  const activeAreas = [...new Set(assignments.map(a => a.area))];
+
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-blue-50 to-white z-50 overflow-auto">
       <button onClick={onClose} className="fixed top-4 right-4 z-50 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:bg-gray-100">✕</button>
@@ -1212,7 +1241,7 @@ function BeautifulReportPreview({ studentName, onClose }: { studentName: string;
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 pb-20">
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 pb-24">
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-2xl font-bold shadow-md">{studentName.charAt(0)}</div>
@@ -1222,58 +1251,65 @@ function BeautifulReportPreview({ studentName, onClose }: { studentName: string;
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-700">Practical Life</span>
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700">Sensorial</span>
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">Mathematics</span>
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Language</span>
+            {activeAreas.map(area => (
+              <span key={area} className={`px-3 py-1 rounded-full text-sm font-medium ${areaColors[area]?.bg || 'bg-gray-100'} ${areaColors[area]?.text || 'text-gray-700'}`}>
+                {areaLabels[area] || area}
+              </span>
+            ))}
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2"><span>📝</span> Weekly Summary</h3>
           <p className="text-gray-700 leading-relaxed">
-            {studentName} had a wonderful week of exploration and discovery! She showed great focus during her Sensorial work, especially with the Pink Tower. Her concentration has improved significantly.
+            {studentName} worked on {assignments.length} activities this week across {activeAreas.length} curriculum areas. 
+            {assignments.filter(a => a.progress_status === 'mastered').length > 0 && 
+              ` ${assignments.filter(a => a.progress_status === 'mastered').length} work(s) achieved mastery!`}
           </p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 px-2"><span>✨</span> Learning Highlights</h3>
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 px-2"><span>✨</span> Learning Highlights ({assignments.length} works)</h3>
           
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="relative aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-              <div className="text-center"><div className="text-6xl mb-2">🗼</div><p className="text-gray-500 text-sm">Photo: Pink Tower</p></div>
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 shadow-sm">Sensorial</div>
-            </div>
-            <div className="p-5 space-y-3">
-              <h4 className="font-semibold text-gray-800">Pink Tower</h4>
-              <p className="text-gray-700">{studentName} built the Pink Tower independently. She noticed when one cube was out of order and self-corrected!</p>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-sm text-gray-600"><span className="font-medium text-gray-700">Why it matters: </span>Develops visual discrimination, fine motor control, and concentration.</p>
+          {assignments.map((assignment, idx) => {
+            const colors = areaColors[assignment.area] || { bg: 'bg-gray-100', text: 'text-gray-700', gradient: 'from-gray-100 to-slate-100' };
+            const statusLabels: Record<string, string> = {
+              not_started: 'Introduced',
+              presented: 'Presented',
+              practicing: 'Practicing',
+              mastered: '⭐ Mastered'
+            };
+            
+            return (
+              <div key={assignment.id || idx} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className={`relative py-8 bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}>
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{areaEmojis[assignment.area] || '📚'}</div>
+                  </div>
+                  <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium ${colors.bg} ${colors.text} shadow-sm`}>
+                    {areaLabels[assignment.area] || assignment.area}
+                  </div>
+                  <div className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium bg-white/80 text-gray-700 shadow-sm">
+                    {statusLabels[assignment.progress_status] || assignment.progress_status}
+                  </div>
+                </div>
+                <div className="p-5 space-y-3">
+                  <h4 className="font-semibold text-gray-800 text-lg">{assignment.work_name}</h4>
+                  {assignment.notes && (
+                    <p className="text-gray-700">{assignment.notes}</p>
+                  )}
+                  {!assignment.notes && (
+                    <p className="text-gray-500 italic">Great progress on this work!</p>
+                  )}
+                </div>
               </div>
-              <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
-                <p className="text-sm text-amber-800"><span className="font-medium">💡 Try at home: </span>Stack household items by size.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-              <div className="text-center"><div className="text-6xl mb-2">📏</div><p className="text-gray-500 text-sm">Photo: Number Rods</p></div>
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 shadow-sm">Mathematics</div>
-            </div>
-            <div className="p-5 space-y-3">
-              <h4 className="font-semibold text-gray-800">Number Rods</h4>
-              <p className="text-gray-700">{studentName} received her first presentation of the Number Rods. She was fascinated by how the rods increase in length.</p>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-sm text-gray-600"><span className="font-medium text-gray-700">Why it matters: </span>Children literally feel that 10 is longer than 1.</p>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2"><span>💝</span> A Note for You</h3>
-          <p className="text-blue-900 leading-relaxed italic">"Thank you for sharing {studentName} with us this week. Her curiosity makes her a wonderful member of our classroom community!"</p>
+          <p className="text-blue-900 leading-relaxed italic">"Thank you for sharing {studentName} with us this week. Their curiosity makes them a wonderful member of our classroom community!"</p>
           <p className="text-blue-700 mt-3 font-medium text-right">— Teacher Tredoux</p>
         </div>
 
@@ -1281,13 +1317,13 @@ function BeautifulReportPreview({ studentName, onClose }: { studentName: string;
           <p>Generated with care by Whale Class</p>
           <p className="mt-1 text-xs">✨ Enhanced with AI</p>
         </footer>
-
-        <div className="fixed bottom-6 left-0 right-0 flex justify-center">
-          <button onClick={onClose} className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:bg-emerald-700 flex items-center gap-2">
-            <span>✓</span><span>Continue Tutorial</span>
-          </button>
-        </div>
       </main>
+
+      <div className="fixed bottom-6 left-0 right-0 flex justify-center">
+        <button onClick={onClose} className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:bg-emerald-700 flex items-center gap-2">
+          <span>✓</span><span>Continue Tutorial</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -1332,11 +1368,9 @@ function TutorialOverlay({ step, currentIndex, totalSteps, onNext, onPrev, onSki
           <button onClick={onSkip} className={`text-sm ${step.celebratory ? 'text-white/70 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}>Skip tutorial</button>
           <div className="flex gap-2">
             {currentIndex > 0 && (
-              <button onClick={onPrev} className={`px-4 py-2 rounded-lg text-sm font-medium ${step.celebratory ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}>← Back</button>
+              <button onClick={onPrev} className={`px-3 py-2 rounded-lg text-xs ${step.celebratory ? 'text-white/60 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}>← Back</button>
             )}
-            {(step.autoAdvance === false || step.celebratory) && (
-              <button onClick={onNext} className={`px-4 py-2 rounded-lg text-sm font-medium ${step.celebratory ? 'bg-white text-orange-600 hover:bg-white/90' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>Continue →</button>
-            )}
+            <button onClick={onNext} className={`px-4 py-2 rounded-lg text-sm font-medium ${step.celebratory ? 'bg-white text-orange-600 hover:bg-white/90' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>Next →</button>
           </div>
         </div>
       </div>
