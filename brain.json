@@ -1,40 +1,39 @@
 {
-  "lastUpdated": "2026-01-24T23:15:00Z",
+  "lastUpdated": "2026-01-24T23:20:00Z",
   "currentSession": "SESSION-83-DEMO-CLEANUP",
-  "status": "🔧 FIXING DEMO - Wheel only, no Portfolio",
+  "status": "✅ PUSHED - Waiting for Railway",
   
-  "summary": "Session 83: Demo audit - remove Find Work list, remove Portfolio tab. Wheel only.",
+  "summary": "Session 83: Demo cleanup - wheel only, no Portfolio, no Find Work list",
   
   "session83Progress": {
     "demoFixes": {
-      "status": "IN PROGRESS",
+      "status": "✅ PUSHED",
+      "commit": "ae9c436 Demo: Remove Find Work list + Portfolio tab, wheel only",
       "changes": [
-        "✅ Removed Portfolio tab (3 tabs now: This Week, Progress, Reports)",
-        "✅ Removed workNavOpen state",
-        "✅ Changed tutorial step from 'find-work' to 'browse-works'",
+        "✅ Removed Portfolio tab (3 tabs: This Week, Progress, Reports)",
+        "✅ Removed workNavOpen state and Find Work button",
+        "✅ Added Browse Works button → opens wheel",
         "✅ Unified fetchWorksForWheel function",
-        "🔄 Replacing Find Work button with Browse Works button",
-        "🔄 Removing old work navigator list UI"
-      ],
-      "goal": "Demo matches REAL system exactly"
+        "✅ Long-press area icon still works for wheel"
+      ]
     }
   },
 
-  "deployStatus": "🔧 FIXING LOCALLY",
+  "deployStatus": "🟡 RAILWAY BUILDING",
   "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
   "note": "URL requires www. prefix",
 
-  "demoStructure": {
+  "demoFeatures": {
     "tabs": ["This Week", "Progress", "Reports"],
-    "removed": ["Portfolio tab", "Find Work list"],
-    "wheelAccess": "Browse Works button OR long-press area icon"
+    "wheelAccess": [
+      "Browse Works button (opens all works)",
+      "Long-press area icon P/S/M/L/C (opens area-filtered works)"
+    ]
   },
 
   "nextSteps": [
-    "1. Remove Find Work button UI",
-    "2. Add Browse Works button that opens wheel",
-    "3. Remove portfolio tab render code",
-    "4. Test locally",
-    "5. Push and deploy"
+    "1. ⏳ Wait 2-3 min for Railway deploy",
+    "2. Test at https://www.teacherpotato.xyz/montree/demo/zohan",
+    "3. Verify wheel works, Portfolio gone, 3 tabs only"
   ]
 }
