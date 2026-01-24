@@ -171,10 +171,31 @@ export default function ZohanTutorialPage() {
   const [loadingWorks, setLoadingWorks] = useState(false);
   const [selectedWork, setSelectedWork] = useState<CurriculumWork | null>(null);
   
-  // Wheel state (for long-press)
+  // Wheel state (for long-press) - iOS-style 3D wheel
   const [wheelOpen, setWheelOpen] = useState(false);
   const [wheelArea, setWheelArea] = useState('');
+  const [currentWorkIndex, setCurrentWorkIndex] = useState(0);
+  const [wheelDisplayOffset, setWheelDisplayOffset] = useState(0);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  // iOS physics constants
+  const ITEM_HEIGHT = 44;
+  const TIME_CONSTANT = 325;
+  const VELOCITY_THRESHOLD = 10;
+  const VISIBLE_ITEMS = 5;
+  
+  // iOS-style wheel physics state
+  const wheelPhysics = useRef({
+    offset: 0,
+    velocity: 0,
+    amplitude: 0,
+    target: 0,
+    timestamp: 0,
+    frame: 0,
+    reference: 0,
+    animationId: null as number | null,
+    ticker: null as NodeJS.Timeout | null,
+  });
   
   // Progress tab state
   const [areaProgress, setAreaProgress] = useState<AreaProgress[]>([]);
@@ -383,7 +404,8 @@ export default function ZohanTutorialPage() {
     longPressTimer.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
       setWheelArea(area);
-      setWheelOpen(true);
+      // Fetch works for this area and open wheel
+      fetchWheelWorks(area);
     }, 500);
   };
 
@@ -393,6 +415,105 @@ export default function ZohanTutorialPage() {
       longPressTimer.current = null;
     }
   };
+  
+  // Fetch works for wheel (area-filtered)
+  const fetchWheelWorks = async (area: string) => {
+    if (!selectedStudent) return;
+    try {
+      const params = new URLSearchParams();
+      params.set('child_id', selectedStudent.id);
+      params.set('limit', '400');
+      params.set('area', area);
+      const res = await fetch(`/api/montree/works/search?${params.toString()}`);
+      const data = await res.json();
+      setAllWorks(data.works || []);
+      setCurrentWorkIndex(0);
+      wheelPhysics.current.offset = 0;
+      wheelPhysics.current.velocity = 0;
+      setWheelDisplayOffset(0);
+      setWheelOpen(true);
+    } catch (err) {
+      console.error('Failed to fetch wheel works:', err);
+    }
+  };
+
+  // WHEEL touch handlers - iOS-style physics
+  const wheelScroll = useCallback((newOffset: number) => {
+    const maxOffset = (allWorks.length - 1) * ITEM_HEIGHT;
+    const clampedOffset = Math.max(-ITEM_HEIGHT * 0.3, Math.min(maxOffset + ITEM_HEIGHT * 0.3, newOffset));
+    wheelPhysics.current.offset = clampedOffset;
+    setWheelDisplayOffset(clampedOffset);
+    const newIndex = Math.round(clampedOffset / ITEM_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(allWorks.length - 1, newIndex));
+    if (clampedIndex !== currentWorkIndex) {
+      setCurrentWorkIndex(clampedIndex);
+      if (navigator.vibrate) navigator.vibrate(1);
+    }
+  }, [allWorks.length, currentWorkIndex, ITEM_HEIGHT]);
+
+  const trackVelocity = useCallback(() => {
+    const now = Date.now();
+    const elapsed = now - wheelPhysics.current.timestamp;
+    const delta = wheelPhysics.current.offset - wheelPhysics.current.frame;
+    wheelPhysics.current.timestamp = now;
+    wheelPhysics.current.frame = wheelPhysics.current.offset;
+    const instantVelocity = (1000 * delta) / (1 + elapsed);
+    wheelPhysics.current.velocity = 0.8 * instantVelocity + 0.2 * wheelPhysics.current.velocity;
+  }, []);
+
+  const autoScroll = useCallback(() => {
+    const { amplitude, target, timestamp } = wheelPhysics.current;
+    const elapsed = Date.now() - timestamp;
+    const delta = -amplitude * Math.exp(-elapsed / TIME_CONSTANT);
+    if (Math.abs(delta) > 0.5) {
+      wheelScroll(target + delta);
+      wheelPhysics.current.animationId = requestAnimationFrame(autoScroll);
+    } else {
+      wheelScroll(target);
+      wheelPhysics.current.animationId = null;
+    }
+  }, [wheelScroll, TIME_CONSTANT]);
+
+  const handleWheelTouchStart = useCallback((e: React.TouchEvent) => {
+    if (wheelPhysics.current.animationId) {
+      cancelAnimationFrame(wheelPhysics.current.animationId);
+      wheelPhysics.current.animationId = null;
+    }
+    if (wheelPhysics.current.ticker) clearInterval(wheelPhysics.current.ticker);
+    wheelPhysics.current.reference = e.touches[0].clientY;
+    wheelPhysics.current.velocity = 0;
+    wheelPhysics.current.frame = wheelPhysics.current.offset;
+    wheelPhysics.current.timestamp = Date.now();
+    wheelPhysics.current.ticker = setInterval(trackVelocity, 100);
+  }, [trackVelocity]);
+
+  const handleWheelTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    const delta = wheelPhysics.current.reference - y;
+    wheelPhysics.current.reference = y;
+    wheelScroll(wheelPhysics.current.offset + delta);
+  }, [wheelScroll]);
+
+  const handleWheelTouchEnd = useCallback(() => {
+    if (wheelPhysics.current.ticker) {
+      clearInterval(wheelPhysics.current.ticker);
+      wheelPhysics.current.ticker = null;
+    }
+    const maxOffset = (allWorks.length - 1) * ITEM_HEIGHT;
+    if (Math.abs(wheelPhysics.current.velocity) > VELOCITY_THRESHOLD) {
+      wheelPhysics.current.amplitude = 0.8 * wheelPhysics.current.velocity;
+      wheelPhysics.current.target = wheelPhysics.current.offset + wheelPhysics.current.amplitude;
+      wheelPhysics.current.target = Math.round(wheelPhysics.current.target / ITEM_HEIGHT) * ITEM_HEIGHT;
+      wheelPhysics.current.target = Math.max(0, Math.min(maxOffset, wheelPhysics.current.target));
+      wheelPhysics.current.timestamp = Date.now();
+      wheelPhysics.current.animationId = requestAnimationFrame(autoScroll);
+    } else {
+      const nearestIndex = Math.round(wheelPhysics.current.offset / ITEM_HEIGHT);
+      const clampedIndex = Math.max(0, Math.min(allWorks.length - 1, nearestIndex));
+      wheelScroll(clampedIndex * ITEM_HEIGHT);
+    }
+  }, [allWorks.length, autoScroll, wheelScroll, ITEM_HEIGHT, VELOCITY_THRESHOLD]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -1013,6 +1134,123 @@ export default function ZohanTutorialPage() {
             studentName={selectedStudent.name}
             onClose={handleCloseReportPreview}
           />
+        )}
+
+        {/* SCROLL WHEEL OVERLAY - iOS-style 3D picker */}
+        {wheelOpen && (
+          <div 
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => setWheelOpen(false)}
+          >
+            <div 
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 text-center">
+                <p className="text-sm opacity-80">Browsing {AREA_CONFIG[wheelArea]?.letter || 'All'} Area Works</p>
+                <p className="font-bold text-lg">{currentWorkIndex + 1} of {allWorks.length}</p>
+              </div>
+
+              {/* Wheel Container - iOS style with 3D perspective */}
+              {allWorks.length === 0 ? (
+                <div className="py-16 text-center">
+                  <span className="animate-bounce text-3xl block mb-2">🎡</span>
+                  <p className="text-gray-500">Loading works...</p>
+                </div>
+              ) : (
+                <div 
+                  className="relative overflow-hidden touch-none select-none"
+                  style={{ 
+                    height: ITEM_HEIGHT * VISIBLE_ITEMS,
+                    perspective: '1000px',
+                    perspectiveOrigin: 'center center',
+                  }}
+                  onTouchStart={handleWheelTouchStart}
+                  onTouchMove={handleWheelTouchMove}
+                  onTouchEnd={handleWheelTouchEnd}
+                >
+                  {/* Gradient overlays for fade effect */}
+                  <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/80 to-transparent z-20 pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent z-20 pointer-events-none" />
+                  
+                  {/* Center selection indicator - glass effect */}
+                  <div 
+                    className="absolute inset-x-3 z-10 pointer-events-none rounded-xl"
+                    style={{
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      height: ITEM_HEIGHT,
+                      background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.15), rgba(20, 184, 166, 0.15))',
+                      border: '2px solid rgba(16, 185, 129, 0.4)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
+                    }}
+                  />
+
+                  {/* 3D Wheel with items */}
+                  <div className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
+                    {allWorks.map((work, idx) => {
+                      const itemOffset = idx * ITEM_HEIGHT - wheelDisplayOffset;
+                      const centerY = (ITEM_HEIGHT * VISIBLE_ITEMS) / 2 - ITEM_HEIGHT / 2;
+                      const y = centerY + itemOffset;
+                      
+                      if (Math.abs(itemOffset) > ITEM_HEIGHT * 3) return null;
+                      
+                      const rotation = (itemOffset / ITEM_HEIGHT) * 18;
+                      const translateZ = Math.cos(rotation * Math.PI / 180) * 10 - 10;
+                      const normalizedDistance = Math.abs(itemOffset) / (ITEM_HEIGHT * 2.5);
+                      const opacity = Math.max(0.2, 1 - normalizedDistance * 0.8);
+                      const scale = Math.max(0.8, 1 - normalizedDistance * 0.15);
+                      const isSelected = idx === currentWorkIndex;
+                      
+                      return (
+                        <div
+                          key={work.id}
+                          className="absolute inset-x-3 flex items-center gap-3 px-3"
+                          style={{
+                            height: ITEM_HEIGHT,
+                            top: y,
+                            opacity,
+                            transform: `scale(${scale}) translateZ(${translateZ}px)`,
+                            transition: 'none',
+                          }}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                            STATUS_CONFIG[work.status || 'not_started'].color
+                          }`}>
+                            {STATUS_CONFIG[work.status || 'not_started'].label}
+                          </div>
+                          <span className={`flex-1 truncate text-sm ${isSelected ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                            {work.name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Footer with action buttons */}
+              <div className="border-t p-4 flex gap-3">
+                <button
+                  onClick={() => {
+                    const work = allWorks[currentWorkIndex];
+                    if (work) toast.success(`Selected: ${work.name}`);
+                    setWheelOpen(false);
+                  }}
+                  className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md"
+                >
+                  Select Work
+                </button>
+                <button
+                  onClick={() => setWheelOpen(false)}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Tutorial Overlay */}
