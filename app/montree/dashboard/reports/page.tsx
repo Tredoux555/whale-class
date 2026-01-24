@@ -211,7 +211,7 @@ export default function ReportsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-12 h-12 bg-slate-200 rounded-full animate-pulse" />
                       <div className="flex-1">
-                        <div className="h-5 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${50 + Math.random() * 30}%` }} />
+                        <div className="h-5 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${60 + (i % 3) * 12}%` }} />
                         <div className="h-3 bg-slate-100 rounded animate-pulse w-24" />
                       </div>
                       <div className="w-16 h-6 bg-slate-200 rounded-full animate-pulse" />
