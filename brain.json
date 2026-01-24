@@ -1,19 +1,19 @@
 {
-  "lastUpdated": "2026-01-24T23:50:00Z",
+  "lastUpdated": "2026-01-24T23:52:00Z",
   "currentSession": "SESSION-83-DEMO-CLEANUP",
-  "status": "✅ PUSHED - 3 fixes deployed",
+  "status": "✅ PUSHED - Browse Works button removed",
   
-  "summary": "Session 83: Demo fixes - Next button, clearer instructions, report shows ALL works",
+  "summary": "Session 83: Demo cleanup complete - wheel via long-press only",
   
   "session83Fixes": {
-    "commit": "d023b84",
-    "changes": [
-      "✅ Next → button always visible (not just on celebratory steps)",
-      "✅ Back button smaller/subtle",
-      "✅ Browse Works instruction clearer: 'Tap the green button above'",
-      "✅ Report now shows ALL assignments dynamically",
-      "✅ Report shows area badges, status, and notes for each work",
-      "✅ Weekly summary shows count and mastery stats"
+    "commits": ["ae9c436", "d023b84", "4f666ca"],
+    "finalChanges": [
+      "✅ Removed Portfolio tab (3 tabs: This Week, Progress, Reports)",
+      "✅ Removed Browse Works button entirely",
+      "✅ Wheel accessible ONLY via long-press area icon",
+      "✅ Next → button always visible",
+      "✅ Report shows ALL assignments dynamically",
+      "✅ Tutorial step updated: 'Hold the area icon (C) to browse Cultural works!'"
     ]
   },
 
@@ -22,14 +22,8 @@
 
   "demoFeatures": {
     "tabs": ["This Week", "Progress", "Reports"],
-    "wheelAccess": ["Browse Works button", "Long-press area icon"],
-    "tutorialNavigation": "Skip | ← Back (subtle) | Next → (always visible)",
-    "reportPreview": "Shows ALL weekly assignments with area colors and status"
-  },
-
-  "nextSteps": [
-    "1. ⏳ Wait 2-3 min for Railway deploy",
-    "2. Test tutorial flow - Next button should always show",
-    "3. Test report - should show ALL works, not just 2"
-  ]
+    "wheelAccess": "Long-press area icon (P/S/M/L/C) for 500ms",
+    "tutorialSteps": 13,
+    "reportPreview": "Shows ALL weekly assignments"
+  }
 }

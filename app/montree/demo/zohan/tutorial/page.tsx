@@ -1263,12 +1263,30 @@ function BeautifulReportPreview({ studentName, assignments, onClose }: { student
               practicing: 'Practicing',
               mastered: '⭐ Mastered'
             };
+
+            // Curated explanations by area
+            const whyItMatters: Record<string, string> = {
+              practical_life: 'Develops independence, concentration, coordination, and a sense of order - the foundation for all learning.',
+              sensorial: 'Refines the senses and develops visual discrimination, helping children classify and understand their world.',
+              math: 'Provides concrete, hands-on experience with mathematical concepts, making abstract ideas tangible.',
+              language: 'Builds phonemic awareness and vocabulary, preparing the mind for reading and writing.',
+              cultural: 'Connects the child to the wider world, fostering curiosity about geography, science, and cultures.',
+            };
+
+            const tryAtHome: Record<string, string> = {
+              practical_life: 'Let your child help with real household tasks like pouring, folding, or food preparation.',
+              sensorial: 'Play sorting games with household items - by color, size, or texture.',
+              math: 'Count objects together during daily activities - stairs, toys, snacks.',
+              language: 'Read together daily and play "I Spy" games focusing on beginning sounds.',
+              cultural: 'Explore maps together, discuss where family members live, or observe nature outdoors.',
+            };
             
             return (
               <div key={assignment.id || idx} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className={`relative py-8 bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}>
+                <div className={`relative aspect-[4/3] bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}>
                   <div className="text-center">
-                    <div className="text-5xl mb-2">{areaEmojis[assignment.area] || '📚'}</div>
+                    <div className="text-6xl mb-2">{areaEmojis[assignment.area] || '📚'}</div>
+                    <p className="text-gray-500 text-sm">Photo: {assignment.work_name}</p>
                   </div>
                   <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium ${colors.bg} ${colors.text} shadow-sm`}>
                     {areaLabels[assignment.area] || assignment.area}
@@ -1279,12 +1297,23 @@ function BeautifulReportPreview({ studentName, assignments, onClose }: { student
                 </div>
                 <div className="p-5 space-y-3">
                   <h4 className="font-semibold text-gray-800 text-lg">{assignment.work_name}</h4>
-                  {assignment.notes && (
+                  {assignment.notes ? (
                     <p className="text-gray-700">{assignment.notes}</p>
+                  ) : (
+                    <p className="text-gray-700">{studentName} showed wonderful focus and engagement with this work.</p>
                   )}
-                  {!assignment.notes && (
-                    <p className="text-gray-500 italic">Great progress on this work!</p>
-                  )}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-700">Why it matters: </span>
+                      {whyItMatters[assignment.area] || 'Develops concentration, coordination, and a love of learning.'}
+                    </p>
+                  </div>
+                  <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                    <p className="text-sm text-amber-800">
+                      <span className="font-medium">💡 Try at home: </span>
+                      {tryAtHome[assignment.area] || 'Continue the learning at home with similar activities.'}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
