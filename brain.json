@@ -1,39 +1,35 @@
 {
-  "lastUpdated": "2026-01-24T23:20:00Z",
+  "lastUpdated": "2026-01-24T23:50:00Z",
   "currentSession": "SESSION-83-DEMO-CLEANUP",
-  "status": "✅ PUSHED - Waiting for Railway",
+  "status": "✅ PUSHED - 3 fixes deployed",
   
-  "summary": "Session 83: Demo cleanup - wheel only, no Portfolio, no Find Work list",
+  "summary": "Session 83: Demo fixes - Next button, clearer instructions, report shows ALL works",
   
-  "session83Progress": {
-    "demoFixes": {
-      "status": "✅ PUSHED",
-      "commit": "ae9c436 Demo: Remove Find Work list + Portfolio tab, wheel only",
-      "changes": [
-        "✅ Removed Portfolio tab (3 tabs: This Week, Progress, Reports)",
-        "✅ Removed workNavOpen state and Find Work button",
-        "✅ Added Browse Works button → opens wheel",
-        "✅ Unified fetchWorksForWheel function",
-        "✅ Long-press area icon still works for wheel"
-      ]
-    }
+  "session83Fixes": {
+    "commit": "d023b84",
+    "changes": [
+      "✅ Next → button always visible (not just on celebratory steps)",
+      "✅ Back button smaller/subtle",
+      "✅ Browse Works instruction clearer: 'Tap the green button above'",
+      "✅ Report now shows ALL assignments dynamically",
+      "✅ Report shows area badges, status, and notes for each work",
+      "✅ Weekly summary shows count and mastery stats"
+    ]
   },
 
   "deployStatus": "🟡 RAILWAY BUILDING",
   "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
-  "note": "URL requires www. prefix",
 
   "demoFeatures": {
     "tabs": ["This Week", "Progress", "Reports"],
-    "wheelAccess": [
-      "Browse Works button (opens all works)",
-      "Long-press area icon P/S/M/L/C (opens area-filtered works)"
-    ]
+    "wheelAccess": ["Browse Works button", "Long-press area icon"],
+    "tutorialNavigation": "Skip | ← Back (subtle) | Next → (always visible)",
+    "reportPreview": "Shows ALL weekly assignments with area colors and status"
   },
 
   "nextSteps": [
     "1. ⏳ Wait 2-3 min for Railway deploy",
-    "2. Test at https://www.teacherpotato.xyz/montree/demo/zohan",
-    "3. Verify wheel works, Portfolio gone, 3 tabs only"
+    "2. Test tutorial flow - Next button should always show",
+    "3. Test report - should show ALL works, not just 2"
   ]
 }
