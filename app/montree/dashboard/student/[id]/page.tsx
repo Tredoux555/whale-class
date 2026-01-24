@@ -4,8 +4,9 @@
 // v78 - Fixed expand tap issue
 'use client';
 
-import { useState, useEffect, useRef, use, useCallback } from 'react';
+import { useState, useEffect, useRef, use, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import DemoTutorial, { STUDENT_STEPS } from '@/components/montree/DemoTutorial';
 import { toast } from 'sonner';
 import WorkNavigator from '@/components/montree/WorkNavigator';
 import ParentAccessModal from '@/components/montree/ParentAccessModal';
@@ -355,6 +356,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         isOpen={showParentModal}
         onClose={() => setShowParentModal(false)}
       />
+
+      {/* Demo Tutorial Overlay */}
+      <Suspense fallback={null}>
+        <DemoTutorial steps={STUDENT_STEPS} />
+      </Suspense>
     </div>
   );
 }

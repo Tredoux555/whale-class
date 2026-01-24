@@ -1,72 +1,71 @@
 {
-  "lastUpdated": "2026-01-25T00:45:00Z",
-  "currentSession": "SESSION-83-COMPLETE",
-  "status": "🌙 Awaiting test after mobile fix push",
+  "lastUpdated": "2026-01-25T10:30:00Z",
+  "currentSession": "SESSION-84-DEMO-REBUILD",
+  "status": "✅ Demo rebuilt - wraps real dashboard with tutorial overlay",
   
   "handoff": "HANDOFF_SESSION_83.md",
   
-  "todaysCommits": [
-    "275f15c Demo: Dynamic camera import + debug logs",
-    "570a847 Demo: Stronger pulsate on area icon",
-    "e97cdd3 Demo: Camera capture, wheel adds work, photos in report",
-    "7175e97 Demo report: Full-size photos, Why it matters, Try at home",
-    "4f666ca Demo: Remove Browse Works button",
-    "ae9c436 Demo: Remove Find Work list + Portfolio tab"
-  ],
-
-  "demoStatus": {
-    "done": [
-      "3 tabs only (This Week, Progress, Reports)",
-      "Wheel-only via long-press area icon",
-      "No Browse Works button",
-      "No progress bar in tutorial",
-      "Pulsating area icon (ring-4, glow)",
-      "Report shows all works dynamically",
-      "Why it matters + Try at home sections",
-      "Full-size photo areas",
-      "Camera component wired up",
-      "Dynamic import for SSR fix"
-    ],
-    "pendingTest": [
-      "Mobile page load (SSR fix pushed)",
-      "Camera capture on mobile",
-      "Photos displaying in report",
-      "Wheel adding works to list"
+  "todaysWork": {
+    "session84": [
+      "Rebuilt demo to wrap real dashboard instead of duplicating code",
+      "Added grid layout to real dashboard (was list, now grid)",
+      "Created DemoTutorial component - sticky note style tutorial overlay",
+      "Demo mode activated via ?demo=zohan query param",
+      "/montree/demo/zohan/tutorial now redirects to /montree/dashboard?demo=zohan",
+      "Same codebase = fix one, fix both"
     ]
   },
 
-  "debugLogs": {
-    "photoCapture": "Photo captured for work:",
-    "reportLookup": "Report photo lookup:",
-    "wheelAdd": "Adding work from wheel:"
+  "demoArchitecture": {
+    "before": "900-line monolith duplicating all UI logic",
+    "after": "Real dashboard + 100-line tutorial overlay",
+    "entryPoint": "/montree/dashboard?demo=zohan",
+    "legacyRedirect": "/montree/demo/zohan/tutorial → redirects to above"
   },
 
-  "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
-  "note": "Must use www. prefix",
-
-  "gameplan": {
-    "phase1": "Perfect demo - test mobile, fix bugs, remove debug logs",
-    "phase2": "Capacitor setup - native app wrapper",
-    "phase3": "App Store submission"
-  },
-
-  "capacitorPlan": {
-    "timeline": "2-4 days",
-    "cost": "$0 (Claude does it)",
-    "requirements": [
-      "Apple Developer Account ($99/year)",
-      "Google Play Developer ($25 one-time)",
-      "Xcode (already have Mac)",
-      "Android Studio (free)"
+  "tutorialSteps": {
+    "classroom": [
+      "Welcome - This is your classroom",
+      "Tap a student card"
     ],
-    "benefits": [
-      "Uses existing Next.js code",
-      "Native camera (fixes mobile issues)",
-      "Push notifications",
-      "App Store distribution",
-      "Offline support"
+    "student": [
+      "Works intro - This week's assigned works",
+      "Status tap - Cycle ○→P→Pr→M",
+      "Expand work - See more options",
+      "Notes - They appear in parent reports",
+      "Demo video - YouTube refresher",
+      "Camera - Capture photos",
+      "Wheel - Hold area letter to browse",
+      "Progress tab - Curriculum overview",
+      "Reports - Generate parent reports",
+      "Done - 30% effort → 150% output"
     ]
   },
 
-  "nextSessionPrompt": "Let's test the demo on mobile and fix any remaining issues. Then set up Capacitor."
+  "files": {
+    "modified": [
+      "app/montree/dashboard/page.tsx - Grid layout + DemoTutorial",
+      "app/montree/dashboard/student/[id]/page.tsx - DemoTutorial added"
+    ],
+    "created": [
+      "components/montree/DemoTutorial.tsx - Sticky note tutorial overlay",
+      "components/montree/TutorialOverlay.tsx - (unused, kept for reference)"
+    ],
+    "replaced": [
+      "app/montree/demo/zohan/tutorial/page.tsx - Now just a redirect"
+    ]
+  },
+
+  "testUrls": {
+    "realDashboard": "https://www.teacherpotato.xyz/montree/dashboard",
+    "demoMode": "https://www.teacherpotato.xyz/montree/dashboard?demo=zohan",
+    "legacyDemo": "https://www.teacherpotato.xyz/montree/demo/zohan/tutorial"
+  },
+
+  "nextSteps": [
+    "1. Push changes: git add -A && git commit -m 'Session 84: Demo rebuild - wraps real dashboard' && git push",
+    "2. Test real dashboard (grid layout works?)",
+    "3. Test demo mode (?demo=zohan shows tutorial overlay?)",
+    "4. Then: Capacitor setup for native app"
+  ]
 }
