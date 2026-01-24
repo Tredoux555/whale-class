@@ -1,36 +1,22 @@
 {
-  "lastUpdated": "2026-01-24T13:20:00Z",
-  "currentSession": "SESSION-81-BUILD-FIX-COMPLETE",
-  "status": "✅ BUILD FIXED - DEMO AUDITED",
+  "lastUpdated": "2026-01-24T14:10:00Z",
+  "currentSession": "SESSION-82-WHEEL-UI-FIXED",
+  "status": "✅ iOS WHEEL ADDED TO DEMO",
   
-  "summary": "Session 81: Fixed 2 Suspense boundary errors blocking Railway build. Audited demo to match real page.",
+  "summary": "Session 82: Added iOS-style 3D scroll wheel to demo. Long-press area icon to open.",
   
-  "session81Progress": {
-    "buildFixes": {
-      "status": "✅ FIXED & PUSHED",
-      "commits": [
-        "c55de08 Fix: Suspense boundary for /montree/demo/tutorial page",
-        "e33e28a Demo audit: Match tutorial to real student detail page",
-        "a0178ff Fix: Suspense boundary for /montree/demo page"
-      ],
-      "issue": "useSearchParams() should be wrapped in a suspense boundary",
-      "filesFixed": [
-        "/app/montree/demo/page.tsx",
-        "/app/montree/demo/tutorial/page.tsx"
-      ]
-    },
-
-    "demoAudit": {
-      "status": "✅ COMPLETE",
-      "file": "/app/montree/demo/zohan/tutorial/page.tsx",
+  "session82Progress": {
+    "wheelFix": {
+      "status": "✅ PUSHED",
+      "commit": "7e656ea Fix: Add iOS-style 3D wheel to demo tutorial",
+      "issue": "Demo had 'Find Work' list, real page has 3D wheel",
       "changes": [
-        "Added 4th Portfolio tab (matches real)",
-        "Added WorkNavigator 'Find Work' button",
-        "Header shows quick stats (🟡/🔵/🟢)",
-        "Progress tab has expandable areas",
-        "Added floating parent share button",
-        "Copied constants from real page"
-      ]
+        "Added wheel physics state (iOS-style momentum)",
+        "Added touch handlers for wheel scroll",
+        "Added 3D perspective wheel overlay",
+        "Wheel opens on long-press of area icon"
+      ],
+      "howToTrigger": "Tap work to expand → Long-press area letter (P/S/M/L/C) for 500ms → Wheel opens"
     }
   },
 
