@@ -85,7 +85,7 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <div 
                     className="h-4 bg-slate-200 rounded animate-pulse"
-                    style={{ width: `${60 + Math.random() * 30}%` }}
+                    style={{ width: `${65 + (i % 3) * 10}%` }}
                   ></div>
                 </div>
                 {/* Arrow */}

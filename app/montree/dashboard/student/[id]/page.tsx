@@ -211,7 +211,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${60 + Math.random() * 30}%` }}></div>
+                    <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${65 + (i % 3) * 10}%` }}></div>
                     <div className="h-3 w-20 bg-slate-100 rounded animate-pulse"></div>
                   </div>
                   <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
@@ -1019,7 +1019,7 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
               <div className="flex-1">
-                <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${50 + Math.random() * 40}%` }}></div>
+                <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${60 + (i % 3) * 15}%` }}></div>
                 <div className="h-3 w-16 bg-slate-100 rounded animate-pulse"></div>
               </div>
               <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
