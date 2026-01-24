@@ -220,19 +220,30 @@ async function uploadItem(item: MediaQueueItem): Promise<boolean> {
     media.syncStatus = 'uploading';
     await db.saveMedia(media);
     
+    // Determine file extension based on media type
+    let filename: string;
+    if (media.mediaType === 'document' && media.fileName) {
+      filename = media.fileName;
+    } else {
+      const ext = media.mediaType === 'video' ? 'mp4' : 'jpg';
+      filename = `capture-${Date.now()}.${ext}`;
+    }
+    
     // Build form data
     const formData = new FormData();
-    formData.append('file', blob, `capture-${Date.now()}.jpg`);
+    formData.append('file', blob, filename);
     
     const metadata = {
       child_id: media.childId,
       media_type: media.mediaType,
       captured_at: media.capturedAt,
       work_id: media.workId,
-      caption: media.caption || media.workName || 'Quick Capture',
+      caption: media.caption || media.workName || (media.mediaType === 'document' ? 'Document' : 'Quick Capture'),
       tags: media.tags || [],
       width: media.width,
       height: media.height,
+      file_name: media.fileName,
+      mime_type: media.mimeType,
     };
     formData.append('metadata', JSON.stringify(metadata));
     
