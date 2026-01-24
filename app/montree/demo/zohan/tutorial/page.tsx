@@ -65,7 +65,7 @@ interface TutorialStep {
   title: string;
   instruction: string;
   emoji: string;
-  targetType: 'student' | 'status' | 'work' | 'notes' | 'demo' | 'camera' | 'wheel' | 'tab' | 'report' | 'preview' | 'findwork' | 'none';
+  targetType: 'student' | 'status' | 'work' | 'notes' | 'demo' | 'camera' | 'wheel' | 'tab' | 'report' | 'preview' | 'none';
   targetId?: string;
   autoAdvance?: boolean;
   celebratory?: boolean;
@@ -78,7 +78,6 @@ interface TutorialStep {
 const TABS = [
   { id: 'week', label: 'This Week', icon: '📋' },
   { id: 'progress', label: 'Progress', icon: '📊' },
-  { id: 'portfolio', label: 'Portfolio', icon: '📷' },
   { id: 'reports', label: 'Reports', icon: '📄' },
 ];
 
@@ -131,7 +130,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { id: 'watch-demo', title: 'Need a Refresher?', instruction: 'Tap Demo to open YouTube and see how to present this work.', emoji: '▶️', targetType: 'demo' },
   { id: 'take-photo', title: 'Capture the Moment', instruction: 'Photos go directly into parent reports!', emoji: '📸', targetType: 'camera' },
   { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly. A child picks up something not on their plan.', emoji: '😮', targetType: 'none', autoAdvance: false, celebratory: true },
-  { id: 'find-work', title: 'Find Any Work', instruction: 'Tap "Find Work" to search the entire curriculum. Try it!', emoji: '🔍', targetType: 'findwork' },
+  { id: 'browse-works', title: 'Browse Any Work', instruction: 'Tap "Browse Works" to spin through the entire curriculum. Try it!', emoji: '🎡', targetType: 'wheel' },
   { id: 'progress-tab', title: 'Progress Overview', instruction: 'The Progress tab shows mastery across all curriculum areas.', emoji: '📊', targetType: 'tab', targetId: 'progress' },
   { id: 'grand-finale-intro', title: '🎉 THE GRAND FINALE 🎉', instruction: 'Now for the magic—where all this data becomes a beautiful report...', emoji: '✨', targetType: 'none', autoAdvance: false, celebratory: true },
   { id: 'generate-report', title: 'Generate a Report', instruction: 'Tap "Generate Report" to create a weekly summary for parents.', emoji: '📄', targetType: 'report' },
@@ -163,8 +162,7 @@ export default function ZohanTutorialPage() {
   const [editingNotes, setEditingNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   
-  // Work Navigator state
-  const [workNavOpen, setWorkNavOpen] = useState(false);
+  // Work search state (for wheel)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArea, setSelectedArea] = useState('all');
   const [allWorks, setAllWorks] = useState<CurriculumWork[]>([]);
@@ -268,30 +266,31 @@ export default function ZohanTutorialPage() {
     }
   };
 
-  const fetchWorksForNav = useCallback(async () => {
-    if (!selectedStudent || !workNavOpen) return;
+  // Fetch works when wheel opens
+  const fetchWorksForWheel = useCallback(async (area: string = 'all') => {
+    if (!selectedStudent) return;
     setLoadingWorks(true);
     try {
       const params = new URLSearchParams();
       params.set('child_id', selectedStudent.id);
       params.set('limit', '400');
-      if (selectedArea !== 'all') params.set('area', selectedArea);
+      if (area !== 'all') params.set('area', area);
 
       const res = await fetch(`/api/montree/works/search?${params.toString()}`);
       const data = await res.json();
       setAllWorks(data.works || []);
-      setSelectedWork(null);
+      setCurrentWorkIndex(0);
+      wheelPhysics.current.offset = 0;
+      wheelPhysics.current.velocity = 0;
+      setWheelDisplayOffset(0);
+      setWheelOpen(true);
     } catch (err) {
       console.error('Failed to fetch works:', err);
       setAllWorks([]);
     } finally {
       setLoadingWorks(false);
     }
-  }, [selectedStudent, workNavOpen, selectedArea]);
-
-  useEffect(() => {
-    if (workNavOpen) fetchWorksForNav();
-  }, [workNavOpen, selectedArea, fetchWorksForNav]);
+  }, [selectedStudent]);
 
   // ============================================
   // TUTORIAL NAVIGATION
@@ -395,17 +394,16 @@ export default function ZohanTutorialPage() {
     if (step.targetType === 'camera') nextStep();
   };
 
-  const handleFindWorkClick = () => {
-    setWorkNavOpen(true);
-    if (step.targetType === 'findwork') nextStep();
+  const handleBrowseWorksClick = () => {
+    fetchWorksForWheel('all');
+    if (step.targetType === 'wheel') nextStep();
   };
 
   const handleLongPressStart = (area: string) => {
     longPressTimer.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
       setWheelArea(area);
-      // Fetch works for this area and open wheel
-      fetchWheelWorks(area);
+      fetchWorksForWheel(area);
     }, 500);
   };
 
@@ -416,27 +414,6 @@ export default function ZohanTutorialPage() {
     }
   };
   
-  // Fetch works for wheel (area-filtered)
-  const fetchWheelWorks = async (area: string) => {
-    if (!selectedStudent) return;
-    try {
-      const params = new URLSearchParams();
-      params.set('child_id', selectedStudent.id);
-      params.set('limit', '400');
-      params.set('area', area);
-      const res = await fetch(`/api/montree/works/search?${params.toString()}`);
-      const data = await res.json();
-      setAllWorks(data.works || []);
-      setCurrentWorkIndex(0);
-      wheelPhysics.current.offset = 0;
-      wheelPhysics.current.velocity = 0;
-      setWheelDisplayOffset(0);
-      setWheelOpen(true);
-    } catch (err) {
-      console.error('Failed to fetch wheel works:', err);
-    }
-  };
-
   // WHEEL touch handlers - iOS-style physics
   const wheelScroll = useCallback((newOffset: number) => {
     const maxOffset = (allWorks.length - 1) * ITEM_HEIGHT;
@@ -700,124 +677,18 @@ export default function ZohanTutorialPage() {
                 </div>
               )}
 
-              {/* WORK NAVIGATOR - MATCHES REAL */}
-              <div className="mb-4">
-                <button
-                  onClick={handleFindWorkClick}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center ${
-                    workNavOpen
-                      ? 'bg-emerald-600 text-white shadow-lg'
-                      : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm'
-                  } ${step.targetType === 'findwork' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}`}
-                >
-                  <span className="text-xl">{workNavOpen ? '✕' : '🔍'}</span>
-                  <span className="font-semibold">{workNavOpen ? 'Close' : 'Find Work'}</span>
-                  {!workNavOpen && <span className="text-sm text-emerald-500 ml-1">Browse all works</span>}
-                </button>
-
-                {/* Expanded Work Navigator */}
-                {workNavOpen && (
-                  <div className="mt-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                    <div className="bg-gray-50 border-b p-3">
-                      <div className="relative mb-3">
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search works..."
-                          className="w-full px-4 py-3 pl-10 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          autoFocus
-                        />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                      </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
-                        {[
-                          { key: 'all', label: 'All', icon: '📋' },
-                          { key: 'practical_life', label: 'Practical', icon: '🧹' },
-                          { key: 'sensorial', label: 'Sensorial', icon: '👁️' },
-                          { key: 'math', label: 'Math', icon: '🔢' },
-                          { key: 'language', label: 'Language', icon: '📖' },
-                          { key: 'cultural', label: 'Cultural', icon: '🌍' },
-                        ].map(area => (
-                          <button
-                            key={area.key}
-                            onClick={() => setSelectedArea(area.key)}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                              selectedArea === area.key
-                                ? 'bg-emerald-600 text-white shadow-md'
-                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                            }`}
-                          >
-                            <span>{area.icon}</span>
-                            <span>{area.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Selected Work Panel */}
-                    {selectedWork && (
-                      <div className="border-b bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-lg ${
-                              STATUS_CONFIG[selectedWork.status || 'not_started'].color
-                            }`}
-                          >
-                            {STATUS_CONFIG[selectedWork.status || 'not_started'].label}
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 truncate">{selectedWork.name}</h3>
-                          </div>
-                          <button className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-white text-xl">📷</button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Works List */}
-                    <div className="max-h-64 overflow-y-auto">
-                      {loadingWorks ? (
-                        <div className="text-center py-8 text-gray-500">
-                          <span className="animate-bounce text-2xl block mb-2">🐋</span>
-                          <p className="text-sm">Loading...</p>
-                        </div>
-                      ) : (
-                        <div className="divide-y divide-gray-100">
-                          {allWorks
-                            .filter(w => !searchQuery || w.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                            .slice(0, 50)
-                            .map(work => (
-                              <button
-                                key={work.id}
-                                onClick={() => setSelectedWork(selectedWork?.id === work.id ? null : work)}
-                                className={`w-full flex items-center gap-3 p-3 text-left ${
-                                  selectedWork?.id === work.id
-                                    ? 'bg-emerald-100 border-l-4 border-emerald-500'
-                                    : 'hover:bg-gray-50 border-l-4 border-transparent'
-                                }`}
-                              >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
-                                  STATUS_CONFIG[work.status || 'not_started'].color
-                                }`}>
-                                  {STATUS_CONFIG[work.status || 'not_started'].label}
-                                </div>
-                                <span className="flex-1 text-sm truncate text-gray-900">{work.name}</span>
-                              </button>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="border-t bg-gray-50 px-4 py-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{allWorks.length} works</span>
-                      <button onClick={() => { setWorkNavOpen(false); setSelectedWork(null); }} className="text-sm text-emerald-600 font-medium">Done</button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* BROWSE WORKS BUTTON - Opens wheel */}
+              <button
+                onClick={handleBrowseWorksClick}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center mb-4 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm ${step.targetType === 'wheel' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}`}
+              >
+                <span className="text-xl">🎡</span>
+                <span className="font-semibold">Browse Works</span>
+                <span className="text-sm text-emerald-500 ml-1">Spin through curriculum</span>
+              </button>
 
               {/* Legend - MATCHES REAL */}
-              {expandedIndex === null && !workNavOpen && (
+              {expandedIndex === null && (
                 <div className="flex items-center justify-center gap-4 mb-4 text-xs text-gray-500 overflow-x-auto">
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">○</span>
@@ -1066,19 +937,6 @@ export default function ZohanTutorialPage() {
                   </div>
                 </>
               )}
-            </div>
-          )}
-
-          {/* PORTFOLIO TAB - MATCHES REAL */}
-          {activeTab === 'portfolio' && (
-            <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">📷</span>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Portfolio Coming Soon</h3>
-              <p className="text-gray-500 text-sm">
-                All photos captured during work sessions will appear here.
-              </p>
             </div>
           )}
 
