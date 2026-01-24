@@ -201,21 +201,27 @@ export default function ReportsPage() {
       {/* Content */}
       <main className="flex-1 p-4">
         {loading ? (
-          // Loading state
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
-                    <div className="h-3 bg-gray-100 rounded w-32" />
+          // Skeleton loading state
+          <div className="space-y-6">
+            <div>
+              <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-3"></div>
+              <div className="space-y-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-slate-200 rounded-full animate-pulse" />
+                      <div className="flex-1">
+                        <div className="h-5 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${50 + Math.random() * 30}%` }} />
+                        <div className="h-3 bg-slate-100 rounded animate-pulse w-24" />
+                      </div>
+                      <div className="w-16 h-6 bg-slate-200 rounded-full animate-pulse" />
+                    </div>
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-full mb-2" />
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-3/4" />
                   </div>
-                </div>
-                <div className="h-3 bg-gray-100 rounded w-full mb-2" />
-                <div className="h-3 bg-gray-100 rounded w-2/3" />
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         ) : (
           <div className="space-y-6">

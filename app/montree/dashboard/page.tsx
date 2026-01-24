@@ -44,17 +44,59 @@ export default function DashboardPage() {
   }, []);
 
   // ==========================================
-  // LOADING STATE
+  // SKELETON LOADING STATE - Shows UI instantly
   // ==========================================
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-pulse">🐋</span>
+      <div className="min-h-screen bg-slate-50">
+        {/* Header Skeleton */}
+        <header className="bg-white border-b border-slate-200 px-4 py-4 sticky top-0 z-40">
+          <div className="flex items-center justify-between max-w-2xl mx-auto">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🐋</span>
+              <div>
+                <h1 className="text-lg font-semibold text-slate-800">Whale Class</h1>
+                <div className="h-3 w-16 bg-slate-200 rounded animate-pulse mt-1"></div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 bg-slate-100 rounded-lg animate-pulse"></div>
+              <div className="w-9 h-9 bg-slate-100 rounded-lg animate-pulse"></div>
+            </div>
           </div>
-          <p className="text-slate-500">Loading classroom...</p>
+        </header>
+
+        {/* Quick Action Button Skeleton */}
+        <div className="px-4 py-3 max-w-2xl mx-auto">
+          <div className="w-full py-4 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl h-14 animate-pulse"></div>
         </div>
+
+        {/* Student List Skeleton */}
+        <main className="px-4 pb-8 max-w-2xl mx-auto">
+          <div className="space-y-2">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm"
+              >
+                {/* Avatar Skeleton */}
+                <div className="w-12 h-12 rounded-full bg-slate-200 animate-pulse"></div>
+                {/* Name Skeleton */}
+                <div className="flex-1">
+                  <div 
+                    className="h-4 bg-slate-200 rounded animate-pulse"
+                    style={{ width: `${60 + Math.random() * 30}%` }}
+                  ></div>
+                </div>
+                {/* Arrow */}
+                <span className="text-slate-200">›</span>
+              </div>
+            ))}
+          </div>
+        </main>
+
+        {/* Floating Button Skeleton */}
+        <div className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-400 rounded-full animate-pulse"></div>
       </div>
     );
   }
