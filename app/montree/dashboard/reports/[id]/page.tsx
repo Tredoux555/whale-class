@@ -74,10 +74,14 @@ export default function ReportDetailPage() {
       setReport(data.report);
       setChild(data.child);
 
-      // Fetch thumbnail URLs for all highlights
-      const paths = data.report.content.highlights
+      // Session 80 FIX: Only fetch signed URLs for relative paths
+      // If storage_path is already a full URL (https://...), use it directly
+      const highlights = data.report?.content?.highlights || [];
+      const paths = highlights
         .map((h: { storage_path?: string }) => h.storage_path)
-        .filter(Boolean);
+        .filter((p: string | undefined): p is string => 
+          !!p && !p.startsWith('http://') && !p.startsWith('https://')
+        );
 
       if (paths.length > 0) {
         const urlsResponse = await fetch('/api/montree/media/urls', {
@@ -90,6 +94,7 @@ export default function ReportDetailPage() {
           setThumbnailUrls(urlsData.urls);
         }
       }
+      // Note: Full URLs in storage_path are handled directly by ReportPreview component
     } catch (err) {
       console.error('Fetch error:', err);
       setError('Failed to load report');

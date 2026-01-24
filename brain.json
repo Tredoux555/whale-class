@@ -1,31 +1,49 @@
 {
-  "lastUpdated": "2026-01-24T11:15:00Z",
-  "currentSession": "SESSION-64-IN-PROGRESS",
-  "status": "🟡 IN PROGRESS",
+  "lastUpdated": "2026-01-24T12:45:00Z",
+  "currentSession": "SESSION-81-ZOHAN-DEMO",
+  "status": "🟡 DESIGN COMPLETE - READY TO BUILD",
   
-  "summary": "Session 64: Added document upload to QuickCapture (photo/document toggle).",
+  "summary": "Session 81: Zohan demo system designed. Reports preview bug FIXED. Handoff written.",
   
-  "session64Progress": {
-    "feature": "Document Upload in Story System",
-    "filesModified": [
-      "lib/media/types.ts - added 'document' mediaType + fileName/mimeType fields",
-      "lib/media/capture.ts - skip compression for documents",
-      "lib/media/sync.ts - handle document filenames in upload",
-      "components/media/QuickCapture.tsx - Photo/Document toggle UI",
-      "app/api/montree/media/upload/route.ts - accept PDF/DOCX, store file_name/mime_type"
-    ],
-    "migrationNeeded": "migrations/SESSION_64_DOCUMENT_SUPPORT.sql",
-    "status": "Code complete, needs DB migration + testing"
+  "session81Progress": {
+    "feature": "Zohan Personalized Demo",
+    "designComplete": true,
+    "handoffDocument": "docs/HANDOFF_ZOHAN_DEMO.md",
+    
+    "bugFixed": {
+      "issue": "Reports generate but don't display",
+      "rootCause": "API fetched child from wrong table (montree_children instead of children)",
+      "filesFixed": [
+        "app/api/montree/reports/[id]/route.ts - changed table from montree_children to children",
+        "app/montree/dashboard/reports/[id]/page.tsx - added null safety for highlights array"
+      ],
+      "status": "✅ FIXED"
+    },
+    
+    "demoStructure": {
+      "welcome": "/montree/demo/zohan/page.tsx",
+      "disclaimer": "/montree/demo/zohan/disclaimer/page.tsx",
+      "tutorial": "/montree/demo/zohan/tutorial/page.tsx",
+      "setup": "/montree/demo/zohan/setup/page.tsx (Phase 2)"
+    },
+    
+    "tutorialSteps": 14,
+    "keyPrinciple": "Uses REAL system, not fake data. Personalization creates trust."
   },
 
-  "session63Complete": {
-    "newGames": ["Color Match", "Color Grade", "Hundred Board", "Odd/Even"],
-    "parentPortal": {
-      "testUrl": "localhost:3001/montree/parent/dashboard?test=Rachel",
-      "features": ["Today's Activities", "Recommended Games", "Weekly Reports", "Recent Photos"],
-      "removed": ["Progress bars", "Daily reports"]
-    }
-  },
+  "uiChangesNeeded": [
+    "ClassroomGrid.tsx - Convert list view to tile grid",
+    "Hide Portfolio tab icon from navigation",
+    "TutorialOverlay.tsx - Guided walkthrough engine"
+  ],
+
+  "filesToCreate": [
+    "/app/montree/demo/zohan/page.tsx",
+    "/app/montree/demo/zohan/disclaimer/page.tsx",
+    "/app/montree/demo/zohan/tutorial/page.tsx",
+    "/components/montree/demo/TutorialOverlay.tsx",
+    "/components/montree/ClassroomGrid.tsx"
+  ],
 
   "parentPortalBypass": {
     "usage": "?test=Rachel (or YueZe, Lucky, Austin)",
@@ -40,8 +58,15 @@
   "gamesTotal": 22,
 
   "nextSteps": [
-    "Run SESSION_64_DOCUMENT_SUPPORT.sql in Supabase",
-    "Test document upload on tablet",
-    "Add document display in parent portal story view"
-  ]
+    "1. Build welcome page (/montree/demo/zohan)",
+    "2. Build disclaimer page",
+    "3. Build TutorialOverlay component",
+    "4. Build ClassroomGrid (tiles not list)",
+    "5. Wire up tutorial flow with 14 steps",
+    "6. Add classroom photos (Tredoux to provide)",
+    "7. Test full demo end-to-end"
+  ],
+
+  "demoTarget": "Zohan (Montessori principal)",
+  "demoGoal": "Showcase Montree → School onboarding"
 }
