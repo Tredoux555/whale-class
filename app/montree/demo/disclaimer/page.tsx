@@ -1,13 +1,14 @@
 // /montree/demo/disclaimer/page.tsx
 // Disclaimer page - sensitive data warning
 // Session 80: Zohan Demo Experience
+// Fixed: Wrapped useSearchParams in Suspense
 
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function DisclaimerPage() {
+function DisclaimerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const name = searchParams.get('name') || 'Zohan';
@@ -124,5 +125,17 @@ export default function DisclaimerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DisclaimerPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    }>
+      <DisclaimerContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,9 @@
 // /montree/demo/zohan/tutorial/page.tsx
 // Interactive guided demo for Zohan - FULL EMBEDDED EXPERIENCE
-// Session 81 - Complete tutorial with NO redirects
-// Updated: Stunning report preview that matches real parent reports
+// Session 81 - Complete tutorial with REAL data
+// - Demo button opens real YouTube
+// - Selection wheel with real works
+// - Progress tab with real data
 
 'use client';
 
@@ -27,6 +29,22 @@ interface WorkAssignment {
   progress_status: 'not_started' | 'presented' | 'practicing' | 'mastered';
   notes?: string;
   mediaCount?: number;
+}
+
+interface CurriculumWork {
+  id: string;
+  name: string;
+  area?: { area_key: string; name: string };
+  status?: string;
+}
+
+interface AreaProgress {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  works: { id: string; name: string; status: number }[];
+  stats: { total: number; presented: number; practicing: number; mastered: number };
 }
 
 interface TutorialStep {
@@ -183,6 +201,14 @@ const AREA_CONFIG: Record<string, { letter: string; color: string; bg: string; n
   cultural: { letter: 'C', color: 'text-orange-700', bg: 'bg-orange-100', name: 'Cultural' },
 };
 
+const AREAS = [
+  { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: 'from-pink-500 to-rose-500' },
+  { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: 'from-purple-500 to-violet-500' },
+  { id: 'mathematics', name: 'Mathematics', icon: '🔢', color: 'from-blue-500 to-indigo-500' },
+  { id: 'language', name: 'Language', icon: '📖', color: 'from-green-500 to-emerald-500' },
+  { id: 'cultural', name: 'Cultural', icon: '🌍', color: 'from-orange-500 to-amber-500' },
+];
+
 function getAvatarColor(index: number): [string, string] {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
@@ -206,14 +232,24 @@ export default function ZohanTutorialPage() {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState('');
   const [activeTab, setActiveTab] = useState('week');
+  const [weekInfo, setWeekInfo] = useState<{ week: number; year: number } | null>(null);
   
-  // Demo-specific state
+  // Wheel state - REAL works
   const [wheelOpen, setWheelOpen] = useState(false);
+  const [wheelArea, setWheelArea] = useState('');
+  const [allWorks, setAllWorks] = useState<CurriculumWork[]>([]);
+  const [wheelLoading, setWheelLoading] = useState(false);
+  const [selectedWheelIndex, setSelectedWheelIndex] = useState(0);
+  
+  // Progress state - REAL data
+  const [areaProgress, setAreaProgress] = useState<AreaProgress[]>([]);
+  const [progressLoading, setProgressLoading] = useState(false);
+  
+  // Report state
   const [reportGenerated, setReportGenerated] = useState(false);
   const [reportPreviewOpen, setReportPreviewOpen] = useState(false);
 
   const step = TUTORIAL_STEPS[currentStep];
-  const isLastStep = currentStep === TUTORIAL_STEPS.length - 1;
 
   // ============================================
   // DATA FETCHING
@@ -240,16 +276,61 @@ export default function ZohanTutorialPage() {
       const res = await fetch(`/api/classroom/child/${studentId}/week`);
       const data = await res.json();
       setAssignments(data.assignments || []);
+      setWeekInfo(data.weekInfo || null);
     } catch (err) {
       console.error('Failed to fetch assignments:', err);
-      // Demo fallback data
-      setAssignments([
-        { id: '1', work_name: 'Pink Tower', area: 'sensorial', progress_status: 'practicing', notes: '' },
-        { id: '2', work_name: 'Number Rods', area: 'math', progress_status: 'presented', notes: '' },
-        { id: '3', work_name: 'Sandpaper Letters', area: 'language', progress_status: 'not_started', notes: '' },
-        { id: '4', work_name: 'Pouring Water', area: 'practical_life', progress_status: 'mastered', notes: '' },
-        { id: '5', work_name: 'Land & Water Globe', area: 'cultural', progress_status: 'not_started', notes: '' },
-      ]);
+    }
+  };
+
+  const fetchWorksForArea = async (area: string) => {
+    if (!selectedStudent) return;
+    setWheelLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set('child_id', selectedStudent.id);
+      params.set('limit', '100');
+      if (area && area !== 'all') params.set('area', area);
+
+      const res = await fetch(`/api/montree/works/search?${params.toString()}`);
+      const data = await res.json();
+      setAllWorks(data.works || []);
+      setSelectedWheelIndex(0);
+    } catch (err) {
+      console.error('Failed to fetch works:', err);
+      setAllWorks([]);
+    } finally {
+      setWheelLoading(false);
+    }
+  };
+
+  const fetchProgress = async (studentId: string) => {
+    setProgressLoading(true);
+    try {
+      const res = await fetch(`/api/classroom/child/${studentId}/progress`);
+      const data = await res.json();
+      
+      const progressByArea = AREAS.map(area => {
+        const areaWorks = (data.works || []).filter((w: any) => 
+          w.area === area.id || w.area === area.name.toLowerCase().replace(' ', '_')
+        );
+        
+        return {
+          ...area,
+          works: areaWorks,
+          stats: {
+            total: areaWorks.length,
+            presented: areaWorks.filter((w: any) => w.status === 1).length,
+            practicing: areaWorks.filter((w: any) => w.status === 2).length,
+            mastered: areaWorks.filter((w: any) => w.status === 3).length,
+          }
+        };
+      });
+
+      setAreaProgress(progressByArea);
+    } catch (err) {
+      console.error('Failed to fetch progress:', err);
+    } finally {
+      setProgressLoading(false);
     }
   };
 
@@ -285,13 +366,24 @@ export default function ZohanTutorialPage() {
     }
   };
 
-  const handleStatusTap = (index: number) => {
+  const handleStatusTap = async (index: number) => {
     const assignment = assignments[index];
     const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
     
     setAssignments(prev => prev.map((a, i) => 
       i === index ? { ...a, progress_status: nextStatus as any } : a
     ));
+
+    // Actually update the progress
+    try {
+      await fetch('/api/weekly-planning/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId: assignment.id, status: nextStatus }),
+      });
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
     
     if (step.targetType === 'status') {
       toast.success(`→ ${nextStatus.replace('_', ' ')}`);
@@ -315,7 +407,11 @@ export default function ZohanTutorialPage() {
     }
   };
 
-  const handleDemoClick = () => {
+  // REAL YouTube demo
+  const handleDemoClick = (workName: string) => {
+    const searchQuery = encodeURIComponent(`${workName} Montessori presentation`);
+    window.open(`https://www.youtube.com/results?search_query=${searchQuery}`, '_blank');
+    
     if (step.targetType === 'demo') {
       toast.success('Opening YouTube...');
       nextStep();
@@ -329,18 +425,64 @@ export default function ZohanTutorialPage() {
     }
   };
 
-  const handleWheelOpen = () => {
+  // REAL wheel with area
+  const handleWheelOpen = (area: string) => {
+    setWheelArea(area);
     setWheelOpen(true);
+    fetchWorksForArea(area);
+    
     if (step.targetType === 'wheel') {
-      setTimeout(() => {
-        setWheelOpen(false);
+      // Don't auto-close, let user interact
+    }
+  };
+
+  const handleWheelSelect = async (work: CurriculumWork) => {
+    if (!selectedStudent || !weekInfo) {
+      toast.error('Missing data');
+      return;
+    }
+
+    try {
+      toast.loading(`Adding ${work.name}...`);
+      
+      const res = await fetch('/api/weekly-planning/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          week: weekInfo.week,
+          year: weekInfo.year,
+          child_id: selectedStudent.id,
+          work_id: work.id,
+          work_name: work.name,
+          area: work.area?.area_key || wheelArea,
+        }),
+      });
+      
+      if (!res.ok) throw new Error('Failed');
+      
+      toast.dismiss();
+      toast.success(`Added: ${work.name}`);
+      
+      // Refresh assignments
+      fetchAssignments(selectedStudent.id);
+      setWheelOpen(false);
+      
+      if (step.targetType === 'wheel') {
         nextStep();
-      }, 2000);
+      }
+    } catch (err) {
+      toast.dismiss();
+      toast.error('Failed to add work');
     }
   };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    
+    if (tab === 'progress' && selectedStudent) {
+      fetchProgress(selectedStudent.id);
+    }
+    
     if (step.targetType === 'tab' && tab === step.targetId) {
       nextStep();
     }
@@ -497,127 +639,189 @@ export default function ZohanTutorialPage() {
 
         {/* Tab Content */}
         <main className="max-w-4xl mx-auto px-4 py-4 pb-40">
+          {/* THIS WEEK TAB */}
           {activeTab === 'week' && (
             <div className="space-y-2">
-              {assignments.map((assignment, index) => {
-                const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'text-gray-600', bg: 'bg-gray-100', name: 'Unknown' };
-                const status = STATUS_CONFIG[assignment.progress_status];
-                const isExpanded = expandedIndex === index;
-                const isFirstWork = index === 0;
+              {assignments.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                  <div className="text-4xl mb-3">📋</div>
+                  <p className="text-gray-500">No assignments this week</p>
+                </div>
+              ) : (
+                assignments.map((assignment, index) => {
+                  const area = AREA_CONFIG[assignment.area] || { letter: '?', color: 'text-gray-600', bg: 'bg-gray-100', name: 'Unknown' };
+                  const status = STATUS_CONFIG[assignment.progress_status];
+                  const isExpanded = expandedIndex === index;
+                  const isFirstWork = index === 0;
 
-                // Highlighting logic
-                const highlightStatus = step.targetType === 'status' && isFirstWork;
-                const highlightWork = step.targetType === 'work' && isFirstWork;
-                const highlightWheel = step.targetType === 'wheel' && isFirstWork;
+                  const highlightStatus = step.targetType === 'status' && isFirstWork;
+                  const highlightWork = step.targetType === 'work' && isFirstWork;
+                  const highlightWheel = step.targetType === 'wheel' && isFirstWork;
 
-                return (
-                  <div 
-                    key={assignment.id} 
-                    className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
-                  >
-                    <div className="flex items-center p-3 gap-3">
-                      {/* Area Icon - HOLD for wheel */}
-                      <div 
-                        className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm ${highlightWheel ? 'ring-2 ring-orange-500 ring-offset-2 animate-pulse' : ''}`}
-                        onTouchStart={() => isFirstWork && handleWheelOpen()}
-                        onMouseDown={() => isFirstWork && handleWheelOpen()}
-                      >
-                        {area.letter}
+                  return (
+                    <div 
+                      key={assignment.id} 
+                      className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
+                    >
+                      <div className="flex items-center p-3 gap-3">
+                        {/* Area Icon - HOLD for wheel */}
+                        <div 
+                          className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm ${highlightWheel ? 'ring-2 ring-orange-500 ring-offset-2 animate-pulse' : ''}`}
+                          onClick={() => handleWheelOpen(assignment.area)}
+                        >
+                          {area.letter}
+                        </div>
+
+                        {/* Status Badge */}
+                        <button
+                          onClick={() => handleStatusTap(index)}
+                          className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90 shadow-sm ${highlightStatus ? 'ring-2 ring-emerald-500 ring-offset-2 animate-pulse scale-110' : ''}`}
+                        >
+                          {status.label}
+                        </button>
+
+                        {/* Work Name */}
+                        <div 
+                          className={`flex-1 min-w-0 cursor-pointer ${highlightWork ? 'bg-emerald-50 rounded-lg px-2 py-1 ring-2 ring-emerald-500' : ''}`}
+                          onClick={() => handleWorkExpand(index)}
+                        >
+                          <p className="font-medium text-gray-900 truncate">{assignment.work_name}</p>
+                        </div>
+
+                        <svg 
+                          className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
                       </div>
 
-                      {/* Status Badge */}
-                      <button
-                        onClick={() => handleStatusTap(index)}
-                        className={`w-10 h-10 rounded-full ${status.color} flex items-center justify-center font-bold text-sm transition-transform active:scale-90 shadow-sm ${highlightStatus ? 'ring-2 ring-emerald-500 ring-offset-2 animate-pulse scale-110' : ''}`}
-                      >
-                        {status.label}
-                      </button>
+                      {/* Expanded Panel */}
+                      {isExpanded && (
+                        <div className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
+                          {/* Notes */}
+                          <div className={`mb-4 ${step.targetType === 'notes' ? 'ring-2 ring-emerald-500 rounded-lg p-2' : ''}`}>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">📝 Notes</label>
+                            <textarea
+                              value={editingNotes}
+                              onChange={(e) => handleNotesChange(e.target.value)}
+                              placeholder="Add observation notes..."
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 bg-white text-gray-900"
+                              rows={3}
+                            />
+                          </div>
 
-                      {/* Work Name */}
-                      <div 
-                        className={`flex-1 min-w-0 cursor-pointer ${highlightWork ? 'bg-emerald-50 rounded-lg px-2 py-1 ring-2 ring-emerald-500' : ''}`}
-                        onClick={() => handleWorkExpand(index)}
-                      >
-                        <p className="font-medium text-gray-900 truncate">{assignment.work_name}</p>
-                      </div>
+                          {/* Action Buttons */}
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleDemoClick(assignment.work_name)}
+                              className={`flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 ${step.targetType === 'demo' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-105' : ''}`}
+                            >
+                              <span className="text-xl">▶️</span>
+                              <span>Demo</span>
+                            </button>
 
-                      <svg 
-                        className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                            <button
+                              onClick={handleCameraClick}
+                              className={`flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 ${step.targetType === 'camera' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-105' : ''}`}
+                            >
+                              <span className="text-xl">📸</span>
+                              <span>Capture</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Expanded Panel */}
-                    {isExpanded && (
-                      <div className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
-                        {/* Notes */}
-                        <div className={`mb-4 ${step.targetType === 'notes' ? 'ring-2 ring-emerald-500 rounded-lg p-2' : ''}`}>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">📝 Notes</label>
-                          <textarea
-                            value={editingNotes}
-                            onChange={(e) => handleNotesChange(e.target.value)}
-                            placeholder="Add observation notes..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 bg-white text-gray-900"
-                            rows={3}
-                          />
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-3">
-                          <button
-                            onClick={handleDemoClick}
-                            className={`flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 ${step.targetType === 'demo' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-105' : ''}`}
-                          >
-                            <span className="text-xl">▶️</span>
-                            <span>Demo</span>
-                          </button>
-
-                          <button
-                            onClick={handleCameraClick}
-                            className={`flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 ${step.targetType === 'camera' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-105' : ''}`}
-                          >
-                            <span className="text-xl">📸</span>
-                            <span>Capture</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           )}
 
+          {/* PROGRESS TAB - REAL DATA */}
           {activeTab === 'progress' && (
-            <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
-              <div className="text-5xl mb-4">📊</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Progress Overview</h3>
-              <p className="text-gray-500 mb-4">Track mastery across all curriculum areas</p>
-              
-              {/* Simple progress bars */}
-              <div className="space-y-3 text-left">
-                {['Practical Life', 'Sensorial', 'Mathematics', 'Language', 'Cultural'].map((area, i) => (
-                  <div key={area}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium">{area}</span>
-                      <span className="text-gray-500">{20 + i * 15}%</span>
+            <div className="space-y-4">
+              {progressLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin text-4xl mb-3">📊</div>
+                  <p className="text-gray-500">Loading progress...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Overall Stats */}
+                  {areaProgress.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm p-4 mb-4">
+                      <h3 className="font-bold text-gray-900 mb-3">Overall Progress</h3>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <div className="text-2xl font-bold text-amber-600">
+                            {areaProgress.reduce((sum, a) => sum + a.stats.presented, 0)}
+                          </div>
+                          <p className="text-xs text-gray-500">Presented</p>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-blue-600">
+                            {areaProgress.reduce((sum, a) => sum + a.stats.practicing, 0)}
+                          </div>
+                          <p className="text-xs text-gray-500">Practicing</p>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-green-600">
+                            {areaProgress.reduce((sum, a) => sum + a.stats.mastered, 0)}
+                          </div>
+                          <p className="text-xs text-gray-500">Mastered</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-emerald-500 transition-all"
-                        style={{ width: `${20 + i * 15}%` }}
-                      />
+                  )}
+
+                  {/* Area Breakdown */}
+                  {areaProgress.map(area => {
+                    const total = area.stats.total || 1;
+                    const progressPercent = Math.round(
+                      ((area.stats.presented + area.stats.practicing + area.stats.mastered) / total) * 100
+                    );
+
+                    return (
+                      <div key={area.id} className="bg-white rounded-xl shadow-sm p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className={`w-10 h-10 bg-gradient-to-br ${area.color} rounded-xl flex items-center justify-center text-xl`}>
+                            {area.icon}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900">{area.name}</h4>
+                            <p className="text-xs text-gray-500">
+                              {area.stats.mastered}/{area.stats.total} mastered
+                            </p>
+                          </div>
+                          <span className="text-lg font-bold text-emerald-600">{progressPercent}%</span>
+                        </div>
+                        
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full flex">
+                            <div className="bg-green-500" style={{ width: `${(area.stats.mastered / total) * 100}%` }} />
+                            <div className="bg-blue-500" style={{ width: `${(area.stats.practicing / total) * 100}%` }} />
+                            <div className="bg-amber-400" style={{ width: `${(area.stats.presented / total) * 100}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {areaProgress.length === 0 && (
+                    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                      <div className="text-4xl mb-3">📊</div>
+                      <p className="text-gray-500">No progress data yet</p>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
+          {/* REPORTS TAB */}
           {activeTab === 'reports' && (
             <div className="space-y-4">
               <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-5 shadow-lg text-white">
@@ -651,23 +855,63 @@ export default function ZohanTutorialPage() {
           )}
         </main>
 
-        {/* Wheel Modal (simplified demo) */}
+        {/* REAL Work Selection Wheel */}
         {wheelOpen && (
           <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setWheelOpen(false)}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 text-center" onClick={e => e.stopPropagation()}>
-              <div className="text-5xl mb-4 animate-spin-slow">🎡</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Work Selection Wheel</h3>
-              <p className="text-gray-500 mb-4">Browse all 200+ works in this area</p>
-              <div className="space-y-2">
-                {['Knobbed Cylinders', 'Brown Stair', 'Pink Tower', 'Color Tablets'].map(work => (
-                  <div key={work} className="p-3 bg-gray-50 rounded-xl text-left font-medium">{work}</div>
-                ))}
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4">
+                <h3 className="text-xl font-bold text-center">Work Selection Wheel</h3>
+                <p className="text-center text-white/80 text-sm">
+                  {AREA_CONFIG[wheelArea]?.name || 'All Areas'} • {allWorks.length} works
+                </p>
+              </div>
+
+              {/* Works List */}
+              <div className="max-h-80 overflow-y-auto">
+                {wheelLoading ? (
+                  <div className="py-12 text-center">
+                    <div className="animate-spin text-3xl mb-2">🎡</div>
+                    <p className="text-gray-500">Loading works...</p>
+                  </div>
+                ) : allWorks.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <p className="text-gray-500">No works found</p>
+                  </div>
+                ) : (
+                  <div className="p-2">
+                    {allWorks.map((work, index) => (
+                      <button
+                        key={work.id}
+                        onClick={() => handleWheelSelect(work)}
+                        className={`w-full p-3 rounded-xl text-left transition-all hover:bg-emerald-50 flex items-center gap-3 ${
+                          index === selectedWheelIndex ? 'bg-emerald-100 ring-2 ring-emerald-500' : ''
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg ${AREA_CONFIG[work.area?.area_key || '']?.bg || 'bg-gray-100'} flex items-center justify-center text-sm font-bold ${AREA_CONFIG[work.area?.area_key || '']?.color || 'text-gray-600'}`}>
+                          {AREA_CONFIG[work.area?.area_key || '']?.letter || '?'}
+                        </div>
+                        <span className="font-medium text-gray-800">{work.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t bg-gray-50">
+                <button
+                  onClick={() => setWheelOpen(false)}
+                  className="w-full py-3 bg-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* BEAUTIFUL REPORT PREVIEW - Full Screen */}
+        {/* Report Preview */}
         {reportPreviewOpen && selectedStudent && (
           <BeautifulReportPreview 
             studentName={selectedStudent.name}
@@ -676,7 +920,7 @@ export default function ZohanTutorialPage() {
         )}
 
         {/* Tutorial Overlay */}
-        {showTutorial && !reportPreviewOpen && (
+        {showTutorial && !reportPreviewOpen && !wheelOpen && (
           <TutorialOverlay
             step={step}
             currentIndex={currentStep}
@@ -694,8 +938,6 @@ export default function ZohanTutorialPage() {
   // RENDER: CLASSROOM GRID
   // ============================================
 
-  const rachelStudent = students.find(s => s.name.toLowerCase() === 'rachel');
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       {/* Header */}
@@ -711,7 +953,7 @@ export default function ZohanTutorialPage() {
         </div>
       </header>
 
-      {/* Student Grid (TILES) */}
+      {/* Student Grid */}
       <main className="px-4 py-6 max-w-4xl mx-auto pb-40">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
           {students.map((student, index) => {
@@ -770,8 +1012,7 @@ export default function ZohanTutorialPage() {
 }
 
 // ============================================
-// BEAUTIFUL REPORT PREVIEW COMPONENT
-// Matches the real parent report format
+// BEAUTIFUL REPORT PREVIEW
 // ============================================
 
 function BeautifulReportPreview({ 
@@ -783,7 +1024,6 @@ function BeautifulReportPreview({
 }) {
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-blue-50 to-white z-50 overflow-auto">
-      {/* Close Button */}
       <button
         onClick={onClose}
         className="fixed top-4 right-4 z-50 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:bg-gray-100"
@@ -791,7 +1031,6 @@ function BeautifulReportPreview({
         ✕
       </button>
 
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
@@ -806,9 +1045,8 @@ function BeautifulReportPreview({
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 pb-20">
-        {/* Child Info Card */}
+        {/* Child Info */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-2xl font-bold shadow-md">
@@ -819,8 +1057,6 @@ function BeautifulReportPreview({
               <p className="text-gray-500">January 20 - 26, 2026</p>
             </div>
           </div>
-
-          {/* Areas Explored Pills */}
           <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-700">Practical Life</span>
             <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700">Sensorial</span>
@@ -838,17 +1074,17 @@ function BeautifulReportPreview({
             {studentName} had a wonderful week of exploration and discovery! She showed great focus during her Sensorial work, 
             especially with the Pink Tower. Her concentration has improved significantly, and she's beginning to self-correct 
             when placing the cubes. In Mathematics, she was introduced to the Number Rods and is developing a strong 
-            understanding of quantity. Her enthusiasm for learning continues to inspire her classmates!
+            understanding of quantity.
           </p>
         </div>
 
-        {/* Learning Highlights */}
+        {/* Highlights */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 px-2">
             <span>✨</span> Learning Highlights
           </h3>
           
-          {/* Highlight 1 - Pink Tower */}
+          {/* Highlight 1 */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="relative aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
               <div className="text-center">
@@ -862,31 +1098,30 @@ function BeautifulReportPreview({
             <div className="p-5 space-y-3">
               <h4 className="font-semibold text-gray-800">Pink Tower</h4>
               <p className="text-gray-700">
-                {studentName} built the Pink Tower independently today, carefully placing each cube from largest to smallest. 
-                She noticed when one cube was out of order and self-corrected without prompting!
+                {studentName} built the Pink Tower independently, carefully placing each cube from largest to smallest. 
+                She noticed when one cube was out of order and self-corrected!
               </p>
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-sm text-gray-600">
                   <span className="font-medium text-gray-700">Why it matters: </span>
-                  The Pink Tower develops visual discrimination of size, fine motor control, and concentration. 
-                  Self-correction shows the development of the mathematical mind.
+                  The Pink Tower develops visual discrimination of size, fine motor control, and concentration.
                 </p>
               </div>
               <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
                 <p className="text-sm text-amber-800">
                   <span className="font-medium">💡 Try at home: </span>
-                  Stack household items by size (books, boxes, containers) and let your child arrange them from biggest to smallest.
+                  Stack household items by size and let your child arrange them biggest to smallest.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Highlight 2 - Number Rods */}
+          {/* Highlight 2 */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-6xl mb-2">📏</div>
-                <p className="text-gray-500 text-sm">Photo: Number Rods presentation</p>
+                <p className="text-gray-500 text-sm">Photo: Number Rods</p>
               </div>
               <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 shadow-sm">
                 Mathematics
@@ -895,20 +1130,19 @@ function BeautifulReportPreview({
             <div className="p-5 space-y-3">
               <h4 className="font-semibold text-gray-800">Number Rods</h4>
               <p className="text-gray-700">
-                {studentName} received her first presentation of the Number Rods. She was fascinated by how the rods increase 
-                in length and counted aloud as we named each one together.
+                {studentName} received her first presentation of the Number Rods. She was fascinated by how the rods 
+                increase in length and counted aloud as we named each one.
               </p>
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-sm text-gray-600">
                   <span className="font-medium text-gray-700">Why it matters: </span>
-                  Number Rods provide a concrete, sensorial experience of quantity. Children literally feel 
-                  that 10 is longer/heavier than 1, building a foundation for abstract math concepts.
+                  Number Rods provide a concrete experience of quantity - children literally feel that 10 is longer than 1.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Highlight 3 - Pouring */}
+          {/* Highlight 3 - Mastered */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="relative aspect-[4/3] bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center">
               <div className="text-center">
@@ -922,12 +1156,11 @@ function BeautifulReportPreview({
             <div className="p-5 space-y-3">
               <h4 className="font-semibold text-gray-800">Pouring Water</h4>
               <p className="text-gray-700">
-                {studentName} has mastered pouring water between two pitchers! She pours slowly and steadily with no spills, 
-                and even helps clean up the work area afterward.
+                {studentName} has mastered pouring water between two pitchers! She pours slowly and steadily with no spills.
               </p>
               <div className="bg-green-50 rounded-lg p-3 border border-green-100">
                 <p className="text-sm text-green-800 font-medium flex items-center gap-2">
-                  <span>🎉</span> MASTERED! {studentName} can now move on to more challenging pouring exercises.
+                  <span>🎉</span> MASTERED! {studentName} can now move on to more challenging exercises.
                 </p>
               </div>
             </div>
@@ -941,19 +1174,16 @@ function BeautifulReportPreview({
           </h3>
           <p className="text-blue-900 leading-relaxed italic">
             "Thank you for sharing {studentName} with us this week. Her curiosity and gentle nature make her a 
-            wonderful member of our classroom community. She's always ready to help a friend and approaches each 
-            new work with such enthusiasm. We're excited to see her continue to grow!"
+            wonderful member of our classroom community. We're excited to see her continue to grow!"
           </p>
           <p className="text-blue-700 mt-3 font-medium text-right">— Teacher Tredoux</p>
         </div>
 
-        {/* Footer */}
         <footer className="text-center py-8 text-gray-400 text-sm">
           <p>Generated with care by Whale Class</p>
           <p className="mt-1 text-xs">✨ Enhanced with AI</p>
         </footer>
 
-        {/* Tap to Close Hint */}
         <div className="fixed bottom-6 left-0 right-0 flex justify-center">
           <button
             onClick={onClose}
@@ -969,7 +1199,7 @@ function BeautifulReportPreview({
 }
 
 // ============================================
-// TUTORIAL OVERLAY COMPONENT
+// TUTORIAL OVERLAY
 // ============================================
 
 function TutorialOverlay({
@@ -991,7 +1221,6 @@ function TutorialOverlay({
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 p-4 pointer-events-none">
-      {/* Progress bar */}
       <div className="max-w-md mx-auto mb-3">
         <div className="h-1.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
           <div 
@@ -1004,22 +1233,15 @@ function TutorialOverlay({
         </p>
       </div>
 
-      {/* Tutorial card */}
       <div className={`
         max-w-md mx-auto rounded-2xl shadow-2xl pointer-events-auto overflow-hidden
-        ${step.celebratory 
-          ? 'bg-gradient-to-br from-amber-500 to-orange-500' 
-          : 'bg-white'
-        }
+        ${step.celebratory ? 'bg-gradient-to-br from-amber-500 to-orange-500' : 'bg-white'}
       `}>
         <div className="p-5">
           <div className="flex items-start gap-4">
             <div className={`
               w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0
-              ${step.celebratory 
-                ? 'bg-white/20' 
-                : 'bg-gradient-to-br from-emerald-100 to-teal-100'
-              }
+              ${step.celebratory ? 'bg-white/20' : 'bg-gradient-to-br from-emerald-100 to-teal-100'}
             `}>
               {step.emoji}
             </div>
@@ -1034,7 +1256,6 @@ function TutorialOverlay({
           </div>
         </div>
 
-        {/* Navigation */}
         <div className={`
           px-5 py-3 flex items-center justify-between border-t
           ${step.celebratory ? 'border-white/20 bg-white/10' : 'border-slate-100 bg-slate-50'}
