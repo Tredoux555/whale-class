@@ -1,52 +1,40 @@
 {
-  "lastUpdated": "2026-01-24T14:10:00Z",
-  "currentSession": "SESSION-82-WHEEL-UI-FIXED",
-  "status": "✅ iOS WHEEL ADDED TO DEMO",
+  "lastUpdated": "2026-01-24T23:15:00Z",
+  "currentSession": "SESSION-83-DEMO-CLEANUP",
+  "status": "🔧 FIXING DEMO - Wheel only, no Portfolio",
   
-  "summary": "Session 82: Added iOS-style 3D scroll wheel to demo. Long-press area icon to open.",
+  "summary": "Session 83: Demo audit - remove Find Work list, remove Portfolio tab. Wheel only.",
   
-  "session82Progress": {
-    "wheelFix": {
-      "status": "✅ PUSHED",
-      "commit": "7e656ea Fix: Add iOS-style 3D wheel to demo tutorial",
-      "issue": "Demo had 'Find Work' list, real page has 3D wheel",
+  "session83Progress": {
+    "demoFixes": {
+      "status": "IN PROGRESS",
       "changes": [
-        "Added wheel physics state (iOS-style momentum)",
-        "Added touch handlers for wheel scroll",
-        "Added 3D perspective wheel overlay",
-        "Wheel opens on long-press of area icon"
+        "✅ Removed Portfolio tab (3 tabs now: This Week, Progress, Reports)",
+        "✅ Removed workNavOpen state",
+        "✅ Changed tutorial step from 'find-work' to 'browse-works'",
+        "✅ Unified fetchWorksForWheel function",
+        "🔄 Replacing Find Work button with Browse Works button",
+        "🔄 Removing old work navigator list UI"
       ],
-      "howToTrigger": "Tap work to expand → Long-press area letter (P/S/M/L/C) for 500ms → Wheel opens"
+      "goal": "Demo matches REAL system exactly"
     }
   },
 
-  "deployStatus": "🟡 WAITING FOR RAILWAY BUILD",
-  "testUrl": "https://teacherpotato.xyz/montree/demo/zohan",
+  "deployStatus": "🔧 FIXING LOCALLY",
+  "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
+  "note": "URL requires www. prefix",
 
   "demoStructure": {
-    "welcome": "/montree/demo/zohan/page.tsx ✅",
-    "disclaimer": "inline modal ✅",
-    "tutorial": "/montree/demo/zohan/tutorial/page.tsx ✅ (14 steps)",
-    "setup": "/montree/demo/zohan/setup/page.tsx (Phase 2)"
-  },
-
-  "parentPortalBypass": {
-    "usage": "?test=Rachel (or YueZe, Lucky, Austin)",
-    "hardcodedIds": {
-      "rachel": "c23afdf4-847b-4269-9eaa-a3a03b299291",
-      "yueze": "12d91cbf-6830-41a6-b4f9-adeeee85186a",
-      "lucky": "79c574f8-827c-4bc6-9086-b71ca8338d9d",
-      "austin": "02e04915-9f28-4eb1-afaa-29f6fc7e2b8b"
-    }
+    "tabs": ["This Week", "Progress", "Reports"],
+    "removed": ["Portfolio tab", "Find Work list"],
+    "wheelAccess": "Browse Works button OR long-press area icon"
   },
 
   "nextSteps": [
-    "1. ⏳ Wait for Railway build (~2 min)",
-    "2. Test demo at /montree/demo/zohan",
-    "3. Walk through 14-step tutorial",
-    "4. Verify it matches real /montree/dashboard/student/[id]"
-  ],
-
-  "demoTarget": "Zohan (Montessori principal)",
-  "demoGoal": "Showcase Montree → School onboarding"
+    "1. Remove Find Work button UI",
+    "2. Add Browse Works button that opens wheel",
+    "3. Remove portfolio tab render code",
+    "4. Test locally",
+    "5. Push and deploy"
+  ]
 }
