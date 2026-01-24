@@ -1,34 +1,72 @@
 {
-  "lastUpdated": "2026-01-25T00:15:00Z",
-  "currentSession": "SESSION-83-DEMO-CLEANUP",
-  "status": "✅ PUSHED - Camera, wheel, photos all wired up",
+  "lastUpdated": "2026-01-25T00:45:00Z",
+  "currentSession": "SESSION-83-COMPLETE",
+  "status": "🌙 Awaiting test after mobile fix push",
   
-  "latestCommit": "e97cdd3 Demo: Camera capture, wheel adds work, photos in report",
+  "handoff": "HANDOFF_SESSION_83.md",
   
-  "fixesImplemented": [
-    "✅ Progress bar removed (no more messy green line)",
-    "✅ Area icon pulsates on 'longpress' step",
-    "✅ Instruction updated: 'Hold the colored area circle to browse and add any work'",
-    "✅ Wheel selection adds work to list (setAssignments)",
-    "✅ Camera opens on Capture button click",
-    "✅ Photos stored per work (capturedPhotos state)",
-    "✅ Photos display in report preview (real images not emojis)"
+  "todaysCommits": [
+    "275f15c Demo: Dynamic camera import + debug logs",
+    "570a847 Demo: Stronger pulsate on area icon",
+    "e97cdd3 Demo: Camera capture, wheel adds work, photos in report",
+    "7175e97 Demo report: Full-size photos, Why it matters, Try at home",
+    "4f666ca Demo: Remove Browse Works button",
+    "ae9c436 Demo: Remove Find Work list + Portfolio tab"
   ],
 
-  "cameraFlow": {
-    "onClick": "handleCameraClick(workId) → setShowCamera(true)",
-    "onCapture": "handlePhotoCapture → setCapturedPhotos → toast success",
-    "onCancel": "handleCameraCancel → setShowCamera(false)",
-    "display": "Report shows img if capturedPhotos[id] exists, else emoji"
+  "demoStatus": {
+    "done": [
+      "3 tabs only (This Week, Progress, Reports)",
+      "Wheel-only via long-press area icon",
+      "No Browse Works button",
+      "No progress bar in tutorial",
+      "Pulsating area icon (ring-4, glow)",
+      "Report shows all works dynamically",
+      "Why it matters + Try at home sections",
+      "Full-size photo areas",
+      "Camera component wired up",
+      "Dynamic import for SSR fix"
+    ],
+    "pendingTest": [
+      "Mobile page load (SSR fix pushed)",
+      "Camera capture on mobile",
+      "Photos displaying in report",
+      "Wheel adding works to list"
+    ]
+  },
+
+  "debugLogs": {
+    "photoCapture": "Photo captured for work:",
+    "reportLookup": "Report photo lookup:",
+    "wheelAdd": "Adding work from wheel:"
   },
 
   "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
-  
-  "toTest": [
-    "1. Does Capture button open camera modal?",
-    "2. Does it ask for camera permissions on mobile?",
-    "3. Can you take a photo and see it in report?",
-    "4. Does holding area icon open wheel?",
-    "5. Does selecting work from wheel add it to list?"
-  ]
+  "note": "Must use www. prefix",
+
+  "gameplan": {
+    "phase1": "Perfect demo - test mobile, fix bugs, remove debug logs",
+    "phase2": "Capacitor setup - native app wrapper",
+    "phase3": "App Store submission"
+  },
+
+  "capacitorPlan": {
+    "timeline": "2-4 days",
+    "cost": "$0 (Claude does it)",
+    "requirements": [
+      "Apple Developer Account ($99/year)",
+      "Google Play Developer ($25 one-time)",
+      "Xcode (already have Mac)",
+      "Android Studio (free)"
+    ],
+    "benefits": [
+      "Uses existing Next.js code",
+      "Native camera (fixes mobile issues)",
+      "Push notifications",
+      "App Store distribution",
+      "Offline support"
+    ]
+  },
+
+  "nextSessionPrompt": "Let's test the demo on mobile and fix any remaining issues. Then set up Capacitor."
 }
