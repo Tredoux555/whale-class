@@ -7,7 +7,6 @@
 import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import AIInsightsTab from '@/components/montree/AIInsightsTab';
 import WorkNavigator from '@/components/montree/WorkNavigator';
 import ParentAccessModal from '@/components/montree/ParentAccessModal';
 import PortfolioTabNew from '@/components/montree/PortfolioTab';
@@ -72,7 +71,6 @@ const TABS = [
   { id: 'progress', label: 'Progress', icon: '📊' },
   { id: 'portfolio', label: 'Portfolio', icon: '📷' },
   { id: 'reports', label: 'Reports', icon: '📄' },
-  { id: 'ai', label: 'AI Insights', icon: '🧠' },
 ];
 
 const STATUS_CONFIG = {
@@ -335,12 +333,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         )}
         {activeTab === 'reports' && (
           <ReportsTab 
-            childId={studentId} 
-            childName={student.name}
-          />
-        )}
-        {activeTab === 'ai' && (
-          <AIInsightsTab 
             childId={studentId} 
             childName={student.name}
           />
