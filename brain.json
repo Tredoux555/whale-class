@@ -1,49 +1,37 @@
 {
-  "lastUpdated": "2026-01-24T11:00:00Z",
-  "currentSession": "SESSION-59-COMPLETE",
-  "status": "🟢 AUDIT PASSED - READY FOR TESTING",
+  "lastUpdated": "2026-01-24T12:10:00Z",
+  "currentSession": "SESSION-60-SKELETON-LOADERS",
+  "status": "🟢 SKELETON LOADERS ADDED",
   
-  "summary": "Created 100+ work-specific parent-friendly definitions. All curriculum IDs now match. Generator uses work-definitions.ts instead of generic area descriptions.",
+  "summary": "Added instant-feel skeleton loading to Montree dashboard, student detail, and reports pages. Also added file sharing feature to Story system.",
   
-  "auditResults": {
-    "criticalIssueFOUND": "Work ID prefixes didn't match curriculum",
-    "criticalIssueFIXED": true,
-    "fixApplied": "Added correct prefixes (se_, ma_, la_, cu_) and curriculum ID aliases",
-    "verificationPassed": "11/11 curriculum IDs return work-specific content, not fallbacks"
+  "skeletonLoaders": {
+    "added": [
+      "/app/montree/dashboard/page.tsx - Main dashboard with 8 student placeholders",
+      "/app/montree/dashboard/student/[id]/page.tsx - Student detail with tabs, header, work items",
+      "/app/montree/dashboard/reports/page.tsx - Reports list with cards"
+    ],
+    "benefit": "UI appears instantly, data loads in background - feels much faster"
   },
-  
-  "prefixMapping": {
-    "practical_life": "pl_ ✅",
-    "sensorial": "se_ ✅ (was sen_)",
-    "mathematics": "ma_ ✅ (was math_)",
-    "language": "la_ ✅ (was lang_)",
-    "cultural": "cu_ ✅ (was cult_)"
+
+  "storyFilesFeature": {
+    "status": "Pushed, needs migration",
+    "files": [
+      "/migrations/065_story_shared_files.sql",
+      "/app/api/story/admin/files/* (upload, list, delete)",
+      "/app/api/story/shared-files/route.ts (student-facing)",
+      "/app/story/admin/dashboard/page.tsx (Files tab)",
+      "/app/story/[session]/page.tsx (Documents section)"
+    ],
+    "migrationRequired": true
   },
-  
-  "aliasesAdded": [
-    "se_color_box_1/2/3 (for color tablets)",
-    "se_cylinder_block_1/2/3/4 (for knobbed cylinders)",
-    "se_sound_boxes (for sound cylinders)",
-    "ma_sandpaper_numerals (for sandpaper numbers)",
-    "ma_spindle_box (singular)",
-    "ma_exchange_game (for bank game)",
-    "ma_addition_strip_board",
-    "la_sound_games (for i_spy)",
-    "cu_globe_land_water / cu_globe_continents",
-    "cu_land_water_forms",
-    "cu_puzzle_map_world / cu_puzzle_maps_continents"
-  ],
-  
-  "filesModified": [
-    "/lib/montree/reports/work-definitions.ts (NEW - 900+ lines)",
-    "/lib/montree/reports/generator.ts (UPDATED)"
-  ],
-  
-  "nextSteps": [
-    "Run local test: generate a report and verify rich definitions appear",
-    "Deploy when satisfied"
-  ],
-  
-  "notDeployed": true,
-  "testingOn": "localhost:3000"
+
+  "previousSession": {
+    "session59": "100+ work definitions, critical ID prefix bug fixed"
+  },
+
+  "deploymentStatus": {
+    "pushed": true,
+    "railwayDeploying": true
+  }
 }

@@ -159,13 +159,70 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-bounce">🌳</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+        {/* Header Skeleton */}
+        <header className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white sticky top-0 z-50">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-white/20 rounded-xl animate-pulse"></div>
+              <div className="w-14 h-14 bg-white/30 rounded-full animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-6 w-32 bg-white/30 rounded animate-pulse mb-2"></div>
+                <div className="h-4 w-20 bg-white/20 rounded animate-pulse"></div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 bg-white/20 rounded-xl px-4 py-2">
+                <div className="h-4 w-24 bg-white/30 rounded animate-pulse"></div>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600 font-medium">Loading...</p>
+        </header>
+
+        {/* Tab Navigation Skeleton */}
+        <div className="bg-white border-b shadow-sm sticky top-[88px] z-40">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="flex gap-1 py-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex-1 py-3 px-4 rounded-xl bg-slate-100 animate-pulse"></div>
+              ))}
+            </div>
+          </div>
         </div>
+
+        {/* Content Skeleton */}
+        <main className="max-w-4xl mx-auto px-4 py-4">
+          {/* Week info card */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="h-5 w-32 bg-slate-200 rounded animate-pulse mb-2"></div>
+                <div className="h-4 w-24 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+              <div className="text-right">
+                <div className="h-8 w-12 bg-emerald-100 rounded animate-pulse mb-1"></div>
+                <div className="h-3 w-16 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Work items skeleton */}
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${60 + Math.random() * 30}%` }}></div>
+                    <div className="h-3 w-20 bg-slate-100 rounded animate-pulse"></div>
+                  </div>
+                  <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+
+        {/* Floating button skeleton */}
+        <div className="fixed bottom-6 right-6 w-14 h-14 bg-blue-400 rounded-full animate-pulse"></div>
       </div>
     );
   }
@@ -942,11 +999,33 @@ function ThisWeekTab({ childId, childName, onMediaUploaded }: {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="w-12 h-12 bg-white rounded-xl shadow flex items-center justify-center mx-auto mb-3">
-          <span className="text-2xl animate-pulse">📋</span>
+      <div className="space-y-4">
+        {/* Week info skeleton */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-5 w-28 bg-slate-200 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-20 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+            <div className="text-right">
+              <div className="h-7 w-12 bg-emerald-100 rounded animate-pulse mb-1"></div>
+              <div className="h-3 w-14 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+          </div>
         </div>
-        <p className="text-gray-500">Loading this week...</p>
+        {/* Work items skeleton */}
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl shadow-sm p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${50 + Math.random() * 40}%` }}></div>
+                <div className="h-3 w-16 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
