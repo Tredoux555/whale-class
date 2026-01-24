@@ -1,21 +1,34 @@
 {
-  "lastUpdated": "2026-01-25T00:01:00Z",
+  "lastUpdated": "2026-01-25T00:15:00Z",
   "currentSession": "SESSION-83-DEMO-CLEANUP",
-  "status": "✅ PUSHED - Beautiful report restored",
+  "status": "✅ PUSHED - Camera, wheel, photos all wired up",
   
-  "summary": "Session 83: Demo report now has full photos and curated explanations",
+  "latestCommit": "e97cdd3 Demo: Camera capture, wheel adds work, photos in report",
   
-  "latestCommit": "7175e97 Demo report: Full-size photos, Why it matters, Try at home tips",
-  
-  "reportFeatures": [
-    "✅ Full-size photo areas (aspect-[4/3])",
-    "✅ 'Why it matters' explanations by area",
-    "✅ '💡 Try at home' suggestions by area",
-    "✅ Shows ALL assignments dynamically",
-    "✅ Area badges with colors",
-    "✅ Status badges (Presented/Practicing/⭐ Mastered)"
+  "fixesImplemented": [
+    "✅ Progress bar removed (no more messy green line)",
+    "✅ Area icon pulsates on 'longpress' step",
+    "✅ Instruction updated: 'Hold the colored area circle to browse and add any work'",
+    "✅ Wheel selection adds work to list (setAssignments)",
+    "✅ Camera opens on Capture button click",
+    "✅ Photos stored per work (capturedPhotos state)",
+    "✅ Photos display in report preview (real images not emojis)"
   ],
 
-  "deployStatus": "🟡 RAILWAY BUILDING",
-  "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan"
+  "cameraFlow": {
+    "onClick": "handleCameraClick(workId) → setShowCamera(true)",
+    "onCapture": "handlePhotoCapture → setCapturedPhotos → toast success",
+    "onCancel": "handleCameraCancel → setShowCamera(false)",
+    "display": "Report shows img if capturedPhotos[id] exists, else emoji"
+  },
+
+  "testUrl": "https://www.teacherpotato.xyz/montree/demo/zohan",
+  
+  "toTest": [
+    "1. Does Capture button open camera modal?",
+    "2. Does it ask for camera permissions on mobile?",
+    "3. Can you take a photo and see it in report?",
+    "4. Does holding area icon open wheel?",
+    "5. Does selecting work from wheel add it to list?"
+  ]
 }
