@@ -1,12 +1,14 @@
 // /montree/demo/zohan/tutorial/page.tsx
 // Interactive guided demo for Zohan - MATCHES REAL PAGE EXACTLY
-// Session 81 - Audit: Copied from real /montree/dashboard/student/[id]/page.tsx
+// Session 83 - Camera, wheel selection, photo display
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import CameraCapture from '@/components/montree/media/CameraCapture';
+import type { CapturedPhoto } from '@/lib/montree/media/types';
 
 // ============================================
 // TYPES - Copied from real page
@@ -65,7 +67,7 @@ interface TutorialStep {
   title: string;
   instruction: string;
   emoji: string;
-  targetType: 'student' | 'status' | 'work' | 'notes' | 'demo' | 'camera' | 'wheel' | 'tab' | 'report' | 'preview' | 'none';
+  targetType: 'student' | 'status' | 'work' | 'notes' | 'demo' | 'camera' | 'wheel' | 'tab' | 'report' | 'preview' | 'longpress' | 'none';
   targetId?: string;
   autoAdvance?: boolean;
   celebratory?: boolean;
@@ -129,7 +131,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { id: 'add-note', title: 'Add an Observation', instruction: 'Notes appear in parent reports. Try typing something! Hit enter to save.', emoji: '✏️', targetType: 'notes' },
   { id: 'watch-demo', title: 'Need a Refresher?', instruction: 'Tap Demo to open YouTube and see how to present this work.', emoji: '▶️', targetType: 'demo' },
   { id: 'take-photo', title: 'Capture the Moment', instruction: 'Photos go directly into parent reports!', emoji: '📸', targetType: 'camera' },
-  { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly. A child picks up something not on their plan. Hold the area icon (C) to browse Cultural works!', emoji: '😮', targetType: 'none', autoAdvance: false, celebratory: true },
+  { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly! Hold the colored area circle to browse and add any work.', emoji: '😮', targetType: 'longpress', autoAdvance: false, celebratory: true },
   { id: 'progress-tab', title: 'Progress Overview', instruction: 'The Progress tab shows mastery across all curriculum areas.', emoji: '📊', targetType: 'tab', targetId: 'progress' },
   { id: 'grand-finale-intro', title: '🎉 THE GRAND FINALE 🎉', instruction: 'Now for the magic—where all this data becomes a beautiful report...', emoji: '✨', targetType: 'none', autoAdvance: false, celebratory: true },
   { id: 'generate-report', title: 'Generate a Report', instruction: 'Tap "Generate Report" to create a weekly summary for parents.', emoji: '📄', targetType: 'report' },
@@ -202,6 +204,11 @@ export default function ZohanTutorialPage() {
   // Reports state
   const [reportGenerated, setReportGenerated] = useState(false);
   const [reportPreviewOpen, setReportPreviewOpen] = useState(false);
+
+  // Camera state
+  const [showCamera, setShowCamera] = useState(false);
+  const [activePhotoWorkId, setActivePhotoWorkId] = useState<string | null>(null);
+  const [capturedPhotos, setCapturedPhotos] = useState<Record<string, string>>({}); // workId -> dataUrl
 
   const step = TUTORIAL_STEPS[currentStep];
 
@@ -388,9 +395,24 @@ export default function ZohanTutorialPage() {
     }
   };
 
-  const handleCameraClick = () => {
-    toast.success('📸 Photo captured! (Demo)');
-    if (step.targetType === 'camera') nextStep();
+  const handleCameraClick = (workId: string) => {
+    setActivePhotoWorkId(workId);
+    setShowCamera(true);
+  };
+
+  const handlePhotoCapture = (photo: CapturedPhoto) => {
+    if (activePhotoWorkId) {
+      setCapturedPhotos(prev => ({ ...prev, [activePhotoWorkId]: photo.dataUrl }));
+      toast.success('📸 Photo captured!');
+      if (step.targetType === 'camera') nextStep();
+    }
+    setShowCamera(false);
+    setActivePhotoWorkId(null);
+  };
+
+  const handleCameraCancel = () => {
+    setShowCamera(false);
+    setActivePhotoWorkId(null);
   };
 
   const handleLongPressStart = (area: string) => {
@@ -709,7 +731,9 @@ export default function ZohanTutorialPage() {
                       <div className="flex items-center p-3 gap-3">
                         {/* Area Icon - LONG PRESS for wheel */}
                         <div 
-                          className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300`}
+                          className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold text-base cursor-pointer select-none active:scale-90 transition-transform shadow-sm border-2 border-dashed border-transparent active:border-gray-300 ${
+                            step.targetType === 'longpress' && isFirst ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-110' : ''
+                          }`}
                           onTouchStart={() => handleLongPressStart(assignment.area)}
                           onTouchEnd={handleLongPressEnd}
                           onMouseDown={() => handleLongPressStart(assignment.area)}
@@ -797,7 +821,7 @@ export default function ZohanTutorialPage() {
                             </button>
 
                             <button
-                              onClick={handleCameraClick}
+                              onClick={() => handleCameraClick(assignment.id)}
                               className={`flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 ${
                                 step.targetType === 'camera' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse scale-105' : ''
                               }`}
@@ -975,6 +999,7 @@ export default function ZohanTutorialPage() {
           <BeautifulReportPreview 
             studentName={selectedStudent.name}
             assignments={assignments}
+            capturedPhotos={capturedPhotos}
             onClose={handleCloseReportPreview}
           />
         )}
@@ -1078,12 +1103,29 @@ export default function ZohanTutorialPage() {
                 <button
                   onClick={() => {
                     const work = allWorks[currentWorkIndex];
-                    if (work) toast.success(`Selected: ${work.name}`);
+                    if (work && selectedStudent) {
+                      // Add work to assignments
+                      const newAssignment: WorkAssignment = {
+                        id: `demo-${Date.now()}`,
+                        child_id: selectedStudent.id,
+                        work_id: work.id,
+                        work_name: work.name,
+                        area: work.area,
+                        week_number: weekInfo?.week || 1,
+                        year: weekInfo?.year || 2026,
+                        progress_status: 'not_started',
+                        notes: '',
+                        media_count: 0
+                      };
+                      setAssignments(prev => [...prev, newAssignment]);
+                      toast.success(`✅ Added: ${work.name}`);
+                      if (step.targetType === 'longpress') nextStep();
+                    }
                     setWheelOpen(false);
                   }}
                   className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-md"
                 >
-                  Select Work
+                  Add to Plan
                 </button>
                 <button
                   onClick={() => setWheelOpen(false)}
@@ -1093,6 +1135,17 @@ export default function ZohanTutorialPage() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Camera Capture Modal */}
+        {showCamera && (
+          <div className="fixed inset-0 z-[100]">
+            <CameraCapture
+              onCapture={handlePhotoCapture}
+              onCancel={handleCameraCancel}
+              facingMode="environment"
+            />
           </div>
         )}
 
@@ -1180,7 +1233,7 @@ export default function ZohanTutorialPage() {
 // BEAUTIFUL REPORT PREVIEW
 // ============================================
 
-function BeautifulReportPreview({ studentName, assignments, onClose }: { studentName: string; assignments: WorkAssignment[]; onClose: () => void }) {
+function BeautifulReportPreview({ studentName, assignments, capturedPhotos, onClose }: { studentName: string; assignments: WorkAssignment[]; capturedPhotos: Record<string, string>; onClose: () => void }) {
   // Group assignments by area
   const areaColors: Record<string, { bg: string; text: string; gradient: string }> = {
     practical_life: { bg: 'bg-pink-100', text: 'text-pink-700', gradient: 'from-pink-100 to-rose-100' },
@@ -1281,13 +1334,19 @@ function BeautifulReportPreview({ studentName, assignments, onClose }: { student
               cultural: 'Explore maps together, discuss where family members live, or observe nature outdoors.',
             };
             
+            const photoUrl = capturedPhotos[assignment.id];
+            
             return (
               <div key={assignment.id || idx} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className={`relative aspect-[4/3] bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}>
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{areaEmojis[assignment.area] || '📚'}</div>
-                    <p className="text-gray-500 text-sm">Photo: {assignment.work_name}</p>
-                  </div>
+                <div className={`relative aspect-[4/3] ${photoUrl ? '' : `bg-gradient-to-br ${colors.gradient}`} flex items-center justify-center overflow-hidden`}>
+                  {photoUrl ? (
+                    <img src={photoUrl} alt={assignment.work_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-6xl mb-2">{areaEmojis[assignment.area] || '📚'}</div>
+                      <p className="text-gray-500 text-sm">Photo: {assignment.work_name}</p>
+                    </div>
+                  )}
                   <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium ${colors.bg} ${colors.text} shadow-sm`}>
                     {areaLabels[assignment.area] || assignment.area}
                   </div>
@@ -1357,13 +1416,6 @@ function TutorialOverlay({ step, currentIndex, totalSteps, onNext, onPrev, onSki
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 p-4 pointer-events-none">
-      <div className="max-w-md mx-auto mb-3">
-        <div className="h-1.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
-          <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500" style={{ width: `${progress}%` }} />
-        </div>
-        <p className="text-center text-slate-500 text-xs mt-1">Step {currentIndex + 1} of {totalSteps}</p>
-      </div>
-
       <div className={`max-w-md mx-auto rounded-2xl shadow-2xl pointer-events-auto overflow-hidden ${step.celebratory ? 'bg-gradient-to-br from-amber-500 to-orange-500' : 'bg-white'}`}>
         <div className="p-5">
           <div className="flex items-start gap-4">
