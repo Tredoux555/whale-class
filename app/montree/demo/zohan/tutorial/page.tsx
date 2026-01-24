@@ -78,7 +78,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'add-note',
     title: 'Add an Observation',
-    instruction: 'Notes appear in weekly parent reports. Try typing something!',
+    instruction: 'Notes appear in weekly parent reports. Try typing something! Hit enter to save.',
     emoji: '✏️',
     targetType: 'notes',
   },
