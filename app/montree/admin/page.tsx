@@ -79,6 +79,16 @@ export default function AdminPage() {
           <h2 className="text-lg font-bold text-white mb-2">Media Gallery</h2>
           <p className="text-gray-400 text-sm">Browse all captured photos and videos.</p>
         </Link>
+
+        {/* Curriculum Games Card */}
+        <Link 
+          href="/montree/dashboard/games"
+          className="bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-700 rounded-xl p-6 hover:border-purple-400 transition-colors"
+        >
+          <div className="text-3xl mb-3">🎮</div>
+          <h2 className="text-lg font-bold text-white mb-2">Curriculum Games</h2>
+          <p className="text-purple-300 text-sm">11 English games aligned to Montessori curriculum. Letter sounds, word building, grammar.</p>
+        </Link>
       </div>
     </div>
   );
