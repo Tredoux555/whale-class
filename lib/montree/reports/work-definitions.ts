@@ -319,6 +319,20 @@ const PRACTICAL_LIFE_DEFINITIONS: Record<string, WorkDefinition> = {
     developmental_note: "Your child is learning to solve problems with words - 'I feel... when you... I need...' They're building emotional vocabulary and lifelong conflict resolution skills. Using words instead of actions is a crucial skill.",
     home_extension: "Help your child name their feelings and express needs with words when conflicts arise.",
   },
+  
+  // ----- CRAFT/HANDWORK -----
+  pl_knitting: {
+    developmental_note: "Your child is learning to knit - creating fabric from yarn using two needles. This ancient craft develops bilateral coordination (both hands doing different movements), concentration, pattern-following, and patience. The rhythmic motion is calming and the finished product brings immense pride.",
+    home_extension: "Finger knitting is a great way to practice at home - same coordination, no needles needed!",
+  },
+  pl_sewing: {
+    developmental_note: "Your child is learning basic sewing - threading a needle and creating stitches. They're developing incredible fine motor precision, patience, and the ability to follow a sequence. Every stitch is preparation for writing and other detailed work.",
+    home_extension: "Sewing cards or burlap with large needles let your child practice sewing at home safely.",
+  },
+  pl_weaving: {
+    developmental_note: "Your child is weaving - passing thread over and under to create fabric. They're learning patterns (over, under, over, under), developing hand coordination, and experiencing the satisfaction of creating something beautiful from simple materials.",
+    home_extension: "Make a simple paper loom and weave strips of paper or ribbon together.",
+  },
 };
 
 // ============================================
@@ -470,6 +484,12 @@ const SENSORIAL_DEFINITIONS: Record<string, WorkDefinition> = {
   se_land_water_forms: {
     developmental_note: "Your child is exploring concepts like island, lake, peninsula, and bay using water and clay models. They're learning geography vocabulary through hands-on experience - touch before textbook.",
     home_extension: "Make land/water forms in a sandbox or at the beach. Or use clay and a pan of water at home.",
+  },
+  
+  // ----- COLOR EXPLORATION -----
+  se_color_mixing: {
+    developmental_note: "Your child is experimenting with mixing colors - discovering that blue and yellow make green, or red and yellow make orange. They're learning through hands-on experimentation, developing prediction skills, and experiencing the magic of transformation. This is real science: hypothesize, test, observe!",
+    home_extension: "Mix food coloring in water or blend paint colors together. Ask 'What do you think will happen?' before mixing!",
   },
 };
 
@@ -651,6 +671,10 @@ const LANGUAGE_DEFINITIONS: Record<string, WorkDefinition> = {
   la_moveable_alphabet: {
     developmental_note: "Your child is building words by selecting letter tiles - 'CAT' spelled out on a mat. This is writing before their hand can write! They're encoding their ideas into letters, experiencing the power of written language. We celebrate phonetic spelling because it shows they're hearing sounds and finding letters.",
     home_extension: "Make letter tiles from paper or use magnetic letters. Let your child build words!",
+  },
+  la_word_building: {
+    developmental_note: "Your child is building words using the Moveable Alphabet - arranging letters to spell words they hear. This is encoding: turning sounds into written symbols. They're experiencing the thrill of 'I can write!' before their hand is ready for pencil work. Invented spelling is celebrated because it shows phonemic awareness.",
+    home_extension: "Use magnetic letters or letter cards to build simple words together. Sound them out!",
   },
   la_chalkboard_writing: {
     developmental_note: "Your child is writing letters and words on a chalkboard. The larger movements are easier than small pencil writing, building confidence and muscle memory before paper and pencil work.",
@@ -835,19 +859,74 @@ export function getWorkDefinition(
   workName: string | null,
   area: string
 ): WorkDefinition {
-  // Try exact work_id match first
+  // Try exact work_id match first (for properly formatted IDs like "cu_parts_leaf")
   if (workId && ALL_DEFINITIONS[workId]) {
     return ALL_DEFINITIONS[workId];
   }
 
-  // Try matching by work name (normalized)
+  // Try matching by work name with multiple strategies
   if (workName) {
-    const normalizedName = workName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const normalizedName = workName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+    const nameWords = workName.toLowerCase().split(/\s+/);
     
-    // Try to find a matching definition
+    // Strategy 1: Direct name match in keys
     for (const [key, def] of Object.entries(ALL_DEFINITIONS)) {
-      if (key.includes(normalizedName) || normalizedName.includes(key.split('_').slice(1).join('_'))) {
+      const keyParts = key.split('_').slice(1).join('_'); // Remove prefix like "pl_", "se_", etc.
+      
+      // Exact match after prefix removal
+      if (keyParts === normalizedName) {
         return def;
+      }
+    }
+    
+    // Strategy 2: Partial match - key contains name or name contains key
+    for (const [key, def] of Object.entries(ALL_DEFINITIONS)) {
+      const keyParts = key.split('_').slice(1).join('_');
+      
+      // "knitting" matches "pl_knitting"
+      if (keyParts === nameWords[0] || nameWords.includes(keyParts)) {
+        return def;
+      }
+      
+      // "geometry_solids" should match "geometric_solids" (fuzzy)
+      if (keyParts.length > 4 && normalizedName.length > 4) {
+        // Check if they share a significant portion (first 5+ chars match)
+        const keyPrefix = keyParts.substring(0, Math.min(6, keyParts.length));
+        const namePrefix = normalizedName.substring(0, Math.min(6, normalizedName.length));
+        if (keyPrefix === namePrefix) {
+          return def;
+        }
+      }
+    }
+    
+    // Strategy 3: Key word matching for multi-word names
+    for (const [key, def] of Object.entries(ALL_DEFINITIONS)) {
+      const keyWords = key.split('_').slice(1); // Remove prefix, get words
+      
+      // Check if main words match (e.g., "bank" matches "bank_game")
+      for (const word of nameWords) {
+        if (word.length >= 4 && keyWords.includes(word)) {
+          return def;
+        }
+      }
+      
+      // Special cases for common variations
+      const specialMatches: Record<string, string[]> = {
+        'geometric': ['geometry'],
+        'geometry': ['geometric'],
+        'colour': ['color'],
+        'color': ['colour'],
+        'spindle': ['spindles'],
+        'cylinder': ['cylinders'],
+      };
+      
+      for (const word of nameWords) {
+        const variations = specialMatches[word] || [];
+        for (const variant of variations) {
+          if (keyWords.includes(variant)) {
+            return def;
+          }
+        }
       }
     }
   }
