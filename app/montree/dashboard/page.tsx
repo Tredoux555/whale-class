@@ -1,13 +1,12 @@
 // /montree/dashboard/page.tsx
-// REBUILT: Clean, minimal, beautiful classroom dashboard
-// Session 54: Deep audit - simpler UI
-
+// Session 84: Grid layout + demo mode support
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import QuickCapture from '@/components/media/QuickCapture';
 import SyncStatus from '@/components/media/SyncStatus';
+import DemoTutorial, { CLASSROOM_STEPS } from '@/components/montree/DemoTutorial';
 import { initSync } from '@/lib/media';
 
 interface Student {
@@ -16,19 +15,30 @@ interface Student {
   photo_url?: string;
 }
 
+const AVATAR_COLORS = [
+  ['#ec4899', '#f43f5e'], // pink-rose
+  ['#8b5cf6', '#a855f7'], // violet-purple
+  ['#3b82f6', '#6366f1'], // blue-indigo
+  ['#06b6d4', '#14b8a6'], // cyan-teal
+  ['#10b981', '#22c55e'], // emerald-green
+  ['#f59e0b', '#f97316'], // amber-orange
+];
+
+function getAvatarColor(index: number): [string, string] {
+  return AVATAR_COLORS[index % AVATAR_COLORS.length];
+}
+
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
-  // Initialize offline sync
   useEffect(() => {
     if (typeof window !== 'undefined') {
       initSync();
     }
   }, []);
 
-  // Fetch students
   useEffect(() => {
     fetch('/api/montree/children')
       .then(r => r.json())
@@ -43,15 +53,11 @@ export default function DashboardPage() {
     setQuickCaptureOpen(true);
   }, []);
 
-  // ==========================================
-  // SKELETON LOADING STATE - Shows UI instantly
-  // ==========================================
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        {/* Header Skeleton */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
         <header className="bg-white border-b border-slate-200 px-4 py-4 sticky top-0 z-40">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🐋</span>
               <div>
@@ -59,57 +65,27 @@ export default function DashboardPage() {
                 <div className="h-3 w-16 bg-slate-200 rounded animate-pulse mt-1"></div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-slate-100 rounded-lg animate-pulse"></div>
-              <div className="w-9 h-9 bg-slate-100 rounded-lg animate-pulse"></div>
-            </div>
           </div>
         </header>
-
-        {/* Quick Action Button Skeleton */}
-        <div className="px-4 py-3 max-w-2xl mx-auto">
-          <div className="w-full py-4 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl h-14 animate-pulse"></div>
-        </div>
-
-        {/* Student List Skeleton */}
-        <main className="px-4 pb-8 max-w-2xl mx-auto">
-          <div className="space-y-2">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm"
-              >
-                {/* Avatar Skeleton */}
-                <div className="w-12 h-12 rounded-full bg-slate-200 animate-pulse"></div>
-                {/* Name Skeleton */}
-                <div className="flex-1">
-                  <div 
-                    className="h-4 bg-slate-200 rounded animate-pulse"
-                    style={{ width: `${65 + (i % 3) * 10}%` }}
-                  ></div>
-                </div>
-                {/* Arrow */}
-                <span className="text-slate-200">›</span>
+        <main className="px-4 py-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center p-4 bg-white/70 rounded-2xl">
+                <div className="w-14 h-14 rounded-full bg-slate-200 animate-pulse mb-2"></div>
+                <div className="h-4 w-16 bg-slate-200 rounded animate-pulse"></div>
               </div>
             ))}
           </div>
         </main>
-
-        {/* Floating Button Skeleton */}
-        <div className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-400 rounded-full animate-pulse"></div>
       </div>
     );
   }
 
-  // ==========================================
-  // MAIN UI
-  // ==========================================
   return (
-    <div className="min-h-screen bg-slate-50">
-      
-      {/* ========== HEADER ========== */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+      {/* Header */}
       <header className="bg-white border-b border-slate-200 px-4 py-4 sticky top-0 z-40">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🐋</span>
             <div>
@@ -138,8 +114,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* ========== QUICK ACTIONS ========== */}
-      <div className="px-4 py-3 max-w-2xl mx-auto">
+      {/* Quick Actions */}
+      <div className="px-4 py-3 max-w-4xl mx-auto">
         <button
           onClick={openQuickCapture}
           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
@@ -149,51 +125,48 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* ========== STUDENT LIST ========== */}
-      <main className="px-4 pb-8 max-w-2xl mx-auto">
+      {/* Student Grid */}
+      <main className="px-4 py-6 max-w-4xl mx-auto pb-40">
         {students.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">🐋</div>
             <p className="text-slate-500 mb-4">No students yet</p>
-            <Link 
-              href="/montree/admin/students" 
-              className="text-emerald-600 font-medium"
-            >
+            <Link href="/montree/admin/students" className="text-emerald-600 font-medium">
               + Add students
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {students.map((student, index) => (
-              <Link
-                key={student.id}
-                href={`/montree/dashboard/student/${student.id}`}
-                className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
-              >
-                {/* Avatar */}
-                <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm"
-                  style={{
-                    background: `linear-gradient(135deg, ${getAvatarColor(index)[0]}, ${getAvatarColor(index)[1]})`
-                  }}
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            {students.map((student, index) => {
+              const colors = getAvatarColor(index);
+
+              return (
+                <Link
+                  key={student.id}
+                  href={`/montree/dashboard/student/${student.id}`}
+                  className="relative flex flex-col items-center p-4 rounded-2xl transition-all bg-white/70 hover:bg-white hover:shadow-md"
                 >
-                  {student.name.charAt(0)}
-                </div>
-                
-                {/* Name */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-800 truncate">{student.name}</p>
-                </div>
-                
-                {/* Arrow */}
-                <span className="text-slate-300">›</span>
-              </Link>
-            ))}
+                  <div 
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md mb-2"
+                    style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}
+                  >
+                    {student.photo_url ? (
+                      <img src={student.photo_url} alt={student.name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      student.name.charAt(0)
+                    )}
+                  </div>
+                  <p className="font-medium text-slate-800 text-sm text-center truncate w-full">
+                    {student.name}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         )}
       </main>
 
-      {/* ========== FLOATING CAMERA BUTTON ========== */}
+      {/* Floating Camera Button */}
       <button
         onClick={openQuickCapture}
         className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-90 transition-transform z-50"
@@ -201,29 +174,17 @@ export default function DashboardPage() {
         <span className="text-2xl">📷</span>
       </button>
 
-      {/* ========== QUICK CAPTURE MODAL ========== */}
+      {/* Quick Capture Modal */}
       <QuickCapture
         isOpen={quickCaptureOpen}
         onClose={() => setQuickCaptureOpen(false)}
         students={students}
       />
+
+      {/* Demo Tutorial - only shows when ?demo=zohan is in URL */}
+      <Suspense fallback={null}>
+        <DemoTutorial steps={CLASSROOM_STEPS} />
+      </Suspense>
     </div>
   );
-}
-
-// ==========================================
-// HELPERS
-// ==========================================
-
-const AVATAR_COLORS = [
-  ['#10b981', '#14b8a6'], // emerald-teal
-  ['#3b82f6', '#6366f1'], // blue-indigo
-  ['#f59e0b', '#f97316'], // amber-orange
-  ['#ec4899', '#f43f5e'], // pink-rose
-  ['#8b5cf6', '#a855f7'], // violet-purple
-  ['#06b6d4', '#0ea5e9'], // cyan-sky
-];
-
-function getAvatarColor(index: number): [string, string] {
-  return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
