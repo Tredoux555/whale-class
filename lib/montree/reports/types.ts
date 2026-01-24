@@ -76,8 +76,8 @@ export interface ReportContent {
 
 export interface ReportHighlight {
   // Link to media
-  media_id: string;
-  storage_path?: string;
+  media_id: string | null;
+  storage_path?: string | null;
   thumbnail_path?: string;
   
   // Link to curriculum work (if tagged)
@@ -94,9 +94,14 @@ export interface ReportHighlight {
   repetitions?: number;          // How many times this work this week
   session_notes?: string[];      // Teacher observation notes
   
+  // Session 58: Status and multiple photos
+  status?: string;               // presented/practicing/mastered
+  photo_count?: number;          // How many photos for this work
+  all_photos?: string[];         // All photo storage paths
+  
   // Metadata
   captured_at: string;
-  caption: string | null;
+  caption?: string | null;
 }
 
 export type CurriculumArea = 

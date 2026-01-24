@@ -1,8 +1,13 @@
 // lib/montree/reports/generator.ts
-// Report generation logic - aggregates photos and creates report
-// Phase 3 - Session 54 | Updated Session 55 for parent descriptions
+// Report generation logic - aggregates weekly work and photos
+// Session 58 - FIXED to use correct tables (weekly_assignments, child_work_media)
+// Session 59 - UPGRADED to use rich work-specific definitions from work-definitions.ts
+//              No more generic "Practical Life develops concentration" - each work gets
+//              its own parent-friendly explanation of WHAT the child is doing, WHY it matters,
+//              and HOW it connects to home.
 
 import { createServerClient } from '@/lib/supabase/server';
+import { getWorkDefinition, generateReportSummary } from './work-definitions';
 import type { 
   MontreeWeeklyReport, 
   ReportContent, 
@@ -13,28 +18,12 @@ import type {
 } from './types';
 
 // ============================================
-// TYPES FOR INTERNAL USE
-// ============================================
-
-interface WorkTranslation {
-  display_name: string;
-  area: CurriculumArea;
-  developmental_context: string;
-  home_extension: string | null;
-  photo_caption_template: string | null;
-  // Session 55: Parent-friendly descriptions
-  parent_description: string | null;
-  why_it_matters: string | null;
-  home_connection: string | null;
-}
-
-// ============================================
 // MAIN GENERATOR FUNCTION
 // ============================================
 
 export async function generateWeeklyReport(params: {
   child_id: string;
-  school_id: string;
+  school_id?: string;
   week_start: string;
   week_end: string;
   report_type: ReportType;
@@ -47,37 +36,27 @@ export async function generateWeeklyReport(params: {
     week_end, 
     report_type, 
     generated_by,
-    use_ai = true 
   } = params;
 
-  // Use a deterministic UUID for default school
-  // This is a fixed UUID that represents "default school" in our system
   const DEFAULT_SCHOOL_UUID = '00000000-0000-0000-0000-000000000001';
   const school_id = params.school_id || DEFAULT_SCHOOL_UUID;
-
-  const startTime = Date.now();
 
   try {
     const supabase = await createServerClient();
 
     // 1. Get child info
-    // FIX Session 56: Use 'children' table not 'montree_children' - they have different IDs!
-    // Note: 'children' table doesn't have gender column, so we default to 'they'
-    const { data: childData, error: childError } = await supabase
+    const { data: child, error: childError } = await supabase
       .from('children')
-      .select('id, name')
+      .select('id, name, photo_url')
       .eq('id', child_id)
       .single();
 
-    if (childError || !childData) {
-      console.error('Child lookup error:', childError?.message, 'for child_id:', child_id);
+    if (childError || !child) {
+      console.error('Child lookup error:', childError?.message);
       return { success: false, error: 'Child not found' };
     }
 
-    // Add gender as 'they' since the children table doesn't have it
-    const child = { ...childData, gender: 'they' as const };
-
-    // 2. Check if report already exists
+    // 2. Check if report already exists for this week
     const { data: existingReport } = await supabase
       .from('montree_weekly_reports')
       .select('id')
@@ -89,208 +68,163 @@ export async function generateWeeklyReport(params: {
     if (existingReport) {
       return { 
         success: false, 
-        error: `A ${report_type} report already exists for this week.` 
+        error: `A ${report_type} report already exists for this week. Delete it first to regenerate.` 
       };
     }
 
-    // 3. Fetch media for this child during this week
-    const weekStartDate = new Date(week_start);
-    const weekEndDate = new Date(week_end);
-    weekEndDate.setHours(23, 59, 59, 999);
+    // 3. Get the latest weekly plan (same logic as /api/classroom/child/[id]/week)
+    const { data: plans } = await supabase
+      .from('weekly_plans')
+      .select('id, week_number, year')
+      .order('year', { ascending: false })
+      .order('week_number', { ascending: false })
+      .limit(1);
 
-    const { data: mediaItems, error: mediaError } = await supabase
-      .from('montree_media')
-      .select('id, storage_path, thumbnail_path, child_id, work_id, caption, tags, captured_at')
-      .eq('child_id', child_id)
-      .gte('captured_at', weekStartDate.toISOString())
-      .lte('captured_at', weekEndDate.toISOString())
-      .order('captured_at', { ascending: true });
-
-    if (mediaError) {
-      console.error('Media fetch error:', mediaError);
-      return { success: false, error: 'Failed to fetch media' };
-    }
-
-    const allMedia = mediaItems || [];
-
-    // Also check for group photos
-    const { data: groupMediaLinks } = await supabase
-      .from('montree_media_children')
-      .select('media_id')
-      .eq('child_id', child_id);
-
-    if (groupMediaLinks && groupMediaLinks.length > 0) {
-      const groupMediaIds = groupMediaLinks.map(l => l.media_id);
-      
-      const { data: groupMedia } = await supabase
-        .from('montree_media')
-        .select('id, storage_path, thumbnail_path, child_id, work_id, caption, tags, captured_at')
-        .in('id', groupMediaIds)
-        .gte('captured_at', weekStartDate.toISOString())
-        .lte('captured_at', weekEndDate.toISOString());
-
-      if (groupMedia) {
-        const existingIds = new Set(allMedia.map(m => m.id));
-        groupMedia.forEach(gm => {
-          if (!existingIds.has(gm.id)) {
-            allMedia.push(gm);
-          }
-        });
-      }
-    }
-
-    // 4. Get work translations INCLUDING new parent description fields
-    const workIds = [...new Set(allMedia.filter(m => m.work_id).map(m => m.work_id))];
-    let workTranslations: Record<string, WorkTranslation> = {};
-
-    if (workIds.length > 0) {
-      const { data: translations } = await supabase
-        .from('montree_work_translations')
-        .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template, parent_description, why_it_matters, home_connection')
-        .in('work_id', workIds);
-
-      if (translations) {
-        translations.forEach(t => {
-          workTranslations[t.work_id] = {
-            display_name: t.display_name,
-            area: t.area as CurriculumArea,
-            developmental_context: t.developmental_context,
-            home_extension: t.home_extension,
-            photo_caption_template: t.photo_caption_template,
-            parent_description: t.parent_description,
-            why_it_matters: t.why_it_matters,
-            home_connection: t.home_connection,
-          };
-        });
-      }
-    }
-
-    // 4b. Fetch work sessions for this week
-    const { data: sessions } = await supabase
-      .from('montree_work_sessions')
-      .select('*')
-      .eq('child_id', child_id)
-      .gte('observed_at', weekStartDate.toISOString())
-      .lte('observed_at', weekEndDate.toISOString());
-
-    const workRepetitions: Record<string, number> = {};
-    const sessionNotes: Record<string, string[]> = {};
+    const latestPlan = plans?.[0];
     
-    if (sessions && sessions.length > 0) {
-      sessions.forEach(s => {
-        if (s.work_id) {
-          workRepetitions[s.work_id] = (workRepetitions[s.work_id] || 0) + 1;
-          if (s.notes && s.notes.trim()) {
-            if (!sessionNotes[s.work_id]) sessionNotes[s.work_id] = [];
-            sessionNotes[s.work_id].push(s.notes);
-          }
-        }
-      });
-      
-      // Fetch translations for session works not in media
-      const sessionWorkIds = Object.keys(workRepetitions);
-      const newWorkIds = sessionWorkIds.filter(id => !workIds.includes(id));
-      
-      if (newWorkIds.length > 0) {
-        const { data: moreTranslations } = await supabase
-          .from('montree_work_translations')
-          .select('work_id, display_name, area, developmental_context, home_extension, photo_caption_template, parent_description, why_it_matters, home_connection')
-          .in('work_id', newWorkIds);
-          
-        if (moreTranslations) {
-          moreTranslations.forEach(t => {
-            workTranslations[t.work_id] = {
-              display_name: t.display_name,
-              area: t.area as CurriculumArea,
-              developmental_context: t.developmental_context,
-              home_extension: t.home_extension,
-              photo_caption_template: t.photo_caption_template,
-              parent_description: t.parent_description,
-              why_it_matters: t.why_it_matters,
-              home_connection: t.home_connection,
-            };
-          });
-        }
-      }
+    if (!latestPlan) {
+      return { success: false, error: 'No weekly plans found. Please create a weekly plan first.' };
     }
 
-    // 5. Build highlights - NOW USING PARENT DESCRIPTIONS
-    const childName = child.name;
-    const highlights: ReportHighlight[] = allMedia.map(media => {
-      const work = media.work_id ? workTranslations[media.work_id] : null;
-      const repetitions = media.work_id ? (workRepetitions[media.work_id] || 1) : 1;
-      const notes = media.work_id ? (sessionNotes[media.work_id] || []) : [];
-      
-      // Session 55: Use parent_description if available, personalize with child name
-      let observation = media.caption || notes[0] || 'Working with concentration.';
-      if (work?.parent_description) {
-        // Replace "Your child" with actual name
-        observation = work.parent_description.replace(/Your child/g, childName);
-      }
-      
-      // Use why_it_matters for developmental note
-      const developmental_note = work?.why_it_matters || work?.developmental_context || 'Developing independence and focus.';
-      
-      // Use home_connection for home extension
-      const home_ext = work?.home_connection || work?.home_extension || null;
-      
-      return {
-        media_id: media.id,
-        storage_path: media.storage_path,
-        thumbnail_path: media.thumbnail_path,
-        work_id: media.work_id,
-        work_name: work?.display_name || null,
-        area: work?.area || null,
-        observation,
-        developmental_note,
-        home_extension: home_ext,
-        captured_at: media.captured_at,
-        caption: media.caption,
-        repetitions,
-        session_notes: notes.length > 0 ? notes : undefined,
-      };
+    const weekNumber = latestPlan.week_number;
+    const year = latestPlan.year;
+    
+    console.log('🔍 Report generator debug:', {
+      child_id,
+      week_start,
+      week_end,
+      usingPlanWeek: weekNumber,
+      usingPlanYear: year
     });
 
-    // 6. Calculate areas explored
+    // 4. Fetch assignments for this child this week - THE CORRECT TABLE!
+    const { data: assignments, error: assignError } = await supabase
+      .from('weekly_assignments')
+      .select('id, work_name, work_id, area, progress_status, notes, presented_at, practicing_at, mastered_at')
+      .eq('child_id', child_id)
+      .eq('week_number', weekNumber)
+      .eq('year', year);
+
+    console.log('🔍 Assignments query result:', {
+      error: assignError?.message,
+      count: assignments?.length || 0,
+      assignments: assignments?.slice(0, 3) // First 3 for brevity
+    });
+
+    if (assignError) {
+      console.error('Assignments fetch error:', assignError);
+      return { success: false, error: 'Failed to fetch work assignments' };
+    }
+
+    const allAssignments = assignments || [];
+
+    // 5. Get photos for these assignments - THE CORRECT TABLE!
+    const assignmentIds = allAssignments.map(a => a.id);
+    let allMedia: any[] = [];
+
+    if (assignmentIds.length > 0) {
+      const { data: mediaData, error: mediaError } = await supabase
+        .from('child_work_media')
+        .select('id, assignment_id, media_url, notes, taken_at')
+        .in('assignment_id', assignmentIds)
+        .order('taken_at', { ascending: true });
+
+      console.log('🔍 Media query result:', {
+        error: mediaError?.message,
+        count: mediaData?.length || 0,
+        media: mediaData?.slice(0, 3)
+      });
+
+      allMedia = mediaData || [];
+    }
+
+    // Group media by assignment
+    const mediaByAssignment: Record<string, any[]> = {};
+    allMedia.forEach(m => {
+      if (!mediaByAssignment[m.assignment_id]) {
+        mediaByAssignment[m.assignment_id] = [];
+      }
+      mediaByAssignment[m.assignment_id].push(m);
+    });
+
+    // 6. Build highlights - one per assignment with work done
+    const childName = child.name;
+    const highlights: ReportHighlight[] = [];
+
+    for (const assignment of allAssignments) {
+      // Skip works that weren't started
+      if (assignment.progress_status === 'not_started') continue;
+
+      const photos = mediaByAssignment[assignment.id] || [];
+      const area = mapAreaToEnum(assignment.area);
+
+      // Get status text
+      const statusText = getStatusText(assignment.progress_status);
+
+      // Build observation text
+      let observation = '';
+      if (assignment.notes) {
+        observation = assignment.notes;
+      } else {
+        observation = `${childName} worked on ${assignment.work_name}. Status: ${statusText}.`;
+      }
+
+      // Get rich, work-specific developmental content
+      const workDefinition = getWorkDefinition(assignment.work_id, assignment.work_name, area);
+
+      // Create highlight for the assignment
+      // Use media_url directly (it's already a full public URL)
+      const highlight: ReportHighlight = {
+        media_id: photos[0]?.id || null,
+        storage_path: photos[0]?.media_url || null,  // This is now a full URL
+        work_id: assignment.work_id,
+        work_name: assignment.work_name,
+        area,
+        observation,
+        developmental_note: workDefinition.developmental_note,
+        home_extension: workDefinition.home_extension,
+        captured_at: photos[0]?.taken_at || assignment.presented_at || new Date().toISOString(),
+        status: assignment.progress_status,
+        photo_count: photos.length,
+        all_photos: photos.map(p => p.media_url),
+      };
+
+      highlights.push(highlight);
+    }
+
+    // 7. Calculate areas explored
     const areasSet = new Set<CurriculumArea>();
     highlights.forEach(h => {
       if (h.area) areasSet.add(h.area);
     });
     const areas_explored = Array.from(areasSet);
 
-    // 7. Build content
-    const totalSessions = sessions?.length || 0;
-    const uniqueWorksThisWeek = Object.keys(workRepetitions).length;
-    
+    // 8. Build summary using rich definitions
+    const summary = generateReportSummary(childName, highlights, areas_explored);
+
+    // 9. Build content
     const content: ReportContent = {
-      summary: generateBasicSummary(childName, child.gender, highlights, areas_explored, totalSessions, uniqueWorksThisWeek),
+      summary,
       highlights,
       areas_explored,
       total_activities: highlights.length,
       total_photos: allMedia.length,
-      total_sessions: totalSessions,
-      unique_works: uniqueWorksThisWeek,
-      work_repetitions: workRepetitions,
-      milestones: [],
-      teacher_notes: report_type === 'teacher' ? '' : undefined,
-      parent_message: report_type === 'parent' 
-        ? `Thank you for being part of ${childName}'s learning journey!` 
-        : undefined,
+      milestones: highlights.filter(h => h.status === 'mastered').map(h => h.work_name || 'Activity'),
+      parent_message: `Thank you for being part of ${childName}'s learning journey!`,
       generated_with_ai: false,
       generation_timestamp: new Date().toISOString(),
     };
 
-    // 8. Create report record
+    // 10. Create report record
     const { data: report, error: insertError } = await supabase
       .from('montree_weekly_reports')
       .insert({
         school_id,
-        classroom_id: null,
         child_id,
         week_start,
         week_end,
         report_type,
-        status: 'draft' as const,
+        status: 'draft',
         content,
         generated_at: new Date().toISOString(),
         generated_by,
@@ -303,42 +237,12 @@ export async function generateWeeklyReport(params: {
       return { success: false, error: `Failed to create report: ${insertError.message}` };
     }
 
-    // 9. Link media to report
-    if (allMedia.length > 0) {
-      const mediaLinks = allMedia.map((m, index) => ({
-        report_id: report.id,
-        media_id: m.id,
-        display_order: index,
-        caption: m.caption,
-      }));
-
-      await supabase.from('montree_report_media').insert(mediaLinks);
-    }
-
-    // 10. Auto-generate share token
-    const shareToken = generateShareToken();
-    const shareExpiresAt = new Date();
-    shareExpiresAt.setDate(shareExpiresAt.getDate() + 90);
-
-    await supabase.from('report_share_tokens').insert({
-      report_id: report.id,
-      token: shareToken,
-      expires_at: shareExpiresAt.toISOString(),
-      revoked: false,
-    });
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://teacherpotato.xyz';
-    const shareUrl = `${baseUrl}/montree/report/${shareToken}`;
-
     return {
       success: true,
       report: report as MontreeWeeklyReport,
-      share_url: shareUrl,
-      share_token: shareToken,
       stats: {
         photos_included: allMedia.length,
         activities_detected: highlights.length,
-        ai_generation_time_ms: use_ai ? Date.now() - startTime : undefined,
       },
     };
 
@@ -355,60 +259,40 @@ export async function generateWeeklyReport(params: {
 // HELPER FUNCTIONS
 // ============================================
 
-function generateShareToken(): string {
-  const array = new Uint8Array(32);
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(array);
-  } else {
-    for (let i = 0; i < 32; i++) {
-      array[i] = Math.floor(Math.random() * 256);
-    }
-  }
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+function getWeekNumber(date: Date): { week: number; year: number } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return { week, year: d.getUTCFullYear() };
 }
 
-function generateBasicSummary(
-  name: string, 
-  gender: 'he' | 'she' | 'they',
-  highlights: ReportHighlight[],
-  areas: CurriculumArea[],
-  totalSessions: number,
-  uniqueWorks: number
-): string {
-  const verb = gender === 'they' ? 'were' : 'was';
-  const possessive = gender === 'he' ? 'his' : gender === 'she' ? 'her' : 'their';
-  const showedVerb = gender === 'they' ? 'They showed' : gender === 'he' ? 'He showed' : 'She showed';
-  
-  if (highlights.length === 0 && totalSessions === 0) {
-    return `This week, ${name} continued ${possessive} learning journey in the classroom.`;
-  }
-
-  const areaNames = areas.map(a => {
-    switch (a) {
-      case 'practical_life': return 'Practical Life';
-      case 'sensorial': return 'Sensorial';
-      case 'language': return 'Language';
-      case 'mathematics': return 'Mathematics';
-      case 'cultural': return 'Cultural';
-      default: return a;
-    }
-  });
-
-  const areaText = areaNames.length === 0 
-    ? 'various activities'
-    : areaNames.length === 1 
-      ? areaNames[0]
-      : areaNames.length === 2
-        ? `${areaNames[0]} and ${areaNames[1]}`
-        : `${areaNames.slice(0, -1).join(', ')}, and ${areaNames[areaNames.length - 1]}`;
-
-  const activityCount = uniqueWorks || highlights.length;
-  const sessionNote = totalSessions > activityCount 
-    ? `, returning to favorite works ${totalSessions - activityCount} times` 
-    : '';
-
-  return `This week, ${name} ${verb} actively engaged in ${possessive} learning, exploring ${activityCount} ${activityCount === 1 ? 'activity' : 'activities'} across ${areaText}${sessionNote}. ${showedVerb} wonderful focus and curiosity throughout the week.`;
+function mapAreaToEnum(area: string): CurriculumArea {
+  const areaMap: Record<string, CurriculumArea> = {
+    'practical_life': 'practical_life',
+    'sensorial': 'sensorial',
+    'language': 'language',
+    'mathematics': 'mathematics',
+    'math': 'mathematics',
+    'cultural': 'cultural',
+    'culture': 'cultural',
+  };
+  return areaMap[area?.toLowerCase()] || 'practical_life';
 }
+
+function getStatusText(status: string): string {
+  switch (status) {
+    case 'presented': return 'Introduced this week';
+    case 'practicing': return 'Actively practicing';
+    case 'mastered': return 'Mastered! 🌟';
+    default: return 'In progress';
+  }
+}
+
+// NOTE: Old generic getDevelopmentalNote, getHomeExtension, and generateSummary functions
+// have been removed. Now using work-specific definitions from ./work-definitions.ts
+// Session 59 - Rich parent-friendly definitions for every Montessori work
 
 export async function regenerateReportContent(
   report_id: string,

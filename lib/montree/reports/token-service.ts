@@ -39,8 +39,8 @@ function generateSecureToken(): string {
  * Build the full share URL for a token
  */
 export function buildShareUrl(token: string): string {
-  // Use environment variable or fallback
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://teacherpotato.xyz';
+  // Use environment variable or fallback to localhost for dev
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   return `${baseUrl}/montree/report/${token}`;
 }
 
@@ -218,8 +218,9 @@ export async function validateTokenAndGetReport(
 
     let mediaUrls: Record<string, string> = {};
     if (storagePaths.length > 0) {
+      // Try work-photos bucket first (where most photos are stored)
       const { data: signedUrls } = await supabase.storage
-        .from('whale-media')
+        .from('work-photos')
         .createSignedUrls(storagePaths as string[], 3600); // 1 hour expiry
 
       if (signedUrls) {
