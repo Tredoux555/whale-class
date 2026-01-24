@@ -19,6 +19,17 @@ interface MediaItem {
   created_at: string;
 }
 
+interface SharedFile {
+  id: number;
+  original_filename: string;
+  file_size: number;
+  mime_type: string;
+  description: string | null;
+  uploaded_by: string;
+  created_at: string;
+  public_url: string;
+}
+
 export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
@@ -40,6 +51,7 @@ export default function StoryViewer() {
   
   // Media state
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [sharedFiles, setSharedFiles] = useState<SharedFile[]>([]);
   const [showMediaSection, setShowMediaSection] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -101,6 +113,24 @@ export default function StoryViewer() {
     }
   }, [getSession]);
 
+  const loadSharedFiles = useCallback(async () => {
+    const session = getSession();
+    if (!session) return;
+
+    try {
+      const res = await fetch('/api/story/shared-files', {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSharedFiles(data.files || []);
+      }
+    } catch {
+      // Non-critical, ignore
+    }
+  }, [getSession]);
+
   // Check for new messages periodically (every 10 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -119,6 +149,7 @@ export default function StoryViewer() {
 
     loadStory();
     loadMedia();
+    loadSharedFiles();
     
     // Auto-logout on window close
     const handleUnload = () => {
@@ -128,7 +159,7 @@ export default function StoryViewer() {
     
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [params.session, router, loadStory, loadMedia, getSession]);
+  }, [params.session, router, loadStory, loadMedia, loadSharedFiles, getSession]);
 
   // Handle letter clicks
   const handleLetterClick = async (letter: string, charIndex: number, paragraphIndex: number) => {
@@ -256,6 +287,25 @@ export default function StoryViewer() {
       return item.filename.replace(/\.[^/.]+$/, '').replace(/-|_/g, ' ');
     }
     return 'Shared Song';
+  };
+
+  // Get icon for file type
+  const getFileIcon = (mimeType: string, filename: string) => {
+    if (mimeType.includes('pdf')) return '📕';
+    if (mimeType.includes('word') || filename.match(/\.docx?$/i)) return '📘';
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || filename.match(/\.xlsx?$/i)) return '📗';
+    if (mimeType.includes('powerpoint') || mimeType.includes('presentation') || filename.match(/\.pptx?$/i)) return '📙';
+    if (mimeType.includes('image')) return '🖼️';
+    if (mimeType.includes('text') || filename.match(/\.txt$/i)) return '📄';
+    if (mimeType.includes('zip') || mimeType.includes('rar')) return '📦';
+    return '📎';
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   // Render paragraph with interactive letters
@@ -529,10 +579,46 @@ export default function StoryViewer() {
                   )}
 
                   {/* Empty State */}
-                  {mediaItems.length === 0 && (
+                  {mediaItems.length === 0 && sharedFiles.length === 0 && (
                     <p className="text-gray-500 text-center py-4">
-                      No classroom photos or songs shared yet today.
+                      No classroom photos, songs, or documents shared yet.
                     </p>
+                  )}
+
+                  {/* Documents Section */}
+                  {sharedFiles.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                        <span>📁</span> Classroom Documents
+                      </h3>
+                      <div className="space-y-2">
+                        {sharedFiles.map((file) => (
+                          <a
+                            key={file.id}
+                            href={file.public_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-colors"
+                          >
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
+                              {getFileIcon(file.mime_type, file.original_filename)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-800 truncate">
+                                {file.original_filename}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {formatFileSize(file.file_size)} • Shared by {file.uploaded_by}
+                                {file.description && <span className="ml-2 text-blue-600">— {file.description}</span>}
+                              </p>
+                            </div>
+                            <div className="text-blue-600 text-sm font-medium flex-shrink-0">
+                              Download ⬇
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </>
               );

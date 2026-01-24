@@ -186,14 +186,22 @@ export default function ParentReportViewPage() {
               <span>✨</span> Learning Highlights
             </h3>
             
-            {report.highlights.map((highlight, index) => (
-              <HighlightCard
-                key={highlight.media_id}
-                highlight={highlight}
-                imageUrl={highlight.storage_path ? mediaUrls[highlight.storage_path] : null}
-                index={index}
-              />
-            ))}
+            {report.highlights.map((highlight, index) => {
+              // storage_path might be a full URL (media_url) or a path needing signing
+              const isFullUrl = highlight.storage_path?.startsWith('http');
+              const imageUrl = isFullUrl 
+                ? highlight.storage_path 
+                : (highlight.storage_path ? mediaUrls[highlight.storage_path] : null);
+              
+              return (
+                <HighlightCard
+                  key={highlight.media_id || `highlight-${index}`}
+                  highlight={highlight}
+                  imageUrl={imageUrl}
+                  index={index}
+                />
+              );
+            })}
           </div>
         )}
 
