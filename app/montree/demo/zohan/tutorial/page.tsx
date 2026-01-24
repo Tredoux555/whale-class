@@ -129,8 +129,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { id: 'add-note', title: 'Add an Observation', instruction: 'Notes appear in parent reports. Try typing something! Hit enter to save.', emoji: '✏️', targetType: 'notes' },
   { id: 'watch-demo', title: 'Need a Refresher?', instruction: 'Tap Demo to open YouTube and see how to present this work.', emoji: '▶️', targetType: 'demo' },
   { id: 'take-photo', title: 'Capture the Moment', instruction: 'Photos go directly into parent reports!', emoji: '📸', targetType: 'camera' },
-  { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly. A child picks up something not on their plan.', emoji: '😮', targetType: 'none', autoAdvance: false, celebratory: true },
-  { id: 'browse-works', title: 'Browse Any Work', instruction: 'Tap the green "Browse Works" button above to spin through the entire curriculum!', emoji: '🎡', targetType: 'wheel' },
+  { id: 'random-work-intro', title: '😮 Child Chose a Random Work!', instruction: 'This happens constantly. A child picks up something not on their plan. Hold the area icon (C) to browse Cultural works!', emoji: '😮', targetType: 'none', autoAdvance: false, celebratory: true },
   { id: 'progress-tab', title: 'Progress Overview', instruction: 'The Progress tab shows mastery across all curriculum areas.', emoji: '📊', targetType: 'tab', targetId: 'progress' },
   { id: 'grand-finale-intro', title: '🎉 THE GRAND FINALE 🎉', instruction: 'Now for the magic—where all this data becomes a beautiful report...', emoji: '✨', targetType: 'none', autoAdvance: false, celebratory: true },
   { id: 'generate-report', title: 'Generate a Report', instruction: 'Tap "Generate Report" to create a weekly summary for parents.', emoji: '📄', targetType: 'report' },
@@ -392,11 +391,6 @@ export default function ZohanTutorialPage() {
   const handleCameraClick = () => {
     toast.success('📸 Photo captured! (Demo)');
     if (step.targetType === 'camera') nextStep();
-  };
-
-  const handleBrowseWorksClick = () => {
-    fetchWorksForWheel('all');
-    if (step.targetType === 'wheel') nextStep();
   };
 
   const handleLongPressStart = (area: string) => {
@@ -676,16 +670,6 @@ export default function ZohanTutorialPage() {
                   </div>
                 </div>
               )}
-
-              {/* BROWSE WORKS BUTTON - Opens wheel */}
-              <button
-                onClick={handleBrowseWorksClick}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all w-full justify-center mb-4 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm ${step.targetType === 'wheel' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}`}
-              >
-                <span className="text-xl">🎡</span>
-                <span className="font-semibold">Browse Works</span>
-                <span className="text-sm text-emerald-500 ml-1">Spin through curriculum</span>
-              </button>
 
               {/* Legend - MATCHES REAL */}
               {expandedIndex === null && (
