@@ -22,6 +22,16 @@ type OnboardingInput = {
   classrooms: ClassroomInput[];
 };
 
+// Generate a simple login code like "whale-7392"
+function generateLoginCode(classroomName: string): string {
+  const prefix = classroomName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .substring(0, 10) || 'class';
+  const suffix = Math.floor(1000 + Math.random() * 9000); // 4 digit number
+  return `${prefix}-${suffix}`;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: OnboardingInput = await request.json();
@@ -67,12 +77,19 @@ export async function POST(request: NextRequest) {
 
       // Create teacher first if name provided
       let teacherId = null;
+      let loginCode = null;
+      
       if (classroom.teacher?.name) {
+        // Generate unique login code
+        loginCode = generateLoginCode(classroom.name);
+        
         const { data: teacher, error: teacherError } = await supabase
           .from('simple_teachers')
           .insert({
             name: classroom.teacher.name,
-            password: '123', // Default password
+            password: '123', // Temporary default, teacher will set their own
+            password_set: false,
+            login_code: loginCode,
             school_id: schoolId,
             is_active: true,
           })
@@ -81,9 +98,29 @@ export async function POST(request: NextRequest) {
 
         if (teacherError) {
           console.error('Teacher creation error:', teacherError);
+          // Try with different code if duplicate
+          if (teacherError.code === '23505') {
+            loginCode = generateLoginCode(classroom.name + Math.random());
+            const { data: retryTeacher } = await supabase
+              .from('simple_teachers')
+              .insert({
+                name: classroom.teacher.name,
+                password: '123',
+                password_set: false,
+                login_code: loginCode,
+                school_id: schoolId,
+                is_active: true,
+              })
+              .select()
+              .single();
+            if (retryTeacher) {
+              teacherId = retryTeacher.id;
+              createdTeachers.push({ ...retryTeacher, login_code: loginCode });
+            }
+          }
         } else {
           teacherId = teacher.id;
-          createdTeachers.push(teacher);
+          createdTeachers.push({ ...teacher, login_code: loginCode });
         }
       }
 
@@ -120,7 +157,7 @@ export async function POST(request: NextRequest) {
       success: true,
       school: newSchool,
       classrooms: createdClassrooms,
-      teachers: createdTeachers,
+      teachers: createdTeachers, // Includes login_code for each teacher
     }, { status: 201 });
 
   } catch (error) {
