@@ -2,26 +2,16 @@
   "appId": "xyz.teacherpotato.montree",
   "appName": "Montree",
   "webDir": "out",
-  "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "https"
+    "url": "https://www.teacherpotato.xyz/montree",
+    "cleartext": true
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 2000,
-      "backgroundColor": "#10B981",
-      "showSpinner": false
-    },
-    "CapacitorSQLite": {
-      "iosDatabaseLocation": "Library/CapacitorDatabase",
-      "iosIsEncryption": false,
-      "androidIsEncryption": false
+      "launchShowDuration": 0
     }
   },
   "ios": {
     "contentInset": "automatic"
-  },
-  "android": {
-    "allowMixedContent": false
   }
 }

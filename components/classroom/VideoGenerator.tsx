@@ -247,7 +247,7 @@ export default function VideoGenerator({ childId, childName, onClose }: VideoGen
     // Text
     ctx.fillStyle = 'white';
     ctx.font = '36px Arial';
-    ctx.fillText('Whale Classroom', width / 2, height / 2 + 60);
+    ctx.fillText('My Classroomroom', width / 2, height / 2 + 60);
     
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.font = '20px Arial';
