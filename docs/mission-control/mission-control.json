@@ -1,92 +1,93 @@
 {
-  "project": "Whale - Montessori Learning Platform",
-  "lastUpdated": "2026-01-15T21:35:00+08:00",
-  "currentSession": "Session 36 - Deployment Blocked",
-  "currentStatus": "⚠️ Code ready but Railway not deploying - 404 on /admin/classroom",
-  "productionUrl": "https://www.teacherpotato.xyz",
+  "project": "Montree - Local-First Montessori Platform",
+  "lastUpdated": "2026-01-25T20:00:00+08:00",
+  "currentSession": "Session 85 - School Onboarding Complete",
   
-  "railwayStatus": "✅ ONLINE",
-  "launchDate": "2026-01-16",
-  "daysRemaining": 1,
-
-  "HANDOFF_LOCATION": "/docs/mission-control/SESSION_LOG.md",
-
-  "MISSION_CRITICAL_PHILOSOPHY": {
-    "THE_STEM": "/admin/schools/beijing-international",
-    "purpose": "Single source of truth. The tree grows from here.",
-    "mantra": "If this goes down for even a day, we lose the school forever.",
-    "approach": "Build step by step as needed - maximum efficiency",
-    "design": "Tesla style - energy direct from source to output",
-    "debugging": "Tredoux can open THE STEM and access EVERYTHING quickly"
+  "THE_VISION": {
+    "summary": "Schools buy the app. They own their data. Forever.",
+    "philosophy": "You deliver the tool. They own everything.",
+    "priority": "THIS IS THE ONLY PRIORITY"
   },
 
-  "ACCESS_CONTROL": {
-    "currentActiveUser": "Tredoux ONLY",
-    "inactiveTeachers": ["Jasmine", "Ivan", "others TBD"],
-    "activationPlan": "Teachers get access later when system proven",
-    "principalAccess": "Will have tabs but Tredoux owns the data"
-  },
-
-  "WHALE_CLASS_STUDENTS": {
-    "total": 18,
-    "ordered_list": [
-      "1. Rachel", "2. Yueze", "3. Lucky", "4. Austin", "5. Minxi", "6. Leo",
-      "7. Joey", "8. Eric", "9. Jimmy", "10. Kevin", "11. Niuniu", "12. Amy",
-      "13. Henry", "14. Segina", "15. Hayden", "16. KK", "17. Kayla", "18. Stella"
-    ],
-    "source": "Individual_English_Report_week_17.docx - exact order"
-  },
-
-  "CURRENT_FOCUS": "Wire 18 students to English progress + Reports",
-
-  "THE_STEM_STRUCTURE": {
-    "/admin/schools/beijing-international": {
-      "overview": "School dashboard - THE STEM entry point",
-      "tabs": ["Classrooms", "Teachers", "Curriculum", "English", "Reports", "Settings"]
+  "TWO_PHASES": {
+    "phase1_web": {
+      "status": "IN PROGRESS",
+      "purpose": "Perfect the product, prove the concept",
+      "url": "https://www.teacherpotato.xyz/montree",
+      "data_location": "Supabase (your server)",
+      "when_done": "When onboarding + dashboard + reports flow perfectly"
     },
-    "/admin/schools/beijing-international/classrooms/[id]": {
-      "purpose": "Classroom management",
-      "features": ["Students list", "Curriculum editor", "Progress view"]
-    },
-    "/admin/schools/beijing-international/english-reports": {
-      "purpose": "Weekly English reports in Tredoux's exact style",
-      "features": ["18 students in order", "Work done", "Performance", "Next work", "Copy/Download"]
+    "phase2_native": {
+      "status": "WAITING",
+      "purpose": "The real product - schools own everything",
+      "tech": "Capacitor (iOS/Android) + SQLite local database",
+      "data_location": "Their device, their NAS, their iCloud - THEIR CHOICE",
+      "you_see_nothing": true,
+      "works_offline": true,
+      "works_forever": "Even if you disappear, app still runs"
     }
   },
 
-  "ENGLISH_WORKS_AVAILABLE": {
-    "matching": ["Big/Small letter puzzle", "Animal matching", "Baby animals matching"],
-    "3ptc": ["/a/", "/e/", "/i/", "/o/", "/u/", "Mixed"],
-    "wbw": ["/a/", "/e/", "/i/", "/o/", "/u/", "3ptc variants", "Mixed Box 1-3"],
-    "wfw": ["/a/", "/e/", "/i/", "/o/", "/u/"],
-    "spl": ["/a/", "/e/", "/i/", "/o/", "/u/"],
-    "sound_games": ["I Spy", "Beginning Sounds", "Ending Sounds"],
-    "pink_reading": ["/a/", "/e/", "/i/", "/o/", "/u/"],
-    "primary_phonics": ["Red 1-10"]
+  "WHY_THIS_MATTERS": {
+    "privacy": "You never see their students' faces or data",
+    "independence": "If you stop updating, app still works",
+    "no_server_costs": "You're not paying for their storage",
+    "trust": "Schools in China want data sovereignty",
+    "mission_aligned": "You're not building a data empire"
   },
 
-  "DATABASE_PRIORITY": [
-    "1. Get 18 children in correct order with display_order",
-    "2. Create child_english_position table",
-    "3. Create english_weekly_log table for reports",
-    "4. Wire English reports page to real data",
-    "5. Track progress as Tredoux inputs it"
+  "CURRENT_BUILD_STATUS": {
+    "onboarding": "✅ Principal creates school → adds classrooms → assigns teachers",
+    "teacher_login": "✅ Login codes generated, first-time password setup",
+    "dashboard": "🔄 Needs to filter by logged-in teacher's classroom",
+    "reports": "🔄 Exists but needs connecting to new structure",
+    "native_conversion": "⏳ After web is perfected"
+  },
+
+  "DATA_MODEL": {
+    "montree_schools": "One per paying customer",
+    "montree_classrooms": "Belongs to school, has one teacher",
+    "simple_teachers": "Has login_code, password, classroom_id",
+    "children": "Has classroom_id, all progress linked",
+    "note": "Same schema works for web AND native"
+  },
+
+  "KEY_URLS_WEB": {
+    "/montree/onboarding": "Principal sets up school",
+    "/montree/login": "Teacher login (code or password)",
+    "/montree/dashboard": "Teacher's classroom view",
+    "/montree/admin": "Principal manages school"
+  },
+
+  "NATIVE_ARCHITECTURE": {
+    "app_container": "Capacitor (wraps web app for iOS/Android)",
+    "local_database": "SQLite on device",
+    "sync_optional": "PowerSync to their own cloud/NAS if they want",
+    "photos": "Stored locally, never leave device unless they choose",
+    "purchase_model": "One-time buy OR subscription for updates"
+  },
+
+  "WHALE_CLASS_LEGACY": {
+    "note": "Tredoux's internal classroom - still works",
+    "school_id": "00000000-0000-0000-0000-000000000001",
+    "classroom_id": "00000000-0000-0000-0000-000000000002",
+    "login_code": "whaleclass-7a4b",
+    "students": 18
+  },
+
+  "NEXT_STEPS": [
+    "1. Connect dashboard to show teacher's classroom only",
+    "2. Build admin panel for principal to manage classrooms",
+    "3. Wire up weekly reports to new structure",
+    "4. Test complete flow end-to-end",
+    "5. Polish UI until perfect",
+    "6. Convert to native with Capacitor + SQLite"
   ],
 
   "CREDENTIALS": {
-    "superAdmin": {"name": "Tredoux", "password": "870602", "role": "owner"},
-    "teachers": [
-      {"name": "Jasmine", "status": "inactive"},
-      {"name": "Ivan", "status": "inactive"}
-    ]
-  },
-
-  "ROUTES_FROM_STEM": {
-    "stem_entry": "/admin/schools/beijing-international",
-    "classrooms": "/admin/schools/beijing-international/classrooms",
-    "teachers": "/admin/schools/beijing-international/teachers",
-    "curriculum": "/admin/schools/beijing-international/curriculum",
-    "english": "/admin/schools/beijing-international/english",
-    "english_reports": "/admin/schools/beijing-international/english-reports"
+    "tredoux": {
+      "login_code": "whaleclass-7a4b",
+      "role": "teacher + admin"
+    }
   }
 }
