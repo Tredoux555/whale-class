@@ -5,8 +5,39 @@
 import Link from 'next/link';
 
 export default function AdminPage() {
+  const demoUrl = 'https://www.teacherpotato.xyz/montree/dashboard?demo=true';
+  
+  const copyDemoLink = () => {
+    navigator.clipboard.writeText(demoUrl);
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Demo Link Banner */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🎬</span>
+          <div>
+            <h2 className="text-white font-bold">Demo Mode</h2>
+            <p className="text-amber-100 text-sm">Share this link to show how Montree works</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link 
+            href="/montree/dashboard?demo=true"
+            className="bg-white text-amber-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-50 transition-colors"
+          >
+            Try Demo
+          </Link>
+          <button 
+            onClick={copyDemoLink}
+            className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-700 transition-colors"
+          >
+            Copy Link
+          </button>
+        </div>
+      </div>
+
       <h1 className="text-2xl font-bold text-white mb-6">School Administration</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

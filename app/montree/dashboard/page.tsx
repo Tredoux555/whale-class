@@ -31,7 +31,7 @@ function getAvatarColor(index: number): [string, string] {
 
 function DashboardContent() {
   const searchParams = useSearchParams();
-  const isDemo = searchParams.get('demo') === 'zohan';
+  const isDemo = searchParams.get('demo') === 'true';
   
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ function DashboardContent() {
   }, []);
 
   // Build URL with demo param if in demo mode
-  const buildUrl = (path: string) => isDemo ? `${path}?demo=zohan` : path;
+  const buildUrl = (path: string) => isDemo ? `${path}?demo=true` : path;
 
   if (loading) {
     return (

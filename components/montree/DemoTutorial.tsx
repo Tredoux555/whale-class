@@ -18,7 +18,7 @@ interface DemoTutorialProps {
 
 export default function DemoTutorial({ steps, onComplete }: DemoTutorialProps) {
   const searchParams = useSearchParams();
-  const isDemo = searchParams.get('demo') === 'zohan';
+  const isDemo = searchParams.get('demo') === 'true';
   
   const [currentStep, setCurrentStep] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
