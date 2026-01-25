@@ -1,7 +1,5 @@
 // app/montree/dashboard/reports/page.tsx
-// Weekly Reports list page - view and generate reports
-// Phase 3 - Session 54
-
+// Session 90: Weekly Reports with Montree auth
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -17,14 +15,25 @@ interface Child {
   name: string;
 }
 
+interface TeacherSession {
+  id: string;
+  name: string;
+  classroom_id: string;
+  classroom_name: string;
+  classroom_icon: string;
+}
+
 export default function ReportsPage() {
   const router = useRouter();
+  
+  // Auth
+  const [teacher, setTeacher] = useState<TeacherSession | null>(null);
   
   // State
   const [reports, setReports] = useState<MontreeWeeklyReport[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<string | null>(null); // child_id being generated
+  const [generating, setGenerating] = useState<string | null>(null);
   
   // Filters
   const [selectedWeek, setSelectedWeek] = useState<{ start: string; end: string } | null>(() => {
@@ -34,25 +43,39 @@ export default function ReportsPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('all');
 
-  // ============================================
-  // FETCH DATA
-  // ============================================
-
-  const fetchChildren = useCallback(async () => {
+  // Check auth on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('montree_teacher');
+    if (!stored) {
+      router.push('/montree/login');
+      return;
+    }
     try {
-      const response = await fetch('/api/montree/children');
+      setTeacher(JSON.parse(stored));
+    } catch {
+      router.push('/montree/login');
+    }
+  }, [router]);
+
+  // Fetch children for this classroom
+  const fetchChildren = useCallback(async () => {
+    if (!teacher?.classroom_id) return;
+    try {
+      const response = await fetch(`/api/montree/children?classroom_id=${teacher.classroom_id}`);
       const data = await response.json();
       setChildren(data.children || []);
     } catch (err) {
       console.error('Failed to fetch children:', err);
     }
-  }, []);
+  }, [teacher?.classroom_id]);
 
   const fetchReports = useCallback(async () => {
+    if (!teacher?.classroom_id) return;
     try {
       setLoading(true);
       
       const params = new URLSearchParams();
+      params.set('classroom_id', teacher.classroom_id);
       if (selectedWeek) {
         params.set('week_start', selectedWeek.start);
       }
@@ -75,19 +98,15 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedWeek, selectedChildId, statusFilter]);
+  }, [teacher?.classroom_id, selectedWeek, selectedChildId, statusFilter]);
 
   useEffect(() => {
-    fetchChildren();
-  }, [fetchChildren]);
+    if (teacher) fetchChildren();
+  }, [teacher, fetchChildren]);
 
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
-  // ============================================
-  // GENERATE REPORT
-  // ============================================
+    if (teacher) fetchReports();
+  }, [teacher, fetchReports]);
 
   const handleGenerateReport = async (childId: string) => {
     if (!selectedWeek || generating) return;
@@ -109,7 +128,6 @@ export default function ReportsPage() {
       const data = await response.json();
 
       if (data.success && data.report) {
-        // Navigate to the new report
         router.push(`/montree/dashboard/reports/${data.report.id}`);
       } else {
         alert(data.error || 'Failed to generate report');
@@ -122,22 +140,21 @@ export default function ReportsPage() {
     }
   };
 
-  // ============================================
-  // HELPERS
-  // ============================================
-
   const getChildName = (childId: string) => {
     return children.find(c => c.id === childId)?.name || 'Unknown';
   };
 
-  // Children without reports for selected week
   const childrenWithoutReports = children.filter(child => 
     !reports.some(r => r.child_id === child.id)
   );
 
-  // ============================================
-  // RENDER
-  // ============================================
+  if (!teacher) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <span className="text-4xl animate-pulse">📊</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
@@ -155,7 +172,7 @@ export default function ReportsPage() {
             <div>
               <h1 className="text-lg font-bold text-gray-800">Weekly Reports</h1>
               <p className="text-xs text-gray-500">
-                {reports.length} report{reports.length !== 1 ? 's' : ''}
+                {teacher.classroom_name} • {reports.length} report{reports.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -172,11 +189,10 @@ export default function ReportsPage() {
 
       {/* Filters */}
       <div className="bg-white border-b border-gray-100 px-4 py-2 flex gap-2 overflow-x-auto">
-        {/* Status filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as ReportStatus | 'all')}
-          className="px-3 py-1.5 bg-gray-100 border-0 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-1.5 bg-gray-100 border-0 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -185,13 +201,12 @@ export default function ReportsPage() {
           <option value="sent">Sent</option>
         </select>
 
-        {/* Child filter */}
         <select
           value={selectedChildId || ''}
           onChange={(e) => setSelectedChildId(e.target.value || null)}
-          className="px-3 py-1.5 bg-gray-100 border-0 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-1.5 bg-gray-100 border-0 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-emerald-500"
         >
-          <option value="">All Children</option>
+          <option value="">All Students</option>
           {children.map(child => (
             <option key={child.id} value={child.id}>{child.name}</option>
           ))}
@@ -201,7 +216,6 @@ export default function ReportsPage() {
       {/* Content */}
       <main className="flex-1 p-4">
         {loading ? (
-          // Skeleton loading state
           <div className="space-y-6">
             <div>
               <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-3"></div>
@@ -214,10 +228,7 @@ export default function ReportsPage() {
                         <div className="h-5 bg-slate-200 rounded animate-pulse mb-2" style={{ width: `${60 + (i % 3) * 12}%` }} />
                         <div className="h-3 bg-slate-100 rounded animate-pulse w-24" />
                       </div>
-                      <div className="w-16 h-6 bg-slate-200 rounded-full animate-pulse" />
                     </div>
-                    <div className="h-3 bg-slate-100 rounded animate-pulse w-full mb-2" />
-                    <div className="h-3 bg-slate-100 rounded animate-pulse w-3/4" />
                   </div>
                 ))}
               </div>
@@ -258,7 +269,7 @@ export default function ReportsPage() {
                       disabled={generating === child.id}
                       className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center group disabled:opacity-50"
                     >
-                      <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 group-hover:bg-blue-100 group-hover:text-blue-500 transition-colors">
+                      <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 group-hover:bg-emerald-100 group-hover:text-emerald-500 transition-colors">
                         {generating === child.id ? (
                           <span className="animate-spin">⏳</span>
                         ) : (
@@ -267,7 +278,7 @@ export default function ReportsPage() {
                       </div>
                       <p className="font-medium text-gray-700 text-sm">{child.name}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {generating === child.id ? 'Generating...' : 'Click to generate'}
+                        {generating === child.id ? 'Generating...' : 'Tap to generate'}
                       </p>
                     </button>
                   ))}

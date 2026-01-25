@@ -1,8 +1,8 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-25T22:30:00+08:00",
-  "session": 89,
+  "lastUpdated": "2026-01-25T23:00:00+08:00",
+  "session": 90,
   
   "CORE_MISSION": {
     "statement": "Schools buy the app. They own their data. Forever.",
@@ -12,9 +12,10 @@
 
   "PHASE_1_WEB": {
     "status": "IN_PROGRESS",
-    "completion": "80%",
+    "completion": "85%",
     "remaining": [
-      "Reports working"
+      "End-to-end testing",
+      "Polish"
     ]
   },
 
@@ -28,54 +29,55 @@
       "Logout functionality",
       "Admin panel with classrooms grid",
       "Teacher codes visible to principal",
-      "Student management (add/edit/remove/move)",
-      "Progress tracking page",
-      "Tap to cycle status (0→1→2→3→0)"
+      "Student management",
+      "Progress tracking",
+      "Weekly reports (filtered by classroom)"
     ],
     "next_up": [
-      "Reports"
+      "End-to-end testing (Session 91)",
+      "Polish & bugs (Session 92)"
     ]
   },
 
   "SESSION_LOG": {
+    "90": {
+      "date": "2026-01-25",
+      "completed": [
+        "Reports page updated with Montree auth",
+        "Filters children by classroom_id",
+        "Shows classroom name in header",
+        "Generate reports for classroom students only"
+      ]
+    },
     "89": {
       "date": "2026-01-25",
       "completed": [
-        "Progress page at /montree/dashboard/progress",
-        "Select child → Select area → Tap work to cycle status",
-        "API: GET /api/montree/progress (works with status)",
-        "API: POST /api/montree/progress (update status)",
-        "Added 📈 button to dashboard header"
+        "Progress page",
+        "Tap to cycle status"
       ]
     },
     "88": {
       "date": "2026-01-25",
       "completed": [
-        "Students page with list view",
-        "Add/edit/remove students",
-        "Move between classrooms"
+        "Student management"
       ]
     },
     "87": {
       "date": "2026-01-25",
       "completed": [
-        "Admin page with classrooms grid",
-        "Teacher codes visible + copy"
+        "Admin panel"
       ]
     },
     "86": {
       "date": "2026-01-25",
       "completed": [
-        "Dashboard auth + classroom filter",
-        "Logout functionality"
+        "Dashboard auth + classroom filter"
       ]
     },
     "85": {
       "date": "2026-01-25",
       "completed": [
-        "Onboarding wizard",
-        "Teacher login codes",
-        "Gameplan created"
+        "Onboarding + login codes + gameplan"
       ]
     }
   },
@@ -83,8 +85,9 @@
   "KEY_URLS": {
     "/montree/onboarding": "Principal sets up school",
     "/montree/login": "Teacher login",
-    "/montree/dashboard": "Teacher classroom view",
+    "/montree/dashboard": "Teacher classroom",
     "/montree/dashboard/progress": "Progress tracking",
+    "/montree/dashboard/reports": "Weekly reports",
     "/montree/admin": "Principal dashboard",
     "/montree/admin/students": "Student management"
   },
