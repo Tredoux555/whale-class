@@ -164,7 +164,14 @@ function DashboardContent() {
             
             {/* Logout dropdown */}
             {showLogout && (
-              <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+              <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 min-w-[160px]">
+                <Link
+                  href="/montree/admin"
+                  className="block px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  🏫 Admin Panel
+                </Link>
+                <hr className="my-1 border-slate-100" />
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -196,8 +203,17 @@ function DashboardContent() {
             <Link
               href={buildUrl('/montree/dashboard/media')}
               className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
+              title="Media Gallery"
             >
               <span className="text-base">🖼️</span>
+            </Link>
+            
+            <Link
+              href="/montree/games"
+              className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
+              title="Games"
+            >
+              <span className="text-base">🎮</span>
             </Link>
           </div>
         </div>
