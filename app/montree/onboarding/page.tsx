@@ -16,6 +16,18 @@ type Classroom = {
   teacherEmail: string;
 };
 
+type CreatedTeacher = {
+  id: string;
+  name: string;
+  login_code: string;
+};
+
+type CreatedClassroom = {
+  id: string;
+  name: string;
+  icon: string;
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -29,6 +41,11 @@ export default function OnboardingPage() {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [editingClassroom, setEditingClassroom] = useState<Classroom | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Success state
+  const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
+  const [createdClassrooms, setCreatedClassrooms] = useState<CreatedClassroom[]>([]);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Generate slug from school name
   const generateSlug = (name: string) => {
@@ -69,14 +86,20 @@ export default function OnboardingPage() {
     }
   };
 
+  // Copy code to clipboard
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
   // Submit everything
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Create school
-      const schoolRes = await fetch('/api/montree/onboarding', {
+      const res = await fetch('/api/montree/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,13 +119,18 @@ export default function OnboardingPage() {
         }),
       });
 
-      if (!schoolRes.ok) {
-        const data = await schoolRes.json();
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || 'Failed to create school');
       }
 
-      // Success! Redirect to admin
-      router.push('/montree/admin?onboarded=true');
+      const data = await res.json();
+      
+      // Store created data and show success
+      setCreatedTeachers(data.teachers || []);
+      setCreatedClassrooms(data.classrooms || []);
+      setStep(4); // Success step
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -119,7 +147,9 @@ export default function OnboardingPage() {
             <span className="text-3xl">🌱</span>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Montree Setup</h1>
-              <p className="text-sm text-gray-500">Step {step} of 3</p>
+              <p className="text-sm text-gray-500">
+                {step === 4 ? 'Complete!' : `Step ${step} of 3`}
+              </p>
             </div>
           </div>
           {/* Progress bar */}
@@ -128,7 +158,7 @@ export default function OnboardingPage() {
               <div 
                 key={s}
                 className={`h-2 flex-1 rounded-full transition-colors ${
-                  s <= step ? 'bg-emerald-500' : 'bg-gray-200'
+                  s <= step || step === 4 ? 'bg-emerald-500' : 'bg-gray-200'
                 }`}
               />
             ))}
@@ -183,7 +213,7 @@ export default function OnboardingPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">Add your classrooms</h2>
-              <p className="text-gray-500 mt-2">Click + to add a classroom, like adding a table in Supabase</p>
+              <p className="text-gray-500 mt-2">Click + to add a classroom</p>
             </div>
 
             {/* Classroom Grid */}
@@ -364,6 +394,68 @@ export default function OnboardingPage() {
                 {loading ? 'Setting up...' : 'Finish Setup ✓'}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Step 4: Success - Show Login Codes */}
+        {step === 4 && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <span className="text-6xl mb-4 block">🎉</span>
+              <h2 className="text-2xl font-bold text-gray-800">{schoolName} is ready!</h2>
+              <p className="text-gray-500 mt-2">Share these codes with your teachers</p>
+            </div>
+
+            {/* Login Codes */}
+            <div className="space-y-4 mb-8">
+              {createdTeachers.map((teacher, index) => {
+                const classroom = createdClassrooms[index];
+                return (
+                  <div 
+                    key={teacher.id}
+                    className="p-4 bg-gray-50 rounded-xl border"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{classroom?.icon || '📚'}</span>
+                        <div>
+                          <p className="font-semibold text-gray-800">{teacher.name}</p>
+                          <p className="text-sm text-gray-500">{classroom?.name || 'Classroom'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="px-3 py-2 bg-white border rounded-lg font-mono text-lg">
+                          {teacher.login_code}
+                        </code>
+                        <button
+                          onClick={() => copyCode(teacher.login_code)}
+                          className={`px-3 py-2 rounded-lg transition-colors ${
+                            copiedCode === teacher.login_code
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                          }`}
+                        >
+                          {copiedCode === teacher.login_code ? '✓' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
+              <p className="text-amber-800 text-sm">
+                <strong>Important:</strong> Teachers use these codes at <strong>/montree/login</strong> to set up their account. The code can only be used once.
+              </p>
+            </div>
+
+            <button
+              onClick={() => router.push('/montree/admin')}
+              className="w-full py-4 bg-emerald-500 text-white text-lg font-semibold rounded-xl hover:bg-emerald-600 transition-colors"
+            >
+              Go to Admin Dashboard →
+            </button>
           </div>
         )}
       </div>
