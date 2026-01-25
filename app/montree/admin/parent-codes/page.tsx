@@ -63,7 +63,7 @@ export default function ParentCodesPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <span className="text-4xl animate-bounce block mb-4">🐋</span>
+          <span className="text-4xl animate-bounce block mb-4">🌳</span>
           <p className="text-gray-600">Loading parent codes...</p>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function ParentCodesPage() {
 
       {/* Print Header - only show on print */}
       <div className="hidden print:block text-center py-4 border-b">
-        <h1 className="text-2xl font-bold">🐋 Whale Class - Parent Portal Access</h1>
+        <h1 className="text-2xl font-bold">🌳 My Classroom - Parent Portal Access</h1>
         <p className="text-gray-600">Scan QR code or visit the URL and enter your code</p>
       </div>
 

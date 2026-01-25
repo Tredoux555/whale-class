@@ -119,7 +119,7 @@ export const ActivityVideoSection: React.FC<ActivityVideoSectionProps> = ({
       video.setAttribute('x-webkit-airplay', 'allow');
 
       // Setup media session for lock screen controls
-      setupMediaSessionForVideo(video, 'Activity Instruction Video', 'Whale Class');
+      setupMediaSessionForVideo(video, 'Activity Instruction Video', 'My Classroom');
     }
   }, [uploadedUrl]);
 

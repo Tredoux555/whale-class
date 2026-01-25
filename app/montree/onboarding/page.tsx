@@ -4,22 +4,29 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Emoji options for classrooms
-const EMOJI_OPTIONS = ['🐋', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
+const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
 const COLOR_OPTIONS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+
+type Teacher = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 type Classroom = {
   id: string;
   name: string;
   icon: string;
   color: string;
-  teacherName: string;
-  teacherEmail: string;
+  teachers: Teacher[];
 };
 
 type CreatedTeacher = {
   id: string;
   name: string;
   login_code: string;
+  classroom_name: string;
+  classroom_icon: string;
 };
 
 type CreatedClassroom = {
@@ -61,8 +68,7 @@ export default function OnboardingPage() {
       name: '',
       icon: EMOJI_OPTIONS[classrooms.length % EMOJI_OPTIONS.length],
       color: COLOR_OPTIONS[classrooms.length % COLOR_OPTIONS.length],
-      teacherName: '',
-      teacherEmail: '',
+      teachers: [{ id: crypto.randomUUID(), name: '', email: '' }],
     };
     setClassrooms([...classrooms, newClassroom]);
     setEditingClassroom(newClassroom);
@@ -86,6 +92,35 @@ export default function OnboardingPage() {
     }
   };
 
+  // Add teacher to classroom
+  const addTeacher = (classroomId: string) => {
+    const classroom = classrooms.find(c => c.id === classroomId);
+    if (classroom) {
+      const newTeacher: Teacher = { id: crypto.randomUUID(), name: '', email: '' };
+      updateClassroom(classroomId, { teachers: [...classroom.teachers, newTeacher] });
+    }
+  };
+
+  // Update teacher in classroom
+  const updateTeacher = (classroomId: string, teacherId: string, updates: Partial<Teacher>) => {
+    const classroom = classrooms.find(c => c.id === classroomId);
+    if (classroom) {
+      const updatedTeachers = classroom.teachers.map(t =>
+        t.id === teacherId ? { ...t, ...updates } : t
+      );
+      updateClassroom(classroomId, { teachers: updatedTeachers });
+    }
+  };
+
+  // Remove teacher from classroom
+  const removeTeacher = (classroomId: string, teacherId: string) => {
+    const classroom = classrooms.find(c => c.id === classroomId);
+    if (classroom && classroom.teachers.length > 1) {
+      const updatedTeachers = classroom.teachers.filter(t => t.id !== teacherId);
+      updateClassroom(classroomId, { teachers: updatedTeachers });
+    }
+  };
+
   // Copy code to clipboard
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -93,42 +128,67 @@ export default function OnboardingPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  // Submit everything
+  // Generate a simple login code
+  const generateLoginCode = () => {
+    const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  };
+
+  // Submit everything - works locally without API
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
 
     try {
-      const res = await fetch('/api/montree/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          school: {
-            name: schoolName,
-            slug: generateSlug(schoolName),
-          },
-          classrooms: classrooms.map(c => ({
-            name: c.name,
-            icon: c.icon,
-            color: c.color,
-            teacher: {
-              name: c.teacherName,
-              email: c.teacherEmail,
-            },
-          })),
-        }),
-      });
+      // Generate school data
+      const schoolId = crypto.randomUUID();
+      const schoolData = {
+        id: schoolId,
+        name: schoolName,
+        slug: generateSlug(schoolName),
+        created_at: new Date().toISOString(),
+      };
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to create school');
+      // Generate classrooms and teachers with login codes
+      const createdClassroomsData: CreatedClassroom[] = [];
+      const createdTeachersData: CreatedTeacher[] = [];
+
+      for (const classroom of classrooms) {
+        const classroomId = crypto.randomUUID();
+        
+        createdClassroomsData.push({
+          id: classroomId,
+          name: classroom.name,
+          icon: classroom.icon,
+        });
+
+        // Create teachers for this classroom
+        for (const teacher of classroom.teachers) {
+          if (teacher.name.trim()) {
+            const loginCode = generateLoginCode();
+            createdTeachersData.push({
+              id: crypto.randomUUID(),
+              name: teacher.name,
+              login_code: loginCode,
+              classroom_name: classroom.name,
+              classroom_icon: classroom.icon,
+            });
+          }
+        }
       }
 
-      const data = await res.json();
+      // Save to localStorage
+      localStorage.setItem('montree_school', JSON.stringify(schoolData));
+      localStorage.setItem('montree_classrooms', JSON.stringify(createdClassroomsData));
+      localStorage.setItem('montree_teachers', JSON.stringify(createdTeachersData));
       
-      // Store created data and show success
-      setCreatedTeachers(data.teachers || []);
-      setCreatedClassrooms(data.classrooms || []);
+      // Update state for success screen
+      setCreatedTeachers(createdTeachersData);
+      setCreatedClassrooms(createdClassroomsData);
       setStep(4); // Success step
 
     } catch (err) {
@@ -239,9 +299,9 @@ export default function OnboardingPage() {
                   <p className="font-medium text-gray-800 mt-2">
                     {classroom.name || 'Untitled'}
                   </p>
-                  {classroom.teacherName && (
-                    <p className="text-sm text-gray-500">{classroom.teacherName}</p>
-                  )}
+                  <p className="text-sm text-gray-500">
+                    {classroom.teachers.filter(t => t.name).length} teacher(s)
+                  </p>
                 </div>
               ))}
 
@@ -295,7 +355,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={editingClassroom.name}
                       onChange={(e) => updateClassroom(editingClassroom.id, { name: e.target.value })}
-                      placeholder="e.g. Whale Class"
+                      placeholder="e.g. My Classroom"
                       className="w-full p-3 border rounded-lg"
                     />
                   </div>
@@ -344,36 +404,57 @@ export default function OnboardingPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">Assign teachers</h2>
-              <p className="text-gray-500 mt-2">One teacher per classroom</p>
+              <p className="text-gray-500 mt-2">Add one or more teachers per classroom</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {classrooms.map(classroom => (
                 <div 
                   key={classroom.id}
                   className="p-4 border rounded-xl"
                   style={{ borderLeftColor: classroom.color, borderLeftWidth: '4px' }}
                 >
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-3 mb-4">
                     <span className="text-2xl">{classroom.icon}</span>
                     <span className="font-semibold text-gray-800">{classroom.name}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      value={classroom.teacherName}
-                      onChange={(e) => updateClassroom(classroom.id, { teacherName: e.target.value })}
-                      placeholder="Teacher name"
-                      className="p-3 border rounded-lg"
-                    />
-                    <input
-                      type="email"
-                      value={classroom.teacherEmail}
-                      onChange={(e) => updateClassroom(classroom.id, { teacherEmail: e.target.value })}
-                      placeholder="Email (optional)"
-                      className="p-3 border rounded-lg"
-                    />
+                  
+                  <div className="space-y-3">
+                    {classroom.teachers.map((teacher, index) => (
+                      <div key={teacher.id} className="flex gap-3 items-center">
+                        <input
+                          type="text"
+                          value={teacher.name}
+                          onChange={(e) => updateTeacher(classroom.id, teacher.id, { name: e.target.value })}
+                          placeholder="Teacher name"
+                          className="flex-1 p-3 border rounded-lg"
+                        />
+                        <input
+                          type="text"
+                          inputMode="email"
+                          value={teacher.email}
+                          onChange={(e) => updateTeacher(classroom.id, teacher.id, { email: e.target.value })}
+                          placeholder="Email (optional)"
+                          className="flex-1 p-3 border rounded-lg"
+                        />
+                        {classroom.teachers.length > 1 && (
+                          <button
+                            onClick={() => removeTeacher(classroom.id, teacher.id)}
+                            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 flex items-center justify-center"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                  
+                  <button
+                    onClick={() => addTeacher(classroom.id)}
+                    className="mt-3 text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                  >
+                    <span>+</span> Add another teacher
+                  </button>
                 </div>
               ))}
             </div>
@@ -408,40 +489,37 @@ export default function OnboardingPage() {
 
             {/* Login Codes */}
             <div className="space-y-4 mb-8">
-              {createdTeachers.map((teacher, index) => {
-                const classroom = createdClassrooms[index];
-                return (
-                  <div 
-                    key={teacher.id}
-                    className="p-4 bg-gray-50 rounded-xl border"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{classroom?.icon || '📚'}</span>
-                        <div>
-                          <p className="font-semibold text-gray-800">{teacher.name}</p>
-                          <p className="text-sm text-gray-500">{classroom?.name || 'Classroom'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="px-3 py-2 bg-white border rounded-lg font-mono text-lg">
-                          {teacher.login_code}
-                        </code>
-                        <button
-                          onClick={() => copyCode(teacher.login_code)}
-                          className={`px-3 py-2 rounded-lg transition-colors ${
-                            copiedCode === teacher.login_code
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                          }`}
-                        >
-                          {copiedCode === teacher.login_code ? '✓' : 'Copy'}
-                        </button>
+              {createdTeachers.map((teacher) => (
+                <div 
+                  key={teacher.id}
+                  className="p-4 bg-gray-50 rounded-xl border"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{teacher.classroom_icon || '📚'}</span>
+                      <div>
+                        <p className="font-semibold text-gray-800">{teacher.name}</p>
+                        <p className="text-sm text-gray-500">{teacher.classroom_name || 'Classroom'}</p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <code className="px-3 py-2 bg-white border rounded-lg font-mono text-lg">
+                        {teacher.login_code}
+                      </code>
+                      <button
+                        onClick={() => copyCode(teacher.login_code)}
+                        className={`px-3 py-2 rounded-lg transition-colors ${
+                          copiedCode === teacher.login_code
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                        }`}
+                      >
+                        {copiedCode === teacher.login_code ? '✓' : 'Copy'}
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">

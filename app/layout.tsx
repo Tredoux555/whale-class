@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { GlobalVideoSetup } from "@/components/GlobalVideoSetup";
-import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,26 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Whale Class - Montessori Progress Tracking",
-  description: "Complete Montessori curriculum tracking for schools - 342 works across 5 areas",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Whale Class",
-    startupImage: "/apple-touch-icon.png",
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-  },
+  title: "Montree",
+  description: "Montessori progress tracking",
 };
 
 export const viewport: Viewport = {
@@ -39,7 +18,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#4A90E2",
+  themeColor: "#10B981",
 };
 
 export default function RootLayout({
@@ -49,17 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-      </head>
-      <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
-        <Toaster position="top-center" richColors closeButton />
-        <ServiceWorkerRegistration />
-        <GlobalVideoSetup />
+      <body className={`${inter.variable} antialiased`}>
         {children}
       </body>
     </html>

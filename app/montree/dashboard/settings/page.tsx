@@ -48,10 +48,10 @@ export default function SettingsPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
-              🐋
+              🌳
             </div>
             <div className="flex-1">
-              <div className="text-gray-900 font-bold text-lg">Whale Class</div>
+              <div className="text-gray-900 font-bold text-lg">My Classroom</div>
               <div className="text-gray-500 text-sm">PreK 4 • Beijing International School</div>
               <div className="text-emerald-600 text-xs mt-1">✓ Active subscription</div>
             </div>

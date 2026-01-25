@@ -228,8 +228,8 @@ export default function GamesHubPage() {
       <footer className="bg-gray-50 border-t border-gray-100 py-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl">🐋</span>
-            <span className="font-bold text-gray-700">Whale Class Games</span>
+            <span className="text-2xl">🌳</span>
+            <span className="font-bold text-gray-700">My Classroom Games</span>
           </div>
           <p className="text-sm text-gray-500">
             Making learning fun, one game at a time! 🌟

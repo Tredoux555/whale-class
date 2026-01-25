@@ -353,7 +353,7 @@ function TutorialContent() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">🐋</span>
+            <span className="text-3xl">🌳</span>
           </div>
           <p className="text-slate-500">Loading classroom...</p>
         </div>
@@ -439,9 +439,9 @@ function TutorialContent() {
           <div className="max-w-4xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">🐋</span>
+                <span className="text-3xl">🌳</span>
                 <div>
-                  <h1 className="text-xl font-bold">Whale Class</h1>
+                  <h1 className="text-xl font-bold">My Classroom</h1>
                   <p className="text-emerald-100 text-sm">{students.length} students</p>
                 </div>
               </div>
@@ -637,7 +637,7 @@ export default function TutorialPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-3xl">🐋</span>
+            <span className="text-3xl">🌳</span>
           </div>
           <p className="text-slate-500">Loading tutorial...</p>
         </div>

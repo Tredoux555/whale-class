@@ -72,10 +72,10 @@ function ParentPortalContent() {
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-4 py-4">
         <div className="max-w-md mx-auto flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl">🐋</span>
+            <span className="text-2xl">🌳</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Whale Class</h1>
+            <h1 className="text-xl font-bold text-gray-900">My Classroom</h1>
             <p className="text-sm text-gray-500">Parent Portal</p>
           </div>
         </div>
@@ -174,7 +174,7 @@ function ParentPortalContent() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-gray-400">
-        <p>🐋 Whale Class • Montessori Progress Tracking</p>
+        <p>🌳 My Classroom • Montessori Progress Tracking</p>
       </footer>
     </div>
   );
@@ -187,7 +187,7 @@ export default function ParentPortalPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-bounce">🐋</span>
+            <span className="text-3xl animate-bounce">🌳</span>
           </div>
           <p className="text-gray-600">Loading...</p>
         </div>
