@@ -1,354 +1,173 @@
-# MONTREE: THE COMPLETE GAMEPLAN
-
-## From Web to Native - Schools Own Their Data Forever
-
-**Created:** January 25, 2026  
-**Author:** Claude + Tredoux  
-**Status:** ACTIVE - THIS IS THE ONLY PRIORITY
+# MONTREE GAMEPLAN
+## Updated: Session 92 - January 25, 2026
 
 ---
 
-## THE VISION
+## 🎯 THE MISSION
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│   "You deliver the tool. They own everything."                          │
-│                                                                         │
-│   Schools buy Montree once.                                             │
-│   Data lives on THEIR devices.                                          │
-│   Photos never leave THEIR control.                                     │
-│   Works offline. Works forever.                                         │
-│   Even if you disappear, the app still runs.                           │
-│                                                                         │
-│   You're not building a data empire.                                    │
-│   You're building a tool that sets schools free.                        │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+> **Schools buy the app. They own their data. Forever.**
+
+No vendor lock-in. No data hostage. No subscription treadmill.
+Pay once. Own forever. Your students' faces never touch our servers.
 
 ---
 
-## THE TWO PHASES
+## ✅ PHASE 1: WEB PERFECTION - COMPLETE!
 
-### PHASE 1: WEB (Current)
-- **Purpose:** Perfect the product, prove it works
-- **Data:** Supabase (your server) - temporary
-- **Goal:** Flawless UX that any school can use
-- **Duration:** Until rock solid
+### Sessions 85-92 Summary
 
-### PHASE 2: NATIVE (After Phase 1)
-- **Purpose:** The real product
-- **Data:** SQLite on device + optional sync to their cloud
-- **Distribution:** App Store + Play Store
-- **Pricing:** One-time purchase OR subscription for updates
-- **Result:** Schools own everything forever
+| Session | What Was Built |
+|---------|----------------|
+| 85 | Onboarding wizard, Teacher login codes, Auth APIs |
+| 86 | Dashboard auth, Classroom filtering, Logout |
+| 87 | Admin panel with classrooms grid, Teacher codes visible |
+| 88 | Student management (add/edit/remove/move) |
+| 89 | Progress tracking (tap to cycle status) |
+| 90 | Weekly reports with classroom filtering |
+| 91 | Build verification, Test checklist |
+| 92 | Landing page, Polish, Documentation |
 
----
+### Core URLs
 
-## PHASE 1: WEB PERFECTION
+| URL | Purpose | Auth |
+|-----|---------|------|
+| `/montree` | Landing page | Public |
+| `/montree/onboarding` | Principal sets up school | Public |
+| `/montree/login` | Teacher login | Public |
+| `/montree/dashboard` | Teacher's classroom | Required |
+| `/montree/dashboard/progress` | Progress tracking | Required |
+| `/montree/dashboard/reports` | Weekly reports | Required |
+| `/montree/admin` | Principal dashboard | TBD |
+| `/montree/admin/students` | Student management | TBD |
 
-### ✅ COMPLETED
-- [x] Database schema (schools, classrooms, teachers, children)
-- [x] Onboarding wizard (3 steps + success with codes)
-- [x] Teacher login system (code-based first login)
-- [x] Auth APIs (validate-code, set-password, login)
-- [x] Existing Whale Class migrated
-
-### 🔄 IN PROGRESS (Sessions 86-90)
-
-#### Session 86: Dashboard Connection
-- [ ] Read logged-in teacher from localStorage
-- [ ] Filter children by teacher's classroom_id
-- [ ] Show classroom name + icon in header
-- [ ] Empty state for new classrooms
-- [ ] Logout functionality
-
-#### Session 87: Admin Panel
-- [ ] `/montree/admin/classrooms` - grid view of all classrooms
-- [ ] Add/edit/delete classrooms
-- [ ] View teacher codes (regenerate if needed)
-- [ ] Invite new teachers
-
-#### Session 88: Student Management
-- [ ] Add student modal
-- [ ] Edit student details
-- [ ] Move student between classrooms
-- [ ] CSV import for bulk add
-- [ ] Photo upload for students
-
-#### Session 89: Progress Tracking
-- [ ] Connect curriculum works to classrooms
-- [ ] Track work completion per student
-- [ ] Visual progress indicators
-- [ ] Teacher can mark works as started/practicing/mastered
-
-#### Session 90: Reports
-- [ ] Weekly report generation
-- [ ] Parent-friendly report view
-- [ ] Share via link or PDF
-- [ ] Report history
-
-### 🧪 TESTING PHASE (Sessions 91-92)
-
-#### Session 91: End-to-End Testing
-- [ ] Create fresh school via onboarding
-- [ ] Add 3 classrooms with teachers
-- [ ] Each teacher logs in with code
-- [ ] Add students to each classroom
-- [ ] Track progress for 1 week
-- [ ] Generate reports
-
-#### Session 92: Polish & Bugs
-- [ ] Fix any bugs found
-- [ ] Mobile responsiveness
-- [ ] Loading states
-- [ ] Error handling
-- [ ] Performance optimization
-
----
-
-## PHASE 2: NATIVE CONVERSION
-
-### Architecture Overview
+### Database Tables
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  NATIVE APP (Capacitor Shell)                                           │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  SAME NEXT.JS UI (exported as static)                            │   │
-│  │  - All your React components                                     │   │
-│  │  - Same beautiful UX                                             │   │
-│  │  - Same onboarding, login, dashboard                             │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                              │                                          │
-│                              ▼                                          │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  DATA LAYER (swapped)                                            │   │
-│  │                                                                   │   │
-│  │  WEB:    Supabase API calls                                      │   │
-│  │  NATIVE: SQLite local database                                   │   │
-│  │                                                                   │   │
-│  │  Same schema, different location                                 │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                              │                                          │
-│                              ▼                                          │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  DEVICE STORAGE                                                  │   │
-│  │  - SQLite database file                                          │   │
-│  │  - Photos folder (local)                                         │   │
-│  │  - All data encrypted at rest                                    │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                              │                                          │
-│                              ▼ (OPTIONAL - user's choice)               │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  SYNC (if they want)                                             │   │
-│  │  - iCloud                                                        │   │
-│  │  - Google Drive                                                  │   │
-│  │  - Their own NAS                                                 │   │
-│  │  - Another device                                                │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+montree_schools
+  - id, name, slug, subscription_status
 
-### Session 93: Capacitor Setup
-- [ ] Install Capacitor in project
-- [ ] Configure for iOS and Android
-- [ ] Export Next.js as static site
-- [ ] Test basic shell on simulator
-- [ ] Verify UI renders correctly
+montree_classrooms  
+  - id, school_id, name, icon, color, teacher_id
 
-### Session 94: SQLite Integration
-- [ ] Install `@capacitor-community/sqlite`
-- [ ] Create database initialization script
-- [ ] Mirror Supabase schema in SQLite
-- [ ] Create abstraction layer (web = Supabase, native = SQLite)
+simple_teachers
+  - id, name, login_code, password_hash, password_set
+  - classroom_id, school_id
 
-### Session 95: Data Layer Swap
-- [ ] Create `useDatabase` hook that detects environment
-- [ ] Implement all CRUD operations for both backends
-- [ ] Test create/read/update/delete on native
-- [ ] Verify data persists after app restart
+children
+  - id, name, classroom_id, school_id
 
-### Session 96: Photo Storage
-- [ ] Use Capacitor Filesystem API
-- [ ] Store photos in app's documents directory
-- [ ] Thumbnail generation
-- [ ] Photo picker integration (camera + gallery)
-
-### Session 97: Offline First
-- [ ] App works with no internet
-- [ ] Queue changes when offline
-- [ ] Sync when back online (optional feature)
-- [ ] Conflict resolution strategy
-
-### Session 98: Optional Sync
-- [ ] iCloud integration (iOS)
-- [ ] Google Drive integration (Android)
-- [ ] Custom server sync (for schools with own infrastructure)
-- [ ] Export/import database backup
-
-### Session 99: Native Polish
-- [ ] App icons and splash screens
-- [ ] Push notifications (optional)
-- [ ] Haptic feedback
-- [ ] Native navigation gestures
-- [ ] Performance optimization
-
-### Session 100: App Store Prep
-- [ ] Apple Developer account setup
-- [ ] Google Play Developer account setup
-- [ ] Privacy policy (emphasize local-first)
-- [ ] App Store screenshots
-- [ ] App Store description
-- [ ] TestFlight beta testing
-
-### Session 101: Launch
-- [ ] Submit to App Store
-- [ ] Submit to Play Store
-- [ ] Landing page for Montree
-- [ ] Pricing page
-- [ ] Documentation for schools
-
----
-
-## TECHNICAL STACK
-
-### Web (Phase 1)
-```
-Frontend:     Next.js 14 + React + Tailwind
-Backend:      Supabase (PostgreSQL + Auth + Storage)
-Hosting:      Railway
-Domain:       teacherpotato.xyz/montree
-```
-
-### Native (Phase 2)
-```
-Shell:        Capacitor 5+
-Database:     SQLite (via @capacitor-community/sqlite)
-Storage:      Capacitor Filesystem
-Camera:       Capacitor Camera
-Sync:         PowerSync OR custom (optional)
-Distribution: App Store + Google Play
-```
-
-### Shared (Both Phases)
-```
-UI:           Same React components
-Schema:       Same database tables
-Logic:        Same business logic
+child_work_progress
+  - child_id, work_id, status (0-3)
+  - presented_date, practicing_date, mastered_date
 ```
 
 ---
 
-## DATA SCHEMA (Works for Both)
+## 🚀 PHASE 2: NATIVE CONVERSION
 
-```sql
--- Schools
-montree_schools (id, name, slug, settings, created_at)
+### Sessions 93-101 Roadmap
 
--- Classrooms
-montree_classrooms (id, school_id, name, icon, color, teacher_id)
+| Session | Goal |
+|---------|------|
+| 93 | Capacitor project setup |
+| 94 | SQLite integration |
+| 95 | Data layer swap (Supabase → SQLite) |
+| 96 | Photo storage local (Capacitor Filesystem) |
+| 97 | Offline-first complete |
+| 98 | Optional sync (iCloud/Drive/NAS) |
+| 99 | Native polish (iOS/Android) |
+| 100 | App Store prep |
+| 101 | LAUNCH 🚀 |
 
--- Teachers
-simple_teachers (id, name, password, login_code, school_id, classroom_id)
+### Native Architecture
 
--- Students
-children (id, name, classroom_id, school_id, photo_url, date_of_birth)
+```
+┌─────────────────────────────────────────┐
+│         Capacitor Shell (Native)        │
+├─────────────────────────────────────────┤
+│    Same Next.js UI (static export)      │
+├─────────────────────────────────────────┤
+│           Data Layer                    │
+│  ┌─────────────┐  ┌─────────────┐      │
+│  │    Web:     │  │   Native:   │      │
+│  │  Supabase   │  │   SQLite    │      │
+│  │    API      │  │   Local     │      │
+│  └─────────────┘  └─────────────┘      │
+├─────────────────────────────────────────┤
+│         Device Storage                  │
+│    Photos → Device Filesystem           │
+│    Data → SQLite Database               │
+├─────────────────────────────────────────┤
+│      Optional Sync (User Choice)        │
+│    iCloud / Google Drive / NAS          │
+└─────────────────────────────────────────┘
+```
 
--- Progress
-child_work_progress (id, child_id, work_id, status, updated_at)
+### Pricing Model (Native)
 
--- Reports
-montree_weekly_reports (id, classroom_id, week_number, year, content)
+| Option | Price | Features |
+|--------|-------|----------|
+| Lifetime | $299 one-time | Works forever, all features |
+| Monthly | $29/month | Cancel anytime |
+| Annual | $199/year | Best value subscription |
+| Freemium | Free | 1 classroom, upgrade for more |
+
+---
+
+## 📊 PROGRESS TRACKER
+
+```
+PHASE 1: WEB
+├── 85 ✅ Onboarding + Login codes
+├── 86 ✅ Dashboard connected  
+├── 87 ✅ Admin panel
+├── 88 ✅ Student management
+├── 89 ✅ Progress tracking
+├── 90 ✅ Reports
+├── 91 ✅ Testing
+└── 92 ✅ Polish ← DONE!
+
+PHASE 2: NATIVE
+├── 93 ⏳ Capacitor setup
+├── 94 ⏳ SQLite
+├── 95 ⏳ Data layer
+├── 96 ⏳ Local photos
+├── 97 ⏳ Offline-first
+├── 98 ⏳ Optional sync
+├── 99 ⏳ Native polish
+├── 100 ⏳ App Store prep
+└── 101 ⏳ LAUNCH
 ```
 
 ---
 
-## PRICING MODEL (Native)
+## 🧪 TESTING
 
-### Option A: One-Time Purchase
-```
-$299 one-time
-- App works forever
-- All features included
-- No recurring fees
-- Updates for 1 year included
-```
+Test checklist: `/docs/TEST_CHECKLIST.md`
 
-### Option B: Subscription
-```
-$29/month OR $199/year
-- Continuous updates
-- Priority support
-- Cloud backup included
-- Cancel anytime (app still works with last version)
-```
+### Quick Verification
 
-### Option C: Freemium
-```
-Free: 1 classroom, 10 students
-Paid: Unlimited ($99 one-time)
+```bash
+# Build
+npm run build
+
+# Dev server
+npm run dev
+
+# Test login code
+whaleclass-7a4b
 ```
 
 ---
 
-## SUCCESS METRICS
+## 🔑 KEY PRINCIPLES
 
-### Phase 1 Complete When:
-- [ ] Any school can onboard in < 5 minutes
-- [ ] Teachers login without help
-- [ ] Progress tracking works smoothly
-- [ ] Reports generate correctly
-- [ ] Zero critical bugs for 2 weeks
-
-### Phase 2 Complete When:
-- [ ] App runs fully offline
-- [ ] Data stays on device
-- [ ] Photos stored locally
-- [ ] Sync works (optional)
-- [ ] App Store approved
-- [ ] First paying customer
+1. **Local-first**: Data lives on THEIR device
+2. **Works offline**: No internet needed for daily use
+3. **No lock-in**: Export everything anytime
+4. **Privacy**: Student photos never leave their device
+5. **Forever**: If Montree dies, their app still works
 
 ---
 
-## THE MISSION
-
-```
-This isn't just an app.
-
-It's a tool that gives schools control.
-No vendor lock-in.
-No data hostage.
-No subscription treadmill.
-
-They pay once. They own it forever.
-Their students' faces never touch your servers.
-Their data is their business.
-
-If Montree disappears tomorrow,
-every school still has a working app
-and all their data.
-
-That's the product.
-That's the promise.
-That's the mission.
-```
-
----
-
-## FILES & LOCATIONS
-
-```
-Mission Control:     /docs/mission-control/mission-control.json
-This Gameplan:       /docs/MONTREE_GAMEPLAN.md
-Session Handoffs:    /docs/HANDOFF_*.md
-Migrations:          /migrations/067-068_*.sql
-```
-
----
-
-**LET'S BUILD THIS.**
+**Next:** Session 93 - Capacitor Setup
