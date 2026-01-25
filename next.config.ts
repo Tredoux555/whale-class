@@ -1,32 +1,57 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
+/**
+ * NEXT.JS CONFIG
+ * 
+ * Supports two modes:
+ * - Web (default): output: 'standalone' for Railway/Vercel with API routes
+ * - Native (CAPACITOR_BUILD=true): output: 'export' for static Capacitor build
+ */
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === 'true';
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  // CRITICAL: Required for Docker/Railway deployments to include API routes
-  output: 'standalone',
-  // Ignore TypeScript errors during builds (fix later)
+  // Standalone for web (API routes), export for native (static)
+  output: isCapacitorBuild ? 'export' : 'standalone',
+  
+  // Trailing slashes needed for static export
+  trailingSlash: isCapacitorBuild,
+  
+  // Exclude dynamic routes from static export
+  ...(isCapacitorBuild ? {
+    experimental: {
+      // Exclude these pages from static export - they use query params in native
+      excludeDefaultMomentLocales: true,
+    }
+  } : {}),
+  
+  // Ignore TypeScript errors during builds
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Allow external images from Supabase storage
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'dmfncjjtsoxrnvcdnvjq.supabase.co',
-        pathname: '/storage/v1/object/public/**',
+  
+  // Image config
+  images: isCapacitorBuild 
+    ? { unoptimized: true }
+    : {
+        remotePatterns: [
+          {
+            protocol: 'https',
+            hostname: 'dmfncjjtsoxrnvcdnvjq.supabase.co',
+            pathname: '/storage/v1/object/public/**',
+          },
+        ],
       },
-    ],
-  },
-  // Transpile server-only modules (bcryptjs v3 is ESM-only)
+  
+  // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
-  // Enable Turbopack (Next.js 16 default) - silences webpack config warning
+  
+  // Enable Turbopack
   turbopack: {},
-  // Keep webpack config for PWA compatibility (runs in build only)
+  
+  // Webpack config for PWA
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Only externalize optional native dependencies
       config.externals = config.externals || [];
       if (Array.isArray(config.externals)) {
         config.externals.push('pg-native');
@@ -36,14 +61,12 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Only apply PWA for web builds
 const pwaConfig = withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-  // Exclude admin routes and API generate routes from precaching
-  // This prevents the service worker from trying to fetch admin-related resources
-  // which could trigger Great Firewall issues in China
+  disable: process.env.NODE_ENV === "development" || isCapacitorBuild,
   buildExcludes: [
     /chunks\/app\/admin/,
     /chunks\/app\/api\/circle-plans\/generate/,
@@ -52,4 +75,4 @@ const pwaConfig = withPWA({
   ],
 });
 
-export default pwaConfig(nextConfig);
+export default isCapacitorBuild ? nextConfig : pwaConfig(nextConfig);

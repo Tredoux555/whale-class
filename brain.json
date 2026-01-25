@@ -1,77 +1,62 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-26T00:30:00+08:00",
-  "session": 92,
+  "lastUpdated": "2026-01-26T11:00:00+08:00",
+  "session": 93,
   
   "CORE_MISSION": {
-    "statement": "Schools buy the app. They own their data. Forever.",
-    "philosophy": "You deliver the tool. They own everything.",
-    "priority": "THIS IS THE ONLY PRIORITY"
+    "statement": "Schools buy the app. They own their data. Forever."
   },
 
-  "STATUS": "PHASE 1 COMPLETE ✅",
+  "STATUS": "SESSION 93 COMPLETE - WAITING FOR XCODE",
 
-  "PHASE_1_WEB": {
-    "status": "COMPLETE",
-    "completion": "100%",
-    "sessions": "85-92",
-    "handoff": "/docs/HANDOFF_PHASE1_WEB_COMPLETE.md"
+  "SESSION_93_SUMMARY": {
+    "COMPLETED": [
+      "✅ Static build working (npm run build:native)",
+      "✅ 122 pages generated to out/ folder",
+      "✅ iOS platform added (npx cap add ios)",
+      "✅ iOS sync complete (npx cap sync ios)",
+      "✅ ios/ folder with Xcode project ready"
+    ],
+    "BLOCKED_BY_USER": [
+      "❌ Xcode not installed",
+      "❌ Cannot test in iOS Simulator without Xcode"
+    ]
   },
 
-  "PHASE_2_NATIVE": {
-    "status": "NOT_STARTED",
-    "sessions": "93-101",
-    "next_session": 93,
-    "focus": "Capacitor setup"
+  "USER_ACTION_REQUIRED": {
+    "step1": "Open App Store on your Mac",
+    "step2": "Search for 'Xcode' and install it (it's free, ~12GB)",
+    "step3": "After install, run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
+    "step4": "Then run: npx cap open ios",
+    "step5": "In Xcode, select iPhone simulator and click Play button"
   },
 
-  "SESSION_LOG": {
-    "92": {
-      "date": "2026-01-25",
-      "completed": [
-        "Added 🎮 Games link to dashboard",
-        "Admin link in logout dropdown",
-        "Back button on admin page",
-        "Comprehensive handoff document",
-        "Updated gameplan"
-      ]
-    },
-    "91": { "summary": "Build verification + test checklist" },
-    "90": { "summary": "Reports with auth" },
-    "89": { "summary": "Progress tracking" },
-    "88": { "summary": "Student management" },
-    "87": { "summary": "Admin panel" },
-    "86": { "summary": "Dashboard auth" },
-    "85": { "summary": "Onboarding + login codes" }
+  "FILES_CREATED_SESSION_93": [
+    "ios/ - Complete iOS Xcode project",
+    "lib/platform.ts - Native detection utility",
+    "app/games/[gameId]/GamePageClient.tsx - Client component",
+    "app/montree/dashboard/reports/[id]/ReportDetailClient.tsx - Client component"
+  ],
+
+  "BUILD_COMMANDS": {
+    "build": "npm run build:native",
+    "sync": "npx cap sync ios",
+    "open": "npx cap open ios"
   },
 
-  "KEY_URLS": {
-    "/montree": "Landing page",
-    "/montree/onboarding": "Principal sets up school",
-    "/montree/login": "Teacher login",
-    "/montree/dashboard": "Teacher classroom",
-    "/montree/dashboard/progress": "Progress tracking",
-    "/montree/dashboard/reports": "Weekly reports",
-    "/montree/admin": "Principal dashboard",
-    "/montree/admin/students": "Student management",
-    "/montree/games": "Educational games"
+  "NEXT_SESSION_94": {
+    "focus": "SQLite integration",
+    "tasks": [
+      "Create SQLite database schema",
+      "Create data layer abstraction",
+      "Test reading/writing locally"
+    ],
+    "prerequisite": "Xcode must be installed first"
   },
 
   "TEST_DATA": {
-    "school_id": "00000000-0000-0000-0000-000000000001",
-    "school_name": "Beijing International School",
-    "classroom_id": "00000000-0000-0000-0000-000000000002",
-    "classroom_name": "Whale Class",
-    "classroom_icon": "🐋",
-    "teacher_name": "Tredoux",
     "login_code": "whaleclass-7a4b",
-    "student_count": 18
-  },
-
-  "DOCS": {
-    "handoff": "/docs/HANDOFF_PHASE1_WEB_COMPLETE.md",
-    "gameplan": "/docs/MONTREE_GAMEPLAN.md",
-    "test_checklist": "/docs/SESSION_91_TEST_CHECKLIST.md"
+    "teacher_name": "Tredoux"
   }
 }
