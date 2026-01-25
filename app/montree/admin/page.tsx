@@ -85,9 +85,18 @@ export default function AdminPage() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white">{school?.name || 'My School'}</h1>
-            <p className="text-slate-400 text-sm">{classrooms.length} classroom{classrooms.length !== 1 ? 's' : ''}</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/montree/dashboard"
+              className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              title="Back to Dashboard"
+            >
+              ←
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-white">{school?.name || 'My School'}</h1>
+              <p className="text-slate-400 text-sm">{classrooms.length} classroom{classrooms.length !== 1 ? 's' : ''}</p>
+            </div>
           </div>
           <Link
             href="/montree/onboarding"
