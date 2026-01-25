@@ -1,318 +1,363 @@
 // /montree/admin/students/page.tsx
-// WORKING WEEKLY PLANNING - Ported from admin/weekly-planning
-// Uses same API that writes to children + weekly_assignments tables
+// Session 88: Student Management - Add, edit, move students
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-interface ParsedAssignment {
-  childName: string;
-  works: {
-    area: string;
-    workNameChinese: string;
-    workNameEnglish: string;
-  }[];
-}
-
-interface UploadResult {
-  success: boolean;
-  plan?: any;
-  translatedContent?: {
-    weekNumber: number;
-    assignments: ParsedAssignment[];
-  };
-  error?: string;
-}
-
-interface WeeklyPlan {
+interface Student {
   id: string;
-  week_number: number;
-  year: number;
-  status: string;
-  original_filename?: string;
+  name: string;
+  photo_url?: string;
+  date_of_birth?: string;
+  classroom_id: string;
+  classroom_name?: string;
+  classroom_icon?: string;
 }
 
-const AREA_COLORS: Record<string, string> = {
-  practical_life: 'bg-pink-500/20 text-pink-300',
-  sensorial: 'bg-purple-500/20 text-purple-300',
-  mathematics: 'bg-blue-500/20 text-blue-300',
-  math: 'bg-blue-500/20 text-blue-300',
-  language: 'bg-green-500/20 text-green-300',
-  culture: 'bg-orange-500/20 text-orange-300',
-};
-
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'P',
-  sensorial: 'S',
-  mathematics: 'M',
-  math: 'M',
-  language: 'L',
-  culture: 'C',
-};
+interface Classroom {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 export default function StudentsPage() {
-  const [existingPlans, setExistingPlans] = useState<WeeklyPlan[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [childCount, setChildCount] = useState(0);
+  const [selectedClassroom, setSelectedClassroom] = useState<string>('all');
+  
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [saving, setSaving] = useState(false);
+  
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formDob, setFormDob] = useState('');
+  const [formClassroom, setFormClassroom] = useState('');
 
   useEffect(() => {
-    loadPlans();
-    loadChildCount();
+    fetchData();
   }, []);
 
-  async function loadPlans() {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/weekly-planning/list');
-      if (res.ok) {
-        const data = await res.json();
-        setExistingPlans(data.plans || []);
+      // Fetch students
+      const studentsRes = await fetch('/api/montree/admin/students');
+      const studentsData = await studentsRes.json();
+      setStudents(studentsData.students || []);
+
+      // Fetch classrooms
+      const classroomsRes = await fetch('/api/montree/admin/overview');
+      const classroomsData = await classroomsRes.json();
+      setClassrooms(classroomsData.classrooms || []);
+      
+      // Set default classroom for new students
+      if (classroomsData.classrooms?.length > 0) {
+        setFormClassroom(classroomsData.classrooms[0].id);
       }
     } catch (err) {
-      console.error('Failed to load plans:', err);
-    }
-    setLoading(false);
-  }
-
-  async function loadChildCount() {
-    try {
-      const res = await fetch('/api/montree/children');
-      if (res.ok) {
-        const data = await res.json();
-        setChildCount(data.children?.length || 0);
-      }
-    } catch (err) {
-      console.error('Failed to load children:', err);
-    }
-  }
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      await processFile(files[0]);
-    }
-  }, []);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      await processFile(files[0]);
+      console.error('Failed to fetch:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  async function processFile(file: File) {
-    if (!file.name.endsWith('.docx')) {
-      setUploadError('Please upload a .docx file');
-      return;
-    }
+  const openAddModal = () => {
+    setEditingStudent(null);
+    setFormName('');
+    setFormDob('');
+    setFormClassroom(classrooms[0]?.id || '');
+    setShowAddModal(true);
+  };
 
-    setUploading(true);
-    setUploadError(null);
-    setUploadResult(null);
+  const openEditModal = (student: Student) => {
+    setEditingStudent(student);
+    setFormName(student.name);
+    setFormDob(student.date_of_birth || '');
+    setFormClassroom(student.classroom_id);
+    setShowAddModal(true);
+  };
 
+  const closeModal = () => {
+    setShowAddModal(false);
+    setEditingStudent(null);
+  };
+
+  const handleSave = async () => {
+    if (!formName.trim() || !formClassroom) return;
+    
+    setSaving(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const payload = {
+        name: formName.trim(),
+        date_of_birth: formDob || null,
+        classroom_id: formClassroom,
+      };
 
-      // Uses the WORKING API that writes to children + weekly_assignments
-      const res = await fetch('/api/weekly-planning/upload', {
-        method: 'POST',
-        body: formData,
+      const url = editingStudent 
+        ? `/api/montree/admin/students/${editingStudent.id}`
+        : '/api/montree/admin/students';
+      
+      const method = editingStudent ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
+      if (!res.ok) throw new Error('Failed to save');
 
-      if (result.success) {
-        setUploadResult(result);
-        loadPlans();
-        loadChildCount();
-      } else {
-        setUploadError(result.error || 'Upload failed');
-      }
+      // Refresh data
+      await fetchData();
+      closeModal();
     } catch (err) {
-      console.error('Upload error:', err);
-      setUploadError('Failed to upload file');
+      console.error('Save error:', err);
+      alert('Failed to save student');
+    } finally {
+      setSaving(false);
     }
-    
-    setUploading(false);
-  }
+  };
+
+  const handleDelete = async (studentId: string, studentName: string) => {
+    if (!confirm(`Remove ${studentName} from the school?`)) return;
+
+    try {
+      const res = await fetch(`/api/montree/admin/students/${studentId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error('Failed to delete');
+
+      // Refresh data
+      await fetchData();
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to remove student');
+    }
+  };
+
+  // Filter students
+  const filteredStudents = selectedClassroom === 'all' 
+    ? students 
+    : students.filter(s => s.classroom_id === selectedClassroom);
+
+  // Group by classroom for display
+  const groupedStudents = filteredStudents.reduce((acc, student) => {
+    const key = student.classroom_id || 'unassigned';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(student);
+    return acc;
+  }, {} as Record<string, Student[]>);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="h-8 w-32 bg-slate-700 rounded animate-pulse mb-6"></div>
+          <div className="space-y-4">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="h-16 bg-slate-800 rounded-xl animate-pulse"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Students</h1>
-          <p className="text-gray-400">{childCount} students enrolled</p>
-        </div>
-        <Link
-          href="/montree/dashboard"
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex items-center gap-2"
-        >
-          🌳 Open Classroom →
-        </Link>
-      </div>
-
-      {/* Upload Zone */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-        <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          🚀 Import Students
-        </h2>
-        <p className="text-gray-400 text-sm mb-4">
-          Upload your weekly planning document. Creates students and assigns works automatically.
-        </p>
-
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`relative border-2 border-dashed rounded-xl p-8 transition-all text-center
-            ${isDragging 
-              ? 'border-emerald-500 bg-emerald-500/10' 
-              : 'border-gray-700 hover:border-gray-600'
-            }
-            ${uploading ? 'opacity-50 pointer-events-none' : ''}
-          `}
-        >
-          {uploading ? (
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent mb-4" />
-              <p className="text-white font-medium">Processing document...</p>
-              <p className="text-sm text-gray-400">Parsing, translating, matching works</p>
-            </div>
-          ) : (
-            <>
-              <div className="text-4xl mb-3">📄</div>
-              <p className="text-white font-medium mb-1">
-                Drop your document
-              </p>
-              <p className="text-gray-500 text-sm mb-4">
-                Word, Image, Excel, PDF
-              </p>
-              <label className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-lg cursor-pointer hover:bg-emerald-700 transition-colors font-medium">
-                Choose File
-                <input
-                  type="file"
-                  accept=".docx,.doc,.pdf,.xlsx,.xls,.png,.jpg,.jpeg"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
-              </label>
-            </>
-          )}
-        </div>
-
-        {/* Paste option */}
-        <div className="mt-4 text-center text-gray-500 text-sm">or paste</div>
-        <textarea 
-          placeholder="Paste classroom roster..."
-          className="mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-white placeholder-gray-500 resize-none h-24 focus:outline-none focus:border-emerald-500"
-        />
-      </div>
-
-      {/* Upload Error */}
-      {uploadError && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
-          <p className="text-red-400 font-medium">❌ {uploadError}</p>
-        </div>
-      )}
-
-      {/* Upload Success */}
-      {uploadResult?.success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 mb-6">
-          <h3 className="text-xl font-bold text-emerald-400 mb-4">
-            ✅ Week {uploadResult.translatedContent?.weekNumber} Plan Created!
-          </h3>
-          
-          <p className="text-emerald-300 mb-4">
-            {uploadResult.translatedContent?.assignments?.length || 0} children • {' '}
-            {uploadResult.translatedContent?.assignments?.reduce((sum, a) => sum + a.works.length, 0) || 0} total works assigned
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-            {uploadResult.translatedContent?.assignments?.slice(0, 6).map((assignment, i) => (
-              <div key={i} className="bg-gray-800 rounded-lg p-3">
-                <p className="font-semibold text-white mb-2">{assignment.childName}</p>
-                <div className="flex flex-wrap gap-1">
-                  {assignment.works.map((work, j) => (
-                    <span key={j} className={`px-2 py-0.5 rounded text-xs ${AREA_COLORS[work.area] || 'bg-gray-700 text-gray-300'}`}>
-                      {AREA_LABELS[work.area] || '?'}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <Link href="/montree/admin" className="text-slate-400 text-sm hover:text-white mb-1 inline-block">
+              ← Back to Admin
+            </Link>
+            <h1 className="text-2xl font-bold text-white">Students</h1>
+            <p className="text-slate-400 text-sm">{students.length} total</p>
           </div>
-
-          {(uploadResult.translatedContent?.assignments?.length || 0) > 6 && (
-            <p className="text-sm text-gray-400 mb-4">
-              +{(uploadResult.translatedContent?.assignments?.length || 0) - 6} more children...
-            </p>
-          )}
-
-          <Link
-            href="/montree/dashboard"
-            className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
           >
-            🌳 View in Classroom →
-          </Link>
+            + Add Student
+          </button>
         </div>
-      )}
 
-      {/* Existing Plans */}
-      {existingPlans.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4">📚 Uploaded Plans</h2>
-          
-          <div className="space-y-2">
-            {existingPlans.map(plan => (
-              <div 
-                key={plan.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-gray-800 hover:bg-gray-750 transition-colors"
+        {/* Filter */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <button
+            onClick={() => setSelectedClassroom('all')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              selectedClassroom === 'all'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            All ({students.length})
+          </button>
+          {classrooms.map(c => {
+            const count = students.filter(s => s.classroom_id === c.id).length;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setSelectedClassroom(c.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  selectedClassroom === c.id
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
               >
-                <div>
-                  <p className="font-semibold text-white">
-                    Week {plan.week_number}, {plan.year}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {plan.original_filename || 'Manual entry'}
-                  </p>
-                </div>
-                <Link
-                  href="/montree/dashboard"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-                >
-                  Open →
-                </Link>
-              </div>
-            ))}
-          </div>
+                {c.icon} {c.name} ({count})
+              </button>
+            );
+          })}
         </div>
-      )}
+
+        {/* Students List */}
+        {filteredStudents.length === 0 ? (
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
+            <span className="text-5xl mb-4 block">👶</span>
+            <h3 className="text-white font-semibold mb-2">No students yet</h3>
+            <p className="text-slate-400 mb-6">Add your first student to get started</p>
+            <button
+              onClick={openAddModal}
+              className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+            >
+              + Add Student
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(groupedStudents).map(([classroomId, classStudents]) => {
+              const classroom = classrooms.find(c => c.id === classroomId);
+              return (
+                <div key={classroomId}>
+                  {selectedClassroom === 'all' && (
+                    <h2 className="text-slate-400 text-sm font-medium mb-3 flex items-center gap-2">
+                      <span>{classroom?.icon || '📚'}</span>
+                      <span>{classroom?.name || 'Unassigned'}</span>
+                      <span className="text-slate-500">({classStudents.length})</span>
+                    </h2>
+                  )}
+                  <div className="space-y-2">
+                    {classStudents.map(student => (
+                      <div
+                        key={student.id}
+                        className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex items-center justify-between hover:border-slate-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg">
+                            {student.photo_url ? (
+                              <img src={student.photo_url} alt={student.name} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              student.name.charAt(0)
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="text-white font-medium">{student.name}</h3>
+                            {student.date_of_birth && (
+                              <p className="text-slate-400 text-sm">
+                                Born: {new Date(student.date_of_birth).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(student)}
+                            className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(student.id, student.name)}
+                            className="px-3 py-1.5 bg-slate-700 text-red-400 rounded-lg text-sm hover:bg-red-900/30 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Add/Edit Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-2xl p-6 max-w-md w-full">
+              <h2 className="text-xl font-bold text-white mb-6">
+                {editingStudent ? 'Edit Student' : 'Add Student'}
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-slate-400 text-sm mb-1">Name *</label>
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="e.g. Rachel"
+                    className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-slate-400 text-sm mb-1">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={formDob}
+                    onChange={(e) => setFormDob(e.target.value)}
+                    className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Classroom */}
+                <div>
+                  <label className="block text-slate-400 text-sm mb-1">Classroom *</label>
+                  <select
+                    value={formClassroom}
+                    onChange={(e) => setFormClassroom(e.target.value)}
+                    className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:border-emerald-500 focus:outline-none"
+                  >
+                    {classrooms.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.icon} {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={closeModal}
+                  className="flex-1 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!formName.trim() || !formClassroom || saving}
+                  className="flex-1 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? 'Saving...' : editingStudent ? 'Save Changes' : 'Add Student'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
