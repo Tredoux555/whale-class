@@ -1,62 +1,119 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-26T11:00:00+08:00",
+  "lastUpdated": "2026-01-26T12:00:00+08:00",
   "session": 93,
   
   "CORE_MISSION": {
-    "statement": "Schools buy the app. They own their data. Forever."
+    "statement": "Schools buy the app. They own their data. Forever.",
+    "philosophy": "You deliver the tool. They own everything."
   },
 
-  "STATUS": "SESSION 93 COMPLETE - WAITING FOR XCODE",
+  "STATUS": "SESSION 93 COMPLETE - XCODE DOWNLOADING",
+
+  "PROJECT_PATH": "/Users/tredouxwillemse/Desktop/ACTIVE/whale",
+
+  "CRITICAL_INSTRUCTIONS_FOR_NEXT_SESSION": {
+    "rule_1": "SEGMENT YOUR WORK - Small chunks, test each, save brain",
+    "rule_2": "UPDATE BRAIN.JSON EVERY 5 MINUTES during builds",
+    "rule_3": "GIT COMMIT after each working checkpoint",
+    "rule_4": "If you glitch, read this brain.json + SESSION_93_HANDOFF.md",
+    "checkpoint_format": {
+      "time": "HH:MM",
+      "task": "What was completed",
+      "status": "working/broken/testing"
+    }
+  },
 
   "SESSION_93_SUMMARY": {
-    "COMPLETED": [
-      "✅ Static build working (npm run build:native)",
-      "✅ 122 pages generated to out/ folder",
-      "✅ iOS platform added (npx cap add ios)",
-      "✅ iOS sync complete (npx cap sync ios)",
-      "✅ ios/ folder with Xcode project ready"
-    ],
-    "BLOCKED_BY_USER": [
-      "❌ Xcode not installed",
-      "❌ Cannot test in iOS Simulator without Xcode"
-    ]
+    "capacitor": {
+      "static_build": "✅ npm run build:native (122 pages)",
+      "ios_platform": "✅ npx cap add ios",
+      "ios_sync": "✅ npx cap sync ios",
+      "ios_folder": "✅ ~/Desktop/ACTIVE/whale/ios/"
+    },
+    "disk_cleanup": {
+      "before": "7.9GB free",
+      "after": "115GB free",
+      "freed": "102GB",
+      "deleted": [
+        "iPhone backup (65GB)",
+        "Cursor caches (10GB)",
+        "Claude VMs (10GB)",
+        "iOS Simulators (6GB)",
+        "Photo cache (12GB)"
+      ]
+    },
+    "desktop": {
+      "before": "40 folders",
+      "after": "6 folders",
+      "structure": ["ACTIVE", "TEACHING", "BUSINESS", "CODE-ARCHIVE", "PERSONAL", "ARCHIVE"]
+    }
   },
 
-  "USER_ACTION_REQUIRED": {
-    "step1": "Open App Store on your Mac",
-    "step2": "Search for 'Xcode' and install it (it's free, ~12GB)",
-    "step3": "After install, run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
-    "step4": "Then run: npx cap open ios",
-    "step5": "In Xcode, select iPhone simulator and click Play button"
-  },
+  "FILES_MODIFIED_SESSION_93": [
+    "next.config.ts - dual mode (web/native)",
+    "package.json - build:native script",
+    "lib/platform.ts - NEW native detection",
+    "scripts/build-native.sh - NEW build script",
+    "app/montree/dashboard/reports/[id]/page.tsx - server wrapper",
+    "app/montree/dashboard/reports/[id]/ReportDetailClient.tsx - NEW client",
+    "app/games/[gameId]/page.tsx - server wrapper",
+    "app/games/[gameId]/GamePageClient.tsx - NEW client"
+  ],
 
-  "FILES_CREATED_SESSION_93": [
-    "ios/ - Complete iOS Xcode project",
-    "lib/platform.ts - Native detection utility",
-    "app/games/[gameId]/GamePageClient.tsx - Client component",
-    "app/montree/dashboard/reports/[id]/ReportDetailClient.tsx - Client component"
+  "PROTECTED_FILES": [
+    "~/Desktop/ACTIVE/whale/brain.json",
+    "~/Desktop/ACTIVE/whale/docs/mission-control/",
+    "~/Desktop/ACTIVE/jeffy-mvp/docs/mission-control/"
   ],
 
   "BUILD_COMMANDS": {
-    "build": "npm run build:native",
-    "sync": "npx cap sync ios",
-    "open": "npx cap open ios"
+    "dev": "cd ~/Desktop/ACTIVE/whale && npm run dev",
+    "build_web": "cd ~/Desktop/ACTIVE/whale && npm run build",
+    "build_native": "cd ~/Desktop/ACTIVE/whale && npm run build:native",
+    "cap_sync": "cd ~/Desktop/ACTIVE/whale && npx cap sync ios",
+    "cap_open": "cd ~/Desktop/ACTIVE/whale && npx cap open ios"
   },
 
+  "AFTER_XCODE_INSTALLS": [
+    "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
+    "cd ~/Desktop/ACTIVE/whale",
+    "npx cap open ios",
+    "In Xcode: Select iPhone sim → Click Play"
+  ],
+
   "NEXT_SESSION_94": {
-    "focus": "SQLite integration",
+    "focus": "SQLite Integration",
     "tasks": [
-      "Create SQLite database schema",
-      "Create data layer abstraction",
-      "Test reading/writing locally"
+      "1. Verify Xcode/simulator works → CHECKPOINT",
+      "2. Create SQLite schema (lib/db/sqlite-schema.ts) → CHECKPOINT",
+      "3. Create SQLite service (lib/db/sqlite.ts) → CHECKPOINT",
+      "4. Test read/write on device → CHECKPOINT",
+      "5. Git commit + final brain update"
     ],
-    "prerequisite": "Xcode must be installed first"
+    "estimated_time": "1-2 hours"
+  },
+
+  "PHASE_2_ROADMAP": {
+    "94": "SQLite integration",
+    "95": "Data layer swap (Supabase → SQLite)",
+    "96": "Photo storage local",
+    "97": "Offline-first complete",
+    "98": "Optional sync (iCloud/Drive/NAS)",
+    "99": "Native polish",
+    "100": "App Store prep",
+    "101": "LAUNCH"
   },
 
   "TEST_DATA": {
+    "url": "/montree/login",
     "login_code": "whaleclass-7a4b",
-    "teacher_name": "Tredoux"
-  }
+    "teacher_name": "Tredoux",
+    "student_count": 18,
+    "school": "Beijing International School",
+    "classroom": "Whale Class 🐋"
+  },
+
+  "HANDOFF_DOC": "/docs/SESSION_93_HANDOFF.md"
 }
