@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:native": "bash scripts/build-native.sh",
+    "cap:sync": "npx cap sync",
+    "cap:ios": "npm run build:native && npx cap sync ios && npx cap open ios",
+    "cap:android": "npm run build:native && npx cap sync android && npx cap open android"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
