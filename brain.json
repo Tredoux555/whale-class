@@ -1,8 +1,8 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-25T21:00:00+08:00",
-  "session": 86,
+  "lastUpdated": "2026-01-25T21:30:00+08:00",
+  "session": 87,
   
   "CORE_MISSION": {
     "statement": "Schools buy the app. They own their data. Forever.",
@@ -12,66 +12,52 @@
 
   "PHASE_1_WEB": {
     "status": "IN_PROGRESS",
-    "completion": "65%",
+    "completion": "70%",
     "remaining": [
-      "Admin panel for principals", 
       "Student management",
       "Progress tracking connected",
       "Reports working"
-    ],
-    "tech_stack": {
-      "frontend": "Next.js 14 + React + Tailwind",
-      "backend": "Supabase (PostgreSQL)",
-      "hosting": "Railway",
-      "domain": "teacherpotato.xyz/montree"
-    }
-  },
-
-  "PHASE_2_NATIVE": {
-    "status": "WAITING",
-    "completion": "0%",
-    "starts_when": "Phase 1 is rock solid",
-    "tech_stack": {
-      "shell": "Capacitor 5+",
-      "database": "SQLite local",
-      "storage": "Capacitor Filesystem",
-      "sync": "PowerSync (optional)",
-      "distribution": "App Store + Google Play"
-    }
+    ]
   },
 
   "CURRENT_STATE": {
     "completed": [
-      "Database schema (schools, classrooms, teachers, children)",
-      "Onboarding wizard (3 steps + login codes)",
-      "Teacher login system (code + password)",
+      "Database schema",
+      "Onboarding wizard",
+      "Teacher login codes",
       "Auth APIs",
-      "Whale Class migrated",
-      "Dashboard shows teacher's classroom only",
-      "Logout functionality"
+      "Dashboard shows teacher's classroom",
+      "Logout functionality",
+      "Admin panel with classrooms grid",
+      "Teacher codes visible to principal"
     ],
-    "in_progress": [
-      "Testing the full login → dashboard flow"
-    ],
+    "in_progress": [],
     "next_up": [
-      "Admin panel",
-      "Student management",
+      "Student management (add/edit/move)",
       "Progress tracking",
       "Reports"
     ]
   },
 
   "SESSION_LOG": {
+    "87": {
+      "date": "2026-01-25",
+      "completed": [
+        "Admin page redesigned with classrooms grid",
+        "Shows school name, classroom count",
+        "Each classroom: icon, name, teacher, student count, login code",
+        "Copy login code button",
+        "Quick links to other admin features",
+        "API: /api/montree/admin/overview"
+      ]
+    },
     "86": {
       "date": "2026-01-25",
       "completed": [
-        "API: /api/montree/children now accepts ?classroom_id filter",
-        "Dashboard checks localStorage for montree_teacher",
-        "Redirects to /montree/login if not logged in",
-        "Shows classroom icon + name dynamically",
-        "Shows teacher name in header",
-        "Logout dropdown added",
-        "Empty state for new classrooms"
+        "Dashboard auth check",
+        "Filter children by classroom_id",
+        "Dynamic classroom icon/name",
+        "Logout functionality"
       ]
     },
     "85": {
@@ -80,8 +66,7 @@
         "School onboarding wizard",
         "Teacher login code system",
         "Auth APIs",
-        "Mission control updated",
-        "Complete gameplan created"
+        "Gameplan created"
       ]
     }
   },
@@ -89,8 +74,8 @@
   "KEY_URLS": {
     "/montree/onboarding": "Principal sets up school",
     "/montree/login": "Teacher login",
-    "/montree/dashboard": "Teacher classroom view (auth required)",
-    "/montree/admin": "Principal management"
+    "/montree/dashboard": "Teacher classroom view",
+    "/montree/admin": "Principal dashboard with classrooms"
   },
 
   "WHALE_CLASS": {
@@ -100,13 +85,6 @@
     "login_code": "whaleclass-7a4b",
     "students": 18
   },
-
-  "HARD_LAWS": [
-    "Update brain.json every 5 minutes during builds",
-    "Chunk → Save → Analyze → Proceed",
-    "Never lose progress",
-    "This is the ONLY priority"
-  ],
 
   "GAMEPLAN_LOCATION": "/docs/MONTREE_GAMEPLAN.md"
 }
