@@ -1,134 +1,155 @@
-# HANDOFF: School Onboarding - Session 85
+# HANDOFF: Montree School Onboarding - Session 85
 
 ## Date: January 25, 2026
 
 ---
 
-## WHAT WAS BUILT
+## WHAT'S BUILT
 
-### 1. Clean Database Migration
-`migrations/067_school_onboarding_clean.sql`
-
-Creates/ensures:
-- `montree_schools` - school records
-- `montree_classrooms` - with `teacher_id` linking to teachers
-- `montree_school_admins` - principals
-- Adds `classroom_id` to `simple_teachers`
-- Adds `classroom_id` to `children`
-- Migrates existing Whale Class data
-
-### 2. Onboarding Wizard UI
-`app/montree/onboarding/page.tsx`
-
-3-step flow:
-1. **School Name** → auto-generates slug
-2. **Add Classrooms** → Supabase-style grid, click to add, emoji picker
-3. **Assign Teachers** → name + email per classroom
-
-### 3. Onboarding API
-`app/api/montree/onboarding/route.ts`
-
-Creates school + classrooms + teachers in one POST request.
-
----
-
-## THE DATA MODEL (SIMPLE)
+### Complete New System (Montree SaaS)
 
 ```
-montree_schools
-    │
-    ├── montree_classrooms (has teacher_id)
-    │       │
-    │       └── children (has classroom_id)
-    │
-    └── simple_teachers (has classroom_id)
+/montree/onboarding     → Principal sets up school (3 steps + success with codes)
+/montree/login          → Teacher login (code flow OR name+password)
+/montree/dashboard      → Teacher's classroom
+/montree/admin          → Principal manages school
 ```
 
-**One teacher = One classroom = Their students**
+### The Flow
 
----
-
-## TO RUN THIS
-
-### Step 1: Run Migration in Supabase
-
-Copy and paste the entire contents of:
+**Principal onboards school:**
 ```
-migrations/067_school_onboarding_clean.sql
-```
-Into Supabase SQL Editor and run it.
-
-### Step 2: Test the Onboarding Flow
-
-```
-npm run dev
-```
-
-Open: `http://localhost:3000/montree/onboarding`
-
 1. Enter school name
-2. Add classrooms with + button
-3. Assign teachers
-4. Click Finish
-
-### Step 3: Verify in Supabase
-
-```sql
-SELECT * FROM montree_schools;
-SELECT * FROM montree_classrooms;
-SELECT name, classroom_id FROM simple_teachers;
+2. Add classrooms (grid UI with +)
+3. Assign teacher names
+4. SUCCESS → Shows login codes for each teacher
 ```
 
----
+**Teacher first login:**
+```
+1. Gets code from principal (e.g. "whale-7392")
+2. Goes to /montree/login
+3. Enters code → Sets their own password
+4. Redirected to /montree/dashboard
+```
 
-## WHAT'S NOT DONE YET
-
-1. **Connect dashboard to classroom_id** - Currently shows all children, needs to filter by logged-in teacher's classroom
-2. **Principal login** - Needs auth flow for `montree_school_admins`
-3. **Student management** - Add/remove students from classrooms
+**Teacher returning:**
+```
+1. Goes to /montree/login
+2. Enters name + password
+3. Redirected to /montree/dashboard
+```
 
 ---
 
 ## FILES CREATED
 
+### Migrations
 ```
-migrations/067_school_onboarding_clean.sql    # Database migration
-app/montree/onboarding/page.tsx               # 3-step wizard UI
-app/api/montree/onboarding/route.ts           # API endpoint
+migrations/067_school_onboarding_clean.sql   # Tables + migrate existing data
+migrations/068_teacher_login_codes.sql       # Add login_code column
+```
+
+### Pages
+```
+app/montree/onboarding/page.tsx              # 3-step wizard + success
+app/montree/login/page.tsx                   # Teacher login (code + password)
+```
+
+### APIs
+```
+app/api/montree/onboarding/route.ts          # Create school + classrooms + teachers
+app/api/montree/auth/validate-code/route.ts  # Check if code is valid
+app/api/montree/auth/set-password/route.ts   # First-time password setup
+app/api/montree/auth/login/route.ts          # Name + password login
 ```
 
 ---
 
-## ARCHITECTURE DECISIONS
+## DATABASE SCHEMA
 
-| Decision | Choice | Why |
-|----------|--------|-----|
-| Table naming | `montree_` prefix | Separates from old tables (schools, classrooms) |
-| Teacher-Classroom | 1:1 via teacher_id on classroom | Simpler than junction table |
-| Children-Classroom | Direct `classroom_id` on children | No enrollment table needed for now |
-| Auth | Simple password (like simple_teachers) | No Supabase Auth needed yet |
+### simple_teachers (updated)
+```sql
+id              UUID
+name            TEXT
+password        TEXT
+password_set    BOOLEAN     -- true after teacher sets own password
+login_code      TEXT UNIQUE -- e.g. "whale-7392"
+school_id       UUID
+classroom_id    UUID
+is_active       BOOLEAN
+last_login      TIMESTAMPTZ
+```
+
+### montree_classrooms
+```sql
+id              UUID
+school_id       UUID
+name            TEXT
+icon            TEXT        -- emoji
+color           TEXT        -- hex
+teacher_id      UUID        -- links to simple_teachers
+is_active       BOOLEAN
+```
+
+### montree_schools
+```sql
+id              UUID
+name            TEXT
+slug            TEXT UNIQUE
+subscription_status TEXT
+```
 
 ---
 
-## WEB VS NATIVE
+## TO RUN THIS
 
-**Same tables work for both:**
-- Web: Data in Supabase, fetched on demand
-- Native: Same schema in local SQLite, synced via PowerSync
+### Step 1: Run Migrations
 
-No architecture changes needed when going native. Just add sync layer.
+In Supabase SQL Editor, run in order:
+1. `migrations/067_school_onboarding_clean.sql`
+2. `migrations/068_teacher_login_codes.sql`
+
+### Step 2: Test
+
+```bash
+npm run dev
+```
+
+1. Go to `http://localhost:3000/montree/onboarding`
+2. Create a test school
+3. Add a classroom + teacher
+4. Note the login code shown on success
+5. Go to `http://localhost:3000/montree/login`
+6. Enter the code → Set password → Should redirect to dashboard
 
 ---
 
-## SUCCESS CRITERIA
+## WHAT'S NOT CONNECTED YET
 
-- [x] Migration created
-- [x] Onboarding UI built  
-- [x] API endpoint working
-- [ ] Migration run in Supabase (YOU DO THIS)
-- [ ] Test flow works end-to-end
-- [ ] Dashboard filters by classroom
+1. **Dashboard filter** - `/montree/dashboard` needs to read from `montree_teacher` localStorage and filter children by `classroom_id`
+2. **Admin panel** - `/montree/admin` needs to show classrooms + regenerate codes
+3. **Logout** - Need to clear `montree_teacher` from localStorage
 
 ---
 
-*Ready to run migration and test.*
+## NEXT STEPS
+
+1. Connect dashboard to show only the logged-in teacher's classroom children
+2. Build admin panel to view classrooms and teacher codes
+3. Add "Forgot code" flow (principal regenerates)
+
+---
+
+## KEY URLS
+
+| URL | Who | Purpose |
+|-----|-----|---------|
+| `/montree/onboarding` | Principal | Setup new school |
+| `/montree/login` | Teacher | Login or first-time setup |
+| `/montree/dashboard` | Teacher | View classroom |
+| `/montree/admin` | Principal | Manage school |
+
+---
+
+*Session 85 complete. Teacher auth system ready.*
