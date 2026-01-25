@@ -179,6 +179,14 @@ function DashboardContent() {
             <SyncStatus showLabel={false} />
             
             <Link
+              href={buildUrl('/montree/dashboard/progress')}
+              className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
+              title="Progress Tracking"
+            >
+              <span className="text-base">📈</span>
+            </Link>
+            
+            <Link
               href={buildUrl('/montree/dashboard/reports')}
               className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center transition-colors"
             >
