@@ -1,8 +1,8 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-25T21:30:00+08:00",
-  "session": 87,
+  "lastUpdated": "2026-01-25T22:00:00+08:00",
+  "session": 88,
   
   "CORE_MISSION": {
     "statement": "Schools buy the app. They own their data. Forever.",
@@ -12,9 +12,8 @@
 
   "PHASE_1_WEB": {
     "status": "IN_PROGRESS",
-    "completion": "70%",
+    "completion": "75%",
     "remaining": [
-      "Student management",
       "Progress tracking connected",
       "Reports working"
     ]
@@ -29,25 +28,36 @@
       "Dashboard shows teacher's classroom",
       "Logout functionality",
       "Admin panel with classrooms grid",
-      "Teacher codes visible to principal"
+      "Teacher codes visible to principal",
+      "Student management (add/edit/remove/move)"
     ],
-    "in_progress": [],
     "next_up": [
-      "Student management (add/edit/move)",
       "Progress tracking",
       "Reports"
     ]
   },
 
   "SESSION_LOG": {
+    "88": {
+      "date": "2026-01-25",
+      "completed": [
+        "Students page with list view",
+        "Filter by classroom",
+        "Add student modal (name, DOB, classroom)",
+        "Edit student modal",
+        "Remove student with confirm",
+        "Move student between classrooms",
+        "API: GET /api/montree/admin/students",
+        "API: POST /api/montree/admin/students",
+        "API: PATCH /api/montree/admin/students/[id]",
+        "API: DELETE /api/montree/admin/students/[id]"
+      ]
+    },
     "87": {
       "date": "2026-01-25",
       "completed": [
-        "Admin page redesigned with classrooms grid",
-        "Shows school name, classroom count",
-        "Each classroom: icon, name, teacher, student count, login code",
-        "Copy login code button",
-        "Quick links to other admin features",
+        "Admin page with classrooms grid",
+        "Teacher codes visible + copy",
         "API: /api/montree/admin/overview"
       ]
     },
@@ -56,7 +66,6 @@
       "completed": [
         "Dashboard auth check",
         "Filter children by classroom_id",
-        "Dynamic classroom icon/name",
         "Logout functionality"
       ]
     },
@@ -75,15 +84,8 @@
     "/montree/onboarding": "Principal sets up school",
     "/montree/login": "Teacher login",
     "/montree/dashboard": "Teacher classroom view",
-    "/montree/admin": "Principal dashboard with classrooms"
-  },
-
-  "WHALE_CLASS": {
-    "school_id": "00000000-0000-0000-0000-000000000001",
-    "classroom_id": "00000000-0000-0000-0000-000000000002",
-    "teacher": "Tredoux",
-    "login_code": "whaleclass-7a4b",
-    "students": 18
+    "/montree/admin": "Principal dashboard",
+    "/montree/admin/students": "Student management"
   },
 
   "GAMEPLAN_LOCATION": "/docs/MONTREE_GAMEPLAN.md"
