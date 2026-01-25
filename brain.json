@@ -1,8 +1,8 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-25T20:30:00+08:00",
-  "session": 85,
+  "lastUpdated": "2026-01-25T21:00:00+08:00",
+  "session": 86,
   
   "CORE_MISSION": {
     "statement": "Schools buy the app. They own their data. Forever.",
@@ -12,9 +12,8 @@
 
   "PHASE_1_WEB": {
     "status": "IN_PROGRESS",
-    "completion": "60%",
+    "completion": "65%",
     "remaining": [
-      "Dashboard filters by classroom",
       "Admin panel for principals", 
       "Student management",
       "Progress tracking connected",
@@ -38,13 +37,6 @@
       "storage": "Capacitor Filesystem",
       "sync": "PowerSync (optional)",
       "distribution": "App Store + Google Play"
-    },
-    "key_features": {
-      "offline_first": true,
-      "data_on_device": true,
-      "photos_local": true,
-      "works_forever": true,
-      "you_see_nothing": true
     }
   },
 
@@ -54,10 +46,12 @@
       "Onboarding wizard (3 steps + login codes)",
       "Teacher login system (code + password)",
       "Auth APIs",
-      "Whale Class migrated"
+      "Whale Class migrated",
+      "Dashboard shows teacher's classroom only",
+      "Logout functionality"
     ],
     "in_progress": [
-      "Dashboard connection to logged-in teacher"
+      "Testing the full login → dashboard flow"
     ],
     "next_up": [
       "Admin panel",
@@ -67,18 +61,35 @@
     ]
   },
 
-  "DATABASE_SCHEMA": {
-    "montree_schools": "id, name, slug, settings",
-    "montree_classrooms": "id, school_id, name, icon, color, teacher_id",
-    "simple_teachers": "id, name, password, login_code, school_id, classroom_id",
-    "children": "id, name, classroom_id, school_id, photo_url",
-    "child_work_progress": "id, child_id, work_id, status"
+  "SESSION_LOG": {
+    "86": {
+      "date": "2026-01-25",
+      "completed": [
+        "API: /api/montree/children now accepts ?classroom_id filter",
+        "Dashboard checks localStorage for montree_teacher",
+        "Redirects to /montree/login if not logged in",
+        "Shows classroom icon + name dynamically",
+        "Shows teacher name in header",
+        "Logout dropdown added",
+        "Empty state for new classrooms"
+      ]
+    },
+    "85": {
+      "date": "2026-01-25",
+      "completed": [
+        "School onboarding wizard",
+        "Teacher login code system",
+        "Auth APIs",
+        "Mission control updated",
+        "Complete gameplan created"
+      ]
+    }
   },
 
   "KEY_URLS": {
     "/montree/onboarding": "Principal sets up school",
     "/montree/login": "Teacher login",
-    "/montree/dashboard": "Teacher classroom view",
+    "/montree/dashboard": "Teacher classroom view (auth required)",
     "/montree/admin": "Principal management"
   },
 
@@ -88,19 +99,6 @@
     "teacher": "Tredoux",
     "login_code": "whaleclass-7a4b",
     "students": 18
-  },
-
-  "SESSION_LOG": {
-    "85": {
-      "date": "2026-01-25",
-      "completed": [
-        "School onboarding wizard",
-        "Teacher login code system",
-        "Auth APIs (validate-code, set-password, login)",
-        "Mission control updated",
-        "Complete gameplan created"
-      ]
-    }
   },
 
   "HARD_LAWS": [
