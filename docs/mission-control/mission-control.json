@@ -1,93 +1,138 @@
 {
   "project": "Montree - Local-First Montessori Platform",
-  "lastUpdated": "2026-01-25T20:00:00+08:00",
-  "currentSession": "Session 85 - School Onboarding Complete",
+  "lastUpdated": "2026-01-25T20:30:00+08:00",
+  "currentSession": 85,
+  "gameplan": "/docs/MONTREE_GAMEPLAN.md",
   
   "THE_VISION": {
-    "summary": "Schools buy the app. They own their data. Forever.",
+    "oneLiner": "Schools buy the app. They own their data. Forever.",
     "philosophy": "You deliver the tool. They own everything.",
-    "priority": "THIS IS THE ONLY PRIORITY"
+    "priority": "THIS IS THE ONLY PRIORITY",
+    "promise": "Even if Montree disappears, every school still has a working app and all their data."
   },
 
-  "TWO_PHASES": {
+  "ROADMAP": {
     "phase1_web": {
-      "status": "IN PROGRESS",
-      "purpose": "Perfect the product, prove the concept",
-      "url": "https://www.teacherpotato.xyz/montree",
-      "data_location": "Supabase (your server)",
-      "when_done": "When onboarding + dashboard + reports flow perfectly"
+      "name": "Web Perfection",
+      "sessions": "86-92",
+      "status": "IN_PROGRESS",
+      "goal": "Flawless UX that any school can use",
+      "milestones": {
+        "86": "Dashboard shows teacher's classroom",
+        "87": "Admin panel for principals",
+        "88": "Student management",
+        "89": "Progress tracking",
+        "90": "Reports",
+        "91": "End-to-end testing",
+        "92": "Polish & bug fixes"
+      }
     },
     "phase2_native": {
+      "name": "Native Conversion",
+      "sessions": "93-101",
       "status": "WAITING",
-      "purpose": "The real product - schools own everything",
-      "tech": "Capacitor (iOS/Android) + SQLite local database",
-      "data_location": "Their device, their NAS, their iCloud - THEIR CHOICE",
-      "you_see_nothing": true,
-      "works_offline": true,
-      "works_forever": "Even if you disappear, app still runs"
+      "goal": "App Store ready, local-first, works offline forever",
+      "milestones": {
+        "93": "Capacitor setup",
+        "94": "SQLite integration",
+        "95": "Data layer swap",
+        "96": "Photo storage local",
+        "97": "Offline-first complete",
+        "98": "Optional sync (iCloud/Drive/NAS)",
+        "99": "Native polish",
+        "100": "App Store prep",
+        "101": "LAUNCH 🚀"
+      }
     }
   },
 
-  "WHY_THIS_MATTERS": {
-    "privacy": "You never see their students' faces or data",
-    "independence": "If you stop updating, app still works",
-    "no_server_costs": "You're not paying for their storage",
-    "trust": "Schools in China want data sovereignty",
-    "mission_aligned": "You're not building a data empire"
+  "CURRENT_STATUS": {
+    "session": 85,
+    "completed": [
+      "✅ Database schema",
+      "✅ Onboarding wizard (3 steps)",
+      "✅ Teacher login codes",
+      "✅ Auth APIs",
+      "✅ Whale Class migrated",
+      "✅ Gameplan created"
+    ],
+    "next_session": {
+      "number": 86,
+      "focus": "Connect dashboard to logged-in teacher's classroom",
+      "tasks": [
+        "Read montree_teacher from localStorage",
+        "Filter children by classroom_id",
+        "Show classroom name/icon in header",
+        "Empty state for new classrooms",
+        "Logout functionality"
+      ]
+    }
   },
 
-  "CURRENT_BUILD_STATUS": {
-    "onboarding": "✅ Principal creates school → adds classrooms → assigns teachers",
-    "teacher_login": "✅ Login codes generated, first-time password setup",
-    "dashboard": "🔄 Needs to filter by logged-in teacher's classroom",
-    "reports": "🔄 Exists but needs connecting to new structure",
-    "native_conversion": "⏳ After web is perfected"
+  "TECH_STACK": {
+    "web": {
+      "frontend": "Next.js 14 + React + Tailwind",
+      "backend": "Supabase (PostgreSQL + Storage)",
+      "hosting": "Railway",
+      "domain": "teacherpotato.xyz/montree"
+    },
+    "native": {
+      "shell": "Capacitor 5+",
+      "database": "SQLite (@capacitor-community/sqlite)",
+      "storage": "Capacitor Filesystem",
+      "camera": "Capacitor Camera",
+      "sync": "PowerSync (optional)",
+      "distribution": "App Store + Google Play"
+    }
   },
 
   "DATA_MODEL": {
     "montree_schools": "One per paying customer",
     "montree_classrooms": "Belongs to school, has one teacher",
-    "simple_teachers": "Has login_code, password, classroom_id",
-    "children": "Has classroom_id, all progress linked",
+    "simple_teachers": "login_code, password, classroom_id",
+    "children": "Belongs to classroom",
     "note": "Same schema works for web AND native"
   },
 
-  "KEY_URLS_WEB": {
+  "KEY_URLS": {
     "/montree/onboarding": "Principal sets up school",
     "/montree/login": "Teacher login (code or password)",
     "/montree/dashboard": "Teacher's classroom view",
     "/montree/admin": "Principal manages school"
   },
 
-  "NATIVE_ARCHITECTURE": {
-    "app_container": "Capacitor (wraps web app for iOS/Android)",
-    "local_database": "SQLite on device",
-    "sync_optional": "PowerSync to their own cloud/NAS if they want",
-    "photos": "Stored locally, never leave device unless they choose",
-    "purchase_model": "One-time buy OR subscription for updates"
-  },
-
-  "WHALE_CLASS_LEGACY": {
-    "note": "Tredoux's internal classroom - still works",
+  "WHALE_CLASS": {
+    "note": "Tredoux's internal test classroom",
     "school_id": "00000000-0000-0000-0000-000000000001",
     "classroom_id": "00000000-0000-0000-0000-000000000002",
     "login_code": "whaleclass-7a4b",
     "students": 18
   },
 
-  "NEXT_STEPS": [
-    "1. Connect dashboard to show teacher's classroom only",
-    "2. Build admin panel for principal to manage classrooms",
-    "3. Wire up weekly reports to new structure",
-    "4. Test complete flow end-to-end",
-    "5. Polish UI until perfect",
-    "6. Convert to native with Capacitor + SQLite"
-  ],
+  "SUCCESS_CRITERIA": {
+    "phase1_complete": [
+      "Any school can onboard in < 5 minutes",
+      "Teachers login without help",
+      "Progress tracking works smoothly",
+      "Reports generate correctly",
+      "Zero critical bugs for 2 weeks"
+    ],
+    "phase2_complete": [
+      "App runs fully offline",
+      "Data stays on device",
+      "Photos stored locally",
+      "App Store approved",
+      "First paying customer"
+    ]
+  },
 
-  "CREDENTIALS": {
-    "tredoux": {
-      "login_code": "whaleclass-7a4b",
-      "role": "teacher + admin"
-    }
-  }
+  "FILES": {
+    "gameplan": "/docs/MONTREE_GAMEPLAN.md",
+    "brain": "/brain.json",
+    "mission_control": "/docs/mission-control/mission-control.json",
+    "handoffs": "/docs/HANDOFF_*.md",
+    "migrations": "/migrations/067-068_*.sql"
+  },
+
+  "MANTRA": "You deliver the tool. They own everything."
 }

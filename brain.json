@@ -1,71 +1,114 @@
 {
-  "lastUpdated": "2026-01-25T10:30:00Z",
-  "currentSession": "SESSION-84-DEMO-REBUILD",
-  "status": "✅ Demo rebuilt - wraps real dashboard with tutorial overlay",
+  "project": "Montree",
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-25T20:30:00+08:00",
+  "session": 85,
   
-  "handoff": "HANDOFF_SESSION_83.md",
-  
-  "todaysWork": {
-    "session84": [
-      "Rebuilt demo to wrap real dashboard instead of duplicating code",
-      "Added grid layout to real dashboard (was list, now grid)",
-      "Created DemoTutorial component - sticky note style tutorial overlay",
-      "Demo mode activated via ?demo=zohan query param",
-      "/montree/demo/zohan/tutorial now redirects to /montree/dashboard?demo=zohan",
-      "Same codebase = fix one, fix both"
+  "CORE_MISSION": {
+    "statement": "Schools buy the app. They own their data. Forever.",
+    "philosophy": "You deliver the tool. They own everything.",
+    "priority": "THIS IS THE ONLY PRIORITY"
+  },
+
+  "PHASE_1_WEB": {
+    "status": "IN_PROGRESS",
+    "completion": "60%",
+    "remaining": [
+      "Dashboard filters by classroom",
+      "Admin panel for principals", 
+      "Student management",
+      "Progress tracking connected",
+      "Reports working"
+    ],
+    "tech_stack": {
+      "frontend": "Next.js 14 + React + Tailwind",
+      "backend": "Supabase (PostgreSQL)",
+      "hosting": "Railway",
+      "domain": "teacherpotato.xyz/montree"
+    }
+  },
+
+  "PHASE_2_NATIVE": {
+    "status": "WAITING",
+    "completion": "0%",
+    "starts_when": "Phase 1 is rock solid",
+    "tech_stack": {
+      "shell": "Capacitor 5+",
+      "database": "SQLite local",
+      "storage": "Capacitor Filesystem",
+      "sync": "PowerSync (optional)",
+      "distribution": "App Store + Google Play"
+    },
+    "key_features": {
+      "offline_first": true,
+      "data_on_device": true,
+      "photos_local": true,
+      "works_forever": true,
+      "you_see_nothing": true
+    }
+  },
+
+  "CURRENT_STATE": {
+    "completed": [
+      "Database schema (schools, classrooms, teachers, children)",
+      "Onboarding wizard (3 steps + login codes)",
+      "Teacher login system (code + password)",
+      "Auth APIs",
+      "Whale Class migrated"
+    ],
+    "in_progress": [
+      "Dashboard connection to logged-in teacher"
+    ],
+    "next_up": [
+      "Admin panel",
+      "Student management",
+      "Progress tracking",
+      "Reports"
     ]
   },
 
-  "demoArchitecture": {
-    "before": "900-line monolith duplicating all UI logic",
-    "after": "Real dashboard + 100-line tutorial overlay",
-    "entryPoint": "/montree/dashboard?demo=zohan",
-    "legacyRedirect": "/montree/demo/zohan/tutorial → redirects to above"
+  "DATABASE_SCHEMA": {
+    "montree_schools": "id, name, slug, settings",
+    "montree_classrooms": "id, school_id, name, icon, color, teacher_id",
+    "simple_teachers": "id, name, password, login_code, school_id, classroom_id",
+    "children": "id, name, classroom_id, school_id, photo_url",
+    "child_work_progress": "id, child_id, work_id, status"
   },
 
-  "tutorialSteps": {
-    "classroom": [
-      "Welcome - This is your classroom",
-      "Tap a student card"
-    ],
-    "student": [
-      "Works intro - This week's assigned works",
-      "Status tap - Cycle ○→P→Pr→M",
-      "Expand work - See more options",
-      "Notes - They appear in parent reports",
-      "Demo video - YouTube refresher",
-      "Camera - Capture photos",
-      "Wheel - Hold area letter to browse",
-      "Progress tab - Curriculum overview",
-      "Reports - Generate parent reports",
-      "Done - 30% effort → 150% output"
-    ]
+  "KEY_URLS": {
+    "/montree/onboarding": "Principal sets up school",
+    "/montree/login": "Teacher login",
+    "/montree/dashboard": "Teacher classroom view",
+    "/montree/admin": "Principal management"
   },
 
-  "files": {
-    "modified": [
-      "app/montree/dashboard/page.tsx - Grid layout + DemoTutorial",
-      "app/montree/dashboard/student/[id]/page.tsx - DemoTutorial added"
-    ],
-    "created": [
-      "components/montree/DemoTutorial.tsx - Sticky note tutorial overlay",
-      "components/montree/TutorialOverlay.tsx - (unused, kept for reference)"
-    ],
-    "replaced": [
-      "app/montree/demo/zohan/tutorial/page.tsx - Now just a redirect"
-    ]
+  "WHALE_CLASS": {
+    "school_id": "00000000-0000-0000-0000-000000000001",
+    "classroom_id": "00000000-0000-0000-0000-000000000002",
+    "teacher": "Tredoux",
+    "login_code": "whaleclass-7a4b",
+    "students": 18
   },
 
-  "testUrls": {
-    "realDashboard": "https://www.teacherpotato.xyz/montree/dashboard",
-    "demoMode": "https://www.teacherpotato.xyz/montree/dashboard?demo=zohan",
-    "legacyDemo": "https://www.teacherpotato.xyz/montree/demo/zohan/tutorial"
+  "SESSION_LOG": {
+    "85": {
+      "date": "2026-01-25",
+      "completed": [
+        "School onboarding wizard",
+        "Teacher login code system",
+        "Auth APIs (validate-code, set-password, login)",
+        "Mission control updated",
+        "Complete gameplan created"
+      ]
+    }
   },
 
-  "nextSteps": [
-    "1. Push changes: git add -A && git commit -m 'Session 84: Demo rebuild - wraps real dashboard' && git push",
-    "2. Test real dashboard (grid layout works?)",
-    "3. Test demo mode (?demo=zohan shows tutorial overlay?)",
-    "4. Then: Capacitor setup for native app"
-  ]
+  "HARD_LAWS": [
+    "Update brain.json every 5 minutes during builds",
+    "Chunk → Save → Analyze → Proceed",
+    "Never lose progress",
+    "This is the ONLY priority"
+  ],
+
+  "GAMEPLAN_LOCATION": "/docs/MONTREE_GAMEPLAN.md"
 }
