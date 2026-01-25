@@ -1,7 +1,7 @@
 {
   "project": "Montree",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-26T00:00:00+08:00",
+  "lastUpdated": "2026-01-26T00:30:00+08:00",
   "session": 92,
   
   "CORE_MISSION": {
@@ -10,26 +10,31 @@
     "priority": "THIS IS THE ONLY PRIORITY"
   },
 
+  "STATUS": "PHASE 1 COMPLETE ✅",
+
   "PHASE_1_WEB": {
-    "status": "COMPLETE ✅",
+    "status": "COMPLETE",
     "completion": "100%",
-    "sessions": "85-92"
+    "sessions": "85-92",
+    "handoff": "/docs/HANDOFF_PHASE1_WEB_COMPLETE.md"
   },
 
-  "BUILD_STATUS": {
-    "npm_build": "✅ PASS",
-    "routes_count": 140,
-    "montree_routes": 65
+  "PHASE_2_NATIVE": {
+    "status": "NOT_STARTED",
+    "sessions": "93-101",
+    "next_session": 93,
+    "focus": "Capacitor setup"
   },
 
   "SESSION_LOG": {
     "92": {
       "date": "2026-01-25",
       "completed": [
-        "Added 🎮 Games link to dashboard header",
+        "Added 🎮 Games link to dashboard",
         "Admin link in logout dropdown",
         "Back button on admin page",
-        "Polish & navigation improvements"
+        "Comprehensive handoff document",
+        "Updated gameplan"
       ]
     },
     "91": { "summary": "Build verification + test checklist" },
@@ -39,13 +44,6 @@
     "87": { "summary": "Admin panel" },
     "86": { "summary": "Dashboard auth" },
     "85": { "summary": "Onboarding + login codes" }
-  },
-
-  "COMPLETE_FLOW": {
-    "1_principal_setup": "/montree/onboarding → Creates school + classrooms + teachers → Gets login codes",
-    "2_teacher_login": "/montree/login → Enter code → Set password → Dashboard",
-    "3_daily_use": "/montree/dashboard → Track progress, capture photos, generate reports",
-    "4_admin": "/montree/admin → Manage classrooms, students, view codes"
   },
 
   "KEY_URLS": {
@@ -60,12 +58,20 @@
     "/montree/games": "Educational games"
   },
 
-  "NEXT_PHASE": {
-    "phase": "PHASE 2: NATIVE",
-    "sessions": "93-101",
-    "goal": "Convert to Capacitor + SQLite for local-first native app"
+  "TEST_DATA": {
+    "school_id": "00000000-0000-0000-0000-000000000001",
+    "school_name": "Beijing International School",
+    "classroom_id": "00000000-0000-0000-0000-000000000002",
+    "classroom_name": "Whale Class",
+    "classroom_icon": "🐋",
+    "teacher_name": "Tredoux",
+    "login_code": "whaleclass-7a4b",
+    "student_count": 18
   },
 
-  "TEST_CHECKLIST": "/docs/SESSION_91_TEST_CHECKLIST.md",
-  "GAMEPLAN_LOCATION": "/docs/MONTREE_GAMEPLAN.md"
+  "DOCS": {
+    "handoff": "/docs/HANDOFF_PHASE1_WEB_COMPLETE.md",
+    "gameplan": "/docs/MONTREE_GAMEPLAN.md",
+    "test_checklist": "/docs/SESSION_91_TEST_CHECKLIST.md"
+  }
 }
