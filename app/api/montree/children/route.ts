@@ -1,22 +1,30 @@
 // app/api/montree/children/route.ts
-// Children API: Now reads from 'children' table (same as admin) for unified data
-// This allows weekly planning uploads to work with Montree dashboard
+// Children API: Fetches children filtered by classroom_id
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 
-// GET /api/montree/children - List children from unified 'children' table
+// GET /api/montree/children?classroom_id=xxx
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const classroomId = searchParams.get('classroom_id');
+    
     const supabase = await createServerClient();
     
-    // Read from 'children' table - same as admin classroom
-    // This ensures weekly planning uploads show up in Montree
-    const { data: children, error } = await supabase
+    // Build query
+    let query = supabase
       .from('children')
-      .select('id, name, date_of_birth, photo_url, display_order')
+      .select('id, name, date_of_birth, photo_url, display_order, classroom_id')
       .order('display_order', { ascending: true })
       .order('name');
+    
+    // Filter by classroom if provided
+    if (classroomId) {
+      query = query.eq('classroom_id', classroomId);
+    }
+    
+    const { data: children, error } = await query;
     
     if (error) {
       console.error('Fetch children error:', error);
@@ -34,7 +42,7 @@ export async function GET(request: NextRequest) {
       return {
         ...child,
         age: age ? parseFloat(age) : null,
-        progress: 0 // Will be calculated from weekly_assignments
+        progress: 0
       };
     });
     
@@ -46,12 +54,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// POST not needed - children are imported via weekly planning document
-export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { error: 'Use /admin/weekly-planning to import children via document upload' },
-    { status: 405 }
-  );
 }
