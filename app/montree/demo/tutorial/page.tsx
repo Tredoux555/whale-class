@@ -757,8 +757,7 @@ function TutorialOverlay({
   );
 }
 
-// ============================================
-// WEEK TAB DEMO (Simplified for tutorial)
+// WEEK TAB DEMO (FIXED - Status cycling works!)
 // ============================================
 
 function WeekTabDemo({ 
@@ -771,15 +770,15 @@ function WeekTabDemo({
   onNext: () => void;
 }) {
   const [expandedWork, setExpandedWork] = useState<string | null>(null);
-
-  // Mock works for demo
-  const works = [
+  
+  // FIX: Works in state so changes persist
+  const [works, setWorks] = useState([
     { id: '1', name: 'Pouring Water', area: 'practical_life', status: 'practicing' },
     { id: '2', name: 'Pink Tower', area: 'sensorial', status: 'mastered' },
     { id: '3', name: 'Sandpaper Letters', area: 'language', status: 'presented' },
     { id: '4', name: 'Number Rods', area: 'mathematics', status: 'not_started' },
     { id: '5', name: 'Land & Water Forms', area: 'cultural', status: 'practicing' },
-  ];
+  ]);
 
   const AREA_CONFIG: Record<string, { letter: string; bg: string; color: string }> = {
     practical_life: { letter: 'P', bg: 'bg-pink-100', color: 'text-pink-700' },
@@ -789,6 +788,8 @@ function WeekTabDemo({
     cultural: { letter: 'C', bg: 'bg-orange-100', color: 'text-orange-700' },
   };
 
+  const STATUS_ORDER = ['not_started', 'presented', 'practicing', 'mastered'];
+
   const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
     not_started: { label: '○', bg: 'bg-gray-200', color: 'text-gray-600' },
     presented: { label: 'P', bg: 'bg-amber-200', color: 'text-amber-800' },
@@ -796,22 +797,36 @@ function WeekTabDemo({
     mastered: { label: 'M', bg: 'bg-green-200', color: 'text-green-800' },
   };
 
-  const handleStatusClick = () => {
+  // FIX: Actually cycle the status
+  const handleStatusClick = (workId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setWorks(prev => prev.map(work => {
+      if (work.id === workId) {
+        const currentIndex = STATUS_ORDER.indexOf(work.status);
+        const nextIndex = (currentIndex + 1) % STATUS_ORDER.length;
+        return { ...work, status: STATUS_ORDER[nextIndex] };
+      }
+      return work;
+    }));
+    
     if (step?.id === 'tap-status') {
       onNext();
     }
   };
 
   const handleWorkClick = (workId: string) => {
-    setExpandedWork(expandedWork === workId ? null : workId);
+    setExpandedWork(prev => prev === workId ? null : workId);
     if (step?.id === 'expand-work') {
       onNext();
     }
   };
 
+  const completed = works.filter(w => w.status === 'mastered').length;
+  const percentComplete = Math.round((completed / works.length) * 100);
+
   return (
     <div className="space-y-2">
-      {/* Week header */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -819,13 +834,12 @@ function WeekTabDemo({
             <p className="text-sm text-gray-500">{works.length} works assigned</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-emerald-600">40%</div>
-            <p className="text-xs text-gray-500">2/5 complete</p>
+            <div className="text-2xl font-bold text-emerald-600">{percentComplete}%</div>
+            <p className="text-xs text-gray-500">{completed}/{works.length} complete</p>
           </div>
         </div>
       </div>
 
-      {/* Works list */}
       {works.map((work, index) => {
         const area = AREA_CONFIG[work.area];
         const status = STATUS_CONFIG[work.status];
@@ -835,22 +849,22 @@ function WeekTabDemo({
         return (
           <div 
             key={work.id}
-            className={`bg-white rounded-xl shadow-sm overflow-hidden ${
+            className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${
               isExpanded ? 'ring-2 ring-emerald-500' : ''
             }`}
           >
             <div 
               data-work-row={isFirstWork ? true : undefined}
-              className={`flex items-center p-3 gap-3 ${
+              onClick={() => handleWorkClick(work.id)}
+              className={`flex items-center p-3 gap-3 cursor-pointer hover:bg-gray-50 active:bg-gray-100 ${
                 step?.target === '[data-work-row]' && step?.highlight && isFirstWork
                   ? 'ring-2 ring-inset ring-emerald-400'
                   : ''
               }`}
             >
-              {/* Area icon */}
               <div
                 data-area-icon={isFirstWork ? true : undefined}
-                className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold ${
+                className={`w-10 h-10 rounded-xl ${area.bg} flex items-center justify-center ${area.color} font-bold flex-shrink-0 ${
                   step?.target === '[data-area-icon]' && step?.highlight && isFirstWork
                     ? 'ring-2 ring-emerald-400 animate-pulse'
                     : ''
@@ -859,11 +873,10 @@ function WeekTabDemo({
                 {area.letter}
               </div>
 
-              {/* Status badge */}
               <button
                 data-status-badge={isFirstWork ? true : undefined}
-                onClick={handleStatusClick}
-                className={`w-10 h-10 rounded-full ${status.bg} ${status.color} flex items-center justify-center font-bold text-sm ${
+                onClick={(e) => handleStatusClick(work.id, e)}
+                className={`w-10 h-10 rounded-full ${status.bg} ${status.color} flex items-center justify-center font-bold text-sm flex-shrink-0 transition-all hover:scale-110 active:scale-95 ${
                   step?.target === '[data-status-badge]' && step?.highlight && isFirstWork
                     ? 'ring-2 ring-emerald-400 animate-pulse'
                     : ''
@@ -872,17 +885,12 @@ function WeekTabDemo({
                 {status.label}
               </button>
 
-              {/* Work name */}
-              <button 
-                onClick={() => handleWorkClick(work.id)}
-                className="flex-1 text-left"
-              >
-                <p className="font-medium text-gray-900">{work.name}</p>
-              </button>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 truncate">{work.name}</p>
+              </div>
 
-              {/* Expand arrow */}
               <svg 
-                className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -891,10 +899,8 @@ function WeekTabDemo({
               </svg>
             </div>
 
-            {/* Expanded content */}
             {isExpanded && (
               <div className="border-t bg-gradient-to-r from-emerald-50 to-teal-50 p-4">
-                {/* Notes */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">📝 Notes</label>
                   <textarea
@@ -906,14 +912,15 @@ function WeekTabDemo({
                         : ''
                     }`}
                     rows={2}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
-                {/* Action buttons */}
                 <div className="flex gap-3">
                   <button
                     data-demo-button
-                    className={`flex-1 py-3 bg-red-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 ${
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex-1 py-3 bg-red-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-red-600 active:scale-95 ${
                       step?.target === '[data-demo-button]' && step?.highlight
                         ? 'ring-2 ring-emerald-400 animate-pulse'
                         : ''
@@ -925,7 +932,8 @@ function WeekTabDemo({
 
                   <button
                     data-capture-button
-                    className={`flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 ${
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-700 active:scale-95 ${
                       step?.target === '[data-capture-button]' && step?.highlight
                         ? 'ring-2 ring-white ring-offset-2 animate-pulse'
                         : ''
@@ -944,19 +952,6 @@ function WeekTabDemo({
   );
 }
 
-// ============================================
-// PROGRESS TAB DEMO
-// ============================================
-
-function ProgressTabDemo({ 
-  student,
-  step,
-  onNext 
-}: { 
-  student: Student;
-  step: TutorialStep | null;
-  onNext: () => void;
-}) {
   const areas = [
     { name: 'Practical Life', icon: '🧹', color: 'from-pink-500 to-rose-500', stats: { total: 20, mastered: 8, practicing: 5, presented: 3 } },
     { name: 'Sensorial', icon: '👁️', color: 'from-purple-500 to-violet-500', stats: { total: 15, mastered: 6, practicing: 4, presented: 2 } },
