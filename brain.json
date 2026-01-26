@@ -1,48 +1,39 @@
 {
   "project": "Montree",
   "session": 100,
-  "lastUpdated": "2026-01-27T11:00:00+08:00",
+  "lastUpdated": "2026-01-26T16:00:00+08:00",
   
-  "STATUS": "🚀 REBUILT - Real system, no fake demo",
+  "STATUS": "🐋 REBUILT - Demo = Real System",
   
-  "ARCHITECTURE": {
-    "principle": "Demo IS the real system - login as Demo/Demo",
-    "flow": "/montree → /login?demo=true → /dashboard → REAL functionality"
+  "PRINCIPLE": "Demo IS the real system. Login as Demo/123. No fake code.",
+
+  "CREDENTIALS": {
+    "montree": "Demo / 123",
+    "admin": "Tredoux / 870602"
   },
 
-  "WHATS_NEW": [
-    "✅ /montree landing - clean, uses 🐋 branding",
-    "✅ /montree/login - real auth with Demo/Demo auto-fill",
-    "✅ /montree/dashboard - REAL dashboard with WorkNavigator",
-    "✅ /api/montree/auth - teacher authentication",
-    "✅ /api/montree/children - fetches by classroom_id",
-    "✅ SQL migration 070 - creates Demo school, classroom, teacher, students"
-  ],
-
-  "NEXT_STEP": {
-    "action": "Run SQL migration in Supabase",
-    "file": "supabase/migrations/070_montree_complete_setup.sql",
-    "creates": [
-      "montree_schools table",
-      "montree_teachers table",
-      "Demo School (slug: demo)",
-      "Demo Classroom",
-      "Demo teacher (Demo/Demo)",
-      "6 students: Rachel, Marcus, Sophie, James, Lily, Oliver"
-    ]
+  "WHALE_CLASS": {
+    "students": 20,
+    "names": "Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe",
+    "school": "Beijing International School",
+    "classroom_id": "c1a2c3d4-e5f6-4d7e-8a9b-0a1b2c3d4e5f"
   },
 
-  "REMOVED": [
-    "Separate demo codebase - no more /demo/tutorial",
-    "Fake tutorial overlay - demo uses real system",
-    "Debug stub dashboard - replaced with real one",
-    "Debug stub login - replaced with real auth"
+  "WORKING": [
+    "✅ Login with Demo/123",
+    "✅ Dashboard shows 20 students",
+    "✅ WorkNavigator component (Selection Wheel)",
+    "✅ Camera component",
+    "✅ Report components"
   ],
 
-  "REAL_COMPONENTS_USED": [
-    "WorkNavigator - selection wheel, camera, status cycling",
-    "CameraCapture - real photo capture",
-    "ReportPreview - reports with photos",
-    "All in components/montree/"
-  ]
+  "NEXT": [
+    "1. Test /admin/classroom (just deployed API)",
+    "2. Import weekly assignments from PDF",
+    "3. Wire WorkNavigator to show assigned works",
+    "4. Fix student ages",
+    "5. Wire Generate Report button"
+  ],
+
+  "HANDOFF": "docs/HANDOFF_SESSION100_MONTREE_REBUILD.md"
 }
