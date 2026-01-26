@@ -262,9 +262,10 @@ function ChildDetailView({
   );
 }
 
-// Weekly Works Tab - integrates WorkNavigator
+// Weekly Works Tab - shows assigned works from database
 function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) {
-  // Import WorkNavigator dynamically to avoid SSR issues
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [WorkNavigator, setWorkNavigator] = useState<any>(null);
 
   useEffect(() => {
@@ -273,15 +274,68 @@ function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) 
     });
   }, []);
 
+  useEffect(() => {
+    fetch(`/api/montree/weekly-assignments?child_id=${child.id}&week=2&year=2026`)
+      .then(r => r.json())
+      .then(data => {
+        setAssignments(data.assignments || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [child.id]);
+
+  const areaConfig: Record<string, { icon: string; color: string; name: string }> = {
+    practical_life: { icon: '🧹', color: '#22c55e', name: 'Practical Life' },
+    sensorial: { icon: '👁️', color: '#f97316', name: 'Sensorial' },
+    math: { icon: '🔢', color: '#3b82f6', name: 'Math' },
+    language: { icon: '📚', color: '#ec4899', name: 'Language' },
+    cultural: { icon: '🌍', color: '#8b5cf6', name: 'Cultural' },
+  };
+
+  const statusColors: Record<string, string> = {
+    not_started: 'bg-gray-100 text-gray-600',
+    presented: 'bg-blue-100 text-blue-700',
+    practicing: 'bg-amber-100 text-amber-700',
+    completed: 'bg-emerald-100 text-emerald-700',
+  };
+
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h2 className="font-bold text-gray-800 mb-2">This Week's Focus</h2>
-        <p className="text-sm text-gray-500">
-          Tap "Find Work" to browse all Montessori works, update status, and capture photos.
-        </p>
-      </div>
+      {/* Assigned works */}
+      {loading ? (
+        <div className="bg-white rounded-2xl p-8 text-center">
+          <div className="animate-pulse text-3xl mb-2">📋</div>
+          <p className="text-gray-500">Loading assignments...</p>
+        </div>
+      ) : assignments.length > 0 ? (
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-3">This Week's Focus</h2>
+          <div className="space-y-2">
+            {assignments.map((a, i) => {
+              const config = areaConfig[a.area] || { icon: '📋', color: '#666', name: a.area };
+              return (
+                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <span className="text-2xl">{config.icon}</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">{a.work_name}</p>
+                    <p className="text-xs text-gray-500">{config.name}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[a.status] || statusColors.not_started}`}>
+                    {a.status === 'presented' ? 'P' : a.status === 'practicing' ? 'Pr' : a.status === 'completed' ? 'M' : '○'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-2">This Week's Focus</h2>
+          <p className="text-sm text-gray-500">No assignments for this week yet.</p>
+        </div>
+      )}
 
+      {/* Find Work button */}
       {WorkNavigator && (
         <WorkNavigator
           classroomId={session.classroom?.id}
