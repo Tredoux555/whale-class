@@ -1,3 +1,5 @@
+'use client';
+
 // /montree/page.tsx - Minimalist landing
 export default function MontreeLanding() {
   return (
@@ -31,7 +33,7 @@ export default function MontreeLanding() {
         textAlign: 'center',
         maxWidth: '500px'
       }}>
-        {/* Tree icon - subtle */}
+        {/* Tree icon */}
         <div style={{ 
           fontSize: '48px', 
           marginBottom: '32px',
@@ -65,6 +67,7 @@ export default function MontreeLanding() {
         {/* CTA Button */}
         <a
           href="/montree/demo/"
+          className="cta-button"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -80,14 +83,6 @@ export default function MontreeLanding() {
             textDecoration: 'none',
             transition: 'all 0.3s ease',
             cursor: 'pointer'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.02)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
           Begin
@@ -108,6 +103,14 @@ export default function MontreeLanding() {
           </a>
         </div>
       </div>
+      
+      {/* CSS for hover effect */}
+      <style jsx>{`
+        .cta-button:hover {
+          background: rgba(255, 255, 255, 0.2) !important;
+          transform: scale(1.02);
+        }
+      `}</style>
     </div>
   );
 }
