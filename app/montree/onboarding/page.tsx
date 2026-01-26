@@ -43,6 +43,8 @@ export default function OnboardingPage() {
   
   // Step 1: School
   const [schoolName, setSchoolName] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   
   // Step 2 & 3: Classrooms with teachers
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -138,57 +140,38 @@ export default function OnboardingPage() {
     return code;
   };
 
-  // Submit everything - works locally without API
+  // Submit everything - calls API to save to Supabase
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Generate school data
-      const schoolId = crypto.randomUUID();
-      const schoolData = {
-        id: schoolId,
-        name: schoolName,
-        slug: generateSlug(schoolName),
-        created_at: new Date().toISOString(),
-      };
+      const response = await fetch('/api/montree/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schoolName,
+          ownerEmail,
+          ownerName,
+          classrooms: classrooms.map(c => ({
+            id: c.id,
+            name: c.name,
+            icon: c.icon,
+            color: c.color,
+            teachers: c.teachers,
+          })),
+        }),
+      });
 
-      // Generate classrooms and teachers with login codes
-      const createdClassroomsData: CreatedClassroom[] = [];
-      const createdTeachersData: CreatedTeacher[] = [];
+      const data = await response.json();
 
-      for (const classroom of classrooms) {
-        const classroomId = crypto.randomUUID();
-        
-        createdClassroomsData.push({
-          id: classroomId,
-          name: classroom.name,
-          icon: classroom.icon,
-        });
-
-        // Create teachers for this classroom
-        for (const teacher of classroom.teachers) {
-          if (teacher.name.trim()) {
-            const loginCode = generateLoginCode();
-            createdTeachersData.push({
-              id: crypto.randomUUID(),
-              name: teacher.name,
-              login_code: loginCode,
-              classroom_name: classroom.name,
-              classroom_icon: classroom.icon,
-            });
-          }
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create school');
       }
 
-      // Save to localStorage
-      localStorage.setItem('montree_school', JSON.stringify(schoolData));
-      localStorage.setItem('montree_classrooms', JSON.stringify(createdClassroomsData));
-      localStorage.setItem('montree_teachers', JSON.stringify(createdTeachersData));
-      
       // Update state for success screen
-      setCreatedTeachers(createdTeachersData);
-      setCreatedClassrooms(createdClassroomsData);
+      setCreatedTeachers(data.teachers);
+      setCreatedClassrooms(data.classrooms);
       setStep(4); // Success step
 
     } catch (err) {
@@ -239,28 +222,55 @@ export default function OnboardingPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center mb-8">
               <span className="text-6xl mb-4 block">🏫</span>
-              <h2 className="text-2xl font-bold text-gray-800">What's your school called?</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Set up your school</h2>
               <p className="text-gray-500 mt-2">This will appear on reports and dashboards</p>
             </div>
 
-            <input
-              type="text"
-              value={schoolName}
-              onChange={(e) => setSchoolName(e.target.value)}
-              placeholder="e.g. Sunshine Montessori"
-              className="w-full text-xl p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              autoFocus
-            />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder="e.g. Sunshine Montessori"
+                  className="w-full text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  autoFocus
+                />
+                {schoolName && (
+                  <p className="mt-1 text-sm text-gray-400">
+                    URL: montree.app/{generateSlug(schoolName)}
+                  </p>
+                )}
+              </div>
 
-            {schoolName && (
-              <p className="mt-2 text-sm text-gray-400">
-                URL: montree.app/{generateSlug(schoolName)}
-              </p>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                <input
+                  type="text"
+                  value={ownerName}
+                  onChange={(e) => setOwnerName(e.target.value)}
+                  placeholder="e.g. Sarah Johnson"
+                  className="w-full text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Email *</label>
+                <input
+                  type="email"
+                  value={ownerEmail}
+                  onChange={(e) => setOwnerEmail(e.target.value)}
+                  placeholder="e.g. sarah@school.com"
+                  className="w-full text-lg p-4 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                />
+                <p className="mt-1 text-sm text-gray-400">For account recovery and important updates</p>
+              </div>
+            </div>
 
             <button
               onClick={() => setStep(2)}
-              disabled={!schoolName.trim()}
+              disabled={!schoolName.trim() || !ownerEmail.trim()}
               className="mt-8 w-full py-4 bg-emerald-500 text-white text-lg font-semibold rounded-xl hover:bg-emerald-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Continue →
