@@ -37,7 +37,7 @@ export default function MontreeLanding() {
           
           {/* Setup Button */}
           <a
-            href="/montree/onboarding"
+            href="/montree/principal/register"
             className="px-8 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-2"
           >
             <span>🏫</span>
@@ -45,8 +45,14 @@ export default function MontreeLanding() {
           </a>
         </div>
         
-        {/* Teacher Login */}
-        <div className="mt-12">
+        {/* Login Links */}
+        <div className="mt-12 flex flex-col items-center gap-2">
+          <a
+            href="/montree/principal/login"
+            className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+          >
+            Principal Login →
+          </a>
           <a
             href="/montree/login"
             className="text-white/50 hover:text-white/80 text-sm transition-colors"
