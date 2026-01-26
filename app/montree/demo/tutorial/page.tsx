@@ -952,6 +952,19 @@ function WeekTabDemo({
   );
 }
 
+// ============================================
+// PROGRESS TAB DEMO
+// ============================================
+
+function ProgressTabDemo({ 
+  student,
+  step,
+  onNext 
+}: { 
+  student: Student;
+  step: TutorialStep | null;
+  onNext: () => void;
+}) {
   const areas = [
     { name: 'Practical Life', icon: '🧹', color: 'from-pink-500 to-rose-500', stats: { total: 20, mastered: 8, practicing: 5, presented: 3 } },
     { name: 'Sensorial', icon: '👁️', color: 'from-purple-500 to-violet-500', stats: { total: 15, mastered: 6, practicing: 4, presented: 2 } },
