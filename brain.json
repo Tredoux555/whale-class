@@ -1,9 +1,9 @@
 {
   "project": "Montree",
   "session": 103,
-  "lastUpdated": "2026-01-26T19:55:00+08:00",
+  "lastUpdated": "2026-01-26T20:10:00+08:00",
   
-  "STATUS": "🔧 Session 103 IN PROGRESS - Dashboard rebuilt with notes/progress/reports",
+  "STATUS": "🎨 Session 103 - Status Wheel + Yellow Notes + Status Cycling",
   
   "PRINCIPLE": "Chunk→Save→Update brain→Proceed. Never lose progress.",
 
@@ -13,44 +13,34 @@
   },
 
   "SESSION_103_COMPLETED": [
-    "✅ Added notes textarea in expanded work panel",
+    "✅ Status Wheel - long-press status badge to open radial picker",
+    "✅ Status Cycling - tap badge to cycle ○ → P → Pr → M",
+    "✅ Yellow Sticky Notes - notepad style with tape effect",
     "✅ Notes save to /api/montree/sessions",
-    "✅ Progress tab shows data DIRECTLY (stats + recent activity)",
-    "✅ Reports tab generates parent-friendly reports",
-    "✅ Reports include parent_explanation_simple from montessori_works",
-    "✅ Updated sessions API to accept work_name/area (not just work_id)",
-    "✅ Created 071_montree_sessions.sql migration"
+    "✅ Progress tab shows data DIRECTLY",
+    "✅ Reports tab generates with parent descriptions",
+    "✅ Created /api/montree/progress/update for status changes"
   ],
 
-  "TODO_BEFORE_TESTING": [
-    "⚠️ RUN MIGRATION: 071_montree_sessions.sql in Supabase",
-    "Then test: Add note → Save → Check Progress tab → Generate Report"
-  ],
-
-  "PARENT_DESCRIPTIONS_LOCATION": {
-    "table": "montessori_works",
-    "columns": [
-      "parent_explanation_simple - Quick one-liner",
-      "parent_explanation_detailed - Full explanation", 
-      "parent_why_it_matters - Why parents should care"
-    ],
-    "sensitive_periods": "parent_description column"
+  "NEW_FEATURES": {
+    "status_wheel": "Long-press (500ms) on status badge → opens radial wheel picker",
+    "status_cycling": "Tap status badge → cycles through ○ → P → Pr → M",
+    "yellow_notes": "Sticky note style with gradient, lines, tape effect"
   },
 
   "APIS_WORKING": [
     "POST /api/montree/auth - Teacher login",
-    "GET /api/montree/children?classroom_id=X - Classroom students",
-    "GET /api/montree/weekly-assignments?child_id=X - Week's works",
-    "GET /api/montree/works/search - Full curriculum (268+ works)",
-    "POST /api/montree/sessions - Save notes (now accepts work_name/area)",
-    "GET /api/montree/sessions?child_id=X - Get child's history"
+    "GET /api/montree/children - Classroom students",
+    "GET /api/montree/weekly-assignments - Week's works",
+    "GET /api/montree/works/search - Full curriculum",
+    "POST /api/montree/sessions - Save notes/observations",
+    "GET /api/montree/sessions - Get child's history",
+    "POST /api/montree/progress/update - Update work status"
   ],
 
-  "NEXT_TODO": [
-    "1. Run migration 071",
-    "2. Test full flow: Note → Progress → Report",
-    "3. Wire Capture button to camera",
-    "4. Add photo upload to sessions"
+  "TODO_BEFORE_TESTING": [
+    "⚠️ RUN MIGRATION: 071_montree_sessions.sql in Supabase",
+    "May also need child_work_progress table for status updates"
   ],
 
   "HANDOFF": "docs/HANDOFF_SESSION103.md"
