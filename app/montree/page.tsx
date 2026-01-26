@@ -1,4 +1,4 @@
-// /montree/page.tsx - ULTRA SIMPLE landing
+// /montree/page.tsx - Minimalist landing
 export default function MontreeLanding() {
   return (
     <div style={{ 
@@ -7,64 +7,106 @@ export default function MontreeLanding() {
       flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center',
-      backgroundColor: '#f0fdf4',
-      padding: '24px'
+      background: 'linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #0f172a 100%)',
+      padding: '24px',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <span style={{ fontSize: '80px', marginBottom: '24px' }}>🌳</span>
-      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', color: '#1f2937' }}>
-        Montree
-      </h1>
-      <p style={{ color: '#6b7280', marginBottom: '32px' }}>
-        Simple progress tracking
-      </p>
+      {/* Subtle glow effect */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '600px',
+        height: '600px',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '280px' }}>
-        <a
-          href="/montree/login/"
-          style={{
-            display: 'block',
-            padding: '16px 24px',
-            backgroundColor: '#10b981',
-            color: 'white',
-            textAlign: 'center',
-            fontWeight: '600',
-            borderRadius: '16px',
-            textDecoration: 'none',
-            fontSize: '18px'
-          }}
-        >
-          Teacher Login
-        </a>
+      {/* Content */}
+      <div style={{ 
+        position: 'relative', 
+        zIndex: 10, 
+        textAlign: 'center',
+        maxWidth: '500px'
+      }}>
+        {/* Tree icon - subtle */}
+        <div style={{ 
+          fontSize: '48px', 
+          marginBottom: '32px',
+          opacity: 0.9
+        }}>
+          🌳
+        </div>
         
+        {/* Title */}
+        <h1 style={{ 
+          fontSize: '42px', 
+          fontWeight: '300',
+          color: 'white',
+          marginBottom: '16px',
+          letterSpacing: '-1px'
+        }}>
+          Welcome to <span style={{ fontWeight: '600' }}>Montree</span>
+        </h1>
+        
+        {/* Subtitle */}
+        <p style={{ 
+          fontSize: '18px',
+          color: 'rgba(167, 243, 208, 0.8)',
+          marginBottom: '64px',
+          fontWeight: '300',
+          lineHeight: '1.6'
+        }}>
+          The future of Montessori Classroom Management
+        </p>
+        
+        {/* CTA Button */}
         <a
           href="/montree/demo/"
           style={{
-            display: 'block',
-            padding: '16px 24px',
-            backgroundColor: '#fef3c7',
-            color: '#92400e',
-            textAlign: 'center',
-            fontWeight: '600',
-            borderRadius: '16px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '18px 48px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '100px',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '500',
             textDecoration: 'none',
-            border: '2px solid #fcd34d'
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.transform = 'scale(1.02)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          ✨ Try Demo
+          Begin
+          <span style={{ fontSize: '20px' }}>→</span>
         </a>
         
-        <a
-          href="/"
-          style={{
-            display: 'block',
-            padding: '12px',
-            color: '#6b7280',
-            textAlign: 'center',
-            textDecoration: 'none'
-          }}
-        >
-          ← Back
-        </a>
+        {/* Teacher login - very subtle */}
+        <div style={{ marginTop: '80px' }}>
+          <a
+            href="/montree/login/"
+            style={{
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontSize: '14px',
+              textDecoration: 'none'
+            }}
+          >
+            Teacher Login
+          </a>
+        </div>
       </div>
     </div>
   );
