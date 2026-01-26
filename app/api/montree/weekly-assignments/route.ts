@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function GET(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const weekNumber = searchParams.get('week') || getCurrentWeek();
@@ -27,28 +31,8 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Group by area for display
-    const byArea: Record<string, any[]> = {};
-    const areaConfig: Record<string, { icon: string; color: string }> = {
-      practical_life: { icon: '🧹', color: '#22c55e' },
-      sensorial: { icon: '👁️', color: '#f97316' },
-      math: { icon: '🔢', color: '#3b82f6' },
-      language: { icon: '📚', color: '#ec4899' },
-      cultural: { icon: '🌍', color: '#8b5cf6' },
-    };
-
-    (data || []).forEach(assignment => {
-      const area = assignment.area || 'other';
-      if (!byArea[area]) byArea[area] = [];
-      byArea[area].push({
-        ...assignment,
-        areaConfig: areaConfig[area] || { icon: '📋', color: '#666' }
-      });
-    });
-
     return NextResponse.json({
       assignments: data || [],
-      byArea,
       week: parseInt(weekNumber),
       year: parseInt(year),
       total: data?.length || 0
