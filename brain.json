@@ -1,11 +1,11 @@
 {
   "project": "Montree",
   "session": 101,
-  "lastUpdated": "2026-01-26T17:30:00+08:00",
+  "lastUpdated": "2026-01-26T18:00:00+08:00",
   
-  "STATUS": "🎸 Session 101 - One Man Band deployed works API",
+  "STATUS": "🎸 Session 101 - Works API + Weekly Assignments deployed",
   
-  "PRINCIPLE": "Demo IS the real system. Claude does ALL code directly - no Cursor.",
+  "PRINCIPLE": "Demo IS the real system. Claude does ALL code directly - no Cursor. Personal onboarding at $1000/mo is the right move.",
 
   "CREDENTIALS": {
     "montree": "Demo / 123",
@@ -19,27 +19,29 @@
     "classroom_id": "c1a2c3d4-e5f6-4d7e-8a9b-0a1b2c3d4e5f"
   },
 
-  "SESSION_101_FIXES": [
-    "✅ Created /api/montree/works/search/route.ts",
-    "✅ Embedded 100 Montessori works (5 areas x 20 works)",
-    "✅ All in Chinese + English",
-    "✅ Deployed to production"
+  "SESSION_101_COMPLETE": [
+    "✅ Created /api/montree/works/search with FULL curriculum (268+ works)",
+    "✅ Created /api/montree/weekly-assignments API",
+    "✅ Imported Week 2, 2026 assignments (96 total) via SQL",
+    "✅ Updated WeeklyWorksTab to fetch and display assigned works",
+    "✅ Fixed build error (lazy Supabase init)"
   ],
 
   "WORKING": [
     "✅ Login with Demo/123",
     "✅ Dashboard shows 20 students",
-    "✅ WorkNavigator component",
-    "✅ Works Search API (100 works embedded)",
-    "⏳ Waiting for Railway deploy..."
+    "✅ Works Search API (268+ works from JSON files)",
+    "✅ Weekly assignments in database (96 for Week 2)",
+    "✅ Week tab fetches assigned works",
+    "⏳ Awaiting Railway deploy for Week tab display"
   ],
 
   "NEXT": [
-    "1. Test Find Work button - should show 100 works now",
-    "2. Fix /admin/classroom student click (Student not found)",
-    "3. Import weekly assignments",
+    "1. Test Amy's Week tab - should show 5 assigned works",
+    "2. Test Find Work - should show 268+ works",
+    "3. Wire tap-to-cycle status on assigned works",
     "4. Wire Generate Report button"
   ],
 
-  "HANDOFF": "docs/HANDOFF_SESSION100_MONTREE_REBUILD.md"
+  "HANDOFF": "docs/HANDOFF_SESSION101.md"
 }
