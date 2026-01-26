@@ -1,10 +1,25 @@
 {
   "project": "Montree",
-  "session": 99,
-  "lastUpdated": "2026-01-26T13:35:00+08:00",
+  "session": 100,
+  "lastUpdated": "2026-01-27T09:20:00+08:00",
   
-  "STATUS": "✅ PWA PIVOT COMPLETE - Ready for Supabase",
+  "STATUS": "✅ WeekTabDemo FIXED - status cycling + expand working",
   
+  "FIXED_THIS_SESSION": {
+    "file": "app/montree/demo/tutorial/page.tsx",
+    "bugs": [
+      "works was const, not state - changes didnt persist",
+      "handleStatusClick only called onNext(), never cycled status",
+      "click events not propagating properly for expand"
+    ],
+    "solution": [
+      "works now in useState - changes persist",
+      "handleStatusClick cycles: ○ → P → Pr → M → ○",
+      "e.stopPropagation() prevents status click from triggering expand",
+      "percentComplete updates dynamically as you cycle to mastered"
+    ]
+  },
+
   "PIVOT": {
     "from": "Native iOS (Capacitor/Ionic)",
     "to": "PWA with direct HK payments",
@@ -18,24 +33,11 @@
     "abandoned": "~/Desktop/ACTIVE/montree-mobile/"
   },
 
-  "HANDOFFS": [
-    "whale/docs/HANDOFF_SESSION_99.md",
-    "whale/docs/HANDOFF_MONTREE_PWA.md"
-  ],
-
-  "FIXED_TODAY": [
-    "/montree/demo/setup - was 404, now redirects",
-    "/api/montree/children - returns demo students",
-    "Tutorial demo fallback - works without DB",
-    "Minimalist landing page - dark, elegant"
-  ],
-
   "NEXT": [
-    "1. Create Supabase multi-tenant schema",
-    "2. Add Row Level Security",
-    "3. Update onboarding to save to Supabase",
-    "4. Add PWA manifest + service worker",
-    "5. Test multi-teacher photo sync"
+    "1. Test the fix at /montree/demo/tutorial",
+    "2. Create Supabase multi-tenant schema",
+    "3. Add Row Level Security",
+    "4. Update onboarding to save to Supabase"
   ],
 
   "BUSINESS": {
