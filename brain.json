@@ -1,48 +1,48 @@
 {
   "project": "Montree",
   "session": 100,
-  "lastUpdated": "2026-01-27T09:20:00+08:00",
+  "lastUpdated": "2026-01-27T11:00:00+08:00",
   
-  "STATUS": "✅ WeekTabDemo FIXED - status cycling + expand working",
+  "STATUS": "🚀 REBUILT - Real system, no fake demo",
   
-  "FIXED_THIS_SESSION": {
-    "file": "app/montree/demo/tutorial/page.tsx",
-    "bugs": [
-      "works was const, not state - changes didnt persist",
-      "handleStatusClick only called onNext(), never cycled status",
-      "click events not propagating properly for expand"
-    ],
-    "solution": [
-      "works now in useState - changes persist",
-      "handleStatusClick cycles: ○ → P → Pr → M → ○",
-      "e.stopPropagation() prevents status click from triggering expand",
-      "percentComplete updates dynamically as you cycle to mastered"
+  "ARCHITECTURE": {
+    "principle": "Demo IS the real system - login as Demo/Demo",
+    "flow": "/montree → /login?demo=true → /dashboard → REAL functionality"
+  },
+
+  "WHATS_NEW": [
+    "✅ /montree landing - clean, uses 🐋 branding",
+    "✅ /montree/login - real auth with Demo/Demo auto-fill",
+    "✅ /montree/dashboard - REAL dashboard with WorkNavigator",
+    "✅ /api/montree/auth - teacher authentication",
+    "✅ /api/montree/children - fetches by classroom_id",
+    "✅ SQL migration 070 - creates Demo school, classroom, teacher, students"
+  ],
+
+  "NEXT_STEP": {
+    "action": "Run SQL migration in Supabase",
+    "file": "supabase/migrations/070_montree_complete_setup.sql",
+    "creates": [
+      "montree_schools table",
+      "montree_teachers table",
+      "Demo School (slug: demo)",
+      "Demo Classroom",
+      "Demo teacher (Demo/Demo)",
+      "6 students: Rachel, Marcus, Sophie, James, Lily, Oliver"
     ]
   },
 
-  "PIVOT": {
-    "from": "Native iOS (Capacitor/Ionic)",
-    "to": "PWA with direct HK payments",
-    "reason": "Apple takes 30%, schools don't find apps in App Store"
-  },
-
-  "LIVE": "teacherpotato.xyz/montree",
-
-  "CODEBASE": {
-    "active": "~/Desktop/ACTIVE/whale/app/montree/",
-    "abandoned": "~/Desktop/ACTIVE/montree-mobile/"
-  },
-
-  "NEXT": [
-    "1. Test the fix at /montree/demo/tutorial",
-    "2. Create Supabase multi-tenant schema",
-    "3. Add Row Level Security",
-    "4. Update onboarding to save to Supabase"
+  "REMOVED": [
+    "Separate demo codebase - no more /demo/tutorial",
+    "Fake tutorial overlay - demo uses real system",
+    "Debug stub dashboard - replaced with real one",
+    "Debug stub login - replaced with real auth"
   ],
 
-  "BUSINESS": {
-    "company": "HK Limited",
-    "pricing": "$50-100/school/year",
-    "apple_cut": "0%"
-  }
+  "REAL_COMPONENTS_USED": [
+    "WorkNavigator - selection wheel, camera, status cycling",
+    "CameraCapture - real photo capture",
+    "ReportPreview - reports with photos",
+    "All in components/montree/"
+  ]
 }

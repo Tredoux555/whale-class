@@ -1,20 +1,43 @@
 // /api/montree/children/route.ts
-// Returns children for Montree - demo mode returns demo students
+// Returns children for a classroom
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase/server';
 
-// Demo students for when no real data exists
-const DEMO_STUDENTS = [
-  { id: 'demo-1', name: 'Rachel', progress: { presented: 12, practicing: 8, mastered: 24, total: 44 } },
-  { id: 'demo-2', name: 'Marcus', progress: { presented: 8, practicing: 15, mastered: 18, total: 41 } },
-  { id: 'demo-3', name: 'Sophie', progress: { presented: 5, practicing: 12, mastered: 30, total: 47 } },
-  { id: 'demo-4', name: 'James', progress: { presented: 10, practicing: 6, mastered: 22, total: 38 } },
-  { id: 'demo-5', name: 'Lily', progress: { presented: 7, practicing: 11, mastered: 26, total: 44 } },
-  { id: 'demo-6', name: 'Oliver', progress: { presented: 9, practicing: 14, mastered: 20, total: 43 } },
-];
-
-export async function GET() {
-  // For now, return demo students
-  // TODO: Once Supabase multi-tenant is set up, fetch real students by school_id
-  return NextResponse.json({ children: DEMO_STUDENTS });
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const classroomId = searchParams.get('classroom_id');
+    
+    const supabase = await createServerClient();
+    
+    let query = supabase
+      .from('montree_children')
+      .select('id, name, age, photo_url, notes, classroom_id')
+      .order('name');
+    
+    // Filter by classroom if provided
+    if (classroomId) {
+      query = query.eq('classroom_id', classroomId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching children:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch children' },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json({ children: data || [] });
+    
+  } catch (error) {
+    console.error('Children API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
