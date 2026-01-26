@@ -1,47 +1,44 @@
 {
   "project": "Montree",
-  "session": 101,
-  "lastUpdated": "2026-01-26T18:00:00+08:00",
+  "session": 102,
+  "lastUpdated": "2026-01-26T18:35:00+08:00",
   
-  "STATUS": "🎸 Session 101 - Works API + Weekly Assignments deployed",
+  "STATUS": "✅ Session 102 - Dashboard REBUILT with full functionality",
   
-  "PRINCIPLE": "Demo IS the real system. Claude does ALL code directly - no Cursor. Personal onboarding at $1000/mo is the right move.",
+  "PRINCIPLE": "Chunk→Save→Update brain→Proceed. Never lose progress.",
 
   "CREDENTIALS": {
     "montree": "Demo / 123",
     "admin": "Tredoux / 870602"
   },
 
-  "WHALE_CLASS": {
-    "students": 20,
-    "names": "Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe",
-    "school": "Beijing International School",
-    "classroom_id": "c1a2c3d4-e5f6-4d7e-8a9b-0a1b2c3d4e5f"
+  "SESSION_102_PLAN": {
+    "goal": "Restore all functionality to montree dashboard page",
+    "chunks": [
+      { "id": 1, "task": "Types + constants + main page shell", "status": "✅ DONE", "lines": "83" },
+      { "id": 2, "task": "ChildDetailView with tabs", "status": "✅ DONE", "lines": "55" },
+      { "id": 3, "task": "WeeklyWorksTab with expandable rows + notes + Demo + Capture", "status": "✅ DONE", "lines": "256" },
+      { "id": 4, "task": "ProgressTab with real curriculum data from API", "status": "✅ DONE", "lines": "153" },
+      { "id": 5, "task": "ReportsTab with generate + share functionality", "status": "✅ DONE", "lines": "164" }
+    ]
   },
 
-  "SESSION_101_COMPLETE": [
-    "✅ Created /api/montree/works/search with FULL curriculum (268+ works)",
-    "✅ Created /api/montree/weekly-assignments API",
-    "✅ Imported Week 2, 2026 assignments (96 total) via SQL",
-    "✅ Updated WeeklyWorksTab to fetch and display assigned works",
-    "✅ Fixed build error (lazy Supabase init)"
+  "ISSUES_FOUND": [
+    "❌ Week tab works don't expand when clicked",
+    "❌ No notes, Demo button, or Capture in expanded panel",
+    "❌ Progress tab is just a link - no real data",
+    "❌ Reports tab Generate button does nothing",
+    "❌ student/[id]/page.tsx doesn't exist - all inline in dashboard"
   ],
 
-  "WORKING": [
-    "✅ Login with Demo/123",
-    "✅ Dashboard shows 20 students",
-    "✅ Works Search API (268+ works from JSON files)",
-    "✅ Weekly assignments in database (96 for Week 2)",
-    "✅ Week tab fetches assigned works",
-    "⏳ Awaiting Railway deploy for Week tab display"
+  "WORKING_APIS": [
+    "/api/montree/children - classroom students",
+    "/api/montree/weekly-assignments - week's assigned works",
+    "/api/montree/works/search - full curriculum (268+ works)",
+    "/api/montree/progress/{childId}/{workId} - update status"
   ],
 
-  "NEXT": [
-    "1. Test Amy's Week tab - should show 5 assigned works",
-    "2. Test Find Work - should show 268+ works",
-    "3. Wire tap-to-cycle status on assigned works",
-    "4. Wire Generate Report button"
-  ],
-
-  "HANDOFF": "docs/HANDOFF_SESSION101.md"
+  "FILE_BEING_REBUILT": "/app/montree/dashboard/page.tsx",
+  
+  "HANDOFF": "docs/HANDOFF_SESSION102.md"
 }
