@@ -1,56 +1,46 @@
 {
   "project": "Montree",
-  "version": "2.0.0",
-  "lastUpdated": "2026-01-25T20:05:00+08:00",
-  "session": 95,
+  "session": 99,
+  "lastUpdated": "2026-01-26T13:35:00+08:00",
   
-  "CORE_MISSION": {
-    "statement": "Schools buy the app. They own their data. Forever.",
-    "philosophy": "You deliver the tool. They own everything."
+  "STATUS": "✅ PWA PIVOT COMPLETE - Ready for Supabase",
+  
+  "PIVOT": {
+    "from": "Native iOS (Capacitor/Ionic)",
+    "to": "PWA with direct HK payments",
+    "reason": "Apple takes 30%, schools don't find apps in App Store"
   },
 
-  "STATUS": "PIVOTED TO VITE - See montree-mobile project",
+  "LIVE": "teacherpotato.xyz/montree",
 
-  "ARCHITECTURE_DECISION": {
-    "problem": "Next.js App Router + Capacitor = infinite reload loop",
-    "root_cause": "Next.js client routing fetches JSON from capacitor:// paths that don't exist",
-    "solution": "New mobile app with Vite + React + Ionic (no Next.js)",
-    "web_app": "teacherpotato.xyz stays on Next.js - it works fine",
-    "mobile_app": "NEW PROJECT: /Users/tredouxwillemse/Desktop/ACTIVE/montree-mobile"
+  "CODEBASE": {
+    "active": "~/Desktop/ACTIVE/whale/app/montree/",
+    "abandoned": "~/Desktop/ACTIVE/montree-mobile/"
   },
 
-  "PROJECT_PATHS": {
-    "web_app": "/Users/tredouxwillemse/Desktop/ACTIVE/whale",
-    "mobile_app": "/Users/tredouxwillemse/Desktop/ACTIVE/montree-mobile",
-    "mobile_handoff": "/Users/tredouxwillemse/Desktop/ACTIVE/montree-mobile/docs/HANDOFF_SESSION95.md",
-    "research_doc": "/Users/tredouxwillemse/Desktop/ACTIVE/whale/docs/HANDOFF_MONTREE_MOBILE.md"
-  },
+  "HANDOFFS": [
+    "whale/docs/HANDOFF_SESSION_99.md",
+    "whale/docs/HANDOFF_MONTREE_PWA.md"
+  ],
 
-  "CURRENT_BLOCKER": {
-    "issue": "npm not installing devDependencies in montree-mobile",
-    "error": "sh: tsc: command not found",
-    "next_step": "Fix npm install or create fresh Vite project"
-  },
+  "FIXED_TODAY": [
+    "/montree/demo/setup - was 404, now redirects",
+    "/api/montree/children - returns demo students",
+    "Tutorial demo fallback - works without DB",
+    "Minimalist landing page - dark, elegant"
+  ],
 
-  "CRITICAL_RULES": {
-    "rule_1": "SEGMENT YOUR WORK - Each task under 5 minutes",
-    "rule_2": "UPDATE BRAIN.JSON AFTER EVERY STEP",
-    "rule_3": "TEST BEFORE PROCEEDING to next step",
-    "rule_4": "IF YOU GLITCH: Read handoff + brain.json + resume"
-  },
+  "NEXT": [
+    "1. Create Supabase multi-tenant schema",
+    "2. Add Row Level Security",
+    "3. Update onboarding to save to Supabase",
+    "4. Add PWA manifest + service worker",
+    "5. Test multi-teacher photo sync"
+  ],
 
-  "WEB_APP_STATUS": {
-    "url": "https://www.teacherpotato.xyz",
-    "montree_url": "https://www.teacherpotato.xyz/montree",
-    "status": "WORKING - Don't touch for now",
-    "note": "Web version works. Focus on mobile app."
-  },
-
-  "MOBILE_APP_TECH_STACK": {
-    "framework": "Vite + React + TypeScript",
-    "styling": "Tailwind CSS",
-    "navigation": "Ionic React + React Router 5",
-    "native": "Capacitor 8",
-    "database": "SQLite (offline) + Supabase (sync)"
+  "BUSINESS": {
+    "company": "HK Limited",
+    "pricing": "$50-100/school/year",
+    "apple_cut": "0%"
   }
 }
