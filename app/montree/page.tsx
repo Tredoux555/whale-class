@@ -1,116 +1,67 @@
 'use client';
 
-// /montree/page.tsx - Minimalist landing
+// /montree/page.tsx - Landing page
 export default function MontreeLanding() {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #0f172a 100%)',
-      padding: '24px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Subtle glow effect */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '600px',
-        height: '600px',
-        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }} />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
       
       {/* Content */}
-      <div style={{ 
-        position: 'relative', 
-        zIndex: 10, 
-        textAlign: 'center',
-        maxWidth: '500px'
-      }}>
-        {/* Tree icon */}
-        <div style={{ 
-          fontSize: '48px', 
-          marginBottom: '32px',
-          opacity: 0.9
-        }}>
-          🌳
+      <div className="relative z-10 text-center max-w-lg">
+        {/* Logo */}
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-8">
+          <span className="text-5xl">🐋</span>
         </div>
         
         {/* Title */}
-        <h1 style={{ 
-          fontSize: '42px', 
-          fontWeight: '300',
-          color: 'white',
-          marginBottom: '16px',
-          letterSpacing: '-1px'
-        }}>
-          Welcome to <span style={{ fontWeight: '600' }}>Montree</span>
+        <h1 className="text-4xl md:text-5xl font-light text-white mb-4">
+          Welcome to <span className="font-semibold">Montree</span>
         </h1>
         
         {/* Subtitle */}
-        <p style={{ 
-          fontSize: '18px',
-          color: 'rgba(167, 243, 208, 0.8)',
-          marginBottom: '64px',
-          fontWeight: '300',
-          lineHeight: '1.6'
-        }}>
+        <p className="text-lg text-emerald-300/80 mb-12 font-light">
           The future of Montessori Classroom Management
         </p>
         
-        {/* CTA Button */}
-        <a
-          href="/montree/demo/"
-          className="cta-button"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '18px 48px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '100px',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: '500',
-            textDecoration: 'none',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer'
-          }}
-        >
-          Begin
-          <span style={{ fontSize: '20px' }}>→</span>
-        </a>
-        
-        {/* Teacher login - very subtle */}
-        <div style={{ marginTop: '80px' }}>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* Demo Button - Goes to login with Demo hint */}
           <a
-            href="/montree/login/"
-            style={{
-              color: 'rgba(255, 255, 255, 0.4)',
-              fontSize: '14px',
-              textDecoration: 'none'
-            }}
+            href="/montree/login?demo=true"
+            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
           >
-            Teacher Login
+            <span>👀</span>
+            <span>Try Demo</span>
+          </a>
+          
+          {/* Setup Button */}
+          <a
+            href="/montree/onboarding"
+            className="px-8 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+          >
+            <span>🏫</span>
+            <span>Set Up School</span>
+          </a>
+        </div>
+        
+        {/* Teacher Login */}
+        <div className="mt-12">
+          <a
+            href="/montree/login"
+            className="text-white/50 hover:text-white/80 text-sm transition-colors"
+          >
+            Teacher Login →
           </a>
         </div>
       </div>
       
-      {/* CSS for hover effect */}
-      <style jsx>{`
-        .cta-button:hover {
-          background: rgba(255, 255, 255, 0.2) !important;
-          transform: scale(1.02);
-        }
-      `}</style>
+      {/* Footer */}
+      <div className="absolute bottom-6 text-center">
+        <p className="text-slate-500 text-xs">
+          🐋 Montree • teacherpotato.xyz
+        </p>
+      </div>
     </div>
   );
 }
