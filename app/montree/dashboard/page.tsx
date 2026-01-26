@@ -226,6 +226,13 @@ function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) 
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  
+  // WorkNavigator dynamic import - MUST be before any early returns!
+  const [WorkNavigator, setWorkNavigator] = useState<any>(null);
+  
+  useEffect(() => {
+    import('@/components/montree/WorkNavigator').then(mod => setWorkNavigator(() => mod.default)).catch(() => {});
+  }, []);
 
   // Fetch assignments
   useEffect(() => {
@@ -334,13 +341,6 @@ function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) 
       </div>
     );
   }
-
-
-  // Dynamically import WorkNavigator
-  const [WorkNavigator, setWorkNavigator] = useState<any>(null);
-  useEffect(() => {
-    import('@/components/montree/WorkNavigator').then(mod => setWorkNavigator(() => mod.default)).catch(() => {});
-  }, []);
 
   return (
     <div className="space-y-4">
