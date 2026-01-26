@@ -8,11 +8,29 @@ import { createServerClient } from '@/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { child_id, work_id, session_type, notes, media_urls, duration_minutes } = body;
+    const { 
+      child_id, 
+      work_id, 
+      work_name, 
+      area,
+      session_type, 
+      notes, 
+      media_urls, 
+      duration_minutes,
+      teacher_id,
+      status 
+    } = body;
     
-    if (!child_id || !work_id) {
+    if (!child_id) {
       return NextResponse.json(
-        { error: 'child_id and work_id required' },
+        { error: 'child_id required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!work_id && !work_name) {
+      return NextResponse.json(
+        { error: 'work_id or work_name required' },
         { status: 400 }
       );
     }
@@ -23,11 +41,15 @@ export async function POST(request: NextRequest) {
       .from('montree_work_sessions')
       .insert({
         child_id,
-        work_id,
-        session_type: session_type || 'practice',
+        work_id: work_id || null,
+        work_name: work_name || null,
+        area: area || null,
+        session_type: session_type || 'observation',
         notes: notes || null,
         media_urls: media_urls || [],
         duration_minutes: duration_minutes || null,
+        teacher_id: teacher_id || null,
+        status: status || null,
         observed_at: new Date().toISOString(),
       })
       .select()
@@ -36,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating session:', error);
       return NextResponse.json(
-        { error: 'Failed to save session' },
+        { error: 'Failed to save session', details: error.message },
         { status: 500 }
       );
     }
@@ -85,7 +107,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Error fetching sessions:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch sessions' },
+        { error: 'Failed to fetch sessions', details: error.message },
         { status: 500 }
       );
     }

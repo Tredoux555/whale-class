@@ -1,9 +1,9 @@
 {
   "project": "Montree",
-  "session": 102,
-  "lastUpdated": "2026-01-26T19:20:00+08:00",
+  "session": 103,
+  "lastUpdated": "2026-01-26T19:55:00+08:00",
   
-  "STATUS": "✅ Session 102 COMPLETE - Dashboard working + Sessions API",
+  "STATUS": "🔧 Session 103 IN PROGRESS - Dashboard rebuilt with notes/progress/reports",
   
   "PRINCIPLE": "Chunk→Save→Update brain→Proceed. Never lose progress.",
 
@@ -12,19 +12,29 @@
     "admin": "Tredoux / 870602"
   },
 
-  "SESSION_102_COMPLETED": [
-    "✅ Restored working dashboard from git",
-    "✅ Added expandable works (click row → Demo + Capture buttons)",
-    "✅ Fixed React hooks error #310",
-    "✅ Created /api/montree/sessions for notes/observations",
-    "✅ Verified multi-teacher architecture (4+ teachers share classroom)"
+  "SESSION_103_COMPLETED": [
+    "✅ Added notes textarea in expanded work panel",
+    "✅ Notes save to /api/montree/sessions",
+    "✅ Progress tab shows data DIRECTLY (stats + recent activity)",
+    "✅ Reports tab generates parent-friendly reports",
+    "✅ Reports include parent_explanation_simple from montessori_works",
+    "✅ Updated sessions API to accept work_name/area (not just work_id)",
+    "✅ Created 071_montree_sessions.sql migration"
   ],
 
-  "ARCHITECTURE_CONFIRMED": {
-    "multi_teacher": true,
-    "how_it_works": "All teachers with same classroom_id see same children/data",
-    "data_linking": "Work sessions linked by child_id (not teacher_id)",
-    "notes_shared": "Any teacher can add/view notes for any child"
+  "TODO_BEFORE_TESTING": [
+    "⚠️ RUN MIGRATION: 071_montree_sessions.sql in Supabase",
+    "Then test: Add note → Save → Check Progress tab → Generate Report"
+  ],
+
+  "PARENT_DESCRIPTIONS_LOCATION": {
+    "table": "montessori_works",
+    "columns": [
+      "parent_explanation_simple - Quick one-liner",
+      "parent_explanation_detailed - Full explanation", 
+      "parent_why_it_matters - Why parents should care"
+    ],
+    "sensitive_periods": "parent_description column"
   },
 
   "APIS_WORKING": [
@@ -32,16 +42,16 @@
     "GET /api/montree/children?classroom_id=X - Classroom students",
     "GET /api/montree/weekly-assignments?child_id=X - Week's works",
     "GET /api/montree/works/search - Full curriculum (268+ works)",
-    "POST /api/montree/sessions - Save notes/observations",
+    "POST /api/montree/sessions - Save notes (now accepts work_name/area)",
     "GET /api/montree/sessions?child_id=X - Get child's history"
   ],
 
-  "NEXT_SESSION": [
-    "1. Wire notes textarea in expanded panel",
-    "2. Wire Capture button to camera",
-    "3. Connect Progress tab to real API",
-    "4. Test Reports generation"
+  "NEXT_TODO": [
+    "1. Run migration 071",
+    "2. Test full flow: Note → Progress → Report",
+    "3. Wire Capture button to camera",
+    "4. Add photo upload to sessions"
   ],
 
-  "HANDOFF": "docs/HANDOFF_SESSION102.md"
+  "HANDOFF": "docs/HANDOFF_SESSION103.md"
 }
