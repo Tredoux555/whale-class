@@ -70,8 +70,8 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40">
+      {/* Header - with safe area for notch */}
+      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
