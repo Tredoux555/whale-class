@@ -10,13 +10,14 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
     const now = Date.now();
-    const tenMinutesAgo = new Date(now - 10 * 60 * 1000).toISOString();
+    // 2 minutes window - heartbeats are sent every 30s so 2min is safe
+    const twoMinutesAgo = new Date(now - 2 * 60 * 1000).toISOString();
 
-    // Get recent logins (within 10 min, not logged out)
+    // Get recent logins (within 2 min, not logged out)
     const { data: rows, error } = await supabase
       .from('story_login_logs')
       .select('username, login_time')
-      .gt('login_time', tenMinutesAgo)
+      .gt('login_time', twoMinutesAgo)
       .is('logout_at', null)
       .order('login_time', { ascending: false });
 

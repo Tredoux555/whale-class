@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface School {
@@ -23,6 +24,7 @@ interface School {
 }
 
 export default function SuperAdminPage() {
+  const router = useRouter();
   const [schools, setSchools] = useState<School[]>([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -49,6 +51,34 @@ export default function SuperAdminPage() {
       console.error('Failed to fetch schools:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loginAsSchool = async (schoolId: string) => {
+    try {
+      const res = await fetch('/api/montree/super-admin/login-as', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schoolId, superAdminPassword: '870602' }),
+      });
+
+      if (!res.ok) throw new Error('Failed to login');
+      
+      const data = await res.json();
+      
+      // Store session (same as regular principal login)
+      localStorage.setItem('montree_principal', JSON.stringify(data.principal));
+      localStorage.setItem('montree_school', JSON.stringify(data.school));
+      
+      // Redirect to principal admin
+      if (data.needsSetup) {
+        router.push('/montree/principal/setup');
+      } else {
+        router.push('/montree/admin');
+      }
+    } catch (err) {
+      console.error('Login as failed:', err);
+      alert('Failed to login as principal');
     }
   };
 
@@ -218,12 +248,20 @@ export default function SuperAdminPage() {
                       {new Date(school.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4 text-right">
-                      <Link
-                        href={`/montree/super-admin/schools/${school.id}`}
-                        className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
-                      >
-                        View →
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => loginAsSchool(school.id)}
+                          className="px-3 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Login As →
+                        </button>
+                        <Link
+                          href={`/montree/super-admin/schools/${school.id}`}
+                          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                        >
+                          View →
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

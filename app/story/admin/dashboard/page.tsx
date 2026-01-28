@@ -74,6 +74,8 @@ const [imagePreview, setImagePreview] = useState<string | null>(null);
 const [uploadingImage, setUploadingImage] = useState(false);
 const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
 const [uploadingAudio, setUploadingAudio] = useState(false);
+const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+const [uploadingVideo, setUploadingVideo] = useState(false);
 const [isLoading, setIsLoading] = useState(true);
 const [vaultPassword, setVaultPassword] = useState('');
 const [vaultUnlocked, setVaultUnlocked] = useState(false);
@@ -281,15 +283,41 @@ loadSharedFiles();
 }
 }, [activeTab, loadSharedFiles]);
 const sendAdminMessage = async () => {
-  if (!adminMessage.trim() && !selectedImage && !selectedAudio) return;
+  if (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo) return;
   setSendingMessage(true);
   setMessageSent(false);
   setMessageError('');
   try {
     const session = getSession();
     
+    // If there's a video file, upload it
+    if (selectedVideo) {
+      setUploadingVideo(true);
+      const formData = new FormData();
+      formData.append('file', selectedVideo);
+      formData.append('caption', adminMessage.trim());
+      
+      const res = await fetch('/api/story/admin/send-video', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session}` },
+        body: formData
+      });
+      
+      const data = await res.json();
+      setUploadingVideo(false);
+      
+      if (res.ok) {
+        setAdminMessage('');
+        setSelectedVideo(null);
+        setMessageSent(true);
+        await loadMessages();
+        setTimeout(() => setMessageSent(false), 3000);
+      } else {
+        setMessageError(data.error || 'Failed to send video');
+      }
+    }
     // If there's an audio file, upload it
-    if (selectedAudio) {
+    else if (selectedAudio) {
       setUploadingAudio(true);
       const formData = new FormData();
       formData.append('file', selectedAudio);
@@ -366,6 +394,7 @@ const sendAdminMessage = async () => {
     setSendingMessage(false);
     setUploadingImage(false);
     setUploadingAudio(false);
+    setUploadingVideo(false);
   }
 };
 
@@ -398,6 +427,21 @@ const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 const clearAudio = () => {
   setSelectedAudio(null);
+};
+
+const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setSelectedVideo(file);
+    // Clear image and audio if video is selected
+    setSelectedImage(null);
+    setImagePreview(null);
+    setSelectedAudio(null);
+  }
+};
+
+const clearVideo = () => {
+  setSelectedVideo(null);
 };
 const handleVaultUnlock = async () => {
 const session = getSession();
@@ -781,6 +825,23 @@ Sign Out
                 </div>
               )}
               
+              {/* Video Preview */}
+              {selectedVideo && (
+                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <span className="text-2xl">🎬</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-red-800">{selectedVideo.name}</p>
+                    <p className="text-xs text-red-600">{(selectedVideo.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  </div>
+                  <button
+                    onClick={clearVideo}
+                    className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
               <div className="flex gap-2 flex-wrap">
                 {/* Image Upload Button */}
                 <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
@@ -804,15 +865,26 @@ Sign Out
                   />
                 </label>
                 
+                {/* Video Upload Button */}
+                <label className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+                  🎬 Add Video
+                  <input
+                    type="file"
+                    accept="video/*,.mp4,.mov,.webm,.avi"
+                    onChange={handleVideoSelect}
+                    className="hidden"
+                  />
+                </label>
+                
                 <button
                   onClick={sendAdminMessage}
-                  disabled={sendingMessage || uploadingImage || uploadingAudio || (!adminMessage.trim() && !selectedImage && !selectedAudio)}
+                  disabled={sendingMessage || uploadingImage || uploadingAudio || uploadingVideo || (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo)}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  {uploadingAudio ? '⟳ Uploading Song...' : uploadingImage ? '⟳ Uploading...' : sendingMessage ? '⟳ Sending...' : selectedAudio ? '✓ Send Song' : selectedImage ? '✓ Send Photo' : '✓ Send Message'}
+                  {uploadingVideo ? '⟳ Uploading Video...' : uploadingAudio ? '⟳ Uploading Song...' : uploadingImage ? '⟳ Uploading...' : sendingMessage ? '⟳ Sending...' : selectedVideo ? '✓ Send Video' : selectedAudio ? '✓ Send Song' : selectedImage ? '✓ Send Photo' : '✓ Send Message'}
                 </button>
                 <button
-                  onClick={() => { setAdminMessage(''); setMessageError(''); clearImage(); clearAudio(); }}
+                  onClick={() => { setAdminMessage(''); setMessageError(''); clearImage(); clearAudio(); clearVideo(); }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Clear

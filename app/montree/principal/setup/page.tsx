@@ -115,6 +115,16 @@ export default function PrincipalSetupPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const shareCode = (teacher: CreatedTeacher) => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://teacherpotato.xyz';
+    const shareUrl = `${baseUrl}/montree/join?code=${teacher.login_code}`;
+    const message = `🐋 Welcome to Montree!\n\nHi ${teacher.name}, here's your teacher login code for ${teacher.classroom_name}:\n\nCode: ${teacher.login_code}\n\nLogin here: ${shareUrl}`;
+    
+    navigator.clipboard.writeText(message);
+    setCopiedCode(`share-${teacher.login_code}`);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
   if (!school) return null;
 
   return (
@@ -134,7 +144,7 @@ export default function PrincipalSetupPage() {
           <p className="text-emerald-300/70 text-sm">
             {step === 1 && 'Add your classrooms'}
             {step === 2 && 'Assign teachers to classrooms'}
-            {step === 3 && 'Share these codes with your teachers'}
+            {step === 3 && (createdTeachers.length > 0 ? 'Share these codes with your teachers' : 'Head to your dashboard to get started')}
           </p>
           
           {step < 3 && (
@@ -291,43 +301,63 @@ export default function PrincipalSetupPage() {
         {/* Step 3: Success - Show Login Codes */}
         {step === 3 && (
           <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-            <div className="space-y-4 mb-8">
-              {createdTeachers.map((teacher) => (
-                <div 
-                  key={teacher.id}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{teacher.classroom_icon}</span>
-                    <div>
-                      <p className="font-medium text-white">{teacher.name}</p>
-                      <p className="text-emerald-300/60 text-sm">{teacher.classroom_name}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <code className="px-4 py-2 bg-emerald-500/20 text-emerald-300 font-mono text-lg rounded-lg">
-                      {teacher.login_code}
-                    </code>
-                    <button
-                      onClick={() => copyCode(teacher.login_code)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        copiedCode === teacher.login_code
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
+            {createdTeachers.length > 0 ? (
+              <>
+                <div className="space-y-4 mb-8">
+                  {createdTeachers.map((teacher) => (
+                    <div 
+                      key={teacher.id}
+                      className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between"
                     >
-                      {copiedCode === teacher.login_code ? '✓' : 'Copy'}
-                    </button>
-                  </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{teacher.classroom_icon}</span>
+                        <div>
+                          <p className="font-medium text-white">{teacher.name}</p>
+                          <p className="text-emerald-300/60 text-sm">{teacher.classroom_name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="px-4 py-2 bg-emerald-500/20 text-emerald-300 font-mono text-lg rounded-lg">
+                          {teacher.login_code}
+                        </code>
+                        <button
+                          onClick={() => copyCode(teacher.login_code)}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            copiedCode === teacher.login_code
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          {copiedCode === teacher.login_code ? '✓' : 'Copy'}
+                        </button>
+                        <button
+                          onClick={() => shareCode(teacher)}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            copiedCode === `share-${teacher.login_code}`
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-teal-500/30 text-teal-300 hover:bg-teal-500/50'
+                          }`}
+                          title="Copy share message for WeChat"
+                        >
+                          {copiedCode === `share-${teacher.login_code}` ? '✓ Copied!' : '📱 Share'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
-              <p className="text-amber-300 text-sm">
-                ⚠️ Save these codes now! They won't be shown again.
-              </p>
-            </div>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                  <p className="text-amber-300 text-sm">
+                    ⚠️ Save these codes now! They won&apos;t be shown again.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8 mb-6">
+                <p className="text-white/70 mb-2">You&apos;re all set!</p>
+                <p className="text-emerald-300/60 text-sm">Add classrooms and teachers from your dashboard</p>
+              </div>
+            )}
 
             <button
               onClick={() => router.push('/montree/admin')}

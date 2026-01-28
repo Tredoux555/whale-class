@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { CURRICULUM, getAllWorks } from '@/lib/montree/curriculum-data';
 
 export async function GET(request: NextRequest) {
@@ -6,10 +7,63 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const areaFilter = searchParams.get('area');
     const searchQuery = searchParams.get('q')?.toLowerCase() || '';
+    const classroomId = searchParams.get('classroom_id');
 
-    // Get ALL works from the full curriculum (268+ works)
+    // If classroom_id provided, use classroom-specific curriculum
+    if (classroomId) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        let query = supabase
+          .from('montree_classroom_curriculum_works')
+          .select('*')
+          .eq('classroom_id', classroomId)
+          .eq('is_active', true)
+          .order('area_id')
+          .order('sequence');
+        
+        if (areaFilter && areaFilter !== 'all') {
+          query = query.eq('area_id', areaFilter.replace('-', '_'));
+        }
+        
+        const { data, error } = await query;
+        
+        if (!error && data && data.length > 0) {
+          let works = data.map(w => ({
+            id: w.work_key,
+            name: w.name,
+            chinese_name: w.name_chinese,
+            description: w.description,
+            age_range: w.age_range,
+            sequence: w.sequence,
+            materials: w.materials,
+            levels: w.levels,
+            area: {
+              area_key: w.area_id,
+              name: w.area_id?.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+              color: getAreaColor(w.area_id),
+              icon: getAreaIcon(w.area_id)
+            },
+            status: 'not_started'
+          }));
+          
+          if (searchQuery) {
+            works = works.filter(w => 
+              w.name.toLowerCase().includes(searchQuery) ||
+              w.chinese_name?.toLowerCase().includes(searchQuery)
+            );
+          }
+          
+          return NextResponse.json({ works, total: works.length, source: 'classroom' });
+        }
+      }
+    }
+
+    // Fallback to global curriculum
     let allWorks = getAllWorks().map((work, index) => {
-      // Find which area this work belongs to
       let areaInfo = { id: 'unknown', name: 'Unknown', icon: '📋', color: '#666' };
       for (const area of CURRICULUM) {
         for (const category of area.categories) {
@@ -19,7 +73,6 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-
       return {
         id: work.id,
         name: work.name,
@@ -29,48 +82,41 @@ export async function GET(request: NextRequest) {
         sequence: index + 1,
         materials: work.materials,
         levels: work.levels,
-        area: {
-          area_key: areaInfo.id,
-          name: areaInfo.name,
-          color: areaInfo.color,
-          icon: areaInfo.icon
-        },
+        area: { area_key: areaInfo.id, name: areaInfo.name, color: areaInfo.color, icon: areaInfo.icon },
         status: 'not_started'
       };
     });
 
-    // Filter by area if specified
     if (areaFilter && areaFilter !== 'all') {
-      // Handle different area key formats
       const normalizedFilter = areaFilter.toLowerCase().replace('-', '_');
-      allWorks = allWorks.filter(w => {
-        const areaKey = w.area.area_key.toLowerCase();
-        return areaKey === normalizedFilter || 
-               areaKey.includes(normalizedFilter) ||
-               normalizedFilter.includes(areaKey);
-      });
+      allWorks = allWorks.filter(w => w.area.area_key.toLowerCase().includes(normalizedFilter));
     }
 
-    // Filter by search query
     if (searchQuery) {
       allWorks = allWorks.filter(w => 
         w.name.toLowerCase().includes(searchQuery) ||
-        w.chinese_name?.toLowerCase().includes(searchQuery) ||
-        w.description?.toLowerCase().includes(searchQuery)
+        w.chinese_name?.toLowerCase().includes(searchQuery)
       );
     }
 
-    return NextResponse.json({
-      works: allWorks,
-      total: allWorks.length,
-      version: 'v101-full-curriculum'
-    });
+    return NextResponse.json({ works: allWorks, total: allWorks.length, source: 'global' });
 
   } catch (error) {
     console.error('Works search error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch works', details: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch works' }, { status: 500 });
   }
+}
+
+function getAreaIcon(areaId: string): string {
+  const icons: Record<string, string> = {
+    practical_life: '🧹', sensorial: '👁️', mathematics: '🔢', language: '📚', cultural: '🌍'
+  };
+  return icons[areaId] || '📖';
+}
+
+function getAreaColor(areaId: string): string {
+  const colors: Record<string, string> = {
+    practical_life: '#22c55e', sensorial: '#f97316', mathematics: '#3b82f6', language: '#ec4899', cultural: '#8b5cf6'
+  };
+  return colors[areaId] || '#666';
 }
