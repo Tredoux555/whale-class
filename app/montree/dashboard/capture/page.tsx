@@ -58,6 +58,22 @@ function CaptureContent() {
   const [schoolId, setSchoolId] = useState<string>('');
 
   // ============================================
+  // GET SCHOOL ID FROM SESSION
+  // ============================================
+  
+  useEffect(() => {
+    const stored = localStorage.getItem('montree_session');
+    if (stored) {
+      try {
+        const session = JSON.parse(stored);
+        if (session.school?.id) {
+          setSchoolId(session.school.id);
+        }
+      } catch {}
+    }
+  }, []);
+
+  // ============================================
   // FETCH CHILDREN
   // ============================================
 
@@ -69,11 +85,6 @@ function CaptureContent() {
         
         if (data.children) {
           setChildren(data.children);
-          
-          // Get school_id from first child's classroom
-          if (data.children.length > 0 && data.children[0].classroom?.school_id) {
-            setSchoolId(data.children[0].classroom.school_id);
-          }
         }
       } catch (err) {
         console.error('Failed to fetch children:', err);
