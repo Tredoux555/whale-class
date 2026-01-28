@@ -1,5 +1,6 @@
 // lib/montree/types.ts
 // Core types for Montree system
+// Session 112: Added dashboard types
 
 export type WorkStatus = 'not_started' | 'in_progress' | 'completed';
 
@@ -18,7 +19,6 @@ export interface Work {
   materials: string[];
   levels: WorkLevel[];
   prerequisites?: string[];
-  // Keep existing fields from JSON
   directAims?: string[];
   indirectAims?: string[];
   controlOfError?: string;
@@ -56,6 +56,7 @@ export interface Child {
   name: string;
   dateOfBirth?: string;
   parentId?: string;
+  photo_url?: string;
   createdAt: string;
 }
 
@@ -80,57 +81,98 @@ export interface ChildOverallProgress {
   areaProgress: AreaProgress[];
 }
 
-// Status colors - light fills for visual indication
+// ============================================
+// Dashboard Types (Session 112)
+// ============================================
+
+// Child as returned by API with progress summary
+export interface DashboardChild {
+  id: string;
+  name: string;
+  photo_url?: string;
+  age?: number;
+  progress?: {
+    presented: number;
+    practicing: number;
+    mastered: number;
+  };
+}
+
+// Progress bar data for each area
+export interface AreaProgressBar {
+  area: string;
+  areaName: string;
+  icon: string;
+  color: string;
+  totalWorks: number;
+  currentPosition: number;
+  currentWorkName: string | null;
+  percentComplete: number;
+}
+
+// ============================================
+// Area Configuration
+// ============================================
+
+export const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
+  practical_life: { name: 'Practical Life', icon: '🧹', color: '#ec4899' },
+  sensorial: { name: 'Sensorial', icon: '👁️', color: '#8b5cf6' },
+  mathematics: { name: 'Math', icon: '🔢', color: '#3b82f6' },
+  language: { name: 'Language', icon: '📖', color: '#22c55e' },
+  cultural: { name: 'Cultural', icon: '🌍', color: '#f97316' },
+};
+
+export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
+
+// ============================================
+// Status Colors
+// ============================================
+
 export const STATUS_COLORS = {
   not_started: {
-    fill: '#f1f5f9',      // slate-100 (light gray)
-    border: '#cbd5e1',    // slate-300
-    text: '#64748b',      // slate-500
+    fill: '#f1f5f9',
+    border: '#cbd5e1',
+    text: '#64748b',
     label: 'Not Started',
   },
   in_progress: {
-    fill: '#fef3c7',      // amber-100 (light amber)
-    border: '#fcd34d',    // amber-300
-    text: '#d97706',      // amber-600
+    fill: '#fef3c7',
+    border: '#fcd34d',
+    text: '#d97706',
     label: 'In Progress',
   },
   completed: {
-    fill: '#dcfce7',      // green-100 (light green)
-    border: '#86efac',    // green-300
-    text: '#16a34a',      // green-600
+    fill: '#dcfce7',
+    border: '#86efac',
+    text: '#16a34a',
     label: 'Completed',
   },
 } as const;
 
-// Area colors (distinct from status colors)
-// Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
-export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
-
 export const AREA_COLORS = {
   practical_life: {
-    primary: '#22c55e',   // green-500
-    light: '#bbf7d0',     // green-200
-    dark: '#15803d',      // green-700
+    primary: '#22c55e',
+    light: '#bbf7d0',
+    dark: '#15803d',
   },
   sensorial: {
-    primary: '#f97316',   // orange-500
-    light: '#fed7aa',     // orange-200
-    dark: '#c2410c',      // orange-700
+    primary: '#f97316',
+    light: '#fed7aa',
+    dark: '#c2410c',
   },
   mathematics: {
-    primary: '#3b82f6',   // blue-500
-    light: '#bfdbfe',     // blue-200
-    dark: '#1d4ed8',      // blue-700
+    primary: '#3b82f6',
+    light: '#bfdbfe',
+    dark: '#1d4ed8',
   },
   language: {
-    primary: '#ec4899',   // pink-500
-    light: '#fbcfe8',     // pink-200
-    dark: '#be185d',      // pink-700
+    primary: '#ec4899',
+    light: '#fbcfe8',
+    dark: '#be185d',
   },
   cultural: {
-    primary: '#8b5cf6',   // violet-500
-    light: '#ddd6fe',     // violet-200
-    dark: '#6d28d9',      // violet-700
+    primary: '#8b5cf6',
+    light: '#ddd6fe',
+    dark: '#6d28d9',
   },
 } as const;
-

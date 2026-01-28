@@ -15,38 +15,41 @@ export async function POST(request: NextRequest) {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await request.json();
-    const { child_id, work_key, work_name, status, notes } = body;
+    const { child_id, work_key, work_name, status, area, notes } = body;
     
     if (!child_id || (!work_key && !work_name)) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
     }
     
-    // Status: 0=not started, 1=presented, 2=practicing, 3=mastered
-    const statusValue = typeof status === 'number' ? status : parseInt(status) || 0;
-    
-    // Find existing progress record
-    let query = supabase
-      .from('montree_child_progress')
-      .select('id')
-      .eq('child_id', child_id);
-    
-    if (work_key) {
-      query = query.eq('work_key', work_key);
-    } else {
-      query = query.ilike('work_name', work_name);
+    // Normalize status to string format
+    let statusStr = status;
+    if (typeof status === 'number') {
+      statusStr = ['not_started', 'presented', 'practicing', 'mastered'][status] || 'not_started';
     }
     
-    const { data: existing } = await query.single();
+    // Find existing progress record by work_name
+    const workNameToFind = work_name || work_key;
+    const { data: existing } = await supabase
+      .from('montree_child_progress')
+      .select('id')
+      .eq('child_id', child_id)
+      .ilike('work_name', workNameToFind)
+      .single();
+    
+    const now = new Date().toISOString();
     
     if (existing) {
       // Update existing record
+      const updateData: any = { 
+        status: statusStr,
+        updated_at: now
+      };
+      if (notes) updateData.notes = notes;
+      if (statusStr === 'mastered') updateData.mastered_at = now;
+      
       const { error } = await supabase
         .from('montree_child_progress')
-        .update({ 
-          status: statusValue,
-          notes: notes || null,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', existing.id);
       
       if (error) {
@@ -59,10 +62,12 @@ export async function POST(request: NextRequest) {
         .from('montree_child_progress')
         .insert({
           child_id,
-          work_key: work_key || null,
-          work_name: work_name,
-          status: statusValue,
-          notes: notes || null
+          work_name: workNameToFind,
+          area: area || null,
+          status: statusStr,
+          notes: notes || null,
+          presented_at: now,
+          mastered_at: statusStr === 'mastered' ? now : null
         });
       
       if (error) {
@@ -71,7 +76,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    return NextResponse.json({ success: true, status: statusValue });
+    return NextResponse.json({ success: true, status: statusStr });
     
   } catch (error) {
     console.error('Progress update error:', error);

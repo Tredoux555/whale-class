@@ -2,16 +2,15 @@
 // Session 105: Principal setup - add classrooms and teachers
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-function hashLoginCode(code: string): string {
-  return crypto.createHash('sha256').update(code).digest('hex');
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
+
+// Login code is stored plain for lookup, password_hash is for email+password auth
 
 function generateLoginCode(): string {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
@@ -38,6 +37,7 @@ interface ClassroomInput {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const { schoolId, classrooms } = await request.json() as {
       schoolId: string;
       classrooms: ClassroomInput[];
@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
         if (!teacher.name?.trim()) continue;
 
         const loginCode = generateLoginCode();
-        const passwordHash = hashLoginCode(loginCode);
 
         const { data: createdTeacher, error: teacherError } = await supabase
           .from('montree_teachers')
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
             classroom_id: createdClassroom.id,
             name: teacher.name.trim(),
             email: teacher.email?.trim() || null,
-            password_hash: passwordHash,
+            login_code: loginCode,  // Store plain code for lookup
             role: 'teacher',
             is_active: true,
           })
