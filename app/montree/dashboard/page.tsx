@@ -67,15 +67,15 @@ export default function DashboardPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 overflow-hidden">
-      {/* Compact Header */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-2 flex items-center justify-between shrink-0">
+      {/* Compact Header - with safe area for notch/dynamic island */}
+      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-xl">🐋</span>
           <span className="font-bold text-sm truncate max-w-[150px]">{session.classroom?.name}</span>
         </div>
         <button 
           onClick={() => { clearSession(); router.push('/montree/login'); }}
-          className="text-xs px-2 py-1 bg-white/20 rounded-lg"
+          className="text-xs px-3 py-1.5 bg-white/20 rounded-lg active:bg-white/30"
         >
           Logout
         </button>
@@ -120,8 +120,8 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* Footer Tools */}
-      <footer className="bg-white border-t px-2 py-1 flex justify-around shrink-0">
+      {/* Footer Tools - with safe area for home bar */}
+      <footer className="bg-white border-t px-2 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] flex justify-around shrink-0">
         <Link href="/montree/dashboard/curriculum" className="p-2 text-xl hover:scale-110 transition-transform" title="Curriculum">📚</Link>
         <Link href="/montree/dashboard/games" className="p-2 text-xl hover:scale-110 transition-transform" title="Games">🎮</Link>
         <Link href="/montree/dashboard/tools" className="p-2 text-xl hover:scale-110 transition-transform" title="Tools">🛠️</Link>
