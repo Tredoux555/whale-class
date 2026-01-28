@@ -23,6 +23,14 @@ interface CurriculumWork {
   area_id?: string;
 }
 
+interface NextWorkSuggestion {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  area: string;
+  description?: string;
+}
+
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
   not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
   presented: { label: 'P', bg: 'bg-amber-300', text: 'text-amber-800' },
@@ -48,6 +56,11 @@ export default function WeekPage() {
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+  
+  // Next work suggestion state
+  const [nextWorkSuggestion, setNextWorkSuggestion] = useState<NextWorkSuggestion | null>(null);
+  const [showNextWorkModal, setShowNextWorkModal] = useState(false);
+  const [addingNextWork, setAddingNextWork] = useState(false);
 
   // Fetch assignments
   const fetchAssignments = () => {
@@ -86,7 +99,12 @@ export default function WeekPage() {
           status: nextStatus 
         }),
       });
-      toast.success(`→ ${nextStatus === 'completed' ? 'Mastered' : nextStatus.replace('_', ' ')}`);
+      toast.success(`→ ${nextStatus === 'completed' ? 'Mastered! 🎉' : nextStatus.replace('_', ' ')}`);
+      
+      // If just mastered, fetch next work suggestion
+      if (nextStatus === 'completed') {
+        fetchNextWork(a.work_name, a.area);
+      }
     } catch {
       toast.error('Failed to update');
       // Revert on error
@@ -94,6 +112,54 @@ export default function WeekPage() {
       reverted[index] = a;
       setAssignments(reverted);
     }
+  };
+
+  // Fetch next work in sequence
+  const fetchNextWork = async (workName: string, area: string) => {
+    try {
+      const res = await fetch(`/api/montree/works/next?work_name=${encodeURIComponent(workName)}&area=${encodeURIComponent(area)}`);
+      const data = await res.json();
+      
+      if (data.success && data.next_work) {
+        // Check if already in assignments
+        const alreadyAdded = assignments.some(
+          a => a.work_name?.toLowerCase() === data.next_work.name?.toLowerCase()
+        );
+        
+        if (!alreadyAdded) {
+          setNextWorkSuggestion(data.next_work);
+          setShowNextWorkModal(true);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch next work:', err);
+    }
+  };
+
+  // Add suggested next work
+  const addNextWork = async () => {
+    if (!nextWorkSuggestion) return;
+    setAddingNextWork(true);
+    
+    try {
+      await fetch('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          work_name: nextWorkSuggestion.name,
+          area: nextWorkSuggestion.area,
+          status: 'presented'
+        }),
+      });
+      toast.success(`Added: ${nextWorkSuggestion.name}`);
+      setShowNextWorkModal(false);
+      setNextWorkSuggestion(null);
+      fetchAssignments();
+    } catch {
+      toast.error('Failed to add');
+    }
+    setAddingNextWork(false);
   };
 
   // Open picker and fetch curriculum
@@ -371,6 +437,70 @@ export default function WeekPage() {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Next Work Suggestion Modal */}
+      {showNextWorkModal && nextWorkSuggestion && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowNextWorkModal(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-center">
+              <div className="text-5xl mb-2">🎉</div>
+              <h3 className="text-xl font-bold text-white">Work Mastered!</h3>
+              <p className="text-emerald-100 text-sm mt-1">Ready for the next step?</p>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-200">
+                <p className="text-xs text-amber-600 font-medium mb-1">NEXT IN SEQUENCE</p>
+                <p className="text-lg font-bold text-gray-800">{nextWorkSuggestion.name}</p>
+                {nextWorkSuggestion.name_chinese && (
+                  <p className="text-sm text-gray-500">{nextWorkSuggestion.name_chinese}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1 capitalize">
+                  {nextWorkSuggestion.area?.replace('_', ' ')}
+                </p>
+              </div>
+              
+              {nextWorkSuggestion.description && (
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                  {nextWorkSuggestion.description}
+                </p>
+              )}
+            </div>
+            
+            {/* Actions */}
+            <div className="p-4 pt-0 flex gap-3">
+              <button
+                onClick={() => setShowNextWorkModal(false)}
+                className="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Later
+              </button>
+              <button
+                onClick={addNextWork}
+                disabled={addingNextWork}
+                className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {addingNextWork ? (
+                  <span className="animate-spin">⏳</span>
+                ) : (
+                  <>
+                    <span>Add</span>
+                    <span>→</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
