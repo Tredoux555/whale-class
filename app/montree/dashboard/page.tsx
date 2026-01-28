@@ -43,17 +43,23 @@ export default function DashboardPage() {
       .catch(() => setLoading(false));
   }, [session?.classroom?.id]);
 
-  // Calculate optimal grid layout
+  // Calculate optimal grid layout - prefer wider/square tiles
   const gridLayout = useMemo(() => {
     const count = children.length;
-    if (count === 0) return { cols: 1, rows: 1 };
+    if (count === 0) return { cols: 3, rows: 1 };
     
-    // Find the best rectangle that fits all children
-    // Aim for slightly more columns than rows (landscape bias)
-    const sqrt = Math.sqrt(count);
-    const cols = Math.ceil(sqrt * 1.2); // Slightly wider
+    // For 20 students: 4 cols x 5 rows = nice square-ish tiles
+    // For mobile, 3-4 columns works best
+    if (count <= 6) return { cols: 3, rows: 2 };
+    if (count <= 9) return { cols: 3, rows: 3 };
+    if (count <= 12) return { cols: 4, rows: 3 };
+    if (count <= 16) return { cols: 4, rows: 4 };
+    if (count <= 20) return { cols: 4, rows: 5 };
+    if (count <= 25) return { cols: 5, rows: 5 };
+    
+    // Fallback for larger classes
+    const cols = 5;
     const rows = Math.ceil(count / cols);
-    
     return { cols, rows };
   }, [children.length]);
 
@@ -81,8 +87,8 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      {/* Student Grid - FILLS the screen */}
-      <main className="flex-1 p-2 min-h-0">
+      {/* Student Grid - scrollable with square-ish tiles */}
+      <main className="flex-1 p-3 overflow-y-auto">
         {children.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500">
             <span className="text-4xl mb-2">👶</span>
@@ -90,20 +96,19 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div 
-            className="grid gap-2 h-full w-full"
+            className="grid gap-3"
             style={{
               gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
-              gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
             }}
           >
             {children.map((child) => (
               <Link
                 key={child.id}
                 href={`/montree/dashboard/${child.id}`}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all flex flex-col items-center justify-center overflow-hidden"
+                className="bg-white rounded-xl shadow-sm hover:shadow-md active:scale-95 transition-all flex flex-col items-center justify-center p-3 aspect-square"
               >
-                {/* Avatar - scales with container */}
-                <div className="w-[40%] max-w-16 aspect-square rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden mb-1">
+                {/* Avatar */}
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl overflow-hidden mb-2">
                   {child.photo_url ? (
                     <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
                   ) : (
@@ -111,7 +116,7 @@ export default function DashboardPage() {
                   )}
                 </div>
                 {/* Name */}
-                <p className="text-xs sm:text-sm font-medium text-gray-700 truncate w-full text-center px-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 truncate w-full text-center">
                   {child.name.split(' ')[0]}
                 </p>
               </Link>
