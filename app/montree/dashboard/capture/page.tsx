@@ -152,7 +152,7 @@ function CaptureContent() {
 
   const handleDone = () => {
     if (preSelectedChildId) {
-      router.push(`/montree/dashboard/student/${preSelectedChildId}`);
+      router.push(`/montree/dashboard/${preSelectedChildId}`);
     } else {
       router.push('/montree/dashboard');
     }
