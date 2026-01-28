@@ -124,13 +124,13 @@ export default function TeacherLoginPage() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-emerald-300 mb-2">
-                    Email
+                    Username or Email
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@school.com"
+                    placeholder="tredoux"
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                     required
                     autoFocus
