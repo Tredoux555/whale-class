@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
+import SwipeableWorkRow from '../SwipeableWorkRow';
 
 interface WorkAssignment {
   id: string;
@@ -51,13 +52,13 @@ const STATUS_CONFIG = {
 // Area display order: 1. Practical Life, 2. Sensorial, 3. Math, 4. Language, 5. Culture
 const AREA_ORDER = ['practical_life', 'sensorial', 'math', 'mathematics', 'language', 'culture'];
 
-const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  practical_life: { label: 'Practical Life', color: 'text-amber-800', bgColor: 'bg-amber-50 border-amber-200' },
-  sensorial: { label: 'Sensorial', color: 'text-pink-800', bgColor: 'bg-pink-50 border-pink-200' },
-  math: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
-  mathematics: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200' },
-  language: { label: 'Language', color: 'text-green-800', bgColor: 'bg-green-50 border-green-200' },
-  culture: { label: 'Culture', color: 'text-purple-800', bgColor: 'bg-purple-50 border-purple-200' },
+const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: string; letter: string; letterColor: string }> = {
+  practical_life: { label: 'Practical Life', color: 'text-amber-800', bgColor: 'bg-amber-50 border-amber-200', letter: 'P', letterColor: 'bg-amber-100 text-amber-800' },
+  sensorial: { label: 'Sensorial', color: 'text-pink-800', bgColor: 'bg-pink-50 border-pink-200', letter: 'S', letterColor: 'bg-pink-100 text-pink-800' },
+  math: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200', letter: 'M', letterColor: 'bg-blue-100 text-blue-800' },
+  mathematics: { label: 'Math', color: 'text-blue-800', bgColor: 'bg-blue-50 border-blue-200', letter: 'M', letterColor: 'bg-blue-100 text-blue-800' },
+  language: { label: 'Language', color: 'text-green-800', bgColor: 'bg-green-50 border-green-200', letter: 'L', letterColor: 'bg-green-100 text-green-800' },
+  culture: { label: 'Culture', color: 'text-purple-800', bgColor: 'bg-purple-50 border-purple-200', letter: 'C', letterColor: 'bg-purple-100 text-purple-800' },
 };
 
 // Toast component
@@ -113,6 +114,8 @@ function ChildDetailContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeAssignment, setActiveAssignment] = useState<WorkAssignment | null>(null);
   const [captureType, setCaptureType] = useState<'photo' | 'video'>('photo');
+  const [addWorkModal, setAddWorkModal] = useState<{ area: string } | null>(null);
+  const [customWorkName, setCustomWorkName] = useState('');
 
   useEffect(() => {
     if (childId) {
@@ -169,6 +172,61 @@ function ChildDetailContent() {
   const handleStatusTap = (assignment: WorkAssignment) => {
     const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
     updateProgress(assignment.id, nextStatus);
+  };
+
+  const handleWorkChanged = (assignmentId: string, newWorkId: string, newWorkName: string) => {
+    if (!child) return;
+    setChild({
+      ...child,
+      assignments: child.assignments.map(a => 
+        a.id === assignmentId ? { ...a, work_id: newWorkId, work_name: newWorkName } : a
+      )
+    });
+  };
+
+  const handleNotesChanged = (assignmentId: string, notes: string) => {
+    if (!child) return;
+    setChild({
+      ...child,
+      assignments: child.assignments.map(a => 
+        a.id === assignmentId ? { ...a, notes } : a
+      )
+    });
+  };
+
+  const handleAddCustomWork = async () => {
+    if (!addWorkModal || !customWorkName.trim() || !child) return;
+    
+    try {
+      const res = await fetch('/api/weekly-planning/add-work', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          childId: child.id,
+          weekNumber,
+          year,
+          area: addWorkModal.area,
+          workName: customWorkName.trim(),
+        }),
+      });
+      
+      const data = await res.json();
+      if (data.success && data.assignment) {
+        setChild({
+          ...child,
+          assignments: [...child.assignments, data.assignment]
+        });
+        showToast(`Added "${customWorkName}"`, 'success');
+      } else {
+        showToast(data.error || 'Failed to add work', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to add work:', err);
+      showToast('Failed to add work', 'error');
+    }
+    
+    setAddWorkModal(null);
+    setCustomWorkName('');
   };
 
   const handleCaptureClick = (assignment: WorkAssignment) => {
@@ -513,94 +571,50 @@ function ChildDetailContent() {
           const areaConfig = AREA_CONFIG[areaKey];
           if (!areaConfig) return null;
           const areaAssignments = assignmentsByArea[areaKey] || [];
-          if (areaAssignments.length === 0) return null;
 
           return (
             <div key={areaKey} className={`rounded-xl border mb-4 overflow-hidden ${areaConfig.bgColor}`}>
-              <div className={`px-4 py-3 border-b ${areaConfig.bgColor}`}>
+              <div className={`px-4 py-3 border-b ${areaConfig.bgColor} flex items-center justify-between`}>
                 <h3 className={`font-semibold ${areaConfig.color}`}>
                   {areaConfig.label}
                   <span className="ml-2 text-sm font-normal opacity-70">
                     ({areaAssignments.length})
                   </span>
                 </h3>
+                <button
+                  onClick={() => setAddWorkModal({ area: areaKey })}
+                  className={`px-3 py-1 text-sm rounded-lg ${areaConfig.letterColor} active:scale-95`}
+                >
+                  + Add
+                </button>
               </div>
               
               <div className="bg-white divide-y">
                 {areaAssignments.map(assignment => {
                   const assignmentMedia = getMediaForAssignment(assignment.id);
-                  const isOptionsOpen = showCaptureOptions === assignment.id;
                   
                   return (
-                    <div key={assignment.id} className="p-4">
-                      <div className="flex items-center gap-3">
-                        {/* Status Button */}
-                        <button
-                          onClick={() => handleStatusTap(assignment)}
-                          className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center font-bold
-                            ${STATUS_CONFIG[assignment.progress_status].color}
-                            active:scale-95 transition-transform touch-manipulation shadow-sm`}
-                        >
-                          <span className="text-lg">{STATUS_CONFIG[assignment.progress_status].label}</span>
-                          <span className="text-[9px] font-normal opacity-70">tap</span>
-                        </button>
-
-                        {/* Work Name */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-800 truncate">{assignment.work_name}</p>
-                          {assignment.work_name_chinese && (
-                            <p className="text-sm text-gray-500 truncate">{assignment.work_name_chinese}</p>
-                          )}
-                        </div>
-
-                        {/* Combined Capture Button */}
-                        <div className="relative">
-                          <button
-                            onClick={() => handleCaptureClick(assignment)}
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all
-                              ${isOptionsOpen 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-blue-100 text-blue-600 hover:bg-blue-200'} 
-                              active:scale-95`}
-                          >
-                            📹
-                          </button>
-                          
-                          {/* Capture Options Popup */}
-                          {isOptionsOpen && (
-                            <div className="absolute right-0 top-14 bg-white rounded-xl shadow-xl border p-2 z-10 flex gap-2">
-                              <button
-                                onClick={() => startCapture(assignment, 'photo')}
-                                className="w-14 h-14 bg-green-100 text-green-600 rounded-xl flex flex-col items-center justify-center hover:bg-green-200 active:scale-95"
-                              >
-                                <span className="text-xl">📷</span>
-                                <span className="text-[10px]">Photo</span>
-                              </button>
-                              <button
-                                onClick={() => startCapture(assignment, 'video')}
-                                className="w-14 h-14 bg-purple-100 text-purple-600 rounded-xl flex flex-col items-center justify-center hover:bg-purple-200 active:scale-95"
-                              >
-                                <span className="text-xl">🎥</span>
-                                <span className="text-[10px]">Video</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Demo Video Button */}
-                        {assignment.video_url && (
-                          <button
-                            onClick={() => setVideoModal({ url: assignment.video_url!, title: assignment.work_name })}
-                            className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center hover:bg-red-200 active:scale-95"
-                          >
-                            ▶️
-                          </button>
-                        )}
-                      </div>
-
+                    <div key={assignment.id}>
+                      <SwipeableWorkRow
+                        assignment={assignment}
+                        childId={childId}
+                        areaConfig={{ letter: areaConfig.letter, color: areaConfig.letterColor }}
+                        statusConfig={{
+                          label: STATUS_CONFIG[assignment.progress_status].label,
+                          color: STATUS_CONFIG[assignment.progress_status].color,
+                          next: STATUS_CONFIG[assignment.progress_status].next,
+                        }}
+                        onStatusTap={() => handleStatusTap(assignment)}
+                        onCapture={() => startCapture(assignment, 'photo')}
+                        onRecordVideo={() => startCapture(assignment, 'video')}
+                        onWatchVideo={() => assignment.video_url && setVideoModal({ url: assignment.video_url, title: assignment.work_name })}
+                        onWorkChanged={handleWorkChanged}
+                        onNotesChanged={handleNotesChanged}
+                      />
+                      
                       {/* Media Thumbnails */}
                       {assignmentMedia.length > 0 && (
-                        <div className="mt-3 flex gap-2 overflow-x-auto">
+                        <div className="px-3 pb-3 flex gap-2 overflow-x-auto">
                           {assignmentMedia.map(item => (
                             <button
                               key={item.id}
@@ -626,16 +640,15 @@ function ChildDetailContent() {
                           ))}
                         </div>
                       )}
-
-                      {/* Notes */}
-                      {assignment.notes && (
-                        <div className="mt-3 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
-                          {assignment.notes}
-                        </div>
-                      )}
                     </div>
                   );
                 })}
+                
+                {areaAssignments.length === 0 && (
+                  <div className="p-4 text-center text-gray-400 text-sm">
+                    No works in {areaConfig.label}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -648,6 +661,41 @@ function ChildDetailContent() {
           </div>
         )}
       </main>
+
+      {/* Add Custom Work Modal */}
+      {addWorkModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setAddWorkModal(null)}>
+          <div className="bg-white rounded-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Add Custom Work</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Area: {AREA_CONFIG[addWorkModal.area]?.label || addWorkModal.area}
+            </p>
+            <input
+              type="text"
+              value={customWorkName}
+              onChange={e => setCustomWorkName(e.target.value)}
+              placeholder="Work name (e.g., Pouring Water)"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setAddWorkModal(null); setCustomWorkName(''); }}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCustomWork}
+                disabled={!customWorkName.trim()}
+                className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
+              >
+                Add Work
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Demo Video Modal */}
       {videoModal && (

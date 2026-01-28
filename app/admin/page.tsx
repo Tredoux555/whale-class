@@ -207,15 +207,14 @@ export default function AdminDashboard() {
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Print & Reports</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Link
-              href="/admin/classroom/print?week=4&year=2026&mode=grid"
-              target="_blank"
+              href="/admin/weekly-planning"
               className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-blue-500/50 hover:bg-slate-800 transition-all group"
             >
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <span className="text-xl">🖨️</span>
               </div>
               <h3 className="font-bold text-white text-sm">Print Weekly Plan</h3>
-              <p className="text-slate-500 text-xs mt-1">Grid, Cards, or Wall mode</p>
+              <p className="text-slate-500 text-xs mt-1">Upload & print plans</p>
             </Link>
             <Link
               href="/admin/english-progress"

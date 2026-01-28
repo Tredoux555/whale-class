@@ -145,6 +145,27 @@ export default function WeeklyPlanningPage() {
     setUploading(false);
   }
 
+  async function deletePlan(planId: string) {
+    if (!confirm('Delete this weekly plan and all its assignments?')) return;
+    
+    try {
+      const res = await fetch('/api/weekly-planning/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId })
+      });
+      
+      if (res.ok) {
+        loadPlans(); // Refresh list
+      } else {
+        alert('Failed to delete plan');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete plan');
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -312,6 +333,12 @@ export default function WeeklyPlanningPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => deletePlan(plan.id)}
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
+                    >
+                      🗑️ Delete
+                    </button>
                     <Link
                       href={`/admin/classroom/print?week=${plan.week_number}&year=${plan.year}`}
                       target="_blank"

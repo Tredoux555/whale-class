@@ -148,7 +148,7 @@ export default function DashboardPage() {
               <span className="text-3xl">🐋</span>
               <div>
                 <h1 className="text-xl font-bold">{session.classroom?.name || 'My Classroom'}</h1>
-                <p className="text-emerald-100 text-sm">{children.length} students • {session.school.name}</p>
+                <p className="text-emerald-100 text-sm">{children.length} students • {session.school?.name || 'School'}</p>
               </div>
             </div>
             <button onClick={handleLogout} className="text-sm text-white/70 hover:text-white">Logout</button>
@@ -188,11 +188,14 @@ export default function DashboardPage() {
           <button className="flex flex-col items-center text-emerald-600">
             <span className="text-xl">🏠</span><span className="text-xs font-medium">Home</span>
           </button>
+          <button onClick={() => router.push('/montree/dashboard/print')} className="flex flex-col items-center text-gray-400">
+            <span className="text-xl">🖨️</span><span className="text-xs">Print</span>
+          </button>
+          <button onClick={() => router.push('/montree/dashboard/curriculum')} className="flex flex-col items-center text-gray-400">
+            <span className="text-xl">📚</span><span className="text-xs">Curriculum</span>
+          </button>
           <button onClick={() => router.push('/montree/dashboard/progress')} className="flex flex-col items-center text-gray-400">
             <span className="text-xl">📊</span><span className="text-xs">Progress</span>
-          </button>
-          <button className="flex flex-col items-center text-gray-400">
-            <span className="text-xl">📄</span><span className="text-xs">Reports</span>
           </button>
         </div>
       </nav>
@@ -210,13 +213,21 @@ function ChildDetailView({ child, session, onBack }: { child: Child; session: Se
       
       <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <button onClick={onBack} className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30">←</button>
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">{child.name.charAt(0)}</div>
-            <div>
-              <h1 className="text-xl font-bold">{child.name}</h1>
-              <p className="text-emerald-100 text-sm">{session.classroom?.name}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={onBack} className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30">←</button>
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">{child.name.charAt(0)}</div>
+              <div>
+                <h1 className="text-xl font-bold">{child.name}</h1>
+                <p className="text-emerald-100 text-sm">{session.classroom?.name}</p>
+              </div>
             </div>
+            <button 
+              onClick={() => window.location.href = `/montree/dashboard/capture?child=${child.id}`}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-2 font-medium transition-all"
+            >
+              📷 Camera
+            </button>
           </div>
         </div>
       </header>
@@ -445,7 +456,7 @@ function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) 
                           className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-red-600 active:scale-95">
                           ▶️ Demo
                         </button>
-                        <button onClick={() => toast.info('Camera coming soon!')}
+                        <button onClick={() => window.location.href = `/montree/dashboard/capture?child=${child.id}`}
                           className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-600 active:scale-95">
                           📸 Capture
                         </button>
@@ -491,7 +502,7 @@ function WeeklyWorksTab({ child, session }: { child: Child; session: Session }) 
       )}
 
       {WorkNavigator && (
-        <WorkNavigator classroomId={session.classroom?.id} childId={child.id} childName={child.name} schoolId={session.school.id} />
+        <WorkNavigator classroomId={session.classroom?.id} childId={child.id} childName={child.name} schoolId={session.school?.id} />
       )}
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">

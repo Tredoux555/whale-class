@@ -8,6 +8,26 @@ const USER_PASSWORDS: Record<string, string> = {
   'Z': 'oe',
 };
 
+async function logLogin(username: string, ip: string, userAgent: string) {
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from('story_login_logs').insert({
+      username,
+      login_time: new Date().toISOString(),
+      ip_address: ip,
+      user_agent: userAgent
+    });
+    
+    if (error) {
+      console.error('[Auth] Login log error:', error.message);
+    } else {
+      console.log('[Auth] Login logged for:', username, 'at', new Date().toISOString());
+    }
+  } catch (e) {
+    console.error('[Auth] Login log exception:', e);
+  }
+}
+
 export async function POST(req: NextRequest) {
   console.log('[Auth] POST login request');
   
@@ -29,7 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
   }
 
-  const supabase = getSupabase();
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
   const userAgent = req.headers.get('user-agent') || 'unknown';
 
@@ -42,68 +61,37 @@ export async function POST(req: NextRequest) {
       .setExpirationTime('24h')
       .sign(getJWTSecret());
 
-    // Log the login - use only core columns
-    try {
-      const { error: logError } = await supabase.from('story_login_logs').insert({
-        username,
-        login_time: new Date().toISOString(),
-        ip_address: ip,
-        user_agent: userAgent
-      });
-      
-      if (logError) {
-        console.error('[Auth] Login log insert error:', logError);
-      } else {
-        console.log('[Auth] Login logged successfully for:', username);
-      }
-    } catch (e) {
-      console.error('[Auth] Login log exception:', e);
-    }
+    // Log the login
+    await logLogin(username, ip, userAgent);
 
     return NextResponse.json({ session: token });
   }
 
   // CHECK 2: Database with bcrypt (if configured)
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const { data: users, error } = await supabase
-        .from('story_users')
-        .select('username, password_hash')
-        .eq('username', username)
-        .limit(1);
+    const supabase = getSupabase();
+    const { data: users, error } = await supabase
+      .from('story_users')
+      .select('username, password_hash')
+      .eq('username', username)
+      .limit(1);
 
-      if (!error && users && users.length > 0) {
-        const bcrypt = await import('bcryptjs');
-        const valid = await bcrypt.compare(password, users[0].password_hash);
-        
-        if (valid) {
-          console.log('[Auth] DB auth success for:', username);
-          const token = await new SignJWT({ username })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setIssuedAt()
-            .setExpirationTime('24h')
-            .sign(getJWTSecret());
+    if (!error && users && users.length > 0) {
+      const bcrypt = await import('bcryptjs');
+      const valid = await bcrypt.compare(password, users[0].password_hash);
+      
+      if (valid) {
+        console.log('[Auth] DB auth success for:', username);
+        const token = await new SignJWT({ username })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuedAt()
+          .setExpirationTime('24h')
+          .sign(getJWTSecret());
 
-          // Log the login
-          try {
-            const { error: logError } = await supabase.from('story_login_logs').insert({
-              username,
-              login_time: new Date().toISOString(),
-              ip_address: ip,
-              user_agent: userAgent
-            });
-            
-            if (logError) {
-              console.error('[Auth] Login log insert error:', logError);
-            } else {
-              console.log('[Auth] Login logged successfully for:', username);
-            }
-          } catch (e) {
-            console.error('[Auth] Login log exception:', e);
-          }
+        // Log the login
+        await logLogin(username, ip, userAgent);
 
-          return NextResponse.json({ session: token });
-        }
+        return NextResponse.json({ session: token });
       }
     }
   } catch (e) {
@@ -114,13 +102,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Logout - mark as logged out
   try {
     const authHeader = req.headers.get('authorization');
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
       const supabase = getSupabase();
       
-      // Mark the session as logged out
+      // Mark recent login as logged out
       await supabase
         .from('story_login_logs')
         .update({ logout_at: new Date().toISOString() })

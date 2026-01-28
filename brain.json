@@ -1,47 +1,28 @@
 {
-  "project": "Montree",
-  "session": 103,
-  "lastUpdated": "2026-01-26T20:10:00+08:00",
+  "project": "Montree + Story",
+  "session": 108,
+  "lastUpdated": "2026-01-28T11:45:00+08:00",
   
-  "STATUS": "🎨 Session 103 - Status Wheel + Yellow Notes + Status Cycling",
+  "STATUS": "✅ Session complete - handoff written",
   
-  "PRINCIPLE": "Chunk→Save→Update brain→Proceed. Never lose progress.",
+  "HANDOFF": "/docs/HANDOFF_SESSION108_MONTREE_STORY.md",
 
-  "CREDENTIALS": {
-    "montree": "Demo / 123",
-    "admin": "Tredoux / 870602"
-  },
-
-  "SESSION_103_COMPLETED": [
-    "✅ Status Wheel - long-press status badge to open radial picker",
-    "✅ Status Cycling - tap badge to cycle ○ → P → Pr → M",
-    "✅ Yellow Sticky Notes - notepad style with tape effect",
-    "✅ Notes save to /api/montree/sessions",
-    "✅ Progress tab shows data DIRECTLY",
-    "✅ Reports tab generates with parent descriptions",
-    "✅ Created /api/montree/progress/update for status changes"
+  "COMPLETED": [
+    "Montree print - 5 modes (list, notes, grid, cards, wall)",
+    "Camera button - links to /montree/dashboard/capture",
+    "Curriculum API - fixed seed with UUID refs (50 works)",
+    "Story recent messages - 'm' trigger + /api/story/recent-messages",
+    "Story heartbeat - 30s activity tracking + 2min online window"
   ],
 
-  "NEW_FEATURES": {
-    "status_wheel": "Long-press (500ms) on status badge → opens radial wheel picker",
-    "status_cycling": "Tap status badge → cycles through ○ → P → Pr → M",
-    "yellow_notes": "Sticky note style with gradient, lines, tape effect"
-  },
-
-  "APIS_WORKING": [
-    "POST /api/montree/auth - Teacher login",
-    "GET /api/montree/children - Classroom students",
-    "GET /api/montree/weekly-assignments - Week's works",
-    "GET /api/montree/works/search - Full curriculum",
-    "POST /api/montree/sessions - Save notes/observations",
-    "GET /api/montree/sessions - Get child's history",
-    "POST /api/montree/progress/update - Update work status"
+  "PENDING": [
+    "Story video upload - needs testing/debugging"
   ],
 
-  "TODO_BEFORE_TESTING": [
-    "⚠️ RUN MIGRATION: 071_montree_sessions.sql in Supabase",
-    "May also need child_work_progress table for status updates"
-  ],
-
-  "HANDOFF": "docs/HANDOFF_SESSION103.md"
+  "TEST_URLS": {
+    "print": "/montree/dashboard/print?mode=notes",
+    "capture": "/montree/dashboard/capture",
+    "story_parent": "/story (login, then click 'm' for messages)",
+    "story_admin": "/story/admin/dashboard (activity tab)"
+  }
 }

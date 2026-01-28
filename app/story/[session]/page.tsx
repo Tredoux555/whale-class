@@ -30,6 +30,16 @@ interface SharedFile {
   public_url: string;
 }
 
+interface RecentMessage {
+  id: number;
+  type: string;
+  content: string | null;
+  mediaUrl: string | null;
+  mediaFilename: string | null;
+  author: string;
+  createdAt: string;
+}
+
 export default function StoryViewer() {
   const params = useParams();
   const router = useRouter();
@@ -55,6 +65,10 @@ export default function StoryViewer() {
   const [showMediaSection, setShowMediaSection] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  
+  // Recent messages state
+  const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
+  const [showRecentMessages, setShowRecentMessages] = useState(false);
   
   // Refs
   const paragraph3Ref = useRef<HTMLParagraphElement>(null);
@@ -131,6 +145,24 @@ export default function StoryViewer() {
     }
   }, [getSession]);
 
+  const loadRecentMessages = useCallback(async () => {
+    const session = getSession();
+    if (!session) return;
+
+    try {
+      const res = await fetch('/api/story/recent-messages?limit=5', {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRecentMessages(data.messages || []);
+      }
+    } catch {
+      // Non-critical, ignore
+    }
+  }, [getSession]);
+
   // Check for new messages periodically (every 10 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -139,6 +171,29 @@ export default function StoryViewer() {
     
     return () => clearInterval(interval);
   }, [loadStory]);
+
+  // Send heartbeat every 30 seconds to track activity
+  useEffect(() => {
+    const sendHeartbeat = async () => {
+      const session = getSession();
+      if (!session) return;
+      try {
+        await fetch('/api/story/heartbeat', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session}` }
+        });
+      } catch {
+        // Ignore heartbeat errors
+      }
+    };
+
+    // Send initial heartbeat
+    sendHeartbeat();
+    
+    // Then every 30 seconds
+    const interval = setInterval(sendHeartbeat, 30000);
+    return () => clearInterval(interval);
+  }, [getSession]);
 
   useEffect(() => {
     const session = getSession();
@@ -150,6 +205,7 @@ export default function StoryViewer() {
     loadStory();
     loadMedia();
     loadSharedFiles();
+    loadRecentMessages();
     
     // Auto-logout on window close
     const handleUnload = () => {
@@ -159,17 +215,18 @@ export default function StoryViewer() {
     
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [params.session, router, loadStory, loadMedia, loadSharedFiles, getSession]);
+  }, [params.session, router, loadStory, loadMedia, loadSharedFiles, loadRecentMessages, getSession]);
 
   // Handle letter clicks
   const handleLetterClick = async (letter: string, charIndex: number, paragraphIndex: number) => {
     if (!story) return;
 
-    // First paragraph: 't' and 'c' interactions
+    // First paragraph: 't', 'c', and 'm' interactions
     if (paragraphIndex === 0) {
       const firstParagraph = story.paragraphs[0] || '';
       const firstTIndex = firstParagraph.toLowerCase().indexOf('t');
       const firstCIndex = firstParagraph.toLowerCase().indexOf('c');
+      const firstMIndex = firstParagraph.toLowerCase().indexOf('m');
 
       if (letter.toLowerCase() === 't' && charIndex === firstTIndex) {
         // Refresh story to get latest message before showing
@@ -177,15 +234,24 @@ export default function StoryViewer() {
         setIsDecoded(!isDecoded);
         setIsEditing(false);
         setShowMediaSection(false);
+        setShowRecentMessages(false);
         setHasNewMessage(false); // Clear new message indicator
       } else if (letter.toLowerCase() === 'c' && charIndex === firstCIndex) {
         setIsEditing(true);
         setIsDecoded(false);
         setShowMediaSection(false);
+        setShowRecentMessages(false);
         setMessageInput('');
         setTimeout(() => {
           paragraph3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
+      } else if (letter.toLowerCase() === 'm' && charIndex === firstMIndex) {
+        // Toggle recent messages
+        await loadRecentMessages();
+        setShowRecentMessages(!showRecentMessages);
+        setIsDecoded(false);
+        setIsEditing(false);
+        setShowMediaSection(false);
       }
     }
 
@@ -199,6 +265,7 @@ export default function StoryViewer() {
         setShowMediaSection(!showMediaSection);
         setIsDecoded(false);
         setIsEditing(false);
+        setShowRecentMessages(false);
       }
     }
   };
@@ -316,10 +383,11 @@ export default function StoryViewer() {
     const isLastParagraph = index === story.paragraphs.length - 1;
     const isThirdParagraph = index === 2;
 
-    // First paragraph - make first 't' and 'c' clickable
+    // First paragraph - make first 't', 'c', and 'm' clickable
     if (isFirstParagraph) {
       let tFound = false;
       let cFound = false;
+      let mFound = false;
       
       return (
         <p className="mb-6 leading-relaxed text-lg">
@@ -327,11 +395,13 @@ export default function StoryViewer() {
             const lowerChar = char.toLowerCase();
             const isFirstT = lowerChar === 't' && !tFound;
             const isFirstC = lowerChar === 'c' && !cFound;
+            const isFirstM = lowerChar === 'm' && !mFound;
             
             if (isFirstT) tFound = true;
             if (isFirstC) cFound = true;
+            if (isFirstM) mFound = true;
             
-            const isClickable = isFirstT || isFirstC;
+            const isClickable = isFirstT || isFirstC || isFirstM;
             
             return (
               <span
@@ -449,6 +519,49 @@ export default function StoryViewer() {
             </div>
           ))}
         </div>
+
+        {/* Recent Messages Section */}
+        {showRecentMessages && recentMessages.length > 0 && (
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 flex items-center gap-2">
+              <span>💬</span> Recent Notes from Teacher
+            </h3>
+            <div className="space-y-3">
+              {recentMessages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      {msg.author.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {msg.type === 'text' && msg.content && (
+                        <p className="text-gray-800">{msg.content}</p>
+                      )}
+                      {msg.type === 'image' && msg.mediaUrl && (
+                        <img src={msg.mediaUrl} alt="Shared" className="max-w-full h-auto rounded-lg max-h-48" />
+                      )}
+                      {msg.type === 'video' && msg.mediaUrl && (
+                        <video src={msg.mediaUrl} controls className="max-w-full h-auto rounded-lg max-h-48" />
+                      )}
+                      {msg.type === 'audio' && msg.mediaUrl && (
+                        <audio src={msg.mediaUrl} controls className="w-full" />
+                      )}
+                      {msg.content && msg.type !== 'text' && (
+                        <p className="text-gray-600 text-sm mt-2">{msg.content}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-2">
+                        {msg.author} • {new Date(msg.createdAt).toLocaleDateString()} {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Media Section */}
         {showMediaSection && (
