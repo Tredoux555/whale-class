@@ -1,28 +1,58 @@
 {
-  "project": "Montree + Story",
-  "session": 108,
-  "lastUpdated": "2026-01-28T11:45:00+08:00",
+  "project": "Montree",
+  "session": 112,
+  "lastUpdated": "2026-01-28T19:40:00+08:00",
   
-  "STATUS": "✅ Session complete - handoff written",
+  "STATUS": "✅ PWA ARCHITECTURE REFACTOR COMPLETE",
   
-  "HANDOFF": "/docs/HANDOFF_SESSION108_MONTREE_STORY.md",
+  "REFACTOR_SUMMARY": {
+    "before": "946-line monolith with useState tabs (URL never changed)",
+    "after": "Clean URL-based routing with shared layout",
+    "benefit": "Back button works, deep linking, offline cacheable, PWA-ready"
+  },
 
-  "COMPLETED": [
-    "Montree print - 5 modes (list, notes, grid, cards, wall)",
-    "Camera button - links to /montree/dashboard/capture",
-    "Curriculum API - fixed seed with UUID refs (50 works)",
-    "Story recent messages - 'm' trigger + /api/story/recent-messages",
-    "Story heartbeat - 30s activity tracking + 2min online window"
+  "NEW_URL_STRUCTURE": {
+    "/montree/dashboard": "Child picker (181 lines)",
+    "/montree/dashboard/[childId]": "Week view (301 lines)",
+    "/montree/dashboard/[childId]/progress": "Progress bars (124 lines)",
+    "/montree/dashboard/[childId]/reports": "Reports (126 lines)"
+  },
+
+  "FILES_CREATED": [
+    "lib/montree/auth.ts - Unified session management",
+    "lib/montree/types.ts - Added dashboard types + AREA_CONFIG",
+    "app/montree/dashboard/[childId]/layout.tsx - Shared header + tabs",
+    "app/montree/dashboard/[childId]/page.tsx - Week view",
+    "app/montree/dashboard/[childId]/progress/page.tsx - Progress bars", 
+    "app/montree/dashboard/[childId]/reports/page.tsx - Reports",
+    "app/api/montree/children/[id]/route.ts - Single child fetch"
   ],
 
-  "PENDING": [
-    "Story video upload - needs testing/debugging"
-  ],
+  "BUGS_FIXED": {
+    "auth_key": "All pages now use lib/montree/auth.ts (was montree_teacher vs montree_session)",
+    "url_routing": "Tabs now use <Link> with real URLs (was useState)"
+  },
 
-  "TEST_URLS": {
-    "print": "/montree/dashboard/print?mode=notes",
-    "capture": "/montree/dashboard/capture",
-    "story_parent": "/story (login, then click 'm' for messages)",
-    "story_admin": "/story/admin/dashboard (activity tab)"
-  }
+  "FILES_TO_CLEANUP": {
+    "orphaned": [
+      "app/montree/dashboard/progress/page.tsx (OLD - uses wrong auth key)",
+      "app/montree/dashboard/reports/page.tsx (OLD - uses wrong auth key)"
+    ],
+    "action": "Delete these orphan files - they're superseded by [childId]/* routes"
+  },
+
+  "TEST": {
+    "login_url": "/montree/login",
+    "code": "f9f312",
+    "flow": [
+      "1. Login with code f9f312",
+      "2. Land on /montree/dashboard (child picker)",
+      "3. Click child → go to /montree/dashboard/[childId] (Week tab)",
+      "4. Click Progress tab → URL changes to /montree/dashboard/[childId]/progress",
+      "5. Click Reports tab → URL changes to /montree/dashboard/[childId]/reports",
+      "6. Back button works between tabs"
+    ]
+  },
+
+  "HANDOFF": "docs/HANDOFF_SESSION112_PWA_REFACTOR.md"
 }

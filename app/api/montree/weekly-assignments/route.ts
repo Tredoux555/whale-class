@@ -19,28 +19,59 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
-    // Query montree_child_progress - the correct Montree table
-    const { data, error } = await supabase
+    // Get child's classroom
+    const { data: child } = await supabase
+      .from('montree_children')
+      .select('classroom_id')
+      .eq('id', childId)
+      .single();
+
+    if (!child?.classroom_id) {
+      return NextResponse.json({ assignments: [], total: 0 });
+    }
+
+    // Get curriculum works for this classroom
+    const { data: works, error: worksError } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select(`
+        id, work_key, name, name_chinese, age_range, sequence,
+        area:montree_classroom_curriculum_areas!area_id (
+          area_key, name, icon
+        )
+      `)
+      .eq('classroom_id', child.classroom_id)
+      .eq('is_active', true)
+      .order('sequence')
+      .limit(20); // Show first 20 works for "This Week"
+
+    if (worksError) {
+      console.error('Works fetch error:', worksError);
+      return NextResponse.json({ error: 'Failed to fetch works' }, { status: 500 });
+    }
+
+    // Get existing progress for this child
+    const { data: progress } = await supabase
       .from('montree_child_progress')
-      .select('*')
-      .eq('child_id', childId)
-      .order('area');
+      .select('work_name, status')
+      .eq('child_id', childId);
 
-    if (error) throw error;
+    // Create a map of work_name -> status
+    const progressMap = new Map();
+    for (const p of progress || []) {
+      progressMap.set(p.work_name?.toLowerCase(), p.status);
+    }
 
-    // Transform to match expected format for dashboard
-    const assignments = (data || []).map(item => ({
-      id: item.id,
-      child_id: item.child_id,
-      work_key: item.work_key,
-      work_name: item.work_name,
-      area: item.area,
-      status: item.status || 0,
-      current_level: item.current_level || 1,
-      max_level: item.max_level || 3,
-      notes: item.notes,
-      last_updated: item.updated_at,
-      created_at: item.created_at
+    // Transform works to assignments with progress status
+    const assignments = (works || []).map(work => ({
+      id: work.id,
+      work_key: work.work_key,
+      work_name: work.name,
+      work_name_chinese: work.name_chinese,
+      area: work.area?.area_key || 'practical_life',
+      area_name: work.area?.name || 'Practical Life',
+      area_icon: work.area?.icon || '📋',
+      age_range: work.age_range,
+      status: progressMap.get(work.name?.toLowerCase()) || 'not_started'
     }));
 
     return NextResponse.json({

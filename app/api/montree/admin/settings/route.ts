@@ -4,10 +4,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -16,6 +18,7 @@ function hashPassword(password: string): string {
 // Get school settings
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const schoolId = request.headers.get('x-school-id');
     if (!schoolId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -46,6 +49,7 @@ export async function GET(request: NextRequest) {
 // Update school settings
 export async function PATCH(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const schoolId = request.headers.get('x-school-id');
     const principalId = request.headers.get('x-principal-id');
     if (!schoolId) {

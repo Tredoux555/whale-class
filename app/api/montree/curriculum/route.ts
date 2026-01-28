@@ -1,13 +1,14 @@
 // /api/montree/curriculum/route.ts
-// GET/POST curriculum works for a classroom
+// GET/POST curriculum works for a classroom - FIXED inline client
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(url, key);
+}
 
 // Default area definitions
 const DEFAULT_AREAS = [
@@ -18,83 +19,19 @@ const DEFAULT_AREAS = [
   { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
 ];
 
-// Default works by area_key
-const DEFAULT_WORKS: Record<string, Array<{ name: string; name_chinese: string; age_range: string }>> = {
-  practical_life: [
-    { name: 'Pouring Water', name_chinese: '倒水', age_range: '2.5-4' },
-    { name: 'Spooning Beans', name_chinese: '舀豆子', age_range: '2.5-4' },
-    { name: 'Folding Clothes', name_chinese: '叠衣服', age_range: '3-5' },
-    { name: 'Dressing Frames', name_chinese: '衣饰框', age_range: '3-5' },
-    { name: 'Care of Environment', name_chinese: '照顾环境', age_range: '3-6' },
-    { name: 'Flower Arranging', name_chinese: '插花', age_range: '3-6' },
-    { name: 'Food Preparation', name_chinese: '食物制备', age_range: '3-6' },
-    { name: 'Cutting with Scissors', name_chinese: '剪纸', age_range: '3-5' },
-    { name: 'Braiding', name_chinese: '编辫子', age_range: '4-6' },
-    { name: 'Washing Table', name_chinese: '洗桌子', age_range: '3-5' },
-  ],
-  sensorial: [
-    { name: 'Pink Tower', name_chinese: '粉红塔', age_range: '2.5-4' },
-    { name: 'Brown Stair', name_chinese: '棕色梯', age_range: '2.5-4' },
-    { name: 'Red Rods', name_chinese: '红棒', age_range: '2.5-4' },
-    { name: 'Color Tablets', name_chinese: '色板', age_range: '3-5' },
-    { name: 'Geometric Cabinet', name_chinese: '几何图橱', age_range: '3-5' },
-    { name: 'Binomial Cube', name_chinese: '二项式', age_range: '3.5-5' },
-    { name: 'Trinomial Cube', name_chinese: '三项式', age_range: '4-6' },
-    { name: 'Sound Cylinders', name_chinese: '音筒', age_range: '3-5' },
-    { name: 'Smelling Bottles', name_chinese: '嗅觉瓶', age_range: '3-5' },
-    { name: 'Tasting Bottles', name_chinese: '味觉瓶', age_range: '3-5' },
-  ],
-  mathematics: [
-    { name: 'Number Rods', name_chinese: '数棒', age_range: '3-4' },
-    { name: 'Sandpaper Numerals', name_chinese: '砂纸数字', age_range: '3-4' },
-    { name: 'Spindle Box', name_chinese: '纺锤棒箱', age_range: '3.5-4.5' },
-    { name: 'Cards and Counters', name_chinese: '数字与筹码', age_range: '3.5-4.5' },
-    { name: 'Golden Beads', name_chinese: '金色珠子', age_range: '4-6' },
-    { name: 'Teen Boards', name_chinese: '塞根板', age_range: '4-5' },
-    { name: 'Hundred Board', name_chinese: '百数板', age_range: '4-6' },
-    { name: 'Addition Snake Game', name_chinese: '加法蛇', age_range: '4.5-6' },
-    { name: 'Stamp Game', name_chinese: '邮票游戏', age_range: '5-6' },
-    { name: 'Bead Frame', name_chinese: '珠算架', age_range: '5-6' },
-  ],
-  language: [
-    { name: 'Sandpaper Letters', name_chinese: '砂纸字母', age_range: '2.5-4' },
-    { name: 'Moveable Alphabet', name_chinese: '活动字母', age_range: '3.5-5' },
-    { name: 'Metal Insets', name_chinese: '金属嵌板', age_range: '3-5' },
-    { name: 'Object Box', name_chinese: '实物盒', age_range: '3-4' },
-    { name: 'Pink Series', name_chinese: '粉色系列', age_range: '4-5' },
-    { name: 'Blue Series', name_chinese: '蓝色系列', age_range: '4.5-5.5' },
-    { name: 'Green Series', name_chinese: '绿色系列', age_range: '5-6' },
-    { name: 'Grammar Symbols', name_chinese: '语法符号', age_range: '5-6' },
-    { name: 'Sentence Analysis', name_chinese: '句子分析', age_range: '5.5-6' },
-    { name: 'Reading Classification', name_chinese: '阅读分类', age_range: '5-6' },
-  ],
-  cultural: [
-    { name: 'Globe - Land & Water', name_chinese: '地球仪', age_range: '3-4' },
-    { name: 'Puzzle Maps', name_chinese: '拼图地图', age_range: '3.5-6' },
-    { name: 'Land & Water Forms', name_chinese: '陆地水域', age_range: '4-6' },
-    { name: 'Botany Cabinet', name_chinese: '植物图橱', age_range: '3.5-5' },
-    { name: 'Leaf Shapes', name_chinese: '叶形', age_range: '4-6' },
-    { name: 'Parts of a Flower', name_chinese: '花的部分', age_range: '4-6' },
-    { name: 'Life Cycles', name_chinese: '生命周期', age_range: '4-6' },
-    { name: 'Animal Classification', name_chinese: '动物分类', age_range: '4-6' },
-    { name: 'Science Experiments', name_chinese: '科学实验', age_range: '4-6' },
-    { name: 'Art Activities', name_chinese: '艺术活动', age_range: '3-6' },
-  ],
-};
-
 // GET - Fetch curriculum for classroom
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
-    const area = searchParams.get('area');
 
     if (!classroomId) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
 
     // Fetch works with area info
-    let query = supabase
+    const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`
         *,
@@ -106,8 +43,6 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true)
       .order('sequence');
 
-    const { data, error } = await query;
-
     if (error) {
       console.error('Curriculum fetch error:', error);
       return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 500 });
@@ -118,10 +53,7 @@ export async function GET(request: NextRequest) {
     for (const work of data || []) {
       const areaKey = work.area?.area_key || 'other';
       if (!byArea[areaKey]) byArea[areaKey] = [];
-      byArea[areaKey].push({
-        ...work,
-        area_id: work.area?.area_key // Use area_key for frontend compatibility
-      });
+      byArea[areaKey].push(work);
     }
 
     return NextResponse.json({ 
@@ -136,9 +68,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Seed curriculum OR add single work
+// POST - Seed curriculum from Montessori Brain OR add single work
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const body = await request.json();
     const { classroom_id, action } = body;
 
@@ -146,76 +79,114 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
 
-    // SEED ACTION - Create areas and works
-    if (action === 'seed') {
-      // Check if already seeded
+    // SEED FROM BRAIN
+    if (action === 'seed' || action === 'seed_from_brain' || action === 'seed_works') {
+      // Check for existing areas first
       const { data: existingAreas } = await supabase
         .from('montree_classroom_curriculum_areas')
-        .select('id')
-        .eq('classroom_id', classroom_id)
-        .limit(1);
+        .select('id, area_key')
+        .eq('classroom_id', classroom_id);
+
+      let areaMap: Record<string, string> = {};
 
       if (existingAreas && existingAreas.length > 0) {
-        return NextResponse.json({ error: 'Curriculum already seeded', seeded: 0 }, { status: 400 });
-      }
+        // Use existing areas
+        for (const area of existingAreas) {
+          areaMap[area.area_key] = area.id;
+        }
+        // Clear existing works only
+        await supabase.from('montree_classroom_curriculum_works').delete().eq('classroom_id', classroom_id);
+      } else {
+        // Create new areas
+        const areasToInsert = DEFAULT_AREAS.map(area => ({
+          classroom_id,
+          ...area,
+          is_active: true
+        }));
 
-      // Step 1: Create areas
-      const areasToInsert = DEFAULT_AREAS.map(area => ({
-        classroom_id,
-        ...area,
-        is_active: true
-      }));
+        const { data: insertedAreas, error: areaError } = await supabase
+          .from('montree_classroom_curriculum_areas')
+          .insert(areasToInsert)
+          .select();
 
-      const { data: insertedAreas, error: areaError } = await supabase
-        .from('montree_classroom_curriculum_areas')
-        .insert(areasToInsert)
-        .select();
+        if (areaError) {
+          console.error('Area seed error:', areaError);
+          return NextResponse.json({ error: 'Failed to seed areas' }, { status: 500 });
+        }
 
-      if (areaError) {
-        console.error('Area seed error:', areaError);
-        return NextResponse.json({ error: 'Failed to seed areas' }, { status: 500 });
-      }
-
-      // Build area_key -> UUID map
-      const areaMap: Record<string, string> = {};
-      for (const area of insertedAreas || []) {
-        areaMap[area.area_key] = area.id;
-      }
-
-      // Step 2: Create works
-      const worksToInsert: any[] = [];
-      let seq = 1;
-      for (const [areaKey, works] of Object.entries(DEFAULT_WORKS)) {
-        const areaId = areaMap[areaKey];
-        if (!areaId) continue;
-        
-        for (const work of works) {
-          worksToInsert.push({
-            classroom_id,
-            area_id: areaId,
-            work_key: work.name.toLowerCase().replace(/\s+/g, '_'),
-            name: work.name,
-            name_chinese: work.name_chinese,
-            age_range: work.age_range,
-            sequence: seq++,
-            is_active: true
-          });
+        for (const area of insertedAreas || []) {
+          areaMap[area.area_key] = area.id;
         }
       }
 
-      const { error: workError } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .insert(worksToInsert);
+      const brainAreaMapping: Record<string, string> = {
+        'practical_life': 'practical_life',
+        'sensorial': 'sensorial',
+        'mathematics': 'mathematics',
+        'math': 'mathematics',
+        'language': 'language',
+        'cultural': 'cultural',
+        'culture': 'cultural',
+      };
 
-      if (workError) {
-        console.error('Work seed error:', workError);
-        return NextResponse.json({ error: 'Failed to seed works' }, { status: 500 });
+      // Fetch from Montessori Brain
+      const { data: brainWorks, error: brainError } = await supabase
+        .from('montessori_works')
+        .select('*')
+        .order('sequence_order');
+
+      if (brainError) {
+        console.error('Brain fetch error:', brainError);
+        return NextResponse.json({ error: 'Failed to fetch brain works' }, { status: 500 });
+      }
+
+      // Transform to classroom works
+      const worksToInsert: any[] = [];
+      let seq = 1;
+      
+      for (const work of brainWorks || []) {
+        const mappedArea = brainAreaMapping[work.curriculum_area] || 'practical_life';
+        const areaId = areaMap[mappedArea];
+        if (!areaId) continue;
+
+        worksToInsert.push({
+          classroom_id,
+          area_id: areaId,
+          work_key: work.slug || work.name.toLowerCase().replace(/\s+/g, '_'),
+          name: work.name,
+          name_chinese: work.name_chinese || null,
+          description: work.parent_explanation_simple || null,
+          age_range: work.age_min && work.age_max ? `${work.age_min}-${work.age_max}` : '3-6',
+          sequence: seq++,
+          is_active: true,
+          direct_aims: work.direct_aims || [],
+          indirect_aims: work.indirect_aims || [],
+          materials: work.materials_needed || [],
+          control_of_error: work.control_of_error || null,
+          prerequisites: work.readiness_indicators || [],
+          // Teacher presentation guide
+          quick_guide: work.quick_guide || null,
+          parent_description: work.parent_explanation_detailed || null,
+          why_it_matters: work.parent_why_it_matters || null,
+          video_search_terms: work.video_search_term || null,
+        });
+      }
+
+      if (worksToInsert.length > 0) {
+        const { error: workError } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .insert(worksToInsert);
+
+        if (workError) {
+          console.error('Work seed error:', workError);
+          return NextResponse.json({ error: 'Failed to seed works' }, { status: 500 });
+        }
       }
 
       return NextResponse.json({ 
         success: true, 
         seeded: worksToInsert.length,
-        areas: insertedAreas?.length || 0
+        areas: Object.keys(areaMap).length
       });
     }
 
@@ -226,7 +197,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'name required' }, { status: 400 });
     }
 
-    // Get area_id from area_key
     const { data: areaData } = await supabase
       .from('montree_classroom_curriculum_areas')
       .select('id')
@@ -238,7 +208,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Area not found - seed curriculum first' }, { status: 400 });
     }
 
-    // Get next sequence
     const { data: existingSeq } = await supabase
       .from('montree_classroom_curriculum_works')
       .select('sequence')
