@@ -1,60 +1,349 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-24T12:00:00Z",
-  "session": 49,
-  "mode": "COMPLETE",
-  "phase": "SESSION 49 FINISHED",
-
-  "SESSION_49_SUMMARY": {
-    "duration": "45 minutes",
-    "focus": "Montree Games System - Complete Separation from Whale",
-    "commits": 1,
-    "games_copied": 27
+  "lastUpdated": "2026-01-29T14:00:00Z",
+  "session": 115,
+  "mode": "CONTINUING",
+  "phase": "AI Analyst - DB Verified, Building UI",
+  
+  "CURRENT_STATUS": {
+    "database": "✅ VERIFIED - All 3 tables + columns created",
+    "ai_engine": "✅ COMPLETE - 1,876 lines",
+    "apis": "✅ COMPLETE - analysis + reports endpoints",
+    "focus_ui_components": "✅ COMPLETE",
+    "weekly_review_ui": "✅ COMPLETE - /[childId]/weekly-review (618 lines)",
+    "dashboard_integration": "✅ COMPLETE - Focus/List toggle + Reports button",
+    "next_task": "Test with real classroom data"
   },
 
-  "CRITICAL_RULE": {
-    "memory_19": "🚨 Montree ≠ Whale. MONTREE=/montree/* (SaaS for schools). WHALE=/admin/* (Tredoux internal). Same codebase, SEPARATE products. NEVER mix them."
+  "NEXT_SESSION_START_HERE": {
+    "priority_1": "Build Weekly Review UI page with tabs",
+    "priority_2": "Integrate FocusModeView into child dashboard",
+    "priority_3": "Test with real classroom data",
+    "handoff": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
 
-  "MONTREE_GAMES": {
-    "hub_url": "/montree/games",
-    "total_games": 27,
-    "categories": {
-      "phonics": ["letter-sounds", "beginning-sounds", "middle-sounds", "ending-sounds", "combined-i-spy", "sound-blending", "sound-segmenting", "sound-safari"],
-      "reading": ["letter-match", "letter-tracer", "capital-letter-tracer", "word-builder", "vocabulary-builder", "read-and-reveal"],
-      "math": ["number-tracer", "quantity-match", "bead-frame", "hundred-board", "odd-even"],
-      "sensorial": ["sensorial-sort", "color-match", "color-grade"],
-      "grammar": ["grammar-symbols", "sentence-builder", "sentence-match", "sentence-scramble"]
+  "SESSION_115_COMPLETE": {
+    "phase_1_database": "✅ COMPLETE - migration ready",
+    "phase_2_focus_ui": "✅ COMPLETE - components ready",
+    "phase_3_ai_engine": "✅ COMPLETE - 1,876 lines of AI code",
+    "phase_4_reports": "✅ COMPLETE - API endpoints built",
+    "total_lines_written": "~3,500 lines",
+    "handoff_doc": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
+  },
+
+  "IMPLEMENTATION_PROGRESS": {
+    "phase_1_database": {
+      "status": "✅ COMPLETE",
+      "migration_file": "/supabase/migrations/050_ai_analyst_schema.sql",
+      "tables_created": ["montree_child_sensitive_periods", "montree_weekly_analysis", "montree_child_focus_works"],
+      "columns_added": ["duration_minutes", "repetition_count", "concentration_quality", "emotional_state", "social_interaction"],
+      "next_action": "Run migration in Supabase SQL Editor"
+    },
+    "phase_2_focus_ui": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Chunk 1: AreaSpinnerWheel component (/components/montree/AreaSpinnerWheel.tsx)",
+        "✅ Chunk 2: FocusModeCard component (/components/montree/FocusModeCard.tsx)",
+        "✅ Chunk 3: Focus works API endpoint (/app/api/montree/focus-works/route.ts)",
+        "✅ Chunk 4: FocusModeView component (/components/montree/FocusModeView.tsx)"
+      ],
+      "integration_note": "Components ready - add view toggle to child dashboard page"
+    },
+    "phase_3_ai_engine": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Chunk 1: note-parser.ts - Keyword extraction from teacher notes",
+        "✅ Chunk 2: sensitive-periods.ts - 9 periods with detection algorithm",
+        "✅ Chunk 3: recommendation-engine.ts - Work scoring (40+35+25+25 points)",
+        "✅ Chunk 4: weekly-analyzer.ts - Main orchestrator with narratives",
+        "✅ index.ts - Export all modules"
+      ],
+      "files_created": [
+        "/lib/montree/ai/note-parser.ts (439 lines)",
+        "/lib/montree/ai/sensitive-periods.ts (448 lines)",
+        "/lib/montree/ai/recommendation-engine.ts (431 lines)",
+        "/lib/montree/ai/weekly-analyzer.ts (558 lines)",
+        "/lib/montree/ai/index.ts"
+      ]
+    },
+    "phase_4_reports": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Analysis API (/api/montree/analysis) - GET/POST for weekly analysis",
+        "✅ Reports API (/api/montree/reports/generate) - Three report types"
+      ],
+      "api_endpoints": {
+        "analysis": "/api/montree/analysis - GET cached, POST generate",
+        "reports": "/api/montree/reports/generate - POST generates teacher/parent/ai reports"
+      }
     }
   },
 
-  "MONTREE_URLS": {
-    "hub": "/montree",
-    "admin": "/montree/admin",
-    "games": "/montree/games",
-    "parent": "/montree/parent",
-    "dashboard": "/montree/dashboard",
-    "student": "/montree/dashboard/student/[id]",
-    "reports": "/montree/dashboard/reports"
+  "SESSION_115_SUMMARY": {
+    "completed": [
+      "Dashboard grid fix (px-4 py-3, gap-2.5)",
+      "Camera icon + class photo mode (?class=true)",
+      "Parent descriptions import script",
+      "Deep Montessori observation research",
+      "AI Analyst framework + game plan"
+    ],
+    "files_created": [
+      "/docs/AI_MONTESSORI_ANALYST_GAMEPLAN.md",
+      "/scripts/import-parent-descriptions-to-brain.ts"
+    ],
+    "files_modified": [
+      "/app/montree/dashboard/page.tsx",
+      "/app/montree/dashboard/capture/page.tsx",
+      "/lib/montree/media/types.ts",
+      "/lib/montree/media/upload.ts"
+    ]
   },
 
-  "WHALE_URLS": {
-    "admin": "/admin",
-    "classroom": "/admin/classroom",
-    "handbook": "/admin/handbook",
-    "print": "/admin/classroom/print",
-    "games": "/games"
+  "AI_MONTESSORI_ANALYST": {
+    "purpose": "Analyze child's weekly progress like a master Montessorian, detect sensitive periods, identify concerns, recommend next works",
+    
+    "research_insights": {
+      "observation_method": "Document objectively: what happens, not interpretation. Track work selection, duration, repetitions, completion, transitions.",
+      
+      "normalization_markers": [
+        "Love of work (intrinsic motivation, maximum effort)",
+        "Concentration (sustained focus, returns after interruption)",
+        "Self-discipline (independent, follows routines)",
+        "Sociability with joy (courteous, helpful, peaceful)"
+      ],
+      
+      "attention_norms_by_age": {
+        "age_2": {"routine": "4-6 min", "engaging": "up to 10 min"},
+        "age_3": {"routine": "6-9 min", "engaging": "up to 15 min"},
+        "age_4": {"routine": "8-12 min", "engaging": "up to 20 min"},
+        "age_5": {"routine": "12-15 min", "engaging": "up to 25 min"},
+        "age_6": {"routine": "15-18 min", "engaging": "up to 30 min"}
+      },
+      
+      "area_balance_by_age": {
+        "age_2_3": {"practical_life": "50-60%", "sensorial": "25-35%", "language": "10-15%", "math": "minimal", "cultural": "minimal"},
+        "age_3_4": {"practical_life": "35-45%", "sensorial": "25-35%", "language": "15-25%", "math": "5-15%", "cultural": "5-10%"},
+        "age_4_5": {"practical_life": "20-25%", "sensorial": "15-20%", "language": "20-25%", "math": "20-25%", "cultural": "15-20%"},
+        "age_5_6": {"practical_life": "as needed", "sensorial": "as needed", "language": "25-30%", "math": "25-30%", "cultural": "20-25%"}
+      },
+      
+      "repetition_meaning": {
+        "productive": "Deep concentration + calm + joy + increasing precision = SENSITIVE PERIOD ACTIVE",
+        "concerning": "Distracted + agitated + no improvement = wrong difficulty or anxiety"
+      },
+      
+      "avoidance_timeline": {
+        "under_1_week": "Monitor, may be temporary",
+        "1_2_weeks": "Begin gentle intervention",
+        "2_4_weeks": "Requires structured observation",
+        "over_4_weeks": "Significant intervention needed"
+      },
+      
+      "mastery_test": "Three Period Lesson - Period 3 (recall without prompting) = true mastery"
+    },
+    
+    "sensitive_periods": {
+      "order": {"age": "0-5, peaks at 2", "signs": "tantrums over routine changes, notices tiny environmental changes, insists on sequences"},
+      "language": {"age": "0-6", "signs": "vocabulary explosion, asks 'what's that?', fascinated by letters"},
+      "movement": {"age": "0-4.5", "signs": "constant physical activity, practices same movement repeatedly"},
+      "sensory": {"age": "0-6, peaks 2.5-4", "signs": "touches everything, sorts by sensory attribute"},
+      "small_objects": {"age": "1-4", "signs": "collects tiny treasures, points out minute details"},
+      "social": {"age": "2.5-6, peaks 3-4.5", "signs": "mimics adult social behaviors, watches peer interactions"},
+      "writing": {"age": "3-5, peaks 3-4", "signs": "makes marks purposefully, traces letters"},
+      "reading": {"age": "3-5", "signs": "points to letters, asks 'what does that say?'"},
+      "math": {"age": "4-6", "signs": "counts spontaneously, asks 'how many?', notices patterns"}
+    },
+    
+    "note_keywords": {
+      "concentration_positive": ["repeated X times", "deep engagement", "absorbed in", "uninterrupted for", "wouldn't stop"],
+      "concentration_negative": ["distracted", "wandered", "couldn't focus", "abandoned", "left incomplete"],
+      "emotional_positive": ["joyful", "proud", "satisfied", "peaceful", "calm"],
+      "emotional_negative": ["frustrated", "upset", "anxious", "cried", "tantrum"],
+      "breakthrough": ["first time", "finally", "explosion", "mastered", "self-corrected"]
+    },
+    
+    "recommendation_scoring": {
+      "interest_alignment": "40 points - work area matches recent interests",
+      "sensitive_period_match": "35 points - work matches active sensitive period",
+      "curriculum_sequence": "25 points - next logical step in progression",
+      "gap_filling_14_days": "15 points - area neglected >2 weeks",
+      "gap_filling_28_days": "+10 points - area neglected >4 weeks"
+    }
   },
 
-  "PLATFORM_STATE": {
-    "Montessori Brain": "213 works with full relationship graph",
-    "Digital Handbook": "Prerequisites, unlocks, sensitive periods, games",
-    "Weekly Planning": "AI suggestions + Print buttons",
-    "Games Hub (Whale)": "/games - 27+ learning games",
-    "Games Hub (Montree)": "/montree/games - 27 games copied, self-contained",
-    "Classroom": "Real progress tracking + Print/Report support",
-    "Parent App": "Today at School + Game Recommendations",
-    "Print System": "3 beautiful modes for classroom display",
-    "Report System": "Individual student progress PDFs"
-  }
+  "FOCUS_MODE_UX": {
+    "concept": "Show ONE work per area (5 tiles max), switch via spinner wheel",
+    "interaction": {
+      "tap_status_badge": "Cycle status: not_started → presented → practicing → mastered",
+      "long_press_emoji": "Open iOS-style spinner wheel to switch work",
+      "tap_card_body": "Expand for notes, demo video, capture photo"
+    },
+    "spinner_wheel": {
+      "trigger": "Long-press on area emoji (🧹👁️🔢📚🌍)",
+      "behavior": "Pre-scrolls to current work, swipe up/down to select",
+      "confirmation": "Tap outside or 'Done' button"
+    },
+    "data_logging": "ALL works still logged for weekly review regardless of focus view"
+  },
+
+  "THREE_REPORT_TYPES": {
+    "teacher_report": {
+      "audience": "Teacher only",
+      "tone": "Data-rich, professional",
+      "content": [
+        "Full work list with status, duration, repetitions",
+        "Concentration metrics vs age benchmarks",
+        "Sensitive period analysis with evidence",
+        "Area distribution chart vs expected for age",
+        "Red/yellow flags with recommendations",
+        "Next work recommendations with reasoning",
+        "4-week historical trend"
+      ]
+    },
+    "parent_report": {
+      "audience": "Parents",
+      "tone": "Warm, accessible, celebratory",
+      "content": [
+        "Child's photo + warm greeting",
+        "2-3 highlight accomplishments",
+        "Works by area with parent-friendly descriptions",
+        "'Why it matters' for each work",
+        "Photos from the week",
+        "'At home' activity suggestions",
+        "Encouraging closing"
+      ]
+    },
+    "ai_analysis_report": {
+      "audience": "Teacher only (confidential)",
+      "tone": "Clinical but actionable",
+      "content": [
+        "Psychological profile summary",
+        "Sensitive period assessment",
+        "Developmental trajectory analysis",
+        "Specific concerns with evidence",
+        "Detailed 2-week recommendations",
+        "Questions for teacher to observe",
+        "Suggested parent communication points"
+      ]
+    }
+  },
+
+  "IMPLEMENTATION_GAMEPLAN": {
+    "total_time": "~15 hours",
+    "phases": {
+      "phase_1_database": {
+        "time": "2 hours",
+        "priority": "CRITICAL",
+        "tasks": [
+          "CREATE TABLE montree_child_sensitive_periods",
+          "CREATE TABLE montree_weekly_analysis",
+          "CREATE TABLE montree_child_focus_works",
+          "ALTER montree_child_progress ADD duration, repetition, concentration columns",
+          "ALTER montree_sessions ADD emotional_state, social_interaction columns"
+        ]
+      },
+      "phase_2_focus_ui": {
+        "time": "3 hours",
+        "priority": "CRITICAL",
+        "tasks": [
+          "Build AreaSpinnerWheel component (iOS picker style)",
+          "Update child dashboard for 5-tile focus layout",
+          "Create /api/montree/focus-works endpoint",
+          "Add haptic feedback for iOS"
+        ]
+      },
+      "phase_3_ai_engine": {
+        "time": "4 hours",
+        "priority": "HIGH",
+        "tasks": [
+          "Build /lib/montree/ai/weekly-analyzer.ts",
+          "Build /lib/montree/ai/sensitive-periods.ts",
+          "Build /lib/montree/ai/recommendation-engine.ts",
+          "Build /lib/montree/ai/note-parser.ts (keyword extraction)"
+        ]
+      },
+      "phase_4_reports": {
+        "time": "3 hours",
+        "priority": "HIGH",
+        "tasks": [
+          "Build teacher report template",
+          "Build parent report template",
+          "Build AI analysis report template",
+          "Create /api/montree/reports/generate endpoint"
+        ]
+      },
+      "phase_5_ui_integration": {
+        "time": "2 hours",
+        "priority": "MEDIUM",
+        "tasks": [
+          "Build weekly review page with tabs",
+          "Add AI insights panel to child dashboard",
+          "Print/PDF export for reports",
+          "Share button for parent report"
+        ]
+      },
+      "phase_6_automation": {
+        "time": "1 hour",
+        "priority": "MEDIUM",
+        "tasks": [
+          "Create /api/cron/weekly-analysis endpoint",
+          "Schedule Sunday 6 PM analysis generation",
+          "Red flag notification system"
+        ]
+      }
+    }
+  },
+
+  "DATABASE_SCHEMA_OVERVIEW": {
+    "new_tables": {
+      "montree_child_sensitive_periods": "Track detected periods per child with confidence scores and evidence",
+      "montree_weekly_analysis": "Cache AI analysis results, metrics, flags, recommendations, narratives",
+      "montree_child_focus_works": "One active work per area per child (UNIQUE child_id + area)"
+    },
+    "column_additions": {
+      "montree_child_progress": "duration_minutes, repetition_count, concentration_quality, self_corrected, help_requested, completed_cycle",
+      "montree_sessions": "emotional_state, social_interaction, ai_extracted_keywords"
+    }
+  },
+
+  "FILE_STRUCTURE": {
+    "ai_engine": [
+      "/lib/montree/ai/weekly-analyzer.ts",
+      "/lib/montree/ai/sensitive-periods.ts",
+      "/lib/montree/ai/recommendation-engine.ts",
+      "/lib/montree/ai/note-parser.ts"
+    ],
+    "reports": [
+      "/lib/montree/reports/teacher-report.ts",
+      "/lib/montree/reports/parent-report.ts",
+      "/lib/montree/reports/ai-analysis-report.ts"
+    ],
+    "components": [
+      "/components/montree/AreaSpinnerWheel.tsx",
+      "/components/montree/FocusModeCard.tsx",
+      "/components/montree/AIInsightsPanel.tsx",
+      "/components/montree/WeeklyReviewTabs.tsx"
+    ],
+    "pages": [
+      "/app/montree/dashboard/[childId]/page.tsx (update for focus mode)",
+      "/app/montree/dashboard/[childId]/weekly-review/page.tsx (new)"
+    ]
+  },
+
+  "PARENT_DESCRIPTIONS": {
+    "seed_file": "/lib/montree/seed/parent-descriptions.ts",
+    "count": "~160 works",
+    "fields": ["parent_description", "why_it_matters", "home_connection"],
+    "import_script": "/scripts/import-parent-descriptions-to-brain.ts",
+    "run_command": "npx tsx scripts/import-parent-descriptions-to-brain.ts",
+    "db_columns_exist": "montessori_works has parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters"
+  },
+
+  "NEXT_STEPS": [
+    "1. START Phase 1: Create database migration SQL",
+    "2. Run migration in Supabase",
+    "3. Run parent descriptions import script",
+    "4. Build AreaSpinnerWheel component",
+    "5. Update child dashboard for focus mode"
+  ]
 }

@@ -17,6 +17,15 @@ const config: Config = {
         'whale-light': '#B8E0F0',
         accent: '#FFB84D',
       },
+      animation: {
+        'slide-up': 'slideUp 0.3s ease-out',
+      },
+      keyframes: {
+        slideUp: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
     },
   },
   plugins: [],

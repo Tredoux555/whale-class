@@ -1,13 +1,7 @@
 // lib/montree/ai/index.ts
-// Clean exports for Montree AI module
+// Export all AI analysis modules
 
-export { MONTREE_SYSTEM_PROMPT, buildAnalyzePrompt, buildWeeklyReportPrompt, buildSuggestNextPrompt } from './prompts';
-
-export { 
-  AREA_DISPLAY_NAMES,
-  getAreaDisplayName,
-  transformAssignment,
-  transformChildContext,
-  generateFallbackAnalysis,
-  generateFallbackSuggestions
-} from './utils';
+export * from './note-parser';
+export * from './sensitive-periods';
+export * from './recommendation-engine';
+export * from './weekly-analyzer';

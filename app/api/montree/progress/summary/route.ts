@@ -130,13 +130,22 @@ export async function GET(request: NextRequest) {
     const totalWorks = areaSummary.reduce((sum, a) => sum + a.totalWorks, 0);
     const overallPercent = totalWorks > 0 ? Math.round((totalCompleted / totalWorks) * 100) : 0;
 
+    // Also return detailed progress list with dates
+    const { data: detailedProgress } = await supabase
+      .from('montree_child_progress')
+      .select('id, work_name, area, status, presented_at, mastered_at')
+      .eq('child_id', childId)
+      .order('updated_at', { ascending: false });
+
     return NextResponse.json({
+      success: true,
       areas: areaSummary,
       overall: {
         completed: totalCompleted,
         total: totalWorks,
         percent: overallPercent,
       },
+      progress: detailedProgress || [],
     });
 
   } catch (error) {

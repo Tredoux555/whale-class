@@ -20,6 +20,7 @@ export interface UploadOptions {
   classroom_id?: string;
   child_id?: string;
   child_ids?: string[];  // For group photos
+  is_class_photo?: boolean;  // Class photo - shared with ALL parents
   work_id?: string;
   caption?: string;
   tags?: string[];
@@ -121,6 +122,7 @@ export async function uploadPhoto(
       classroom_id: options.classroom_id,
       child_id: options.child_id,
       child_ids: options.child_ids,
+      is_class_photo: options.is_class_photo,  // For class photos shared with all parents
       media_type: 'photo',
       captured_at: new Date().toISOString(),
       work_id: options.work_id,
