@@ -1,13 +1,16 @@
 // /montree/dashboard/[childId]/page.tsx
 // Session 112: Week view - child's weekly works
+// Session 115: Added Focus Mode view toggle
 // Layout handles auth + header + tabs
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import FocusModeView from '@/components/montree/FocusModeView';
+import InviteParentModal from '@/components/montree/InviteParentModal';
 
 interface Assignment {
   work_name: string;
@@ -42,8 +45,15 @@ const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'completed'];
 
 export default function WeekPage() {
   const params = useParams();
+  const router = useRouter();
   const childId = params.childId as string;
   const session = getSession();
+  
+  // View mode toggle (focus vs list)
+  const [viewMode, setViewMode] = useState<'focus' | 'list'>('focus');
+  
+  // Invite parent modal
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,6 +261,96 @@ export default function WeekPage() {
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
       
+      {/* Invite Parent Modal */}
+      <InviteParentModal
+        childId={childId}
+        childName={session?.classroom?.children?.find((c: any) => c.id === childId)?.name || 'Child'}
+        teacherId={session?.teacher?.id}
+        isOpen={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+      />
+      
+      {/* View Toggle + Weekly Review Button */}
+      <div className="flex items-center justify-between">
+        <div className="flex bg-white rounded-xl p-1 shadow-sm">
+          <button
+            onClick={() => setViewMode('focus')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'focus' 
+                ? 'bg-emerald-500 text-white' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            🎯 Focus
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-emerald-500 text-white' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            📋 List
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push(`/montree/dashboard/${childId}/weekly-review`)}
+            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-200 transition-colors"
+          >
+            📊 Reports
+          </button>
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-xl text-sm font-medium hover:bg-amber-200 transition-colors"
+          >
+            👨‍👩‍👧 Invite
+          </button>
+        </div>
+      </div>
+
+      {/* Focus Mode View */}
+      {viewMode === 'focus' ? (
+        <FocusModeView
+          childId={childId}
+          classroomId={session?.classroom?.id || ''}
+          assignments={assignments}
+          curriculum={curriculum}
+          onStatusChange={async (workName, area, newStatus) => {
+            const index = assignments.findIndex(a => a.work_name === workName);
+            if (index >= 0) {
+              const updated = [...assignments];
+              updated[index] = { ...updated[index], status: newStatus };
+              setAssignments(updated);
+              
+              await fetch('/api/montree/progress/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ child_id: childId, work_name: workName, area, status: newStatus }),
+              });
+              toast.success(`→ ${newStatus === 'completed' ? 'Mastered! 🎉' : newStatus.replace('_', ' ')}`);
+            }
+          }}
+          onAddWork={async (work, area) => {
+            await fetch('/api/montree/progress/update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ child_id: childId, work_name: work.name, area, status: 'presented' }),
+            });
+            toast.success(`Added: ${work.name}`);
+            fetchAssignments();
+          }}
+          onExpandWork={(workName, area) => {
+            const index = assignments.findIndex(a => a.work_name === workName);
+            if (index >= 0) {
+              setExpandedIndex(index);
+              setViewMode('list'); // Switch to list to show expanded
+            }
+          }}
+        />
+      ) : (
+        <>
       {/* Works List */}
       {assignments.length > 0 ? (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -504,6 +604,8 @@ export default function WeekPage() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

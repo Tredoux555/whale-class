@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast, Toaster } from 'sonner';
 
 interface Classroom {
   id: string;
@@ -124,6 +125,7 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Failed to fetch:', err);
       setError('Failed to load dashboard');
+      toast.error('Failed to load dashboard');
     } finally {
       setLoading(false);
     }
@@ -165,10 +167,12 @@ export default function AdminPage() {
       
       if (res.ok) {
         setShowClassroomModal(false);
+        toast.success(editingClassroom ? 'Classroom updated' : 'Classroom created');
         fetchData();
       }
     } catch (err) {
       console.error('Save classroom error:', err);
+      toast.error('Failed to save classroom');
     } finally {
       setSaving(false);
     }
@@ -185,6 +189,7 @@ export default function AdminPage() {
       fetchData();
     } catch (err) {
       console.error('Delete classroom error:', err);
+      toast.error('Failed to delete classroom');
     }
   };
 
@@ -214,6 +219,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error('Save teacher error:', err);
+      toast.error('Failed to add teacher');
     } finally {
       setSaving(false);
     }
@@ -236,6 +242,7 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error('Regenerate code error:', err);
+      toast.error('Failed to generate new code');
     }
   };
 
@@ -258,10 +265,12 @@ export default function AdminPage() {
           localStorage.setItem('montree_school', JSON.stringify(school));
         }
         setShowSettingsModal(false);
+        toast.success('Settings saved');
         fetchData();
       }
     } catch (err) {
       console.error('Save settings error:', err);
+      toast.error('Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -287,6 +296,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-4 md:p-6">
+      <Toaster position="top-center" />
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -374,18 +384,22 @@ export default function AdminPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <Link href="/montree/admin/students" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
             <span className="text-2xl block mb-2">👨‍👩‍👧</span>
-            <span className="text-white text-sm">All Students</span>
+            <span className="text-white text-sm">Students</span>
+          </Link>
+          <Link href="/montree/admin/teachers" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
+            <span className="text-2xl block mb-2">👩‍🏫</span>
+            <span className="text-white text-sm">Teachers</span>
+          </Link>
+          <Link href="/montree/admin/reports" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
+            <span className="text-2xl block mb-2">📊</span>
+            <span className="text-white text-sm">Reports</span>
           </Link>
           <Link href="/montree/admin/import" className="bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-4 text-center hover:bg-emerald-500/30">
             <span className="text-2xl block mb-2">📄</span>
-            <span className="text-emerald-300 text-sm">Import Plan</span>
-          </Link>
-          <Link href="/montree/dashboard/reports" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
-            <span className="text-2xl block mb-2">📊</span>
-            <span className="text-white text-sm">Reports</span>
+            <span className="text-emerald-300 text-sm">Import</span>
           </Link>
           <Link href="/montree/games" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
             <span className="text-2xl block mb-2">🎮</span>
@@ -395,6 +409,10 @@ export default function AdminPage() {
             <span className="text-2xl block mb-2">👪</span>
             <span className="text-emerald-300 text-sm">Parent Codes</span>
           </Link>
+          <button onClick={handleLogout} className="bg-red-500/20 rounded-xl p-4 text-center hover:bg-red-500/30">
+            <span className="text-2xl block mb-2">🚪</span>
+            <span className="text-red-300 text-sm">Logout</span>
+          </button>
         </div>
       </div>
 

@@ -44,9 +44,10 @@ function CaptureContent() {
   // Get pre-selected child from URL if any
   const preSelectedChildId = searchParams.get('child');
   const isGroupMode = searchParams.get('group') === 'true';
+  const isClassMode = searchParams.get('class') === 'true'; // Class photo - shared with all parents
 
   // State
-  const [step, setStep] = useState<FlowStep>(preSelectedChildId ? 'camera' : 'select-child');
+  const [step, setStep] = useState<FlowStep>(preSelectedChildId ? 'camera' : (isClassMode ? 'camera' : 'select-child'));
   const [children, setChildren] = useState<MontreeChild[]>([]);
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [selectedChildIds, setSelectedChildIds] = useState<string[]>(
@@ -115,11 +116,15 @@ function CaptureContent() {
     setStep('uploading');
     setError(null);
 
+    // For class photos, tag all children
+    const idsToTag = isClassMode ? children.map(c => c.id) : selectedChildIds;
+
     try {
       const result = await uploadPhoto(photo, {
         school_id: schoolId || 'default-school',
-        child_id: selectedChildIds.length === 1 ? selectedChildIds[0] : undefined,
-        child_ids: selectedChildIds.length > 1 ? selectedChildIds : undefined,
+        child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+        child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+        is_class_photo: isClassMode, // Mark as class photo for sharing with all parents
         onProgress: setUploadProgress,
       });
 
@@ -137,7 +142,7 @@ function CaptureContent() {
   };
 
   const handleCameraCancel = () => {
-    if (preSelectedChildId) {
+    if (preSelectedChildId || isClassMode) {
       router.back();
     } else {
       setStep('select-child');

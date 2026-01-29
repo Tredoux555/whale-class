@@ -112,6 +112,7 @@ export interface UploadMediaRequest {
   classroom_id?: string;
   child_id?: string;  // Optional for group photos
   child_ids?: string[];  // For group photos, multiple children
+  is_class_photo?: boolean;  // Class photo - shared with ALL parents
   media_type: 'photo' | 'video';
   captured_by: string;
   captured_at: string;

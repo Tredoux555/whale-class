@@ -36,11 +36,13 @@ export default function TeacherLoginPage() {
           school: data.school,
           classroom: data.classroom,
           loginAt: new Date().toISOString(),
+          onboarded: data.teacher.password_set, // Not onboarded if first login
         }));
         
-        // Redirect to set-password if not set (only for code login)
+        // Redirect based on state
         if (mode === 'code' && !data.teacher.password_set) {
-          router.push('/montree/set-password');
+          // First time - show onboarding then set password
+          router.push('/montree/onboarding');
         } else {
           router.push('/montree/dashboard');
         }

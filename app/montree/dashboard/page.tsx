@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, clearSession, type MontreeSession } from '@/lib/montree/auth';
+import { toast, Toaster } from 'sonner';
 
 interface Child {
   id: string;
@@ -40,7 +41,10 @@ export default function DashboardPage() {
         setChildren(data.children || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        toast.error('Failed to load students');
+        setLoading(false);
+      });
   }, [session?.classroom?.id]);
 
   // Calculate optimal grid layout - prefer wider/square tiles
@@ -73,6 +77,7 @@ export default function DashboardPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 overflow-hidden">
+      <Toaster position="top-center" />
       {/* Compact Header - with safe area for notch/dynamic island */}
       <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
@@ -88,7 +93,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Student Grid - scrollable with square-ish tiles */}
-      <main className="flex-1 p-3 overflow-y-auto">
+      <main className="flex-1 px-4 py-3 overflow-y-auto">
         {children.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500">
             <span className="text-4xl mb-2">👶</span>
@@ -127,6 +132,7 @@ export default function DashboardPage() {
 
       {/* Footer Tools - with safe area for home bar */}
       <footer className="bg-white border-t px-2 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] flex justify-around shrink-0">
+        <Link href="/montree/dashboard/capture?class=true" className="p-2 text-xl hover:scale-110 transition-transform" title="Class Photo">📷</Link>
         <Link href="/montree/dashboard/curriculum" className="p-2 text-xl hover:scale-110 transition-transform" title="Curriculum">📚</Link>
         <Link href="/montree/dashboard/games" className="p-2 text-xl hover:scale-110 transition-transform" title="Games">🎮</Link>
         <Link href="/montree/dashboard/tools" className="p-2 text-xl hover:scale-110 transition-transform" title="Tools">🛠️</Link>

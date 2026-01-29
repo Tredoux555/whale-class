@@ -24,6 +24,49 @@ function hashCode(code: string): string {
   return crypto.createHash('sha256').update(code).digest('hex');
 }
 
+// List teachers for school
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const { searchParams } = new URL(request.url);
+    const schoolId = searchParams.get('school_id') || request.headers.get('x-school-id');
+    
+    if (!schoolId) {
+      return NextResponse.json({ error: 'School ID required' }, { status: 400 });
+    }
+
+    // Get teachers with their classroom assignments
+    const { data: teachers, error } = await supabase
+      .from('montree_teachers')
+      .select(`
+        id, name, email, is_active, created_at,
+        montree_teacher_classrooms (
+          classroom_id,
+          montree_classrooms ( id, name, icon )
+        )
+      `)
+      .eq('school_id', schoolId)
+      .order('name');
+
+    if (error) throw error;
+
+    // Transform to flatten classrooms
+    const transformedTeachers = (teachers || []).map(t => ({
+      id: t.id,
+      name: t.name,
+      email: t.email,
+      is_active: t.is_active,
+      created_at: t.created_at,
+      classrooms: (t.montree_teacher_classrooms || []).map((tc: any) => tc.montree_classrooms).filter(Boolean)
+    }));
+
+    return NextResponse.json({ teachers: transformedTeachers });
+  } catch (error) {
+    console.error('List teachers error:', error);
+    return NextResponse.json({ error: 'Failed to list teachers' }, { status: 500 });
+  }
+}
+
 // Create new teacher
 export async function POST(request: NextRequest) {
   try {
