@@ -1,14 +1,22 @@
 // lib/montree/email.ts
 // Email service using Resend
 // Install: npm install resend
+// Session 126: Fixed to read env vars at runtime
 
 import { Resend } from 'resend';
 
-// Initialize Resend with API key from env
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily at runtime, not module load time
+let resendInstance: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendInstance;
+}
 
 // Default sender (must be verified domain or Resend test domain)
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Montree <onboarding@resend.dev>';
+const getFromEmail = () => process.env.RESEND_FROM_EMAIL || 'Montree <onboarding@resend.dev>';
 
 export interface EmailResult {
   success: boolean;
@@ -29,8 +37,8 @@ export async function sendReportReadyEmail(
   reportUrl: string
 ): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
       to: parentEmail,
       subject: `📊 ${childName}'s Weekly Report is Ready`,
       html: generateReportReadyHtml(parentName, childName, weekNumber, year, reportUrl),
@@ -60,8 +68,8 @@ export async function sendWelcomeEmail(
   dashboardUrl: string
 ): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
       to: parentEmail,
       subject: `🌳 Welcome to Montree - Track ${childName}'s Progress`,
       html: generateWelcomeHtml(parentName, childName, dashboardUrl),
@@ -298,8 +306,8 @@ export async function sendParentInviteEmail(
   signupUrl: string
 ): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
       to: recipientEmail,
       subject: `🌳 You're Invited - Track ${childName}'s Learning Journey`,
       html: generateInviteHtml(childName, schoolName, inviteCode, signupUrl),
