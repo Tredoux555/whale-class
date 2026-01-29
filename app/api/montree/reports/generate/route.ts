@@ -6,10 +6,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Get supabase at runtime, not module load time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ============================================
 // TYPES
@@ -311,6 +314,8 @@ export async function POST(request: NextRequest) {
     }
 
     const requestedTypes = report_types || ['teacher', 'parent', 'ai_analysis'];
+
+    const supabase = getSupabase();
 
     // Fetch child
     const { data: child } = await supabase

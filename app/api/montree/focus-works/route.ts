@@ -3,14 +3,18 @@
 // GET: Get current focus works for a child
 // POST: Set focus work for an area
 // DELETE: Remove focus work for an area
+// Session 126: Fixed to read env vars at runtime
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Get supabase at runtime, not module load time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ============================================
 // GET: Get focus works for a child
@@ -26,6 +30,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabase();
 
     // Get all focus works for this child
     const { data: focusWorks, error } = await supabase
@@ -91,6 +97,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const supabase = getSupabase();
+
     // Upsert focus work (insert or update if exists)
     const { data, error } = await supabase
       .from('montree_child_focus_works')
@@ -146,6 +154,8 @@ export async function DELETE(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabase();
 
     const { error } = await supabase
       .from('montree_child_focus_works')

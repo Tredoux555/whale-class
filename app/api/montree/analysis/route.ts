@@ -2,15 +2,19 @@
 // API for generating weekly child analysis
 // GET: Get cached analysis for a child/week
 // POST: Generate new analysis
+// Session 126: Fixed to read env vars at runtime
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Get supabase at runtime, not module load time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ============================================
 // GET: Retrieve cached analysis
@@ -27,6 +31,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabase();
 
     let query = supabase
       .from('montree_weekly_analysis')
@@ -78,6 +84,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabase();
 
     // Check for existing analysis
     if (!force_regenerate) {
