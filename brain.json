@@ -1,30 +1,31 @@
 {
   "project": "Montree",
-  "session": 125,
-  "lastUpdated": "2026-01-29T18:30:00+08:00",
+  "session": 126,
+  "lastUpdated": "2026-01-29T19:00:00+08:00",
   
   "STATUS": "✅ DEPLOYED TO PRODUCTION",
   
+  "SESSION_126_SUMMARY": "Railway deploy fixes - moved module-level client inits to runtime",
+  
   "DEPLOY_INFO": {
-    "commit": "51c036a",
+    "commits": ["51c036a", "f241553", "39dfa85", "c8a3d8b"],
     "files_changed": 98,
     "insertions": 13709,
     "deletions": 991,
     "pushed_to": "origin/main"
   },
 
-  "SESSIONS_119_125_FEATURES": [
-    "PWA: Service worker, install banner, offline page, app icons",
-    "Auth: Context provider, session validation, RLS policies",
-    "Principal Dashboard: Teachers page, reports page, billing UI",
-    "Billing: Stripe checkout, webhook, status API",
-    "Parent Portal: Signup, login, dashboard with live stats",
-    "Reports: PDF export, detailed progress views",
-    "Mobile: iOS safe areas, touch targets, input zoom fix",
-    "Security: Fixed bcrypt for parent auth, corrected table names",
-    "Teacher: Onboarding flow, multi-classroom support",
-    "AI: Recommendation engine, weekly analyzer, sensitive periods"
-  ],
+  "RAILWAY_FIX_PATTERN": {
+    "problem": "Module-level client initialization reads env vars at build time when they don't exist",
+    "solution": "Move initialization inside getter functions that run at runtime",
+    "files_fixed": [
+      "lib/montree/supabase.ts",
+      "app/api/montree/focus-works/route.ts",
+      "app/api/montree/analysis/route.ts", 
+      "app/api/montree/reports/generate/route.ts",
+      "lib/montree/email.ts"
+    ]
+  },
 
   "BUILD_STATUS": {
     "pages": 306,
