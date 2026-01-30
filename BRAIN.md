@@ -2,14 +2,40 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Jan 30, 2026)
+## Current State (Jan 31, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: Working, recently fixed Suspense build issue
+**Status**: Working, English phonics curriculum complete
 
 ## Recent Changes
+
+### Session - Jan 31, 2026 (English Curriculum Build)
+- **Onboarding Simplified**: Landing page now has "Set Up School" + "Login" dropdown (Teacher/Principal)
+- **Curriculum Ordering Fixed**: `/api/montree/curriculum/route.ts` now preserves brain's `sequence_order`
+- **Complete English/Phonics Curriculum Created**:
+  - 6-shelf layout covering consonants → free reading (age 3-5)
+  - Shelf 1: Sound Foundations (sandpaper letters, I-spy)
+  - Shelf 2: Pink Series CVC (short a, e, i, o, u word families)
+  - Shelf 3: Blue Series (digraphs sh/ch/th + all blends)
+  - Shelf 4: Green Series Part 1 (Magic E + core vowel teams)
+  - Shelf 5: Green Series Part 2 (diphthongs, R-controlled vowels)
+  - Shelf 6: Comprehension (sentences, stories, reading baskets)
+- **6 Decodable Stories Created** with comprehension worksheets:
+  1. "The Big Red Hat" - CVC focus
+  2. "Chip and the Fish" - Digraphs
+  3. "Frog on a Log" - Blends
+  4. "The Bee in the Tree" - Vowel Teams
+  5. "The Cake by the Lake" - Magic E
+  6. "Time to Read!" - Mixed patterns
+- **Digital Phonics Game**: `/app/montree/games/phonics-challenge/page.tsx` (if created)
+- **Materials Created**:
+  - `CVC_Curriculum_English.xlsx` - Complete word lists, sentences, stories
+  - `English_Corner_Works_Layout.xlsx` - 114 works across 6 shelves × 4 levels
+  - `English_Corner_Shelf_Diagram.html` - Visual layout diagram
+  - Story PDFs with comprehension + answer key
+  - All bundled in `Montessori_Phonics_Curriculum.zip`
 
 ### Session - Jan 30, 2026 (Continued)
 - **AI Analysis Fix**: Now uses FULL learning journey data (not just 4 weeks)

@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
 
-    // Fetch works with area info
+    // Fetch works with area info - ordered by area then sequence
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`
         *,
         area:montree_classroom_curriculum_areas!area_id (
-          id, area_key, name, name_chinese, icon, color
+          id, area_key, name, name_chinese, icon, color, sequence
         )
       `)
       .eq('classroom_id', classroomId)
@@ -48,12 +48,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 500 });
     }
 
-    // Group by area_key for display
+    // Group by area_key for display, sorted by sequence within each area
     const byArea: Record<string, any[]> = {};
     for (const work of data || []) {
       const areaKey = work.area?.area_key || 'other';
       if (!byArea[areaKey]) byArea[areaKey] = [];
       byArea[areaKey].push(work);
+    }
+    // Sort each area by sequence
+    for (const areaKey of Object.keys(byArea)) {
+      byArea[areaKey].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
     }
 
     return NextResponse.json({ 
@@ -140,10 +144,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch brain works' }, { status: 500 });
       }
 
-      // Transform to classroom works
+      // Transform to classroom works - preserve brain's sequence_order
       const worksToInsert: any[] = [];
-      let seq = 1;
-      
+
       for (const work of brainWorks || []) {
         const mappedArea = brainAreaMapping[work.curriculum_area] || 'practical_life';
         const areaId = areaMap[mappedArea];
@@ -157,7 +160,7 @@ export async function POST(request: NextRequest) {
           name_chinese: work.name_chinese || null,
           description: work.parent_explanation_simple || null,
           age_range: work.age_min && work.age_max ? `${work.age_min}-${work.age_max}` : '3-6',
-          sequence: seq++,
+          sequence: work.sequence_order || 999, // Preserve brain's logical order
           is_active: true,
           direct_aims: work.direct_aims || [],
           indirect_aims: work.indirect_aims || [],

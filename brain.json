@@ -1,11 +1,47 @@
 {
   "project": "Montree",
-  "session": 128,
-  "lastUpdated": "2026-01-30T18:00:00+08:00",
+  "session": 129,
+  "lastUpdated": "2026-01-31T22:45:00+08:00",
 
-  "STATUS": "✅ BUG FIX - Progress display fixed",
+  "STATUS": "✅ ENGLISH CURRICULUM COMPLETE - 6-shelf phonics system ready",
 
-  "HANDOFF": "docs/HANDOFF_SESSION127_UI_REDESIGN.md",
+  "HANDOFF": "docs/HANDOFF_SESSION129_ENGLISH_CURRICULUM.md",
+
+  "SESSION_129_ENGLISH_CURRICULUM": {
+    "summary": "Built complete English/phonics curriculum for 3-5 year olds",
+    "goal": "Children reading at kindergarten level by age 5",
+    "shelf_layout": {
+      "shelf_1": "Sound Foundations - sandpaper letters, I-spy, phonemic awareness (14 works)",
+      "shelf_2": "Pink Series CVC - short a/e/i/o/u word families (20 works)",
+      "shelf_3": "Blue Series - digraphs sh/ch/th/wh/ck/ng + L/R/S blends (20 works)",
+      "shelf_4": "Green Part 1 - Magic E (a_e, i_e, o_e) + vowel teams ee/ea/ai/ay/oa/ow (20 works)",
+      "shelf_5": "Green Part 2 - oo, ou/ow, oi/oy, au/aw + R-controlled ar/or/er/ir/ur (20 works)",
+      "shelf_6": "Comprehension - sentences, stories, reading baskets (20 works)"
+    },
+    "total_works": 114,
+    "stories_created": [
+      "The Big Red Hat (CVC)",
+      "Chip and the Fish (Digraphs)",
+      "Frog on a Log (Blends)",
+      "The Bee in the Tree (Vowel Teams)",
+      "The Cake by the Lake (Magic E)",
+      "Time to Read! (Mixed)"
+    ],
+    "files_created": [
+      "CVC_Curriculum_English.xlsx - Master curriculum spreadsheet",
+      "English_Corner_Works_Layout.xlsx - 6 tabs, 4 levels per shelf, materials checklist",
+      "English_Corner_Shelf_Diagram.html - Visual bookshelf layout",
+      "Story_1-6_*.pdf - Individual story PDFs with comprehension",
+      "Phonics_Stories_All.pdf - Combined stories document",
+      "Printing_Instructions.pdf - Teacher printing guide",
+      "Answer_Key.pdf - Comprehension answers",
+      "Montessori_Phonics_Curriculum.zip - Complete bundle"
+    ],
+    "code_changes": [
+      "app/montree/page.tsx - Simplified onboarding (Set Up School + Login dropdown)",
+      "app/api/montree/curriculum/route.ts - Fixed ordering to preserve sequence_order"
+    ]
+  },
 
   "SESSION_128_FIX": {
     "issue": "Progress wasn't displaying - checking for 'completed' status that doesn't exist",
@@ -38,10 +74,12 @@
   },
 
   "NEXT_SESSION_TODO": [
-    "1. Test progress bars page on localhost:3000/montree/dashboard/[childId]/progress",
-    "2. Verify reports page shows works correctly",
-    "3. Test on iPad/iPhone",
-    "4. Commit fixes and deploy to Railway"
+    "1. Create three-part card images for CVC words (SVG or source from OpenClipart)",
+    "2. Build digital phonics game into app at /app/montree/games/phonics-challenge/",
+    "3. Connect curriculum spreadsheet data to Supabase for English area",
+    "4. Add English curriculum works to curriculum-data.ts",
+    "5. Test phonics stories on iPad for classroom use",
+    "6. Consider parent dashboard showing child's current phonics shelf level"
   ],
 
   "FIXED_APIS": [
