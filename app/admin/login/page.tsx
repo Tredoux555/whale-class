@@ -121,7 +121,7 @@ export default function AdminLogin() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
-              <span className="text-4xl">🐋</span>
+              <span className="text-4xl">🌳</span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-1">Admin Login</h1>
             <p className="text-slate-400 text-sm">Whale Montessori Platform</p>

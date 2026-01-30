@@ -50,7 +50,7 @@ function drawHeader(doc: PDFKit.PDFDocument, data: PDFReportData) {
   doc.fontSize(fontSize.title)
     .font(fonts.bold)
     .fillColor(colors.text)
-    .text('🐋 ' + data.schoolName, margins.left, margins.top);
+    .text('🌳 ' + data.schoolName, margins.left, margins.top);
   
   doc.moveDown(0.3)
     .fontSize(fontSize.subtitle)

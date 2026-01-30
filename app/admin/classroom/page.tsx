@@ -116,7 +116,7 @@ export default function ClassroomPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🐋</span>
+              <span className="text-2xl">🌳</span>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Whale Class</h1>
                 <p className="text-sm text-gray-500">{children.length} students</p>

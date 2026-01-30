@@ -114,7 +114,7 @@ function PrintContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">🐋</div>
+          <div className="text-6xl mb-4 animate-bounce">🌳</div>
           <p className="text-gray-600">Loading weekly plan...</p>
         </div>
       </div>
@@ -184,7 +184,7 @@ function PrintContent() {
         {mode === 'list' && (
           <div className="p-1">
             <div className="flex items-center gap-2 border-b border-gray-400 pb-1 mb-1">
-              <span className="text-lg">🐋</span>
+              <span className="text-lg">🌳</span>
               <span className="font-bold text-sm">Week {weekNum}</span>
             </div>
             <div className="grid grid-cols-2 gap-0">
@@ -216,7 +216,7 @@ function PrintContent() {
           <div className="p-6 print:p-4">
             <div className="flex items-center justify-between border-b-2 border-gray-800 pb-3 mb-4">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">🐋</span>
+                <span className="text-3xl">🌳</span>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">{classroomName}</h1>
                   <p className="text-sm text-gray-600">Week {weekNum}, 2026</p>
@@ -303,7 +303,7 @@ function PrintContent() {
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-xl p-6 mb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="text-5xl">🐋</div>
+                  <div className="text-5xl">🌳</div>
                   <div>
                     <h1 className="text-2xl font-bold">{classroomName} Weekly Plan</h1>
                     <p className="text-emerald-100 mt-1">Week {weekNum}, 2026</p>
@@ -324,7 +324,7 @@ function PrintContent() {
 
             <div className="mt-6 pt-4 border-t-2 border-gray-200 flex items-center justify-between text-xs text-gray-500">
               <div className="flex items-center gap-2">
-                <span className="text-lg">🐋</span>
+                <span className="text-lg">🌳</span>
                 <span>{classroomName} • Montree</span>
               </div>
               <div>Printed: {today}</div>
@@ -338,7 +338,7 @@ function PrintContent() {
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-xl p-6 mb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="text-5xl">🐋</div>
+                  <div className="text-5xl">🌳</div>
                   <div>
                     <h1 className="text-2xl font-bold">{classroomName} Weekly Plan</h1>
                     <p className="text-emerald-100 mt-1">Week {weekNum}, 2026</p>
@@ -523,7 +523,7 @@ export default function PrintPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">🐋</div>
+          <div className="text-6xl mb-4 animate-bounce">🌳</div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>

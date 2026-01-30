@@ -62,7 +62,7 @@ export default function TeacherLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg shadow-emerald-500/30 mb-4">
-            <span className="text-4xl">🐋</span>
+            <span className="text-4xl">🌳</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Montree</h1>
           <p className="text-emerald-300/70">Teacher Login</p>

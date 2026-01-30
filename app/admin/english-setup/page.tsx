@@ -327,7 +327,7 @@ export default function EnglishSetupPage() {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-amber-900 mb-2">🐋 Tredoux's English Area</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-amber-900 mb-2">🌳 Tredoux's English Area</h1>
           <p className="text-amber-700 text-lg">Whale Class - 3 Shelf Setup</p>
           <div className="flex justify-center gap-4 md:gap-8 mt-4 text-sm flex-wrap">
             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full">← Progression Flow →</span>
@@ -574,7 +574,7 @@ export default function EnglishSetupPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-amber-700">
-          <p className="font-semibold">🐋 Whale Class - Making Readers</p>
+          <p className="font-semibold">🌳 Whale Class - Making Readers</p>
           <p className="text-sm">Data from Montessori Brain (37 Language Works)</p>
         </div>
       </div>

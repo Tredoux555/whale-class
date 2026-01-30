@@ -193,7 +193,7 @@ export default function ClassroomHubPage() {
               </Link>
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
-                  <span>🐋</span> Classroom Hub
+                  <span>🌳</span> Classroom Hub
                 </h1>
                 <p className="text-blue-100 text-sm">Everything in one place</p>
               </div>

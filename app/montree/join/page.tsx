@@ -27,7 +27,7 @@ function JoinContent() {
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg mb-4">
-            <span className="text-4xl">🐋</span>
+            <span className="text-4xl">🌳</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Welcome to Montree</h1>
           <p className="text-gray-500 mt-1">Your classroom awaits!</p>
@@ -101,7 +101,7 @@ export default function JoinPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-5xl">🐋</div>
+        <div className="animate-bounce text-5xl">🌳</div>
       </div>
     }>
       <JoinContent />

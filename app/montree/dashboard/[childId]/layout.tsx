@@ -60,7 +60,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   if (!session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🐋</div>
+        <div className="animate-bounce text-4xl">🌳</div>
       </div>
     );
   }

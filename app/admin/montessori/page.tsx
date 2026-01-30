@@ -98,7 +98,7 @@ export default function MontessoriDashboard() {
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4 animate-bounce">🐋</div>
+              <div className="text-6xl mb-4 animate-bounce">🌳</div>
               <p className="text-[#2C5F7C] text-lg">Loading...</p>
             </div>
           ) : children.length === 0 ? (

@@ -507,7 +507,7 @@ export default function WorkNavigator({
           <div className="max-h-64 overflow-y-auto">
             {loading ? (
               <div className="text-center py-8 text-gray-500">
-                <span className="animate-bounce text-2xl block mb-2">🐋</span>
+                <span className="animate-bounce text-2xl block mb-2">🌳</span>
                 <p className="text-sm">Loading...</p>
               </div>
             ) : error ? (

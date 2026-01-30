@@ -199,7 +199,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <span className="text-3xl">🐋</span>
+                <span className="text-3xl">🌳</span>
               </div>
               <div>
                 <h1 className="text-xl font-bold tracking-tight">Whale Class</h1>
@@ -246,7 +246,7 @@ export default function Home() {
         {loading ? (
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
-              <span className="text-4xl animate-bounce">🐋</span>
+              <span className="text-4xl animate-bounce">🌳</span>
             </div>
             <p className="text-gray-600 font-medium">Loading videos...</p>
           </div>
