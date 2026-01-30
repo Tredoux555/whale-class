@@ -1,37 +1,65 @@
 {
   "project": "Montree",
-  "session": 126,
-  "lastUpdated": "2026-01-29T19:00:00+08:00",
-  
-  "STATUS": "✅ DEPLOYED TO PRODUCTION",
-  
-  "SESSION_126_SUMMARY": "Railway deploy fixes - moved module-level client inits to runtime",
-  
-  "DEPLOY_INFO": {
-    "commits": ["51c036a", "f241553", "39dfa85", "c8a3d8b"],
-    "files_changed": 98,
-    "insertions": 13709,
-    "deletions": 991,
-    "pushed_to": "origin/main"
-  },
+  "session": 128,
+  "lastUpdated": "2026-01-30T18:00:00+08:00",
 
-  "RAILWAY_FIX_PATTERN": {
-    "problem": "Module-level client initialization reads env vars at build time when they don't exist",
-    "solution": "Move initialization inside getter functions that run at runtime",
+  "STATUS": "✅ BUG FIX - Progress display fixed",
+
+  "HANDOFF": "docs/HANDOFF_SESSION127_UI_REDESIGN.md",
+
+  "SESSION_128_FIX": {
+    "issue": "Progress wasn't displaying - checking for 'completed' status that doesn't exist",
+    "root_cause": "API routes checked for status='completed' but actual status values are: not_started, presented, practicing, mastered",
     "files_fixed": [
-      "lib/montree/supabase.ts",
-      "app/api/montree/focus-works/route.ts",
-      "app/api/montree/analysis/route.ts", 
-      "app/api/montree/reports/generate/route.ts",
-      "lib/montree/email.ts"
-    ]
+      "app/api/montree/progress/bars/route.ts - Line 58: changed 'completed' to 'mastered', added 'practicing'/'presented' for current work tracking",
+      "app/api/montree/reports/pdf/route.ts - Lines 58,64: changed 'completed' to 'mastered'"
+    ],
+    "status_values": {
+      "not_started": "Work not yet introduced",
+      "presented": "Teacher presented the work",
+      "practicing": "Child is practicing",
+      "mastered": "Child has mastered the work"
+    }
+  },
+  
+  "SESSION_127_SUMMARY": {
+    "research": [
+      "docs/RESEARCH_MONTREE_UI_REDESIGN.md (216 lines)",
+      "docs/GAMEPLAN_MONTREE_UI_REDESIGN.md (307 lines)"
+    ],
+    "built": {
+      "pillar_1_dashboard_grid": "app/montree/dashboard/page.tsx (201 lines)",
+      "pillar_2_student_view": "app/montree/dashboard/[childId]/page.tsx (470 lines)",
+      "pillar_3_progress": "app/montree/dashboard/[childId]/progress/page.tsx (175 lines)",
+      "pillar_4_parent_reports": "app/montree/dashboard/[childId]/reports/page.tsx (394 lines)"
+    },
+    "total_changes": "974 insertions, 846 deletions",
+    "git_status": "NOT COMMITTED"
   },
 
-  "BUILD_STATUS": {
-    "pages": 306,
-    "errors": 0,
-    "status": "PRODUCTION READY"
+  "NEXT_SESSION_TODO": [
+    "1. Test progress bars page on localhost:3000/montree/dashboard/[childId]/progress",
+    "2. Verify reports page shows works correctly",
+    "3. Test on iPad/iPhone",
+    "4. Commit fixes and deploy to Railway"
+  ],
+
+  "FIXED_APIS": [
+    "/api/montree/progress/bars - FIXED: status check bug",
+    "/api/montree/reports/pdf - FIXED: status check bug"
+  ],
+
+  "DESIGN_TOKENS": {
+    "bg_primary": "#FAFAF9",
+    "text_primary": "#2D3748",
+    "area_practical": "#F59E0B",
+    "area_sensorial": "#8B5CF6",
+    "area_math": "#3B82F6",
+    "area_language": "#10B981",
+    "area_cultural": "#F43F5E"
   },
+
+  "LESSON_LEARNED": "Update brain.json IMMEDIATELY after each file change - glitched 3x this session",
 
   "LIVE_URL": "https://teacherpotato.xyz/montree"
 }
