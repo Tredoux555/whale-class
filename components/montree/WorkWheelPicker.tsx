@@ -22,12 +22,6 @@ interface WorkWheelPickerProps {
   onSelectWork: (work: Work, status: string) => void;
 }
 
-const STATUS_OPTIONS = [
-  { key: 'presented', label: 'Present', icon: 'P', color: 'bg-amber-400' },
-  { key: 'practicing', label: 'Practice', icon: 'Pr', color: 'bg-blue-400' },
-  { key: 'mastered', label: 'Master', icon: '✓', color: 'bg-emerald-500' },
-];
-
 export default function WorkWheelPicker({
   isOpen,
   onClose,
@@ -38,7 +32,6 @@ export default function WorkWheelPicker({
 }: WorkWheelPickerProps) {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [showStatusPicker, setShowStatusPicker] = useState(false);
 
   const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[area.replace('math', 'mathematics')] || {
     name: area, icon: '📋', color: '#888'
@@ -58,12 +51,6 @@ export default function WorkWheelPicker({
     }
   }, [isOpen, currentWorkName, works]);
 
-  // Reset when closed
-  useEffect(() => {
-    if (!isOpen) {
-      setShowStatusPicker(false);
-    }
-  }, [isOpen]);
 
   const scrollToIndex = useCallback((index: number, smooth = true) => {
     if (wheelRef.current) {
@@ -92,18 +79,10 @@ export default function WorkWheelPicker({
     }
   }, [selectedIndex, works.length]);
 
-  // Handle work selection (tap on center item)
+  // Handle work selection - simple: just select and default to not_started
   const handleSelectWork = () => {
     if (works[selectedIndex]) {
-      setShowStatusPicker(true);
-    }
-  };
-
-  // Handle status selection
-  const handleStatusSelect = (status: string) => {
-    if (works[selectedIndex]) {
-      onSelectWork(works[selectedIndex], status);
-      setShowStatusPicker(false);
+      onSelectWork(works[selectedIndex], 'not_started');
       onClose();
     }
   };
@@ -217,44 +196,18 @@ export default function WorkWheelPicker({
         </div>
       </div>
 
-      {/* Bottom Action Area */}
+      {/* Bottom Action Area - Simplified: just Select button */}
       <div
         className="pb-[max(1rem,env(safe-area-inset-bottom))] px-4 pt-4"
         onClick={e => e.stopPropagation()}
       >
-        {showStatusPicker ? (
-          <div className="bg-white rounded-2xl p-4 space-y-3">
-            <p className="text-center text-gray-800 font-medium">
-              {selectedWork?.name}
-            </p>
-            <div className="flex gap-2">
-              {STATUS_OPTIONS.map(opt => (
-                <button
-                  key={opt.key}
-                  onClick={() => handleStatusSelect(opt.key)}
-                  className={`flex-1 py-3 rounded-xl font-semibold text-white ${opt.color} active:scale-95 transition-transform`}
-                >
-                  <span className="text-lg mr-1">{opt.icon}</span>
-                  <span className="text-sm">{opt.label}</span>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowStatusPicker(false)}
-              className="w-full py-2 text-gray-500 text-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleSelectWork}
-            disabled={!selectedWork}
-            className="w-full py-4 bg-white text-emerald-600 font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
-          >
-            Select "{selectedWork?.name?.substring(0, 20)}{selectedWork?.name && selectedWork.name.length > 20 ? '...' : ''}"
-          </button>
-        )}
+        <button
+          onClick={handleSelectWork}
+          disabled={!selectedWork}
+          className="w-full py-4 bg-white text-emerald-600 font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
+        >
+          Select "{selectedWork?.name?.substring(0, 20)}{selectedWork?.name && selectedWork.name.length > 20 ? '...' : ''}"
+        </button>
       </div>
     </div>
   );

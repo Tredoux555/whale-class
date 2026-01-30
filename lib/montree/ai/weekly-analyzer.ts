@@ -1,6 +1,7 @@
 // lib/montree/ai/weekly-analyzer.ts
 // Main orchestrator for weekly child analysis
 // Combines note parsing, sensitive period detection, and recommendations
+// Updated: Now uses FULL learning journey data - thinks like a teacher who's known the child for years
 
 import { parseNotes, getOverallSentiment } from './note-parser';
 import { 
@@ -34,6 +35,7 @@ export interface WeeklyAnalysisInput {
   };
   weekStart: string; // ISO date
   weekEnd: string;
+  // Current week's progress
   progress: {
     work_name: string;
     area: string;
@@ -43,11 +45,22 @@ export interface WeeklyAnalysisInput {
     duration_minutes?: number;
     repetition_count?: number;
   }[];
+  // FULL historical progress - entire learning journey, not just recent weeks
   historicalProgress?: {
     work_name: string;
     area: string;
     status: string;
     date?: string;
+    notes?: string; // Now includes notes too
+  }[];
+  // All teacher observations/sessions - detailed notes over time
+  observationHistory?: {
+    work_name: string;
+    area: string;
+    notes?: string;
+    date?: string;
+    session_type?: string;
+    duration_minutes?: number;
   }[];
   availableWorks?: {
     id: string;
@@ -152,15 +165,22 @@ function getExpectedDuration(age: number): number {
 // ============================================
 
 export function analyzeWeeklyProgress(input: WeeklyAnalysisInput): WeeklyAnalysisResult {
-  const { child, weekStart, weekEnd, progress, historicalProgress, availableWorks } = input;
-  
+  const { child, weekStart, weekEnd, progress, historicalProgress, observationHistory, availableWorks } = input;
+
   // Calculate age
   const childAge = calculateAge(child.date_of_birth);
   const ageBracket = childAge < 3 ? '2-3' : childAge < 4 ? '3-4' : childAge < 5 ? '4-5' : '5-6';
 
-  // Extract notes for parsing
-  const notes = progress.map(p => p.notes).filter(Boolean) as string[];
-  const noteAnalysis = parseNotes(notes);
+  // Extract ALL notes - current week + full observation history
+  // This gives the AI the complete picture of the child's journey
+  const currentWeekNotes = progress.map(p => p.notes).filter(Boolean) as string[];
+  const historicalNotes = (historicalProgress || []).map(p => p.notes).filter(Boolean) as string[];
+  const observationNotes = (observationHistory || []).map(o => o.notes).filter(Boolean) as string[];
+
+  // Combine all notes for comprehensive analysis
+  const allNotes = [...currentWeekNotes, ...historicalNotes, ...observationNotes];
+  const notes = currentWeekNotes; // Use current week for primary analysis
+  const noteAnalysis = parseNotes(allNotes); // But parse ALL notes for patterns
   const sentiment = getOverallSentiment(noteAnalysis.summary);
 
   // Calculate work patterns

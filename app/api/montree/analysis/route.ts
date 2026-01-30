@@ -3,6 +3,7 @@
 // GET: Get cached analysis for a child/week
 // POST: Generate new analysis
 // Session 126: Fixed to read env vars at runtime
+// Updated: Now fetches FULL learning journey + notes from work_sessions
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -133,16 +134,34 @@ export async function POST(request: NextRequest) {
       console.error('Error fetching progress:', progressError);
     }
 
-    // Fetch historical progress (last 4 weeks)
-    const fourWeeksAgo = new Date(week_start);
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-    
+    // Fetch FULL historical progress (entire learning journey, not just 4 weeks)
+    // This allows the AI to think like a teacher who's known the child for years
     const { data: historicalProgress } = await supabase
       .from('montree_child_progress')
-      .select('work_name, area, status, created_at')
+      .select('work_name, area, status, created_at, notes')
       .eq('child_id', child_id)
-      .gte('created_at', fourWeeksAgo.toISOString())
-      .lt('created_at', week_start);
+      .lt('created_at', week_start)
+      .order('created_at', { ascending: true }); // Chronological order
+
+    // Fetch ALL teacher observations/notes from work_sessions
+    // These contain detailed observations that aren't in progress records
+    const { data: workSessions } = await supabase
+      .from('montree_work_sessions')
+      .select('work_name, area, notes, observed_at, session_type, duration_minutes')
+      .eq('child_id', child_id)
+      .order('observed_at', { ascending: true });
+
+    // Create a map of notes by work_name for easy lookup
+    const notesByWork: Record<string, string[]> = {};
+    for (const session of workSessions || []) {
+      if (session.notes && session.work_name) {
+        if (!notesByWork[session.work_name]) {
+          notesByWork[session.work_name] = [];
+        }
+        const dateStr = new Date(session.observed_at).toLocaleDateString();
+        notesByWork[session.work_name].push(`[${dateStr}] ${session.notes}`);
+      }
+    }
 
     // Fetch available curriculum works
     const { data: curriculum } = await supabase
@@ -150,7 +169,7 @@ export async function POST(request: NextRequest) {
       .select('id, name, area, sequence_order')
       .eq('classroom_id', child.classroom_id);
 
-    // Run analysis
+    // Run analysis with full learning journey data
     const analysisResult = analyzeWeeklyProgress({
       child: {
         id: child.id,
@@ -160,20 +179,40 @@ export async function POST(request: NextRequest) {
       },
       weekStart: week_start,
       weekEnd: week_end,
+      // Current week's progress with merged notes from work_sessions
       progress: (progress || []).map(p => ({
         work_name: p.work_name,
         area: p.area,
         status: p.status,
-        notes: p.notes,
+        // Combine notes from progress record AND work_sessions
+        notes: [
+          p.notes,
+          ...(notesByWork[p.work_name] || [])
+        ].filter(Boolean).join('\n'),
         date: p.created_at,
         duration_minutes: p.duration_minutes,
         repetition_count: p.repetition_count,
       })),
+      // FULL historical progress (entire learning journey)
       historicalProgress: (historicalProgress || []).map(p => ({
         work_name: p.work_name,
         area: p.area,
         status: p.status,
         date: p.created_at,
+        // Include historical notes too
+        notes: [
+          p.notes,
+          ...(notesByWork[p.work_name] || [])
+        ].filter(Boolean).join('\n'),
+      })),
+      // All work sessions for detailed observation history
+      observationHistory: (workSessions || []).map(s => ({
+        work_name: s.work_name,
+        area: s.area,
+        notes: s.notes,
+        date: s.observed_at,
+        session_type: s.session_type,
+        duration_minutes: s.duration_minutes,
       })),
       availableWorks: (curriculum || []).map(w => ({
         id: w.id,
