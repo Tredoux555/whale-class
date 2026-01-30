@@ -60,3 +60,63 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+// DELETE - Delete a school and all its data
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const { searchParams } = new URL(request.url);
+    const schoolId = searchParams.get('schoolId');
+    const password = searchParams.get('password');
+
+    // Verify super admin password
+    if (password !== '870602') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!schoolId) {
+      return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
+    }
+
+    console.log(`🗑️ Deleting school ${schoolId} and all related data...`);
+
+    // Delete in order to respect foreign keys
+    // 1. Delete student aliases
+    await supabase.from('montree_student_aliases').delete().eq('school_id', schoolId);
+
+    // 2. Delete children
+    await supabase.from('montree_children').delete().eq('school_id', schoolId);
+
+    // 3. Delete teachers
+    await supabase.from('montree_teachers').delete().eq('school_id', schoolId);
+
+    // 4. Delete curriculum imports
+    await supabase.from('montree_curriculum_imports').delete().eq('school_id', schoolId);
+    await supabase.from('montree_work_imports').delete().eq('school_id', schoolId);
+    await supabase.from('montree_custom_curriculum').delete().eq('school_id', schoolId);
+
+    // 5. Delete classrooms
+    await supabase.from('montree_classrooms').delete().eq('school_id', schoolId);
+
+    // 6. Delete school admins
+    await supabase.from('montree_school_admins').delete().eq('school_id', schoolId);
+
+    // 7. Finally delete the school
+    const { error: schoolError } = await supabase
+      .from('montree_schools')
+      .delete()
+      .eq('id', schoolId);
+
+    if (schoolError) {
+      console.error('Failed to delete school:', schoolError);
+      return NextResponse.json({ error: schoolError.message }, { status: 500 });
+    }
+
+    console.log(`✅ School ${schoolId} deleted successfully`);
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Delete school error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
