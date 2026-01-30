@@ -54,6 +54,34 @@ export default function SuperAdminPage() {
     }
   };
 
+  const deleteSchool = async (school: School) => {
+    const confirmMsg = `🚨 DELETE "${school.name}"?\n\nThis will permanently delete:\n• ${school.classroom_count || 0} classrooms\n• ${school.teacher_count || 0} teachers\n• ${school.student_count || 0} students\n• All curriculum and progress data\n\nType "DELETE" to confirm:`;
+
+    const input = prompt(confirmMsg);
+    if (input !== 'DELETE') {
+      alert('Cancelled - you must type DELETE to confirm');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/montree/super-admin/schools?schoolId=${school.id}&password=870602`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete');
+      }
+
+      // Remove from local state
+      setSchools(prev => prev.filter(s => s.id !== school.id));
+      alert(`✅ "${school.name}" deleted successfully`);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Failed to delete school: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
+
   const loginAsSchool = async (schoolId: string) => {
     try {
       const res = await fetch('/api/montree/super-admin/login-as', {
@@ -88,7 +116,7 @@ export default function SuperAdminPage() {
         <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full">
           <div className="text-center mb-6">
             <span className="text-4xl block mb-2">🔐</span>
-            <h1 className="text-xl font-bold text-white">Super Admin</h1>
+            <h1 className="text-xl font-bold text-white">Master Admin</h1>
             <p className="text-slate-400 text-sm">Enter password to continue</p>
           </div>
           
@@ -122,7 +150,7 @@ export default function SuperAdminPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <span>🌱</span> Montree Super Admin
+              <span>🌳</span> Montree Master Admin
             </h1>
             <p className="text-slate-400 text-sm mt-1">
               {schools.length} registered school{schools.length !== 1 ? 's' : ''}
@@ -255,12 +283,12 @@ export default function SuperAdminPage() {
                         >
                           Login As →
                         </button>
-                        <Link
-                          href={`/montree/super-admin/schools/${school.id}`}
-                          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                        <button
+                          onClick={() => deleteSchool(school)}
+                          className="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors"
                         >
-                          View →
-                        </Link>
+                          🗑️ Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
