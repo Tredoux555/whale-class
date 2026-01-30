@@ -11,10 +11,17 @@
 
 ## Recent Changes
 
-### Session - Jan 30, 2026
+### Session - Jan 30, 2026 (Continued)
+- **AI Analysis Fix**: Now uses FULL learning journey data (not just 4 weeks)
+- AI reads notes from `montree_work_sessions` table (previously missed)
+- AI "thinks like a teacher who's known the child for years"
+- WorkWheelPicker simplified: single "Select" button, defaults to `not_started`
+- **Curriculum Fix**: New classrooms auto-assign full curriculum during onboarding
+- Created backfill endpoint: `/api/montree/admin/backfill-curriculum`
+
+### Session - Jan 30, 2026 (Earlier)
 - Replaced all whale emojis (🐋) with tree emojis (🌳) across 44 source files + 5 icon SVGs
 - Skipped historical docs to preserve project history
-- About to test new school onboarding flow
 
 ### Previous Sessions
 - Progress display bug fixed - status values are `not_started`, `presented`, `practicing`, `mastered`
@@ -32,6 +39,10 @@
 | `app/admin/curriculum-import/page.tsx` | Onboarding wizard |
 | `app/montree/principal/register/page.tsx` | School registration |
 | `app/montree/principal/setup/page.tsx` | School setup flow |
+| `app/api/montree/principal/setup/route.ts` | Setup API (auto-assigns curriculum) |
+| `app/api/montree/analysis/route.ts` | AI analysis API |
+| `app/api/montree/admin/backfill-curriculum/route.ts` | Backfill curriculum for existing classrooms |
+| `lib/montree/ai/weekly-analyzer.ts` | AI analysis engine |
 | `lib/montree/db.ts` | Database operations |
 | `lib/montree/curriculum-data.ts` | Static curriculum definitions |
 
@@ -44,11 +55,12 @@
 - `classrooms` - Classrooms per school
 - `montree_children` - Students
 - `children` - Legacy children table (FK target)
-- `child_work_completion` - Progress tracking
+- `montree_child_progress` - Progress tracking (status per work)
+- `montree_work_sessions` - Teacher notes/observations (detailed session logs)
+- `montree_classroom_curriculum_works` - Curriculum assigned to classrooms
+- `montree_weekly_analysis` - Cached AI analysis results
 - `curriculum_areas` - Area definitions
 - `curriculum_works` - Work items
-- `school_curriculum` - Custom curriculum per school
-- `classroom_curriculum` - Curriculum assigned to classrooms
 
 ### Status Values
 Progress uses: `not_started` → `presented` → `practicing` → `mastered`
@@ -72,9 +84,10 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
-- [ ] Test new school onboarding flow
-- [ ] Test wheel picker on mobile after Railway deploys
-- [ ] Investigate why one student shows no curriculum (likely classroom assignment issue)
+- [ ] Push commits (git auth issue - needs manual `git push` from local machine)
+- [ ] Test new school onboarding to confirm curriculum auto-assigns
+- [ ] Test AI analysis with teacher notes integration
+- [ ] Consider running backfill for existing classrooms missing curriculum
 
 ## Gotchas
 - `useSearchParams()` must be wrapped in Suspense boundary (Next.js 16)
