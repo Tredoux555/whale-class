@@ -54,14 +54,15 @@ export async function GET(request: NextRequest) {
       .lte('updated_at', endDate + 'T23:59:59');
 
     // Build highlights from progress
+    // Status values: not_started, presented, practicing, mastered
     const highlights = (progress || [])
-      .filter(p => p.status === 'practicing' || p.status === 'completed')
+      .filter(p => p.status === 'practicing' || p.status === 'mastered')
       .slice(0, 5)
       .map(p => ({
         workName: p.work_name,
         workArea: p.area,
         observation: p.notes || `Working on ${p.work_name}`,
-        developmentalNote: p.status === 'completed' ? 'Mastered this skill!' : undefined,
+        developmentalNote: p.status === 'mastered' ? 'Mastered this skill!' : undefined,
         homeExtension: getHomeExtension(p.area),
       }));
 
