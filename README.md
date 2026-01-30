@@ -4,7 +4,7 @@ A Next.js platform designed for the Whale Class kindergarten to share weekly son
 
 ## Features
 
-- 🐋 **Whale-themed Design**: Beautiful, kid-friendly interface with ocean and whale aesthetics
+- 🌳 **Whale-themed Design**: Beautiful, kid-friendly interface with ocean and whale aesthetics
 - 📱 **PWA Support**: Installable on mobile devices for app-like experience
 - 🎵 **Song of the Week**: Weekly song uploads for children to learn
 - 📚 **Phonics Songs**: Educational phonics videos
@@ -131,7 +131,7 @@ npm start
 ## Customization
 
 - Colors: Edit `app/globals.css` to change the whale theme colors
-- Logo: Replace the emoji whale (🐋) with your own logo
+- Logo: Replace the emoji whale (🌳) with your own logo
 - Icons: Add custom PWA icons (192x192 and 512x512) to `public/`
 
 ## License

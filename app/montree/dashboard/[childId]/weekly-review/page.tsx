@@ -514,7 +514,7 @@ function ParentReportView({ report }: { report: ParentReport }) {
       {/* Closing */}
       <div className="text-center py-4">
         <p className="text-slate-600 italic">{report.closing}</p>
-        <p className="text-2xl mt-2">🐋</p>
+        <p className="text-2xl mt-2">🌳</p>
       </div>
     </div>
   );

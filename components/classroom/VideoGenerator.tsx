@@ -242,7 +242,7 @@ export default function VideoGenerator({ childId, childName, onClose }: VideoGen
     ctx.fillStyle = '#4ECCA3';
     ctx.font = '120px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🐋', width / 2, height / 2 - 40);
+    ctx.fillText('🌳', width / 2, height / 2 - 40);
     
     // Text
     ctx.fillStyle = 'white';

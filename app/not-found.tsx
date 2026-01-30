@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100 flex items-center justify-center p-4">
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-lg mb-6">
-          <span className="text-6xl">🐋</span>
+          <span className="text-6xl">🌳</span>
         </div>
         <h1 className="text-4xl font-bold text-gray-800 mb-2">Page Not Found</h1>
         <p className="text-gray-600 mb-8 max-w-md">

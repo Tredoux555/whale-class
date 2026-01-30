@@ -1,7 +1,9 @@
 // /api/montree/principal/setup/route.ts
 // Session 105: Principal setup - add classrooms and teachers
+// Updated: Auto-assign full curriculum to new classrooms
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { CURRICULUM } from '@/lib/montree/curriculum-data';
 
 function getSupabase() {
   return createClient(
@@ -19,6 +21,35 @@ function generateLoginCode(): string {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
+}
+
+// Build curriculum records for a new classroom
+function buildCurriculumRecords(classroomId: string) {
+  const records: any[] = [];
+  let globalSequence = 0;
+
+  for (const area of CURRICULUM) {
+    for (const category of area.categories) {
+      for (const work of category.works) {
+        globalSequence++;
+        records.push({
+          classroom_id: classroomId,
+          area_id: area.id,
+          work_key: work.id,
+          name: work.name,
+          name_chinese: work.chineseName || null,
+          description: work.description || null,
+          age_range: work.ageRange || '3-6',
+          sequence: globalSequence,
+          materials: work.materials || [],
+          levels: work.levels || [],
+          is_active: true,
+        });
+      }
+    }
+  }
+
+  return records;
 }
 
 interface TeacherInput {
@@ -87,6 +118,21 @@ export async function POST(request: NextRequest) {
       }
 
       createdClassrooms.push(createdClassroom);
+
+      // Auto-assign full curriculum to this classroom
+      const curriculumRecords = buildCurriculumRecords(createdClassroom.id);
+      if (curriculumRecords.length > 0) {
+        const { error: curriculumError } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .insert(curriculumRecords);
+
+        if (curriculumError) {
+          console.error('Curriculum assignment error:', curriculumError);
+          // Don't fail the whole operation - classroom still works with global fallback
+        } else {
+          console.log(`Assigned ${curriculumRecords.length} curriculum works to classroom ${createdClassroom.name}`);
+        }
+      }
 
       // Create teachers for this classroom
       for (const teacher of classroom.teachers) {

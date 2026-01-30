@@ -83,7 +83,7 @@ export default function AssessmentAdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-4xl animate-pulse">🐋</div>
+        <div className="text-4xl animate-pulse">🌳</div>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function AssessmentAdminDashboard() {
               <ChevronLeft size={24} />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold">🐋 Whale Test</h1>
+              <h1 className="text-2xl font-bold">🌳 Whale Test</h1>
               <p className="text-gray-400 text-sm">English Readiness Assessment</p>
             </div>
           </div>

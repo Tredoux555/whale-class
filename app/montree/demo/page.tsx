@@ -26,7 +26,7 @@ function DemoWelcomeContent() {
       <div className="relative z-10 text-center max-w-2xl">
         {/* Logo */}
         <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-8 animate-bounce">
-          <span className="text-6xl">🐋</span>
+          <span className="text-6xl">🌳</span>
         </div>
 
         {/* Welcome Text */}
@@ -66,7 +66,7 @@ function DemoWelcomeContent() {
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
         <p className="text-slate-500 text-xs">
-          🐋 Montree • teacherpotato.xyz
+          🌳 Montree • teacherpotato.xyz
         </p>
       </div>
     </div>
@@ -77,7 +77,7 @@ export default function DemoWelcomePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center">
-        <div className="animate-bounce text-6xl">🐋</div>
+        <div className="animate-bounce text-6xl">🌳</div>
       </div>
     }>
       <DemoWelcomeContent />

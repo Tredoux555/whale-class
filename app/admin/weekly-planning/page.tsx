@@ -187,7 +187,7 @@ export default function WeeklyPlanningPage() {
             href="/admin/classroom"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
           >
-            🐋 Open Classroom View →
+            🌳 Open Classroom View →
           </Link>
         </div>
 
@@ -305,7 +305,7 @@ export default function WeeklyPlanningPage() {
                 href={`/admin/classroom?week=${uploadResult.translatedContent?.weekNumber}&year=${new Date().getFullYear()}`}
                 className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                🐋 View Week {uploadResult.translatedContent?.weekNumber} in Classroom →
+                🌳 View Week {uploadResult.translatedContent?.weekNumber} in Classroom →
               </Link>
             </div>
           </div>

@@ -191,7 +191,7 @@ function CaptureContent() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center gap-3">
-          <span className="text-2xl">🐋</span>
+          <span className="text-2xl">🌳</span>
           <h1 className="text-lg font-bold text-gray-800">
             {step === 'success' ? 'Photo Saved!' : step === 'error' ? 'Upload Failed' : 'Uploading...'}
           </h1>

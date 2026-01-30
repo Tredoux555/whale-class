@@ -118,7 +118,7 @@ export default function PrincipalSetupPage() {
   const shareCode = (teacher: CreatedTeacher) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://teacherpotato.xyz';
     const shareUrl = `${baseUrl}/montree/join?code=${teacher.login_code}`;
-    const message = `🐋 Welcome to Montree!\n\nHi ${teacher.name}, here's your teacher login code for ${teacher.classroom_name}:\n\nCode: ${teacher.login_code}\n\nLogin here: ${shareUrl}`;
+    const message = `🌳 Welcome to Montree!\n\nHi ${teacher.name}, here's your teacher login code for ${teacher.classroom_name}:\n\nCode: ${teacher.login_code}\n\nLogin here: ${shareUrl}`;
     
     navigator.clipboard.writeText(message);
     setCopiedCode(`share-${teacher.login_code}`);
@@ -372,7 +372,7 @@ export default function PrincipalSetupPage() {
       {/* Footer */}
       <div className="absolute bottom-6 left-0 right-0 text-center">
         <p className="text-slate-500 text-xs">
-          🐋 Montree • teacherpotato.xyz
+          🌳 Montree • teacherpotato.xyz
         </p>
       </div>
     </div>

@@ -11,7 +11,7 @@ export default function MontreeLanding() {
       <div className="relative z-10 text-center max-w-lg">
         {/* Logo */}
         <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-8">
-          <span className="text-5xl">🐋</span>
+          <span className="text-5xl">🌳</span>
         </div>
         
         {/* Title */}
@@ -65,7 +65,7 @@ export default function MontreeLanding() {
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
         <p className="text-slate-500 text-xs">
-          🐋 Montree • teacherpotato.xyz
+          🌳 Montree • teacherpotato.xyz
         </p>
       </div>
     </div>

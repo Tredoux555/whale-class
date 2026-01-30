@@ -113,7 +113,7 @@ export default function AdminDashboard() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <span className="text-2xl">🐋</span>
+              <span className="text-2xl">🌳</span>
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">{greeting}, Tredoux!</h1>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-slate-600 text-sm">
-          <p>🐋 Whale Montessori Platform • teacherpotato.xyz</p>
+          <p>🌳 Whale Montessori Platform • teacherpotato.xyz</p>
         </div>
       </main>
     </div>

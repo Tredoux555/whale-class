@@ -1202,7 +1202,7 @@ const ISPY_COMPLETE = {
     { sound: '/d/', words: ['dog 🐕', 'doll', 'duck 🦆', 'door 🚪', 'drum 🥁', 'dish', 'desk', 'deer 🦌', 'dragon 🐲', 'dress 👗'], note: 'Voiced - harder than /t/' },
     { sound: '/g/', words: ['goat 🐐', 'gift 🎁', 'glass', 'grape 🍇', 'guitar 🎸', 'gold', 'game 🎮', 'girl 👧', 'gorilla 🦍', 'grass'], note: 'Voiced stop' },
     { sound: '/j/', words: ['jet ✈️', 'jam', 'jug', 'jar', 'jeep 🚙', 'juice 🧃', 'jacket', 'jellyfish 🪼', 'jeans 👖', 'jewel 💎'], note: 'Affricate sound' },
-    { sound: '/w/', words: ['wig', 'web 🕸️', 'watch ⌚', 'worm 🪱', 'wagon', 'wolf 🐺', 'water 💧', 'window', 'whale 🐋', 'watermelon 🍉'], note: 'Lips rounded' },
+    { sound: '/w/', words: ['wig', 'web 🕸️', 'watch ⌚', 'worm 🪱', 'wagon', 'wolf 🐺', 'water 💧', 'window', 'whale 🌳', 'watermelon 🍉'], note: 'Lips rounded' },
     { sound: '/y/', words: ['yak', 'yarn 🧶', 'yawn', 'yogurt', 'yo-yo 🪀', 'yell', 'yellow 💛', 'yes', 'yam', 'yacht'], note: 'Tongue high' },
   ],
   phase3_hard: [
@@ -1567,7 +1567,7 @@ export default function EnglishGuidePage() {
           <div className="space-y-4">
             {/* Header */}
             <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center">
-              <div className="text-5xl mb-2">🐋</div>
+              <div className="text-5xl mb-2">🌳</div>
               <h2 className="text-3xl font-bold mb-1">Tredoux's English Area</h2>
               <p className="text-teal-100">Whale Class - 3 Shelf Setup</p>
               <div className="flex justify-center gap-3 mt-4">

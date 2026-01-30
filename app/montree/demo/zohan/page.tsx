@@ -36,7 +36,7 @@ export default function ZohanWelcomePage() {
       <div className="relative z-10 text-center max-w-xl">
         {/* Logo */}
         <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-8">
-          <span className="text-6xl">🐋</span>
+          <span className="text-6xl">🌳</span>
         </div>
 
         {/* Welcome text */}

@@ -188,7 +188,7 @@ export default function ParentReportPage({ params }: { params: Promise<{ childId
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">🐋</div>
+          <div className="text-6xl mb-4 animate-bounce">🌳</div>
           <p className="text-gray-600">Loading progress report...</p>
         </div>
       </div>
@@ -493,7 +493,7 @@ export default function ParentReportPage({ params }: { params: Promise<{ childId
         <div className="p-6 bg-gray-50 border-t">
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🐋</span>
+              <span className="text-2xl">🌳</span>
               <div>
                 <p className="font-semibold text-gray-700">Whale Class</p>
                 <p>Beijing International School</p>

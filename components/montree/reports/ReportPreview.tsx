@@ -182,7 +182,7 @@ export default function ReportPreview({
       {/* Footer */}
       <div className="p-4 bg-gray-50 text-center">
         <p className="text-xs text-gray-400">
-          🐋 Montree Education • Powered by teacherpotato.xyz
+          🌳 Montree Education • Powered by teacherpotato.xyz
         </p>
       </div>
     </div>

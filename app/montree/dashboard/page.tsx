@@ -70,7 +70,7 @@ export default function DashboardPage() {
   if (!session || loading) {
     return (
       <div className="h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🐋</div>
+        <div className="animate-bounce text-4xl">🌳</div>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export default function DashboardPage() {
       {/* Compact Header - with safe area for notch/dynamic island */}
       <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🐋</span>
+          <span className="text-xl">🌳</span>
           <span className="font-bold text-sm truncate max-w-[150px]">{session.classroom?.name}</span>
         </div>
         <button 

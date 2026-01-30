@@ -193,7 +193,7 @@ export default function EndingTestGame({
   if (!currentRound) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-4xl animate-pulse">🐋</div>
+        <div className="text-4xl animate-pulse">🌳</div>
       </div>
     );
   }
