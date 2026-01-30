@@ -55,6 +55,13 @@ export default function MediaLibraryPage() {
   const [editWeek, setEditWeek] = useState<number>(1);
   const [editName, setEditName] = useState('');
 
+  // Upload state
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadWeek, setUploadWeek] = useState<number>(1);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   useEffect(() => {
     fetchDocuments();
   }, [filter]);
@@ -126,6 +133,58 @@ export default function MediaLibraryPage() {
     setEditName(doc.original_filename);
   }
 
+  async function handleUpload() {
+    if (uploadFiles.length === 0) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    let successCount = 0;
+    for (let i = 0; i < uploadFiles.length; i++) {
+      const file = uploadFiles[i];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('week_number', uploadWeek.toString());
+
+      try {
+        const res = await fetch('/api/admin/media-library', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          successCount++;
+          setDocuments(prev => [data.document, ...prev]);
+        } else {
+          console.error('Upload failed:', data.error);
+        }
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
+      setUploadProgress(((i + 1) / uploadFiles.length) * 100);
+    }
+
+    setUploading(false);
+    setUploadFiles([]);
+    setShowUpload(false);
+    if (successCount > 0) {
+      alert(`Successfully uploaded ${successCount} file(s)`);
+    }
+  }
+
+  function handleFileDrop(e: React.DragEvent) {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    setUploadFiles(prev => [...prev, ...files]);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setUploadFiles(prev => [...prev, ...files]);
+    }
+  }
+
   // Check for problematic files
   const problemFiles = documents.filter(d => 
     d.original_filename.toLowerCase().includes('recovered') ||
@@ -148,12 +207,20 @@ export default function MediaLibraryPage() {
             <h1 className="text-3xl font-bold">📁 Media Library</h1>
             <p className="text-gray-400 mt-1">Manage all uploaded files across all weeks</p>
           </div>
-          <Link
-            href="/admin"
-            className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            ← Back to Admin
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowUpload(true)}
+              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition-colors flex items-center gap-2"
+            >
+              <span>📤</span> Upload Files
+            </button>
+            <Link
+              href="/admin"
+              className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              ← Back to Admin
+            </Link>
+          </div>
         </div>
 
         {/* Problem Files Alert */}
@@ -238,6 +305,103 @@ export default function MediaLibraryPage() {
             🔍 Search
           </button>
         </div>
+
+        {/* Upload Modal */}
+        {showUpload && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-2xl p-6 max-w-lg w-full mx-4">
+              <h3 className="text-xl font-bold mb-4">📤 Upload Files</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Week Number (1-36)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="36"
+                    value={uploadWeek}
+                    onChange={(e) => setUploadWeek(Number(e.target.value))}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                  />
+                </div>
+
+                {/* Drop Zone */}
+                <div
+                  onDrop={handleFileDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-cyan-500 transition-colors"
+                >
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="text-4xl mb-2">📁</div>
+                    <p className="text-gray-300">Drop files here or click to browse</p>
+                    <p className="text-gray-500 text-sm mt-1">Videos, images, PDFs, documents</p>
+                  </label>
+                </div>
+
+                {/* File List */}
+                {uploadFiles.length > 0 && (
+                  <div className="bg-gray-700 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    <p className="text-sm text-gray-400 mb-2">{uploadFiles.length} file(s) selected:</p>
+                    {uploadFiles.map((file, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm py-1">
+                        <span className="truncate">{file.name}</span>
+                        <button
+                          onClick={() => setUploadFiles(prev => prev.filter((_, idx) => idx !== i))}
+                          className="text-red-400 hover:text-red-300 ml-2"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Progress */}
+                {uploading && (
+                  <div className="bg-gray-700 rounded-lg p-3">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Uploading...</span>
+                      <span>{Math.round(uploadProgress)}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-cyan-500 transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowUpload(false);
+                    setUploadFiles([]);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                  disabled={uploading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={uploadFiles.length === 0 || uploading}
+                  className="flex-1 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                >
+                  {uploading ? 'Uploading...' : `Upload ${uploadFiles.length} File(s)`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Edit Modal */}
         {editingDoc && (
