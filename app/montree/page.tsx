@@ -1,11 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 // /montree/page.tsx - Landing page
 export default function MontreeLanding() {
-  const [showLoginOptions, setShowLoginOptions] = useState(false);
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
       {/* Background glow */}
@@ -39,37 +35,14 @@ export default function MontreeLanding() {
             <span>Set Up School</span>
           </a>
 
-          {/* Login Button */}
-          <button
-            onClick={() => setShowLoginOptions(!showLoginOptions)}
+          {/* Login Button - goes to login selection page */}
+          <a
+            href="/montree/login-select"
             className="px-8 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-2"
           >
             <span>🔑</span>
             <span>Login</span>
-            <span className={`transition-transform duration-200 ${showLoginOptions ? 'rotate-180' : ''}`}>
-              ▼
-            </span>
-          </button>
-
-          {/* Login Options - shown when Login is clicked */}
-          {showLoginOptions && (
-            <div className="flex flex-col gap-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <a
-                href="/montree/login"
-                className="px-6 py-3 bg-white/5 backdrop-blur border border-white/10 text-white rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-              >
-                <span>👩‍🏫</span>
-                <span>Teacher Login</span>
-              </a>
-              <a
-                href="/montree/principal/login"
-                className="px-6 py-3 bg-white/5 backdrop-blur border border-white/10 text-white rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-              >
-                <span>👔</span>
-                <span>Principal Login</span>
-              </a>
-            </div>
-          )}
+          </a>
         </div>
       </div>
 
