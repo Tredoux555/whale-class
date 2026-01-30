@@ -92,36 +92,37 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      {/* Student Grid - scrollable with square-ish tiles */}
-      <main className="flex-1 px-4 py-3 overflow-y-auto">
+      {/* Student Grid - AUTO-FITS to fill entire screen */}
+      <main className="flex-1 p-2 overflow-hidden">
         {children.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500">
             <span className="text-4xl mb-2">👶</span>
             <p className="text-sm">No students yet</p>
           </div>
         ) : (
-          <div 
-            className="grid gap-3"
+          <div
+            className="h-full grid gap-2"
             style={{
               gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
+              gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
             }}
           >
             {children.map((child) => (
               <Link
                 key={child.id}
                 href={`/montree/dashboard/${child.id}`}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md active:scale-95 transition-all flex flex-col items-center justify-center p-3 aspect-square"
+                className="bg-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all flex flex-col items-center justify-center p-1 min-h-0"
               >
-                {/* Avatar */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl overflow-hidden mb-2">
+                {/* Avatar - scales with container */}
+                <div className="w-[45%] aspect-square max-w-[70px] rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl overflow-hidden mb-1">
                   {child.photo_url ? (
                     <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
                   ) : (
-                    child.name.charAt(0)
+                    <span style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)' }}>{child.name.charAt(0)}</span>
                   )}
                 </div>
                 {/* Name */}
-                <p className="text-xs sm:text-sm font-medium text-gray-700 truncate w-full text-center">
+                <p className="text-xs font-medium text-gray-700 truncate w-full text-center px-1" style={{ fontSize: 'clamp(0.6rem, 2.5vw, 0.875rem)' }}>
                   {child.name.split(' ')[0]}
                 </p>
               </Link>

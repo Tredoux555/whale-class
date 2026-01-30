@@ -67,7 +67,7 @@ export default function WorkWheelPicker({
 
   const scrollToIndex = useCallback((index: number, smooth = true) => {
     if (wheelRef.current) {
-      const itemHeight = 72; // Height of each work item
+      const itemHeight = 80; // Height of each work item
       const scrollPos = index * itemHeight;
       wheelRef.current.scrollTo({
         top: scrollPos,
@@ -79,7 +79,7 @@ export default function WorkWheelPicker({
   // Handle scroll end to snap to nearest item
   const handleScroll = useCallback(() => {
     if (wheelRef.current) {
-      const itemHeight = 72;
+      const itemHeight = 80;
       const scrollTop = wheelRef.current.scrollTop;
       const newIndex = Math.round(scrollTop / itemHeight);
       const clampedIndex = Math.max(0, Math.min(newIndex, works.length - 1));
@@ -136,27 +136,27 @@ export default function WorkWheelPicker({
 
       {/* Wheel Container */}
       <div
-        className="flex-1 relative overflow-hidden"
+        className="flex-1 relative overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {/* Gradient overlays for fade effect */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
 
-        {/* Selection highlight */}
-        <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[72px] bg-white/10 rounded-2xl border-2 border-white/30 z-5 pointer-events-none" />
+        {/* Selection highlight - centered in container */}
+        <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[80px] bg-white/15 rounded-2xl border-2 border-white/40 z-5 pointer-events-none" />
 
         {/* Scrollable wheel */}
         <div
           ref={wheelRef}
-          className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+          className="flex-1 overflow-y-auto scrollbar-hide"
           onScroll={handleScroll}
           style={{
-            paddingTop: 'calc(50% - 36px)',
-            paddingBottom: 'calc(50% - 36px)',
             scrollSnapType: 'y mandatory'
           }}
         >
+          {/* Top spacer to center first item */}
+          <div style={{ height: 'calc(50% - 40px)' }} />
           {works.map((work, index) => {
             const distance = Math.abs(index - selectedIndex);
             const opacity = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
@@ -165,11 +165,10 @@ export default function WorkWheelPicker({
             return (
               <div
                 key={work.id || index}
-                className="h-[72px] flex items-center justify-center px-6 snap-center cursor-pointer"
+                className="h-[80px] flex items-center justify-center px-6 snap-center cursor-pointer"
                 style={{
-                  opacity,
                   transform: `scale(${scale})`,
-                  transition: 'opacity 0.2s, transform 0.2s'
+                  transition: 'transform 0.2s'
                 }}
                 onClick={() => {
                   if (index === selectedIndex) {
@@ -180,37 +179,41 @@ export default function WorkWheelPicker({
                   }
                 }}
               >
-                <div className="flex items-center gap-3 w-full max-w-md">
+                <div className={`flex items-center gap-3 w-full max-w-md transition-opacity duration-200 ${
+                  distance === 0 ? 'opacity-100' : distance === 1 ? 'opacity-70' : 'opacity-40'
+                }`}>
                   {/* Status indicator */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
-                    ${work.status === 'mastered' ? 'bg-emerald-500 text-white' :
-                      work.status === 'practicing' ? 'bg-blue-400 text-white' :
-                      work.status === 'presented' ? 'bg-amber-400 text-amber-900' :
-                      'bg-white/20 text-white/60'}`}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg
+                    ${work.status === 'mastered' || work.status === 'completed' ? 'bg-emerald-500 text-white' :
+                      work.status === 'practicing' ? 'bg-blue-500 text-white' :
+                      work.status === 'presented' ? 'bg-amber-500 text-white' :
+                      'bg-white/30 text-white'}`}
                   >
-                    {work.status === 'mastered' ? '✓' :
+                    {work.status === 'mastered' || work.status === 'completed' ? '✓' :
                      work.status === 'practicing' ? 'Pr' :
                      work.status === 'presented' ? 'P' : '○'}
                   </div>
 
                   {/* Work name */}
-                  <div className="flex-1 text-white">
-                    <p className={`font-medium ${distance === 0 ? 'text-lg' : 'text-base'}`}>
+                  <div className="flex-1">
+                    <p className={`font-semibold text-white ${distance === 0 ? 'text-lg' : 'text-base'}`}>
                       {work.name}
                     </p>
                     {work.name_chinese && distance === 0 && (
-                      <p className="text-sm text-white/60">{work.name_chinese}</p>
+                      <p className="text-sm text-white/80">{work.name_chinese}</p>
                     )}
                   </div>
 
                   {/* Sequence number */}
                   {work.sequence && (
-                    <span className="text-white/40 text-sm">#{work.sequence}</span>
+                    <span className="text-white/60 text-sm font-medium">#{work.sequence}</span>
                   )}
                 </div>
               </div>
             );
           })}
+          {/* Bottom spacer to center last item */}
+          <div style={{ height: 'calc(50% - 40px)' }} />
         </div>
       </div>
 

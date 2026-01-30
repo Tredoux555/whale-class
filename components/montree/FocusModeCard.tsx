@@ -32,11 +32,12 @@ interface FocusModeCardProps {
 // STATUS HELPERS
 // ============================================
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
   not_started: { label: '—', bg: 'bg-gray-200', text: 'text-gray-600' },
   presented: { label: 'P', bg: 'bg-amber-100', text: 'text-amber-700' },
   practicing: { label: 'Pr', bg: 'bg-blue-100', text: 'text-blue-700' },
   mastered: { label: 'M', bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  completed: { label: 'M', bg: 'bg-emerald-100', text: 'text-emerald-700' }, // alias
 };
 
 const STATUS_ORDER: FocusWork['status'][] = ['not_started', 'presented', 'practicing', 'mastered'];
@@ -111,7 +112,7 @@ export default function FocusModeCard({
     }
   }, [work, onTapCard]);
 
-  const statusConfig = work ? STATUS_CONFIG[work.status] : STATUS_CONFIG.not_started;
+  const statusConfig = work ? (STATUS_CONFIG[work.status] || STATUS_CONFIG.not_started) : STATUS_CONFIG.not_started;
 
   return (
     <div 
