@@ -1,8 +1,9 @@
 // /montree/onboarding/page.tsx
 // Teacher onboarding - Add students with curriculum progress (MANDATORY)
+// Theme: Clean white/blue for teachers (NOT green - that's for principals)
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Curriculum areas
@@ -63,15 +64,13 @@ function CurriculumPicker({
   const [isOpen, setIsOpen] = useState(false);
   const [showAddCustom, setShowAddCustom] = useState(false);
   const [customWorkName, setCustomWorkName] = useState('');
-  const [insertAfterIndex, setInsertAfterIndex] = useState(-1); // -1 means at the beginning
+  const [insertAfterIndex, setInsertAfterIndex] = useState(-1);
 
   const selectedWork = works.find(w => w.id === selectedWorkId);
   const displayLabel = selectedWork?.name || 'Not started yet';
 
   const handleAddCustomWork = () => {
     if (!customWorkName.trim()) return;
-
-    // Calculate sequence number (insert after the selected position)
     const afterSeq = insertAfterIndex >= 0 ? works[insertAfterIndex]?.sequence || 0 : 0;
     onAddCustomWork(areaId, customWorkName.trim(), afterSeq);
     setCustomWorkName('');
@@ -83,30 +82,30 @@ function CurriculumPicker({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3 bg-white/5 border border-white/20 rounded-xl text-left flex items-center gap-3 hover:bg-white/10 transition-colors"
-        style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
+        className="w-full p-3 bg-white border border-slate-200 rounded-xl text-left flex items-center gap-3 hover:border-blue-300 hover:bg-blue-50/50 transition-colors shadow-sm"
+        style={{ borderLeftColor: color, borderLeftWidth: '4px' }}
       >
         <span className="text-xl">{icon}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-white/50">{areaName}</p>
-          <p className="text-white font-medium truncate">{displayLabel}</p>
+          <p className="text-xs text-slate-400">{areaName}</p>
+          <p className="text-slate-700 font-medium truncate">{displayLabel}</p>
         </div>
-        <span className="text-white/40 text-sm">{isOpen ? '▲' : '▼'}</span>
+        <span className="text-slate-400 text-sm">{isOpen ? '▲' : '▼'}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
           <div className="max-h-72 overflow-y-auto">
             {/* Not started option */}
             <button
               onClick={() => { onSelect(null); setIsOpen(false); }}
-              className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 border-b border-white/10 ${
-                selectedWorkId === null ? 'bg-emerald-500/20' : ''
+              className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 border-b border-slate-100 ${
+                selectedWorkId === null ? 'bg-blue-50' : ''
               }`}
             >
-              <span className="w-7 h-7 rounded-full bg-gray-500/30 flex items-center justify-center text-xs text-white/50">—</span>
-              <span className="text-white/70 flex-1">Not started yet</span>
-              {selectedWorkId === null && <span className="text-emerald-400">✓</span>}
+              <span className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">—</span>
+              <span className="text-slate-500 flex-1">Not started yet</span>
+              {selectedWorkId === null && <span className="text-blue-500">✓</span>}
             </button>
 
             {/* Works list */}
@@ -114,9 +113,9 @@ function CurriculumPicker({
               <div key={work.id} className="relative">
                 <button
                   onClick={() => { onSelect(work.id, work.name); setIsOpen(false); }}
-                  className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 ${
-                    selectedWorkId === work.id ? 'bg-emerald-500/20' : ''
-                  } border-b border-white/5`}
+                  className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 ${
+                    selectedWorkId === work.id ? 'bg-blue-50' : ''
+                  } border-b border-slate-50`}
                 >
                   <span
                     className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
@@ -124,22 +123,21 @@ function CurriculumPicker({
                   >
                     {index + 1}
                   </span>
-                  <span className={`flex-1 truncate ${work.isCustom ? 'text-amber-300' : 'text-white'}`}>
+                  <span className={`flex-1 truncate ${work.isCustom ? 'text-amber-600' : 'text-slate-700'}`}>
                     {work.name}
                     {work.isCustom && <span className="text-xs ml-1 opacity-60">(custom)</span>}
                   </span>
-                  {selectedWorkId === work.id && <span className="text-emerald-400">✓</span>}
+                  {selectedWorkId === work.id && <span className="text-blue-500">✓</span>}
                 </button>
 
-                {/* Add custom work button between items */}
                 {showAddCustom && insertAfterIndex === index && (
-                  <div className="px-4 py-3 bg-amber-500/10 border-y border-amber-500/30">
+                  <div className="px-4 py-3 bg-amber-50 border-y border-amber-200">
                     <input
                       type="text"
                       value={customWorkName}
                       onChange={(e) => setCustomWorkName(e.target.value)}
                       placeholder="Enter custom work name..."
-                      className="w-full p-2 bg-slate-700 border border-white/20 rounded-lg text-white text-sm placeholder-white/40 mb-2"
+                      className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-sm placeholder-slate-400 mb-2"
                       autoFocus
                     />
                     <div className="flex gap-2">
@@ -151,7 +149,7 @@ function CurriculumPicker({
                       </button>
                       <button
                         onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
-                        className="px-3 py-2 bg-white/10 text-white/60 text-sm rounded-lg"
+                        className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
                       >
                         Cancel
                       </button>
@@ -161,15 +159,14 @@ function CurriculumPicker({
               </div>
             ))}
 
-            {/* Add custom at the beginning if selected */}
             {showAddCustom && insertAfterIndex === -1 && (
-              <div className="px-4 py-3 bg-amber-500/10 border-t border-amber-500/30">
+              <div className="px-4 py-3 bg-amber-50 border-t border-amber-200">
                 <input
                   type="text"
                   value={customWorkName}
                   onChange={(e) => setCustomWorkName(e.target.value)}
                   placeholder="Enter custom work name..."
-                  className="w-full p-2 bg-slate-700 border border-white/20 rounded-lg text-white text-sm placeholder-white/40 mb-2"
+                  className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-sm placeholder-slate-400 mb-2"
                   autoFocus
                 />
                 <div className="flex gap-2">
@@ -181,7 +178,7 @@ function CurriculumPicker({
                   </button>
                   <button
                     onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
-                    className="px-3 py-2 bg-white/10 text-white/60 text-sm rounded-lg"
+                    className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
                   >
                     Cancel
                   </button>
@@ -191,29 +188,24 @@ function CurriculumPicker({
           </div>
 
           {/* Add Custom Work Footer */}
-          <div className="border-t border-white/10 p-2 bg-slate-900/50">
-            <p className="text-white/40 text-xs mb-2 px-2">Can&apos;t find the work? Add it:</p>
+          <div className="border-t border-slate-100 p-2 bg-slate-50">
+            <p className="text-slate-400 text-xs mb-2 px-2">Can&apos;t find the work? Add it:</p>
             <div className="flex gap-1 flex-wrap">
               <button
                 onClick={() => { setShowAddCustom(true); setInsertAfterIndex(-1); }}
-                className="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded-lg hover:bg-amber-500/30"
+                className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-200"
               >
                 + At Beginning
               </button>
               {works.length > 0 && (
                 <button
                   onClick={() => { setShowAddCustom(true); setInsertAfterIndex(works.length - 1); }}
-                  className="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded-lg hover:bg-amber-500/30"
+                  className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-200"
                 >
                   + At End
                 </button>
               )}
             </div>
-            {works.length > 0 && !showAddCustom && (
-              <p className="text-white/30 text-xs mt-2 px-2">
-                Or tap a work number, then use &quot;Insert After&quot;
-              </p>
-            )}
           </div>
         </div>
       )}
@@ -230,29 +222,29 @@ function AgePicker({ value, onChange }: { value: number; onChange: (age: number)
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3 bg-white/5 border border-white/20 rounded-xl text-left flex items-center gap-3 hover:bg-white/10 transition-colors"
+        className="w-full p-3 bg-white border border-slate-200 rounded-xl text-left flex items-center gap-3 hover:border-blue-300 transition-colors shadow-sm"
       >
         <span className="text-xl">🎂</span>
         <div className="flex-1">
-          <p className="text-xs text-white/50">Age</p>
-          <p className="text-white font-medium">{selected.label} years old</p>
+          <p className="text-xs text-slate-400">Age</p>
+          <p className="text-slate-700 font-medium">{selected.label} years old</p>
         </div>
-        <span className="text-white/40">▼</span>
+        <span className="text-slate-400">▼</span>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
           <div className="max-h-64 overflow-y-auto">
             {AGE_OPTIONS.map((age, index) => (
               <button
                 key={age.value}
                 onClick={() => { onChange(age.value); setIsOpen(false); }}
-                className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 ${
-                  value === age.value ? 'bg-emerald-500/20' : ''
-                } ${index < AGE_OPTIONS.length - 1 ? 'border-b border-white/5' : ''}`}
+                className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 ${
+                  value === age.value ? 'bg-blue-50' : ''
+                } ${index < AGE_OPTIONS.length - 1 ? 'border-b border-slate-50' : ''}`}
               >
-                <span className="text-white flex-1">{age.label} years old</span>
-                {value === age.value && <span className="text-emerald-400">✓</span>}
+                <span className="text-slate-700 flex-1">{age.label} years old</span>
+                {value === age.value && <span className="text-blue-500">✓</span>}
               </button>
             ))}
           </div>
@@ -264,16 +256,15 @@ function AgePicker({ value, onChange }: { value: number; onChange: (age: number)
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0); // 0: welcome, 1: add students, 2: complete
+  const [step, setStep] = useState(0);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [seedingCurriculum, setSeedingCurriculum] = useState(false);
   const [error, setError] = useState('');
 
-  // Curriculum works loaded from API
   const [curriculumWorks, setCurriculumWorks] = useState<{ [areaId: string]: Work[] }>({});
   const [loadingCurriculum, setLoadingCurriculum] = useState(true);
 
-  // Students being added
   const [students, setStudents] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student>({
     id: crypto.randomUUID(),
@@ -310,7 +301,7 @@ export default function OnboardingPage() {
           grouped[area.id] = [];
         }
 
-        if (data.curriculum) {
+        if (data.curriculum && data.curriculum.length > 0) {
           for (const work of data.curriculum) {
             const areaKey = work.area?.area_key || work.area_key;
             if (areaKey && grouped[areaKey]) {
@@ -324,8 +315,11 @@ export default function OnboardingPage() {
           for (const areaId of Object.keys(grouped)) {
             grouped[areaId].sort((a, b) => a.sequence - b.sequence);
           }
+          setCurriculumWorks(grouped);
+        } else {
+          // No curriculum found - need to seed it
+          await seedCurriculum(classroomId);
         }
-        setCurriculumWorks(grouped);
       }
     } catch (err) {
       console.error('Failed to load curriculum:', err);
@@ -334,12 +328,56 @@ export default function OnboardingPage() {
     }
   };
 
+  const seedCurriculum = async (classroomId: string) => {
+    setSeedingCurriculum(true);
+    try {
+      // Seed the curriculum from the brain
+      const seedRes = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroom_id: classroomId, action: 'seed_from_brain' }),
+      });
+
+      if (seedRes.ok) {
+        // Reload curriculum after seeding
+        const res = await fetch(`/api/montree/curriculum?classroom_id=${classroomId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const grouped: { [areaId: string]: Work[] } = {};
+          for (const area of CURRICULUM_AREAS) {
+            grouped[area.id] = [];
+          }
+
+          if (data.curriculum) {
+            for (const work of data.curriculum) {
+              const areaKey = work.area?.area_key || work.area_key;
+              if (areaKey && grouped[areaKey]) {
+                grouped[areaKey].push({
+                  id: work.id || work.work_key,
+                  name: work.name,
+                  sequence: work.sequence || 0,
+                });
+              }
+            }
+            for (const areaId of Object.keys(grouped)) {
+              grouped[areaId].sort((a, b) => a.sequence - b.sequence);
+            }
+          }
+          setCurriculumWorks(grouped);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to seed curriculum:', err);
+    } finally {
+      setSeedingCurriculum(false);
+    }
+  };
+
   const handleAddCustomWork = (areaId: string, workName: string, afterSequence: number) => {
-    // Add custom work to the local curriculum list
     const newWork: Work = {
       id: `custom_${Date.now()}`,
       name: workName,
-      sequence: afterSequence + 0.5, // Insert between sequences
+      sequence: afterSequence + 0.5,
       isCustom: true,
     };
 
@@ -349,7 +387,6 @@ export default function OnboardingPage() {
       return updated;
     });
 
-    // Auto-select the newly added work for current student
     setCurrentStudent(prev => ({
       ...prev,
       progress: {
@@ -388,12 +425,7 @@ export default function OnboardingPage() {
     setStudents(students.filter((_, i) => i !== index));
     if (editingStudentIndex === index) {
       setEditingStudentIndex(null);
-      setCurrentStudent({
-        id: crypto.randomUUID(),
-        name: '',
-        age: 3.5,
-        progress: {},
-      });
+      setCurrentStudent({ id: crypto.randomUUID(), name: '', age: 3.5, progress: {} });
     }
   };
 
@@ -427,7 +459,6 @@ export default function OnboardingPage() {
         throw new Error(data.error || 'Failed to save students');
       }
 
-      // Mark onboarding complete
       const sessionData = localStorage.getItem('montree_session');
       if (sessionData) {
         const parsed = JSON.parse(sessionData);
@@ -443,36 +474,36 @@ export default function OnboardingPage() {
     }
   };
 
-  // Step 0: Welcome
+  // Step 0: Welcome (White/Blue theme)
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg text-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 w-full max-w-lg text-center">
           <div className="text-6xl mb-6">👋</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Montree!</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">Welcome to Montree!</h1>
 
-          <div className="text-left bg-emerald-50 rounded-2xl p-5 mb-6">
-            <p className="text-gray-700 leading-relaxed mb-4">
+          <div className="text-left bg-blue-50 rounded-2xl p-5 mb-6 border border-blue-100">
+            <p className="text-slate-600 leading-relaxed mb-4">
               I&apos;m so excited to show you how this works and the features that will make your life so much easier!
             </p>
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-slate-600 leading-relaxed mb-4">
               But first, I must apologize — I have to give you a little work to do.
-              <span className="font-semibold"> I promise this will save you a ton of effort in the future.</span>
+              <span className="font-semibold text-slate-700"> I promise this will save you a ton of effort in the future.</span>
             </p>
-            <p className="text-gray-800 font-semibold text-lg">
+            <p className="text-slate-800 font-semibold text-lg">
               🌳 Let&apos;s get your children into the classroom!
             </p>
           </div>
 
           <button
             onClick={() => setStep(1)}
-            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+            className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
             Let&apos;s Do This! →
           </button>
 
           {session?.teacher?.name && (
-            <p className="text-sm text-gray-400 mt-6">
+            <p className="text-sm text-slate-400 mt-6">
               Logged in as {session.teacher.name}
             </p>
           )}
@@ -481,28 +512,28 @@ export default function OnboardingPage() {
     );
   }
 
-  // Step 1: Add Students (MANDATORY)
+  // Step 1: Add Students (White/Blue theme)
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-4 md:p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4 md:p-6">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">Add Your Students</h1>
-            <p className="text-emerald-300/70">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">Add Your Students</h1>
+            <p className="text-blue-600 font-medium">
               {session?.classroom?.name || 'Your Classroom'}
             </p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
-              <p className="text-red-300 text-sm">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
 
           {/* Student Form */}
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 mb-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <span>👶</span>
               {editingStudentIndex !== null ? 'Edit Student' : 'New Student'}
             </h2>
@@ -514,7 +545,7 @@ export default function OnboardingPage() {
                 value={currentStudent.name}
                 onChange={(e) => setCurrentStudent({ ...currentStudent, name: e.target.value })}
                 placeholder="Student's name"
-                className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 outline-none text-lg"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none text-lg transition-colors"
                 autoFocus
               />
             </div>
@@ -527,18 +558,19 @@ export default function OnboardingPage() {
               />
             </div>
 
-            {/* Curriculum Progress - Always Visible */}
-            <div className="border-t border-white/10 pt-5">
-              <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+            {/* Curriculum Progress */}
+            <div className="border-t border-slate-100 pt-5">
+              <h3 className="text-slate-700 font-medium mb-2 flex items-center gap-2">
                 <span>📊</span> Current Progress
               </h3>
-              <p className="text-white/40 text-xs mb-4">
+              <p className="text-slate-400 text-xs mb-4">
                 Select the most recent work they&apos;ve been presented in each area.
-                Can&apos;t find a work? Add it in the correct position.
               </p>
 
-              {loadingCurriculum ? (
-                <div className="text-white/50 text-center py-4">Loading curriculum...</div>
+              {loadingCurriculum || seedingCurriculum ? (
+                <div className="text-slate-500 text-center py-4">
+                  {seedingCurriculum ? 'Setting up curriculum...' : 'Loading curriculum...'}
+                </div>
               ) : (
                 <div className="space-y-3">
                   {CURRICULUM_AREAS.map(area => (
@@ -568,7 +600,7 @@ export default function OnboardingPage() {
             <button
               onClick={addStudent}
               disabled={!currentStudent.name.trim()}
-              className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {editingStudentIndex !== null ? '✓ Update Student' : '+ Add Student'}
             </button>
@@ -579,7 +611,7 @@ export default function OnboardingPage() {
                   setEditingStudentIndex(null);
                   setCurrentStudent({ id: crypto.randomUUID(), name: '', age: 3.5, progress: {} });
                 }}
-                className="w-full mt-2 py-2 text-white/60 hover:text-white"
+                className="w-full mt-2 py-2 text-slate-500 hover:text-slate-700"
               >
                 Cancel Edit
               </button>
@@ -588,8 +620,8 @@ export default function OnboardingPage() {
 
           {/* Students List */}
           {students.length > 0 && (
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 mb-6">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span>👥</span>
                 Students Added ({students.length})
               </h2>
@@ -600,15 +632,15 @@ export default function OnboardingPage() {
                   return (
                     <div
                       key={student.id}
-                      className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
                           {student.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-white font-medium">{student.name}</p>
-                          <p className="text-white/50 text-xs">
+                          <p className="text-slate-700 font-medium">{student.name}</p>
+                          <p className="text-slate-400 text-xs">
                             {student.age} yrs • {progressCount > 0 ? `${progressCount} areas started` : 'New to Montessori'}
                           </p>
                         </div>
@@ -616,13 +648,13 @@ export default function OnboardingPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => editStudent(index)}
-                          className="px-3 py-1.5 bg-white/10 text-white/70 rounded-lg text-sm hover:bg-white/20"
+                          className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-sm hover:bg-slate-300"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => removeStudent(index)}
-                          className="px-3 py-1.5 bg-red-500/20 text-red-300 rounded-lg text-sm hover:bg-red-500/30"
+                          className="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200"
                         >
                           ×
                         </button>
@@ -634,18 +666,18 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Save Button - No Skip Option */}
+          {/* Save Button */}
           <button
             onClick={saveAndComplete}
             disabled={loading || students.length === 0}
-            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : students.length === 0
               ? 'Add at least 1 student to continue'
               : `Save ${students.length} Student${students.length !== 1 ? 's' : ''} & Continue →`}
           </button>
 
-          <p className="text-center text-white/30 text-xs mt-4">
+          <p className="text-center text-slate-400 text-xs mt-4">
             You must add your students before using Montree
           </p>
         </div>
@@ -653,30 +685,30 @@ export default function OnboardingPage() {
     );
   }
 
-  // Step 2: Complete
+  // Step 2: Complete (White/Blue theme)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 w-full max-w-md text-center">
         <div className="text-6xl mb-6">🎉</div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-3">You&apos;re All Set!</h1>
-        <p className="text-gray-600 leading-relaxed mb-6">
+        <h1 className="text-2xl font-bold text-slate-800 mb-3">You&apos;re All Set!</h1>
+        <p className="text-slate-600 leading-relaxed mb-6">
           {students.length} student{students.length !== 1 ? 's' : ''} added to your classroom.
           Now let&apos;s explore your dashboard!
         </p>
 
-        <div className="bg-emerald-50 rounded-2xl p-4 mb-6 text-left">
-          <h3 className="font-semibold text-gray-800 mb-2">What&apos;s Next?</h3>
-          <ul className="text-gray-600 text-sm space-y-2">
+        <div className="bg-blue-50 rounded-2xl p-4 mb-6 text-left border border-blue-100">
+          <h3 className="font-semibold text-slate-800 mb-2">What&apos;s Next?</h3>
+          <ul className="text-slate-600 text-sm space-y-2">
             <li className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span>
+              <span className="text-blue-500">✓</span>
               View your curriculum dashboard
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span>
+              <span className="text-blue-500">✓</span>
               Track student progress with one tap
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-emerald-500">✓</span>
+              <span className="text-blue-500">✓</span>
               Generate weekly reports for parents
             </li>
           </ul>
@@ -684,7 +716,7 @@ export default function OnboardingPage() {
 
         <button
           onClick={() => router.push('/montree/dashboard')}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
         >
           Go to Dashboard →
         </button>
