@@ -313,31 +313,72 @@ export default function PrincipalSetupPage() {
           </div>
         )}
 
-        {/* Step 3: Success - Show Login Codes */}
+        {/* Step 3: Success - Onboarding Complete */}
         {step === 3 && (
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-            {createdTeachers.length > 0 ? (
-              <>
-                <div className="space-y-4 mb-8">
+          <div className="space-y-6">
+            {/* Success Message */}
+            <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
+              <div className="text-5xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Created!
+              </h2>
+              <p className="text-emerald-200">
+                Each classroom has a comprehensive, customizable Montessori curriculum complete with guides and a teacher dashboard.
+              </p>
+            </div>
+
+            {/* What&apos;s Next */}
+            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <span>👉</span> What&apos;s Next?
+              </h3>
+              <p className="text-emerald-200/80 mb-4">
+                Your teachers need to get on board! They&apos;ll review the curriculum, customize it to match their classroom, and add their students.
+              </p>
+              <p className="text-emerald-200/80">
+                But first, they need their login credentials...
+              </p>
+            </div>
+
+            {/* Teacher Codes */}
+            {createdTeachers.length > 0 && (
+              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <span>🔑</span> Teacher Login Codes
+                  </h3>
+                  <button
+                    onClick={copyAllCodes}
+                    className={`px-4 py-2 font-medium rounded-lg transition-colors text-sm flex items-center gap-2 ${
+                      copiedCode === 'all'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                    }`}
+                  >
+                    {copiedCode === 'all' ? '✓ Copied All!' : '📋 Copy All'}
+                  </button>
+                </div>
+
+                <div className="space-y-3 mb-4">
                   {createdTeachers.map((teacher) => (
-                    <div 
+                    <div
                       key={teacher.id}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between"
+                      className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{teacher.classroom_icon}</span>
+                        <span className="text-xl">{teacher.classroom_icon}</span>
                         <div>
-                          <p className="font-medium text-white">{teacher.name}</p>
-                          <p className="text-emerald-300/60 text-sm">{teacher.classroom_name}</p>
+                          <p className="font-medium text-white text-sm">{teacher.name}</p>
+                          <p className="text-emerald-300/60 text-xs">{teacher.classroom_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <code className="px-4 py-2 bg-emerald-500/20 text-emerald-300 font-mono text-lg rounded-lg">
+                        <code className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 font-mono rounded-lg">
                           {teacher.login_code}
                         </code>
                         <button
                           onClick={() => copyCode(teacher.login_code)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                             copiedCode === teacher.login_code
                               ? 'bg-emerald-500 text-white'
                               : 'bg-white/10 text-white hover:bg-white/20'
@@ -347,43 +388,29 @@ export default function PrincipalSetupPage() {
                         </button>
                         <button
                           onClick={() => shareCode(teacher)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                             copiedCode === `share-${teacher.login_code}`
                               ? 'bg-emerald-500 text-white'
                               : 'bg-teal-500/30 text-teal-300 hover:bg-teal-500/50'
                           }`}
-                          title="Copy share message for WeChat"
                         >
-                          {copiedCode === `share-${teacher.login_code}` ? '✓ Copied!' : '📱 Share'}
+                          {copiedCode === `share-${teacher.login_code}` ? '✓' : '📱'}
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6 flex items-center justify-between">
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-3">
+                  <span className="text-xl">⚠️</span>
                   <p className="text-amber-300 text-sm">
-                    ⚠️ Save these codes now! They won&apos;t be shown again.
+                    Save these codes now! They won&apos;t be shown again.
                   </p>
-                  <button
-                    onClick={copyAllCodes}
-                    className={`px-4 py-2 font-medium rounded-lg transition-colors text-sm flex items-center gap-2 ${
-                      copiedCode === 'all'
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-amber-500 text-white hover:bg-amber-600'
-                    }`}
-                  >
-                    {copiedCode === 'all' ? '✓ Copied All!' : '📋 Copy All Codes'}
-                  </button>
                 </div>
-              </>
-            ) : (
-              <div className="text-center py-8 mb-6">
-                <p className="text-white/70 mb-2">You&apos;re all set!</p>
-                <p className="text-emerald-300/60 text-sm">Add classrooms and teachers from your dashboard</p>
               </div>
             )}
 
+            {/* Go to Dashboard */}
             <button
               onClick={() => router.push('/montree/admin')}
               className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
