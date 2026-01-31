@@ -12,10 +12,21 @@ type Teacher = { id: string; name: string; email: string };
 type Classroom = { id: string; name: string; icon: string; color: string; teachers: Teacher[] };
 type CreatedTeacher = { id: string; name: string; login_code: string; classroom_name: string; classroom_icon: string };
 
+// Friendly status messages for creation process
+const SETUP_MESSAGES = [
+  { emoji: '🏫', text: 'Creating your classrooms...' },
+  { emoji: '📚', text: 'Setting up Montessori curriculum...' },
+  { emoji: '🎨', text: 'Adding learning activities...' },
+  { emoji: '👩‍🏫', text: 'Creating teacher accounts...' },
+  { emoji: '🔑', text: 'Generating secure login codes...' },
+  { emoji: '✨', text: 'Almost there, finishing up...' },
+];
+
 export default function PrincipalSetupPage() {
   const router = useRouter();
   const [step, setStep] = useState(1); // 1: classrooms, 2: teachers, 3: success
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ emoji: '', text: '' });
   const [error, setError] = useState('');
   const [school, setSchool] = useState<any>(null);
 
@@ -90,6 +101,15 @@ export default function PrincipalSetupPage() {
     setLoading(true);
     setError('');
 
+    // Start cycling through friendly status messages
+    let messageIndex = 0;
+    setStatusMessage(SETUP_MESSAGES[0]);
+
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % SETUP_MESSAGES.length;
+      setStatusMessage(SETUP_MESSAGES[messageIndex]);
+    }, 2000); // Change message every 2 seconds
+
     try {
       const res = await fetch('/api/montree/principal/setup', {
         method: 'POST',
@@ -98,6 +118,9 @@ export default function PrincipalSetupPage() {
       });
 
       const data = await res.json();
+
+      clearInterval(messageInterval);
+
       if (!res.ok) throw new Error(data.error || 'Setup failed');
 
       setCreatedTeachers(data.teachers);
@@ -107,9 +130,11 @@ export default function PrincipalSetupPage() {
       setStep(3);
 
     } catch (err) {
+      clearInterval(messageInterval);
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {
       setLoading(false);
+      setStatusMessage({ emoji: '', text: '' });
     }
   };
 
@@ -180,6 +205,31 @@ export default function PrincipalSetupPage() {
             </div>
           )}
         </div>
+
+        {/* Loading Overlay with friendly messages */}
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+            <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-sm mx-4">
+              <div className="text-6xl mb-4 animate-bounce">
+                {statusMessage.emoji || '⏳'}
+              </div>
+              <h2 className="text-xl font-semibold text-white mb-2">
+                Setting Up Your School
+              </h2>
+              <p className="text-emerald-300 text-lg mb-4">
+                {statusMessage.text || 'Getting everything ready...'}
+              </p>
+              <div className="flex justify-center gap-1">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+              </div>
+              <p className="text-white/40 text-xs mt-4">
+                This may take a moment...
+              </p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
@@ -318,7 +368,12 @@ export default function PrincipalSetupPage() {
                 disabled={loading || classrooms.some(c => c.teachers.every(t => !t.name.trim()))}
                 className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Complete Setup ✓'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="animate-bounce">{statusMessage.emoji || '⏳'}</span>
+                    <span>{statusMessage.text || 'Creating...'}</span>
+                  </span>
+                ) : 'Complete Setup ✓'}
               </button>
             </div>
           </div>
