@@ -128,12 +128,19 @@ export default function PrincipalSetupPage() {
   const copyAllCodes = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://teacherpotato.xyz';
 
-    let content = `🌳 MONTREE TEACHER CODES - ${school?.name || 'School'}\n\n`;
+    let content = `🌳 Welcome to Montree!\n\n`;
+    content += `Hi teachers! Here are your login codes for our new classroom management system.\n\n`;
+    content += `Find your name below, then go to:\n${baseUrl}/montree/login\n\n`;
+    content += `Enter your code to access your dashboard.\n`;
+    content += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
     createdTeachers.forEach(teacher => {
-      content += `${teacher.classroom_icon} ${teacher.classroom_name}: ${teacher.name}\n`;
-      content += `   Code: ${teacher.login_code}\n`;
-      content += `   Login: ${baseUrl}/montree/join?code=${teacher.login_code}\n\n`;
+      content += `${teacher.classroom_icon} ${teacher.name} (${teacher.classroom_name})\n`;
+      content += `   Code: ${teacher.login_code}\n\n`;
     });
+
+    content += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    content += `Questions? Ask your principal! 😊`;
 
     navigator.clipboard.writeText(content);
     setCopiedCode('all');
@@ -347,15 +354,22 @@ export default function PrincipalSetupPage() {
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <span>🔑</span> Teacher Login Codes
                   </h3>
+                </div>
+
+                {/* Share to Group Chat CTA */}
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
+                  <p className="text-emerald-200 text-sm mb-3">
+                    📱 Share these codes to your teachers group chat - they can take it from there!
+                  </p>
                   <button
                     onClick={copyAllCodes}
-                    className={`px-4 py-2 font-medium rounded-lg transition-colors text-sm flex items-center gap-2 ${
+                    className={`w-full py-3 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 ${
                       copiedCode === 'all'
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
                     }`}
                   >
-                    {copiedCode === 'all' ? '✓ Copied All!' : '📋 Copy All'}
+                    {copiedCode === 'all' ? '✓ Copied! Now paste in your group chat' : '📋 Copy Message for Group Chat'}
                   </button>
                 </div>
 
