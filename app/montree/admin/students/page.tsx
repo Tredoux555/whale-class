@@ -10,11 +10,25 @@ interface Student {
   id: string;
   name: string;
   photo_url?: string;
-  date_of_birth?: string;
+  age?: number;
   classroom_id: string;
   classroom_name?: string;
   classroom_icon?: string;
 }
+
+const AGE_OPTIONS = [
+  { value: '', label: 'Select age' },
+  { value: 2, label: '2 years old' },
+  { value: 2.5, label: '2½ years old' },
+  { value: 3, label: '3 years old' },
+  { value: 3.5, label: '3½ years old' },
+  { value: 4, label: '4 years old' },
+  { value: 4.5, label: '4½ years old' },
+  { value: 5, label: '5 years old' },
+  { value: 5.5, label: '5½ years old' },
+  { value: 6, label: '6 years old' },
+  { value: 6.5, label: '6½ years old' },
+];
 
 interface Classroom {
   id: string;
@@ -36,7 +50,7 @@ export default function StudentsPage() {
   
   // Form state
   const [formName, setFormName] = useState('');
-  const [formDob, setFormDob] = useState('');
+  const [formAge, setFormAge] = useState<number | ''>('');
   const [formClassroom, setFormClassroom] = useState('');
 
   useEffect(() => {
@@ -87,7 +101,7 @@ export default function StudentsPage() {
   const openAddModal = () => {
     setEditingStudent(null);
     setFormName('');
-    setFormDob('');
+    setFormAge('');
     setFormClassroom(classrooms[0]?.id || '');
     setShowAddModal(true);
   };
@@ -95,7 +109,7 @@ export default function StudentsPage() {
   const openEditModal = (student: Student) => {
     setEditingStudent(student);
     setFormName(student.name);
-    setFormDob(student.date_of_birth || '');
+    setFormAge(student.age || '');
     setFormClassroom(student.classroom_id);
     setShowAddModal(true);
   };
@@ -107,12 +121,12 @@ export default function StudentsPage() {
 
   const handleSave = async () => {
     if (!formName.trim() || !formClassroom) return;
-    
+
     setSaving(true);
     try {
       const payload = editingStudent
-        ? { id: editingStudent.id, name: formName.trim(), date_of_birth: formDob || null, classroom_id: formClassroom }
-        : { name: formName.trim(), date_of_birth: formDob || null, classroom_id: formClassroom };
+        ? { id: editingStudent.id, name: formName.trim(), age: formAge || null, classroom_id: formClassroom }
+        : { name: formName.trim(), age: formAge || null, classroom_id: formClassroom };
 
       const method = editingStudent ? 'PATCH' : 'POST';
 
@@ -280,9 +294,9 @@ export default function StudentsPage() {
                           </div>
                           <div>
                             <h3 className="text-white font-medium">{student.name}</h3>
-                            {student.date_of_birth && (
+                            {student.age && (
                               <p className="text-emerald-300 text-sm">
-                                Born: {new Date(student.date_of_birth).toLocaleDateString()}
+                                {student.age % 1 === 0.5 ? `${Math.floor(student.age)}½` : student.age} years old
                               </p>
                             )}
                           </div>
@@ -332,13 +346,16 @@ export default function StudentsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300 text-sm mb-1">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={formDob}
-                    onChange={(e) => setFormDob(e.target.value)}
+                  <label className="block text-emerald-300 text-sm mb-1">Age</label>
+                  <select
+                    value={formAge}
+                    onChange={(e) => setFormAge(e.target.value ? parseFloat(e.target.value) : '')}
                     className="w-full p-3 bg-black/20 border border-emerald-600 rounded-lg text-white focus:border-emerald-400 focus:outline-none"
-                  />
+                  >
+                    {AGE_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

@@ -1,103 +1,90 @@
 {
   "project": "Montree",
-  "session": 129,
-  "lastUpdated": "2026-01-31T22:45:00+08:00",
+  "session": 131,
+  "lastUpdated": "2026-01-31T12:30:00+08:00",
 
-  "STATUS": "✅ ENGLISH CURRICULUM COMPLETE - 6-shelf phonics system ready",
+  "STATUS": "✅ TEACHER UI SIMPLIFIED - MINIMAL INTERFACE",
 
-  "HANDOFF": "docs/HANDOFF_SESSION129_ENGLISH_CURRICULUM.md",
+  "HANDOFF": "docs/HANDOFF_SESSION131_UI_CLEANUP.md",
+  "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
-  "SESSION_129_ENGLISH_CURRICULUM": {
-    "summary": "Built complete English/phonics curriculum for 3-5 year olds",
-    "goal": "Children reading at kindergarten level by age 5",
-    "shelf_layout": {
-      "shelf_1": "Sound Foundations - sandpaper letters, I-spy, phonemic awareness (14 works)",
-      "shelf_2": "Pink Series CVC - short a/e/i/o/u word families (20 works)",
-      "shelf_3": "Blue Series - digraphs sh/ch/th/wh/ck/ng + L/R/S blends (20 works)",
-      "shelf_4": "Green Part 1 - Magic E (a_e, i_e, o_e) + vowel teams ee/ea/ai/ay/oa/ow (20 works)",
-      "shelf_5": "Green Part 2 - oo, ou/ow, oi/oy, au/aw + R-controlled ar/or/er/ir/ur (20 works)",
-      "shelf_6": "Comprehension - sentences, stories, reading baskets (20 works)"
-    },
-    "total_works": 114,
-    "stories_created": [
-      "The Big Red Hat (CVC)",
-      "Chip and the Fish (Digraphs)",
-      "Frog on a Log (Blends)",
-      "The Bee in the Tree (Vowel Teams)",
-      "The Cake by the Lake (Magic E)",
-      "Time to Read! (Mixed)"
+  "SESSION_131_CLEANUP": {
+    "summary": "Simplified teacher dashboard to minimal interface - just students and camera",
+    "philosophy": "Teachers manage works and students. Nothing else. Keep it clean.",
+    "fixes_applied": [
+      "REMOVED footer completely - no more icons cluttering the screen",
+      "Camera button: Top right header (next to logout)",
+      "Student grid: Now includes '+' tile to add students",
+      "Tools/Settings pages: Still exist but NOT linked from main UI",
+      "Parent dashboard: Added games link for practice at home",
+      "Admin settings: Created new page (was 404)",
+      "Admin teachers: Fixed API query that returned empty data",
+      "Admin students: Changed DOB to age picker for consistency",
+      "FIXED: 'Failed to add student' - Added POST handler to /api/montree/children",
+      "FIXED: Students page now uses /api/montree/children (not /api/montree/onboarding/students)"
     ],
-    "files_created": [
-      "CVC_Curriculum_English.xlsx - Master curriculum spreadsheet",
-      "English_Corner_Works_Layout.xlsx - 6 tabs, 4 levels per shelf, materials checklist",
-      "English_Corner_Shelf_Diagram.html - Visual bookshelf layout",
-      "Story_1-6_*.pdf - Individual story PDFs with comprehension",
-      "Phonics_Stories_All.pdf - Combined stories document",
-      "Printing_Instructions.pdf - Teacher printing guide",
-      "Answer_Key.pdf - Comprehension answers",
-      "Montessori_Phonics_Curriculum.zip - Complete bundle"
-    ],
-    "code_changes": [
-      "app/montree/page.tsx - Simplified onboarding (Set Up School + Login dropdown)",
-      "app/api/montree/curriculum/route.ts - Fixed ordering to preserve sequence_order"
+    "files_modified": [
+      "app/montree/dashboard/page.tsx - REMOVED FOOTER",
+      "app/montree/dashboard/settings/page.tsx",
+      "app/montree/parent/dashboard/page.tsx",
+      "app/montree/admin/settings/page.tsx (NEW)",
+      "app/api/montree/admin/teachers/route.ts",
+      "app/montree/admin/students/page.tsx",
+      "app/api/montree/children/route.ts - ADDED POST handler",
+      "app/montree/dashboard/students/page.tsx - Fixed API endpoint"
     ]
   },
 
-  "SESSION_128_FIX": {
-    "issue": "Progress wasn't displaying - checking for 'completed' status that doesn't exist",
-    "root_cause": "API routes checked for status='completed' but actual status values are: not_started, presented, practicing, mastered",
-    "files_fixed": [
-      "app/api/montree/progress/bars/route.ts - Line 58: changed 'completed' to 'mastered', added 'practicing'/'presented' for current work tracking",
-      "app/api/montree/reports/pdf/route.ts - Lines 58,64: changed 'completed' to 'mastered'"
-    ],
-    "status_values": {
-      "not_started": "Work not yet introduced",
-      "presented": "Teacher presented the work",
-      "practicing": "Child is practicing",
-      "mastered": "Child has mastered the work"
+  "QUICK_GUIDES": {
+    "description": "10-second scan style instructions for each work",
+    "location": "supabase/migrations/090_quick_guide_columns.sql",
+    "columns": {
+      "quick_guide": "3-5 bullet point instructions for teachers",
+      "video_search_term": "YouTube search term for demonstration videos"
+    },
+    "coverage": "220 works have quick guides populated",
+    "created_session": 110
+  },
+
+  "TEACHER_UI": {
+    "dashboard": "/montree/dashboard",
+    "layout": {
+      "header": "Classroom name + 📷 Camera + Logout",
+      "main": "Student grid (full screen) with '+' tile to add students",
+      "footer": "REMOVED - no footer"
+    },
+    "flow": "Dashboard → Click student → Manage works/progress",
+    "hidden_pages": [
+      "/montree/dashboard/tools - exists but not linked",
+      "/montree/dashboard/settings - exists but not linked"
+    ]
+  },
+
+  "ROLE_SEPARATION": {
+    "teacher": {
+      "dashboard": "/montree/dashboard",
+      "ui": "Minimal: Student grid + Camera only",
+      "features": ["Student grid", "Camera capture", "Progress tracking per student"]
+    },
+    "principal": {
+      "dashboard": "/montree/admin",
+      "ui": "Full management interface",
+      "features": ["All classrooms", "All teachers", "All students", "School settings"]
+    },
+    "parent": {
+      "dashboard": "/montree/parent/dashboard",
+      "features": ["View child progress", "Weekly reports", "Practice games"]
     }
   },
-  
-  "SESSION_127_SUMMARY": {
-    "research": [
-      "docs/RESEARCH_MONTREE_UI_REDESIGN.md (216 lines)",
-      "docs/GAMEPLAN_MONTREE_UI_REDESIGN.md (307 lines)"
-    ],
-    "built": {
-      "pillar_1_dashboard_grid": "app/montree/dashboard/page.tsx (201 lines)",
-      "pillar_2_student_view": "app/montree/dashboard/[childId]/page.tsx (470 lines)",
-      "pillar_3_progress": "app/montree/dashboard/[childId]/progress/page.tsx (175 lines)",
-      "pillar_4_parent_reports": "app/montree/dashboard/[childId]/reports/page.tsx (394 lines)"
-    },
-    "total_changes": "974 insertions, 846 deletions",
-    "git_status": "NOT COMMITTED"
+
+  "DATA_CONVENTIONS": {
+    "area_in_progress_table": "STRING key like 'practical_life' (NOT UUID)",
+    "area_in_curriculum_tables": "UUID foreign key",
+    "work_identification": "work_name string (case-insensitive matching)",
+    "status_values": ["not_started", "presented", "practicing", "mastered"],
+    "progress_calculation": "All works BEFORE current position count as completed",
+    "age_storage": "Numeric (2, 2.5, 3, 3.5, etc.) - NOT date_of_birth"
   },
-
-  "NEXT_SESSION_TODO": [
-    "1. Create three-part card images for CVC words (SVG or source from OpenClipart)",
-    "2. Build digital phonics game into app at /app/montree/games/phonics-challenge/",
-    "3. Connect curriculum spreadsheet data to Supabase for English area",
-    "4. Add English curriculum works to curriculum-data.ts",
-    "5. Test phonics stories on iPad for classroom use",
-    "6. Consider parent dashboard showing child's current phonics shelf level"
-  ],
-
-  "FIXED_APIS": [
-    "/api/montree/progress/bars - FIXED: status check bug",
-    "/api/montree/reports/pdf - FIXED: status check bug"
-  ],
-
-  "DESIGN_TOKENS": {
-    "bg_primary": "#FAFAF9",
-    "text_primary": "#2D3748",
-    "area_practical": "#F59E0B",
-    "area_sensorial": "#8B5CF6",
-    "area_math": "#3B82F6",
-    "area_language": "#10B981",
-    "area_cultural": "#F43F5E"
-  },
-
-  "LESSON_LEARNED": "Update brain.json IMMEDIATELY after each file change - glitched 3x this session",
 
   "LIVE_URL": "https://teacherpotato.xyz/montree"
 }

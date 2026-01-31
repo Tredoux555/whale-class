@@ -3,7 +3,7 @@
 // Theme: Clean white/blue for teachers (NOT green - that's for principals)
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Curriculum areas
@@ -41,7 +41,7 @@ type Student = {
   progress: { [areaId: string]: { workId: string | null; workName?: string } };
 };
 
-// Curriculum Wheel Picker with Add Custom Work
+// Curriculum Wheel Picker with Add Custom Work + Search + Click-Outside + Long-press Insert
 function CurriculumPicker({
   areaId,
   areaName,
@@ -65,9 +65,43 @@ function CurriculumPicker({
   const [showAddCustom, setShowAddCustom] = useState(false);
   const [customWorkName, setCustomWorkName] = useState('');
   const [insertAfterIndex, setInsertAfterIndex] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const customInputRef = useRef<HTMLInputElement>(null);
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setShowAddCustom(false);
+        setSearchQuery('');
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Focus input when showing add custom form
+  useEffect(() => {
+    if (showAddCustom && customInputRef.current) {
+      customInputRef.current.focus();
+    }
+  }, [showAddCustom, insertAfterIndex]);
 
   const selectedWork = works.find(w => w.id === selectedWorkId);
   const displayLabel = selectedWork?.name || 'Not started yet';
+
+  // Filter works by search query
+  const filteredWorks = searchQuery.trim()
+    ? works.filter(w => w.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : works;
 
   const handleAddCustomWork = () => {
     if (!customWorkName.trim()) return;
@@ -78,8 +112,32 @@ function CurriculumPicker({
     setInsertAfterIndex(-1);
   };
 
+  // Long press / right-click handler for sequence numbers
+  const handleNumberContextMenu = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setInsertAfterIndex(index);
+    setShowAddCustom(true);
+    setCustomWorkName('');
+  };
+
+  const handleNumberTouchStart = (index: number) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setInsertAfterIndex(index);
+      setShowAddCustom(true);
+      setCustomWorkName('');
+    }, 500); // 500ms long press
+  };
+
+  const handleNumberTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-3 bg-white border border-slate-200 rounded-xl text-left flex items-center gap-3 hover:border-blue-300 hover:bg-blue-50/50 transition-colors shadow-sm"
@@ -95,69 +153,122 @@ function CurriculumPicker({
 
       {isOpen && (
         <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
-          <div className="max-h-72 overflow-y-auto">
-            {/* Not started option */}
-            <button
-              onClick={() => { onSelect(null); setIsOpen(false); }}
-              className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 border-b border-slate-100 ${
-                selectedWorkId === null ? 'bg-blue-50' : ''
-              }`}
-            >
-              <span className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">—</span>
-              <span className="text-slate-500 flex-1">Not started yet</span>
-              {selectedWorkId === null && <span className="text-blue-500">✓</span>}
-            </button>
+          {/* Search Bar */}
+          <div className="p-2 border-b border-slate-100 bg-slate-50">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${areaName.toLowerCase()}...`}
+                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-700 text-sm placeholder-slate-400 focus:border-blue-400 outline-none"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto">
+            {/* Not started option (only show when not searching) */}
+            {!searchQuery && (
+              <button
+                onClick={() => { onSelect(null); setIsOpen(false); setSearchQuery(''); }}
+                className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 border-b border-slate-100 ${
+                  selectedWorkId === null ? 'bg-blue-50' : ''
+                }`}
+              >
+                <span className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">—</span>
+                <span className="text-slate-500 flex-1">Not started yet</span>
+                {selectedWorkId === null && <span className="text-blue-500">✓</span>}
+              </button>
+            )}
 
             {/* Works list */}
-            {works.map((work, index) => (
-              <div key={work.id} className="relative">
-                <button
-                  onClick={() => { onSelect(work.id, work.name); setIsOpen(false); }}
-                  className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 ${
-                    selectedWorkId === work.id ? 'bg-blue-50' : ''
-                  } border-b border-slate-50`}
-                >
-                  <span
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                    style={{ backgroundColor: color }}
-                  >
-                    {index + 1}
-                  </span>
-                  <span className={`flex-1 truncate ${work.isCustom ? 'text-amber-600' : 'text-slate-700'}`}>
-                    {work.name}
-                    {work.isCustom && <span className="text-xs ml-1 opacity-60">(custom)</span>}
-                  </span>
-                  {selectedWorkId === work.id && <span className="text-blue-500">✓</span>}
-                </button>
-
-                {showAddCustom && insertAfterIndex === index && (
-                  <div className="px-4 py-3 bg-amber-50 border-y border-amber-200">
-                    <input
-                      type="text"
-                      value={customWorkName}
-                      onChange={(e) => setCustomWorkName(e.target.value)}
-                      placeholder="Enter custom work name..."
-                      className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-sm placeholder-slate-400 mb-2"
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleAddCustomWork}
-                        className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium"
-                      >
-                        Add Here
-                      </button>
-                      <button
-                        onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
-                        className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
+            {filteredWorks.length === 0 && searchQuery && (
+              <div className="px-4 py-6 text-center text-slate-400 text-sm">
+                No works matching &quot;{searchQuery}&quot;
               </div>
-            ))}
+            )}
+
+            {filteredWorks.map((work) => {
+              const originalIndex = works.findIndex(w => w.id === work.id);
+              return (
+                <div key={work.id} className="relative">
+                  <div
+                    className={`w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 ${
+                      selectedWorkId === work.id ? 'bg-blue-50' : ''
+                    } border-b border-slate-50 cursor-pointer`}
+                    onClick={() => { onSelect(work.id, work.name); setIsOpen(false); setSearchQuery(''); }}
+                  >
+                    {/* Sequence number - long press or right click to add work after */}
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-amber-400 hover:ring-offset-1 transition-all active:scale-95"
+                      style={{ backgroundColor: color }}
+                      title="Long press or right-click to add work after this"
+                      onContextMenu={(e) => handleNumberContextMenu(e, originalIndex)}
+                      onTouchStart={() => handleNumberTouchStart(originalIndex)}
+                      onTouchEnd={handleNumberTouchEnd}
+                      onTouchCancel={handleNumberTouchEnd}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {originalIndex + 1}
+                    </span>
+                    <span className={`flex-1 truncate ${work.isCustom ? 'text-amber-600' : 'text-slate-700'}`}>
+                      {work.name}
+                      {work.isCustom && <span className="text-xs ml-1 opacity-60">(custom)</span>}
+                    </span>
+                    {selectedWorkId === work.id && <span className="text-blue-500">✓</span>}
+                  </div>
+
+                  {showAddCustom && insertAfterIndex === originalIndex && (
+                    <div className="px-4 py-3 bg-amber-50 border-y border-amber-200">
+                      <p className="text-amber-700 text-xs mb-2 font-medium">
+                        ➕ Add work after &quot;{work.name}&quot;
+                      </p>
+                      <input
+                        ref={customInputRef}
+                        type="text"
+                        value={customWorkName}
+                        onChange={(e) => setCustomWorkName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customWorkName.trim()) {
+                            handleAddCustomWork();
+                          } else if (e.key === 'Escape') {
+                            setShowAddCustom(false);
+                            setInsertAfterIndex(-1);
+                          }
+                        }}
+                        placeholder="Enter custom work name..."
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-sm placeholder-slate-400 mb-2"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAddCustomWork}
+                          disabled={!customWorkName.trim()}
+                          className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium disabled:opacity-50"
+                        >
+                          Add Work
+                        </button>
+                        <button
+                          onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
+                          className="px-3 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {showAddCustom && insertAfterIndex === -1 && (
               <div className="px-4 py-3 bg-amber-50 border-t border-amber-200">
@@ -189,8 +300,8 @@ function CurriculumPicker({
 
           {/* Add Custom Work Footer */}
           <div className="border-t border-slate-100 p-2 bg-slate-50">
-            <p className="text-slate-400 text-xs mb-2 px-2">Can&apos;t find the work? Add it:</p>
-            <div className="flex gap-1 flex-wrap">
+            <p className="text-slate-400 text-xs mb-1 px-2">Can&apos;t find the work? Add custom:</p>
+            <div className="flex gap-1 flex-wrap mb-2">
               <button
                 onClick={() => { setShowAddCustom(true); setInsertAfterIndex(-1); }}
                 className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-200"
@@ -206,6 +317,10 @@ function CurriculumPicker({
                 </button>
               )}
             </div>
+            <p className="text-slate-400 text-xs px-2 flex items-center gap-1">
+              <span className="inline-block w-4 h-4 rounded-full text-[8px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: color }}>•</span>
+              <span>Long-press or right-click a number to insert after it</span>
+            </p>
           </div>
         </div>
       )}
@@ -213,13 +328,30 @@ function CurriculumPicker({
   );
 }
 
-// Age Picker Component
+// Age Picker Component with Click-Outside
 function AgePicker({ value, onChange }: { value: number; onChange: (age: number) => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const selected = AGE_OPTIONS.find(a => a.value === value) || AGE_OPTIONS[2];
 
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-3 bg-white border border-slate-200 rounded-xl text-left flex items-center gap-3 hover:border-blue-300 transition-colors shadow-sm"
@@ -283,7 +415,24 @@ export default function OnboardingPage() {
     try {
       const parsed = JSON.parse(stored);
       setSession(parsed);
-      loadCurriculum(parsed.classroom?.id);
+
+      // Check if teacher already has students - if so, go to dashboard
+      if (parsed.classroom?.id) {
+        fetch(`/api/montree/children?classroom_id=${parsed.classroom.id}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.children && data.children.length > 0) {
+              // Already onboarded - go to dashboard
+              router.push('/montree/dashboard');
+            } else {
+              // No students yet - load curriculum and continue onboarding
+              loadCurriculum(parsed.classroom.id);
+            }
+          })
+          .catch(() => {
+            loadCurriculum(parsed.classroom.id);
+          });
+      }
     } catch {
       router.push('/montree/login');
     }
@@ -309,6 +458,7 @@ export default function OnboardingPage() {
                 id: work.id || work.work_key,
                 name: work.name,
                 sequence: work.sequence || 0,
+                isCustom: work.is_custom || false,
               });
             }
           }
@@ -356,6 +506,7 @@ export default function OnboardingPage() {
                   id: work.id || work.work_key,
                   name: work.name,
                   sequence: work.sequence || 0,
+                  isCustom: work.is_custom || false,
                 });
               }
             }
@@ -373,17 +524,22 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleAddCustomWork = (areaId: string, workName: string, afterSequence: number) => {
-    const newWork: Work = {
-      id: `custom_${Date.now()}`,
+  const handleAddCustomWork = async (areaId: string, workName: string, afterSequence: number) => {
+    if (!session?.classroom?.id) return;
+
+    // Optimistic UI update with temporary ID
+    const tempId = `temp_${Date.now()}`;
+    const tempWork: Work = {
+      id: tempId,
       name: workName,
       sequence: afterSequence + 0.5,
       isCustom: true,
     };
 
+    // Update local state optimistically
     setCurriculumWorks(prev => {
       const updated = { ...prev };
-      updated[areaId] = [...(updated[areaId] || []), newWork].sort((a, b) => a.sequence - b.sequence);
+      updated[areaId] = [...(updated[areaId] || []), tempWork].sort((a, b) => a.sequence - b.sequence);
       return updated;
     });
 
@@ -391,9 +547,59 @@ export default function OnboardingPage() {
       ...prev,
       progress: {
         ...prev.progress,
-        [areaId]: { workId: newWork.id, workName: workName },
+        [areaId]: { workId: tempId, workName: workName },
       },
     }));
+
+    try {
+      // Persist to database
+      const res = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroom_id: session.classroom.id,
+          area_key: areaId,
+          name: workName,
+          after_sequence: afterSequence,
+          is_custom: true,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const savedWork = data.work;
+
+        // Replace temp ID with actual database ID
+        setCurriculumWorks(prev => {
+          const updated = { ...prev };
+          updated[areaId] = updated[areaId].map(w =>
+            w.id === tempId ? { ...w, id: savedWork.id, sequence: savedWork.sequence } : w
+          ).sort((a, b) => a.sequence - b.sequence);
+          return updated;
+        });
+
+        // Update student progress with real ID
+        setCurrentStudent(prev => {
+          if (prev.progress[areaId]?.workId === tempId) {
+            return {
+              ...prev,
+              progress: {
+                ...prev.progress,
+                [areaId]: { workId: savedWork.id, workName: workName },
+              },
+            };
+          }
+          return prev;
+        });
+
+        console.log(`Custom work "${workName}" saved to classroom curriculum`);
+      } else {
+        console.error('Failed to save custom work');
+        // Could rollback optimistic update here if needed
+      }
+    } catch (err) {
+      console.error('Error saving custom work:', err);
+    }
   };
 
   const addStudent = () => {
@@ -430,7 +636,19 @@ export default function OnboardingPage() {
   };
 
   const saveAndComplete = async () => {
-    if (students.length === 0) {
+    // Auto-add current student if they have a name (don't lose unsaved work!)
+    let finalStudents = [...students];
+    if (currentStudent.name.trim()) {
+      if (editingStudentIndex !== null) {
+        // Was editing - update that student
+        finalStudents[editingStudentIndex] = { ...currentStudent };
+      } else {
+        // New student - add to list
+        finalStudents = [...finalStudents, { ...currentStudent }];
+      }
+    }
+
+    if (finalStudents.length === 0) {
       setError('Please add at least one student to continue');
       return;
     }
@@ -444,7 +662,7 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           classroomId: session.classroom.id,
-          students: students.map(s => ({
+          students: finalStudents.map(s => ({
             name: s.name,
             age: s.age,
             progress: Object.fromEntries(
@@ -474,37 +692,37 @@ export default function OnboardingPage() {
     }
   };
 
-  // Step 0: Welcome (White/Blue theme)
+  // Step 0: Welcome (Emerald/Teal theme - warm & exciting)
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 w-full max-w-lg text-center">
-          <div className="text-6xl mb-6">👋</div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Welcome to Montree!</h1>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-emerald-100 p-8 w-full max-w-lg text-center">
+          <div className="text-6xl mb-4">🌳</div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Almost there!</h1>
+          <p className="text-emerald-600 font-medium mb-6">One quick step and you&apos;re in</p>
 
-          <div className="text-left bg-blue-50 rounded-2xl p-5 mb-6 border border-blue-100">
-            <p className="text-slate-600 leading-relaxed mb-4">
-              I&apos;m so excited to show you how this works and the features that will make your life so much easier!
+          <div className="text-left bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 mb-6 border border-emerald-100">
+            <p className="text-slate-700 leading-relaxed mb-4">
+              ✨ We&apos;ve built something special for you — a system that will transform how you track and nurture each child&apos;s Montessori journey.
             </p>
             <p className="text-slate-600 leading-relaxed mb-4">
-              But first, I must apologize — I have to give you a little work to do.
-              <span className="font-semibold text-slate-700"> I promise this will save you a ton of effort in the future.</span>
+              To unlock all the magic, we just need to know who&apos;s in your classroom.
             </p>
-            <p className="text-slate-800 font-semibold text-lg">
-              🌳 Let&apos;s get your children into the classroom!
+            <p className="text-emerald-700 font-semibold text-lg flex items-center gap-2">
+              <span>👶</span> Let&apos;s add your students!
             </p>
           </div>
 
           <button
             onClick={() => setStep(1)}
-            className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all"
           >
-            Let&apos;s Do This! →
+            Let&apos;s Go! →
           </button>
 
           {session?.teacher?.name && (
             <p className="text-sm text-slate-400 mt-6">
-              Logged in as {session.teacher.name}
+              {session.teacher.name} • {session.classroom?.name}
             </p>
           )}
         </div>

@@ -178,9 +178,6 @@ export default function WorkWheelPicker({
                     <p className={`font-semibold text-white ${distance === 0 ? 'text-lg' : 'text-base'}`}>
                       {work.name}
                     </p>
-                    {work.name_chinese && distance === 0 && (
-                      <p className="text-sm text-white/80">{work.name_chinese}</p>
-                    )}
                   </div>
 
                   {/* Sequence number */}

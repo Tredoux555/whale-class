@@ -1,22 +1,38 @@
 // /montree/dashboard/settings/page.tsx
 // Settings - Teacher profile, preferences
-// Polished Session 64 - Consistent with Montree theme
+// Fixed: Removed admin features - teacher settings only
 'use client';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 const SETTINGS_ITEMS = [
-  { emoji: '🏫', title: 'School Settings', desc: 'Manage school profile', href: '/montree/admin' },
-  { emoji: '👥', title: 'Manage Students', desc: 'Add or edit students', href: '/montree/admin/students' },
-  { emoji: '📚', title: 'Curriculum', desc: 'Edit works & sequences', href: '/admin/curriculum-editor' },
-  { emoji: '📅', title: 'Weekly Planning', desc: 'Upload weekly plans', href: '/admin/weekly-planning' },
-  { emoji: '🖼️', title: 'Media Gallery', desc: 'View all photos', href: '/montree/dashboard/media' },
-  { emoji: '📊', title: 'Reports', desc: 'Generate parent reports', href: '/montree/dashboard/reports' },
+  { emoji: '🖼️', title: 'Media Gallery', desc: 'View captured photos', href: '/montree/dashboard/media' },
+  { emoji: '📊', title: 'Reports', desc: 'View student reports', href: '/montree/dashboard/reports' },
+  { emoji: '🎮', title: 'Curriculum Games', desc: 'Practice activities', href: '/montree/dashboard/games' },
 ];
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [teacherName, setTeacherName] = useState('');
+  const [classroomName, setClassroomName] = useState('');
+  const [classroomIcon, setClassroomIcon] = useState('🌳');
+
+  useEffect(() => {
+    // Load teacher session data
+    const sessionStr = sessionStorage.getItem('teacherSession') || localStorage.getItem('teacherSession');
+    if (sessionStr) {
+      try {
+        const session = JSON.parse(sessionStr);
+        setTeacherName(session.teacherName || session.name || 'Teacher');
+        setClassroomName(session.classroomName || 'My Classroom');
+        setClassroomIcon(session.classroomIcon || '🌳');
+      } catch (e) {
+        console.error('Failed to parse session:', e);
+      }
+    }
+  }, []);
 
   const handleSignOut = () => {
     // Clear teacher session
@@ -31,8 +47,8 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 py-4 px-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link 
-          href="/montree/dashboard" 
+        <Link
+          href="/montree/dashboard"
           className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors"
         >
           <span className="text-lg">←</span>
@@ -48,12 +64,12 @@ export default function SettingsPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
-              🌳
+              {classroomIcon}
             </div>
             <div className="flex-1">
-              <div className="text-gray-900 font-bold text-lg">My Classroom</div>
-              <div className="text-gray-500 text-sm">PreK 4 • Beijing International School</div>
-              <div className="text-emerald-600 text-xs mt-1">✓ Active subscription</div>
+              <div className="text-gray-900 font-bold text-lg">{teacherName || 'Teacher'}</div>
+              <div className="text-gray-500 text-sm">{classroomName}</div>
+              <div className="text-emerald-600 text-xs mt-1">✓ Active</div>
             </div>
           </div>
         </div>

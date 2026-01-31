@@ -193,13 +193,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ADD SINGLE WORK
-    const { work_key, name, name_chinese, area_key, description } = body;
-    
+    // ADD SINGLE WORK - supports inserting at specific position
+    const { work_key, name, name_chinese, area_key, description, after_sequence, is_custom } = body;
+
     if (!name) {
       return NextResponse.json({ error: 'name required' }, { status: 400 });
     }
 
+    // Get the area ID for this work
     const { data: areaData } = await supabase
       .from('montree_classroom_curriculum_areas')
       .select('id')
@@ -211,26 +212,63 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Area not found - seed curriculum first' }, { status: 400 });
     }
 
-    const { data: existingSeq } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('sequence')
-      .eq('classroom_id', classroom_id)
-      .order('sequence', { ascending: false })
-      .limit(1);
+    let newSequence: number;
 
-    const nextSequence = (existingSeq?.[0]?.sequence || 0) + 1;
+    if (after_sequence !== undefined && after_sequence !== null) {
+      // INSERT AFTER SPECIFIC SEQUENCE
+      // First, shift all works with sequence > after_sequence by 1
+      const { error: shiftError } = await supabase.rpc('increment_sequences_after', {
+        p_classroom_id: classroom_id,
+        p_area_id: areaData.id,
+        p_after_sequence: after_sequence
+      });
+
+      // If RPC doesn't exist, do it manually
+      if (shiftError) {
+        // Get all works in this area with sequence > after_sequence
+        const { data: worksToShift } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id, sequence')
+          .eq('classroom_id', classroom_id)
+          .eq('area_id', areaData.id)
+          .gt('sequence', after_sequence)
+          .order('sequence', { ascending: false }); // Descending to avoid conflicts
+
+        // Shift each one
+        for (const work of worksToShift || []) {
+          await supabase
+            .from('montree_classroom_curriculum_works')
+            .update({ sequence: work.sequence + 1 })
+            .eq('id', work.id);
+        }
+      }
+
+      newSequence = after_sequence + 1;
+    } else {
+      // ADD AT END
+      const { data: existingSeq } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('sequence')
+        .eq('classroom_id', classroom_id)
+        .eq('area_id', areaData.id)
+        .order('sequence', { ascending: false })
+        .limit(1);
+
+      newSequence = (existingSeq?.[0]?.sequence || 0) + 1;
+    }
 
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .insert({
         classroom_id,
         area_id: areaData.id,
-        work_key: work_key || name.toLowerCase().replace(/\s+/g, '_'),
+        work_key: work_key || `custom_${name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
         name,
         name_chinese: name_chinese || null,
         description: description || null,
-        sequence: nextSequence,
-        is_active: true
+        sequence: newSequence,
+        is_active: true,
+        is_custom: is_custom || false,
       })
       .select()
       .single();

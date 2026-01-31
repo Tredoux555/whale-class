@@ -16,9 +16,21 @@ export async function POST(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await request.json();
     const { child_id, work_key, work_name, status, area, notes } = body;
-    
+
     if (!child_id || (!work_key && !work_name)) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
+    }
+
+    // Verify child exists
+    const { data: child, error: childError } = await supabase
+      .from('montree_children')
+      .select('id')
+      .eq('id', child_id)
+      .single();
+
+    if (childError || !child) {
+      console.error('Child not found for progress update:', child_id, childError);
+      return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
     
     // Normalize status to string format

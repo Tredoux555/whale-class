@@ -45,6 +45,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
     }
 
+    // Get curriculum areas for this classroom to map area_key to area_id (UUID)
+    const { data: curriculumAreas } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id, area_key')
+      .eq('classroom_id', classroomId);
+
+    const areaKeyToId = new Map<string, string>();
+    const areaIdToKey = new Map<string, string>();
+    if (curriculumAreas) {
+      for (const area of curriculumAreas) {
+        areaKeyToId.set(area.area_key, area.id);
+        areaIdToKey.set(area.id, area.area_key);
+      }
+    }
+
     // Get curriculum works for this classroom to map work_ids to names
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
@@ -90,7 +105,7 @@ export async function POST(request: NextRequest) {
 
       // Create progress records for each selected work
       // When a student is marked as "on" a particular work, we record all works up to that point as "presented"
-      for (const [areaId, workId] of Object.entries(student.progress)) {
+      for (const [areaKey, workId] of Object.entries(student.progress)) {
         if (!workId) continue; // Skip if not started
 
         const work = workMap.get(workId);
@@ -99,8 +114,15 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // Convert area_key (like "practical_life") to area_id (UUID)
+        const areaUuid = areaKeyToId.get(areaKey);
+        if (!areaUuid) {
+          console.warn(`Area not found for key: ${areaKey}`);
+          continue;
+        }
+
         // Get all works in this area up to and including the selected work
-        const areaWorks = curriculumWorks?.filter(w => w.area_id === areaId) || [];
+        const areaWorks = curriculumWorks?.filter(w => w.area_id === areaUuid) || [];
         areaWorks.sort((a, b) => a.sequence - b.sequence);
 
         // Find index of selected work
@@ -115,7 +137,7 @@ export async function POST(request: NextRequest) {
               child_id: createdChild.id,
               work_name: w.name,
               work_name_chinese: w.name_chinese || null,
-              area: areaId,
+              area: areaKey,  // Use area_key string (like "practical_life"), not UUID
               status: 'presented',
               presented_at: new Date().toISOString(),
               notes: selectedIndex === worksToMark.indexOf(w)

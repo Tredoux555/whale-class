@@ -68,8 +68,17 @@ export default function WeekPage() {
   // Fetch assignments (filter to active works only for Week view)
   const fetchAssignments = () => {
     fetch(`/api/montree/progress?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          console.error('Progress API returned:', r.status);
+          throw new Error('API error');
+        }
+        return r.json();
+      })
       .then(data => {
+        if (data.debug) {
+          console.warn('Progress API debug:', data.debug);
+        }
         // Only show non-completed works in Week view
         const active = (data.progress || []).filter(
           (p: Assignment) => p.status !== 'completed' && p.status !== 'mastered'
@@ -77,7 +86,11 @@ export default function WeekPage() {
         setAssignments(active);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error('Failed to fetch progress:', err);
+        setAssignments([]);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -547,7 +560,6 @@ export default function WeekPage() {
                         <span className="text-xl">{getAreaConfig(selectedArea).icon}</span>
                         <div className="flex-1">
                           <p className="font-medium text-gray-800">{work.name}</p>
-                          {work.name_chinese && <p className="text-xs text-gray-500">{work.name_chinese}</p>}
                         </div>
                         {isAdded ? (
                           <span className="text-xs text-gray-400">Added ✓</span>

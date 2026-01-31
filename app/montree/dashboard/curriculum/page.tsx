@@ -278,7 +278,6 @@ export default function CurriculumPage() {
                             <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-gray-800">{work.name}</p>
-                              {work.name_chinese && <p className="text-sm text-gray-500">{work.name_chinese}</p>}
                             </div>
                             <div className="flex items-center gap-2">
                               {work.is_gateway && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Gateway</span>}

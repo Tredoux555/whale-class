@@ -22,6 +22,25 @@ export async function GET(request: NextRequest) {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // First verify child exists
+    const { data: child, error: childError } = await supabase
+      .from('montree_children')
+      .select('id, name')
+      .eq('id', childId)
+      .single();
+
+    if (childError) {
+      console.error('Child lookup error:', childError);
+      // Return empty progress instead of error - child might be new
+      return NextResponse.json({
+        progress: [],
+        stats: { presented: 0, practicing: 0, mastered: 0 },
+        byArea: {},
+        total: 0,
+        debug: `Child not found: ${childId}`
+      });
+    }
+
     const { data: progress, error } = await supabase
       .from('montree_child_progress')
       .select('*')
@@ -30,7 +49,13 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Progress fetch error:', error);
-      return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 });
+      return NextResponse.json({
+        progress: [],
+        stats: { presented: 0, practicing: 0, mastered: 0 },
+        byArea: {},
+        total: 0,
+        debug: `Query error: ${error.message}`
+      });
     }
 
     // Calculate stats

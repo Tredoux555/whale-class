@@ -30,35 +30,42 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const schoolId = searchParams.get('school_id') || request.headers.get('x-school-id');
-    
+
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID required' }, { status: 400 });
     }
 
-    // Get teachers with their classroom assignments
+    // Get teachers directly (simpler query, matches overview API)
     const { data: teachers, error } = await supabase
       .from('montree_teachers')
-      .select(`
-        id, name, email, is_active, created_at,
-        montree_teacher_classrooms (
-          classroom_id,
-          montree_classrooms ( id, name, icon )
-        )
-      `)
+      .select('id, name, email, classroom_id, is_active, created_at')
       .eq('school_id', schoolId)
+      .eq('is_active', true)
       .order('name');
 
     if (error) throw error;
 
-    // Transform to flatten classrooms
-    const transformedTeachers = (teachers || []).map(t => ({
-      id: t.id,
-      name: t.name,
-      email: t.email,
-      is_active: t.is_active,
-      created_at: t.created_at,
-      classrooms: (t.montree_teacher_classrooms || []).map((tc: any) => tc.montree_classrooms).filter(Boolean)
-    }));
+    // Get classrooms to map names
+    const { data: classrooms } = await supabase
+      .from('montree_classrooms')
+      .select('id, name, icon')
+      .eq('school_id', schoolId)
+      .eq('is_active', true);
+
+    const classroomMap = new Map((classrooms || []).map(c => [c.id, c]));
+
+    // Transform to include classroom info
+    const transformedTeachers = (teachers || []).map(t => {
+      const classroom = t.classroom_id ? classroomMap.get(t.classroom_id) : null;
+      return {
+        id: t.id,
+        name: t.name,
+        email: t.email,
+        is_active: t.is_active,
+        created_at: t.created_at,
+        classrooms: classroom ? [classroom] : []
+      };
+    });
 
     return NextResponse.json({ teachers: transformedTeachers });
   } catch (error) {
