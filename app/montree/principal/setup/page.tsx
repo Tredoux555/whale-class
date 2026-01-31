@@ -119,10 +119,40 @@ export default function PrincipalSetupPage() {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://teacherpotato.xyz';
     const shareUrl = `${baseUrl}/montree/join?code=${teacher.login_code}`;
     const message = `🌳 Welcome to Montree!\n\nHi ${teacher.name}, here's your teacher login code for ${teacher.classroom_name}:\n\nCode: ${teacher.login_code}\n\nLogin here: ${shareUrl}`;
-    
+
     navigator.clipboard.writeText(message);
     setCopiedCode(`share-${teacher.login_code}`);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const downloadAllCodes = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://teacherpotato.xyz';
+    const date = new Date().toLocaleDateString();
+
+    let content = `🌳 MONTREE TEACHER LOGIN CODES\n`;
+    content += `School: ${school?.name || 'Unknown'}\n`;
+    content += `Generated: ${date}\n`;
+    content += `${'='.repeat(50)}\n\n`;
+
+    createdTeachers.forEach(teacher => {
+      content += `${teacher.classroom_icon} ${teacher.classroom_name}\n`;
+      content += `   Teacher: ${teacher.name}\n`;
+      content += `   Code: ${teacher.login_code}\n`;
+      content += `   Login: ${baseUrl}/montree/join?code=${teacher.login_code}\n\n`;
+    });
+
+    content += `${'='.repeat(50)}\n`;
+    content += `⚠️ Keep this file secure - these codes grant teacher access!\n`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `montree-teacher-codes-${school?.slug || 'school'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (!school) return null;
@@ -346,10 +376,16 @@ export default function PrincipalSetupPage() {
                   ))}
                 </div>
 
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6 flex items-center justify-between">
                   <p className="text-amber-300 text-sm">
                     ⚠️ Save these codes now! They won&apos;t be shown again.
                   </p>
+                  <button
+                    onClick={downloadAllCodes}
+                    className="px-4 py-2 bg-amber-500 text-white font-medium rounded-lg hover:bg-amber-600 transition-colors text-sm flex items-center gap-2"
+                  >
+                    📥 Download All Codes
+                  </button>
                 </div>
               </>
             ) : (
