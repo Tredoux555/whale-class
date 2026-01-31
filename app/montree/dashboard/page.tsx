@@ -47,12 +47,11 @@ export default function DashboardPage() {
       });
   }, [session?.classroom?.id]);
 
-  // Calculate optimal grid layout - prefer wider/square tiles
+  // Calculate optimal grid layout - include +1 for the "add student" tile
   const gridLayout = useMemo(() => {
-    const count = children.length;
-    if (count === 0) return { cols: 3, rows: 1 };
-    
-    // For 20 students: 4 cols x 5 rows = nice square-ish tiles
+    const count = children.length + 1; // +1 for add button
+    if (count <= 1) return { cols: 3, rows: 1 };
+
     // For mobile, 3-4 columns works best
     if (count <= 6) return { cols: 3, rows: 2 };
     if (count <= 9) return { cols: 3, rows: 3 };
@@ -60,7 +59,7 @@ export default function DashboardPage() {
     if (count <= 16) return { cols: 4, rows: 4 };
     if (count <= 20) return { cols: 4, rows: 5 };
     if (count <= 25) return { cols: 5, rows: 5 };
-    
+
     // Fallback for larger classes
     const cols = 5;
     const rows = Math.ceil(count / cols);
@@ -84,21 +83,30 @@ export default function DashboardPage() {
           <span className="text-xl">🌳</span>
           <span className="font-bold text-sm truncate max-w-[150px]">{session.classroom?.name}</span>
         </div>
-        <button 
-          onClick={() => { clearSession(); router.push('/montree/login'); }}
-          className="text-xs px-3 py-1.5 bg-white/20 rounded-lg active:bg-white/30"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/montree/dashboard/capture?class=true"
+            className="p-2 bg-white/20 rounded-lg hover:bg-white/30 active:scale-95 transition-all"
+            title="Class Photo"
+          >
+            <span className="text-lg">📷</span>
+          </Link>
+          <button
+            onClick={() => { clearSession(); router.push('/montree/login'); }}
+            className="text-xs px-3 py-1.5 bg-white/20 rounded-lg active:bg-white/30"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
-      {/* Student Grid - AUTO-FITS to fill entire screen */}
-      <main className="flex-1 p-2 overflow-hidden">
+      {/* Student Grid - fills entire screen, no footer clutter */}
+      <main className="flex-1 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] overflow-hidden">
         {children.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-gray-500">
+          <Link href="/montree/dashboard/students" className="h-full flex flex-col items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors">
             <span className="text-4xl mb-2">👶</span>
-            <p className="text-sm">No students yet</p>
-          </div>
+            <p className="text-sm font-medium">Tap to add students</p>
+          </Link>
         ) : (
           <div
             className="h-full grid gap-2"
@@ -127,18 +135,16 @@ export default function DashboardPage() {
                 </p>
               </Link>
             ))}
+            {/* Add Student tile - always at the end */}
+            <Link
+              href="/montree/dashboard/students"
+              className="bg-white/50 border-2 border-dashed border-gray-300 rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 active:scale-95 transition-all flex flex-col items-center justify-center p-1 min-h-0"
+            >
+              <span className="text-2xl text-gray-400">+</span>
+            </Link>
           </div>
         )}
       </main>
-
-      {/* Footer Tools - with safe area for home bar */}
-      <footer className="bg-white border-t px-2 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] flex justify-around shrink-0">
-        <Link href="/montree/dashboard/capture?class=true" className="p-2 text-xl hover:scale-110 transition-transform" title="Class Photo">📷</Link>
-        <Link href="/montree/dashboard/curriculum" className="p-2 text-xl hover:scale-110 transition-transform" title="Curriculum">📚</Link>
-        <Link href="/montree/dashboard/games" className="p-2 text-xl hover:scale-110 transition-transform" title="Games">🎮</Link>
-        <Link href="/montree/dashboard/tools" className="p-2 text-xl hover:scale-110 transition-transform" title="Tools">🛠️</Link>
-        <Link href="/montree/dashboard/settings" className="p-2 text-xl hover:scale-110 transition-transform" title="Settings">⚙️</Link>
-      </footer>
     </div>
   );
 }

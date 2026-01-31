@@ -91,16 +91,27 @@ export async function POST(request: NextRequest) {
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', teacher.id);
 
+    // Check if teacher has onboarded (has students in classroom)
+    let onboarded = false;
+    if (classroom) {
+      const { count } = await supabase
+        .from('montree_children')
+        .select('id', { count: 'exact', head: true })
+        .eq('classroom_id', classroom.id);
+      onboarded = (count || 0) > 0;
+    }
+
     return NextResponse.json({
       success: true,
       teacher: {
         id: teacher.id,
         name: teacher.name,
         email: teacher.email,
-        password_set: !!teacher.password_set_at,
+        password_set_at: teacher.password_set_at || null,
       },
       classroom: classroom || null,
       school: school || null,
+      onboarded,
     });
 
   } catch (error) {

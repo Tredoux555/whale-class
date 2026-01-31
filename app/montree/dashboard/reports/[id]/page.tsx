@@ -187,9 +187,6 @@ export default function ReportViewPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="font-semibold text-gray-800">{work.name}</h3>
-                        {work.name_chinese && (
-                          <p className="text-sm text-gray-500">{work.name_chinese}</p>
-                        )}
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         work.status_label === 'Mastered' ? 'bg-green-100 text-green-700' :

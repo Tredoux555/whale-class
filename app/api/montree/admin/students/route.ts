@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       .select('id, name, photo_url, age, classroom_id, is_active, created_at')
       .in('classroom_id', classroomIds)
       .eq('is_active', true)
-      .order('name');
+      .order('name', { ascending: true });
 
     if (classroomId && classroomId !== 'all') {
       query = query.eq('classroom_id', classroomId);
