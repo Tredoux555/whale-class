@@ -22,6 +22,7 @@ export default function PrincipalSetupPage() {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -100,6 +101,9 @@ export default function PrincipalSetupPage() {
       if (!res.ok) throw new Error(data.error || 'Setup failed');
 
       setCreatedTeachers(data.teachers);
+      if (data.warnings) {
+        setWarnings(data.warnings);
+      }
       setStep(3);
 
     } catch (err) {
@@ -323,6 +327,22 @@ export default function PrincipalSetupPage() {
         {/* Step 3: Success - Onboarding Complete */}
         {step === 3 && (
           <div className="space-y-6">
+            {/* Warning if some items failed */}
+            {warnings.length > 0 && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xl">⚠️</span>
+                  <h3 className="text-red-300 font-semibold">Some items may not have been created</h3>
+                </div>
+                <ul className="text-red-200/80 text-sm space-y-1">
+                  {warnings.map((w, i) => (
+                    <li key={i}>• {w}</li>
+                  ))}
+                </ul>
+                <p className="text-red-200/60 text-xs mt-2">Please try setting up again or contact support if the issue persists.</p>
+              </div>
+            )}
+
             {/* Success Message */}
             <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
               <div className="text-5xl mb-4">🎉</div>

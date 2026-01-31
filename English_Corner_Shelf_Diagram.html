@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montessori English Corner - 6 Shelf Layout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .bookshelf {
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .shelf {
+            background: linear-gradient(180deg, #DEB887 0%, #D2691E 100%);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            padding: 8px 10px 15px 10px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .shelf:last-child {
+            margin-bottom: 0;
+        }
+
+        .shelf-label {
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            background: #2d3748;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .shelf-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-left: 25px;
+        }
+
+        .shelf-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .shelf-title {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .shelf-series {
+            font-size: 0.75rem;
+            color: #4a5568;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+        }
+
+        .works-container {
+            display: flex;
+            gap: 8px;
+            padding-left: 25px;
+            overflow-x: auto;
+        }
+
+        .work {
+            min-width: 100px;
+            padding: 10px 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .work:hover {
+            transform: translateY(-3px);
+        }
+
+        .work-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+        }
+
+        .work-examples {
+            font-size: 0.65rem;
+            opacity: 0.9;
+            line-height: 1.3;
+        }
+
+        /* Shelf Colors */
+        .shelf-1 .shelf-number { background: #6B7280; }
+        .shelf-1 .work { background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%); }
+
+        .shelf-2 .shelf-number { background: #EC4899; }
+        .shelf-2 .work { background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); }
+
+        .shelf-3 .shelf-number { background: #3B82F6; }
+        .shelf-3 .work { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
+
+        .shelf-4 .shelf-number { background: #10B981; }
+        .shelf-4 .work { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+
+        .shelf-5 .shelf-number { background: #F97316; }
+        .shelf-5 .work { background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); }
+
+        .shelf-6 .shelf-number { background: #8B5CF6; }
+        .shelf-6 .work { background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .arrow-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .progression-arrow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .arrow-step {
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .arrow-step strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #2d3748;
+        }
+
+        .arrow-icon {
+            color: #10B981;
+            font-size: 1.5rem;
+        }
+
+        .note {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            color: #4a5568;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .vowel-label {
+            display: flex;
+            justify-content: space-around;
+            padding: 0 30px;
+            margin-top: 5px;
+        }
+
+        .vowel-label span {
+            font-size: 0.7rem;
+            color: #718096;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Montessori English Corner</h1>
+        <p class="subtitle">6-Shelf Layout: From Consonants to Free Reading</p>
+
+        <div class="bookshelf">
+            <!-- Shelf 1: Sound Foundations -->
+            <div class="shelf shelf-1">
+                <div class="shelf-header">
+                    <div class="shelf-number">1</div>
+                    <span class="shelf-title">Sound Foundations</span>
+                    <span class="shelf-series">Pre-Reading</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">Sandpaper Letters</div>
+                        <div class="work-examples">Set 1: c,m,t,s,r,p,b,f</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Sandpaper Letters</div>
+                        <div class="work-examples">Set 2: g,h,j,l,d,w,n,k</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Sandpaper Letters</div>
+                        <div class="work-examples">Set 3: q,v,x,y,z</div>
+                    </div>
+                    <div class="work" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+                        <div class="work-title">RED Vowels</div>
+                        <div class="work-examples">a, e, i, o, u</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">I-Spy Basket</div>
+                        <div class="work-examples">Initial sounds</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shelf 2: Pink Series CVC -->
+            <div class="shelf shelf-2">
+                <div class="shelf-header">
+                    <div class="shelf-number">2</div>
+                    <span class="shelf-title">CVC Word Building</span>
+                    <span class="shelf-series">Pink Series</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">Short A</div>
+                        <div class="work-examples">-at, -an, -ap<br>-ad, -am, -ag</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Short E</div>
+                        <div class="work-examples">-et, -en, -ed<br>-eg, -em, -eb</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Short I</div>
+                        <div class="work-examples">-it, -in, -ig<br>-ip, -id, -im</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Short O</div>
+                        <div class="work-examples">-ot, -op, -og<br>-ob, -od, -ox</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Short U</div>
+                        <div class="work-examples">-ut, -un, -ug<br>-up, -ub, -um</div>
+                    </div>
+                </div>
+                <div class="vowel-label">
+                    <span>← a</span>
+                    <span>e</span>
+                    <span>i</span>
+                    <span>o</span>
+                    <span>u →</span>
+                </div>
+            </div>
+
+            <!-- Shelf 3: Blue Series -->
+            <div class="shelf shelf-3">
+                <div class="shelf-header">
+                    <div class="shelf-number">3</div>
+                    <span class="shelf-title">Digraphs & Blends</span>
+                    <span class="shelf-series">Blue Series</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">sh / ch</div>
+                        <div class="work-examples">ship, fish<br>chip, chin</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">th / wh</div>
+                        <div class="work-examples">this, with<br>when, what</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">ck / ng</div>
+                        <div class="work-examples">back, duck<br>ring, song</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">L & R Blends</div>
+                        <div class="work-examples">bl, cl, fl, gl<br>br, cr, fr, tr</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">S Blends</div>
+                        <div class="work-examples">sc, sk, sm, sn<br>sp, st, sw</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">End Blends</div>
+                        <div class="work-examples">-nd, -nt, -nk<br>-st, -mp, -ft</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shelf 4: Green Series Part 1 -->
+            <div class="shelf shelf-4">
+                <div class="shelf-header">
+                    <div class="shelf-number">4</div>
+                    <span class="shelf-title">Magic E & Vowel Teams</span>
+                    <span class="shelf-series">Green Series</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">a_e</div>
+                        <div class="work-examples">cake, lake<br>make, game</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">i_e / o_e</div>
+                        <div class="work-examples">bike, kite<br>home, bone</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">u_e / e_e</div>
+                        <div class="work-examples">cube, cute<br>Pete, these</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">ee / ea</div>
+                        <div class="work-examples">tree, bee<br>read, leaf</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">ai / ay</div>
+                        <div class="work-examples">rain, wait<br>play, day</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">oa / ow</div>
+                        <div class="work-examples">boat, coat<br>bow, snow</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shelf 5: Green Series Part 2 -->
+            <div class="shelf shelf-5">
+                <div class="shelf-header">
+                    <div class="shelf-number">5</div>
+                    <span class="shelf-title">More Vowels & R-Controlled</span>
+                    <span class="shelf-series">Green Series</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">oo</div>
+                        <div class="work-examples">moon, food<br>book, look</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">ou / ow</div>
+                        <div class="work-examples">out, house<br>cow, how</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">oi / oy</div>
+                        <div class="work-examples">oil, coin<br>boy, toy</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">au / aw</div>
+                        <div class="work-examples">haul, cause<br>saw, paw</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">ar / or</div>
+                        <div class="work-examples">car, star<br>for, corn</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">er / ir / ur</div>
+                        <div class="work-examples">her, bird<br>turn, nurse</div>
+                    </div>
+                    <div class="work" style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);">
+                        <div class="work-title">Puzzle Words</div>
+                        <div class="work-examples">the, was, said<br>have, come...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shelf 6: Reading & Comprehension -->
+            <div class="shelf shelf-6">
+                <div class="shelf-header">
+                    <div class="shelf-number">6</div>
+                    <span class="shelf-title">Reading & Comprehension</span>
+                    <span class="shelf-series">Fluency</span>
+                </div>
+                <div class="works-container">
+                    <div class="work">
+                        <div class="work-title">Sentence Building</div>
+                        <div class="work-examples">Word cards to<br>make sentences</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Picture Match</div>
+                        <div class="work-examples">Match sentence<br>to picture</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Story Sequence</div>
+                        <div class="work-examples">Order events<br>1, 2, 3, 4</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">Comprehension</div>
+                        <div class="work-examples">Story cards +<br>questions</div>
+                    </div>
+                    <div class="work">
+                        <div class="work-title">📚 Reading Baskets</div>
+                        <div class="work-examples">Pink → Blue<br>→ Green</div>
+                    </div>
+                    <div class="work" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <div class="work-title">📖 Free Reading</div>
+                        <div class="work-examples">Kindergarten<br>level books</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow-container">
+            <div class="progression-arrow">
+                <div class="arrow-step">
+                    <strong>Age 3</strong>
+                    Sounds
+                </div>
+                <span class="arrow-icon">→</span>
+                <div class="arrow-step">
+                    <strong>Age 3.5</strong>
+                    CVC Words
+                </div>
+                <span class="arrow-icon">→</span>
+                <div class="arrow-step">
+                    <strong>Age 4</strong>
+                    Blends
+                </div>
+                <span class="arrow-icon">→</span>
+                <div class="arrow-step">
+                    <strong>Age 4.5</strong>
+                    Vowel Patterns
+                </div>
+                <span class="arrow-icon">→</span>
+                <div class="arrow-step" style="color: #10B981;">
+                    <strong>Age 5 ✓</strong>
+                    FREE READER
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #6B7280;"></div>
+                Pre-Reading
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #EC4899;"></div>
+                Pink Series
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #3B82F6;"></div>
+                Blue Series
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #10B981;"></div>
+                Green Series
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #F97316;"></div>
+                Green Extended
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #8B5CF6;"></div>
+                Fluency
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>💡 Tip:</strong> Works are arranged left-to-right by vowel (a → e → i → o → u) on Shelf 2.
+            Each work contains 3-part cards for independent, self-correcting practice.
+        </div>
+    </div>
+</body>
+</html>
