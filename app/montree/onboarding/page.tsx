@@ -1,11 +1,11 @@
 // /montree/onboarding/page.tsx
-// Teacher onboarding - Add students with curriculum progress
+// Teacher onboarding - Add students with curriculum progress (MANDATORY)
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Curriculum areas with their works in sequence
+// Curriculum areas
 const CURRICULUM_AREAS = [
   { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#22c55e' },
   { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#f97316' },
@@ -14,7 +14,7 @@ const CURRICULUM_AREAS = [
   { id: 'cultural', name: 'English', icon: '🌍', color: '#8b5cf6' },
 ];
 
-// Age options for picker
+// Age options
 const AGE_OPTIONS = [
   { value: 2.5, label: '2½' },
   { value: 3, label: '3' },
@@ -30,87 +30,190 @@ type Work = {
   id: string;
   name: string;
   sequence: number;
+  isCustom?: boolean;
 };
 
 type Student = {
   id: string;
   name: string;
   age: number;
-  progress: { [areaId: string]: string | null }; // work_id or null for "not started"
+  progress: { [areaId: string]: { workId: string | null; workName?: string } };
 };
 
-// Spinning Wheel Picker Component
-function WheelPicker({
-  items,
-  selectedId,
-  onSelect,
-  label,
+// Curriculum Wheel Picker with Add Custom Work
+function CurriculumPicker({
+  areaId,
+  areaName,
   icon,
-  color
+  color,
+  works,
+  selectedWorkId,
+  onSelect,
+  onAddCustomWork,
 }: {
-  items: { id: string; label: string }[];
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  label: string;
+  areaId: string;
+  areaName: string;
   icon: string;
   color: string;
+  works: Work[];
+  selectedWorkId: string | null;
+  onSelect: (workId: string | null, workName?: string) => void;
+  onAddCustomWork: (areaId: string, workName: string, afterSequence: number) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customWorkName, setCustomWorkName] = useState('');
+  const [insertAfterIndex, setInsertAfterIndex] = useState(-1); // -1 means at the beginning
 
-  const selectedItem = items.find(i => i.id === selectedId);
-  const displayLabel = selectedItem?.label || 'Not started yet';
+  const selectedWork = works.find(w => w.id === selectedWorkId);
+  const displayLabel = selectedWork?.name || 'Not started yet';
+
+  const handleAddCustomWork = () => {
+    if (!customWorkName.trim()) return;
+
+    // Calculate sequence number (insert after the selected position)
+    const afterSeq = insertAfterIndex >= 0 ? works[insertAfterIndex]?.sequence || 0 : 0;
+    onAddCustomWork(areaId, customWorkName.trim(), afterSeq);
+    setCustomWorkName('');
+    setShowAddCustom(false);
+    setInsertAfterIndex(-1);
+  };
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-3 bg-white/5 border border-white/20 rounded-xl text-left flex items-center gap-3 hover:bg-white/10 transition-colors"
+        style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
       >
         <span className="text-xl">{icon}</span>
-        <div className="flex-1">
-          <p className="text-xs text-white/50">{label}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-white/50">{areaName}</p>
           <p className="text-white font-medium truncate">{displayLabel}</p>
         </div>
-        <span className="text-white/40">▼</span>
+        <span className="text-white/40 text-sm">{isOpen ? '▲' : '▼'}</span>
       </button>
 
       {isOpen && (
-        <div
-          className="absolute z-50 top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-2xl overflow-hidden"
-          ref={containerRef}
-        >
-          {/* Wheel picker simulation */}
-          <div className="max-h-64 overflow-y-auto">
+        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+          <div className="max-h-72 overflow-y-auto">
             {/* Not started option */}
             <button
               onClick={() => { onSelect(null); setIsOpen(false); }}
               className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 border-b border-white/10 ${
-                selectedId === null ? 'bg-emerald-500/20' : ''
+                selectedWorkId === null ? 'bg-emerald-500/20' : ''
               }`}
             >
-              <span className="w-6 h-6 rounded-full bg-gray-500/30 flex items-center justify-center text-xs">—</span>
-              <span className="text-white/70">Not started yet</span>
+              <span className="w-7 h-7 rounded-full bg-gray-500/30 flex items-center justify-center text-xs text-white/50">—</span>
+              <span className="text-white/70 flex-1">Not started yet</span>
+              {selectedWorkId === null && <span className="text-emerald-400">✓</span>}
             </button>
 
-            {items.map((item, index) => (
-              <button
-                key={item.id}
-                onClick={() => { onSelect(item.id); setIsOpen(false); }}
-                className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 ${
-                  selectedId === item.id ? 'bg-emerald-500/20' : ''
-                } ${index < items.length - 1 ? 'border-b border-white/5' : ''}`}
-              >
-                <span
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                  style={{ backgroundColor: color }}
+            {/* Works list */}
+            {works.map((work, index) => (
+              <div key={work.id} className="relative">
+                <button
+                  onClick={() => { onSelect(work.id, work.name); setIsOpen(false); }}
+                  className={`w-full px-4 py-3 text-left hover:bg-white/10 flex items-center gap-3 ${
+                    selectedWorkId === work.id ? 'bg-emerald-500/20' : ''
+                  } border-b border-white/5`}
                 >
-                  {index + 1}
-                </span>
-                <span className="text-white flex-1 truncate">{item.label}</span>
-                {selectedId === item.id && <span className="text-emerald-400">✓</span>}
-              </button>
+                  <span
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{ backgroundColor: color }}
+                  >
+                    {index + 1}
+                  </span>
+                  <span className={`flex-1 truncate ${work.isCustom ? 'text-amber-300' : 'text-white'}`}>
+                    {work.name}
+                    {work.isCustom && <span className="text-xs ml-1 opacity-60">(custom)</span>}
+                  </span>
+                  {selectedWorkId === work.id && <span className="text-emerald-400">✓</span>}
+                </button>
+
+                {/* Add custom work button between items */}
+                {showAddCustom && insertAfterIndex === index && (
+                  <div className="px-4 py-3 bg-amber-500/10 border-y border-amber-500/30">
+                    <input
+                      type="text"
+                      value={customWorkName}
+                      onChange={(e) => setCustomWorkName(e.target.value)}
+                      placeholder="Enter custom work name..."
+                      className="w-full p-2 bg-slate-700 border border-white/20 rounded-lg text-white text-sm placeholder-white/40 mb-2"
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleAddCustomWork}
+                        className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium"
+                      >
+                        Add Here
+                      </button>
+                      <button
+                        onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
+                        className="px-3 py-2 bg-white/10 text-white/60 text-sm rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
+
+            {/* Add custom at the beginning if selected */}
+            {showAddCustom && insertAfterIndex === -1 && (
+              <div className="px-4 py-3 bg-amber-500/10 border-t border-amber-500/30">
+                <input
+                  type="text"
+                  value={customWorkName}
+                  onChange={(e) => setCustomWorkName(e.target.value)}
+                  placeholder="Enter custom work name..."
+                  className="w-full p-2 bg-slate-700 border border-white/20 rounded-lg text-white text-sm placeholder-white/40 mb-2"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddCustomWork}
+                    className="flex-1 py-2 bg-amber-500 text-white text-sm rounded-lg font-medium"
+                  >
+                    Add at Beginning
+                  </button>
+                  <button
+                    onClick={() => { setShowAddCustom(false); setInsertAfterIndex(-1); }}
+                    className="px-3 py-2 bg-white/10 text-white/60 text-sm rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Add Custom Work Footer */}
+          <div className="border-t border-white/10 p-2 bg-slate-900/50">
+            <p className="text-white/40 text-xs mb-2 px-2">Can&apos;t find the work? Add it:</p>
+            <div className="flex gap-1 flex-wrap">
+              <button
+                onClick={() => { setShowAddCustom(true); setInsertAfterIndex(-1); }}
+                className="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded-lg hover:bg-amber-500/30"
+              >
+                + At Beginning
+              </button>
+              {works.length > 0 && (
+                <button
+                  onClick={() => { setShowAddCustom(true); setInsertAfterIndex(works.length - 1); }}
+                  className="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded-lg hover:bg-amber-500/30"
+                >
+                  + At End
+                </button>
+              )}
+            </div>
+            {works.length > 0 && !showAddCustom && (
+              <p className="text-white/30 text-xs mt-2 px-2">
+                Or tap a work number, then use &quot;Insert After&quot;
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -119,13 +222,7 @@ function WheelPicker({
 }
 
 // Age Picker Component
-function AgePicker({
-  value,
-  onChange
-}: {
-  value: number;
-  onChange: (age: number) => void;
-}) {
+function AgePicker({ value, onChange }: { value: number; onChange: (age: number) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const selected = AGE_OPTIONS.find(a => a.value === value) || AGE_OPTIONS[2];
 
@@ -195,7 +292,6 @@ export default function OnboardingPage() {
     try {
       const parsed = JSON.parse(stored);
       setSession(parsed);
-      // Load curriculum for this classroom
       loadCurriculum(parsed.classroom?.id);
     } catch {
       router.push('/montree/login');
@@ -209,16 +305,13 @@ export default function OnboardingPage() {
       const res = await fetch(`/api/montree/curriculum?classroom_id=${classroomId}`);
       if (res.ok) {
         const data = await res.json();
-        // Group works by area_key
         const grouped: { [areaId: string]: Work[] } = {};
         for (const area of CURRICULUM_AREAS) {
           grouped[area.id] = [];
         }
 
-        // The API returns curriculum array with nested area object
         if (data.curriculum) {
           for (const work of data.curriculum) {
-            // Get area_key from nested area object or from byArea grouping
             const areaKey = work.area?.area_key || work.area_key;
             if (areaKey && grouped[areaKey]) {
               grouped[areaKey].push({
@@ -228,7 +321,6 @@ export default function OnboardingPage() {
               });
             }
           }
-          // Sort each area by sequence
           for (const areaId of Object.keys(grouped)) {
             grouped[areaId].sort((a, b) => a.sequence - b.sequence);
           }
@@ -242,21 +334,43 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleAddCustomWork = (areaId: string, workName: string, afterSequence: number) => {
+    // Add custom work to the local curriculum list
+    const newWork: Work = {
+      id: `custom_${Date.now()}`,
+      name: workName,
+      sequence: afterSequence + 0.5, // Insert between sequences
+      isCustom: true,
+    };
+
+    setCurriculumWorks(prev => {
+      const updated = { ...prev };
+      updated[areaId] = [...(updated[areaId] || []), newWork].sort((a, b) => a.sequence - b.sequence);
+      return updated;
+    });
+
+    // Auto-select the newly added work for current student
+    setCurrentStudent(prev => ({
+      ...prev,
+      progress: {
+        ...prev.progress,
+        [areaId]: { workId: newWork.id, workName: workName },
+      },
+    }));
+  };
+
   const addStudent = () => {
     if (!currentStudent.name.trim()) return;
 
     if (editingStudentIndex !== null) {
-      // Update existing student
       const updated = [...students];
       updated[editingStudentIndex] = { ...currentStudent };
       setStudents(updated);
       setEditingStudentIndex(null);
     } else {
-      // Add new student
       setStudents([...students, { ...currentStudent }]);
     }
 
-    // Reset form
     setCurrentStudent({
       id: crypto.randomUUID(),
       name: '',
@@ -285,7 +399,7 @@ export default function OnboardingPage() {
 
   const saveAndComplete = async () => {
     if (students.length === 0) {
-      setError('Please add at least one student');
+      setError('Please add at least one student to continue');
       return;
     }
 
@@ -301,7 +415,9 @@ export default function OnboardingPage() {
           students: students.map(s => ({
             name: s.name,
             age: s.age,
-            progress: s.progress,
+            progress: Object.fromEntries(
+              Object.entries(s.progress).map(([areaId, data]) => [areaId, data.workId])
+            ),
           })),
         }),
       });
@@ -319,22 +435,12 @@ export default function OnboardingPage() {
         localStorage.setItem('montree_session', JSON.stringify(parsed));
       }
 
-      setStep(2); // Show completion
+      setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setLoading(false);
     }
-  };
-
-  const skipOnboarding = () => {
-    const sessionData = localStorage.getItem('montree_session');
-    if (sessionData) {
-      const parsed = JSON.parse(sessionData);
-      parsed.onboarded = true;
-      localStorage.setItem('montree_session', JSON.stringify(parsed));
-    }
-    router.push('/montree/dashboard');
   };
 
   // Step 0: Welcome
@@ -365,13 +471,6 @@ export default function OnboardingPage() {
             Let&apos;s Do This! →
           </button>
 
-          <button
-            onClick={skipOnboarding}
-            className="w-full py-2 text-gray-500 hover:text-gray-700 mt-3"
-          >
-            Skip for now
-          </button>
-
           {session?.teacher?.name && (
             <p className="text-sm text-gray-400 mt-6">
               Logged in as {session.teacher.name}
@@ -382,7 +481,7 @@ export default function OnboardingPage() {
     );
   }
 
-  // Step 1: Add Students
+  // Step 1: Add Students (MANDATORY)
   if (step === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-4 md:p-6">
@@ -416,52 +515,54 @@ export default function OnboardingPage() {
                 onChange={(e) => setCurrentStudent({ ...currentStudent, name: e.target.value })}
                 placeholder="Student's name"
                 className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 outline-none text-lg"
+                autoFocus
               />
             </div>
 
             {/* Age Picker */}
-            <div className="mb-4">
+            <div className="mb-6">
               <AgePicker
                 value={currentStudent.age}
                 onChange={(age) => setCurrentStudent({ ...currentStudent, age })}
               />
             </div>
 
-            {/* Curriculum Progress Section */}
-            {currentStudent.name && (
-              <div className="mt-6">
-                <h3 className="text-white/70 text-sm font-medium mb-3">
-                  Where is {currentStudent.name.split(' ')[0]} in the curriculum?
-                </h3>
-                <p className="text-white/40 text-xs mb-4">
-                  Select the most recent work they&apos;ve been presented. Leave blank if not started.
-                </p>
+            {/* Curriculum Progress - Always Visible */}
+            <div className="border-t border-white/10 pt-5">
+              <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+                <span>📊</span> Current Progress
+              </h3>
+              <p className="text-white/40 text-xs mb-4">
+                Select the most recent work they&apos;ve been presented in each area.
+                Can&apos;t find a work? Add it in the correct position.
+              </p>
 
-                {loadingCurriculum ? (
-                  <div className="text-white/50 text-center py-4">Loading curriculum...</div>
-                ) : (
-                  <div className="space-y-3">
-                    {CURRICULUM_AREAS.map(area => (
-                      <WheelPicker
-                        key={area.id}
-                        label={area.name}
-                        icon={area.icon}
-                        color={area.color}
-                        items={(curriculumWorks[area.id] || []).map(w => ({
-                          id: w.id,
-                          label: w.name,
-                        }))}
-                        selectedId={currentStudent.progress[area.id] || null}
-                        onSelect={(workId) => setCurrentStudent({
-                          ...currentStudent,
-                          progress: { ...currentStudent.progress, [area.id]: workId },
-                        })}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+              {loadingCurriculum ? (
+                <div className="text-white/50 text-center py-4">Loading curriculum...</div>
+              ) : (
+                <div className="space-y-3">
+                  {CURRICULUM_AREAS.map(area => (
+                    <CurriculumPicker
+                      key={area.id}
+                      areaId={area.id}
+                      areaName={area.name}
+                      icon={area.icon}
+                      color={area.color}
+                      works={curriculumWorks[area.id] || []}
+                      selectedWorkId={currentStudent.progress[area.id]?.workId || null}
+                      onSelect={(workId, workName) => setCurrentStudent({
+                        ...currentStudent,
+                        progress: {
+                          ...currentStudent.progress,
+                          [area.id]: { workId, workName },
+                        },
+                      })}
+                      onAddCustomWork={handleAddCustomWork}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Add/Update Button */}
             <button
@@ -495,7 +596,7 @@ export default function OnboardingPage() {
 
               <div className="space-y-2">
                 {students.map((student, index) => {
-                  const progressCount = Object.values(student.progress).filter(Boolean).length;
+                  const progressCount = Object.values(student.progress).filter(p => p.workId).length;
                   return (
                     <div
                       key={student.id}
@@ -508,7 +609,7 @@ export default function OnboardingPage() {
                         <div>
                           <p className="text-white font-medium">{student.name}</p>
                           <p className="text-white/50 text-xs">
-                            {student.age} yrs • {progressCount > 0 ? `${progressCount} areas` : 'New student'}
+                            {student.age} yrs • {progressCount > 0 ? `${progressCount} areas started` : 'New to Montessori'}
                           </p>
                         </div>
                       </div>
@@ -533,22 +634,20 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={skipOnboarding}
-              className="px-6 py-4 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20"
-            >
-              Skip
-            </button>
-            <button
-              onClick={saveAndComplete}
-              disabled={loading || students.length === 0}
-              className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : `Save ${students.length} Student${students.length !== 1 ? 's' : ''} →`}
-            </button>
-          </div>
+          {/* Save Button - No Skip Option */}
+          <button
+            onClick={saveAndComplete}
+            disabled={loading || students.length === 0}
+            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Saving...' : students.length === 0
+              ? 'Add at least 1 student to continue'
+              : `Save ${students.length} Student${students.length !== 1 ? 's' : ''} & Continue →`}
+          </button>
+
+          <p className="text-center text-white/30 text-xs mt-4">
+            You must add your students before using Montree
+          </p>
         </div>
       </div>
     );
