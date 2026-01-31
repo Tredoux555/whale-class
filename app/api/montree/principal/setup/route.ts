@@ -21,33 +21,91 @@ function generateLoginCode(): string {
   return code;
 }
 
-// Build curriculum records for a new classroom
-function buildCurriculumRecords(classroomId: string) {
-  const records: any[] = [];
-  let globalSequence = 0;
+// Default area definitions for curriculum
+const DEFAULT_AREAS = [
+  { area_key: 'practical_life', name: 'Practical Life', name_chinese: '日常生活', icon: '🧹', color: '#10B981', sequence: 1 },
+  { area_key: 'sensorial', name: 'Sensorial', name_chinese: '感官', icon: '👁️', color: '#F59E0B', sequence: 2 },
+  { area_key: 'mathematics', name: 'Mathematics', name_chinese: '数学', icon: '🔢', color: '#3B82F6', sequence: 3 },
+  { area_key: 'language', name: 'Language', name_chinese: '语言', icon: '📚', color: '#EC4899', sequence: 4 },
+  { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
+];
 
-  for (const area of CURRICULUM) {
-    for (const category of area.categories) {
-      for (const work of category.works) {
-        globalSequence++;
-        records.push({
-          classroom_id: classroomId,
-          area_id: area.id,
-          work_key: work.id,
-          name: work.name,
-          name_chinese: work.chineseName || null,
-          description: work.description || null,
-          age_range: work.ageRange || '3-6',
-          sequence: globalSequence,
-          materials: work.materials || [],
-          levels: work.levels || [],
-          is_active: true,
-        });
+// Seed curriculum for a new classroom - MUST be called during classroom creation
+async function seedCurriculumForClassroom(supabase: any, classroomId: string): Promise<{ success: boolean; worksCount: number; error?: string }> {
+  try {
+    // Step 1: Create curriculum areas for this classroom
+    const areasToInsert = DEFAULT_AREAS.map(area => ({
+      classroom_id: classroomId,
+      ...area,
+      is_active: true
+    }));
+
+    const { data: insertedAreas, error: areaError } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .insert(areasToInsert)
+      .select();
+
+    if (areaError) {
+      console.error(`[Setup] Failed to create areas for classroom ${classroomId}:`, areaError.message);
+      return { success: false, worksCount: 0, error: areaError.message };
+    }
+
+    // Build area_key -> UUID map
+    const areaMap: Record<string, string> = {};
+    for (const area of insertedAreas || []) {
+      areaMap[area.area_key] = area.id;
+    }
+
+    // Step 2: Build curriculum works with proper area UUIDs
+    const worksToInsert: any[] = [];
+    let globalSequence = 0;
+
+    for (const area of CURRICULUM) {
+      const areaUuid = areaMap[area.id];
+      if (!areaUuid) {
+        console.warn(`[Setup] No UUID found for area ${area.id}`);
+        continue;
+      }
+
+      for (const category of area.categories) {
+        for (const work of category.works) {
+          globalSequence++;
+          worksToInsert.push({
+            classroom_id: classroomId,
+            area_id: areaUuid,
+            work_key: work.id,
+            name: work.name,
+            name_chinese: work.chineseName || null,
+            description: work.description || null,
+            age_range: work.ageRange || '3-6',
+            sequence: globalSequence,
+            materials: work.materials || [],
+            levels: work.levels || [],
+            is_active: true,
+          });
+        }
       }
     }
-  }
 
-  return records;
+    // Step 3: Insert all works
+    if (worksToInsert.length > 0) {
+      const { error: worksError } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .insert(worksToInsert);
+
+      if (worksError) {
+        console.error(`[Setup] Failed to create works for classroom ${classroomId}:`, worksError.message);
+        return { success: false, worksCount: 0, error: worksError.message };
+      }
+    }
+
+    console.log(`[Setup] Seeded ${worksToInsert.length} curriculum works for classroom ${classroomId}`);
+    return { success: true, worksCount: worksToInsert.length };
+
+  } catch (err) {
+    console.error(`[Setup] Curriculum seed exception for ${classroomId}:`, err);
+    return { success: false, worksCount: 0, error: String(err) };
+  }
 }
 
 interface TeacherInput {
@@ -97,7 +155,6 @@ export async function POST(request: NextRequest) {
 
     const createdClassrooms: any[] = [];
     const createdTeachers: any[] = [];
-    const classroomsForCurriculum: string[] = [];
     const errors: string[] = [];
 
     // PHASE 1: Create all classrooms and teachers FIRST (this is the priority)
@@ -149,7 +206,14 @@ export async function POST(request: NextRequest) {
 
       console.log(`[Setup] Created classroom: ${createdClassroom.name} (${createdClassroom.id})`);
       createdClassrooms.push(createdClassroom);
-      classroomsForCurriculum.push(createdClassroom.id);
+
+      // IMMEDIATELY seed curriculum for this classroom - THIS IS ESSENTIAL
+      const curriculumResult = await seedCurriculumForClassroom(supabase, createdClassroom.id);
+      if (!curriculumResult.success) {
+        errors.push(`Warning: Curriculum seeding failed for ${createdClassroom.name}: ${curriculumResult.error}`);
+      } else {
+        console.log(`[Setup] Curriculum seeded: ${curriculumResult.worksCount} works for ${createdClassroom.name}`);
+      }
 
       // Create ALL teachers for this classroom immediately
       const teachersToCreate = classroom.teachers.filter(t => t.name?.trim());
@@ -213,37 +277,6 @@ export async function POST(request: NextRequest) {
         });
       }
     }
-
-    const phase1Time = Date.now() - startTime;
-    console.log(`[Setup] Phase 1 complete: ${createdClassrooms.length} classrooms, ${createdTeachers.length} teachers (${phase1Time}ms)`);
-
-    // PHASE 2: Assign curriculum to classrooms (non-critical, can fail gracefully)
-    console.log('[Setup] Phase 2: Assigning curriculum (background)...');
-
-    // Do this in background - don't block the response
-    const curriculumPromises = classroomsForCurriculum.map(async (classroomId) => {
-      try {
-        const curriculumRecords = buildCurriculumRecords(classroomId);
-        if (curriculumRecords.length > 0) {
-          const { error: curriculumError } = await supabase
-            .from('montree_classroom_curriculum_works')
-            .insert(curriculumRecords);
-
-          if (curriculumError) {
-            console.error(`[Setup] Curriculum error for classroom ${classroomId}:`, curriculumError.message);
-          } else {
-            console.log(`[Setup] Assigned ${curriculumRecords.length} works to classroom ${classroomId}`);
-          }
-        }
-      } catch (err) {
-        console.error(`[Setup] Curriculum exception for ${classroomId}:`, err);
-      }
-    });
-
-    // Don't await - let it run in background
-    Promise.all(curriculumPromises).catch(err => {
-      console.error('[Setup] Background curriculum assignment failed:', err);
-    });
 
     const totalTime = Date.now() - startTime;
     console.log(`[Setup] Complete! Returning ${createdTeachers.length} teachers (${totalTime}ms)`);
