@@ -335,6 +335,65 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Next Step Banner - Guide principals on what to do */}
+        {stats && (
+          <>
+            {stats.total_classrooms === 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">👆</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">Next Step: Create Your First Classroom</h3>
+                    <p className="text-amber-200 text-sm">Click the button below to add a classroom for your school</p>
+                  </div>
+                  <button onClick={() => openClassroomModal()} className="px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 animate-pulse">
+                    + Add Classroom
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {stats.total_classrooms > 0 && stats.classrooms_without_teacher > 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">👆</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">Next Step: Add Teachers</h3>
+                    <p className="text-amber-200 text-sm">{stats.classrooms_without_teacher} classroom{stats.classrooms_without_teacher > 1 ? 's need' : ' needs'} a teacher assigned</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stats.total_classrooms > 0 && stats.classrooms_without_teacher === 0 && stats.total_students === 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">👇</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">Next Step: Add Students</h3>
+                    <p className="text-emerald-200 text-sm">Click &quot;Students&quot; on any classroom below to add your students</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stats.total_students > 0 && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">✅</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">You&apos;re All Set!</h3>
+                    <p className="text-emerald-200 text-sm">Teachers can now log in with their codes and start tracking student progress</p>
+                  </div>
+                  <Link href="/montree/login" className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600">
+                    Try Teacher View →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {/* Classrooms Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
