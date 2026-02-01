@@ -31,7 +31,25 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, child });
+    // Fetch photos from montree_media
+    const { data: photos, error: photosError } = await supabase
+      .from('montree_media')
+      .select('id, storage_path, work_id, captured_at, thumbnail_path')
+      .eq('child_id', childId)
+      .order('captured_at', { ascending: false });
+
+    // Build photo URLs
+    const formattedPhotos = (photos || []).map((photo: any) => ({
+      id: photo.id,
+      storage_path: photo.storage_path,
+      work_id: photo.work_id,
+      captured_at: photo.captured_at,
+      thumbnail_path: photo.thumbnail_path,
+      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${photo.storage_path}`,
+      thumbnail_url: photo.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${photo.thumbnail_path}` : null
+    }));
+
+    return NextResponse.json({ success: true, child, photos: formattedPhotos });
   } catch (error: any) {
     console.error('Get child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -105,9 +123,9 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .delete()
       .eq('child_id', childId);
 
-    // 3. Delete photos
+    // 3. Delete photos from montree_media
     await supabase
-      .from('montree_child_photos')
+      .from('montree_media')
       .delete()
       .eq('child_id', childId);
 

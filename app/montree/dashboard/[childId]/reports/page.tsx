@@ -24,6 +24,14 @@ interface ReportStats {
   mastered: number;
   practicing: number;
   presented: number;
+  unassigned_photos?: number;
+}
+
+interface UnassignedPhoto {
+  id: string;
+  url: string;
+  caption: string | null;
+  created_at: string;
 }
 
 export default function ReportsPage() {
@@ -37,6 +45,7 @@ export default function ReportsPage() {
   const [stats, setStats] = useState<ReportStats | null>(null);
   const [lastReportDate, setLastReportDate] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [unassignedPhotos, setUnassignedPhotos] = useState<UnassignedPhoto[]>([]);
 
   // Fetch report preview
   const fetchPreview = async () => {
@@ -49,6 +58,7 @@ export default function ReportsPage() {
         setItems(data.items || []);
         setStats(data.stats || null);
         setLastReportDate(data.last_report_date);
+        setUnassignedPhotos(data.unassigned_photos || []);
       }
     } catch (err) {
       console.error('Failed to fetch:', err);
@@ -130,7 +140,7 @@ export default function ReportsPage() {
       {stats && hasItems && (
         <div className="grid grid-cols-3 gap-2">
           <StatCard icon="📚" value={stats.total} label="Works" color="gray" />
-          <StatCard icon="📸" value={stats.with_photos} label="Photos" color="blue" />
+          <StatCard icon="📸" value={stats.with_photos + (stats.unassigned_photos || 0)} label="Photos" color="blue" />
           <StatCard icon="📝" value={stats.with_descriptions} label="Descriptions" color="emerald" />
         </div>
       )}
@@ -191,7 +201,7 @@ export default function ReportsPage() {
 
               {/* Works */}
               {items.map((item, i) => (
-                <div key={i} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <div key={`work-${item.work_name}-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
                   {/* Work header */}
                   <div className="flex items-center gap-2">
                     <StatusBadge status={item.status} />
@@ -232,6 +242,30 @@ export default function ReportsPage() {
                   )}
                 </div>
               ))}
+
+              {/* Unassigned Photos Gallery */}
+              {unassignedPhotos.length > 0 && (
+                <div className="bg-blue-50 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                    📸 Recent Photos
+                    <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {unassignedPhotos.map((photo) => (
+                      <div key={photo.id} className="rounded-lg overflow-hidden bg-gray-200">
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || 'Learning moment'}
+                          className="w-full h-32 object-cover"
+                        />
+                        {photo.caption && (
+                          <p className="p-2 text-xs text-gray-600 italic bg-white">{photo.caption}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}

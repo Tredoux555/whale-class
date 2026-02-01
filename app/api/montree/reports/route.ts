@@ -73,7 +73,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    const school_id = child.classroom?.school_id;
+    // Handle classroom which may be an object or array depending on Supabase
+    const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
+    const school_id = classroom?.school_id;
 
     // STEP 1: Get ALL curriculum works for this classroom (with work_key for brain lookup)
     const { data: curriculumWorks } = await supabase
@@ -168,14 +170,24 @@ export async function POST(request: NextRequest) {
     const unmatched = worksWithDetails.filter(w => !w._matched_brain).map(w => w.name);
     console.log(`Report: ${matched}/${worksWithDetails.length} works matched. Unmatched:`, unmatched);
 
-    // Get photos
-    const { data: photos } = await supabase
-      .from('montree_child_photos')
-      .select('id, url, caption, created_at')
+    // Get photos from montree_media
+    const { data: mediaItems } = await supabase
+      .from('montree_media')
+      .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
       .eq('child_id', child_id)
-      .gte('created_at', week_start)
-      .lte('created_at', week_end || new Date().toISOString())
+      .gte('captured_at', week_start)
+      .lte('captured_at', week_end || new Date().toISOString())
       .limit(10);
+
+    // Build photo URLs
+    const photos = (mediaItems || []).map(item => ({
+      id: item.id,
+      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.storage_path}`,
+      thumbnail_url: item.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.thumbnail_path}` : null,
+      caption: item.caption,
+      captured_at: item.captured_at,
+      work_id: item.work_id,
+    }));
 
     // Overall stats
     const { data: overallProgress } = await supabase

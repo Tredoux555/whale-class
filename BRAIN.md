@@ -11,6 +11,88 @@
 
 ## Recent Changes
 
+### Session - Feb 1, 2026 (Very Late Night - FOCUS WORK PERSISTENCE FIX! 🎯)
+
+**🐛 CRITICAL BUG FIXED: Focus work changes weren't persisting!**
+
+**Root Cause:** When changing focus via wheel picker:
+1. Dashboard sent `is_focus: true` to `/api/montree/progress/update`
+2. The endpoint **completely ignored** the `is_focus` flag
+3. `montree_child_progress` table has NO `is_focus` column
+4. Separate `montree_child_focus_works` table existed but was NEVER updated
+5. After reload, focus reverted to status-priority-based selection
+
+**Fixes Applied:**
+
+| File | Change |
+|------|--------|
+| `/api/montree/progress/update/route.ts` | Now saves to `montree_child_focus_works` when `is_focus: true` |
+| `/api/montree/progress/route.ts` | Fetches focus works and marks progress items with `is_focus` flag |
+| `/components/montree/WorkWheelPicker.tsx` | Removed duplicate "Select" button, simplified to just "Add Work" |
+
+**How Focus Works Now:**
+1. Teacher clicks area icon → Wheel picker opens
+2. Scroll to select work → Click highlighted work
+3. API saves to `montree_child_progress` (progress) AND `montree_child_focus_works` (focus designation)
+4. On reload, GET endpoint fetches both tables and marks `is_focus: true/false`
+5. Dashboard's `fetchAssignments` uses `is_focus` flag to determine focus work
+
+**WorkWheelPicker UI Simplified:**
+- Clicking highlighted work = Change focus work (calls `onSelectWork`)
+- "Add Work" button = Add as extra work (calls `onAddExtra`)
+- No duplicate "Select" button anymore
+
+**Earlier in Session - Photo-Work Association:**
+- Capture button now includes: `?workName=X&area=Y`
+- Photos uploaded with work context in `caption` field
+- Report preview uses caption as fallback for work matching
+
+**Handoff:** `/docs/HANDOFF_FOCUS_WORK_FIX.md`
+
+---
+
+### Session - Feb 1, 2026 (Very Late Night - REPORT PREVIEW COMPLETE! 👁️)
+
+**🎉 REPORT PREVIEW FEATURE COMPLETE:**
+
+Teachers can now preview exactly what parents will see before publishing reports.
+
+**New Files Created:**
+| File | Purpose |
+|------|---------|
+| `/api/montree/reports/preview/route.ts` | Loads parent descriptions from JSON, matches photos to works |
+| `/api/montree/reports/unreported/route.ts` | Fetches all progress since last report |
+| `/api/montree/reports/send/route.ts` | Publishes report and marks as reported |
+
+**Reports Page Updated** (`/app/montree/dashboard/[childId]/reports/page.tsx`):
+- Shows list of works with progress since last report
+- Indicators: 📸 = photo attached, 📝 = description available
+- "👁️ Preview Report" button opens modal showing exactly what parents will see
+- Preview modal shows: child name, work names with status badges, photos, parent descriptions, "why it matters"
+- "Publish Report" button to send to parents
+
+**How Preview Works:**
+1. Loads parent descriptions from `/lib/curriculum/comprehensive-guides/parent-*.json`
+2. Matches photos by work_name from `montree_child_photos` table
+3. Returns structured data with work_name, photo_url, parent_description, why_it_matters
+4. Modal displays everything in parent-friendly format
+
+**What Parents See:**
+- Work name with status badge (🌱 Introduced / 🔄 Practicing / ⭐ Mastered)
+- Photo of child doing the work (if taken)
+- Parent-friendly description explaining what the work teaches
+- "Why it matters" - developmental significance
+
+**Git Status:** Committed and pushed to origin/main ✅
+
+**Still To Do:**
+- Parent-facing report page needs updating to consume new data structure
+- Test full flow: mark progress → take photo → preview → publish → parent views
+
+**Handoff:** `/docs/HANDOFF_REPORT_PREVIEW.md`
+
+---
+
 ### Session - Feb 1, 2026 (Late Night - STATUS JUMPING + REPORTS OVERHAUL!)
 
 **🐛 STATUS JUMPING BUG - ROOT CAUSE FOUND & FIXED:**
@@ -447,7 +529,8 @@ All 309 Montessori works now have comprehensive teacher guides.
 - `classrooms` - Classrooms per school
 - `montree_children` - Students
 - `children` - Legacy children table (FK target)
-- `montree_child_progress` - Progress tracking (status per work)
+- `montree_child_progress` - Progress tracking (status per work) - **NO is_focus column!**
+- `montree_child_focus_works` - **Focus work per area per child** (unique: child_id, area)
 - `montree_work_sessions` - Teacher notes/observations (detailed session logs)
 - `montree_classroom_curriculum_works` - Curriculum assigned to classrooms
 - `montree_weekly_analysis` - Cached AI analysis results
@@ -476,6 +559,12 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
+
+### Focus Work System (FIXED! 🎯)
+- [x] **FIXED: Focus work not persisting** - Now saves to `montree_child_focus_works` table
+- [x] **FIXED: Progress API missing is_focus** - Now fetches and marks focus works
+- [x] **FIXED: WorkWheelPicker duplicate buttons** - Simplified to just "Add Work"
+- [x] **FIXED: Photo-work association** - Capture passes workName/area params
 
 ### MONTESSORI GURU (ALL PHASES COMPLETE! 🔮✅)
 - [x] **COMPLETE: Knowledge base** - 7 books, 96,877 lines collected
@@ -510,6 +599,8 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - **`montree_children.age` is INTEGER** - must use `Math.round()` on decimals like 3.5
 - **`montree_children` has NO `school_id` column** - only use `classroom_id`
 - **Curriculum sequence** - ALWAYS use `/lib/montree/curriculum-loader.ts`, NOT Brain database
+- **Focus works stored separately** - `montree_child_focus_works` table, NOT in `montree_child_progress`
+- **Area values must match** - Focus table CHECK constraint: 'practical_life', 'sensorial', 'mathematics', 'language', 'cultural' (NOT 'math'!)
 - `useSearchParams()` must be wrapped in Suspense boundary (Next.js 16)
 - Foreign key: `child_work_completion.child_id` → `children.id` (not montree_children!)
 - Progress status mapping in `lib/montree/db.ts` - don't use 'completed'

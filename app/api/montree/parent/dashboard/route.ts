@@ -253,29 +253,32 @@ export async function GET(request: NextRequest) {
       summary_preview: a.parent_summary?.slice(0, 100) || null,
     }));
     
-    // Fetch recent photos
+    // Fetch recent photos from montree_media
     const { data: photos } = await supabase
-      .from('montree_child_photos')
-      .select('id, url, work_name, created_at')
+      .from('montree_media')
+      .select('id, storage_path, work_id, captured_at, thumbnail_path')
       .eq('child_id', childId)
-      .order('created_at', { ascending: false })
+      .order('captured_at', { ascending: false })
       .limit(9);
-    
+
     const recentMedia = (photos || []).map(p => ({
       id: p.id,
-      media_url: p.url,
+      media_url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
       media_type: 'image' as const,
-      work_name: p.work_name,
-      taken_at: p.created_at,
+      work_name: p.work_id,
+      taken_at: p.captured_at,
     }));
     
+    // Handle classroom which may be an object or array depending on Supabase
+    const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
+
     return NextResponse.json({
       success: true,
       child: {
         id: child.id,
         name: child.name,
         photo_url: child.photo_url,
-        classroom_name: child.classroom?.name,
+        classroom_name: classroom?.name || null,
       },
       todayActivities,
       recommendedGames: recommendedGames.slice(0, 4), // Max 4 games

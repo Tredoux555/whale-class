@@ -1,0 +1,194 @@
+================================================================================
+MONTREE APPLICATION - DATA INTEGRITY AUDIT SUMMARY
+================================================================================
+Child: Leo
+Child ID: 310743a4-51cf-4f8f-9920-9a087adb084f
+Audit Date: February 1, 2026
+Audit Scope: montree_child_progress, child_work_media, montree_work_sessions tables
+
+================================================================================
+CRITICAL FINDINGS
+================================================================================
+
+1. DUPLICATE RECORDS IN montree_child_progress TABLE
+   ✗ FAIL: 13 progress records for only 10 unique works
+   ✗ FAIL: "Small Buttons Frame" appears 4 times (3 duplicate records)
+   ✓ PASS: Other 9 works have 1 record each
+
+2. MISSING MEDIA RECORDS
+   ✗ FAIL: 0 photos/videos found (child_work_media table is empty)
+   Status: Works cannot be visually documented
+
+3. MISSING SESSION RECORDS
+   ✗ FAIL: 0 work sessions found (montree_work_sessions table is empty)
+   Status: No practice tracking, duration logs, or concentration data
+
+================================================================================
+DUPLICATE DETAILS: "SMALL BUTTONS FRAME"
+================================================================================
+
+4 Records Found (Created in 2.97 seconds):
+
+  Record 1: d7f4c133-be31-4247-a2cf-d6a684195bb7
+    Status: presented
+    Created: 2026-02-01 11:41:40.886 UTC
+    Action: DELETE (oldest)
+
+  Record 2: 1bb7e090-ce13-4b6c-ae9f-ba9c8677f924
+    Status: mastered
+    Created: 2026-02-01 11:41:41.161 UTC
+    Action: DELETE
+
+  Record 3: 15e22fe6-808e-405a-9c59-0711be945664
+    Status: practicing
+    Created: 2026-02-01 11:41:41.606 UTC
+    Action: DELETE
+
+  Record 4: 1424203d-1385-48eb-bbbc-858fc29398e6
+    Status: not_started
+    Created: 2026-02-01 11:41:43.856 UTC
+    Action: KEEP (newest - most recent)
+
+Illogical Status Sequence: presented → mastered → practicing → not_started
+Indicates rapid creation of multiple records instead of single updates
+
+================================================================================
+ROOT CAUSE IDENTIFIED
+================================================================================
+
+FILE: /app/api/montree/children/route.ts (lines 100-115)
+
+BUGGY CODE:
+  const worksToMark = areaWorks.slice(0, selectedIndex + 1);
+  for (const w of worksToMark) {
+    await supabase.from('montree_child_progress').insert({
+      child_id: child.id,
+      work_name: w.name,
+      status: 'presented',
+      ...
+    });
+  }
+
+PROBLEM: Uses .insert() which ALWAYS creates new records
+         Does NOT check if record already exists
+         Does NOT update existing records
+         Allows unlimited duplicates
+
+SEVERITY: MEDIUM-HIGH
+- Code defect: Simple logic error
+- Data loss: None
+- User impact: UI confusion (showing 4 entries for 1 work)
+- Fix complexity: Low
+- Cleanup effort: Low
+
+================================================================================
+DATA INVENTORY: LEO'S 10 WORKS
+================================================================================
+
+Work Name                              | Area         | Status    | Count
+---------------------------------------|--------------|-----------|------
+Small Buttons Frame                    | practical_life | duplicate | 4 ⚠️
+Brown Stair (Broad Stair)             | sensorial    | normal    | 1
+Spindle Boxes                         | mathematics  | normal    | 1
+Eye Dropper                           | practical_life | normal   | 1
+Snaps Frame                           | practical_life | normal   | 1
+Dressing Frame Shoes                  | practical_life | normal   | 1
+Maps                                  | cultural     | normal    | 1
+Word Building Work with /o/           | language     | normal    | 1
+Boards with Numbers                   | mathematics  | normal    | 1
+Geometry Combined with Cards          | cultural     | normal    | 1
+
+Total Records: 13
+Unique Works: 10
+Duplicate Rate: 30.8% (4 extra records out of 13)
+
+================================================================================
+REQUIRED ACTIONS
+================================================================================
+
+IMMEDIATE (Priority: CRITICAL)
+[ ] 1. Add UNIQUE constraint to database
+      SQL: ALTER TABLE montree_child_progress 
+           ADD CONSTRAINT unique_child_work_progress UNIQUE(child_id, work_name);
+      
+[ ] 2. Delete 3 duplicate records for "Small Buttons Frame"
+      See: MONTREE_AUDIT_CLEANUP.sql (provided)
+      Records to delete: 3 oldest IDs
+      Record to keep: 1424203d-1385-48eb-bbbc-858fc29398e6
+
+[ ] 3. Fix API code to use UPSERT instead of INSERT
+      File: /app/api/montree/children/route.ts
+      Change: .insert() → .upsert() with onConflict
+
+HIGH (Priority: Today)
+[ ] 4. Audit all children for similar duplicate patterns
+      SQL: SELECT child_id, work_name, COUNT(*) 
+           FROM montree_child_progress 
+           GROUP BY child_id, work_name 
+           HAVING COUNT(*) > 1;
+
+[ ] 5. Deploy code fix to prevent future duplicates
+
+[ ] 6. Add unit tests to verify duplicate prevention
+
+MEDIUM (Priority: This Week)
+[ ] 7. Implement photo/media capture for works (child_work_media)
+[ ] 8. Implement session tracking for works (montree_work_sessions)
+[ ] 9. Add data validation tests
+
+================================================================================
+GENERATED DOCUMENTS
+================================================================================
+
+1. MONTREE_DATA_INTEGRITY_AUDIT_REPORT.md
+   - Comprehensive audit findings
+   - Root cause analysis
+   - Detailed recommendations
+   - Testing plan
+   - Files involved
+
+2. MONTREE_AUDIT_CLEANUP.sql
+   - Step-by-step SQL cleanup commands
+   - Verification queries
+   - Final state checks
+   - Comments explaining each step
+
+3. AUDIT_SUMMARY.txt (this file)
+   - Executive summary
+   - Quick reference
+   - Action items
+
+================================================================================
+VERIFICATION CHECKLIST
+================================================================================
+
+Before Cleanup:
+  ✓ Verified 4 records for "Small Buttons Frame"
+  ✓ Identified root cause in API code
+  ✓ Found no media or session records
+  ✓ Confirmed other children not audited yet
+
+After Cleanup (Expected):
+  [ ] Only 1 record remains for "Small Buttons Frame"
+  [ ] Total records: 10 (one per unique work)
+  [ ] UNIQUE constraint prevents new duplicates
+  [ ] API code updated to use UPSERT
+  [ ] All other children audited for duplicates
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Review this audit with the development team
+2. Execute cleanup SQL (MONTREE_AUDIT_CLEANUP.sql)
+3. Update API code (app/api/montree/children/route.ts)
+4. Add UNIQUE constraint
+5. Deploy and test
+6. Audit all other children for similar issues
+7. Implement media and session tracking
+
+================================================================================
+AUDIT COMPLETE
+Status: READY FOR REMEDIATION
+Severity: MEDIUM-HIGH (fixable, non-critical)
+Date: 2026-02-01

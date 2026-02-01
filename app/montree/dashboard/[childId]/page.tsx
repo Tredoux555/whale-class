@@ -784,7 +784,7 @@ export default function WeekPage() {
               });
 
               return (
-                <div key={work.work_name} className="space-y-1">
+                <div key={`focus-${work.area}-${work.work_name}`} className="space-y-1">
                   {/* Focus work row */}
                   <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                     {/* Area icon - tap or long-press to swap focus work */}
@@ -846,7 +846,7 @@ export default function WeekPage() {
                           ▶️ Demo
                         </button>
                         <button
-                          onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}`}
+                          onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(work.work_name)}&area=${encodeURIComponent(work.area)}`}
                           className="flex-[2] py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
                         >
                           📸 Capture
@@ -879,10 +879,10 @@ export default function WeekPage() {
                   {/* Extra works for this area - grouped under the focus work */}
                   {areaExtras.length > 0 && (
                     <div className="ml-8 space-y-1">
-                      {areaExtras.map((extra) => {
+                      {areaExtras.map((extra, idx) => {
                         const extraStatus = STATUS_CONFIG[extra.status] || STATUS_CONFIG.not_started;
                         return (
-                          <div key={extra.work_name} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
+                          <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
                             <span className="text-xs text-gray-400">└</span>
                             <span className="flex-1 text-sm text-gray-600">{extra.work_name}</span>
                             <button
@@ -1001,7 +1001,7 @@ export default function WeekPage() {
                     const isAdded = allWorks.some(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
                     return (
                       <button
-                        key={i}
+                        key={`curriculum-${selectedArea}-${work.name || work.id || i}`}
                         onClick={() => !isAdded && addWork(work)}
                         disabled={isAdded}
                         className={`w-full p-3 rounded-xl text-left transition-all flex items-center gap-3

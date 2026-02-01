@@ -51,15 +51,24 @@ export async function GET(request: NextRequest) {
 
     // Get unreported photos
     let photoQuery = supabase
-      .from('montree_child_photos')
-      .select('id, url, caption, created_at')
+      .from('montree_media')
+      .select('id, storage_path, caption, captured_at, thumbnail_path')
       .eq('child_id', childId);
 
     if (lastReportDate) {
-      photoQuery = photoQuery.gt('created_at', lastReportDate);
+      photoQuery = photoQuery.gt('captured_at', lastReportDate);
     }
 
-    const { data: photos } = await photoQuery;
+    const { data: photosData } = await photoQuery;
+
+    // Build photo URLs from storage paths
+    const photos = (photosData || []).map(p => ({
+      id: p.id,
+      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      caption: p.caption,
+      thumbnail_url: p.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.thumbnail_path}` : null,
+      captured_at: p.captured_at,
+    }));
 
     // Map to simple format
     const works = (progress || []).map(p => ({
