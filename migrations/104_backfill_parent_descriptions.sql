@@ -1,11 +1,6 @@
--- ============================================
--- Migration 104: Backfill Parent Descriptions
--- ============================================
--- Updates ALL existing classroom curriculum works
--- with parent-friendly descriptions
--- Total works: 309
--- Date: 2026-02-01
--- ============================================
+-- BACKFILL PARENT DESCRIPTIONS
+-- Total: 309 works
+-- Copy this entire file into Supabase SQL Editor
 
 BEGIN;
 
@@ -1556,9 +1551,4 @@ WHERE LOWER(name) = LOWER('Cosmic Education and the Great Lessons');
 
 COMMIT;
 
--- Verify
-SELECT
-  COUNT(*) as total,
-  COUNT(parent_description) as with_parent_desc,
-  COUNT(why_it_matters) as with_why_matters
-FROM montree_classroom_curriculum_works;
+SELECT COUNT(*) as total, COUNT(parent_description) as with_parent, COUNT(why_it_matters) as with_why FROM montree_classroom_curriculum_works;
