@@ -47,6 +47,13 @@ How it works now:
 
 This eliminates all date/timestamp bugs. Photos are still saved for end-of-term compilation.
 
+**Still To Do:**
+1. **Report Preview** - Teacher should see what report looks like before/after sending
+2. **Parent Report Page** - Data structure mismatch between send endpoint and parent view page
+3. **Push to deploy** - Changes committed locally, need `git push origin main`
+
+**Handoff:** `/docs/HANDOFF_SESSION_STATUS_REPORTS.md`
+
 ---
 
 ### Session - Feb 1, 2026 (Night - DEEP AUDIT & FIXES!)
