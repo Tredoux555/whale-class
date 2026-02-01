@@ -317,28 +317,19 @@ export default function WorkWheelPicker({
           </div>
         ) : (
           <>
-            {/* Split button: Select (3/4) | Add (1/4) */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleSelectWork}
-                disabled={!selectedWork}
-                className="flex-[3] py-4 bg-white text-emerald-600 font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
-              >
-                Select
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedWork && onAddExtra) {
-                    onAddExtra(selectedWork);
-                    onClose();
-                  }
-                }}
-                disabled={!selectedWork || !onAddExtra}
-                className="flex-[1] py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
-              >
-                Add
-              </button>
-            </div>
+            {/* Add Work button - click highlighted work to change focus */}
+            <button
+              onClick={() => {
+                if (selectedWork && onAddExtra) {
+                  onAddExtra(selectedWork);
+                  onClose();
+                }
+              }}
+              disabled={!selectedWork || !onAddExtra}
+              className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
+            >
+              Add Work
+            </button>
 
             {/* Selected work name display */}
             <p className="text-center text-white/80 text-sm mt-1">

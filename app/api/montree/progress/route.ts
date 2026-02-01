@@ -58,6 +58,24 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Also fetch focus works to mark which progress items are focus
+    // This is optional - if it fails, we just won't have focus flags
+    const focusMap = new Map<string, string>();
+    try {
+      const { data: focusWorks, error: focusError } = await supabase
+        .from('montree_child_focus_works')
+        .select('area, work_name')
+        .eq('child_id', childId);
+
+      if (!focusError && focusWorks) {
+        for (const fw of focusWorks) {
+          focusMap.set(fw.area, fw.work_name?.toLowerCase());
+        }
+      }
+    } catch (e) {
+      console.warn('Focus works fetch failed, continuing without focus flags:', e);
+    }
+
     // Calculate stats
     const stats = { presented: 0, practicing: 0, mastered: 0 };
     const byArea: Record<string, any[]> = {};
@@ -77,11 +95,24 @@ export async function GET(request: NextRequest) {
 
       const area = p.area || 'other';
       if (!byArea[area]) byArea[area] = [];
-      byArea[area].push({ ...p, statusNormalized: statusKey });
+
+      // Check if this progress item is a focus work for its area
+      const focusWorkName = focusMap.get(area);
+      const isFocus = focusWorkName === p.work_name?.toLowerCase();
+
+      byArea[area].push({ ...p, statusNormalized: statusKey, is_focus: isFocus });
     }
 
-    return NextResponse.json({ 
-      progress: progress || [],
+    // Add is_focus to progress array
+    const progressWithFocus = (progress || []).map(p => {
+      const area = p.area || 'other';
+      const focusWorkName = focusMap.get(area);
+      const isFocus = focusWorkName === p.work_name?.toLowerCase();
+      return { ...p, is_focus: isFocus };
+    });
+
+    return NextResponse.json({
+      progress: progressWithFocus,
       stats,
       byArea,
       total: progress?.length || 0

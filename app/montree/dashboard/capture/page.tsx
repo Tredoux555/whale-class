@@ -46,6 +46,10 @@ function CaptureContent() {
   const isGroupMode = searchParams.get('group') === 'true';
   const isClassMode = searchParams.get('class') === 'true'; // Class photo - shared with all parents
 
+  // Get work context from URL (passed from Week view Capture button)
+  const workName = searchParams.get('workName');
+  const workArea = searchParams.get('area');
+
   // State
   const [step, setStep] = useState<FlowStep>(preSelectedChildId ? 'camera' : (isClassMode ? 'camera' : 'select-child'));
   const [children, setChildren] = useState<MontreeChild[]>([]);
@@ -125,6 +129,8 @@ function CaptureContent() {
         child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
         child_ids: idsToTag.length > 1 ? idsToTag : undefined,
         is_class_photo: isClassMode, // Mark as class photo for sharing with all parents
+        caption: workName || undefined, // Work name for display/matching
+        tags: workArea ? [workArea] : undefined, // Area tag for categorization
         onProgress: setUploadProgress,
       });
 
