@@ -56,7 +56,7 @@ function GuruContent() {
   const [streamingText, setStreamingText] = useState('');
   const [history, setHistory] = useState<PastInteraction[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [useStreaming, setUseStreaming] = useState(true);
+  const [useStreaming, setUseStreaming] = useState(false); // Disabled until stream route fixed
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load session and children
