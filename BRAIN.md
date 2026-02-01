@@ -2,14 +2,44 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Jan 31, 2026 - Evening)
+## Current State (Feb 1, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: WORKING - Students can now be added! Curriculum correctly sequenced.
+**Status**: WORKING - Full curriculum guides + parent descriptions COMPLETE!
 
 ## Recent Changes
+
+### Session - Feb 1, 2026 (Morning - PARENT DESCRIPTIONS COMPLETE!)
+
+**🎉 100% COMPLETE: Teacher Guides + Parent Descriptions**
+
+All 490 classroom curriculum works now have:
+- ✅ `quick_guide` - 10-second teacher reference
+- ✅ `presentation_steps` - Full AMI album instructions
+- ✅ `parent_description` - Warm, parent-friendly explanations
+- ✅ `why_it_matters` - Developmental significance
+
+**Backfill Migrations Created** (all run successfully):
+- `migrations/104_backfill_parent_descriptions.sql` - Initial backfill
+- `migrations/105_fix_remaining_parent_descriptions.sql` - ILIKE pattern fixes
+- `migrations/106_fix_missing_parent_descriptions.sql` - 100 exact matches
+- `migrations/107_final_parent_descriptions.sql` - Additional patterns
+- `migrations/108_final_19_parent_descriptions.sql` - Final 19 exact matches
+
+**Database Status**:
+- 490 total works (245 per classroom × 2 classrooms)
+- 490/490 have `parent_description` ✅
+- 490/490 have `why_it_matters` ✅
+
+**Classrooms Backfilled**:
+- Panda: `3775b195-1c85-4e2a-a688-e284e98e7b7d` ✅
+- Whale: `945c846d-fb33-4370-8a95-a29b7767af54` ✅
+
+**Auto-load for new classrooms**: ✅ YES - `curriculum-loader.ts` merges all guide data
+
+---
 
 ### Session - Feb 1, 2026 (Early Morning - Curriculum Guides COMPLETE!)
 
@@ -188,10 +218,11 @@ All 309 Montessori works now have comprehensive teacher guides.
 
 | File | Purpose |
 |------|---------|
-| **TEACHER GUIDES (NEW)** | |
-| `lib/curriculum/comprehensive-guides/*.json` | AMI album quality guides for 268 works (44.4% complete) |
+| **TEACHER GUIDES + PARENT DESCRIPTIONS** | |
+| `lib/curriculum/comprehensive-guides/*.json` | AMI album quality guides for 309 works (100% complete!) |
 | `lib/curriculum/comprehensive-guides/AUDIT.json` | Coverage tracking |
-| `docs/HANDOFF_CURRICULUM_GUIDES.md` | Master handoff doc with all 268 works listed |
+| `docs/HANDOFF_CURRICULUM_GUIDES.md` | Master handoff doc |
+| `migrations/104-108_*.sql` | Parent description backfill migrations |
 | `app/api/montree/works/guide/route.ts` | API endpoint for fetching guides |
 | `app/api/montree/admin/backfill-guides/route.ts` | Backfill existing classrooms with guides |
 | `migrations/103_backfill_curriculum_guides.sql` | SQL to update all classrooms |
@@ -258,13 +289,14 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - [x] **FIXED: Curriculum sequence** - Now uses static JSON loader
 - [x] **FIXED: Chinese removed** - English only curriculum
 - [x] **COMPLETE: Curriculum Guides** - 309/309 works (100%)! All have quick_guide + presentation_steps
+- [x] **COMPLETE: Parent Descriptions** - 490/490 works (100%)! All have parent_description + why_it_matters
+- [x] **BACKFILLED: Panda & Whale classrooms** - Both have full guide data
 - [ ] **TEST: Add student from dashboard** - Should work now! Try adding Amy again.
-- [ ] **Reseed Panda classroom** - Hit `/api/montree/admin/reseed-curriculum?classroom_id=3775b195-1c85-4e2a-a688-e284e98e7b7d`
 - [ ] **FIX: Subscription status** - New schools show "Inactive" not "trialing"
 - [ ] **FIX: Teachers page** - "Failed to load data" error
 - [ ] **FIX: Remove hardcoded password** - `870602` in super-admin page
 - [ ] Run migration `099_super_admin_security.sql` for audit tables
-- [ ] Push commits to git
+- [x] **PUSHED**: Git commits including migrations 104-108 (Feb 1, 2026)
 
 ## Gotchas
 - **`montree_children.age` is INTEGER** - must use `Math.round()` on decimals like 3.5
@@ -280,3 +312,7 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - **Production**: teacherpotato.xyz
 - **Teacher Dashboard**: teacherpotato.xyz/montree
 - **Admin**: teacherpotato.xyz/admin
+
+## GitHub
+- **Token**: See 1Password or generate new at github.com/settings/tokens (expires May 2, 2026)
+- **Repo**: Tredoux555/whale-class
