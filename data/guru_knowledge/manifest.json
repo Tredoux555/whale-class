@@ -1,0 +1,141 @@
+{
+  "name": "Montessori Guru Knowledge Base",
+  "version": "2.0",
+  "last_updated": "2026-02-01",
+  "total_lines": 96877,
+  "sources": [
+    {
+      "id": "absorbent_mind",
+      "title": "The Absorbent Mind",
+      "author": "Maria Montessori",
+      "year": 1949,
+      "file": "sources/the_absorbent_mind.txt",
+      "lines": 16471,
+      "topics": ["0_to_6_development", "unconscious_learning", "language", "movement", "will", "concentration", "normalization"],
+      "status": "complete",
+      "priority": 1,
+      "notes": "THE essential 0-6 book. Core philosophy of the absorbent mind period."
+    },
+    {
+      "id": "secret_of_childhood",
+      "title": "The Secret of Childhood",
+      "author": "Maria Montessori",
+      "year": 1936,
+      "file": "sources/secret_of_childhood.txt",
+      "lines": 10306,
+      "topics": ["sensitive_periods", "child_psychology", "adult_role", "obstacles", "normalization", "deviations"],
+      "status": "complete",
+      "priority": 2,
+      "notes": "OCR'd from scanned PDF. Key source for sensitive periods."
+    },
+    {
+      "id": "montessori_method",
+      "title": "The Montessori Method",
+      "author": "Maria Montessori",
+      "year": 1912,
+      "file": "sources/the_montessori_method.txt",
+      "lines": 13181,
+      "topics": ["method", "materials", "discipline", "freedom", "observation", "prepared_environment"],
+      "status": "complete",
+      "priority": 3,
+      "notes": "Foundation text - the original method description. From Project Gutenberg."
+    },
+    {
+      "id": "own_handbook",
+      "title": "Dr. Montessori's Own Handbook",
+      "author": "Maria Montessori",
+      "year": 1914,
+      "file": "sources/dr_montessoris_own_handbook.txt",
+      "lines": 3364,
+      "topics": ["practical_guide", "materials", "exercises", "teacher_role"],
+      "status": "complete",
+      "priority": 4,
+      "notes": "Short practical guide. Good for quick material references."
+    },
+    {
+      "id": "pedagogical_anthropology",
+      "title": "Pedagogical Anthropology",
+      "author": "Maria Montessori",
+      "year": 1913,
+      "file": "sources/pedagogical_anthropology.txt",
+      "lines": 24261,
+      "topics": ["scientific_basis", "child_study", "measurement", "development"],
+      "status": "complete",
+      "priority": 5,
+      "notes": "Scientific/academic foundation. Dense but valuable for understanding her research basis."
+    },
+    {
+      "id": "spontaneous_activity",
+      "title": "Spontaneous Activity in Education",
+      "author": "Maria Montessori",
+      "year": 1917,
+      "file": "sources/spontaneous_activity_in_education.txt",
+      "lines": 11766,
+      "topics": ["advanced_method", "attention", "imagination", "will_development"],
+      "status": "complete",
+      "priority": 6,
+      "notes": "Advanced Method Vol 1. Deep dive on attention and will."
+    },
+    {
+      "id": "elementary_material",
+      "title": "The Montessori Elementary Material",
+      "author": "Maria Montessori",
+      "year": 1917,
+      "file": "sources/the_montessori_elementary_material.txt",
+      "lines": 17528,
+      "topics": ["materials", "sensorial", "math", "language_materials", "cultural"],
+      "status": "complete",
+      "priority": 7,
+      "notes": "Advanced Method Vol 2. Detailed material descriptions for 6-12."
+    }
+  ],
+  "topics_index": {
+    "sensitive_periods": ["secret_of_childhood", "absorbent_mind"],
+    "discipline": ["secret_of_childhood", "montessori_method"],
+    "concentration": ["absorbent_mind", "spontaneous_activity"],
+    "normalization": ["absorbent_mind", "secret_of_childhood"],
+    "deviations": ["secret_of_childhood"],
+    "materials": ["own_handbook", "montessori_method", "elementary_material"],
+    "observation": ["montessori_method", "spontaneous_activity"],
+    "teacher_role": ["own_handbook", "montessori_method", "secret_of_childhood"],
+    "prepared_environment": ["montessori_method", "own_handbook"],
+    "freedom_limits": ["montessori_method", "secret_of_childhood"],
+    "language_development": ["absorbent_mind"],
+    "movement": ["absorbent_mind", "own_handbook"],
+    "will_development": ["spontaneous_activity", "absorbent_mind"]
+  },
+  "books_not_yet_acquired": [
+    {
+      "id": "discovery_of_child",
+      "title": "The Discovery of the Child",
+      "year": 1948,
+      "status": "not_acquired",
+      "source": "Archive.org",
+      "notes": "Revised Montessori Method - would be valuable addition"
+    },
+    {
+      "id": "child_in_family",
+      "title": "The Child in the Family",
+      "year": 1936,
+      "status": "not_acquired",
+      "source": "Archive.org",
+      "notes": "Parent guidance - useful for parent talking points"
+    },
+    {
+      "id": "education_new_world",
+      "title": "Education for a New World",
+      "year": 1946,
+      "status": "not_acquired",
+      "source": "Archive.org",
+      "notes": "Post-war philosophy"
+    },
+    {
+      "id": "to_educate_human_potential",
+      "title": "To Educate the Human Potential",
+      "year": 1948,
+      "status": "not_acquired",
+      "source": "Archive.org",
+      "notes": "Cosmic education for 6-12"
+    }
+  ]
+}

@@ -45,15 +45,19 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   // Determine active tab
   const getActiveTab = () => {
     if (pathname.endsWith('/progress')) return 'progress';
+    if (pathname.endsWith('/profile')) return 'profile';
+    if (pathname.endsWith('/observations')) return 'observations';
     if (pathname.endsWith('/reports')) return 'reports';
     return 'week';
   };
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: 'week', label: '📋 Week', href: `/montree/dashboard/${childId}` },
-    { id: 'progress', label: '📊 Progress', href: `/montree/dashboard/${childId}/progress` },
-    { id: 'reports', label: '📄 Reports', href: `/montree/dashboard/${childId}/reports` },
+    { id: 'week', label: '📋', href: `/montree/dashboard/${childId}` },
+    { id: 'progress', label: '📊', href: `/montree/dashboard/${childId}/progress` },
+    { id: 'profile', label: '🧠', href: `/montree/dashboard/${childId}/profile` },
+    { id: 'observations', label: '👁️', href: `/montree/dashboard/${childId}/observations` },
+    { id: 'reports', label: '📄', href: `/montree/dashboard/${childId}/reports` },
   ];
 
   // Don't show loading spinner - render immediately with fallbacks
@@ -94,12 +98,21 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
             
-            <Link
-              href={`/montree/dashboard/capture?child=${childId}`}
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-2 text-sm font-medium"
-            >
-              📷 Camera
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/montree/dashboard/guru?child=${childId}`}
+                className="px-3 py-2 bg-violet-500/80 hover:bg-violet-500 rounded-xl flex items-center gap-2 text-sm font-medium shadow-sm"
+                title="Ask Montessori Guru"
+              >
+                🔮 Guru
+              </Link>
+              <Link
+                href={`/montree/dashboard/capture?child=${childId}`}
+                className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-2 text-sm font-medium"
+              >
+                📷 Camera
+              </Link>
+            </div>
           </div>
         </div>
       </header>

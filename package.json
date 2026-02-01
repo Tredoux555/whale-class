@@ -74,5 +74,8 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
     "typescript": "5.9.3"
+  },
+  "optionalDependencies": {
+    "@next/swc-wasm-nodejs": "^16.1.6"
   }
 }

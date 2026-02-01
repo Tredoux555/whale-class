@@ -85,6 +85,13 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/montree/dashboard/guru"
+            className="p-2 bg-white/20 rounded-lg hover:bg-white/30 active:scale-95 transition-all"
+            title="Montessori Guru"
+          >
+            <span className="text-lg">🔮</span>
+          </Link>
+          <Link
             href="/montree/dashboard/capture?class=true"
             className="p-2 bg-white/20 rounded-lg hover:bg-white/30 active:scale-95 transition-all"
             title="Class Photo"
