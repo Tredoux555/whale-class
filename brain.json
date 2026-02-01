@@ -1,11 +1,12 @@
 {
   "project": "Montree",
-  "session": 131,
-  "lastUpdated": "2026-01-31T12:30:00+08:00",
+  "session": 133,
+  "lastUpdated": "2026-01-31T23:45:00+08:00",
 
-  "STATUS": "✅ TEACHER UI SIMPLIFIED - MINIMAL INTERFACE",
+  "STATUS": "📚 CURRICULUM GUIDE DATA - 3% complete (8/268 works). See HANDOFF for full list.",
 
-  "HANDOFF": "docs/HANDOFF_SESSION131_UI_CLEANUP.md",
+  "HANDOFF": "docs/HANDOFF_CURRICULUM_GUIDES.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION131_UI_CLEANUP.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
   "SESSION_131_CLEANUP": {
@@ -35,15 +36,69 @@
     ]
   },
 
-  "QUICK_GUIDES": {
-    "description": "10-second scan style instructions for each work",
-    "location": "supabase/migrations/090_quick_guide_columns.sql",
-    "columns": {
-      "quick_guide": "3-5 bullet point instructions for teachers",
-      "video_search_term": "YouTube search term for demonstration videos"
+  "CURRICULUM_DATA": {
+    "IMPORTANT_NOTE": "⚠️ ONBOARDING MUST COPY ALL DATA FROM BRAIN TO CLASSROOM",
+
+    "COMPREHENSIVE_GUIDES": {
+      "location": "lib/curriculum/comprehensive-guides/",
+      "description": "Single source of truth for ALL teacher guide data",
+      "files": {
+        "practical-life-guides.json": "83 works",
+        "sensorial-guides.json": "35 works",
+        "math-guides.json": "57 works",
+        "language-guides.json": "43 works",
+        "cultural-guides.json": "50 works",
+        "AUDIT.json": "Coverage status"
+      },
+      "CURRENT_COVERAGE": {
+        "total_works": 268,
+        "complete": 8,
+        "coverage_percent": "3.0%",
+        "practical_life": "8/83 (9.6%)",
+        "sensorial": "0/35 (0%)",
+        "math": "0/57 (0%)",
+        "language": "0/43 (0%)",
+        "cultural": "0/50 (0%)"
+      },
+      "data_format": {
+        "quick_guide": "3-5 bullet points for 10-second teacher scan",
+        "presentation_steps": "[{step, title, description, tip}] - Full AMI album",
+        "points_of_interest": "What captures child's attention",
+        "control_of_error": "How child self-corrects",
+        "variations": "Different presentation options",
+        "common_challenges": "Teacher pitfalls to avoid"
+      }
     },
-    "coverage": "220 works have quick guides populated",
-    "created_session": 110
+
+    "master_table": "montessori_works (THE BRAIN)",
+    "classroom_table": "montree_classroom_curriculum_works",
+
+    "data_flow": {
+      "description": "When classroom created, ALL data copies from Brain to classroom table",
+      "seeding_code": "app/api/montree/principal/setup-stream/route.ts lines 192-220",
+      "must_copy": ["quick_guide", "video_search_term", "presentation_steps", "direct_aims", "materials_needed", "control_of_error", "parent_description", "why_it_matters"]
+    },
+
+    "migrations": {
+      "schema": "supabase/migrations/050_digital_handbook.sql",
+      "quick_guides": "supabase/migrations/090_quick_guide_columns.sql (12 works)",
+      "language_data": "supabase/migrations/051_english_handbook_seed.sql (5 works)",
+      "practical_life": "migrations/102_practical_life_comprehensive.sql (NEW - 10 works)"
+    },
+
+    "guide_api": {
+      "endpoint": "/api/montree/works/guide?name=Work+Name&classroom_id=xxx",
+      "behavior": "Checks classroom first, falls back to master Brain"
+    },
+
+    "TO_COMPLETE": {
+      "priority_1": "Populate remaining 75 Practical Life works",
+      "priority_2": "Populate 35 Sensorial works",
+      "priority_3": "Populate 57 Math works (research DONE)",
+      "priority_4": "Populate 43 Language works",
+      "priority_5": "Populate 50 Cultural works",
+      "how": "Use Claude with docs/CLAUDE_PROMPT_PRESENTATION_STEPS.md to generate data"
+    }
   },
 
   "TEACHER_UI": {
@@ -84,6 +139,18 @@
     "status_values": ["not_started", "presented", "practicing", "mastered"],
     "progress_calculation": "All works BEFORE current position count as completed",
     "age_storage": "Numeric (2, 2.5, 3, 3.5, etc.) - NOT date_of_birth"
+  },
+
+  "STATUS_TRACKING_TODO": {
+    "description": "Implement manual status changes with automatic timestamps",
+    "current_state": "mastered_at captured, but missing other status timestamps",
+    "proposed_fields": [
+      "practicing_at TIMESTAMPTZ - when status changed to practicing",
+      "status_changed_at TIMESTAMPTZ - last status change time",
+      "changed_by UUID - teacher who made the change"
+    ],
+    "philosophy": "Trust teacher judgment. Manual status changes, automatic timestamp capture.",
+    "implementation": "When teacher changes status, capture timestamp automatically in background"
   },
 
   "LIVE_URL": "https://teacherpotato.xyz/montree"

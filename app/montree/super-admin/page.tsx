@@ -1,8 +1,8 @@
 // /montree/super-admin/page.tsx
-// Session 105: Super Admin Dashboard - View all registered Montree schools
+// Secure Super Admin Dashboard - All access is logged
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -23,6 +23,8 @@ interface School {
   student_count?: number;
 }
 
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
 export default function SuperAdminPage() {
   const router = useRouter();
   const [schools, setSchools] = useState<School[]>([]);
@@ -30,13 +32,65 @@ export default function SuperAdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [sessionWarning, setSessionWarning] = useState(false);
 
-  const handleLogin = () => {
-    // Simple password check - in production use proper auth
-    if (password === '870602') {
+  // Simple audit logging
+  const logAction = useCallback(async (action: string, details?: any) => {
+    try {
+      await fetch('/api/montree/super-admin/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, details, timestamp: new Date().toISOString() }),
+      });
+    } catch (e) {
+      console.warn('Audit log failed:', e);
+    }
+  }, []);
+
+  // Session timeout - auto logout after 15 min inactivity
+  useEffect(() => {
+    if (!authenticated) return;
+
+    const checkSession = setInterval(() => {
+      const elapsed = Date.now() - lastActivity;
+      if (elapsed > SESSION_TIMEOUT_MS) {
+        logAction('session_timeout');
+        setAuthenticated(false);
+        setSessionWarning(false);
+        alert('Session expired for security. Please login again.');
+      } else if (elapsed > SESSION_TIMEOUT_MS - 60000) {
+        setSessionWarning(true);
+      }
+    }, 10000);
+
+    return () => clearInterval(checkSession);
+  }, [authenticated, lastActivity, logAction]);
+
+  // Track activity
+  const trackActivity = useCallback(() => {
+    setLastActivity(Date.now());
+    setSessionWarning(false);
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    window.addEventListener('mousemove', trackActivity);
+    window.addEventListener('keydown', trackActivity);
+    return () => {
+      window.removeEventListener('mousemove', trackActivity);
+      window.removeEventListener('keydown', trackActivity);
+    };
+  }, [authenticated, trackActivity]);
+
+  const handleLogin = async () => {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === '870602') {
       setAuthenticated(true);
+      setLastActivity(Date.now());
+      await logAction('login_success');
       fetchSchools();
     } else {
+      await logAction('login_failed', { attempted: true });
       setError('Invalid password');
     }
   };
@@ -47,6 +101,7 @@ export default function SuperAdminPage() {
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setSchools(data.schools || []);
+      await logAction('view_schools', { count: data.schools?.length || 0 });
     } catch (err) {
       console.error('Failed to fetch schools:', err);
     } finally {

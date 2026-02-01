@@ -33,9 +33,9 @@ export default function TeacherSetupPage() {
         return;
       }
       setSession(parsed);
-      // Pre-fill username with teacher name (lowercase, no spaces)
+      // Pre-fill username with teacher name (no spaces)
       if (parsed.teacher?.name) {
-        setUsername(parsed.teacher.name.toLowerCase().replace(/\s+/g, ''));
+        setUsername(parsed.teacher.name.replace(/\s+/g, ''));
       }
     } catch {
       router.push('/montree/login');
@@ -55,8 +55,8 @@ export default function TeacherSetupPage() {
       setError('Username must be at least 3 characters');
       return;
     }
-    if (!/^[a-z0-9_]+$/.test(username)) {
-      setError('Username can only contain lowercase letters, numbers, and underscores');
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setError('Username can only contain letters, numbers, and underscores');
       return;
     }
     if (!password) {
@@ -158,14 +158,14 @@ export default function TeacherSetupPage() {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
                 placeholder="e.g., sarah_teacher"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none transition-colors"
                 required
                 autoFocus
               />
               <p className="text-slate-400 text-xs mt-1">
-                Lowercase letters, numbers, and underscores only
+                Letters, numbers, and underscores only
               </p>
             </div>
 

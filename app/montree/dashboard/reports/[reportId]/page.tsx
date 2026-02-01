@@ -1,4 +1,4 @@
-// /montree/dashboard/reports/[id]/page.tsx
+// /montree/dashboard/reports/[reportId]/page.tsx
 // Session 111: Report view with parent-friendly descriptions
 'use client';
 
@@ -53,7 +53,7 @@ const AREA_CONFIG: Record<string, { icon: string; color: string; gradient: strin
 export default function ReportViewPage() {
   const router = useRouter();
   const params = useParams();
-  const reportId = params.id as string;
+  const reportId = params.reportId as string;
   
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);

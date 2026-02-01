@@ -1,0 +1,52 @@
+{
+  "last_updated": "2026-02-01",
+  "total_works": 309,
+  "complete": 309,
+  "partial": 0,
+  "needs_guide": 0,
+  "by_area": {
+    "practical-life": {
+      "total": 108,
+      "complete": 108,
+      "partial": 0,
+      "needs_guide": 0
+    },
+    "sensorial": {
+      "total": 35,
+      "complete": 35,
+      "partial": 0,
+      "needs_guide": 0
+    },
+    "math": {
+      "total": 65,
+      "complete": 65,
+      "partial": 0,
+      "needs_guide": 0
+    },
+    "language": {
+      "total": 43,
+      "complete": 43,
+      "partial": 0,
+      "needs_guide": 0
+    },
+    "cultural": {
+      "total": 58,
+      "complete": 58,
+      "partial": 0,
+      "needs_guide": 0
+    }
+  },
+  "coverage_percent": 100.0,
+  "quality_audit": {
+    "date": "2026-02-01",
+    "has_quick_guide": 309,
+    "has_3plus_steps": 309,
+    "has_control_of_error": 309,
+    "has_direct_aims": 309,
+    "has_materials": 309,
+    "has_parent_description": 309,
+    "has_why_it_matters": 309,
+    "fully_complete": 309,
+    "pass_rate": 100.0
+  }
+}
