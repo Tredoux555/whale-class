@@ -102,12 +102,38 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 3: Get child's progress for this week
-    const { data: weekProgress } = await supabase
+    // Add time component to make date range inclusive
+    const weekStartTime = `${week_start}T00:00:00`;
+    const weekEndTime = week_end ? `${week_end}T23:59:59` : new Date().toISOString();
+
+    console.log(`[Reports] Querying progress for ${child_id} from ${weekStartTime} to ${weekEndTime}`);
+
+    // Get ALL progress for this child, then filter by date in JS
+    // This handles records with NULL updated_at (old records before fix)
+    const { data: allProgress, error: progressError } = await supabase
       .from('montree_child_progress')
-      .select('work_name, area, status, updated_at, notes')
-      .eq('child_id', child_id)
-      .gte('updated_at', week_start)
-      .lte('updated_at', week_end || new Date().toISOString());
+      .select('work_name, area, status, updated_at, presented_at, notes')
+      .eq('child_id', child_id);
+
+    // Filter to this week - check updated_at first, fallback to presented_at
+    const weekProgress = (allProgress || []).filter(p => {
+      const activityDate = p.updated_at || p.presented_at;
+      if (!activityDate) return false;
+      return activityDate >= weekStartTime && activityDate <= weekEndTime;
+    });
+
+    // Debug: show sample dates
+    if (allProgress && allProgress.length > 0) {
+      const sample = allProgress.slice(0, 3).map(p => ({
+        work: p.work_name?.substring(0, 20),
+        updated: p.updated_at?.substring(0, 10),
+        presented: p.presented_at?.substring(0, 10),
+      }));
+      console.log(`[Reports] Sample records:`, JSON.stringify(sample));
+      console.log(`[Reports] Week range: ${weekStartTime} to ${weekEndTime}`);
+    }
+
+    console.log(`[Reports] Found ${weekProgress?.length || 0} progress records for week (from ${allProgress?.length || 0} total)`, progressError || '');
 
     // STEP 4: Build works with parent descriptions using the CHAIN
     // progress.work_name → curriculum.name → work_key → brain.slug → descriptions
@@ -152,17 +178,19 @@ export async function POST(request: NextRequest) {
       .limit(10);
 
     // Overall stats
-    const { data: allProgress } = await supabase
+    const { data: overallProgress } = await supabase
       .from('montree_child_progress')
       .select('status')
       .eq('child_id', child_id);
 
-    const stats = { presented: 0, practicing: 0, mastered: 0, total: allProgress?.length || 0 };
-    for (const p of allProgress || []) {
-      if (p.status === 1 || p.status === 'presented') stats.presented++;
-      else if (p.status === 2 || p.status === 'practicing') stats.practicing++;
-      else if (p.status === 3 || p.status === 'mastered' || p.status === 'completed') stats.mastered++;
+    const stats = { presented: 0, practicing: 0, mastered: 0, total: overallProgress?.length || 0 };
+    for (const p of overallProgress || []) {
+      const s = p.status;
+      if (s === 1 || s === 'presented') stats.presented++;
+      else if (s === 2 || s === 'practicing') stats.practicing++;
+      else if (s === 3 || s === 'mastered' || s === 'completed') stats.mastered++;
     }
+    console.log('[Reports] Stats calculated:', stats);
 
     // Group by area
     const worksByArea: Record<string, any[]> = {};

@@ -135,7 +135,8 @@ export async function GET(request: NextRequest) {
         completedCount = areaWorks.filter(w => w.sequence < highest.sequence).length;
 
         // If the highest work is mastered, it also counts as completed
-        if (highest.status === 'mastered') {
+        // Handle both 'mastered' and 'completed' (legacy status value)
+        if (highest.status === 'mastered' || highest.status === 'completed') {
           completedCount++;
         }
 

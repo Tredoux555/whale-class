@@ -38,14 +38,18 @@ export async function POST(request: NextRequest) {
     if (typeof status === 'number') {
       statusStr = ['not_started', 'presented', 'practicing', 'mastered'][status] || 'not_started';
     }
+    // CRITICAL: Normalize 'completed' to 'mastered' (Week UI sends 'completed', rest of app uses 'mastered')
+    if (statusStr === 'completed') {
+      statusStr = 'mastered';
+    }
     
-    // Find existing progress record by work_name
+    // Find existing progress record by work_name (EXACT match to prevent duplicates)
     const workNameToFind = work_name || work_key;
     const { data: existing } = await supabase
       .from('montree_child_progress')
-      .select('id')
+      .select('id, work_name')
       .eq('child_id', child_id)
-      .ilike('work_name', workNameToFind)
+      .eq('work_name', workNameToFind)
       .single();
     
     const now = new Date().toISOString();
@@ -79,6 +83,7 @@ export async function POST(request: NextRequest) {
           status: statusStr,
           notes: notes || null,
           presented_at: now,
+          updated_at: now,  // CRITICAL: Reports queries on this field!
           mastered_at: statusStr === 'mastered' ? now : null
         });
       

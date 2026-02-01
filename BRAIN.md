@@ -7,9 +7,83 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: WORKING - Montessori Guru AI Assistant COMPLETE! 🔮✅
+**Status**: WORKING - Major Overhaul Complete ✅
 
 ## Recent Changes
+
+### Session - Feb 1, 2026 (Late Night - STATUS JUMPING + REPORTS OVERHAUL!)
+
+**🐛 STATUS JUMPING BUG - ROOT CAUSE FOUND & FIXED:**
+
+**Root Causes Identified:**
+1. **Progress API used `ilike` (pattern match)** - Could create duplicate records or match wrong record
+2. **Race condition in Week page** - Window focus triggered refetch while save was in progress
+3. **Reports date filtering was brittle** - ISO timestamp string comparisons failed in edge cases
+
+**Fixes Applied:**
+
+| File | Fix |
+|------|-----|
+| `/api/montree/progress/update/route.ts` | Changed `ilike` to `eq` for exact work_name matching |
+| `/app/montree/dashboard/[childId]/page.tsx` | Added `isSaving` state to block refetch during saves |
+| `/app/montree/dashboard/[childId]/page.tsx` | All save functions now properly await and handle errors |
+| `/app/montree/dashboard/[childId]/reports/page.tsx` | Complete rewrite - "Report to Date" approach |
+
+**Reports System Overhaul - "Report to Date" Approach:**
+
+Old approach: Complex week-based date filtering that was buggy
+New approach: Simple - show all unreported progress since last report
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/montree/reports/unreported?child_id=X` | Fetch all progress since last report |
+| `POST /api/montree/reports/send` | Send report to parents, marks as reported |
+
+How it works now:
+1. Teacher marks progress → saved to DB (no date complexity)
+2. Reports tab shows ALL progress since last report sent
+3. "Send Report" → emails parents + saves report → clears the list
+4. Next time only new progress shows
+
+This eliminates all date/timestamp bugs. Photos are still saved for end-of-term compilation.
+
+---
+
+### Session - Feb 1, 2026 (Night - DEEP AUDIT & FIXES!)
+
+**🐛 MULTIPLE BUGS FOUND & FIXED:**
+
+**1. Reports showing 0 activities**
+- Root Cause: `updated_at` wasn't set on INSERT, only on UPDATE
+- Fix: Added `updated_at: now` to insert in `/api/montree/progress/update/route.ts`
+- Fix: Reports API now fetches ALL progress, filters in JS with fallback to `presented_at`
+
+**2. Status mismatch: 'completed' vs 'mastered' (CRITICAL)**
+- Root Cause: Week UI uses `'completed'` for mastered, but rest of app uses `'mastered'`
+- Fix: API now normalizes `'completed'` → `'mastered'` in progress/update route
+- Fix: Progress bars API now counts both `'completed'` and `'mastered'` as done
+- Fix: Reports API now counts both in stats calculation
+
+**3. Build error - duplicate variable**
+- Fixed `allProgress` defined twice in reports route → renamed to `overallProgress`
+
+**Files Modified:**
+| File | Change |
+|------|--------|
+| `/api/montree/progress/update/route.ts` | Added `updated_at` on insert + normalize 'completed' to 'mastered' |
+| `/api/montree/progress/bars/route.ts` | Handle both 'completed' and 'mastered' in count |
+| `/api/montree/reports/route.ts` | Fixed duplicate var + JS filtering + stats calculation |
+| `/app/montree/dashboard/[childId]/layout.tsx` | Removed Guru/Camera buttons |
+
+**UI Cleanup Done:**
+- Removed 🔮 Guru and 📷 Camera buttons from child detail header
+- Reports page simplified: current week only, no week navigation
+- Hidden tabs: Profile, Observations (kept functional but hidden)
+- Active tabs: Week, Progress, Reports
+
+**Guru Status:** API routes have issues (404s). Deferred for later.
+
+---
 
 ### Session - Feb 1, 2026 (Evening - MONTESSORI GURU ALL PHASES COMPLETE! 🔮✅)
 

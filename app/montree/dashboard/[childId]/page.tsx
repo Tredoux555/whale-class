@@ -31,10 +31,11 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }>
   not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
   presented: { label: 'P', bg: 'bg-amber-300', text: 'text-amber-800' },
   practicing: { label: 'Pr', bg: 'bg-blue-400', text: 'text-blue-800' },
-  completed: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' },
+  mastered: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' },
+  completed: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' }, // Legacy alias
 };
 
-const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'completed'];
+const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'];
 
 // Fuzzy matching for intelligent work placement
 const fuzzyScore = (str1: string, str2: string): number => {
@@ -172,6 +173,9 @@ export default function WeekPage() {
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
   // All works combined (for checking if already added)
   const allWorks = [...focusWorks, ...extraWorks];
+
+  // CRITICAL: Block refetch while saving to prevent race conditions
+  const [isSaving, setIsSaving] = useState(false);
   
   // Next work suggestion state (removed modal - using wheel picker now)
 
@@ -211,6 +215,9 @@ export default function WeekPage() {
 
   // Fetch progress and separate into focus works (1 per area) and extras
   const fetchAssignments = () => {
+    // Don't refetch while a save is in progress (prevents race conditions)
+    if (isSaving) return;
+
     fetch(`/api/montree/progress?child_id=${childId}`)
       .then(r => {
         if (!r.ok) {
@@ -455,7 +462,16 @@ export default function WeekPage() {
   // Handle work selection from wheel picker - sets as new FOCUS work for area
   const handleWheelPickerSelect = async (work: any, status: string) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
-    const newStatus = status === 'mastered' ? 'completed' : status;
+    const newStatus = status; // Use status as-is (mastered, not completed)
+
+    // CRITICAL: Block refetch while saving
+    setIsSaving(true);
+
+    // Store old focus work for revert
+    const oldFocusWork = focusWorks.find(w => {
+      const wArea = w.area === 'math' ? 'mathematics' : w.area;
+      return wArea === area;
+    });
 
     // OPTIMISTIC UPDATE - update UI immediately
     setFocusWorks(prev => prev.map(w => {
@@ -470,7 +486,7 @@ export default function WeekPage() {
 
     // Background API call
     try {
-      await fetch('/api/montree/progress/update', {
+      const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -481,10 +497,19 @@ export default function WeekPage() {
           is_focus: true,
         }),
       });
+      if (!res.ok) throw new Error('Save failed');
     } catch {
       // Revert on failure
-      fetchAssignments();
+      if (oldFocusWork) {
+        setFocusWorks(prev => prev.map(w => {
+          const wArea = w.area === 'math' ? 'mathematics' : w.area;
+          if (wArea === area) return oldFocusWork;
+          return w;
+        }));
+      }
       toast.error('Failed to update');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -499,6 +524,9 @@ export default function WeekPage() {
       return;
     }
 
+    // CRITICAL: Block refetch while saving
+    setIsSaving(true);
+
     // OPTIMISTIC UPDATE - add to UI immediately
     const newExtra: Assignment = {
       work_name: work.name,
@@ -512,7 +540,7 @@ export default function WeekPage() {
 
     // Background API call
     try {
-      await fetch('/api/montree/progress/update', {
+      const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -523,10 +551,13 @@ export default function WeekPage() {
           is_focus: false,
         }),
       });
+      if (!res.ok) throw new Error('Save failed');
     } catch {
       // Revert on failure
       setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
       toast.error('Failed to add');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -534,6 +565,9 @@ export default function WeekPage() {
   const cycleStatus = async (work: Assignment, isFocus: boolean) => {
     const currentIdx = STATUS_FLOW.indexOf(work.status || 'not_started');
     const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length];
+
+    // CRITICAL: Block refetch while saving
+    setIsSaving(true);
 
     // Optimistic update
     if (isFocus) {
@@ -547,7 +581,7 @@ export default function WeekPage() {
     }
 
     try {
-      await fetch('/api/montree/progress/update', {
+      const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -557,14 +591,29 @@ export default function WeekPage() {
           status: nextStatus
         }),
       });
+      if (!res.ok) throw new Error('Save failed');
     } catch {
       toast.error('Failed to update');
-      fetchAssignments(); // Revert by re-fetching
+      // Revert optimistic update
+      if (isFocus) {
+        setFocusWorks(prev => prev.map(w =>
+          w.work_name === work.work_name ? { ...w, status: work.status } : w
+        ));
+      } else {
+        setExtraWorks(prev => prev.map(w =>
+          w.work_name === work.work_name ? { ...w, status: work.status } : w
+        ));
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Remove an extra work (not for focus works) - OPTIMISTIC
   const removeExtra = async (work: Assignment) => {
+    // CRITICAL: Block refetch while saving
+    setIsSaving(true);
+
     // OPTIMISTIC - remove from UI immediately
     const removedWork = work;
     setExtraWorks(prev => prev.filter(w => w.work_name !== work.work_name));
@@ -572,20 +621,23 @@ export default function WeekPage() {
 
     // Background API call
     try {
-      await fetch('/api/montree/progress/update', {
+      const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           child_id: childId,
           work_name: work.work_name,
           area: work.area,
-          status: 'completed'
+          status: 'mastered'  // Mark as mastered (not completed) to hide from extras
         }),
       });
+      if (!res.ok) throw new Error('Save failed');
     } catch {
       // Revert on failure
       setExtraWorks(prev => [...prev, removedWork]);
       toast.error('Failed to remove');
+    } finally {
+      setIsSaving(false);
     }
   };
 
