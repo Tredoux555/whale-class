@@ -87,9 +87,34 @@ function PrintContent() {
 
       const childrenWithWorks: ChildWithWorks[] = await Promise.all(
         childList.map(async (child: any) => {
-          const workRes = await fetch(`/api/montree/weekly-assignments?child_id=${child.id}`);
-          const workData = await workRes.json();
-          return { ...child, works: workData.assignments || [] };
+          // Get focus works (teacher-assigned works for this week)
+          const focusRes = await fetch(`/api/montree/focus-works?child_id=${child.id}`);
+          const focusData = await focusRes.json();
+
+          // Get progress for status info
+          const progressRes = await fetch(`/api/montree/progress?child_id=${child.id}`);
+          const progressData = await progressRes.json();
+
+          // Build progress lookup
+          const progressMap = new Map<string, string>();
+          for (const p of progressData.progress || []) {
+            progressMap.set(p.work_name?.toLowerCase(), p.status);
+          }
+
+          // Convert focus works to the expected format
+          const works: Work[] = [];
+          if (focusData.raw) {
+            for (const fw of focusData.raw) {
+              works.push({
+                id: fw.work_id || fw.id,
+                work_name: fw.work_name,
+                area: fw.area,
+                status: progressMap.get(fw.work_name?.toLowerCase()) || 'presented',
+              });
+            }
+          }
+
+          return { ...child, works };
         })
       );
 
