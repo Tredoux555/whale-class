@@ -1,0 +1,269 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-02-01",
+  "description": "High-quality example Q&A pairs for the Montessori Guru",
+  "examples": [
+    {
+      "id": "focus_new_sibling",
+      "question_type": "focus",
+      "question": "Emma keeps interrupting circle time and can't sit still. She's 3 years old with a new baby sibling at home.",
+      "child_context": {
+        "age": "3 years 2 months",
+        "temperament": {
+          "activity_level": 4,
+          "persistence": 3,
+          "distractibility": 4
+        },
+        "family_notes": "New baby sibling born 2 weeks ago",
+        "sensitive_periods": {
+          "order": "active",
+          "movement": "active"
+        }
+      },
+      "response": {
+        "insight": "Emma's interruptions during circle time are likely seeking connection - with a new baby at home, she's getting less one-on-one attention. Her high activity temperament makes sitting still genuinely difficult, especially when she's emotionally unsettled.",
+        "root_cause": "Attention-seeking behavior triggered by life transition (new sibling) combined with developmental movement needs.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "BEFORE CIRCLE",
+            "details": "Give Emma a special 'helper job' (laying out the circle materials) - this fills her attention need AND gives purposeful movement"
+          },
+          {
+            "priority": 2,
+            "action": "DURING CIRCLE",
+            "details": "Seat her next to you with a small fidget item. When she participates positively, a quiet hand on her shoulder acknowledges her"
+          },
+          {
+            "priority": 3,
+            "action": "AFTER CIRCLE",
+            "details": "5 minutes of one-on-one time, even just walking together to get snack - predictable connection she can count on"
+          },
+          {
+            "priority": 4,
+            "action": "HOME SUGGESTION",
+            "details": "Suggest parents do 'Emma special time' - 10 minutes daily with just her"
+          }
+        ],
+        "timeline": "1-2 weeks to see improvement in circle participation. The adjustment to the new sibling may take 2-3 months overall.",
+        "parent_talking_point": "Emma is such a wonderful helper in our classroom - she loves having special responsibilities. We're making sure she gets plenty of positive attention here."
+      }
+    },
+    {
+      "id": "wandering_no_work",
+      "question_type": "focus",
+      "question": "Marcus won't choose work. He wanders around touching everything but never settling. He's been at school 8 months.",
+      "child_context": {
+        "age": "4 years 1 month",
+        "baseline_focus_minutes": 5,
+        "works_mastered": 12,
+        "works_practicing": 3,
+        "temperament": {
+          "activity_level": 4,
+          "adaptability": 3
+        }
+      },
+      "response": {
+        "insight": "Marcus's wandering suggests he may be in a transitional state - he's interested in many things but hasn't yet experienced the deep concentration that leads to normalization. His 5-minute baseline focus is actually normal for his developmental stage, but he may not have found 'his' work yet.",
+        "root_cause": "Lack of connection to specific materials - he needs to find work that captures his intrinsic interest.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "OBSERVE CLOSELY",
+            "details": "This week, note exactly what he touches and in what order. He's showing you his interests through his wandering."
+          },
+          {
+            "priority": 2,
+            "action": "FOLLOW THE INTEREST",
+            "details": "If he lingers at math materials, prepare a new math presentation just for him"
+          },
+          {
+            "priority": 3,
+            "action": "LIMIT CHOICES",
+            "details": "Temporarily reduce his available options - perhaps just one shelf at a time - to reduce overwhelm"
+          },
+          {
+            "priority": 4,
+            "action": "PROTECT WORK CYCLES",
+            "details": "Don't interrupt him even if he only works for 3 minutes. That's his current capacity. Celebrate it internally."
+          }
+        ],
+        "timeline": "Finding 'his' work could take 2-4 weeks of observation and targeted presentations. Once he connects with a material, concentration will build from there.",
+        "parent_talking_point": "Marcus is in an exciting exploration phase - he's showing us all his interests! We're watching closely to see which work really captures him."
+      }
+    },
+    {
+      "id": "hitting_social",
+      "question_type": "behavior",
+      "question": "Sophia has been hitting other children when they try to use materials she's working with. This started about 2 weeks ago.",
+      "child_context": {
+        "age": "3 years 8 months",
+        "temperament": {
+          "intensity": 5,
+          "adaptability": 2
+        },
+        "sensitive_periods": {
+          "order": "active"
+        },
+        "family_notes": "Parents recently separated"
+      },
+      "response": {
+        "insight": "Sophia's hitting appears to serve a protective function - she's defending her work space during a time when her home life feels unpredictable. With her active sensitive period for order and low adaptability, unexpected intrusions feel threatening. The hitting is communication: 'I need something I can control.'",
+        "root_cause": "Emotional dysregulation from family transition combined with developmental need for order and predictability.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "CREATE SAFE SPACE",
+            "details": "Give Sophia a designated work rug that's 'hers' - place it slightly apart from the group. This gives her clear boundaries."
+          },
+          {
+            "priority": 2,
+            "action": "TEACH WORDS",
+            "details": "Before she starts work, practice: 'I'm using this. You may wait or choose something else.' Role-play this 3x before each work period."
+          },
+          {
+            "priority": 3,
+            "action": "SHADOW CLOSE",
+            "details": "Stay nearby during group work times. When you see tension building, redirect the OTHER child before Sophia needs to defend."
+          },
+          {
+            "priority": 4,
+            "action": "EMOTIONAL VOCABULARY",
+            "details": "Name her feelings throughout the day: 'You look frustrated. It's hard when things feel out of control.' Build her ability to express with words."
+          }
+        ],
+        "timeline": "Physical aggression should decrease within 1-2 weeks with consistent intervention. Full emotional regulation will take months given the home situation.",
+        "parent_talking_point": "Sophia is working so hard on using her words when she feels frustrated. We're helping her feel safe and in control of her space at school."
+      }
+    },
+    {
+      "id": "regression_skills",
+      "question_type": "academic",
+      "question": "Leo was doing well with Practical Life but now won't even attempt spooning work he had mastered. He seems to have regressed.",
+      "child_context": {
+        "age": "2 years 10 months",
+        "time_at_school": "4 months",
+        "works_mastered": 8,
+        "sleep_status": "disrupted",
+        "temperament": {
+          "persistence": 4,
+          "mood_quality": 3
+        }
+      },
+      "response": {
+        "insight": "Leo's regression is likely temporary and related to his disrupted sleep. When children are tired, they return to earlier mastered skills for comfort - or avoid challenge altogether. His persistence is normally high, suggesting this avoidance is circumstantial, not characteristic.",
+        "root_cause": "Sleep deprivation reducing cognitive resources and emotional resilience.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "HONOR THE REGRESSION",
+            "details": "Don't push the spooning work. Offer simpler, already-mastered activities. Success builds confidence."
+          },
+          {
+            "priority": 2,
+            "action": "QUIET CORNER",
+            "details": "Create a cozy reading/resting spot where Leo can recharge. Let him use it without stigma."
+          },
+          {
+            "priority": 3,
+            "action": "SHORTEN EXPECTATIONS",
+            "details": "Aim for one or two quality work cycles, not a full morning. Quality over quantity."
+          },
+          {
+            "priority": 4,
+            "action": "PARENT CONVERSATION",
+            "details": "Check in about sleep at home. Share that school performance dips when children are tired."
+          }
+        ],
+        "timeline": "Once sleep normalizes, expect skills to return within 3-5 days. He hasn't lost anything - the pathways are just temporarily less accessible.",
+        "parent_talking_point": "Leo's body is telling us he needs rest. We're giving him gentle work and quiet time, and we'll see his energy return as he gets more sleep."
+      }
+    },
+    {
+      "id": "sensitive_period_language",
+      "question_type": "academic",
+      "question": "Mia is obsessed with letters. She wants to trace sandpaper letters all day and gets upset when we move to other activities.",
+      "child_context": {
+        "age": "3 years 6 months",
+        "sensitive_periods": {
+          "language": "active"
+        },
+        "temperament": {
+          "persistence": 5,
+          "intensity": 4
+        },
+        "baseline_focus_minutes": 15
+      },
+      "response": {
+        "insight": "Mia is in the peak of her sensitive period for language - this is exactly what it looks like when a child's inner teacher is fully engaged. Her 15-minute focus and high persistence mean she can truly absorb during these windows. This is a gift, not a problem.",
+        "root_cause": "Active sensitive period for written language combined with high persistence creating intense focus on letters.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "FOLLOW THE CHILD",
+            "details": "Let her work with letters as long as she wants. Interrupting a sensitive period disrupts development."
+          },
+          {
+            "priority": 2,
+            "action": "EXPAND THE OBSESSION",
+            "details": "Introduce moveable alphabet, letter matching games, sand tray for writing. Feed the hunger."
+          },
+          {
+            "priority": 3,
+            "action": "BRIDGE ACTIVITIES",
+            "details": "Label items in the classroom. Make letters part of Practical Life: 'Can you find something that starts with M?'"
+          },
+          {
+            "priority": 4,
+            "action": "GENTLE TRANSITIONS",
+            "details": "When you must move to group activities, bring letters with you: 'Let's find letter sounds in our song.'"
+          }
+        ],
+        "timeline": "This intense interest may last weeks or months. When the sensitive period naturally wanes, she'll diversify on her own.",
+        "parent_talking_point": "Mia is in a beautiful sensitive period for language! Her brain is primed to absorb letters right now. We're following her lead and she's making wonderful progress."
+      }
+    },
+    {
+      "id": "separation_anxiety",
+      "question_type": "emotional",
+      "question": "New student James screams and clings to his mother at drop-off. He's been with us for 3 weeks and it's not improving.",
+      "child_context": {
+        "age": "3 years 0 months",
+        "time_at_school": "3 weeks",
+        "temperament": {
+          "initial_reaction": 1,
+          "adaptability": 2
+        },
+        "family_notes": "First time in any school setting, very close to mother"
+      },
+      "response": {
+        "insight": "James's persistent separation anxiety is developmentally expected given his temperament (withdrawing initial reaction, slow adaptability) and this being his first school experience. Three weeks is not long for a child with his profile - he needs more time AND different strategies.",
+        "root_cause": "Temperamental slow-to-warm profile combined with first major separation experience.",
+        "action_plan": [
+          {
+            "priority": 1,
+            "action": "TRANSITION OBJECT",
+            "details": "Have James bring something from home - a small photo of mom, a special rock from their yard. Something he can keep in his pocket."
+          },
+          {
+            "priority": 2,
+            "action": "CONSISTENT GOODBYE",
+            "details": "Create a quick, predictable goodbye ritual with mom: hug, kiss, 'See you after snack', walk away. Same every time."
+          },
+          {
+            "priority": 3,
+            "action": "IMMEDIATE ENGAGEMENT",
+            "details": "The moment mom leaves, guide James to a sensory activity (water play, playdough). Hands-on work calms the nervous system."
+          },
+          {
+            "priority": 4,
+            "action": "CONNECTION BEFORE SEPARATION",
+            "details": "Call mom/text her a photo of James happy later in the day. This builds HER confidence which James will sense."
+          }
+        ],
+        "timeline": "For a slow-to-warm child, expect 6-8 weeks minimum. Progress isn't linear - he may regress after holidays or illness.",
+        "parent_talking_point": "James is building trust with us at his own pace. Each day he separates, even with tears, he's learning that school is safe and you always come back."
+      }
+    }
+  ]
+}

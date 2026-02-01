@@ -7,9 +7,105 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: WORKING - Full curriculum guides + parent descriptions COMPLETE!
+**Status**: WORKING - Montessori Guru AI Assistant COMPLETE! 🔮✅
 
 ## Recent Changes
+
+### Session - Feb 1, 2026 (Evening - MONTESSORI GURU ALL PHASES COMPLETE! 🔮✅)
+
+**🔮 MONTESSORI GURU - FULL IMPLEMENTATION COMPLETE!**
+
+Philosophy: "Complexity absorbed, simplicity delivered" - Teacher asks simple question, gets genius-level child-specific advice.
+
+**ALL PHASES COMPLETE:**
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 1 | Foundation - Topic index, DB migration, basic API | ✅ |
+| Phase 2 | Context Pipeline - Context builder, knowledge retriever, prompts | ✅ |
+| Phase 3 | Core UI - Chat interface, response display, follow-up tracking | ✅ |
+| Phase 4 | Profile System - Mental profiles, observations, pattern detection | ✅ |
+| Phase 5 | Polish - Few-shot examples, streaming responses, final UI | ✅ |
+
+**Complete Feature List:**
+- ✅ Topic index auto-generated from 97K lines (34 topics, 1869 line ranges)
+- ✅ Database migration 110 with 4 new tables
+- ✅ Guru API endpoint with streaming support
+- ✅ Guru chat UI with real-time streaming display
+- ✅ "Ask Guru" button on all child pages
+- ✅ Mental profile editor (temperament, sensitive periods, family context)
+- ✅ Observation logging with ABC model (Antecedent-Behavior-Consequence)
+- ✅ Automatic pattern detection from observations
+- ✅ Follow-up tracking API for outcomes
+- ✅ 6 comprehensive few-shot examples
+- ✅ Child detail page tabs: Week, Progress, Profile, Observations, Reports
+
+**Files Created:**
+| File | Purpose |
+|------|---------|
+| `/scripts/build_topic_index.py` | Auto-generates topic index from books |
+| `/data/guru_knowledge/topic_index.json` | Topic→line mapping for RAG |
+| `/data/guru_knowledge/few_shot_examples.json` | 6 high-quality example Q&A pairs |
+| `/migrations/110_guru_tables.sql` | Mental profiles, observations, interactions, patterns |
+| `/lib/montree/guru/context-builder.ts` | Gathers all child context |
+| `/lib/montree/guru/knowledge-retriever.ts` | Queries Montessori books |
+| `/lib/montree/guru/prompt-builder.ts` | Constructs AI prompts |
+| `/lib/montree/guru/index.ts` | Module exports |
+| `/app/api/montree/guru/route.ts` | Main API endpoint |
+| `/app/api/montree/guru/stream/route.ts` | Streaming API endpoint |
+| `/app/api/montree/guru/followup/route.ts` | Follow-up tracking |
+| `/app/api/montree/children/[id]/profile/route.ts` | Mental profile CRUD |
+| `/app/api/montree/observations/route.ts` | Behavioral observations |
+| `/app/api/montree/patterns/route.ts` | Pattern detection |
+| `/app/montree/dashboard/guru/page.tsx` | Teacher chat UI with streaming |
+| `/app/montree/dashboard/[childId]/profile/page.tsx` | Mental profile editor |
+| `/app/montree/dashboard/[childId]/observations/page.tsx` | Observation logging |
+
+**Database Tables:**
+- `montree_child_mental_profiles` - Temperament (9 traits), learning modality, sensitive periods, family context
+- `montree_behavioral_observations` - ABC model tracking, time/activity/intervention
+- `montree_guru_interactions` - Questions, responses, context snapshots, outcomes
+- `montree_child_patterns` - Auto-detected patterns with confidence levels
+
+**Access Points:**
+- Direct: `/montree/dashboard/guru`
+- From child page: Click 🔮 Guru button in header
+- Child profile: `/montree/dashboard/[childId]/profile`
+- Observations: `/montree/dashboard/[childId]/observations`
+- APIs: `POST /api/montree/guru`, `POST /api/montree/guru/stream`
+
+**How It Works:**
+1. Teacher selects child, types question
+2. System gathers context (age, progress, mental profile, notes, observations)
+3. Topic index identifies relevant Montessori book passages (34 topics from 97K lines)
+4. Mega-prompt built with system persona, child context, knowledge, and few-shot examples
+5. Claude generates response (streamed in real-time to UI)
+6. Response displayed with insight, root cause, action plan, timeline, parent talking point
+7. Interaction logged to database for future reference
+8. Patterns auto-detected from observations over time
+
+---
+
+### Session - Feb 1, 2026 (Afternoon - MONTESSORI GURU PLANNED!)
+
+**Knowledge Base COMPLETE (96,877 lines from 7 Montessori books)**:
+- The Absorbent Mind (16,471 lines)
+- The Secret of Childhood (10,306 lines)
+- The Montessori Method (13,181 lines)
+- Dr. Montessori's Own Handbook (3,364 lines)
+- Pedagogical Anthropology (24,261 lines)
+- Spontaneous Activity in Education (11,766 lines)
+- The Montessori Elementary Material (17,528 lines)
+
+**Location**: `/data/guru_knowledge/sources/*.txt`
+
+**Documentation Created**:
+- `/docs/MONTESSORI_GURU_ARCHITECTURE.md` - Full system design
+- `/docs/MONTESSORI_GURU_IMPLEMENTATION_PLAN.md` - 10-day build plan
+- `/docs/GURU_PLAN_AUDIT.md` - Critical gaps analysis
+- `/docs/HANDOFF_MONTESSORI_GURU.md` - Handoff for next session
+
+---
 
 ### Session - Feb 1, 2026 (Morning - PARENT DESCRIPTIONS COMPLETE!)
 
@@ -218,6 +314,20 @@ All 309 Montessori works now have comprehensive teacher guides.
 
 | File | Purpose |
 |------|---------|
+| **MONTESSORI GURU (MVP COMPLETE!)** | |
+| `data/guru_knowledge/sources/*.txt` | 7 Montessori books (96,877 lines) |
+| `data/guru_knowledge/topic_index.json` | Topic→line ranges for RAG (auto-generated) |
+| `data/guru_knowledge/manifest.json` | Knowledge base manifest |
+| `lib/montree/guru/context-builder.ts` | Gathers child context for AI |
+| `lib/montree/guru/knowledge-retriever.ts` | Queries topic index for passages |
+| `lib/montree/guru/prompt-builder.ts` | Constructs mega-prompts with examples |
+| `app/api/montree/guru/route.ts` | Main Guru API endpoint |
+| `app/montree/dashboard/guru/page.tsx` | Teacher chat UI |
+| `migrations/110_guru_tables.sql` | Database tables for profiles/interactions |
+| `scripts/build_topic_index.py` | Regenerate topic index from books |
+| `docs/MONTESSORI_GURU_ARCHITECTURE.md` | Full system design |
+| `docs/MONTESSORI_GURU_IMPLEMENTATION_PLAN.md` | Build plan |
+| `docs/HANDOFF_GURU_COMPLETE.md` | Complete Guru handoff (Feb 1 evening) |
 | **TEACHER GUIDES + PARENT DESCRIPTIONS** | |
 | `lib/curriculum/comprehensive-guides/*.json` | AMI album quality guides for 309 works (100% complete!) |
 | `lib/curriculum/comprehensive-guides/AUDIT.json` | Coverage tracking |
@@ -285,6 +395,23 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
+
+### MONTESSORI GURU (ALL PHASES COMPLETE! 🔮✅)
+- [x] **COMPLETE: Knowledge base** - 7 books, 96,877 lines collected
+- [x] **COMPLETE: Architecture** - System design documented
+- [x] **COMPLETE: Topic index** - Auto-generated with 34 topics, 1869 line ranges
+- [x] **COMPLETE: Database tables** - Migration 110 created and run
+- [x] **COMPLETE: Guru API** - `/api/montree/guru/route.ts` + streaming
+- [x] **COMPLETE: Guru UI** - `/app/montree/dashboard/guru/page.tsx` with streaming
+- [x] **COMPLETE: Ask Guru button** - Added to child detail pages
+- [x] **COMPLETE: Mental profile editor** - `/app/montree/dashboard/[childId]/profile/page.tsx`
+- [x] **COMPLETE: Observation logging** - `/app/montree/dashboard/[childId]/observations/page.tsx`
+- [x] **COMPLETE: Response streaming** - SSE via `/api/montree/guru/stream/route.ts`
+- [x] **COMPLETE: Pattern detection** - Auto-detects from observations
+- [x] **COMPLETE: Few-shot examples** - 6 comprehensive Q&A pairs
+- [x] **COMPLETE: Follow-up tracking** - `/api/montree/guru/followup/route.ts`
+
+### Previous Items
 - [x] **FIXED: Students not saving** - age must be INT, no school_id column
 - [x] **FIXED: Curriculum sequence** - Now uses static JSON loader
 - [x] **FIXED: Chinese removed** - English only curriculum
