@@ -24,13 +24,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom ID and name required' }, { status: 400 });
     }
 
-    // Create the child
+    // Verify classroom exists
+    const { data: classroom, error: classroomError } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', classroomId)
+      .single();
+
+    if (classroomError || !classroom) {
+      console.error('Classroom not found:', { classroomId, classroomError });
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
+    // Create the child (note: school_id column doesn't exist in table - use classroom_id only)
+    // Age must be integer (database constraint)
     const { data: child, error: childError } = await supabase
       .from('montree_children')
       .insert({
         classroom_id: classroomId,
         name: name.trim(),
-        age: age || 3.5,
+        age: Math.round(age || 4),
       })
       .select()
       .single();

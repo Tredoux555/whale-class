@@ -10,13 +10,13 @@ function getSupabase() {
   return createClient(url, key);
 }
 
-// Default area definitions
+// Default area definitions (English only)
 const DEFAULT_AREAS = [
-  { area_key: 'practical_life', name: 'Practical Life', name_chinese: '日常生活', icon: '🧹', color: '#10B981', sequence: 1 },
-  { area_key: 'sensorial', name: 'Sensorial', name_chinese: '感官', icon: '👁️', color: '#F59E0B', sequence: 2 },
-  { area_key: 'mathematics', name: 'Mathematics', name_chinese: '数学', icon: '🔢', color: '#3B82F6', sequence: 3 },
-  { area_key: 'language', name: 'Language', name_chinese: '语言', icon: '📚', color: '#EC4899', sequence: 4 },
-  { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
+  { area_key: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#10B981', sequence: 1 },
+  { area_key: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#F59E0B', sequence: 2 },
+  { area_key: 'mathematics', name: 'Mathematics', icon: '🔢', color: '#3B82F6', sequence: 3 },
+  { area_key: 'language', name: 'Language', icon: '📚', color: '#EC4899', sequence: 4 },
+  { area_key: 'cultural', name: 'Cultural', icon: '🌍', color: '#8B5CF6', sequence: 5 },
 ];
 
 // GET - Fetch curriculum for classroom
@@ -167,8 +167,12 @@ export async function POST(request: NextRequest) {
           materials: work.materials_needed || [],
           control_of_error: work.control_of_error || null,
           prerequisites: work.readiness_indicators || [],
-          // Teacher presentation guide
+          // Teacher presentation - quick overview
           quick_guide: work.quick_guide || null,
+          // Teacher presentation - detailed steps
+          presentation_steps: work.presentation_steps || [],
+          presentation_notes: work.presentation_notes || null,
+          // Parent-facing
           parent_description: work.parent_explanation_detailed || null,
           why_it_matters: work.parent_why_it_matters || null,
           video_search_terms: work.video_search_term || null,
@@ -194,22 +198,56 @@ export async function POST(request: NextRequest) {
     }
 
     // ADD SINGLE WORK - supports inserting at specific position
-    const { work_key, name, name_chinese, area_key, description, after_sequence, is_custom } = body;
+    const { work_key, name, name_chinese, area_key, description, after_sequence } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'name required' }, { status: 400 });
     }
 
+    // Normalize area_key (handle "Language" -> "language", "math" -> "mathematics")
+    let normalizedAreaKey = (area_key || 'practical_life').toLowerCase().replace(/\s+/g, '_').replace('-', '_');
+    if (normalizedAreaKey === 'math') normalizedAreaKey = 'mathematics';
+
     // Get the area ID for this work
-    const { data: areaData } = await supabase
+    let { data: areaData } = await supabase
       .from('montree_classroom_curriculum_areas')
       .select('id')
       .eq('classroom_id', classroom_id)
-      .eq('area_key', area_key || 'practical_life')
+      .eq('area_key', normalizedAreaKey)
       .single();
 
+    // If area doesn't exist, auto-seed all areas for this classroom
     if (!areaData) {
-      return NextResponse.json({ error: 'Area not found - seed curriculum first' }, { status: 400 });
+      console.log('Auto-seeding curriculum areas for classroom:', classroom_id);
+
+      const areasToInsert = DEFAULT_AREAS.map(area => ({
+        classroom_id,
+        ...area,
+        is_active: true
+      }));
+
+      const { error: seedError } = await supabase
+        .from('montree_classroom_curriculum_areas')
+        .insert(areasToInsert);
+
+      if (seedError) {
+        console.error('Failed to auto-seed areas:', seedError);
+        return NextResponse.json({ error: 'Failed to initialize curriculum areas' }, { status: 500 });
+      }
+
+      // Now fetch the area we need
+      const { data: newAreaData } = await supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id')
+        .eq('classroom_id', classroom_id)
+        .eq('area_key', normalizedAreaKey)
+        .single();
+
+      areaData = newAreaData;
+    }
+
+    if (!areaData) {
+      return NextResponse.json({ error: `Area "${normalizedAreaKey}" could not be created` }, { status: 500 });
     }
 
     let newSequence: number;
@@ -257,25 +295,26 @@ export async function POST(request: NextRequest) {
       newSequence = (existingSeq?.[0]?.sequence || 0) + 1;
     }
 
+    const insertData: Record<string, unknown> = {
+      classroom_id,
+      area_id: areaData.id,
+      work_key: work_key || `custom_${name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
+      name,
+      name_chinese: name_chinese || null,
+      description: description || null,
+      sequence: newSequence,
+      is_active: true,
+    };
+
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
-      .insert({
-        classroom_id,
-        area_id: areaData.id,
-        work_key: work_key || `custom_${name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
-        name,
-        name_chinese: name_chinese || null,
-        description: description || null,
-        sequence: newSequence,
-        is_active: true,
-        is_custom: is_custom || false,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
-      console.error('Insert error:', error);
-      return NextResponse.json({ error: 'Failed to add work' }, { status: 500 });
+      console.error('Insert error:', error, 'Data:', insertData);
+      return NextResponse.json({ error: `Failed to add work: ${error.message}` }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, work: data });

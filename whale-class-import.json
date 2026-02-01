@@ -1,0 +1,800 @@
+[
+  {
+    "name": "Amy",
+    "matches": {
+      "practical_life": {
+        "teacher": "Cutting Practice",
+        "curriculum": "Cutting Practice",
+        "curriculumId": null,
+        "score": 0.47,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Constructive Triangles 3",
+        "curriculum": "Constructive Triangles - Triangular Box",
+        "curriculumId": "se_constructive_triangles_tri",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Number Formation",
+        "curriculum": "Sandpaper Numerals",
+        "curriculumId": "ma_sandpaper_numerals",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "Review Box 1",
+        "curriculum": "Review Box 1",
+        "curriculumId": null,
+        "score": 0.38,
+        "method": "unmatched"
+      },
+      "cultural": {
+        "teacher": "Colored Globe",
+        "curriculum": "Globe - Continents",
+        "curriculumId": "cu_globe_continents",
+        "score": 1,
+        "method": "custom"
+      }
+    }
+  },
+  {
+    "name": "Austin",
+    "matches": {
+      "practical_life": {
+        "teacher": "Flower Arranging",
+        "curriculum": "Flower Arranging",
+        "curriculumId": "pl_flower_arranging",
+        "score": 1,
+        "method": "custom"
+      },
+      "sensorial": {
+        "teacher": "Thermal Tablets Pairing",
+        "curriculum": "Thermic Tablets",
+        "curriculumId": "se_thermic_tablets",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Bank Game Addition",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.55,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /i/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Bird Studies",
+        "curriculum": "Bird Studies",
+        "curriculumId": null,
+        "score": 0.33,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Eric",
+    "matches": {
+      "practical_life": {
+        "teacher": "Table Washing",
+        "curriculum": "Face Washing",
+        "curriculumId": "pl_face_washing",
+        "score": 0.77,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Geometry Figures",
+        "curriculum": "Geometric Solids",
+        "curriculumId": "se_geometric_solids",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Positive Snake Game",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.74,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Family Work with /u/",
+        "curriculum": "Word Families",
+        "curriculumId": "la_word_families",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Leaves Combined",
+        "curriculum": "Leaves Combined",
+        "curriculumId": null,
+        "score": 0.39,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Gengerlyn",
+    "matches": {
+      "practical_life": {
+        "teacher": "Flower Arranging",
+        "curriculum": "Flower Arranging",
+        "curriculumId": "pl_flower_arranging",
+        "score": 1,
+        "method": "custom"
+      },
+      "sensorial": {
+        "teacher": "Binomial Cube",
+        "curriculum": "Binomial Cube",
+        "curriculumId": "se_binomial_cube",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Numerals and Counters",
+        "curriculum": "Cards and Counters",
+        "curriculumId": "ma_cards_counters",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "CVC 3-Part Cards Moveable Alphabet",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": null,
+        "curriculum": null,
+        "score": 0,
+        "method": "none"
+      }
+    }
+  },
+  {
+    "name": "Hayden",
+    "matches": {
+      "practical_life": {
+        "teacher": "Table Washing",
+        "curriculum": "Face Washing",
+        "curriculumId": "pl_face_washing",
+        "score": 0.77,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Color Box 3",
+        "curriculum": "Color Box 3 (Color Gradations)",
+        "curriculumId": "se_color_box_3",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Number and Quantity",
+        "curriculum": "Association of Quantity and Symbol",
+        "curriculumId": "ma_association_quantity_symbol",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "I Spy Red Book 1",
+        "curriculum": "Sound Games (I Spy)",
+        "curriculumId": "la_sound_games",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Tree Puzzle LA",
+        "curriculum": "Tree Puzzle LA",
+        "curriculumId": null,
+        "score": 0.31,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Henry",
+    "matches": {
+      "practical_life": {
+        "teacher": "Spooning Practice",
+        "curriculum": "Spooning",
+        "curriculumId": "pl_spooning",
+        "score": 1,
+        "method": "custom"
+      },
+      "sensorial": {
+        "teacher": "Touch Boards",
+        "curriculum": "Touch Boards",
+        "curriculumId": "se_touch_boards",
+        "score": 1,
+        "method": "fuzzy"
+      },
+      "math": {
+        "teacher": "Linear Counting 5",
+        "curriculum": "Linear Counting 5",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Matching Work",
+        "curriculum": "Object to Picture Matching",
+        "curriculumId": "la_object_picture_matching",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Horse Puzzle LA",
+        "curriculum": "Horse Puzzle LA",
+        "curriculumId": null,
+        "score": 0.31,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Jimmy",
+    "matches": {
+      "practical_life": {
+        "teacher": "Dressing Frame Bow",
+        "curriculum": "Bow Tying Frame",
+        "curriculumId": "pl_frame_bow_tying",
+        "score": 0.62,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Constructive Triangles",
+        "curriculum": "Constructive Triangles - Rectangular Box",
+        "curriculumId": "se_constructive_triangles_rect",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Long Chain with Labels",
+        "curriculum": "Long Chain with Labels",
+        "curriculumId": null,
+        "score": 0.42,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Word Family Work with /i/",
+        "curriculum": "Word Families",
+        "curriculumId": "la_word_families",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "How to Make Ice",
+        "curriculum": "How to Make Ice",
+        "curriculumId": null,
+        "score": 0.33,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Joey",
+    "matches": {
+      "practical_life": {
+        "teacher": "Stringing Seed Beads",
+        "curriculum": "Stringing Seed Beads",
+        "curriculumId": null,
+        "score": 0.5,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Color Box 3",
+        "curriculum": "Color Box 3 (Color Gradations)",
+        "curriculumId": "se_color_box_3",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Linear Counting 6",
+        "curriculum": "Linear Counting 6",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Word Family Work with /u/",
+        "curriculum": "Word Families",
+        "curriculumId": "la_word_families",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Bird Puzzle",
+        "curriculum": "Bird Puzzle",
+        "curriculumId": null,
+        "score": 0.3,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Kayla",
+    "matches": {
+      "practical_life": {
+        "teacher": "Knitting",
+        "curriculum": "Knitting",
+        "curriculumId": null,
+        "score": 0.5,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Sensorial Games",
+        "curriculum": "Sensorial Games",
+        "curriculumId": null,
+        "score": 0.47,
+        "method": "unmatched"
+      },
+      "math": {
+        "teacher": "Number Formation",
+        "curriculum": "Sandpaper Numerals",
+        "curriculumId": "ma_sandpaper_numerals",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "I Spy Red Book 1",
+        "curriculum": "Sound Games (I Spy)",
+        "curriculumId": "la_sound_games",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Horse Puzzle LA",
+        "curriculum": "Horse Puzzle LA",
+        "curriculumId": null,
+        "score": 0.31,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Kevin",
+    "matches": {
+      "practical_life": {
+        "teacher": "Rubber Band Skipping",
+        "curriculum": "Rubber Band Skipping",
+        "curriculumId": null,
+        "score": 0.36,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Tasting Bottles",
+        "curriculum": "Tasting Bottles/Cups",
+        "curriculumId": "se_tasting_bottles",
+        "score": 0.9,
+        "method": "fuzzy"
+      },
+      "math": {
+        "teacher": "Finger Chart 2",
+        "curriculum": "Finger Chart 2",
+        "curriculumId": null,
+        "score": 0.4,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Phonics Book 2",
+        "curriculum": "Phonics Book 2",
+        "curriculumId": null,
+        "score": 0.27,
+        "method": "unmatched"
+      },
+      "cultural": {
+        "teacher": "Tree Puzzle",
+        "curriculum": "Tree Puzzle",
+        "curriculumId": null,
+        "score": 0.31,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "KK",
+    "matches": {
+      "practical_life": {
+        "teacher": "Braiding",
+        "curriculum": "Braiding Frame",
+        "curriculumId": "pl_braiding",
+        "score": 0.9,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Roman Arch",
+        "curriculum": "Roman Arch",
+        "curriculumId": null,
+        "score": 0.36,
+        "method": "unmatched"
+      },
+      "math": {
+        "teacher": "Positive Snake Game",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.74,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /u/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Bird Puzzle LA",
+        "curriculum": "Bird Puzzle LA",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Leo",
+    "matches": {
+      "practical_life": {
+        "teacher": "Dressing Frame Shoes",
+        "curriculum": "Dressing Oneself",
+        "curriculumId": "pl_dressing_self",
+        "score": 0.55,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Geometry Combined with Cards",
+        "curriculum": "Geometric Cabinet",
+        "curriculumId": "se_geometric_cabinet",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Boards with Numbers",
+        "curriculum": "Number Rods with Numerals",
+        "curriculumId": "ma_number_rods_numerals",
+        "score": 0.6,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /o/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Maps",
+        "curriculum": "Puzzle Maps - Individual Continents",
+        "curriculumId": "cu_puzzle_maps_continents",
+        "score": 1,
+        "method": "custom"
+      }
+    }
+  },
+  {
+    "name": "Lucky",
+    "matches": {
+      "practical_life": {
+        "teacher": "Food Preparation",
+        "curriculum": "Food Preparation",
+        "curriculumId": null,
+        "score": 0.38,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Geometry Figures",
+        "curriculum": "Geometric Solids",
+        "curriculumId": "se_geometric_solids",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Skip Counting by 8",
+        "curriculum": "Skip Counting by 8",
+        "curriculumId": null,
+        "score": 0.29,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Word Family Work with /o/",
+        "curriculum": "Word Families",
+        "curriculumId": "la_word_families",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Cultural Envelope",
+        "curriculum": "Cultural Envelope",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "MaoMao",
+    "matches": {
+      "practical_life": {
+        "teacher": "Table Washing",
+        "curriculum": "Face Washing",
+        "curriculumId": "pl_face_washing",
+        "score": 0.77,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Color Box 3",
+        "curriculum": "Color Box 3 (Color Gradations)",
+        "curriculumId": "se_color_box_3",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Number Rods",
+        "curriculum": "Number Rods",
+        "curriculumId": "ma_number_rods",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "Beginning Sounds - I Spy",
+        "curriculum": "Sound Games (I Spy)",
+        "curriculumId": "la_sound_games",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": null,
+        "curriculum": null,
+        "score": 0,
+        "method": "none"
+      }
+    }
+  },
+  {
+    "name": "MingXi",
+    "matches": {
+      "practical_life": {
+        "teacher": "Weaving Craft",
+        "curriculum": "Weaving",
+        "curriculumId": "pl_weaving",
+        "score": 1,
+        "method": "custom"
+      },
+      "sensorial": {
+        "teacher": "Bells Matching",
+        "curriculum": "Fabric Matching",
+        "curriculumId": "se_fabric_matching",
+        "score": 0.6,
+        "method": "fuzzy"
+      },
+      "math": {
+        "teacher": "Bank Game Addition",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.55,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /o/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Maps",
+        "curriculum": "Puzzle Maps - Individual Continents",
+        "curriculumId": "cu_puzzle_maps_continents",
+        "score": 1,
+        "method": "custom"
+      }
+    }
+  },
+  {
+    "name": "NiuNiu",
+    "matches": {
+      "practical_life": {
+        "teacher": "Folding",
+        "curriculum": "Folding Cloths",
+        "curriculumId": "pl_folding_cloth",
+        "score": 1,
+        "method": "custom"
+      },
+      "sensorial": {
+        "teacher": "Constructive Triangles",
+        "curriculum": "Constructive Triangles - Rectangular Box",
+        "curriculumId": "se_constructive_triangles_rect",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Linear Counting 8",
+        "curriculum": "Linear Counting 8",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Word Building Work with /e/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Roman Arch",
+        "curriculum": "Roman Arch",
+        "curriculumId": null,
+        "score": 0.28,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Rachel",
+    "matches": {
+      "practical_life": {
+        "teacher": "Knitting",
+        "curriculum": "Knitting",
+        "curriculumId": null,
+        "score": 0.5,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Geometric Solids",
+        "curriculum": "Geometric Solids",
+        "curriculumId": "se_geometric_solids",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Bank Game Addition",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.55,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /i/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Color Mixing",
+        "curriculum": "Color Mixing",
+        "curriculumId": "cu_color_mixing",
+        "score": 1,
+        "method": "fuzzy"
+      }
+    }
+  },
+  {
+    "name": "Segina",
+    "matches": {
+      "practical_life": {
+        "teacher": "Wet Pouring",
+        "curriculum": "Metal Polishing",
+        "curriculumId": "pl_polishing_metal",
+        "score": 0.53,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Pink Tower LA Game",
+        "curriculum": "Pink Tower",
+        "curriculumId": "se_pink_tower",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Number Rods with Cards",
+        "curriculum": "Number Rods with Numerals",
+        "curriculumId": "ma_number_rods_numerals",
+        "score": 1,
+        "method": "custom"
+      },
+      "language": {
+        "teacher": "Matching Work",
+        "curriculum": "Object to Picture Matching",
+        "curriculumId": "la_object_picture_matching",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Bird Puzzle LA",
+        "curriculum": "Bird Puzzle LA",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "Stella",
+    "matches": {
+      "practical_life": {
+        "teacher": "Dressing Frame",
+        "curriculum": "Braiding Frame",
+        "curriculumId": "pl_braiding",
+        "score": 0.71,
+        "method": "fuzzy"
+      },
+      "sensorial": {
+        "teacher": "Roman Arch Practice",
+        "curriculum": "Roman Arch Practice",
+        "curriculumId": null,
+        "score": 0.32,
+        "method": "unmatched"
+      },
+      "math": {
+        "teacher": "Bank Game Addition",
+        "curriculum": "Addition Snake Game",
+        "curriculumId": "ma_addition_snake_game",
+        "score": 0.55,
+        "method": "fuzzy"
+      },
+      "language": {
+        "teacher": "Word Building Work with /e/",
+        "curriculum": "Moveable Alphabet",
+        "curriculumId": "la_moveable_alphabet",
+        "score": 1,
+        "method": "custom"
+      },
+      "cultural": {
+        "teacher": "Leaf Shape Cabinet and Cards",
+        "curriculum": "Leaf Shape Cabinet and Cards",
+        "curriculumId": null,
+        "score": 0.36,
+        "method": "unmatched"
+      }
+    }
+  },
+  {
+    "name": "YueZe",
+    "matches": {
+      "practical_life": {
+        "teacher": "Fuse Bead Work",
+        "curriculum": "Fuse Bead Work",
+        "curriculumId": null,
+        "score": 0.38,
+        "method": "unmatched"
+      },
+      "sensorial": {
+        "teacher": "Thermal Tablets Grading",
+        "curriculum": "Thermic Tablets",
+        "curriculumId": "se_thermic_tablets",
+        "score": 1,
+        "method": "custom"
+      },
+      "math": {
+        "teacher": "Finger Charts 3",
+        "curriculum": "Finger Charts 3",
+        "curriculumId": null,
+        "score": 0.4,
+        "method": "unmatched"
+      },
+      "language": {
+        "teacher": "Mixed Box 1",
+        "curriculum": "Mixed Box 1",
+        "curriculumId": null,
+        "score": 0.31,
+        "method": "unmatched"
+      },
+      "cultural": {
+        "teacher": "Bird Nomenclature",
+        "curriculum": "Bird Nomenclature",
+        "curriculumId": null,
+        "score": 0.35,
+        "method": "unmatched"
+      }
+    }
+  }
+]

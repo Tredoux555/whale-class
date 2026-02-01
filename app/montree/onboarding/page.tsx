@@ -6,13 +6,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Curriculum areas
+// Curriculum areas (standard Montessori - Language includes English/Phonics)
 const CURRICULUM_AREAS = [
   { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#22c55e' },
   { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#f97316' },
   { id: 'mathematics', name: 'Math', icon: '🔢', color: '#3b82f6' },
   { id: 'language', name: 'Language', icon: '📚', color: '#ec4899' },
-  { id: 'cultural', name: 'English', icon: '🌍', color: '#8b5cf6' },
+  { id: 'cultural', name: 'Cultural', icon: '🌍', color: '#8b5cf6' },
 ];
 
 // Age options
@@ -529,17 +529,30 @@ export default function OnboardingPage() {
 
     // Optimistic UI update with temporary ID
     const tempId = `temp_${Date.now()}`;
+
+    // Find the exact position to insert (right after the clicked work)
+    const currentWorks = curriculumWorks[areaId] || [];
+    const insertAfterIndex = currentWorks.findIndex(w => w.sequence === afterSequence);
+    const insertAtIndex = insertAfterIndex >= 0 ? insertAfterIndex + 1 : currentWorks.length;
+
+    // Calculate sequence: average of before and after, or afterSequence + 0.5 if at end
+    const prevSeq = currentWorks[insertAtIndex - 1]?.sequence ?? afterSequence;
+    const nextSeq = currentWorks[insertAtIndex]?.sequence ?? (prevSeq + 1);
+    const newSequence = (prevSeq + nextSeq) / 2;
+
     const tempWork: Work = {
       id: tempId,
       name: workName,
-      sequence: afterSequence + 0.5,
+      sequence: newSequence,
       isCustom: true,
     };
 
-    // Update local state optimistically
+    // Update local state optimistically - insert at exact position
     setCurriculumWorks(prev => {
       const updated = { ...prev };
-      updated[areaId] = [...(updated[areaId] || []), tempWork].sort((a, b) => a.sequence - b.sequence);
+      const areaWorks = [...(updated[areaId] || [])];
+      areaWorks.splice(insertAtIndex, 0, tempWork);
+      updated[areaId] = areaWorks;
       return updated;
     });
 
@@ -692,37 +705,54 @@ export default function OnboardingPage() {
     }
   };
 
-  // Step 0: Welcome (Emerald/Teal theme - warm & exciting)
+  // Step 0: Welcome (Emerald/Teal theme - warm & inspiring)
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-xl border border-emerald-100 p-8 w-full max-w-lg text-center">
-          <div className="text-6xl mb-4">🌳</div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Almost there!</h1>
-          <p className="text-emerald-600 font-medium mb-6">One quick step and you&apos;re in</p>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100/50 p-10 w-full max-w-md text-center">
+          {/* Logo */}
+          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+            <span className="text-4xl">🌳</span>
+          </div>
 
-          <div className="text-left bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 mb-6 border border-emerald-100">
-            <p className="text-slate-700 leading-relaxed mb-4">
-              ✨ We&apos;ve built something special for you — a system that will transform how you track and nurture each child&apos;s Montessori journey.
+          {/* Welcome headline */}
+          <h1 className="text-3xl font-bold text-slate-800 mb-3">
+            Welcome to Montree
+          </h1>
+          <p className="text-emerald-600 text-lg mb-8">
+            Where every child&apos;s journey matters
+          </p>
+
+          {/* Inspiring message */}
+          <div className="text-left space-y-4 mb-8">
+            <p className="text-slate-600 leading-relaxed">
+              You&apos;re about to experience a new way to nurture growth —
+              tracking progress that celebrates each small victory.
             </p>
-            <p className="text-slate-600 leading-relaxed mb-4">
-              To unlock all the magic, we just need to know who&apos;s in your classroom.
-            </p>
-            <p className="text-emerald-700 font-semibold text-lg flex items-center gap-2">
-              <span>👶</span> Let&apos;s add your students!
+            <p className="text-slate-500 leading-relaxed text-sm">
+              Your dashboard awaits. Add students whenever you&apos;re ready.
             </p>
           </div>
 
           <button
-            onClick={() => setStep(1)}
-            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all"
+            onClick={() => {
+              // Mark as onboarded and go to dashboard
+              const sessionData = localStorage.getItem('montree_session');
+              if (sessionData) {
+                const parsed = JSON.parse(sessionData);
+                parsed.onboarded = true;
+                localStorage.setItem('montree_session', JSON.stringify(parsed));
+              }
+              router.push('/montree/dashboard');
+            }}
+            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
           >
-            Let&apos;s Go! →
+            Enter My Classroom →
           </button>
 
           {session?.teacher?.name && (
-            <p className="text-sm text-slate-400 mt-6">
-              {session.teacher.name} • {session.classroom?.name}
+            <p className="text-sm text-slate-400 mt-8">
+              {session.teacher.name} · {session.classroom?.name}
             </p>
           )}
         </div>
@@ -903,38 +933,51 @@ export default function OnboardingPage() {
     );
   }
 
-  // Step 2: Complete (White/Blue theme)
+  // Step 2: Complete - Inspirational success screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 w-full max-w-md text-center">
-        <div className="text-6xl mb-6">🎉</div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-3">You&apos;re All Set!</h1>
-        <p className="text-slate-600 leading-relaxed mb-6">
-          {students.length} student{students.length !== 1 ? 's' : ''} added to your classroom.
-          Now let&apos;s explore your dashboard!
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100/50 p-10 w-full max-w-md text-center">
+        {/* Celebration icon */}
+        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200">
+          <span className="text-4xl">✨</span>
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-3xl font-bold text-slate-800 mb-3">
+          Beautiful.
+        </h1>
+        <p className="text-emerald-600 text-lg mb-6">
+          {students.length} {students.length === 1 ? 'young mind' : 'young minds'} ready to flourish.
         </p>
 
-        <div className="bg-blue-50 rounded-2xl p-4 mb-6 text-left border border-blue-100">
-          <h3 className="font-semibold text-slate-800 mb-2">What&apos;s Next?</h3>
-          <ul className="text-slate-600 text-sm space-y-2">
-            <li className="flex items-center gap-2">
-              <span className="text-blue-500">✓</span>
-              View your curriculum dashboard
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-blue-500">✓</span>
-              Track student progress with one tap
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-blue-500">✓</span>
-              Generate weekly reports for parents
-            </li>
-          </ul>
+        {/* Inspiring message */}
+        <p className="text-slate-500 leading-relaxed mb-8">
+          Every great journey starts with a single step.
+          You&apos;ve just taken yours.
+        </p>
+
+        {/* What awaits - more poetic */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 mb-8 text-left border border-emerald-100">
+          <p className="text-slate-700 font-medium mb-3">What awaits you:</p>
+          <div className="space-y-3 text-slate-600 text-sm">
+            <p className="flex items-start gap-3">
+              <span className="text-emerald-500 mt-0.5">→</span>
+              <span>A living map of each child&apos;s unique path</span>
+            </p>
+            <p className="flex items-start gap-3">
+              <span className="text-emerald-500 mt-0.5">→</span>
+              <span>Effortless tracking that frees you to teach</span>
+            </p>
+            <p className="flex items-start gap-3">
+              <span className="text-emerald-500 mt-0.5">→</span>
+              <span>Stories to share with the families who trust you</span>
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => router.push('/montree/dashboard')}
-          className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
         >
           Go to Dashboard →
         </button>

@@ -4,12 +4,13 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { getClassroomId } from '@/lib/montree/auth';
 
 interface Work {
   id: string;
   name: string;
   name_chinese?: string;
-  status?: 'not_started' | 'presented' | 'practicing' | 'mastered';
+  status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
   sequence?: number;
 }
 
@@ -20,6 +21,8 @@ interface WorkWheelPickerProps {
   works: Work[];
   currentWorkName?: string;
   onSelectWork: (work: Work, status: string) => void;
+  onAddExtra?: (work: Work) => void; // Add as extra work (not focus)
+  onWorkAdded?: () => void; // Callback to refresh curriculum after adding
 }
 
 export default function WorkWheelPicker({
@@ -29,9 +32,17 @@ export default function WorkWheelPicker({
   works,
   currentWorkName,
   onSelectWork,
+  onAddExtra,
+  onWorkAdded,
 }: WorkWheelPickerProps) {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Add Work form state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newWorkName, setNewWorkName] = useState('');
+  const [insertPosition, setInsertPosition] = useState<'after' | 'end'>('after');
+  const [isAdding, setIsAdding] = useState(false);
 
   const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[area.replace('math', 'mathematics')] || {
     name: area, icon: '📋', color: '#888'
@@ -45,8 +56,12 @@ export default function WorkWheelPicker({
       );
       if (idx >= 0) {
         setSelectedIndex(idx);
-        // Scroll to position after render
-        setTimeout(() => scrollToIndex(idx, false), 50);
+        // Scroll after DOM has rendered the items - use multiple attempts for reliability
+        requestAnimationFrame(() => {
+          scrollToIndex(idx, false);
+          // Second attempt after scroll container is fully ready
+          setTimeout(() => scrollToIndex(idx, false), 100);
+        });
       }
     }
   }, [isOpen, currentWorkName, works]);
@@ -84,6 +99,51 @@ export default function WorkWheelPicker({
     if (works[selectedIndex]) {
       onSelectWork(works[selectedIndex], 'not_started');
       onClose();
+    }
+  };
+
+  // Handle adding a new work
+  const handleAddWork = async () => {
+    if (!newWorkName.trim()) return;
+
+    const classroomId = getClassroomId();
+    if (!classroomId) {
+      alert('No classroom found');
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const selectedWork = works[selectedIndex];
+      const afterSequence = insertPosition === 'after' && selectedWork?.sequence
+        ? selectedWork.sequence
+        : undefined;
+
+      const response = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroom_id: classroomId,
+          name: newWorkName.trim(),
+          area_key: area,
+          after_sequence: afterSequence,
+          is_custom: true,
+        }),
+      });
+
+      if (response.ok) {
+        setNewWorkName('');
+        setShowAddForm(false);
+        onWorkAdded?.(); // Trigger refresh
+      } else {
+        const err = await response.json();
+        alert(err.error || 'Failed to add work');
+      }
+    } catch (error) {
+      console.error('Add work error:', error);
+      alert('Failed to add work');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -193,18 +253,107 @@ export default function WorkWheelPicker({
         </div>
       </div>
 
-      {/* Bottom Action Area - Simplified: just Select button */}
+      {/* Bottom Action Area */}
       <div
-        className="pb-[max(1rem,env(safe-area-inset-bottom))] px-4 pt-4"
+        className="pb-[max(1rem,env(safe-area-inset-bottom))] px-4 pt-4 space-y-3"
         onClick={e => e.stopPropagation()}
       >
-        <button
-          onClick={handleSelectWork}
-          disabled={!selectedWork}
-          className="w-full py-4 bg-white text-emerald-600 font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
-        >
-          Select "{selectedWork?.name?.substring(0, 20)}{selectedWork?.name && selectedWork.name.length > 20 ? '...' : ''}"
-        </button>
+        {/* Add Work Form - expandable */}
+        {showAddForm ? (
+          <div className="bg-white/10 rounded-2xl p-4 space-y-3">
+            <input
+              type="text"
+              value={newWorkName}
+              onChange={(e) => setNewWorkName(e.target.value)}
+              placeholder="Work name..."
+              autoFocus
+              className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/50 border border-white/30 focus:outline-none focus:border-white/60"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newWorkName.trim()) handleAddWork();
+                if (e.key === 'Escape') setShowAddForm(false);
+              }}
+            />
+
+            {/* Position selector */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setInsertPosition('after')}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  insertPosition === 'after'
+                    ? 'bg-white/30 text-white'
+                    : 'bg-white/10 text-white/60'
+                }`}
+              >
+                After #{works[selectedIndex]?.sequence || '?'}
+              </button>
+              <button
+                onClick={() => setInsertPosition('end')}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  insertPosition === 'end'
+                    ? 'bg-white/30 text-white'
+                    : 'bg-white/10 text-white/60'
+                }`}
+              >
+                End of list
+              </button>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
+                className="flex-1 py-3 bg-white/20 text-white font-medium rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddWork}
+                disabled={!newWorkName.trim() || isAdding}
+                className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl disabled:opacity-50"
+              >
+                {isAdding ? 'Adding...' : 'Add Work'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Split button: Select (3/4) | Add (1/4) */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleSelectWork}
+                disabled={!selectedWork}
+                className="flex-[3] py-4 bg-white text-emerald-600 font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
+              >
+                Select
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedWork && onAddExtra) {
+                    onAddExtra(selectedWork);
+                    onClose();
+                  }
+                }}
+                disabled={!selectedWork || !onAddExtra}
+                className="flex-[1] py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
+              >
+                Add
+              </button>
+            </div>
+
+            {/* Selected work name display */}
+            <p className="text-center text-white/80 text-sm mt-1">
+              {selectedWork?.name?.substring(0, 30)}{selectedWork?.name && selectedWork.name.length > 30 ? '...' : ''}
+            </p>
+
+            {/* Add custom work link */}
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
+            >
+              + Add custom work to {areaConfig.name}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

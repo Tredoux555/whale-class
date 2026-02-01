@@ -13,24 +13,41 @@ export async function GET(request: NextRequest) {
     if (classroomId) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      
+
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        
+
+        // First, get the area_id if filtering by area
+        let areaId: string | null = null;
+        if (areaFilter && areaFilter !== 'all') {
+          const normalizedArea = areaFilter.toLowerCase().replace('-', '_');
+          const { data: areaData } = await supabase
+            .from('montree_classroom_curriculum_areas')
+            .select('id')
+            .eq('classroom_id', classroomId)
+            .eq('area_key', normalizedArea)
+            .single();
+          areaId = areaData?.id || null;
+        }
+
         let query = supabase
           .from('montree_classroom_curriculum_works')
-          .select('*')
+          .select(`
+            *,
+            area:montree_classroom_curriculum_areas!area_id (
+              id, area_key, name, name_chinese, icon, color
+            )
+          `)
           .eq('classroom_id', classroomId)
           .eq('is_active', true)
-          .order('area_id')
           .order('sequence');
-        
-        if (areaFilter && areaFilter !== 'all') {
-          query = query.eq('area_id', areaFilter.replace('-', '_'));
+
+        if (areaId) {
+          query = query.eq('area_id', areaId);
         }
-        
+
         const { data, error } = await query;
-        
+
         if (!error && data && data.length > 0) {
           let works = data.map(w => ({
             id: w.work_key,
@@ -42,10 +59,10 @@ export async function GET(request: NextRequest) {
             materials: w.materials,
             levels: w.levels,
             area: {
-              area_key: w.area_id,
-              name: w.area_id?.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
-              color: getAreaColor(w.area_id),
-              icon: getAreaIcon(w.area_id)
+              area_key: w.area?.area_key || 'unknown',
+              name: w.area?.name || 'Unknown',
+              color: w.area?.color || getAreaColor(w.area?.area_key),
+              icon: w.area?.icon || getAreaIcon(w.area?.area_key)
             },
             status: 'not_started'
           }));

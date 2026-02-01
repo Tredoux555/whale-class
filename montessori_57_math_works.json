@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Number Rods",
+    "quick_guide": "• Wooden rods in increasing lengths from 1 to 10 units\n• Child matches rods to corresponding quantities\n• Develops understanding of magnitude and length\n• Builds foundation for number concept\n• Prepares for decimal system",
+    "presentation_steps": [
+      {"step": 1, "title": "Introduction to Length", "description": "Invite child to explore the rods. Place the shortest rod (1 unit) on the mat. Discuss how long it is. Introduce 'short' and 'long' concepts through sensorial exploration.", "tip": "Use descriptive language: 'This rod is very short. This rod is very long.'"},
+      {"step": 2, "title": "Pairing Rods by Length", "description": "Show the child two rods. Ask which is longer. Have them place rods side by side to compare. Repeat with different pairs, mixing short and long rods.", "tip": "Use natural language: 'Can you find the rod that is longer than this one?'"},
+      {"step": 3, "title": "Building a Sequence", "description": "Demonstrate arranging rods from shortest to longest. Place the 1-rod, then find the rod that is longer. Continue sequentially. Name each position: 'This is the longest rod. This is the second longest.'", "tip": "Create the sequence slowly, emphasizing the progression. This is the foundation for understanding quantity."},
+      {"step": 4, "title": "Counting Units in Each Rod", "description": "Once the sequence is complete, touch each rod while counting its segments. 'One, two, three...' Associate the length with the quantity of units.", "tip": "Emphasize that the rod's length directly represents the number of units it contains."},
+      {"step": 5, "title": "Child's Independent Exploration", "description": "Invite the child to arrange rods themselves. Observe their understanding of sequence and quantity. Provide minimal guidance unless they request assistance.", "tip": "Allow errors. The control of error (visual) will help the child self-correct."}
+    ],
+    "points_of_interest": ["The contrast in length between rods", "The visual pattern when arranged in sequence", "The physical sensation of lifting heavier rods", "The satisfaction of creating order", "The connection between length and quantity"],
+    "control_of_error": "Visual: The sequence is obvious when arranged correctly. A rod in the wrong position will visually stand out. The graduated length progression makes errors self-evident.",
+    "direct_aims": ["To understand quantity from 1 to 10", "To develop sensorial awareness of length", "To recognize numerical sequence", "To establish linear measurement concept"],
+    "indirect_aims": ["Development of fine motor coordination through lifting and placing rods", "Preparation for the decimal system through understanding units", "Foundation for mathematical thinking", "Concentration and attention to detail"],
+    "materials_needed": ["Number Rods (10 rods ranging from 1 to 10 units in length)", "Mat or tray for presentation"],
+    "age_range": "3-5 years",
+    "variations": ["Rods hidden in a bag - child draws by touch to find specific lengths", "Combining rods - placing two rods next to each other to equal a longer rod", "Rods in random order - child must find and arrange by length"],
+    "extensions": ["Use rods to introduce addition concepts", "Connect to Sandpaper Numbers for symbol introduction", "Use rods with the decimal system materials"],
+    "vocabulary": ["Long", "Short", "Longer", "Shorter", "Longest", "Shortest", "First", "Last", "Sequence", "Order"],
+    "common_challenges": ["Child may not understand the sequence initially - allow sensorial exploration first", "Difficulty with fine motor control - choose appropriate starting rods", "Child may count incorrectly - model correct counting with clear touch-point method"],
+    "parent_description": "Number Rods are long wooden rods of increasing length from 1 to 10 units. Your child learns to arrange them from shortest to longest, which helps them understand that quantity (numbers 1-10) is directly connected to physical length. This sensorial experience is the foundation for all future math learning.",
+    "why_it_matters": "This material bridges the gap between sensorial learning and abstract number concepts. Children develop an intuitive understanding of quantity through physical manipulation before encountering symbols. The visual progression creates a mental template for quantity that supports all subsequent mathematical thinking."
+  },
+  {
+    "name": "Sandpaper Numbers",
+    "quick_guide": "• Numbered figures (1-10) created from sandpaper on smooth cards\n• Child traces numbers while hearing their name\n• Develops multisensory learning of numeral symbols\n• Prepares for writing and reading numbers\n• Connects quantity to symbol",
+    "presentation_steps": [
+      {"step": 1, "title": "Introducing Texture and Sound", "description": "Invite the child to touch a sandpaper number. Slowly trace your finger along the numeral while saying its name. Encourage the child to feel the texture: 'This is rough. This is smooth.'", "tip": "Use a calm, deliberate voice. The multisensory experience (sight, touch, hearing) reinforces learning."},
+      {"step": 2, "title": "Tracing with Two Fingers", "description": "Guide the child's fingers (index and middle) along the sandpaper numeral from the starting point to the end. Trace slowly, counting if appropriate. Repeat several times.", "tip": "Model the correct directional tracing. This proprioceptive input prepares for writing."},
+      {"step": 3, "title": "Naming the Numeral", "description": "As the child traces, say the name: 'This is two. Two.' Repeat the name while tracing. Eventually, ask the child to say the name while tracing.", "tip": "Repetition through multiple sensory channels strengthens memory and symbol recognition."},
+      {"step": 4, "title": "Matching Numerals to Quantity", "description": "Introduce only 3-4 sandpaper numbers initially. Place a sandpaper '2' card next to two objects. Discuss: 'This is two. We have two objects.' Create the connection explicitly.", "tip": "Use materials familiar to the child (counters, beads, or everyday objects)."},
+      {"step": 5, "title": "Independent Exploration and Memorization", "description": "Invite the child to trace sandpaper numbers independently. Observe their formation of letter shapes and their confidence with symbol naming.", "tip": "Allow the child to work at their own pace. Some children need weeks to internalize numerals."}
+    ],
+    "points_of_interest": ["The rough texture of the sandpaper", "The smooth background", "The visual shape of the numeral", "Tracing movements", "The sound of the numeral name"],
+    "control_of_error": "Child develops internal control through repeated tracing and matching. Teacher observation of correct tracing patterns. Sensory feedback (the sandpaper) guides correct directional movement.",
+    "direct_aims": ["To recognize and name numerals 1-10", "To understand the visual representation of quantity", "To prepare the hand for writing numerals", "To establish the correct directional formation of numerals"],
+    "indirect_aims": ["Fine motor development through finger isolation", "Sensory discrimination through multisensory input", "Preparation for writing", "Foundation for reading numerals"],
+    "materials_needed": ["Sandpaper Numbers (1-10) on cards", "Counters or objects to match quantities", "Mat or workspace"],
+    "age_range": "3.5-5 years",
+    "variations": ["Tracing in a tray of sand with one finger", "Eye-tracing (child looks without touching) while teacher traces", "Tracing with closed eyes to emphasize tactile learning", "Tracing with sandpaper numbers and matching to numerals drawn with pencil"],
+    "extensions": ["Combine with Number Rods - trace the sandpaper number, then place the corresponding rod", "Use with Spindle Box - trace number, then count and place spindles", "Connect to beginning writing with unlined paper and pencil"],
+    "vocabulary": ["Numeral", "Number", "One", "Two", "Three", "Ten", "Rough", "Smooth", "Trace", "Shape"],
+    "common_challenges": ["Child may not trace in the correct direction - gently guide and model repeatedly", "Some children may not be ready for sandpaper material - they may need more sensorial preparation", "Confusion between number and quantity - frequently connect the symbol to concrete materials"],
+    "parent_description": "Sandpaper Numbers are cards with rough numerals (1-10) your child traces while hearing the name. This multisensory experience (touch, sight, hearing) helps children recognize and remember numeral symbols and their correct formation. It is a stepping stone between understanding 'how many' and reading/writing numbers.",
+    "why_it_matters": "The Sandpaper Numbers integrate multiple learning pathways. The tactile experience of sandpaper combines with visual recognition and auditory naming. This multisensory approach aligns with how young brains develop symbol recognition. The correct directional tracing prepares hand and brain for future writing."
+  }
+]

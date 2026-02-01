@@ -17,8 +17,8 @@ const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }>
   mathematics: { name: 'Math', icon: '🔢', color: '#3b82f6' },
   math: { name: 'Math', icon: '🔢', color: '#3b82f6' },
   language: { name: 'Language', icon: '📖', color: '#ec4899' },
-  cultural: { name: 'English', icon: '🌍', color: '#8b5cf6' },
-  culture: { name: 'English', icon: '🌍', color: '#8b5cf6' },
+  cultural: { name: 'Cultural', icon: '🌍', color: '#8b5cf6' },
+  culture: { name: 'Cultural', icon: '🌍', color: '#8b5cf6' },
 };
 
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];

@@ -9,13 +9,13 @@ import Link from 'next/link';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 
-// Curriculum areas
+// Curriculum areas (standard Montessori - Language includes English/Phonics)
 const CURRICULUM_AREAS = [
   { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#22c55e' },
   { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#f97316' },
   { id: 'mathematics', name: 'Math', icon: '🔢', color: '#3b82f6' },
   { id: 'language', name: 'Language', icon: '📚', color: '#ec4899' },
-  { id: 'cultural', name: 'English', icon: '🌍', color: '#8b5cf6' },
+  { id: 'cultural', name: 'Cultural', icon: '🌍', color: '#8b5cf6' },
 ];
 
 // Age options

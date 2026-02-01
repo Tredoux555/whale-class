@@ -1,9 +1,9 @@
 // /api/montree/principal/setup/route.ts
 // Principal setup - add classrooms and teachers
-// FIXED: Create teachers FIRST before curriculum to prevent timeout issues
+// OVERHAULED: Use static curriculum as PRIMARY source for correct sequencing
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { CURRICULUM } from '@/lib/montree/curriculum-data';
+import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 
 function getSupabase() {
   return createClient(
@@ -21,23 +21,25 @@ function generateLoginCode(): string {
   return code;
 }
 
-// Default area definitions for curriculum
-const DEFAULT_AREAS = [
-  { area_key: 'practical_life', name: 'Practical Life', name_chinese: '日常生活', icon: '🧹', color: '#10B981', sequence: 1 },
-  { area_key: 'sensorial', name: 'Sensorial', name_chinese: '感官', icon: '👁️', color: '#F59E0B', sequence: 2 },
-  { area_key: 'mathematics', name: 'Mathematics', name_chinese: '数学', icon: '🔢', color: '#3B82F6', sequence: 3 },
-  { area_key: 'language', name: 'Language', name_chinese: '语言', icon: '📚', color: '#EC4899', sequence: 4 },
-  { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
-];
-
-// Seed curriculum for a new classroom - MUST be called during classroom creation
-async function seedCurriculumForClassroom(supabase: any, classroomId: string): Promise<{ success: boolean; worksCount: number; error?: string }> {
+/**
+ * Seed curriculum for a new classroom using STATIC JSON files
+ * This ensures correct Montessori sequencing (not Brain's unreliable order)
+ */
+async function seedCurriculumForClassroom(
+  supabase: any,
+  classroomId: string
+): Promise<{ success: boolean; worksCount: number; error?: string }> {
   try {
-    // Step 1: Create curriculum areas for this classroom
-    const areasToInsert = DEFAULT_AREAS.map(area => ({
+    // Step 1: Create curriculum areas from static data (English only)
+    const areas = loadCurriculumAreas();
+    const areasToInsert = areas.map(area => ({
       classroom_id: classroomId,
-      ...area,
-      is_active: true
+      area_key: area.area_key,
+      name: area.name,
+      icon: area.icon,
+      color: area.color,
+      sequence: area.sequence,
+      is_active: true,
     }));
 
     const { data: insertedAreas, error: areaError } = await supabase
@@ -46,7 +48,7 @@ async function seedCurriculumForClassroom(supabase: any, classroomId: string): P
       .select();
 
     if (areaError) {
-      console.error(`[Setup] Failed to create areas for classroom ${classroomId}:`, areaError.message);
+      console.error(`[Setup] Failed to create areas:`, areaError.message);
       return { success: false, worksCount: 0, error: areaError.message };
     }
 
@@ -56,54 +58,66 @@ async function seedCurriculumForClassroom(supabase: any, classroomId: string): P
       areaMap[area.area_key] = area.id;
     }
 
-    // Step 2: Build curriculum works with proper area UUIDs
-    const worksToInsert: any[] = [];
-    let globalSequence = 0;
+    // Step 2: Load ALL works from static curriculum (correctly sequenced!)
+    const allWorks = loadAllCurriculumWorks();
+    console.log(`[Setup] Loading ${allWorks.length} works from static curriculum`);
 
-    for (const area of CURRICULUM) {
-      const areaUuid = areaMap[area.id];
+    // Step 3: Transform to database format
+    const worksToInsert = allWorks.map(work => {
+      const areaUuid = areaMap[work.area_key];
       if (!areaUuid) {
-        console.warn(`[Setup] No UUID found for area ${area.id}`);
-        continue;
+        console.warn(`[Setup] No area UUID for ${work.area_key}`);
+        return null;
       }
 
-      for (const category of area.categories) {
-        for (const work of category.works) {
-          globalSequence++;
-          worksToInsert.push({
-            classroom_id: classroomId,
-            area_id: areaUuid,
-            work_key: work.id,
-            name: work.name,
-            name_chinese: work.chineseName || null,
-            description: work.description || null,
-            age_range: work.ageRange || '3-6',
-            sequence: globalSequence,
-            materials: work.materials || [],
-            levels: work.levels || [],
-            is_active: true,
-          });
+      return {
+        classroom_id: classroomId,
+        area_id: areaUuid,
+        work_key: work.work_key,
+        name: work.name,
+        description: work.description || null,
+        age_range: work.age_range || '3-6',
+        sequence: work.sequence, // CORRECT global sequence from static files
+        is_active: true,
+        materials: work.materials || [],
+        direct_aims: work.direct_aims || [],
+        indirect_aims: work.indirect_aims || [],
+        control_of_error: work.control_of_error || null,
+        prerequisites: work.prerequisites || [],
+      };
+    }).filter(Boolean);
+
+    // Step 4: Insert works in batches for reliability
+    const BATCH_SIZE = 50;
+    let insertedCount = 0;
+
+    for (let i = 0; i < worksToInsert.length; i += BATCH_SIZE) {
+      const batch = worksToInsert.slice(i, i + BATCH_SIZE);
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const { error: batchError } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .insert(batch);
+
+        if (!batchError) {
+          insertedCount += batch.length;
+          break;
+        }
+
+        if (attempt < 3) {
+          console.warn(`[Setup] Batch ${Math.floor(i/BATCH_SIZE)+1} attempt ${attempt} failed, retrying...`);
+          await new Promise(r => setTimeout(r, 500 * attempt));
+        } else {
+          console.error(`[Setup] Batch insert failed after 3 attempts:`, batchError.message);
         }
       }
     }
 
-    // Step 3: Insert all works
-    if (worksToInsert.length > 0) {
-      const { error: worksError } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .insert(worksToInsert);
-
-      if (worksError) {
-        console.error(`[Setup] Failed to create works for classroom ${classroomId}:`, worksError.message);
-        return { success: false, worksCount: 0, error: worksError.message };
-      }
-    }
-
-    console.log(`[Setup] Seeded ${worksToInsert.length} curriculum works for classroom ${classroomId}`);
-    return { success: true, worksCount: worksToInsert.length };
+    console.log(`[Setup] Seeded ${insertedCount}/${worksToInsert.length} works for classroom ${classroomId}`);
+    return { success: true, worksCount: insertedCount };
 
   } catch (err) {
-    console.error(`[Setup] Curriculum seed exception for ${classroomId}:`, err);
+    console.error(`[Setup] Curriculum seed error:`, err);
     return { success: false, worksCount: 0, error: String(err) };
   }
 }
@@ -157,20 +171,15 @@ export async function POST(request: NextRequest) {
     const createdTeachers: any[] = [];
     const errors: string[] = [];
 
-    // PHASE 1: Create all classrooms and teachers FIRST (this is the priority)
-    console.log('[Setup] Phase 1: Creating classrooms and teachers...');
-
+    // Process each classroom
     for (const classroom of classrooms) {
       if (!classroom.name?.trim()) {
-        console.log(`[Setup] Skipping classroom with empty name`);
         errors.push(`Classroom with empty name was skipped`);
         continue;
       }
 
-      // Create classroom with retry logic
+      // Create classroom
       let createdClassroom = null;
-      let classroomError = null;
-
       for (let attempt = 1; attempt <= 3; attempt++) {
         const result = await supabase
           .from('montree_classrooms')
@@ -184,46 +193,36 @@ export async function POST(request: NextRequest) {
           .select()
           .single();
 
-        if (result.error) {
-          classroomError = result.error;
-          console.error(`[Setup] Classroom creation attempt ${attempt} failed for "${classroom.name}":`, result.error.message);
-          if (attempt < 3) {
-            await new Promise(r => setTimeout(r, 100 * attempt)); // Brief delay before retry
-          }
-        } else {
+        if (!result.error) {
           createdClassroom = result.data;
-          classroomError = null;
           break;
+        }
+
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 100 * attempt));
+        } else {
+          errors.push(`Failed to create classroom "${classroom.name}"`);
         }
       }
 
-      if (classroomError || !createdClassroom) {
-        const errMsg = `Failed to create classroom "${classroom.name}": ${classroomError?.message || 'Unknown error'}`;
-        console.error(`[Setup] ${errMsg}`);
-        errors.push(errMsg);
-        continue;
-      }
+      if (!createdClassroom) continue;
 
-      console.log(`[Setup] Created classroom: ${createdClassroom.name} (${createdClassroom.id})`);
+      console.log(`[Setup] Created classroom: ${createdClassroom.name}`);
       createdClassrooms.push(createdClassroom);
 
-      // IMMEDIATELY seed curriculum for this classroom - THIS IS ESSENTIAL
+      // Seed curriculum with CORRECT sequencing
       const curriculumResult = await seedCurriculumForClassroom(supabase, createdClassroom.id);
       if (!curriculumResult.success) {
-        errors.push(`Warning: Curriculum seeding failed for ${createdClassroom.name}: ${curriculumResult.error}`);
+        errors.push(`Curriculum seeding failed for ${createdClassroom.name}: ${curriculumResult.error}`);
       } else {
-        console.log(`[Setup] Curriculum seeded: ${curriculumResult.worksCount} works for ${createdClassroom.name}`);
+        console.log(`[Setup] Seeded ${curriculumResult.worksCount} works for ${createdClassroom.name}`);
       }
 
-      // Create ALL teachers for this classroom immediately
+      // Create teachers
       const teachersToCreate = classroom.teachers.filter(t => t.name?.trim());
-      console.log(`[Setup] Creating ${teachersToCreate.length} teachers for ${createdClassroom.name}...`);
-
       for (const teacher of teachersToCreate) {
-        // Generate login code with collision retry
         let loginCode = generateLoginCode();
         let createdTeacher = null;
-        let teacherError = null;
 
         for (let attempt = 1; attempt <= 3; attempt++) {
           const result = await supabase
@@ -240,67 +239,46 @@ export async function POST(request: NextRequest) {
             .select()
             .single();
 
-          if (result.error) {
-            teacherError = result.error;
-            console.error(`[Setup] Teacher creation attempt ${attempt} failed for "${teacher.name}":`, result.error.message);
-            // If it might be a code collision, generate new code
-            if (result.error.message?.includes('unique') || result.error.message?.includes('duplicate')) {
-              loginCode = generateLoginCode();
-            }
-            if (attempt < 3) {
-              await new Promise(r => setTimeout(r, 100 * attempt));
-            }
-          } else {
+          if (!result.error) {
             createdTeacher = result.data;
-            teacherError = null;
             break;
+          }
+
+          // If code collision, generate new code
+          if (result.error.message?.includes('unique') || result.error.message?.includes('duplicate')) {
+            loginCode = generateLoginCode();
+          }
+
+          if (attempt < 3) {
+            await new Promise(r => setTimeout(r, 100 * attempt));
           }
         }
 
-        if (teacherError || !createdTeacher) {
-          const errMsg = `Failed to create teacher "${teacher.name}": ${teacherError?.message || 'Unknown error'}`;
-          console.error(`[Setup] ${errMsg}`);
-          errors.push(errMsg);
-          continue;
+        if (createdTeacher) {
+          console.log(`[Setup] Created teacher: ${createdTeacher.name} (code: ${loginCode})`);
+          createdTeachers.push({
+            id: createdTeacher.id,
+            name: createdTeacher.name,
+            email: createdTeacher.email,
+            login_code: loginCode,
+            classroom_id: createdClassroom.id,
+            classroom_name: createdClassroom.name,
+            classroom_icon: createdClassroom.icon,
+          });
+        } else {
+          errors.push(`Failed to create teacher "${teacher.name}"`);
         }
-
-        console.log(`[Setup] Created teacher: ${createdTeacher.name} (code: ${loginCode})`);
-
-        createdTeachers.push({
-          id: createdTeacher.id,
-          name: createdTeacher.name,
-          email: createdTeacher.email,
-          login_code: loginCode,
-          classroom_id: createdClassroom.id,
-          classroom_name: createdClassroom.name,
-          classroom_icon: createdClassroom.icon,
-        });
       }
     }
 
     const totalTime = Date.now() - startTime;
-    console.log(`[Setup] Complete! Returning ${createdTeachers.length} teachers (${totalTime}ms)`);
-
-    // Verification: Count expected vs actual
-    const expectedClassrooms = classrooms.filter(c => c.name?.trim()).length;
-    const expectedTeachers = classrooms.reduce((sum, c) => sum + c.teachers.filter(t => t.name?.trim()).length, 0);
-
-    if (createdClassrooms.length < expectedClassrooms || createdTeachers.length < expectedTeachers) {
-      console.warn(`[Setup] MISMATCH! Expected ${expectedClassrooms} classrooms, got ${createdClassrooms.length}. Expected ${expectedTeachers} teachers, got ${createdTeachers.length}`);
-      errors.push(`Warning: Some items may not have been created. Expected ${expectedClassrooms} classrooms and ${expectedTeachers} teachers, but got ${createdClassrooms.length} classrooms and ${createdTeachers.length} teachers.`);
-    }
+    console.log(`[Setup] Complete! ${createdTeachers.length} teachers (${totalTime}ms)`);
 
     return NextResponse.json({
       success: true,
       classrooms: createdClassrooms,
       teachers: createdTeachers,
       warnings: errors.length > 0 ? errors : undefined,
-      stats: {
-        expectedClassrooms,
-        createdClassrooms: createdClassrooms.length,
-        expectedTeachers,
-        createdTeachers: createdTeachers.length,
-      }
     });
 
   } catch (error) {

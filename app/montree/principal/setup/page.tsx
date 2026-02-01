@@ -97,44 +97,81 @@ export default function PrincipalSetupPage() {
     }));
   };
 
+  const [progressDetail, setProgressDetail] = useState<string>('');
+  const [progressPercent, setProgressPercent] = useState<number>(0);
+
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
-
-    // Start cycling through friendly status messages
-    let messageIndex = 0;
-    setStatusMessage(SETUP_MESSAGES[0]);
-
-    const messageInterval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % SETUP_MESSAGES.length;
-      setStatusMessage(SETUP_MESSAGES[messageIndex]);
-    }, 2000); // Change message every 2 seconds
+    setProgressDetail('');
+    setProgressPercent(0);
 
     try {
-      const res = await fetch('/api/montree/principal/setup', {
+      // Use streaming endpoint for real-time progress
+      const response = await fetch('/api/montree/principal/setup-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ schoolId: school.id, classrooms }),
       });
 
-      const data = await res.json();
-
-      clearInterval(messageInterval);
-
-      if (!res.ok) throw new Error(data.error || 'Setup failed');
-
-      setCreatedTeachers(data.teachers);
-      if (data.warnings) {
-        setWarnings(data.warnings);
+      if (!response.body) {
+        throw new Error('No response body');
       }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            const eventType = line.slice(7);
+            continue;
+          }
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.message) {
+                setStatusMessage({ emoji: data.emoji || '⏳', text: data.message });
+              }
+              if (data.detail) {
+                setProgressDetail(data.detail);
+              }
+              if (data.current && data.total) {
+                setProgressPercent(Math.round((data.current / data.total) * 100));
+              }
+
+              // Handle completion
+              if (data.teachers) {
+                setCreatedTeachers(data.teachers);
+              }
+              if (data.warnings) {
+                setWarnings(data.warnings);
+              }
+            } catch (e) {
+              // Ignore parse errors for incomplete data
+            }
+          }
+        }
+      }
+
       setStep(3);
 
     } catch (err) {
-      clearInterval(messageInterval);
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {
       setLoading(false);
       setStatusMessage({ emoji: '', text: '' });
+      setProgressDetail('');
+      setProgressPercent(0);
     }
   };
 
@@ -206,26 +243,47 @@ export default function PrincipalSetupPage() {
           )}
         </div>
 
-        {/* Loading Overlay with friendly messages */}
+        {/* Loading Overlay with REAL progress */}
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-            <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-sm mx-4">
+            <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-md mx-4">
               <div className="text-6xl mb-4 animate-bounce">
                 {statusMessage.emoji || '⏳'}
               </div>
               <h2 className="text-xl font-semibold text-white mb-2">
                 Setting Up Your School
               </h2>
-              <p className="text-emerald-300 text-lg mb-4">
+              <p className="text-emerald-300 text-lg mb-2">
                 {statusMessage.text || 'Getting everything ready...'}
               </p>
-              <div className="flex justify-center gap-1">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
-              </div>
-              <p className="text-white/40 text-xs mt-4">
-                This may take a moment...
+              {progressDetail && (
+                <p className="text-white/60 text-sm mb-4">
+                  {progressDetail}
+                </p>
+              )}
+
+              {/* Progress bar */}
+              {progressPercent > 0 && (
+                <div className="w-full bg-white/10 rounded-full h-2 mb-4 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              )}
+
+              {progressPercent === 0 && (
+                <div className="flex justify-center gap-1 mb-4">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+                </div>
+              )}
+
+              <p className="text-white/40 text-xs">
+                {progressPercent > 0
+                  ? `${progressPercent}% complete`
+                  : 'The curriculum is gold - worth the wait! ✨'}
               </p>
             </div>
           </div>
