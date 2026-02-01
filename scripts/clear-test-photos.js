@@ -8,13 +8,32 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
+
+// Try to load from .env.local if it exists
+const envPath = path.join(__dirname, '..', '.env.local');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  for (const line of envContent.split('\n')) {
+    const [key, ...valueParts] = line.split('=');
+    if (key && valueParts.length > 0) {
+      const value = valueParts.join('=').trim();
+      if (!process.env[key.trim()]) {
+        process.env[key.trim()] = value;
+      }
+    }
+  }
+  console.log('📄 Loaded environment from .env.local');
+}
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dmfncjjtsoxrnvcdnvjq.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_SERVICE_KEY) {
-  console.error('❌ SUPABASE_SERVICE_ROLE_KEY environment variable is required');
-  console.log('Run with: SUPABASE_SERVICE_ROLE_KEY=your_key node scripts/clear-test-photos.js');
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found');
+  console.log('Make sure it exists in .env.local or run with:');
+  console.log('SUPABASE_SERVICE_ROLE_KEY=your_key node scripts/clear-test-photos.js');
   process.exit(1);
 }
 
