@@ -43,7 +43,7 @@ export interface GuruResponse {
 // ============================================
 // POST: Ask the Guru a question
 // ============================================
-export async function POST(request: NextRequest): Promise<NextResponse<GuruResponse>> {
+export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
@@ -103,6 +103,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<GuruRespo
 
     // 4. Call Claude API
     console.log('[Guru] Calling Claude API...');
+    
+    // Ensure anthropic is not null (already checked above, but TypeScript needs this)
+    if (!anthropic) {
+      return NextResponse.json(
+        { success: false, error: 'AI service not available' },
+        { status: 503 }
+      );
+    }
+    
     const message = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: MAX_TOKENS,
@@ -199,7 +208,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GuruRespo
 // ============================================
 // GET: Get conversation history for a child
 // ============================================
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
