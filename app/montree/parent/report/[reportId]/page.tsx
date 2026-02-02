@@ -7,7 +7,7 @@ import Link from 'next/link';
 interface ReportData {
   id: string;
   week_number: number;
-  year: number;
+  report_year: number;
   parent_summary: string | null;
   highlights: string[] | null;
   areas_of_growth: string[] | null;
@@ -46,6 +46,10 @@ export default function ParentReportPage() {
   }, [reportId, router]);
 
   const loadReport = async () => {
+    if (!reportId) {
+      return; // Wait until reportId is available
+    }
+
     try {
       const res = await fetch(`/api/montree/parent/report/${reportId}`);
       const data = await res.json();
@@ -121,7 +125,7 @@ export default function ParentReportPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">{childName}'s Weekly Report</h1>
-              <p className="text-gray-500">Week {report.week_number}, {report.year}</p>
+              <p className="text-gray-500">Week {report.week_number}, {report.report_year}</p>
             </div>
           </div>
           
