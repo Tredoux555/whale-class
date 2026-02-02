@@ -21,7 +21,11 @@ export async function GET(request: NextRequest) {
 
     if (linkError) {
       console.error('Link query failed:', linkError);
-      throw linkError;
+      return NextResponse.json({
+        error: 'Failed to load parent-child links',
+        debug: linkError?.message,
+        code: linkError?.code
+      }, { status: 500 });
     }
     console.log('Found links:', links);
 
@@ -41,7 +45,11 @@ export async function GET(request: NextRequest) {
 
     if (childError) {
       console.error('Children query failed:', childError);
-      throw childError;
+      return NextResponse.json({
+        error: 'Failed to load child details',
+        debug: childError?.message,
+        code: childError?.code
+      }, { status: 500 });
     }
     console.log('Found children:', children);
 
