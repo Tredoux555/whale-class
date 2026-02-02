@@ -9,8 +9,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
-import { uploadPhoto, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
-import type { MontreeChild, CapturedPhoto, UploadProgress } from '@/lib/montree/media/types';
+import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
+import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia, UploadProgress } from '@/lib/montree/media/types';
 
 // ============================================
 // TYPES
@@ -58,8 +58,10 @@ function CaptureContent() {
     preSelectedChildId ? [preSelectedChildId] : []
   );
   const [capturedPhoto, setCapturedPhoto] = useState<CapturedPhoto | null>(null);
+  const [capturedVideo, setCapturedVideo] = useState<CapturedVideo | null>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'photo' | 'video' | null>(null);
   const [schoolId, setSchoolId] = useState<string>('');
 
   // ============================================
@@ -115,8 +117,7 @@ function CaptureContent() {
     }
   };
 
-  const handlePhotoCapture = async (photo: CapturedPhoto) => {
-    setCapturedPhoto(photo);
+  const handleMediaCapture = async (media: CapturedMedia) => {
     setStep('uploading');
     setError(null);
 
@@ -124,21 +125,48 @@ function CaptureContent() {
     const idsToTag = isClassMode ? children.map(c => c.id) : selectedChildIds;
 
     try {
-      const result = await uploadPhoto(photo, {
-        school_id: schoolId || 'default-school',
-        child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
-        child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-        is_class_photo: isClassMode, // Mark as class photo for sharing with all parents
-        caption: workName || undefined, // Work name for display/matching
-        tags: workArea ? [workArea] : undefined, // Area tag for categorization
-        onProgress: setUploadProgress,
-      });
+      if (media.type === 'photo') {
+        const photo = media.data;
+        setCapturedPhoto(photo);
+        setMediaType('photo');
 
-      if (result.success) {
-        setStep('success');
-      } else {
-        setError(result.error || 'Upload failed');
-        setStep('error');
+        const result = await uploadPhoto(photo, {
+          school_id: schoolId || 'default-school',
+          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+          is_class_photo: isClassMode,
+          caption: workName || undefined,
+          tags: workArea ? [workArea] : undefined,
+          onProgress: setUploadProgress,
+        });
+
+        if (result.success) {
+          setStep('success');
+        } else {
+          setError(result.error || 'Upload failed');
+          setStep('error');
+        }
+      } else if (media.type === 'video') {
+        const video = media.data;
+        setCapturedVideo(video);
+        setMediaType('video');
+
+        const result = await uploadVideo(video, {
+          school_id: schoolId || 'default-school',
+          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+          is_class_photo: isClassMode,
+          caption: workName || undefined,
+          tags: workArea ? [workArea] : undefined,
+          onProgress: setUploadProgress,
+        });
+
+        if (result.success) {
+          setStep('success');
+        } else {
+          setError(result.error || 'Upload failed');
+          setStep('error');
+        }
       }
     } catch (err) {
       console.error('Upload error:', err);
@@ -157,7 +185,9 @@ function CaptureContent() {
 
   const handleTakeAnother = () => {
     setCapturedPhoto(null);
+    setCapturedVideo(null);
     setUploadProgress(null);
+    setMediaType(null);
     setStep('camera');
   };
 
@@ -170,8 +200,10 @@ function CaptureContent() {
   };
 
   const handleRetry = () => {
-    if (capturedPhoto) {
-      handlePhotoCapture(capturedPhoto);
+    if (capturedPhoto && mediaType === 'photo') {
+      handleMediaCapture({ type: 'photo', data: capturedPhoto });
+    } else if (capturedVideo && mediaType === 'video') {
+      handleMediaCapture({ type: 'video', data: capturedVideo });
     }
   };
 
@@ -183,8 +215,9 @@ function CaptureContent() {
   if (step === 'camera') {
     return (
       <CameraCapture
-        onCapture={handlePhotoCapture}
+        onCapture={handleMediaCapture}
         onCancel={handleCameraCancel}
+        allowVideo={true}
       />
     );
   }
@@ -199,20 +232,32 @@ function CaptureContent() {
         <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🌳</span>
           <h1 className="text-lg font-bold text-gray-800">
-            {step === 'success' ? 'Photo Saved!' : step === 'error' ? 'Upload Failed' : 'Uploading...'}
+            {step === 'success' ? (mediaType === 'video' ? 'Video Saved!' : 'Photo Saved!') : step === 'error' ? 'Upload Failed' : 'Uploading...'}
           </h1>
         </header>
 
         {/* Content */}
         <main className="flex-1 flex flex-col items-center justify-center p-6">
           {/* Preview */}
-          {capturedPhoto && (
+          {capturedPhoto && mediaType === 'photo' && (
             <div className="w-full max-w-sm mb-6">
               <img
                 src={capturedPhoto.dataUrl}
                 alt="Captured"
                 className="w-full rounded-2xl shadow-lg"
               />
+            </div>
+          )}
+          {capturedVideo && mediaType === 'video' && (
+            <div className="w-full max-w-sm mb-6">
+              <video
+                src={capturedVideo.dataUrl}
+                controls
+                className="w-full rounded-2xl shadow-lg bg-black"
+              />
+              <p className="text-center text-sm text-gray-500 mt-2">
+                Duration: {Math.round(capturedVideo.duration)}s
+              </p>
             </div>
           )}
 
@@ -254,14 +299,16 @@ function CaptureContent() {
           {step === 'success' && (
             <div className="text-center">
               <div className="text-6xl mb-4">✅</div>
-              <p className="text-lg text-gray-600 mb-8">Photo uploaded successfully!</p>
-              
+              <p className="text-lg text-gray-600 mb-8">
+                {mediaType === 'video' ? 'Video uploaded successfully!' : 'Photo uploaded successfully!'}
+              </p>
+
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <button
                   onClick={handleTakeAnother}
                   className="w-full py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
-                  📷 Take Another Photo
+                  {mediaType === 'video' ? '🎥 Record Another Video' : '📷 Take Another Photo'}
                 </button>
                 <button
                   onClick={handleDone}

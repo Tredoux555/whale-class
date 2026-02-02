@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
     }
 
-    const { school_id, child_id, child_ids, work_id, caption, tags, width, height } = metadata;
+    const { school_id, child_id, child_ids, work_id, caption, tags, width, height, media_type, duration } = metadata;
 
     if (!school_id) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
@@ -38,15 +38,16 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const ext = file.name.split('.').pop() || 'jpg';
+    const ext = file.name.split('.').pop() || (media_type === 'video' ? 'webm' : 'jpg');
     const filename = `${timestamp}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    
-    // Generate storage path
+
+    // Generate storage path: {school_id}/{child_id}/{videos|photos}/{timestamp}.{ext}
     const now = new Date();
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const mediaFolder = media_type === 'video' ? 'videos' : 'photos';
     const childFolder = child_id || 'group';
-    const storagePath = `${school_id}/${childFolder}/${year}/${month}/${filename}`;
+    const storagePath = `${school_id}/${childFolder}/${mediaFolder}/${year}/${month}/${filename}`;
     
     // Upload main file to Supabase storage
     const fileBuffer = await file.arrayBuffer();
@@ -83,12 +84,13 @@ export async function POST(request: NextRequest) {
     const mediaRecord = {
       school_id,
       child_id: child_id || null,
-      media_type: 'photo',
+      media_type: media_type || 'photo',
       storage_path: storagePath,
       thumbnail_path: thumbnailPath,
       file_size_bytes: file.size,
       width: width || null,
       height: height || null,
+      duration_seconds: media_type === 'video' ? (duration || null) : null,
       captured_at: metadata.captured_at || new Date().toISOString(),
       work_id: work_id || null,
       caption: caption || null,

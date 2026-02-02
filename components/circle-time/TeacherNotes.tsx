@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface TeacherNote {
   id: string;
@@ -70,8 +71,10 @@ export default function TeacherNotes({
       if (data.success) {
         setNotes(prev => [data.note, ...prev]);
         setNewNote('');
+        toast.success('Note saved!');
       } else {
         setError(data.error || 'Failed to save note');
+        toast.error('Failed to save note');
       }
     } catch (err) {
       setError('Failed to save note');

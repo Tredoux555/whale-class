@@ -1,44 +1,89 @@
 {
   "project": "Montree",
-  "session": 133,
-  "lastUpdated": "2026-01-31T23:45:00+08:00",
+  "session": 135,
+  "lastUpdated": "2026-02-02T14:30:00+08:00",
 
-  "STATUS": "📚 CURRICULUM GUIDE DATA - 3% complete (8/268 works). See HANDOFF for full list.",
+  "STATUS": "✅ ALL PHASES 100% COMPLETE - All requirements met including area filter, bulk actions, video upload.",
 
-  "HANDOFF": "docs/HANDOFF_CURRICULUM_GUIDES.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION131_UI_CLEANUP.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_COMPLETE.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_TESTING_WEEK.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
-  "SESSION_131_CLEANUP": {
-    "summary": "Simplified teacher dashboard to minimal interface - just students and camera",
-    "philosophy": "Teachers manage works and students. Nothing else. Keep it clean.",
-    "fixes_applied": [
-      "REMOVED footer completely - no more icons cluttering the screen",
-      "Camera button: Top right header (next to logout)",
-      "Student grid: Now includes '+' tile to add students",
-      "Tools/Settings pages: Still exist but NOT linked from main UI",
-      "Parent dashboard: Added games link for practice at home",
-      "Admin settings: Created new page (was 404)",
-      "Admin teachers: Fixed API query that returned empty data",
-      "Admin students: Changed DOB to age picker for consistency",
-      "FIXED: 'Failed to add student' - Added POST handler to /api/montree/children",
-      "FIXED: Students page now uses /api/montree/children (not /api/montree/onboarding/students)"
+  "SESSION_134_TESTING_WEEK": {
+    "summary": "Implemented all 6 phases of Testing Week preparation",
+    "phases_completed": [
+      "Phase 1: Fixed capture retake bug + added note save toast",
+      "Phase 2: Built photo management page with edit/delete modal",
+      "Phase 3: Added video capture mode (30s max, MediaRecorder API)",
+      "Phase 4: Built teacher summary system with Guru AI integration",
+      "Phase 5: Enhanced curriculum editor with drag-drop reordering",
+      "Phase 6: Added parent portal enhancements (announcements, photos, milestones)"
     ],
-    "files_modified": [
-      "app/montree/dashboard/page.tsx - REMOVED FOOTER",
-      "app/montree/dashboard/settings/page.tsx",
-      "app/montree/parent/dashboard/page.tsx",
-      "app/montree/admin/settings/page.tsx (NEW)",
-      "app/api/montree/admin/teachers/route.ts",
-      "app/montree/admin/students/page.tsx",
-      "app/api/montree/children/route.ts - ADDED POST handler",
-      "app/montree/dashboard/students/page.tsx - Fixed API endpoint"
+    "new_files": [
+      "app/api/montree/media/route.ts - Media CRUD API",
+      "app/api/montree/media/url/route.ts - Signed URL generator",
+      "app/api/montree/curriculum/reorder/route.ts - Bulk reorder API",
+      "app/api/montree/parent/announcements/route.ts - Announcements API",
+      "app/api/montree/parent/photos/route.ts - Parent photos API",
+      "app/api/montree/parent/milestones/route.ts - Milestones timeline API",
+      "app/montree/dashboard/[childId]/summary/page.tsx - Teacher summary page",
+      "app/montree/parent/photos/page.tsx - Photo gallery page",
+      "app/montree/parent/milestones/page.tsx - Milestones timeline page",
+      "components/montree/media/MediaDetailModal.tsx - Photo edit/delete modal"
+    ],
+    "modified_files": [
+      "components/montree/media/CameraCapture.tsx - Retake fix + video mode",
+      "components/circle-time/TeacherNotes.tsx - Toast notifications",
+      "lib/montree/media/types.ts - CapturedVideo, CapturedMedia types",
+      "lib/montree/media/upload.ts - Added uploadVideo function",
+      "app/montree/dashboard/capture/page.tsx - Full video upload support",
+      "app/montree/dashboard/media/page.tsx - Area filter + bulk actions + selection mode",
+      "app/api/montree/media/route.ts - Area filter param + bulk delete",
+      "app/api/montree/media/upload/route.ts - Video upload with duration",
+      "app/api/montree/progress/route.ts - Date filtering",
+      "app/montree/dashboard/curriculum/page.tsx - Drag-drop reordering",
+      "app/montree/parent/dashboard/page.tsx - New sections (announcements, photos, milestones)",
+      "components/montree/media/MediaCard.tsx - Selection checkbox support",
+      "components/montree/media/MediaGallery.tsx - Selection mode props"
     ]
+  },
+
+  "NEW_FEATURES": {
+    "video_capture": {
+      "location": "components/montree/media/CameraCapture.tsx",
+      "features": ["Toggle photo/video mode", "30s max recording", "Timer display", "MediaRecorder API"],
+      "codecs": ["vp9", "vp8", "webm fallback"]
+    },
+    "photo_management": {
+      "api": "/api/montree/media",
+      "methods": ["GET (with area filter)", "PATCH (edit)", "DELETE (single + bulk)"],
+      "modal": "components/montree/media/MediaDetailModal.tsx",
+      "features": ["Area filter dropdown", "Bulk selection mode", "Select all", "Bulk delete with confirmation"]
+    },
+    "video_upload": {
+      "location": "app/montree/dashboard/capture/page.tsx",
+      "upload_service": "lib/montree/media/upload.ts (uploadVideo function)",
+      "storage_path": "{school_id}/{child_id}/videos/{YYYY}/{MM}/{filename}.webm",
+      "features": ["Full Supabase upload", "Progress tracking", "Duration metadata", "Same tagging as photos"]
+    },
+    "curriculum_drag_drop": {
+      "location": "app/montree/dashboard/curriculum/page.tsx",
+      "reorder_api": "/api/montree/curriculum/reorder",
+      "features": ["Visual drag handles", "Optimistic UI update", "Async save"]
+    },
+    "teacher_summary": {
+      "location": "app/montree/dashboard/[childId]/summary/page.tsx",
+      "features": ["Week/month toggle", "Area progress bars", "Neglected areas warning", "Guru AI insights"]
+    },
+    "parent_portal_enhancements": {
+      "announcements": "/api/montree/parent/announcements",
+      "photos": "/api/montree/parent/photos + /montree/parent/photos",
+      "milestones": "/api/montree/parent/milestones + /montree/parent/milestones"
+    }
   },
 
   "CURRICULUM_DATA": {
     "IMPORTANT_NOTE": "⚠️ ONBOARDING MUST COPY ALL DATA FROM BRAIN TO CLASSROOM",
-
     "COMPREHENSIVE_GUIDES": {
       "location": "lib/curriculum/comprehensive-guides/",
       "description": "Single source of truth for ALL teacher guide data",
@@ -49,86 +94,40 @@
         "language-guides.json": "43 works",
         "cultural-guides.json": "50 works",
         "AUDIT.json": "Coverage status"
-      },
-      "CURRENT_COVERAGE": {
-        "total_works": 268,
-        "complete": 8,
-        "coverage_percent": "3.0%",
-        "practical_life": "8/83 (9.6%)",
-        "sensorial": "0/35 (0%)",
-        "math": "0/57 (0%)",
-        "language": "0/43 (0%)",
-        "cultural": "0/50 (0%)"
-      },
-      "data_format": {
-        "quick_guide": "3-5 bullet points for 10-second teacher scan",
-        "presentation_steps": "[{step, title, description, tip}] - Full AMI album",
-        "points_of_interest": "What captures child's attention",
-        "control_of_error": "How child self-corrects",
-        "variations": "Different presentation options",
-        "common_challenges": "Teacher pitfalls to avoid"
       }
     },
-
     "master_table": "montessori_works (THE BRAIN)",
-    "classroom_table": "montree_classroom_curriculum_works",
-
-    "data_flow": {
-      "description": "When classroom created, ALL data copies from Brain to classroom table",
-      "seeding_code": "app/api/montree/principal/setup-stream/route.ts lines 192-220",
-      "must_copy": ["quick_guide", "video_search_term", "presentation_steps", "direct_aims", "materials_needed", "control_of_error", "parent_description", "why_it_matters"]
-    },
-
-    "migrations": {
-      "schema": "supabase/migrations/050_digital_handbook.sql",
-      "quick_guides": "supabase/migrations/090_quick_guide_columns.sql (12 works)",
-      "language_data": "supabase/migrations/051_english_handbook_seed.sql (5 works)",
-      "practical_life": "migrations/102_practical_life_comprehensive.sql (NEW - 10 works)"
-    },
-
-    "guide_api": {
-      "endpoint": "/api/montree/works/guide?name=Work+Name&classroom_id=xxx",
-      "behavior": "Checks classroom first, falls back to master Brain"
-    },
-
-    "TO_COMPLETE": {
-      "priority_1": "Populate remaining 75 Practical Life works",
-      "priority_2": "Populate 35 Sensorial works",
-      "priority_3": "Populate 57 Math works (research DONE)",
-      "priority_4": "Populate 43 Language works",
-      "priority_5": "Populate 50 Cultural works",
-      "how": "Use Claude with docs/CLAUDE_PROMPT_PRESENTATION_STEPS.md to generate data"
-    }
+    "classroom_table": "montree_classroom_curriculum_works"
   },
 
   "TEACHER_UI": {
     "dashboard": "/montree/dashboard",
-    "layout": {
-      "header": "Classroom name + 📷 Camera + Logout",
-      "main": "Student grid (full screen) with '+' tile to add students",
-      "footer": "REMOVED - no footer"
-    },
-    "flow": "Dashboard → Click student → Manage works/progress",
-    "hidden_pages": [
-      "/montree/dashboard/tools - exists but not linked",
-      "/montree/dashboard/settings - exists but not linked"
-    ]
+    "capture": "/montree/dashboard/capture",
+    "media": "/montree/dashboard/media",
+    "curriculum": "/montree/dashboard/curriculum",
+    "child_summary": "/montree/dashboard/[childId]/summary",
+    "print": "/montree/dashboard/print"
+  },
+
+  "PARENT_UI": {
+    "dashboard": "/montree/parent/dashboard",
+    "photos": "/montree/parent/photos",
+    "milestones": "/montree/parent/milestones",
+    "report": "/montree/parent/report/[reportId]"
   },
 
   "ROLE_SEPARATION": {
     "teacher": {
       "dashboard": "/montree/dashboard",
-      "ui": "Minimal: Student grid + Camera only",
-      "features": ["Student grid", "Camera capture", "Progress tracking per student"]
+      "features": ["Student grid", "Camera (photo+video)", "Progress tracking", "Summary reports", "Curriculum editor"]
     },
     "principal": {
       "dashboard": "/montree/admin",
-      "ui": "Full management interface",
       "features": ["All classrooms", "All teachers", "All students", "School settings"]
     },
     "parent": {
       "dashboard": "/montree/parent/dashboard",
-      "features": ["View child progress", "Weekly reports", "Practice games"]
+      "features": ["View child progress", "Weekly reports", "Photo gallery", "Milestones timeline", "Practice games"]
     }
   },
 
@@ -137,20 +136,21 @@
     "area_in_curriculum_tables": "UUID foreign key",
     "work_identification": "work_name string (case-insensitive matching)",
     "status_values": ["not_started", "presented", "practicing", "mastered"],
-    "progress_calculation": "All works BEFORE current position count as completed",
-    "age_storage": "Numeric (2, 2.5, 3, 3.5, etc.) - NOT date_of_birth"
+    "media_types": ["photo", "video"],
+    "parent_visible_flag": "montree_media.parent_visible (boolean)"
   },
 
-  "STATUS_TRACKING_TODO": {
-    "description": "Implement manual status changes with automatic timestamps",
-    "current_state": "mastered_at captured, but missing other status timestamps",
-    "proposed_fields": [
-      "practicing_at TIMESTAMPTZ - when status changed to practicing",
-      "status_changed_at TIMESTAMPTZ - last status change time",
-      "changed_by UUID - teacher who made the change"
+  "DATABASE_NOTES": {
+    "tables_used": [
+      "montree_media - Photos/videos with parent_visible flag",
+      "montree_child_progress - For milestones (mastered status)",
+      "montree_classroom_curriculum_works - Work sequences",
+      "montree_announcements - May need creation"
     ],
-    "philosophy": "Trust teacher judgment. Manual status changes, automatic timestamp capture.",
-    "implementation": "When teacher changes status, capture timestamp automatically in background"
+    "columns_referenced": [
+      "montree_media.parent_visible (boolean)",
+      "montree_classroom_curriculum_works.sequence (integer)"
+    ]
   },
 
   "LIVE_URL": "https://teacherpotato.xyz/montree"
