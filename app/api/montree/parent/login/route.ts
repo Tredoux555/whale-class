@@ -83,8 +83,12 @@ export async function POST(req: NextRequest) {
       }
     });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Parent login error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Internal server error',
+      debug: error?.message || String(error),
+      code: error?.code
+    }, { status: 500 });
   }
 }
