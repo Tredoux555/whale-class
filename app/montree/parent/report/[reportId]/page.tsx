@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
+interface HighlightItem {
+  work: string;
+  status: string;
+}
+
 interface ReportData {
   id: string;
   week_number: number;
   report_year: number;
   parent_summary: string | null;
-  highlights: string[] | null;
+  highlights: HighlightItem[] | string[] | null;
   areas_of_growth: string[] | null;
   recommendations: string[] | null;
   created_at: string;
@@ -143,12 +148,15 @@ export default function ParentReportPage() {
               <span>⭐</span> This Week's Highlights
             </h2>
             <ul className="space-y-2">
-              {report.highlights.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-emerald-500 mt-1">•</span>
-                  <span className="text-gray-700">{item}</span>
-                </li>
-              ))}
+              {report.highlights.map((item, i) => {
+                const text = typeof item === 'string' ? item : `${item.work} (${item.status})`;
+                return (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-1">•</span>
+                    <span className="text-gray-700">{text}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
