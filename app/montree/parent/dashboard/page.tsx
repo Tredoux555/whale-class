@@ -9,8 +9,8 @@ interface Child {
   id: string;
   name: string;
   nickname: string | null;
-  date_of_birth: string;
-  photo_url: string | null;
+  date_of_birth?: string | null;
+  photo_url?: string | null;
 }
 
 interface WeeklyReport {
@@ -200,8 +200,10 @@ export default function ParentDashboardPage() {
     router.push('/montree/parent/login');
   };
 
-  const getAge = (dob: string) => {
+  const getAge = (dob: string | null | undefined) => {
+    if (!dob) return '';
     const birth = new Date(dob);
+    if (isNaN(birth.getTime())) return '';
     const now = new Date();
     const years = now.getFullYear() - birth.getFullYear();
     const months = now.getMonth() - birth.getMonth();
@@ -268,7 +270,7 @@ export default function ParentDashboardPage() {
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-gray-800">{child.nickname || child.name}</div>
-                    <div className="text-xs text-gray-500">{getAge(child.date_of_birth)}</div>
+                    {child.date_of_birth && <div className="text-xs text-gray-500">{getAge(child.date_of_birth)}</div>}
                   </div>
                 </button>
               ))}
@@ -293,7 +295,7 @@ export default function ParentDashboardPage() {
                   <h2 className="text-xl font-bold text-gray-800">
                     {selectedChild.nickname || selectedChild.name}
                   </h2>
-                  <p className="text-gray-500">{getAge(selectedChild.date_of_birth)} old</p>
+                  {selectedChild.date_of_birth && <p className="text-gray-500">{getAge(selectedChild.date_of_birth)} old</p>}
                 </div>
               </div>
             </div>
