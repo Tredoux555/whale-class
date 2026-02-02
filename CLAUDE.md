@@ -7,6 +7,59 @@ Next.js 14 app with two separate systems:
 
 ---
 
+## 🚨🚨🚨 START HERE: Parent Auth Bug (Feb 2, 2026) 🚨🚨🚨
+
+**STATUS: BLOCKED - Debug this first before any other work**
+
+### The Bug
+Parent enters invite code → Gets error "Could not find child record"
+
+### Quick Debug Steps
+
+**1. Push pending changes first:**
+```bash
+cd ~/whale
+rm -f .git/HEAD.lock .git/index.lock
+git add -A && git commit -m "Add debug endpoint" && git push origin main
+```
+
+**2. Check Supabase SQL Editor directly:**
+```sql
+-- See what invites exist
+SELECT invite_code, child_id, is_active FROM montree_parent_invites ORDER BY created_at DESC LIMIT 5;
+
+-- See what children exist
+SELECT id, name FROM montree_children LIMIT 10;
+
+-- Check if invite's child_id actually exists (replace UUID)
+SELECT * FROM montree_children WHERE id = 'child-id-from-invite';
+```
+
+**3. Test locally with npm run dev:**
+- Generate new invite for Austin
+- Enter code at `/montree/parent`
+- Check browser Network tab for API response
+- Check terminal for server logs
+
+**4. If still stuck, add logging:**
+In `app/api/montree/parent/auth/access-code/route.ts` after line 47:
+```typescript
+console.log('INVITE FOUND:', invite);
+console.log('LOOKING FOR CHILD:', invite.child_id);
+```
+
+### Root Cause Theories
+1. **Invite has wrong child_id** - check if UUID matches any child
+2. **Child was deleted** - invite orphaned
+3. **Different databases** - local vs production mismatch
+
+### Key Files
+- `app/api/montree/invites/route.ts` - Creates invites (line 68)
+- `app/api/montree/parent/auth/access-code/route.ts` - Validates codes (line 76)
+- `app/api/montree/debug/parent-link/route.ts` - Debug endpoint (NOT DEPLOYED)
+
+---
+
 ## ✅ COMPLETED: Phase 1 - Weekly Reports with One-Click Send
 
 **Goal**: Teachers can generate weekly reports and send to all parents with one click.

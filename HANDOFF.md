@@ -1,130 +1,162 @@
 # WHALE HANDOFF - February 2, 2026
-## Session 136: Parent Portal Auth Debugging
+## Session 136: Parent Portal Auth - BLOCKED
 
 ---
 
-## 🚨 CURRENT ISSUE: Parent Invite Codes Not Linking
+## 🚨 PRIORITY 1: Parent Invite Codes Not Working
 
-### Symptom
-- Teacher generates invite code (e.g., `D7ENJN`) for Austin
-- Parent enters code at `teacherpotato.xyz/montree/parent`
-- Error: **"Could not find child record. Please contact your teacher."**
+### The Problem
+Teacher generates invite code → Parent enters code → **"Could not find child record"**
 
-### Root Cause Analysis
-The invite code **WAS FOUND** in the database (otherwise error would be "Invalid access code").
-The error means `child_id` in the invite record doesn't match any child in `montree_children`.
+### What We Know
+- The invite code IS being found (otherwise error would be "Invalid access code")
+- The `child_id` in the invite doesn't match any child in `montree_children`
+- Debug endpoint created but NOT YET DEPLOYED (git lock issues)
 
-### Likely Causes (investigate)
-1. **Different databases**: Check Railway env vars match local `.env.local`
-2. **Stale invite data**: Old invite with same code pointing to deleted child
-3. **Child not in production**: Data sync issue between environments
-
-### Debug Endpoint Created
+### Files Ready to Push
 ```
-/api/montree/debug/parent-link?code=D7ENJN
-```
-This shows:
-- If invite was found
-- What `child_id` it references
-- If that child exists in `montree_children`
-- Sample of children in DB
-
-### Action Items
-1. **Push debug endpoint**: `git push origin main` (from terminal - network issues in Cowork)
-2. **Test on production**: `https://teacherpotato.xyz/api/montree/debug/parent-link?code=D7ENJN`
-3. **Compare with local**: `http://localhost:3000/api/montree/debug/parent-link?code=D7ENJN`
-4. **Verify Railway env vars**:
-   - `NEXT_PUBLIC_SUPABASE_URL` should be `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
-   - `SUPABASE_SERVICE_ROLE_KEY` should match local
-
----
-
-## ✅ PREVIOUSLY COMPLETED (This Session)
-
-### Migration 095-096 Applied
-- `montree_parents` - Parent accounts table
-- `montree_parent_children` - Parent-child linking
-- `montree_parent_invites` - Invite codes (6-char format)
-- `montree_weekly_reports` - Parent-visible weekly reports
-- `generate_parent_invite_code()` - RPC function for random codes
-
-### API Fixes Applied
-- `/api/montree/parent/auth/access-code/route.ts` - **Unified to use `montree_parent_invites`**
-- `/api/montree/parent/weekly-review/route.ts` - **Removed test mode vulnerability**
-
-### Build Fixes
-- Added Suspense wrappers to:
-  - `/montree/parent/photos/page.tsx`
-  - `/montree/parent/milestones/page.tsx`
-
-### PWA Icons Created (not deployed yet)
-- `/public/montree-parent/icon-*.png` (72, 96, 128, 144, 152, 180, 192, 384, 512)
-- `/public/montree-parent/manifest.json`
-- Green seedling/tree theme for Montessori
-
----
-
-## 🎯 PARENT PORTAL ACCESS
-
-### How Teachers Invite Parents
-
-1. Go to child detail page: `/montree/dashboard/[childId]`
-2. Click **"Invite Parent"** button in header
-3. Copy the generated 6-character code (e.g., `D7ENJN`)
-4. Share with parent
-
-### How Parents Access
-
-1. Tell parent to go to: `https://teacherpotato.xyz/montree/parent`
-2. Enter the 6-character code
-3. Click "Connect to My Child"
-
-### Auth Flow
-```
-Teacher generates code → montree_parent_invites (child_id, invite_code)
-Parent enters code → API looks up invite → Gets child_id → Sets session cookie
+app/api/montree/debug/parent-link/route.ts  (NEW - debug endpoint)
+public/montree-parent/*                      (NEW - PWA icons)
+HANDOFF.md, CLAUDE.md                        (updated)
 ```
 
 ---
 
-## 📁 KEY FILES MODIFIED THIS SESSION
+## 🔧 DEBUGGING STRATEGY (Start Here Next Session)
 
-| File | Change |
-|------|--------|
-| `app/api/montree/parent/auth/access-code/route.ts` | Unified to use `montree_parent_invites` |
-| `app/api/montree/parent/weekly-review/route.ts` | Removed test mode bypass |
-| `app/montree/parent/page.tsx` | 6-char codes, updated placeholder |
-| `app/montree/parent/photos/page.tsx` | Added Suspense wrapper |
-| `app/montree/parent/milestones/page.tsx` | Added Suspense wrapper |
-| `app/api/montree/debug/parent-link/route.ts` | **NEW** - Debug endpoint |
-| `supabase/migrations/095_parent_portal.sql` | Parent tables and invites |
-| `supabase/migrations/096_parent_portal_fixes.sql` | Weekly reports table |
+### Step 1: Push the pending changes
+```bash
+cd ~/whale
+rm -f .git/HEAD.lock .git/index.lock
+git add -A
+git commit -m "Add parent link debug endpoint"
+git push origin main
+```
 
----
+### Step 2: Check Supabase directly
+Go to https://supabase.com/dashboard → Select project → SQL Editor
 
-## 🗂️ DATABASE TABLES
-
-### Parent System
+**Query 1: See all invites**
 ```sql
-montree_parents (id, email, password_hash, name, school_id)
-montree_parent_children (parent_id, child_id, relationship)
-montree_parent_invites (id, child_id, invite_code, expires_at, is_active)
-montree_weekly_reports (id, child_id, week_number, report_year, parent_summary)
+SELECT id, child_id, invite_code, is_active, created_at
+FROM montree_parent_invites
+ORDER BY created_at DESC
+LIMIT 10;
 ```
 
-### Supabase URL
+**Query 2: See all children**
+```sql
+SELECT id, name, nickname, classroom_id
+FROM montree_children
+LIMIT 20;
 ```
-https://dmfncjjtsoxrnvcdnvjq.supabase.co
+
+**Query 3: Check if Austin exists and get his ID**
+```sql
+SELECT id, name FROM montree_children WHERE name ILIKE '%austin%';
+```
+
+**Query 4: Check if the invite's child_id exists**
+```sql
+-- Replace CHILD_ID with the child_id from Query 1
+SELECT * FROM montree_children WHERE id = 'CHILD_ID_FROM_INVITE';
+```
+
+### Step 3: Test locally with logging
+Run `npm run dev` and test the flow:
+1. Go to Austin's page → Click Invite Parent → Note the code
+2. Open browser console, check Network tab
+3. Go to `/montree/parent` → Enter the code
+4. Check the API response in Network tab
+
+### Step 4: Add verbose logging (if needed)
+In `/app/api/montree/parent/auth/access-code/route.ts`, add after line 47:
+```typescript
+console.log('Found invite:', JSON.stringify(invite, null, 2));
+console.log('Looking for child_id:', invite.child_id);
+```
+
+And after line 77:
+```typescript
+console.log('Child lookup result:', { child, childError });
+```
+
+---
+
+## 🎯 LIKELY ROOT CAUSES
+
+### Cause 1: Child ID Mismatch
+The invite was created with a child_id that doesn't exist. This could happen if:
+- Child was deleted after invite was created
+- UUID was corrupted during insert
+- Wrong child_id was passed to the API
+
+### Cause 2: Different Supabase Projects
+Local and production might point to different Supabase databases:
+- Check Railway env vars: `NEXT_PUBLIC_SUPABASE_URL`
+- Should be: `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
+
+### Cause 3: RLS Policy Blocking
+Even with service role, check if there's something weird:
+```sql
+SELECT * FROM pg_policies WHERE tablename = 'montree_children';
+```
+
+---
+
+## 📁 KEY FILES FOR THIS ISSUE
+
+| File | Purpose |
+|------|---------|
+| `app/api/montree/invites/route.ts` | Generates invite codes (line 68: `child_id: childId`) |
+| `app/api/montree/parent/auth/access-code/route.ts` | Validates codes (line 76: child lookup) |
+| `app/api/montree/debug/parent-link/route.ts` | Debug endpoint (NOT DEPLOYED YET) |
+| `supabase/migrations/095_parent_portal.sql` | Creates `montree_parent_invites` table |
+
+---
+
+## ✅ COMPLETED THIS SESSION
+
+1. Unified parent auth to use `montree_parent_invites` table
+2. Fixed Suspense wrapper issues for Next.js 16 build
+3. Created PWA icons for parent portal (not linked yet)
+4. Created debug endpoint (not deployed yet)
+5. Ran migrations 095 and 096
+
+---
+
+## 🗂️ DATABASE SCHEMA
+
+```sql
+-- Parent invites (where codes are stored)
+montree_parent_invites (
+  id UUID PRIMARY KEY,
+  child_id UUID NOT NULL REFERENCES montree_children(id),
+  invite_code TEXT UNIQUE,
+  is_active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
+)
+
+-- Children (what we're trying to look up)
+montree_children (
+  id UUID PRIMARY KEY,
+  name TEXT,
+  nickname TEXT,
+  classroom_id UUID
+)
 ```
 
 ---
 
 ## 🚀 DEPLOYMENT
 
-**Production URL:** https://teacherpotato.xyz/montree
-**Deploy Command:** `git push origin main` (Railway auto-deploys)
+**Production:** https://teacherpotato.xyz/montree
+**Supabase:** https://dmfncjjtsoxrnvcdnvjq.supabase.co
+**Railway:** Auto-deploys on push to main
 
 ---
 
-*Updated: February 2, 2026 18:15*
-*Next: Fix parent link issue, test PWA icons*
+*Updated: February 2, 2026 18:20*
+*Status: BLOCKED - Parent auth not working*
+*Next: Debug locally, find root cause*
