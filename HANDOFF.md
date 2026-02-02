@@ -1,162 +1,135 @@
 # WHALE HANDOFF - February 2, 2026
-## Session 136: Parent Portal Auth - BLOCKED
+## Session 136: Parent Portal - Migration Applied, Ready to Test
 
 ---
 
-## 🚨 PRIORITY 1: Parent Invite Codes Not Working
+## 📍 WHERE WE LEFT OFF
 
-### The Problem
-Teacher generates invite code → Parent enters code → **"Could not find child record"**
+**The parent portal auth system is now ready to test on production.**
 
-### What We Know
-- The invite code IS being found (otherwise error would be "Invalid access code")
-- The `child_id` in the invite doesn't match any child in `montree_children`
-- Debug endpoint created but NOT YET DEPLOYED (git lock issues)
+### What Was Fixed This Session
+1. ✅ **Missing database table** - `montree_parent_invites` didn't exist in Supabase. We ran the migration directly in Supabase SQL Editor.
+2. ✅ **Code deployed** - Latest push includes debug endpoint and auth fixes
+3. ✅ **Railway deployment successful** - "Add parent link debug endpoint + PWA ic..."
 
-### Files Ready to Push
+### What Needs Testing
+Generate a **NEW** invite code from **PRODUCTION** (not localhost) and test the parent flow.
+
+---
+
+## 🚀 PICKUP PROMPT
+
+Copy this to start the next session:
+
 ```
-app/api/montree/debug/parent-link/route.ts  (NEW - debug endpoint)
-public/montree-parent/*                      (NEW - PWA icons)
-HANDOFF.md, CLAUDE.md                        (updated)
+Continue Montree parent portal testing.
+
+Last session we fixed the missing `montree_parent_invites` table in Supabase and deployed the code.
+
+Please help me test the parent invite flow:
+1. Go to teacherpotato.xyz/montree/dashboard (production)
+2. Open a child (e.g., Austin)
+3. Click "Invite Parent" and generate a NEW code
+4. Test that code at teacherpotato.xyz/montree/parent
+
+If it still fails, use the debug endpoint:
+teacherpotato.xyz/api/montree/debug/parent-link?code=XXXXXX
+
+Key context:
+- Supabase URL: dmfncjjtsoxrnvcdnvjq.supabase.co
+- The old code D7ENJN won't work (was in local DB only)
+- Must generate new codes from PRODUCTION teacher dashboard
 ```
 
 ---
 
-## 🔧 DEBUGGING STRATEGY (Start Here Next Session)
+## 🔑 KEY LEARNINGS THIS SESSION
 
-### Step 1: Push the pending changes
-```bash
-cd ~/whale
-rm -f .git/HEAD.lock .git/index.lock
-git add -A
-git commit -m "Add parent link debug endpoint"
-git push origin main
-```
+### Root Cause Found
+The `montree_parent_invites` table **did not exist** in production Supabase. Migration 095 had never been applied to production.
 
-### Step 2: Check Supabase directly
-Go to https://supabase.com/dashboard → Select project → SQL Editor
+### The Error Flow Was
+1. Teacher generates code on localhost → saves to LOCAL Supabase ✅
+2. Parent enters code on production → queries PRODUCTION Supabase
+3. Production had no `montree_parent_invites` table → query failed
+4. Error shown: "Could not find child record"
 
-**Query 1: See all invites**
+### The Fix
+Ran migration 095 directly in Supabase SQL Editor to create:
+- `montree_parents`
+- `montree_parent_children`
+- `montree_parent_invites`
+- `generate_parent_invite_code()` function
+
+---
+
+## 📁 FILES CHANGED THIS SESSION
+
+| File | Status | Purpose |
+|------|--------|---------|
+| `app/api/montree/parent/auth/access-code/route.ts` | Modified | Unified to use `montree_parent_invites` |
+| `app/api/montree/debug/parent-link/route.ts` | **NEW** | Debug endpoint for tracing invite→child linkage |
+| `app/montree/parent/page.tsx` | Modified | 6-char code input |
+| `app/montree/parent/photos/page.tsx` | Modified | Added Suspense wrapper |
+| `app/montree/parent/milestones/page.tsx` | Modified | Added Suspense wrapper |
+| `public/montree-parent/*` | **NEW** | PWA icons (not linked yet) |
+
+---
+
+## 🗄️ DATABASE STATE
+
+### Tables Created (Migration 095)
 ```sql
-SELECT id, child_id, invite_code, is_active, created_at
-FROM montree_parent_invites
-ORDER BY created_at DESC
-LIMIT 10;
+montree_parents (id, email, password_hash, name, school_id)
+montree_parent_children (parent_id, child_id, relationship)
+montree_parent_invites (id, child_id, invite_code, expires_at, is_active)
 ```
 
-**Query 2: See all children**
-```sql
-SELECT id, name, nickname, classroom_id
-FROM montree_children
-LIMIT 20;
-```
-
-**Query 3: Check if Austin exists and get his ID**
-```sql
-SELECT id, name FROM montree_children WHERE name ILIKE '%austin%';
-```
-
-**Query 4: Check if the invite's child_id exists**
-```sql
--- Replace CHILD_ID with the child_id from Query 1
-SELECT * FROM montree_children WHERE id = 'CHILD_ID_FROM_INVITE';
-```
-
-### Step 3: Test locally with logging
-Run `npm run dev` and test the flow:
-1. Go to Austin's page → Click Invite Parent → Note the code
-2. Open browser console, check Network tab
-3. Go to `/montree/parent` → Enter the code
-4. Check the API response in Network tab
-
-### Step 4: Add verbose logging (if needed)
-In `/app/api/montree/parent/auth/access-code/route.ts`, add after line 47:
-```typescript
-console.log('Found invite:', JSON.stringify(invite, null, 2));
-console.log('Looking for child_id:', invite.child_id);
-```
-
-And after line 77:
-```typescript
-console.log('Child lookup result:', { child, childError });
-```
+### Supabase Project
+- URL: `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
+- Tables are now created and ready
 
 ---
 
-## 🎯 LIKELY ROOT CAUSES
+## 🧪 HOW TO TEST
 
-### Cause 1: Child ID Mismatch
-The invite was created with a child_id that doesn't exist. This could happen if:
-- Child was deleted after invite was created
-- UUID was corrupted during insert
-- Wrong child_id was passed to the API
+### From Production (Required)
+1. `https://teacherpotato.xyz/montree/dashboard`
+2. Click any child → "Invite Parent" → Generate code
+3. Copy the 6-character code (e.g., `ABC123`)
+4. Open `https://teacherpotato.xyz/montree/parent`
+5. Enter code → Should redirect to parent dashboard
 
-### Cause 2: Different Supabase Projects
-Local and production might point to different Supabase databases:
-- Check Railway env vars: `NEXT_PUBLIC_SUPABASE_URL`
-- Should be: `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
+### Debug Endpoint
+If it fails, check: `https://teacherpotato.xyz/api/montree/debug/parent-link?code=ABC123`
 
-### Cause 3: RLS Policy Blocking
-Even with service role, check if there's something weird:
-```sql
-SELECT * FROM pg_policies WHERE tablename = 'montree_children';
-```
+This shows:
+- Whether invite exists
+- What child_id it references
+- Whether that child exists
 
 ---
 
-## 📁 KEY FILES FOR THIS ISSUE
+## ⚠️ IMPORTANT NOTES
 
-| File | Purpose |
-|------|---------|
-| `app/api/montree/invites/route.ts` | Generates invite codes (line 68: `child_id: childId`) |
-| `app/api/montree/parent/auth/access-code/route.ts` | Validates codes (line 76: child lookup) |
-| `app/api/montree/debug/parent-link/route.ts` | Debug endpoint (NOT DEPLOYED YET) |
-| `supabase/migrations/095_parent_portal.sql` | Creates `montree_parent_invites` table |
+1. **Don't test from localhost** - Local and production use the same Supabase, but generating codes locally then testing on production caused confusion
+2. **Old codes won't work** - `D7ENJN` was in local DB before we created the production table
+3. **PWA icons created but not linked** - Need to add manifest to parent layout
 
 ---
 
-## ✅ COMPLETED THIS SESSION
+## 🔗 URLS
 
-1. Unified parent auth to use `montree_parent_invites` table
-2. Fixed Suspense wrapper issues for Next.js 16 build
-3. Created PWA icons for parent portal (not linked yet)
-4. Created debug endpoint (not deployed yet)
-5. Ran migrations 095 and 096
-
----
-
-## 🗂️ DATABASE SCHEMA
-
-```sql
--- Parent invites (where codes are stored)
-montree_parent_invites (
-  id UUID PRIMARY KEY,
-  child_id UUID NOT NULL REFERENCES montree_children(id),
-  invite_code TEXT UNIQUE,
-  is_active BOOLEAN DEFAULT true,
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ
-)
-
--- Children (what we're trying to look up)
-montree_children (
-  id UUID PRIMARY KEY,
-  name TEXT,
-  nickname TEXT,
-  classroom_id UUID
-)
-```
+| Environment | URL |
+|------------|-----|
+| Production | https://teacherpotato.xyz/montree |
+| Teacher Dashboard | https://teacherpotato.xyz/montree/dashboard |
+| Parent Portal | https://teacherpotato.xyz/montree/parent |
+| Debug Endpoint | https://teacherpotato.xyz/api/montree/debug/parent-link?code=XXX |
+| Supabase | https://supabase.com/dashboard (project: dmfncjjtsoxrnvcdnvjq) |
+| Railway | https://railway.app (project: whale-class) |
 
 ---
 
-## 🚀 DEPLOYMENT
-
-**Production:** https://teacherpotato.xyz/montree
-**Supabase:** https://dmfncjjtsoxrnvcdnvjq.supabase.co
-**Railway:** Auto-deploys on push to main
-
----
-
-*Updated: February 2, 2026 18:20*
-*Status: BLOCKED - Parent auth not working*
-*Next: Debug locally, find root cause*
+*Updated: February 2, 2026 18:35*
+*Status: Ready to test parent flow on production*
