@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     console.log('Fetching children for IDs:', childIds);
     const { data: children, error: childError } = await supabase
       .from('montree_children')
-      .select('id, name, nickname, date_of_birth, photo_url')
+      .select('id, name, nickname')
       .in('id', childIds)
       .order('name');
 
