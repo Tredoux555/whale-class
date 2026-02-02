@@ -3,9 +3,9 @@ import { getSupabase } from '@/lib/montree/supabase';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { reportId: string } }
+  { params }: { params: Promise<{ reportId: string }> }
 ) {
-  const { reportId } = params;
+  const { reportId } = await params;
 
   if (!reportId) {
     return NextResponse.json({ error: 'Report ID required' }, { status: 400 });
