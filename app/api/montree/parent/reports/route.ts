@@ -21,11 +21,22 @@ export async function GET(request: NextRequest) {
       .order('week_number', { ascending: false })
       .limit(20);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Reports query error:', error);
+      return NextResponse.json({
+        error: 'Failed to load reports',
+        debug: error?.message,
+        code: error?.code
+      }, { status: 500 });
+    }
 
     return NextResponse.json({ reports: reports || [] });
   } catch (error: any) {
     console.error('Get reports error:', error);
-    return NextResponse.json({ error: 'Failed to load reports' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to load reports',
+      debug: error?.message || String(error),
+      code: error?.code
+    }, { status: 500 });
   }
 }

@@ -210,11 +210,11 @@ export default function ReportsPage() {
 
                   {/* Photo */}
                   {item.photo_url && (
-                    <div className="rounded-xl overflow-hidden bg-gray-200">
+                    <div className="rounded-xl overflow-hidden bg-gray-100">
                       <img
                         src={item.photo_url}
                         alt={item.work_name}
-                        className="w-full h-48 object-cover"
+                        className="w-full max-h-96 object-contain"
                       />
                       {item.photo_caption && (
                         <p className="p-2 text-sm text-gray-600 italic">{item.photo_caption}</p>
@@ -252,11 +252,11 @@ export default function ReportsPage() {
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {unassignedPhotos.map((photo) => (
-                      <div key={photo.id} className="rounded-lg overflow-hidden bg-gray-200">
+                      <div key={photo.id} className="rounded-lg overflow-hidden bg-gray-100">
                         <img
                           src={photo.url}
                           alt={photo.caption || 'Learning moment'}
-                          className="w-full h-32 object-cover"
+                          className="w-full max-h-48 object-contain"
                         />
                         {photo.caption && (
                           <p className="p-2 text-xs text-gray-600 italic bg-white">{photo.caption}</p>
