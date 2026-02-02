@@ -1,11 +1,13 @@
 // Debug endpoint to check Supabase connection
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/montree/supabase';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const { searchParams } = new URL(request.url);
+    const childId = searchParams.get('childId');
 
     // Check if we can query the database
     const { data: children, error: childError } = await supabase
@@ -24,11 +26,34 @@ export async function GET() {
       .select('id, name, nickname')
       .limit(1);
 
+    // Check reports for a specific child
+    let reportsCheck = null;
+    if (childId) {
+      const { data: reports, error: reportError } = await supabase
+        .from('montree_weekly_reports')
+        .select('id, week_number, year, child_id, parent_summary, status, created_at')
+        .eq('child_id', childId)
+        .limit(5);
+      reportsCheck = {
+        success: !reportError,
+        count: reports?.length,
+        data: reports,
+        error: reportError?.message
+      };
+    }
+
+    // Get all reports regardless of child
+    const { data: allReports, error: allReportsError } = await supabase
+      .from('montree_weekly_reports')
+      .select('id, week_number, year, child_id, status')
+      .limit(10);
+
     return NextResponse.json({
       supabase_url: supabaseUrl?.substring(0, 40) + '...',
       children_query: {
         success: !childError,
         count: children?.length,
+        data: children,
         error: childError?.message
       },
       links_query: {
@@ -40,6 +65,13 @@ export async function GET() {
       nickname_column: {
         success: !colError,
         error: colError?.message
+      },
+      reports_for_child: reportsCheck,
+      all_reports: {
+        success: !allReportsError,
+        count: allReports?.length,
+        data: allReports,
+        error: allReportsError?.message
       }
     });
   } catch (error: any) {
