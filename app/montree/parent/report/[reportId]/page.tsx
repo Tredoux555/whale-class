@@ -25,8 +25,12 @@ interface ReportData {
   works_completed: {
     work_name: string;
     area: string;
-    status: number;
+    status: string;
     completed_at: string;
+    photo_url: string | null;
+    photo_caption: string | null;
+    parent_description: string | null;
+    why_it_matters: string | null;
   }[];
 }
 
@@ -180,28 +184,61 @@ export default function ParentReportPage() {
 
         {/* Works Completed */}
         {report.works_completed && report.works_completed.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="space-y-4">
+            <h2 className="font-bold text-gray-800 flex items-center gap-2 px-2">
               <span>📋</span> Works This Week ({report.works_completed.length})
             </h2>
-            <div className="grid gap-2">
-              {report.works_completed.map((work, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-xl">{areaEmoji[work.area] || '📌'}</span>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-800">{work.work_name}</div>
-                    <div className="text-xs text-gray-500 capitalize">{work.area.replace('_', ' ')}</div>
-                  </div>
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    work.status === 3 ? 'bg-green-100 text-green-700' :
-                    work.status === 2 ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-600'
+            {report.works_completed.map((work, i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+                {/* Work header */}
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    work.status === 'mastered' ? 'bg-emerald-100 text-emerald-700' :
+                    work.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
+                    'bg-amber-100 text-amber-700'
                   }`}>
-                    {work.status === 3 ? 'Mastered' : work.status === 2 ? 'Practicing' : 'Introduced'}
-                  </div>
+                    {work.status === 'mastered' ? '⭐ Mastered' :
+                     work.status === 'practicing' ? '🔄 Practicing' : '🌱 Introduced'}
+                  </span>
+                  <h4 className="font-bold text-gray-800">{work.work_name}</h4>
                 </div>
-              ))}
-            </div>
+
+                {/* Photo */}
+                {work.photo_url && (
+                  <div className="relative -mx-4 my-3">
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                      <img
+                        src={work.photo_url}
+                        alt={work.work_name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {work.photo_caption && (
+                      <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Description */}
+                {work.parent_description ? (
+                  <div className="space-y-2">
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {work.parent_description}
+                    </p>
+                    {work.why_it_matters && (
+                      <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                        <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                        <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm capitalize">
+                    {areaEmoji[work.area] || '📌'} {work.area.replace('_', ' ')}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
