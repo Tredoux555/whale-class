@@ -208,16 +208,18 @@ export default function ReportsPage() {
                     <h4 className="font-bold text-gray-800">{item.work_name}</h4>
                   </div>
 
-                  {/* Photo */}
+                  {/* Photo - Hero style */}
                   {item.photo_url && (
-                    <div className="rounded-xl overflow-hidden bg-gray-100">
-                      <img
-                        src={item.photo_url}
-                        alt={item.work_name}
-                        className="w-full max-h-96 object-contain"
-                      />
+                    <div className="relative -mx-4 my-3">
+                      <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                        <img
+                          src={item.photo_url}
+                          alt={item.work_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       {item.photo_caption && (
-                        <p className="p-2 text-sm text-gray-600 italic">{item.photo_caption}</p>
+                        <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{item.photo_caption}</p>
                       )}
                     </div>
                   )}
@@ -252,14 +254,16 @@ export default function ReportsPage() {
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {unassignedPhotos.map((photo) => (
-                      <div key={photo.id} className="rounded-lg overflow-hidden bg-gray-100">
-                        <img
-                          src={photo.url}
-                          alt={photo.caption || 'Learning moment'}
-                          className="w-full max-h-48 object-contain"
-                        />
+                      <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
+                        <div className="aspect-square w-full">
+                          <img
+                            src={photo.url}
+                            alt={photo.caption || 'Learning moment'}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                         {photo.caption && (
-                          <p className="p-2 text-xs text-gray-600 italic bg-white">{photo.caption}</p>
+                          <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
                         )}
                       </div>
                     ))}
