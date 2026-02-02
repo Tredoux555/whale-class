@@ -1,122 +1,130 @@
 # WHALE HANDOFF - February 2, 2026
-## Session 136: Testing Week Complete + Parent Portal Documentation
+## Session 136: Parent Portal Auth Debugging
 
 ---
 
-## ✅ STATUS: ALL 6 PHASES COMPLETE
+## 🚨 CURRENT ISSUE: Parent Invite Codes Not Linking
 
-Testing Week preparation is **100% complete**. All features have been audited and verified working.
+### Symptom
+- Teacher generates invite code (e.g., `D7ENJN`) for Austin
+- Parent enters code at `teacherpotato.xyz/montree/parent`
+- Error: **"Could not find child record. Please contact your teacher."**
+
+### Root Cause Analysis
+The invite code **WAS FOUND** in the database (otherwise error would be "Invalid access code").
+The error means `child_id` in the invite record doesn't match any child in `montree_children`.
+
+### Likely Causes (investigate)
+1. **Different databases**: Check Railway env vars match local `.env.local`
+2. **Stale invite data**: Old invite with same code pointing to deleted child
+3. **Child not in production**: Data sync issue between environments
+
+### Debug Endpoint Created
+```
+/api/montree/debug/parent-link?code=D7ENJN
+```
+This shows:
+- If invite was found
+- What `child_id` it references
+- If that child exists in `montree_children`
+- Sample of children in DB
+
+### Action Items
+1. **Push debug endpoint**: `git push origin main` (from terminal - network issues in Cowork)
+2. **Test on production**: `https://teacherpotato.xyz/api/montree/debug/parent-link?code=D7ENJN`
+3. **Compare with local**: `http://localhost:3000/api/montree/debug/parent-link?code=D7ENJN`
+4. **Verify Railway env vars**:
+   - `NEXT_PUBLIC_SUPABASE_URL` should be `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
+   - `SUPABASE_SERVICE_ROLE_KEY` should match local
 
 ---
 
-## 🎯 PARENT PORTAL ACCESS (For Testing Week)
+## ✅ PREVIOUSLY COMPLETED (This Session)
+
+### Migration 095-096 Applied
+- `montree_parents` - Parent accounts table
+- `montree_parent_children` - Parent-child linking
+- `montree_parent_invites` - Invite codes (6-char format)
+- `montree_weekly_reports` - Parent-visible weekly reports
+- `generate_parent_invite_code()` - RPC function for random codes
+
+### API Fixes Applied
+- `/api/montree/parent/auth/access-code/route.ts` - **Unified to use `montree_parent_invites`**
+- `/api/montree/parent/weekly-review/route.ts` - **Removed test mode vulnerability**
+
+### Build Fixes
+- Added Suspense wrappers to:
+  - `/montree/parent/photos/page.tsx`
+  - `/montree/parent/milestones/page.tsx`
+
+### PWA Icons Created (not deployed yet)
+- `/public/montree-parent/icon-*.png` (72, 96, 128, 144, 152, 180, 192, 384, 512)
+- `/public/montree-parent/manifest.json`
+- Green seedling/tree theme for Montessori
+
+---
+
+## 🎯 PARENT PORTAL ACCESS
 
 ### How Teachers Invite Parents
 
-1. **Go to child detail page:** `/montree/dashboard/[childId]`
-2. **Click "👨‍👩‍👧 Invite Parent" button**
-3. **Copy the generated invite code** (format: `XXXX-XXXX`, valid 30 days)
-4. **Share signup link with parent:**
-   ```
-   https://teacherpotato.xyz/montree/parent/signup?code=XXXX-XXXX
-   ```
+1. Go to child detail page: `/montree/dashboard/[childId]`
+2. Click **"Invite Parent"** button in header
+3. Copy the generated 6-character code (e.g., `D7ENJN`)
+4. Share with parent
 
-### How Parents Access (SIMPLE - No Signup Needed!)
+### How Parents Access
 
-1. **Tell parent to go to:** `https://teacherpotato.xyz/montree/parent`
-2. **Enter the 6-character code** from teacher (e.g., `ABC123`)
-3. **Done!** They're logged in and can see their child's progress
+1. Tell parent to go to: `https://teacherpotato.xyz/montree/parent`
+2. Enter the 6-character code
+3. Click "Connect to My Child"
 
-### Alternative: Full Account Signup
-
-If parents want a permanent account with email/password:
-1. Open signup link: `https://teacherpotato.xyz/montree/parent/signup?code=XXXXXX`
-2. Enter email, create password
-3. Account created - can log in at `/montree/parent/login`
-
-### What Parents See
-
-- **Dashboard:** Announcements, weekly reports, quick links
-- **Photos:** `/montree/parent/photos` - Approved photos (parent_visible=true)
-- **Milestones:** `/montree/parent/milestones` - Timeline of mastered works
-- **Games:** Practice games for their child
-
----
-
-## 📋 TESTING WEEK PHASES (All Complete)
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Capture retake bug fix + note toast | ✅ |
-| 2 | Photo management (edit/delete/filter/bulk) | ✅ |
-| 3 | Video capture (30s max, MediaRecorder) | ✅ |
-| 4 | Teacher summary with Guru AI | ✅ |
-| 5 | Curriculum drag-drop reordering | ✅ |
-| 6 | Parent portal enhancements | ✅ |
-
----
-
-## 🗂️ KEY URLS
-
-### Teacher Portal
-| Page | URL |
-|------|-----|
-| Dashboard | `/montree/dashboard` |
-| Capture Photo/Video | `/montree/dashboard/capture` |
-| Media Management | `/montree/dashboard/media` |
-| Curriculum Editor | `/montree/dashboard/curriculum` |
-| Child Summary | `/montree/dashboard/[childId]/summary` |
-| Invite Parent | `/montree/dashboard/[childId]` → "👨‍👩‍👧 Invite Parent" |
-
-### Parent Portal
-| Page | URL |
-|------|-----|
-| Login | `/montree/parent/login` |
-| Signup | `/montree/parent/signup?code=XXXX-XXXX` |
-| Dashboard | `/montree/parent/dashboard` |
-| Photos | `/montree/parent/photos` |
-| Milestones | `/montree/parent/milestones` |
-
----
-
-## 🔧 NEW APIs CREATED
-
+### Auth Flow
 ```
-/api/montree/media              - GET (area filter), PATCH, DELETE (bulk)
-/api/montree/media/url          - Generate signed URLs
-/api/montree/curriculum/reorder - Bulk sequence update
-/api/montree/parent/announcements
-/api/montree/parent/photos
-/api/montree/parent/milestones
-/api/montree/invites            - Generate/revoke invite codes
+Teacher generates code → montree_parent_invites (child_id, invite_code)
+Parent enters code → API looks up invite → Gets child_id → Sets session cookie
 ```
 
 ---
 
-## 📁 KEY FILES
+## 📁 KEY FILES MODIFIED THIS SESSION
 
-### New Pages
-- `app/montree/dashboard/[childId]/summary/page.tsx`
-- `app/montree/parent/photos/page.tsx`
-- `app/montree/parent/milestones/page.tsx`
-
-### New Components
-- `components/montree/media/MediaDetailModal.tsx`
-
-### Modified
-- `components/montree/media/CameraCapture.tsx` - Video mode + retake fix
-- `app/montree/dashboard/capture/page.tsx` - Full video upload
-- `app/montree/dashboard/media/page.tsx` - Area filter + bulk actions
-- `app/montree/dashboard/curriculum/page.tsx` - Drag-drop reordering
-- `app/montree/parent/dashboard/page.tsx` - New sections
+| File | Change |
+|------|--------|
+| `app/api/montree/parent/auth/access-code/route.ts` | Unified to use `montree_parent_invites` |
+| `app/api/montree/parent/weekly-review/route.ts` | Removed test mode bypass |
+| `app/montree/parent/page.tsx` | 6-char codes, updated placeholder |
+| `app/montree/parent/photos/page.tsx` | Added Suspense wrapper |
+| `app/montree/parent/milestones/page.tsx` | Added Suspense wrapper |
+| `app/api/montree/debug/parent-link/route.ts` | **NEW** - Debug endpoint |
+| `supabase/migrations/095_parent_portal.sql` | Parent tables and invites |
+| `supabase/migrations/096_parent_portal_fixes.sql` | Weekly reports table |
 
 ---
 
-## 🚀 LIVE SITE
+## 🗂️ DATABASE TABLES
 
-**URL:** https://teacherpotato.xyz/montree
+### Parent System
+```sql
+montree_parents (id, email, password_hash, name, school_id)
+montree_parent_children (parent_id, child_id, relationship)
+montree_parent_invites (id, child_id, invite_code, expires_at, is_active)
+montree_weekly_reports (id, child_id, week_number, report_year, parent_summary)
+```
+
+### Supabase URL
+```
+https://dmfncjjtsoxrnvcdnvjq.supabase.co
+```
 
 ---
 
-*Updated: February 2, 2026 15:00*
-*Next: Testing Week begins - monitor for issues*
+## 🚀 DEPLOYMENT
+
+**Production URL:** https://teacherpotato.xyz/montree
+**Deploy Command:** `git push origin main` (Railway auto-deploys)
+
+---
+
+*Updated: February 2, 2026 18:15*
+*Next: Fix parent link issue, test PWA icons*

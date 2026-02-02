@@ -37,22 +37,36 @@ Next.js 14 app with two separate systems:
 
 ---
 
+## 🚨 CURRENT ISSUE: Parent Invite Codes Not Linking (Feb 2, 2026)
+
+### Symptom
+- Teacher generates invite code → Parent enters code → **"Could not find child record"**
+
+### Debug
+The error means invite code WAS found, but `child_id` doesn't exist in `montree_children`.
+
+```
+Debug endpoint: /api/montree/debug/parent-link?code=XXXXXX
+```
+
+### Likely Causes
+1. **Railway env vars** don't match local - check `NEXT_PUBLIC_SUPABASE_URL`
+2. **Stale invite** pointing to deleted child
+3. **Data sync issue** between local and production
+
+### Auth Flow (Unified System - Fixed Feb 2, 2026)
+```
+Teacher: /api/montree/invites POST → montree_parent_invites (child_id, invite_code)
+Parent:  /api/montree/parent/auth/access-code POST → lookup invite → get child → set cookie
+```
+
+---
+
 ## 🚧 NEXT SESSION TASKS
 
-### Phase 2: Enhanced Parent Experience
-
-1. **Parent Report View** (`/app/montree/parent/report/[reportId]/page.tsx`)
-   - Make sure it displays nicely for parents
-   - Show photos full-size with tap to expand
-   - Include home activity suggestions
-
-2. **Invite Parent Flow**
-   - Auto-send invite email when generating invite code
-   - Better UI for teachers to see which parents are linked
-
-3. **Photo Capture Integration**
-   - Link photos to specific works during capture
-   - Show work name on photos in report
+1. **Fix parent link issue** - Debug why child_id not found
+2. **Deploy PWA icons** - Files ready in `/public/montree-parent/`
+3. **Test full parent flow** end-to-end
 
 ---
 
@@ -82,25 +96,32 @@ Next.js 14 app with two separate systems:
 
 ## Parent System Architecture
 
-### Auth Flow
+### Auth Flow (SIMPLIFIED - Feb 2, 2026)
 ```
-Teacher invites parent → Generate code → Parent signs up with code → Parent logs in
+Teacher: Click "Invite Parent" → Generate 6-char code (e.g., D7ENJN)
+Parent: Go to /montree/parent → Enter code → Logged in (no signup required)
 ```
 
-### Database Tables
+### Database Tables (Migrations 095-096)
 ```sql
-montree_parents (id, email, password_hash, name, phone, notification_prefs)
-montree_parent_children (parent_id, child_id, relationship, can_view_reports)
-montree_parent_invites (invite_code, child_id, expires_at, used_by)
+montree_parents (id, email, password_hash, name, school_id)
+montree_parent_children (parent_id, child_id, relationship)
+montree_parent_invites (id, child_id, invite_code, expires_at, is_active, is_reusable)
+montree_weekly_reports (id, child_id, week_number, report_year, parent_summary)
+```
+
+### Key API Endpoints
+```
+POST /api/montree/invites             - Generate invite code (teacher)
+POST /api/montree/parent/auth/access-code - Validate code (parent)
+GET  /api/montree/debug/parent-link   - Debug code linkage
 ```
 
 ### Key Files
-- `/app/montree/parent/login/page.tsx` - Parent login
-- `/app/montree/parent/signup/page.tsx` - Parent signup (uses invite code)
+- `/app/montree/parent/page.tsx` - Parent landing/login (code entry)
 - `/app/montree/parent/dashboard/page.tsx` - Parent dashboard
-- `/components/montree/InviteParentModal.tsx` - Teacher generates invite codes
-- `/lib/montree/email.ts` - Email templates (Resend)
-- `/app/api/montree/notify/route.ts` - Send notifications to parents
+- `/app/api/montree/parent/auth/access-code/route.ts` - Code validation
+- `/app/api/montree/invites/route.ts` - Code generation
 
 ### Email Templates Ready
 - `sendWelcomeEmail()` - On parent signup
@@ -136,16 +157,21 @@ montree_parent_invites (invite_code, child_id, expires_at, used_by)
 
 ## Known Issues
 
-### 1. Works Vanishing on Tab Switch
+### 1. Parent Invite Codes Not Linking (**ACTIVE - Feb 2, 2026**)
+- Invite code is found but child lookup fails
+- Debug: `/api/montree/debug/parent-link?code=XXXXXX`
+- Check Railway env vars match local Supabase URL
+
+### 2. Works Vanishing on Tab Switch
 - Added visibility/focus listeners but may still have issues
 - Check if API is returning data correctly
 
-### 2. Reports 404 Error
-- `/api/montree/reports/generate` exists but may have issues
-- Weekly-review page calls it but gets errors
-
 ### 3. RLS Policies Permissive
 - Parent tables have "Allow all" RLS - needs security refinement
+
+### 4. PWA Icons Not Linked
+- Icons created in `/public/montree-parent/`
+- Need to add manifest link to parent layout
 
 ---
 
