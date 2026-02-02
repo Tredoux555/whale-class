@@ -32,7 +32,7 @@ function ParentPortalContent() {
 
   const handleAccessCode = async () => {
     if (!accessCode || accessCode.length < 6) {
-      setError('Please enter your 8-character access code');
+      setError('Please enter your 6-character access code');
       return;
     }
     
@@ -118,17 +118,17 @@ function ParentPortalContent() {
                 <input
                   type="text"
                   value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
+                  onChange={(e) => setAccessCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
                   onKeyPress={handleKeyPress}
-                  placeholder="ABCD1234"
+                  placeholder="ABC123"
                   className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-2xl text-center tracking-[0.3em] font-mono uppercase bg-gray-50 focus:bg-white"
                   disabled={loading}
-                  maxLength={8}
+                  maxLength={6}
                   autoFocus
                   autoComplete="off"
                 />
                 <p className="text-xs text-gray-400 mt-2 text-center">
-                  Enter the 8-character code from your teacher
+                  Enter the 6-character code from your teacher
                 </p>
               </div>
 

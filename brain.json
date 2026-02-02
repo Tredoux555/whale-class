@@ -1,15 +1,29 @@
 {
   "project": "Montree",
-  "session": 135,
-  "lastUpdated": "2026-02-02T14:30:00+08:00",
+  "session": 136,
+  "lastUpdated": "2026-02-02T15:00:00+08:00",
 
-  "STATUS": "✅ ALL PHASES 100% COMPLETE - All requirements met including area filter, bulk actions, video upload.",
+  "STATUS": "✅ ALL 6 PHASES COMPLETE + PARENT PORTAL DOCS READY",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_COMPLETE.md",
+  "HANDOFF": "HANDOFF.md",
   "PREVIOUS_HANDOFF": "docs/HANDOFF_TESTING_WEEK.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
-  "SESSION_134_TESTING_WEEK": {
+  "SESSION_136_QUICK_UPDATE": {
+    "summary": "Documented parent portal access flow for teachers",
+    "parent_portal_url": "https://teacherpotato.xyz/montree/parent/login",
+    "parent_signup_url": "https://teacherpotato.xyz/montree/parent/signup?code=XXXX-XXXX",
+    "invite_flow": [
+      "1. Teacher goes to child detail page /montree/dashboard/[childId]",
+      "2. Clicks '👨‍👩‍👧 Invite Parent' button",
+      "3. Modal generates invite code (XXXX-XXXX), valid 30 days",
+      "4. Teacher shares signup link with parent",
+      "5. Parent creates account with invite code + email + password",
+      "6. Parent logs in with email/password thereafter"
+    ]
+  },
+
+  "SESSION_134_135_TESTING_WEEK": {
     "summary": "Implemented all 6 phases of Testing Week preparation",
     "phases_completed": [
       "Phase 1: Fixed capture retake bug + added note save toast",
@@ -30,74 +44,17 @@
       "app/montree/parent/photos/page.tsx - Photo gallery page",
       "app/montree/parent/milestones/page.tsx - Milestones timeline page",
       "components/montree/media/MediaDetailModal.tsx - Photo edit/delete modal"
-    ],
-    "modified_files": [
-      "components/montree/media/CameraCapture.tsx - Retake fix + video mode",
-      "components/circle-time/TeacherNotes.tsx - Toast notifications",
-      "lib/montree/media/types.ts - CapturedVideo, CapturedMedia types",
-      "lib/montree/media/upload.ts - Added uploadVideo function",
-      "app/montree/dashboard/capture/page.tsx - Full video upload support",
-      "app/montree/dashboard/media/page.tsx - Area filter + bulk actions + selection mode",
-      "app/api/montree/media/route.ts - Area filter param + bulk delete",
-      "app/api/montree/media/upload/route.ts - Video upload with duration",
-      "app/api/montree/progress/route.ts - Date filtering",
-      "app/montree/dashboard/curriculum/page.tsx - Drag-drop reordering",
-      "app/montree/parent/dashboard/page.tsx - New sections (announcements, photos, milestones)",
-      "components/montree/media/MediaCard.tsx - Selection checkbox support",
-      "components/montree/media/MediaGallery.tsx - Selection mode props"
     ]
   },
 
-  "NEW_FEATURES": {
-    "video_capture": {
-      "location": "components/montree/media/CameraCapture.tsx",
-      "features": ["Toggle photo/video mode", "30s max recording", "Timer display", "MediaRecorder API"],
-      "codecs": ["vp9", "vp8", "webm fallback"]
-    },
-    "photo_management": {
-      "api": "/api/montree/media",
-      "methods": ["GET (with area filter)", "PATCH (edit)", "DELETE (single + bulk)"],
-      "modal": "components/montree/media/MediaDetailModal.tsx",
-      "features": ["Area filter dropdown", "Bulk selection mode", "Select all", "Bulk delete with confirmation"]
-    },
-    "video_upload": {
-      "location": "app/montree/dashboard/capture/page.tsx",
-      "upload_service": "lib/montree/media/upload.ts (uploadVideo function)",
-      "storage_path": "{school_id}/{child_id}/videos/{YYYY}/{MM}/{filename}.webm",
-      "features": ["Full Supabase upload", "Progress tracking", "Duration metadata", "Same tagging as photos"]
-    },
-    "curriculum_drag_drop": {
-      "location": "app/montree/dashboard/curriculum/page.tsx",
-      "reorder_api": "/api/montree/curriculum/reorder",
-      "features": ["Visual drag handles", "Optimistic UI update", "Async save"]
-    },
-    "teacher_summary": {
-      "location": "app/montree/dashboard/[childId]/summary/page.tsx",
-      "features": ["Week/month toggle", "Area progress bars", "Neglected areas warning", "Guru AI insights"]
-    },
-    "parent_portal_enhancements": {
-      "announcements": "/api/montree/parent/announcements",
-      "photos": "/api/montree/parent/photos + /montree/parent/photos",
-      "milestones": "/api/montree/parent/milestones + /montree/parent/milestones"
-    }
-  },
-
-  "CURRICULUM_DATA": {
-    "IMPORTANT_NOTE": "⚠️ ONBOARDING MUST COPY ALL DATA FROM BRAIN TO CLASSROOM",
-    "COMPREHENSIVE_GUIDES": {
-      "location": "lib/curriculum/comprehensive-guides/",
-      "description": "Single source of truth for ALL teacher guide data",
-      "files": {
-        "practical-life-guides.json": "83 works",
-        "sensorial-guides.json": "35 works",
-        "math-guides.json": "57 works",
-        "language-guides.json": "43 works",
-        "cultural-guides.json": "50 works",
-        "AUDIT.json": "Coverage status"
-      }
-    },
-    "master_table": "montessori_works (THE BRAIN)",
-    "classroom_table": "montree_classroom_curriculum_works"
+  "PARENT_PORTAL_ACCESS": {
+    "login_url": "/montree/parent/login",
+    "signup_url": "/montree/parent/signup?code=XXXX-XXXX",
+    "auth_method": "Email + password (bcrypt hashed)",
+    "session_storage": "localStorage key: montree_parent_session",
+    "invite_generation": "POST /api/montree/invites (from child detail page)",
+    "invite_expiry": "30 days",
+    "teacher_ui_button": "👨‍👩‍👧 Invite Parent (in InviteParentModal)"
   },
 
   "TEACHER_UI": {
@@ -106,51 +63,37 @@
     "media": "/montree/dashboard/media",
     "curriculum": "/montree/dashboard/curriculum",
     "child_summary": "/montree/dashboard/[childId]/summary",
+    "child_detail": "/montree/dashboard/[childId]",
     "print": "/montree/dashboard/print"
   },
 
   "PARENT_UI": {
+    "login": "/montree/parent/login",
+    "signup": "/montree/parent/signup",
     "dashboard": "/montree/parent/dashboard",
     "photos": "/montree/parent/photos",
     "milestones": "/montree/parent/milestones",
     "report": "/montree/parent/report/[reportId]"
   },
 
-  "ROLE_SEPARATION": {
-    "teacher": {
-      "dashboard": "/montree/dashboard",
-      "features": ["Student grid", "Camera (photo+video)", "Progress tracking", "Summary reports", "Curriculum editor"]
+  "KEY_FEATURES": {
+    "video_capture": {
+      "location": "components/montree/media/CameraCapture.tsx",
+      "max_duration": "30 seconds",
+      "codecs": ["vp9", "vp8", "webm fallback"]
     },
-    "principal": {
-      "dashboard": "/montree/admin",
-      "features": ["All classrooms", "All teachers", "All students", "School settings"]
+    "photo_management": {
+      "api": "/api/montree/media",
+      "features": ["Area filter", "Bulk selection", "Bulk delete", "Edit modal"]
     },
-    "parent": {
-      "dashboard": "/montree/parent/dashboard",
-      "features": ["View child progress", "Weekly reports", "Photo gallery", "Milestones timeline", "Practice games"]
+    "curriculum_drag_drop": {
+      "api": "/api/montree/curriculum/reorder",
+      "features": ["Visual drag handles", "Optimistic UI", "Async save"]
+    },
+    "teacher_summary": {
+      "location": "/montree/dashboard/[childId]/summary",
+      "features": ["Week/month toggle", "Area progress bars", "Guru AI insights"]
     }
-  },
-
-  "DATA_CONVENTIONS": {
-    "area_in_progress_table": "STRING key like 'practical_life' (NOT UUID)",
-    "area_in_curriculum_tables": "UUID foreign key",
-    "work_identification": "work_name string (case-insensitive matching)",
-    "status_values": ["not_started", "presented", "practicing", "mastered"],
-    "media_types": ["photo", "video"],
-    "parent_visible_flag": "montree_media.parent_visible (boolean)"
-  },
-
-  "DATABASE_NOTES": {
-    "tables_used": [
-      "montree_media - Photos/videos with parent_visible flag",
-      "montree_child_progress - For milestones (mastered status)",
-      "montree_classroom_curriculum_works - Work sequences",
-      "montree_announcements - May need creation"
-    ],
-    "columns_referenced": [
-      "montree_media.parent_visible (boolean)",
-      "montree_classroom_curriculum_works.sequence (integer)"
-    ]
   },
 
   "LIVE_URL": "https://teacherpotato.xyz/montree"
