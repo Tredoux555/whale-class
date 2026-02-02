@@ -3,12 +3,13 @@
 // Phase 2 - Session 53
 
 import { compressImage, generateThumbnail, formatFileSize } from './compression';
-import type { 
-  UploadProgress, 
-  MontreeMedia, 
+import type {
+  UploadProgress,
+  MontreeMedia,
   CapturedPhoto,
+  CapturedVideo,
   CompressedImage,
-  ThumbnailResult 
+  ThumbnailResult
 } from './types';
 
 // ============================================
@@ -190,6 +191,114 @@ export async function uploadPhoto(
 }
 
 /**
+ * Upload a captured video without compression (videos stay in original format)
+ */
+export async function uploadVideo(
+  video: CapturedVideo | File | Blob,
+  options: UploadOptions
+): Promise<UploadResult> {
+  const startTime = Date.now();
+  const { onProgress } = options;
+
+  try {
+    // Step 1: Preparing
+    onProgress?.({
+      status: 'preparing',
+      progress: 0,
+      message: 'Preparing video...',
+    });
+
+    // Get the blob from CapturedVideo or use directly if File/Blob
+    const originalBlob = 'blob' in video ? video.blob : video;
+    const originalSize = originalBlob.size;
+    const duration = 'duration' in video ? video.duration : 0;
+
+    // Step 2: Upload (no compression for videos to preserve quality)
+    onProgress?.({
+      status: 'uploading',
+      progress: 20,
+      message: 'Uploading video...',
+    });
+
+    const formData = new FormData();
+
+    // Add main file
+    const filename = `video-${Date.now()}.webm`;
+    formData.append('file', originalBlob, filename);
+
+    // Add metadata
+    const metadata = {
+      school_id: options.school_id,
+      classroom_id: options.classroom_id,
+      child_id: options.child_id,
+      child_ids: options.child_ids,
+      is_class_photo: options.is_class_photo,
+      media_type: 'video',
+      captured_at: new Date().toISOString(),
+      work_id: options.work_id,
+      caption: options.caption,
+      tags: options.tags,
+      duration: duration,
+    };
+    formData.append('metadata', JSON.stringify(metadata));
+
+    // Make upload request
+    const response = await fetch('/api/montree/media/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Step 3: Creating record
+    onProgress?.({
+      status: 'creating-record',
+      progress: 80,
+      message: 'Saving to database...',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Upload failed');
+    }
+
+    // Step 4: Complete
+    const uploadTime = Date.now() - startTime;
+
+    onProgress?.({
+      status: 'complete',
+      progress: 100,
+      message: 'Upload complete!',
+    });
+
+    return {
+      success: true,
+      media: result.media,
+      stats: {
+        originalSize,
+        compressedSize: originalSize,
+        compressionRatio: '0%',
+        uploadTime,
+      },
+    };
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    onProgress?.({
+      status: 'error',
+      progress: 0,
+      message: 'Upload failed',
+      error: errorMessage,
+    });
+
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
+/**
  * Upload multiple photos (batch upload)
  */
 export async function uploadPhotos(
@@ -201,7 +310,7 @@ export async function uploadPhotos(
 
   for (let i = 0; i < photos.length; i++) {
     const photo = photos[i];
-    
+
     const result = await uploadPhoto(photo, {
       ...options,
       onProgress: (progress) => {
@@ -267,7 +376,7 @@ export async function getMediaUrls(storagePaths: string[]): Promise<Record<strin
 export function getProgressMessage(progress: UploadProgress): string {
   switch (progress.status) {
     case 'preparing':
-      return '📷 Preparing photo...';
+      return progress.message.includes('video') ? '🎥 Preparing video...' : '📷 Preparing photo...';
     case 'compressing':
       return '🗜️ Optimizing image...';
     case 'uploading':

@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
-    
+    const fromDate = searchParams.get('from'); // ISO date string for filtering
+    const toDate = searchParams.get('to'); // ISO date string for filtering
+
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
@@ -41,11 +43,20 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const { data: progress, error } = await supabase
+    let query = supabase
       .from('montree_child_progress')
       .select('*')
-      .eq('child_id', childId)
-      .order('updated_at', { ascending: false });
+      .eq('child_id', childId);
+
+    // Apply date filters if provided
+    if (fromDate) {
+      query = query.gte('updated_at', fromDate);
+    }
+    if (toDate) {
+      query = query.lte('updated_at', toDate);
+    }
+
+    const { data: progress, error } = await query.order('updated_at', { ascending: false });
 
     if (error) {
       console.error('Progress fetch error:', error);

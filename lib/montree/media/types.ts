@@ -80,6 +80,17 @@ export interface CapturedPhoto {
   timestamp: Date;
 }
 
+export interface CapturedVideo {
+  blob: Blob;
+  dataUrl: string;
+  duration: number;  // seconds
+  timestamp: Date;
+}
+
+export type CapturedMedia =
+  | { type: 'photo'; data: CapturedPhoto }
+  | { type: 'video'; data: CapturedVideo };
+
 export interface CompressedImage {
   blob: Blob;
   dataUrl: string;

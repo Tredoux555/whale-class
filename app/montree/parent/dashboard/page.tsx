@@ -34,6 +34,29 @@ interface Activity {
   updated_at: string;
 }
 
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  priority: string;
+  created_at: string;
+}
+
+interface Photo {
+  id: string;
+  thumbnail_url: string | null;
+  caption: string | null;
+  captured_at: string;
+}
+
+interface Milestone {
+  id: string;
+  title: string;
+  area: string;
+  date: string;
+  icon: string;
+}
+
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -44,6 +67,9 @@ export default function ParentDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loadingReports, setLoadingReports] = useState(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
 
   // Check session and load data
   useEffect(() => {
@@ -74,9 +100,14 @@ export default function ParentDashboardPage() {
       if (data.children) {
         setChildren(data.children);
         if (data.children.length === 1) {
-          setSelectedChild(data.children[0]);
-          loadReports(data.children[0].id);
-          loadStats(data.children[0].id);
+          const child = data.children[0];
+          setSelectedChild(child);
+          localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
+          loadReports(child.id);
+          loadStats(child.id);
+          loadAnnouncements(child.id);
+          loadPhotos(child.id);
+          loadMilestones(child.id);
         }
       }
     } catch (err) {
@@ -116,10 +147,52 @@ export default function ParentDashboardPage() {
     }
   };
 
+  const loadAnnouncements = async (childId: string) => {
+    try {
+      const res = await fetch(`/api/montree/parent/announcements?child_id=${childId}&limit=3`);
+      const data = await res.json();
+      if (data.success) {
+        setAnnouncements(data.announcements || []);
+      }
+    } catch (err) {
+      console.error('Failed to load announcements:', err);
+    }
+  };
+
+  const loadPhotos = async (childId: string) => {
+    try {
+      const res = await fetch(`/api/montree/parent/photos?child_id=${childId}&limit=4`);
+      const data = await res.json();
+      if (data.success) {
+        setPhotos(data.photos || []);
+      }
+    } catch (err) {
+      console.error('Failed to load photos:', err);
+    }
+  };
+
+  const loadMilestones = async (childId: string) => {
+    try {
+      const res = await fetch(`/api/montree/parent/milestones?child_id=${childId}&limit=5`);
+      const data = await res.json();
+      if (data.success) {
+        setMilestones(data.milestones || []);
+      }
+    } catch (err) {
+      console.error('Failed to load milestones:', err);
+    }
+  };
+
   const handleSelectChild = (child: Child) => {
     setSelectedChild(child);
+    // Save to localStorage for other pages
+    localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
+    // Load all data
     loadReports(child.id);
     loadStats(child.id);
+    loadAnnouncements(child.id);
+    loadPhotos(child.id);
+    loadMilestones(child.id);
   };
 
   const handleLogout = () => {
@@ -225,6 +298,26 @@ export default function ParentDashboardPage() {
               </div>
             </div>
 
+            {/* Announcements */}
+            {announcements.length > 0 && (
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 shadow-sm border border-amber-200">
+                <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+                  <span>📢</span> Announcements
+                </h3>
+                <div className="space-y-2">
+                  {announcements.map(ann => (
+                    <div key={ann.id} className="bg-white p-3 rounded-xl">
+                      <p className="font-medium text-gray-800">{ann.title}</p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ann.content}</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(ann.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Weekly Reports */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -283,6 +376,68 @@ export default function ParentDashboardPage() {
                 <div className="text-xs text-gray-500">Mastered Skills</div>
               </div>
             </div>
+
+            {/* Photo Gallery Preview */}
+            {photos.length > 0 && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                    <span>📸</span> Photos
+                  </h3>
+                  <Link
+                    href="/montree/parent/photos"
+                    className="text-sm text-emerald-600 hover:text-emerald-700"
+                  >
+                    View all →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {photos.map(photo => (
+                    <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                      {photo.thumbnail_url ? (
+                        <img
+                          src={photo.thumbnail_url}
+                          alt={photo.caption || 'Photo'}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-xl">📷</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Milestones Preview */}
+            {milestones.length > 0 && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                    <span>⭐</span> Recent Milestones
+                  </h3>
+                  <Link
+                    href="/montree/parent/milestones"
+                    className="text-sm text-emerald-600 hover:text-emerald-700"
+                  >
+                    View all →
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {milestones.slice(0, 3).map(m => (
+                    <div key={m.id} className="flex items-center gap-3 p-2 bg-amber-50 rounded-lg">
+                      <span className="text-lg">{m.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{m.title}</p>
+                        <p className="text-xs text-gray-500">{new Date(m.date).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Practice Games */}
             <Link

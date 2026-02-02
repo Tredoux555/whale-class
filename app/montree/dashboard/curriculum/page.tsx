@@ -27,6 +27,7 @@ interface Work {
   // Quick Guide for teachers
   quick_guide?: string;
   video_search_term?: string;
+  sequence?: number;
 }
 
 const AREA_ICONS: Record<string, string> = {
@@ -68,6 +69,11 @@ export default function CurriculumPage() {
     materials: '',
     teacher_notes: '',
   });
+
+  // Drag-drop state
+  const [draggedWork, setDraggedWork] = useState<Work | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_session');
@@ -192,6 +198,87 @@ export default function CurriculumPage() {
     }
   };
 
+  // Drag-drop handlers
+  const handleDragStart = (e: React.DragEvent, work: Work) => {
+    setDraggedWork(work);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', work.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, workId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedWork && workId !== draggedWork.id) {
+      setDragOverId(workId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverId(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetWork: Work) => {
+    e.preventDefault();
+    setDragOverId(null);
+
+    if (!draggedWork || !selectedArea || draggedWork.id === targetWork.id) {
+      setDraggedWork(null);
+      return;
+    }
+
+    // Get current works list for this area
+    const areaWorks = [...(byArea[selectedArea] || [])];
+    const draggedIndex = areaWorks.findIndex(w => w.id === draggedWork.id);
+    const targetIndex = areaWorks.findIndex(w => w.id === targetWork.id);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedWork(null);
+      return;
+    }
+
+    // Reorder locally
+    const [removed] = areaWorks.splice(draggedIndex, 1);
+    areaWorks.splice(targetIndex, 0, removed);
+
+    // Update local state immediately for responsive UI
+    setByArea(prev => ({
+      ...prev,
+      [selectedArea]: areaWorks
+    }));
+
+    // Save to database
+    setReordering(true);
+    try {
+      const items = areaWorks.map((w, idx) => ({ id: w.id, sequence: idx + 1 }));
+      const res = await fetch('/api/montree/curriculum/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroom_id: session.classroom.id,
+          area_id: selectedArea,
+          items
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Order saved!');
+      } else {
+        toast.error('Failed to save order');
+        fetchCurriculum(); // Revert on error
+      }
+    } catch (err) {
+      toast.error('Failed to save order');
+      fetchCurriculum(); // Revert on error
+    }
+    setReordering(false);
+    setDraggedWork(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedWork(null);
+    setDragOverId(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
@@ -261,17 +348,41 @@ export default function CurriculumPage() {
             {/* Selected Area Works */}
             {selectedArea && byArea[selectedArea] && (
               <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 capitalize flex items-center gap-2">
-                  {AREA_ICONS[selectedArea]} {selectedArea.replace('_', ' ')}
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 capitalize flex items-center gap-2">
+                    {AREA_ICONS[selectedArea]} {selectedArea.replace('_', ' ')}
+                  </h3>
+                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                    {reordering && <span className="animate-spin">⏳</span>}
+                    ↕️ Drag to reorder
+                  </span>
+                </div>
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto">
                   {byArea[selectedArea].map(work => {
                     const isExpanded = expandedWork === work.id;
+                    const isDragging = draggedWork?.id === work.id;
+                    const isDragOver = dragOverId === work.id;
                     return (
-                      <div key={work.id} className={`bg-gray-50 rounded-xl overflow-hidden ${!work.is_active ? 'opacity-50' : ''}`}>
+                      <div
+                        key={work.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, work)}
+                        onDragOver={(e) => handleDragOver(e, work.id)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, work)}
+                        onDragEnd={handleDragEnd}
+                        className={`bg-gray-50 rounded-xl overflow-hidden transition-all
+                          ${!work.is_active ? 'opacity-50' : ''}
+                          ${isDragging ? 'opacity-50 scale-95' : ''}
+                          ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                      >
                         {/* Work Header */}
                         <div className="flex items-center gap-2 p-3">
-                          <button 
+                          {/* Drag Handle */}
+                          <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 px-1">
+                            ⋮⋮
+                          </div>
+                          <button
                             onClick={() => setExpandedWork(isExpanded ? null : work.id)}
                             className="flex-1 flex items-center gap-3 text-left hover:bg-gray-100 rounded-lg transition-colors"
                           >
@@ -286,12 +397,12 @@ export default function CurriculumPage() {
                             </div>
                           </button>
                           {/* Edit button */}
-                          <button onClick={() => openEditModal(work)} 
+                          <button onClick={() => openEditModal(work)}
                             className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-200">
                             ✏️
                           </button>
                           {/* Hide/Show button */}
-                          <button onClick={() => toggleWorkActive(work)} 
+                          <button onClick={() => toggleWorkActive(work)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center ${work.is_active ? 'bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}>
                             {work.is_active ? '👁️' : '👁️‍🗨️'}
                           </button>
