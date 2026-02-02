@@ -16,7 +16,7 @@ interface Child {
 interface WeeklyReport {
   id: string;
   week_number: number;
-  year: number;
+  report_year: number;
   parent_summary: string | null;
   created_at: string;
 }
@@ -349,7 +349,7 @@ export default function ParentDashboardPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium text-gray-800">
-                            Week {report.week_number}, {report.year}
+                            Week {report.week_number}, {report.report_year}
                           </div>
                           {report.parent_summary && (
                             <p className="text-sm text-gray-500 mt-1 line-clamp-2">

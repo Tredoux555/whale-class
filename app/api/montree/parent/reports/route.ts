@@ -12,12 +12,13 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Get weekly reports for this child
+    // Get weekly reports for this child (only published ones)
     const { data: reports, error } = await supabase
       .from('montree_weekly_reports')
-      .select('id, week_number, year, parent_summary, created_at')
+      .select('id, week_number, report_year, parent_summary, created_at, is_published')
       .eq('child_id', childId)
-      .order('year', { ascending: false })
+      .eq('is_published', true)
+      .order('report_year', { ascending: false })
       .order('week_number', { ascending: false })
       .limit(20);
 

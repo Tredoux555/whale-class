@@ -97,20 +97,26 @@ export async function POST(request: NextRequest) {
       generated_at: now,
     };
 
+    // Calculate week number and year
+    const nowDate = new Date();
+    const startOfYear = new Date(nowDate.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(((nowDate.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+    const reportYear = nowDate.getFullYear();
+
     // Save report to mark as reported
     await supabase
       .from('montree_weekly_reports')
       .insert({
-        school_id: classroom?.school_id,
         classroom_id: child.classroom_id,
         child_id: child.id,
+        week_number: weekNumber,
+        report_year: reportYear,
         week_start: now.split('T')[0],
         week_end: now.split('T')[0],
-        report_type: 'progress',
-        status: 'sent',
-        content: reportContent,
-        generated_at: now,
-        sent_at: now,
+        parent_summary: `${child.name} worked on ${works.length} activities this week.`,
+        highlights: works.slice(0, 5).map(w => ({ work: w.work_name, status: w.status })),
+        is_published: true,
+        published_at: now,
       });
 
     // Get linked parents

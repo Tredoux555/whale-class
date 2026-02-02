@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (childId) {
       const { data: reports, error: reportError } = await supabase
         .from('montree_weekly_reports')
-        .select('id, week_number, year, child_id, parent_summary, status, created_at')
+        .select('id, week_number, report_year, child_id, parent_summary, is_published, created_at')
         .eq('child_id', childId)
         .limit(5);
       reportsCheck = {
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     // Get all reports regardless of child
     const { data: allReports, error: allReportsError } = await supabase
       .from('montree_weekly_reports')
-      .select('id, week_number, year, child_id, status')
+      .select('id, week_number, report_year, child_id, is_published')
       .limit(10);
 
     return NextResponse.json({
