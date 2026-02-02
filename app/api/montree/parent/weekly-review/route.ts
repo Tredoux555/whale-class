@@ -107,36 +107,30 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const weekParam = searchParams.get('week');
-    const testChild = searchParams.get('test'); // For testing without auth
-    
-    // Get child ID from session or test param
+
+    // Get child ID from session cookie (secure - no test mode bypass)
     let childId: string | null = null;
-    
-    if (testChild) {
-      // Test mode - use provided child ID
-      childId = testChild;
-    } else {
-      // Production mode - check parent session cookie
-      const cookieStore = await cookies();
-      const sessionCookie = cookieStore.get('montree_parent_session');
-      
-      if (!sessionCookie?.value) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Not authenticated' 
-        }, { status: 401 });
-      }
-      
-      // Decode session to get child ID
-      try {
-        const session = JSON.parse(atob(sessionCookie.value));
-        childId = session.child_id;
-      } catch {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Invalid session' 
-        }, { status: 401 });
-      }
+
+    // Check parent session cookie
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('montree_parent_session');
+
+    if (!sessionCookie?.value) {
+      return NextResponse.json({
+        success: false,
+        error: 'Not authenticated'
+      }, { status: 401 });
+    }
+
+    // Decode session to get child ID
+    try {
+      const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
+      childId = session.child_id;
+    } catch {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid session'
+      }, { status: 401 });
     }
     
     if (!childId) {
