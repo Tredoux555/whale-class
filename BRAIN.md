@@ -2,14 +2,49 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 1, 2026)
+## Current State (Feb 2, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: WORKING - Major Overhaul Complete ✅
+**Status**: TESTING WEEK - Ready for Real-World Testing 🧪
 
 ## Recent Changes
+
+### Session - Feb 2, 2026 (TESTING WEEK KICKOFF! 🧪)
+
+**🚀 TESTING WEEK PREPARATION COMPLETE!**
+
+**Changes Made:**
+| File | Change |
+|------|--------|
+| `app/montree/dashboard/page.tsx` | Added 🖨️ Print button to header |
+| `app/montree/dashboard/print/page.tsx` | Now shows focus works (teacher-assigned) |
+| `scripts/clear-test-photos.js` | Photo cleanup script (auto-loads .env.local) |
+| `docs/HANDOFF_TESTING_WEEK.md` | Full implementation mission plan |
+
+**Feature Audit Completed:**
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Notes | ✅ Working | Could add toast confirmation |
+| Video Capture | ❌ Not built | Only photos |
+| Curriculum Edit | ✅ EXISTS | `/montree/dashboard/curriculum` |
+| Capture Retake | ⚠️ Bug | State reset issue |
+| Photo Management | ⚠️ View only | No edit/delete |
+| Parent Portal | ✅ EXISTS | 6 pages at `/montree/parent/` |
+| Teacher Summary | ❌ Not built | Plan to use Guru AI |
+
+**Mission Plan Created:** See `## Pending / Next Up` section for 6-phase implementation plan.
+
+**Git Commits:**
+- `4cf263f` - Testing prep: Focus work fix, report preview, photo cleanup
+- `a8f9488` - Print page now uses focus works
+- `c838962` - Fix clear-test-photos script
+- `3b999ee` - Add Print button to dashboard header
+
+**Handoff:** `/docs/HANDOFF_TESTING_WEEK.md`
+
+---
 
 ### Session - Feb 1, 2026 (Very Late Night - FOCUS WORK PERSISTENCE FIX! 🎯)
 
@@ -559,6 +594,52 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
+
+### 🚀 TESTING WEEK MISSION PLAN (Feb 2, 2026)
+
+**Handoff:** `/docs/HANDOFF_TESTING_WEEK.md`
+
+#### Phase 1: Quick Fixes (1-2 hours)
+- [ ] **FIX: Capture retake bug** - Camera stream doesn't restart properly
+  - File: `components/montree/media/CameraCapture.tsx`
+- [ ] **ADD: Note save confirmation** - Add toast when note saved
+
+#### Phase 2: Photo Management System (4-6 hours)
+- [ ] **BUILD: Photo Manager Page** - `/montree/dashboard/photos/page.tsx`
+  - Grid view, filter by child/date/area
+  - Edit caption, delete, bulk actions
+- [ ] **BUILD: Photo Editor Modal** - View, edit tags, delete, reassign
+
+#### Phase 3: Video Capture (3-4 hours)
+- [ ] **ADD: Video mode** to CameraCapture component
+  - Toggle 📷/🎥, MediaRecorder API, 30 sec max
+  - Upload to Supabase storage
+
+#### Phase 4: Teacher Summary System (6-8 hours) ⭐ USE GURU!
+- [ ] **BUILD: Summary Generator** - `/montree/dashboard/[childId]/summary/page.tsx`
+  - Collect: Focus works, progress, areas worked vs ignored
+  - AI Summary: "This week {child} focused on... achieved... consider..."
+- [ ] **BUILD: Summary Dashboard** - Week selector, area chart, productivity score
+  - Neglected areas warning, "Ask Guru" button, Export to PDF
+
+#### Phase 5: Curriculum Sequence Editor (2-3 hours)
+- [ ] **ENHANCE: Curriculum page** - `/montree/dashboard/curriculum`
+  - Drag-and-drop reordering, add/remove works
+
+#### Phase 6: Parent Portal Enhancements (4-6 hours)
+- [ ] **BUILD: Parent communication** - Inbox, announcements
+- [ ] **BUILD: Approved photo gallery** for parents
+- [ ] **BUILD: Report history** and milestones timeline
+
+#### Quick Access URLs
+| Feature | URL |
+|---------|-----|
+| Curriculum Editor | `/montree/dashboard/curriculum` |
+| Photo Gallery | `/montree/dashboard/media` |
+| Print Weekly | `/montree/dashboard/print` |
+| Parent Portal | `/montree/parent` |
+
+---
 
 ### Focus Work System (FIXED! 🎯)
 - [x] **FIXED: Focus work not persisting** - Now saves to `montree_child_focus_works` table
