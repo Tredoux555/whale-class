@@ -103,10 +103,10 @@ export async function POST(request: NextRequest) {
     const weekNumber = Math.ceil(((nowDate.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
     const reportYear = nowDate.getFullYear();
 
-    // Save report to mark as reported
-    await supabase
+    // Save report to mark as reported (upsert to handle duplicate week)
+    const { error: insertError } = await supabase
       .from('montree_weekly_reports')
-      .insert({
+      .upsert({
         classroom_id: child.classroom_id,
         child_id: child.id,
         week_number: weekNumber,
@@ -117,7 +117,12 @@ export async function POST(request: NextRequest) {
         highlights: works.slice(0, 5).map(w => ({ work: w.work_name, status: w.status })),
         is_published: true,
         published_at: now,
-      });
+      }, { onConflict: 'child_id,week_number,report_year' });
+
+    if (insertError) {
+      console.error('Report insert error:', insertError);
+      return NextResponse.json({ error: 'Failed to save report', debug: insertError.message }, { status: 500 });
+    }
 
     // Get linked parents
     const { data: links } = await supabase

@@ -18,7 +18,7 @@ export async function GET(
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
-        id, week_number, year, parent_summary,
+        id, week_number, report_year, parent_summary,
         highlights, areas_of_growth, recommendations,
         created_at, child_id
       `)
@@ -40,7 +40,7 @@ export async function GET(
     if (childError) throw childError;
 
     // Get works completed that week
-    const startOfWeek = getWeekStart(report.year, report.week_number);
+    const startOfWeek = getWeekStart(report.report_year, report.week_number);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(endOfWeek.getDate() + 7);
 
