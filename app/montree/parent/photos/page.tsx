@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 
@@ -13,7 +13,7 @@ interface Photo {
   work_id: string | null;
 }
 
-export default function ParentPhotosPage() {
+function ParentPhotosContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const childIdParam = searchParams.get('child');
@@ -234,5 +234,21 @@ export default function ParentPhotosPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Wrap in Suspense for useSearchParams
+export default function ParentPhotosPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4 animate-pulse">📸</div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ParentPhotosContent />
+    </Suspense>
   );
 }
