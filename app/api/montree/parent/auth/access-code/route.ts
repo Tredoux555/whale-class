@@ -62,11 +62,12 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Check max uses (for non-reusable codes that haven't been converted to reusable)
-    // Skip this check if is_reusable is true
-    if (!invite.is_reusable && invite.used_at) {
-      // Code was already used for signup - but we allow it for access
-      // This is fine - we want parents to reuse the code for login
+    // Check max uses only if max_uses is set (not unlimited/null)
+    if (invite.max_uses !== null && invite.use_count >= invite.max_uses) {
+      return NextResponse.json({
+        success: false,
+        error: 'This access code has reached its use limit. Please contact your teacher for a new code.'
+      }, { status: 401 });
     }
 
     // Get child info

@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         *,
         work:work_id (
           work_id,
+          name,
           area
         )
       `, { count: 'exact' })
@@ -66,10 +67,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Add area info to each media item for frontend use
+    // Add area and work name info to each media item for frontend use
     const mediaWithArea = (media || []).map((item: any) => ({
       ...item,
       area: item.work?.area || null,
+      work_name: item.work?.name || null,
     }));
 
     return NextResponse.json({

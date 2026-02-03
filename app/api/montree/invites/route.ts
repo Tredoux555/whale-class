@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Generate new invite code
+// POST - Generate new invite code (reusable by default, unlimited uses)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     const inviteCode = codeResult;
 
-    // Create invite record
+    // Create invite record - reusable by default with unlimited uses
     const { data: invite, error: insertError } = await supabase
       .from('montree_parent_invites')
       .insert({
@@ -69,20 +69,76 @@ export async function POST(request: NextRequest) {
         invite_code: inviteCode,
         parent_email: parentEmail || null,
         created_by: teacherId || null,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+        is_reusable: true,
+        max_uses: null // unlimited uses
       })
       .select()
       .single();
 
     if (insertError) throw insertError;
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       invite,
-      signupUrl: `/montree/parent/signup?code=${inviteCode}`
+      accessUrl: `/montree/parent?code=${inviteCode}`
     });
   } catch (error: any) {
     console.error('Create invite error:', error);
     return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 });
+  }
+}
+
+// PUT - Reset code (revoke old, create new for same child)
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { childId, teacherId } = body;
+
+    if (!childId) {
+      return NextResponse.json({ error: 'Child ID required' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
+
+    // Deactivate all old codes for this child
+    await supabase
+      .from('montree_parent_invites')
+      .update({ is_active: false })
+      .eq('child_id', childId)
+      .eq('is_active', true);
+
+    // Generate new code
+    const { data: codeResult, error: codeError } = await supabase
+      .rpc('generate_parent_invite_code');
+
+    if (codeError) throw codeError;
+
+    const inviteCode = codeResult;
+
+    // Create new invite record - reusable by default with unlimited uses
+    const { data: invite, error: insertError } = await supabase
+      .from('montree_parent_invites')
+      .insert({
+        child_id: childId,
+        invite_code: inviteCode,
+        created_by: teacherId || null,
+        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        is_reusable: true,
+        max_uses: null // unlimited uses
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    return NextResponse.json({
+      success: true,
+      invite,
+      accessUrl: `/montree/parent?code=${inviteCode}`
+    });
+  } catch (error: any) {
+    console.error('Reset code error:', error);
+    return NextResponse.json({ error: 'Failed to reset code' }, { status: 500 });
   }
 }
 
