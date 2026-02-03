@@ -85,20 +85,20 @@ export default function PhotoDetailView({
           </button>
         </div>
 
-        {/* Image */}
-        <div className="bg-gray-900 aspect-video relative overflow-hidden">
+        {/* Image - auto aspect ratio to avoid black bars */}
+        <div className="bg-gray-900 max-h-[50vh] flex items-center justify-center">
           {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full h-48 flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
             </div>
           ) : imageUrl ? (
             <img
               src={imageUrl}
               alt={media.caption || 'Photo'}
-              className="absolute inset-0 w-full h-full object-contain"
+              className="max-w-full max-h-[50vh] object-contain"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-600">
+            <div className="w-full h-48 flex items-center justify-center text-gray-600">
               <span className="text-4xl">📷</span>
             </div>
           )}
