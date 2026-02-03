@@ -3,6 +3,7 @@
 // Session 125: Fixed to use bcrypt
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getSupabase } from '@/lib/montree/supabase';
 import bcrypt from 'bcryptjs';
 
@@ -62,10 +63,26 @@ export async function POST(req: NextRequest) {
       .from('montree_parents')
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', parent.id);
-    
+
     const school = parent.montree_schools as any;
 
-    // 5. Return session
+    // 5. Set session cookie
+    const sessionData = {
+      parent_id: parent.id,
+      child_id: children[0]?.id,
+      created_at: new Date().toISOString(),
+    };
+    const sessionToken = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+    const cookieStore = await cookies();
+    cookieStore.set('montree_parent_session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+    });
+
+    // 6. Return session
     return NextResponse.json({
       success: true,
       session: {

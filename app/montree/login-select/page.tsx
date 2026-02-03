@@ -45,6 +45,17 @@ export default function LoginSelectPage() {
               <div className="text-sm text-emerald-300/70 font-normal">School admin access</div>
             </div>
           </a>
+
+          <a
+            href="/montree/parent"
+            className="px-8 py-5 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+          >
+            <span className="text-2xl">👨‍👩‍👧</span>
+            <div className="text-left">
+              <div className="text-lg">Parent Login</div>
+              <div className="text-sm text-emerald-300/70 font-normal">View your child's progress</div>
+            </div>
+          </a>
         </div>
 
         {/* Back link */}

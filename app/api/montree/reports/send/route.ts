@@ -150,26 +150,27 @@ export async function POST(request: NextRequest) {
       generated_at: now,
     };
 
-    // Calculate week number and year (reuse nowDate from above)
-    const startOfYear = new Date(nowDate.getFullYear(), 0, 1);
-    const weekNumber = Math.ceil(((nowDate.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
-    const reportYear = nowDate.getFullYear();
+    // Calculate week start (Sunday) and end (Saturday)
+    const weekEndDate = new Date(nowDate);
+    weekEndDate.setDate(nowDate.getDate() + (6 - nowDate.getDay()));
+    const weekEndStr = weekEndDate.toISOString().split('T')[0];
 
-    // Save report to mark as reported (upsert to handle duplicate week)
+    // Save report to mark as sent (upsert to handle duplicate week)
+    // Note: Table has UNIQUE(child_id, week_start, report_type)
     const { error: insertError } = await supabase
       .from('montree_weekly_reports')
       .upsert({
+        school_id: classroom?.school_id,
         classroom_id: child.classroom_id,
         child_id: child.id,
-        week_number: weekNumber,
-        report_year: reportYear,
-        week_start: now.split('T')[0],
-        week_end: now.split('T')[0],
-        parent_summary: `${child.name} worked on ${works.length} activities this week.`,
-        highlights: works.slice(0, 5).map(w => ({ work: w.work_name, status: w.status })),
-        is_published: true,
-        published_at: now,
-      }, { onConflict: 'child_id,week_number,report_year' });
+        week_start: weekStartStr,
+        week_end: weekEndStr,
+        report_type: 'parent',
+        status: 'sent',
+        content: reportContent,
+        generated_at: now,
+        sent_at: now,
+      }, { onConflict: 'child_id,week_start,report_type' });
 
     if (insertError) {
       console.error('Report insert error:', insertError);
