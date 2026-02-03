@@ -75,7 +75,7 @@ export default function ParentDashboardPage() {
   useEffect(() => {
     const sessionStr = localStorage.getItem('montree_parent_session');
     if (!sessionStr) {
-      router.push('/montree/parent/login');
+      router.push('/montree/parent');
       return;
     }
 
@@ -83,13 +83,37 @@ export default function ParentDashboardPage() {
       const session = JSON.parse(sessionStr);
       if (session.expires < Date.now()) {
         localStorage.removeItem('montree_parent_session');
-        router.push('/montree/parent/login');
+        localStorage.removeItem('montree_selected_child');
+        router.push('/montree/parent');
         return;
       }
-      setParentName(session.name);
-      loadChildren(session.parentId);
+      setParentName(session.name || 'Parent');
+
+      // Code-based auth: child is directly in session
+      if (session.childId && session.childName) {
+        const directChild: Child = {
+          id: session.childId,
+          name: session.childName,
+          nickname: session.childName,
+        };
+        setChildren([directChild]);
+        setSelectedChild(directChild);
+        loadReports(session.childId);
+        loadStats(session.childId);
+        loadAnnouncements(session.childId);
+        loadPhotos(session.childId);
+        loadMilestones(session.childId);
+        setLoading(false);
+      } else if (session.parentId) {
+        // Legacy password-based auth: fetch children for this parent
+        loadChildren(session.parentId);
+      } else {
+        // Invalid session
+        localStorage.removeItem('montree_parent_session');
+        router.push('/montree/parent');
+      }
     } catch {
-      router.push('/montree/parent/login');
+      router.push('/montree/parent');
     }
   }, [router]);
 
@@ -197,7 +221,8 @@ export default function ParentDashboardPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('montree_parent_session');
-    router.push('/montree/parent/login');
+    localStorage.removeItem('montree_selected_child');
+    router.push('/montree/parent');
   };
 
   const getAge = (dob: string | null | undefined) => {
