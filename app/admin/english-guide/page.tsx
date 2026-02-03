@@ -1564,9 +1564,44 @@ export default function EnglishGuidePage() {
 
         {/* SHELF SETUP VIEW */}
         {activeView === 'shelf' && (
-          <div className="space-y-4">
+          <div className="space-y-4 print-container">
+            {/* Print Styles */}
+            <style jsx global>{`
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 0.5cm;
+                }
+                body {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                header, .no-print {
+                  display: none !important;
+                }
+                .print-container {
+                  transform: scale(0.7);
+                  transform-origin: top center;
+                  width: 142%;
+                  margin-left: -21%;
+                }
+                .print-container > div {
+                  break-inside: avoid;
+                  margin-bottom: 8px !important;
+                }
+                .bg-gradient-to-r {
+                  background: linear-gradient(to right, var(--tw-gradient-stops)) !important;
+                }
+              }
+            `}</style>
             {/* Header */}
-            <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center">
+            <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl p-6 text-white text-center relative">
+              <button
+                onClick={() => window.print()}
+                className="absolute top-4 right-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition no-print flex items-center gap-2"
+              >
+                🖨️ Print PDF
+              </button>
               <div className="text-5xl mb-2">🌳</div>
               <h2 className="text-3xl font-bold mb-1">Tredoux's English Area</h2>
               <p className="text-teal-100">Whale Class - 3 Shelf Setup</p>
