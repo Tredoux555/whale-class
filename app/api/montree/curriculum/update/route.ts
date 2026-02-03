@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.name_chinese !== undefined) updateData.name_chinese = updates.name_chinese;
     if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.parent_description !== undefined) updateData.parent_description = updates.parent_description;
+    if (updates.why_it_matters !== undefined) updateData.why_it_matters = updates.why_it_matters;
     if (updates.age_range !== undefined) updateData.age_range = updates.age_range;
     if (updates.direct_aims !== undefined) updateData.direct_aims = updates.direct_aims;
     if (updates.indirect_aims !== undefined) updateData.indirect_aims = updates.indirect_aims;

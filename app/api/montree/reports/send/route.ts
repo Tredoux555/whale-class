@@ -64,25 +64,78 @@ export async function POST(request: NextRequest) {
     const { data: progress } = await progressQuery;
     const works = progress || [];
 
-    // Get unreported photos
-    let photoQuery = supabase
-      .from('montree_media')
-      .select('storage_path, work_id, captured_at')
-      .eq('child_id', child_id);
+    // First, check if there's a draft report with selected photos
+    // The photos route creates a draft with week_start as the key
+    const nowDate = new Date();
+    const weekStart = new Date(nowDate);
+    weekStart.setDate(nowDate.getDate() - nowDate.getDay());
+    const weekStartStr = weekStart.toISOString().split('T')[0];
 
-    if (lastReportDate) {
-      photoQuery = photoQuery.gt('captured_at', lastReportDate);
+    // Look for existing draft report with selected photos
+    const { data: draftReport } = await supabase
+      .from('montree_weekly_reports')
+      .select('id')
+      .eq('child_id', child_id)
+      .eq('week_start', weekStartStr)
+      .eq('report_type', 'teacher')
+      .single();
+
+    let photos: Array<{ storage_path: string; work_id: string | null; captured_at: string; url: string; id: string }> = [];
+
+    if (draftReport) {
+      // Get explicitly selected photos from the junction table
+      const { data: reportMedia } = await supabase
+        .from('montree_report_media')
+        .select('media_id, display_order')
+        .eq('report_id', draftReport.id)
+        .order('display_order', { ascending: true });
+
+      if (reportMedia && reportMedia.length > 0) {
+        const mediaIds = reportMedia.map(rm => rm.media_id);
+
+        // Fetch the actual media records for selected photos
+        const { data: selectedPhotos } = await supabase
+          .from('montree_media')
+          .select('id, storage_path, work_id, captured_at')
+          .in('id', mediaIds);
+
+        if (selectedPhotos) {
+          // Sort by the display_order from report_media
+          const mediaOrderMap = new Map(reportMedia.map(rm => [rm.media_id, rm.display_order]));
+          photos = selectedPhotos
+            .sort((a, b) => (mediaOrderMap.get(a.id) || 0) - (mediaOrderMap.get(b.id) || 0))
+            .map(p => ({
+              id: p.id,
+              storage_path: p.storage_path,
+              work_id: p.work_id,
+              captured_at: p.captured_at,
+              url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+            }));
+        }
+      }
     }
 
-    const { data: photoData } = await photoQuery;
+    // Fallback: if no selected photos found, query by date range (backwards compatibility)
+    if (photos.length === 0) {
+      let photoQuery = supabase
+        .from('montree_media')
+        .select('id, storage_path, work_id, captured_at')
+        .eq('child_id', child_id);
 
-    // Build photo URLs from storage paths
-    const photos = photoData?.map(p => ({
-      storage_path: p.storage_path,
-      work_id: p.work_id,
-      captured_at: p.captured_at,
-      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
-    })) || [];
+      if (lastReportDate) {
+        photoQuery = photoQuery.gt('captured_at', lastReportDate);
+      }
+
+      const { data: photoData } = await photoQuery;
+
+      photos = (photoData || []).map(p => ({
+        id: p.id,
+        storage_path: p.storage_path,
+        work_id: p.work_id,
+        captured_at: p.captured_at,
+        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      }));
+    }
 
     // Build report content
     const now = new Date().toISOString();
@@ -97,8 +150,7 @@ export async function POST(request: NextRequest) {
       generated_at: now,
     };
 
-    // Calculate week number and year
-    const nowDate = new Date();
+    // Calculate week number and year (reuse nowDate from above)
     const startOfYear = new Date(nowDate.getFullYear(), 0, 1);
     const weekNumber = Math.ceil(((nowDate.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
     const reportYear = nowDate.getFullYear();

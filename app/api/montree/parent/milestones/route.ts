@@ -3,12 +3,37 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+// Helper function to extract authenticated session data from cookie
+async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('montree_parent_session');
+
+    if (!sessionCookie?.value) {
+      return null;
+    }
+
+    const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
+    if (!session.child_id) {
+      return null;
+    }
+
+    return {
+      childId: session.child_id,
+      inviteId: session.invite_id,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const AREA_LABELS: Record<string, string> = {
@@ -28,6 +53,17 @@ export async function GET(request: NextRequest) {
 
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+    }
+
+    // SECURITY: Authenticate parent via session cookie
+    const session = await getAuthenticatedSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // SECURITY: Verify the requested child matches the authenticated session
+    if (session.childId !== childId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Get mastered works with dates (these are milestones)

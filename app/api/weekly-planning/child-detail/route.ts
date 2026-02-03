@@ -10,6 +10,17 @@ function getSupabase() {
 
 export async function GET(request: NextRequest) {
   try {
+    // Authentication: require x-school-id or x-classroom-id header
+    const schoolId = request.headers.get('x-school-id');
+    const classroomId = request.headers.get('x-classroom-id');
+
+    if (!schoolId && !classroomId) {
+      return NextResponse.json(
+        { error: 'Unauthorized: x-school-id or x-classroom-id header required' },
+        { status: 401 }
+      );
+    }
+
     const supabase = getSupabase();
     const url = new URL(request.url);
     const childId = url.searchParams.get('childId');
@@ -20,15 +31,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'childId, week, year required' }, { status: 400 });
     }
 
-    // Get child info
-    const { data: child, error: childError } = await supabase
+    // Get child info and verify access
+    let childQuery = supabase
       .from('children')
-      .select('id, name, date_of_birth, avatar_emoji')
-      .eq('id', childId)
-      .single();
+      .select('id, name, date_of_birth, avatar_emoji, school_id, classroom_id')
+      .eq('id', childId);
+
+    const { data: child, error: childError } = await childQuery.single();
 
     if (childError || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+    }
+
+    // Verify user has access to this child's school/classroom
+    const hasAccess = (schoolId && child.school_id === schoolId) ||
+                      (classroomId && child.classroom_id === classroomId);
+
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Unauthorized: no access to this child' },
+        { status: 401 }
+      );
     }
 
     // Get assignments for this week

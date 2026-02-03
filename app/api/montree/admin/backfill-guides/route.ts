@@ -16,6 +16,12 @@ function getSupabase() {
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication
+    const schoolId = request.headers.get('x-school-id');
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
     const updateAll = searchParams.get('all') === 'true';
@@ -28,6 +34,19 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+    
+    // SECURITY: Verify classroom belongs to authenticated school
+    if (classroomId) {
+      const { data: classroom } = await supabase
+        .from('montree_classrooms')
+        .select('school_id')
+        .eq('id', classroomId)
+        .single();
+      
+      if (!classroom || classroom.school_id !== schoolId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    }
 
     // Load curriculum with guides
     const allWorks = loadAllCurriculumWorks();

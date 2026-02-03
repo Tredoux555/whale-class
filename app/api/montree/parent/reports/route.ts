@@ -12,6 +12,27 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
+    // Get authenticated parent's ID from session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const parentId = session.user.id;
+
+    // Verify that the authenticated parent owns this child
+    const { data: parentChild, error: verifyError } = await supabase
+      .from('montree_parent_children')
+      .select('id')
+      .eq('parent_id', parentId)
+      .eq('child_id', childId)
+      .single();
+
+    if (verifyError || !parentChild) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Get weekly reports for this child (only published ones)
     const { data: reports, error } = await supabase
       .from('montree_weekly_reports')
@@ -25,9 +46,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Reports query error:', error);
       return NextResponse.json({
-        error: 'Failed to load reports',
-        debug: error?.message,
-        code: error?.code
+        error: 'Failed to load reports'
       }, { status: 500 });
     }
 
@@ -35,9 +54,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Get reports error:', error);
     return NextResponse.json({
-      error: 'Failed to load reports',
-      debug: error?.message || String(error),
-      code: error?.code
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }

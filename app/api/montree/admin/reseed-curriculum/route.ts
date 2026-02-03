@@ -13,17 +13,29 @@ function getSupabase() {
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const schoolId = request.headers.get('x-school-id');
+  if (!schoolId) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+  
   const { searchParams } = new URL(request.url);
   const classroomId = searchParams.get('classroom_id');
-  return handleReseed(classroomId);
+  return handleReseed(classroomId, schoolId);
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication
+  const schoolId = request.headers.get('x-school-id');
+  if (!schoolId) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+  
   const { classroomId } = await request.json();
-  return handleReseed(classroomId);
+  return handleReseed(classroomId, schoolId);
 }
 
-async function handleReseed(classroomId: string | null) {
+async function handleReseed(classroomId: string | null, schoolId: string) {
   try {
     const supabase = getSupabase();
 
@@ -31,15 +43,20 @@ async function handleReseed(classroomId: string | null) {
       return NextResponse.json({ error: 'classroomId required' }, { status: 400 });
     }
 
-    // Verify classroom exists
+    // SECURITY: Verify classroom exists AND belongs to authenticated school
     const { data: classroom, error: classroomErr } = await supabase
       .from('montree_classrooms')
-      .select('id, name')
+      .select('id, name, school_id')
       .eq('id', classroomId)
       .single();
 
     if (classroomErr || !classroom) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+    
+    // SECURITY: Verify classroom belongs to authenticated school
+    if (classroom.school_id !== schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     console.log(`[Reseed] Starting for classroom: ${classroom.name} (${classroomId})`);

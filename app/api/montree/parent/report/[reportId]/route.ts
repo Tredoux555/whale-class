@@ -1,20 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/montree/supabase';
+import { cookies } from 'next/headers';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load parent descriptions from curriculum JSON files
-function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
+// Helper function to extract authenticated session data from cookie
+async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('montree_parent_session');
+
+    if (!sessionCookie?.value) {
+      return null;
+    }
+
+    const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
+    if (!session.child_id) {
+      return null;
+    }
+
+    return {
+      childId: session.child_id,
+      inviteId: session.invite_id,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Load parent descriptions from curriculum JSON files with area info
+function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
   const descriptions = new Map();
   const files = [
-    'practical-life-guides.json',
-    'sensorial-guides.json',
-    'math-guides.json',
-    'language-guides.json',
-    'cultural-guides.json'
+    { file: 'practical-life-guides.json', area: 'practical_life' },
+    { file: 'sensorial-guides.json', area: 'sensorial' },
+    { file: 'math-guides.json', area: 'math' },
+    { file: 'language-guides.json', area: 'language' },
+    { file: 'cultural-guides.json', area: 'cultural' }
   ];
 
-  for (const file of files) {
+  for (const { file, area } of files) {
     try {
       const filePath = join(process.cwd(), `lib/curriculum/comprehensive-guides/${file}`);
       const data = JSON.parse(readFileSync(filePath, 'utf-8'));
@@ -24,6 +49,7 @@ function loadParentDescriptions(): Map<string, { description: string; why_it_mat
           descriptions.set(item.name.toLowerCase(), {
             description: item.parent_description,
             why_it_matters: item.why_it_matters || '',
+            area: area,
           });
         }
       }
@@ -34,44 +60,83 @@ function loadParentDescriptions(): Map<string, { description: string; why_it_mat
   return descriptions;
 }
 
-// Fuzzy match work name to find best description
+// Normalize area names for comparison
+function normalizeArea(area: string): string {
+  const normalized = area.toLowerCase().replace(/[_\s-]/g, '');
+  // Map common variations
+  if (normalized === 'practicallife' || normalized === 'practical') return 'practical_life';
+  if (normalized === 'mathematics') return 'math';
+  if (normalized === 'cultural' || normalized === 'culturalstudies') return 'cultural';
+  return area.toLowerCase();
+}
+
+// Check if work_key indicates a custom work
+function isCustomWork(workKey: string | undefined): boolean {
+  return workKey?.startsWith('custom_') ?? false;
+}
+
+// Find best description with area matching (prevents cross-area mismatches)
 function findBestDescription(
   workName: string,
-  descriptions: Map<string, { description: string; why_it_matters: string }>
+  workArea: string,
+  descriptions: Map<string, { description: string; why_it_matters: string; area: string }>,
+  workKey?: string
 ): { description: string; why_it_matters: string } | null {
-  const workNameLower = workName.toLowerCase();
-
-  // Exact match
-  if (descriptions.has(workNameLower)) {
-    return descriptions.get(workNameLower)!;
+  // Custom works should NOT get auto-matched descriptions
+  if (isCustomWork(workKey)) {
+    return null;
   }
 
-  // Contains match
-  for (const [guideName, desc] of descriptions.entries()) {
-    if (workNameLower.includes(guideName) || guideName.includes(workNameLower)) {
-      return desc;
+  const workNameLower = workName.toLowerCase();
+  const normalizedWorkArea = normalizeArea(workArea);
+
+  // Exact match (must also match area)
+  if (descriptions.has(workNameLower)) {
+    const desc = descriptions.get(workNameLower)!;
+    if (normalizeArea(desc.area) === normalizedWorkArea) {
+      return { description: desc.description, why_it_matters: desc.why_it_matters };
     }
   }
 
-  // Keyword matching
-  const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 2);
-  const skipWords = ['the', 'and', 'for', 'with', 'frame', 'box', 'set', 'work', 'board', 'cards'];
+  // Contains match (must also match area)
+  for (const [guideName, desc] of descriptions.entries()) {
+    if (normalizeArea(desc.area) !== normalizedWorkArea) continue;
+    if (workNameLower.includes(guideName) || guideName.includes(workNameLower)) {
+      return { description: desc.description, why_it_matters: desc.why_it_matters };
+    }
+  }
+
+  // Keyword matching with WHOLE-WORD matching and area constraint
+  const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 3);
+  const skipWords = ['the', 'and', 'for', 'with', 'frame', 'box', 'set', 'work', 'board', 'cards', 'tab', 'mac'];
   const meaningfulWords = workWords.filter(w => !skipWords.includes(w));
 
   let bestMatch: { desc: { description: string; why_it_matters: string }; score: number } | null = null;
 
   for (const [guideName, desc] of descriptions.entries()) {
-    const guideWords = guideName.split(/[\s\-_]+/).filter(w => w.length > 2);
+    // AREA CONSTRAINT: Only match within the same curriculum area
+    if (normalizeArea(desc.area) !== normalizedWorkArea) continue;
+
+    const guideWords = guideName.split(/[\s\-_]+/).filter(w => w.length > 3);
     let score = 0;
+
     for (const word of meaningfulWords) {
       for (const guideWord of guideWords) {
-        if (guideWord.includes(word) || word.includes(guideWord)) {
+        // WHOLE-WORD MATCHING: Exact word match gets highest score
+        if (word === guideWord) {
+          score += 3;
+        }
+        // Partial match only for longer words (6+ chars) to avoid Tab/Table issue
+        else if (word.length >= 6 && guideWord.length >= 6 &&
+                 (guideWord.startsWith(word) || word.startsWith(guideWord))) {
           score += 1;
         }
       }
     }
-    if (score > 0 && (!bestMatch || score > bestMatch.score)) {
-      bestMatch = { desc, score };
+
+    // Require minimum score of 3 (at least one exact word match)
+    if (score >= 3 && (!bestMatch || score > bestMatch.score)) {
+      bestMatch = { desc: { description: desc.description, why_it_matters: desc.why_it_matters }, score };
     }
   }
 
@@ -91,6 +156,12 @@ export async function GET(
   try {
     const supabase = getSupabase();
 
+    // SECURITY: Authenticate parent via session cookie
+    const session = await getAuthenticatedSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Get report
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
@@ -105,6 +176,11 @@ export async function GET(
     if (reportError) throw reportError;
     if (!report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+    }
+
+    // SECURITY: Verify the report belongs to the authenticated child
+    if (report.child_id !== session.childId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Get child info with classroom_id
@@ -130,15 +206,46 @@ export async function GET(
       .gte('updated_at', startOfWeek.toISOString())
       .lt('updated_at', endOfWeek.toISOString());
 
-    // Get photos for this child
+    // Get photos for this report - FIRST check junction table for selected photos
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const { data: mediaPhotos } = await supabase
-      .from('montree_media')
-      .select('id, storage_path, work_id, caption, captured_at')
-      .eq('child_id', report.child_id)
-      .eq('media_type', 'photo')
-      .gte('captured_at', startOfWeek.toISOString())
-      .lt('captured_at', endOfWeek.toISOString());
+    let mediaPhotos: Array<{ id: string; storage_path: string; work_id: string | null; caption: string | null; captured_at: string }> = [];
+
+    // Query the junction table for photos explicitly linked to this report
+    const { data: reportMedia } = await supabase
+      .from('montree_report_media')
+      .select('media_id, display_order')
+      .eq('report_id', reportId)
+      .order('display_order', { ascending: true });
+
+    if (reportMedia && reportMedia.length > 0) {
+      // Get the actual media records for selected photos
+      const mediaIds = reportMedia.map(rm => rm.media_id);
+      const { data: selectedPhotos } = await supabase
+        .from('montree_media')
+        .select('id, storage_path, work_id, caption, captured_at')
+        .in('id', mediaIds);
+
+      if (selectedPhotos && selectedPhotos.length > 0) {
+        // Sort by display_order from junction table
+        const mediaOrderMap = new Map(reportMedia.map(rm => [rm.media_id, rm.display_order]));
+        mediaPhotos = selectedPhotos.sort((a, b) =>
+          (mediaOrderMap.get(a.id) || 0) - (mediaOrderMap.get(b.id) || 0)
+        );
+      }
+    }
+
+    // Fallback: if no photos in junction table, query by date range (backwards compatibility)
+    if (mediaPhotos.length === 0) {
+      const { data: fallbackPhotos } = await supabase
+        .from('montree_media')
+        .select('id, storage_path, work_id, caption, captured_at')
+        .eq('child_id', report.child_id)
+        .eq('media_type', 'photo')
+        .gte('captured_at', startOfWeek.toISOString())
+        .lt('captured_at', endOfWeek.toISOString());
+
+      mediaPhotos = fallbackPhotos || [];
+    }
 
     // Get curriculum works to map work_id to work_name
     const { data: curriculumWorks } = await supabase
@@ -181,8 +288,9 @@ export async function GET(
       // Find photo
       const photo = photosByWorkName.get(workNameLower);
 
-      // Find description (try JSON first, then DB)
-      let desc = findBestDescription(p.work_name || '', jsonDescriptions);
+      // Find description (try JSON first with area matching, then DB)
+      // Pass the area to prevent cross-area mismatches (e.g. "Tab" matching "Table")
+      let desc = findBestDescription(p.work_name || '', p.area || 'unknown', jsonDescriptions);
       if (!desc && dbDescriptions.has(workNameLower)) {
         desc = dbDescriptions.get(workNameLower)!;
       }

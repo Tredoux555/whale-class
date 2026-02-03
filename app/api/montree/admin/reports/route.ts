@@ -5,12 +5,20 @@ import { getSupabase } from '@/lib/montree/supabase';
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Use header-based authentication instead of query parameter
+    const headerSchoolId = request.headers.get('x-school-id');
+    if (!headerSchoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    
     const { searchParams } = new URL(request.url);
-    const schoolId = searchParams.get('school_id');
+    const querySchoolId = searchParams.get('school_id');
     const range = searchParams.get('range') || 'week';
     
-    if (!schoolId) {
-      return NextResponse.json({ error: 'School ID required' }, { status: 400 });
+    // SECURITY: Prevent accessing other schools' data via query parameter
+    const schoolId = headerSchoolId;
+    if (querySchoolId && querySchoolId !== headerSchoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const supabase = getSupabase();

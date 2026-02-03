@@ -34,6 +34,7 @@ const QUICK_ACTIONS = [
 const TOOLS: Tool[] = [
   // Teaching Tools
   { id: 'circle-planner', title: 'Circle Time', href: '/admin/circle-planner', icon: '⭕', color: 'bg-amber-500', description: 'Plan activities' },
+  { id: 'description-review', title: 'Description Review', href: '/admin/description-review', icon: '📝', color: 'bg-emerald-500', description: 'Work descriptions' },
   { id: 'english-guide', title: 'English Guide', href: '/admin/english-guide', icon: '📖', color: 'bg-blue-500', description: 'How to teach' },
   { id: 'english-setup', title: 'English Setup', href: '/admin/english-setup', icon: '🗄️', color: 'bg-teal-500', description: 'Shelf layout' },
   { id: 'english-progress', title: 'English Progress', href: '/admin/english-progress', icon: '📊', color: 'bg-indigo-500', description: 'Parent reports' },
@@ -205,7 +206,7 @@ export default function AdminDashboard() {
         {/* English Teaching Guides - PDF Downloads */}
         <section className="mb-8">
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">📚 English Teaching Guides</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <a
               href="/guides/Montessori-English-Teaching-Guide.pdf"
               target="_blank"
@@ -227,6 +228,28 @@ export default function AdminDashboard() {
               </div>
               <h3 className="font-bold text-white text-sm">Shelf Layout</h3>
               <p className="text-teal-300 text-xs mt-1">PDF • 72 works</p>
+            </a>
+            <a
+              href="/guides/Montessori-English-Materials-List.pdf"
+              target="_blank"
+              className="bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-500/30 rounded-xl p-4 hover:border-pink-400 hover:bg-pink-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">📋</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Materials List</h3>
+              <p className="text-pink-300 text-xs mt-1">PDF • Shopping list</p>
+            </a>
+            <a
+              href="/guides/Montessori-English-Materials-List.docx"
+              target="_blank"
+              className="bg-gradient-to-br from-cyan-600/20 to-sky-600/20 border border-cyan-500/30 rounded-xl p-4 hover:border-cyan-400 hover:bg-cyan-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">📄</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Materials List</h3>
+              <p className="text-cyan-300 text-xs mt-1">Word • Editable</p>
             </a>
             <Link
               href="/admin/english-guide"

@@ -45,6 +45,18 @@ const nextConfig: NextConfig = {
   
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
+
+  // Redirect non-www to www
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'teacherpotato.xyz' }],
+        destination: 'https://www.teacherpotato.xyz/:path*',
+        permanent: true,
+      },
+    ];
+  },
   
   // Enable Turbopack
   turbopack: {},
