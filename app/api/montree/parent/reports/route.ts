@@ -1,5 +1,39 @@
+// /api/montree/parent/reports/route.ts
+// Get weekly reports for a parent's child
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+// Helper function to extract authenticated session data from cookie
+async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('montree_parent_session');
+
+    if (!sessionCookie?.value) {
+      return null;
+    }
+
+    const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
+    if (!session.child_id) {
+      return null;
+    }
+
+    return {
+      childId: session.child_id,
+      inviteId: session.invite_id,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -10,28 +44,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
-
-    // Get authenticated parent's ID from session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-    if (sessionError || !session?.user?.id) {
+    // SECURITY: Authenticate parent via session cookie
+    const session = await getAuthenticatedSession();
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const parentId = session.user.id;
-
-    // Verify that the authenticated parent owns this child
-    const { data: parentChild, error: verifyError } = await supabase
-      .from('montree_parent_children')
-      .select('id')
-      .eq('parent_id', parentId)
-      .eq('child_id', childId)
-      .single();
-
-    if (verifyError || !parentChild) {
+    // SECURITY: Verify the requested child matches the authenticated session
+    if (session.childId !== childId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const supabase = getSupabase();
 
     // Get weekly reports for this child (published ones OR status='sent')
     const { data: reports, error } = await supabase
