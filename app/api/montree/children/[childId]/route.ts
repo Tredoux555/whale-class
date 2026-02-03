@@ -116,6 +116,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (body.age !== undefined) updates.age = Math.round(body.age);
     if (body.photo_url !== undefined) updates.photo_url = body.photo_url;
     if (body.notes !== undefined) updates.notes = body.notes;
+    if (body.enrolled_at !== undefined) updates.enrolled_at = body.enrolled_at;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
@@ -138,6 +139,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     console.error('Update child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+// PATCH - Update child (alias for PUT)
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  return PUT(request, context);
 }
 
 // DELETE - Remove child and all related data

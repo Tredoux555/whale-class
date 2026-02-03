@@ -2,14 +2,52 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 2, 2026)
+## Current State (Feb 3, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: TESTING WEEK - Ready for Real-World Testing 🧪
+**Status**: TESTING WEEK - Bug Fixes + Student Tenure Feature 🧪
 
 ## Recent Changes
+
+### Session - Feb 3, 2026 (BUGS FIXED + STUDENT TENURE! 🎯)
+
+**🐛 CRITICAL BUGS FIXED:**
+
+**1. Parent Reports 500 Error**
+- Root Cause: `send/route.ts` was inserting non-existent columns (`week_number`, `report_year`, `is_published`, `published_at`)
+- Fix: Rewrote to use actual schema columns (`week_start`, `week_end`, `status: 'sent'`)
+
+**2. Gallery Not Showing Photos**
+- Root Cause: Broken FK join `work:work_id (...)` failed silently
+- Fix: Changed to simple query + manual curriculum lookup (same pattern as working preview endpoint)
+
+**🆕 STUDENT TENURE FEATURE:**
+
+Teachers can now specify how long a student has been enrolled when adding them. This gives Guru accurate context.
+
+| File | Change |
+|------|--------|
+| `migrations/113_student_tenure.sql` | Adds `enrolled_at DATE` column to `montree_children` |
+| `app/montree/dashboard/students/page.tsx` | Added tenure dropdown with 6 options |
+| `app/api/montree/children/route.ts` | Added `enrolled_at` to POST and GET |
+| `app/api/montree/children/[childId]/route.ts` | Added `enrolled_at` to PUT, added PATCH alias |
+| `lib/montree/guru/context-builder.ts` | Now uses `enrolled_at` for `time_at_school` calculation |
+
+**Tenure Options:**
+- Just started (< 2 weeks)
+- A few weeks (2-4 weeks)
+- 1-3 months
+- 3-6 months
+- 6-12 months
+- More than a year
+
+**Impact:** Guru now accurately understands student tenure, won't suggest "adjustment period" advice for long-term students.
+
+**Handoff:** `/HANDOFF.md`
+
+---
 
 ### Session - Feb 2, 2026 (TESTING WEEK KICKOFF! 🧪)
 
@@ -562,7 +600,7 @@ All 309 Montessori works now have comprehensive teacher guides.
 ### Key Tables
 - `schools` - School records
 - `classrooms` - Classrooms per school
-- `montree_children` - Students
+- `montree_children` - Students (**has `enrolled_at` DATE for tenure tracking!**)
 - `children` - Legacy children table (FK target)
 - `montree_child_progress` - Progress tracking (status per work) - **NO is_focus column!**
 - `montree_child_focus_works` - **Focus work per area per child** (unique: child_id, area)

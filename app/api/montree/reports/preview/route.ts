@@ -183,8 +183,36 @@ export async function GET(request: NextRequest) {
 
     const { data: progress } = await progressQuery;
 
-    // Get ALL photos for this child from montree_media table
-    // Note: Photos are stored in montree_media (not montree_child_photos which is legacy)
+    // Check for draft report with SELECTED photos first (respect teacher's photo selections)
+    const nowDate = new Date();
+    const weekStart = new Date(nowDate);
+    weekStart.setDate(nowDate.getDate() - nowDate.getDay());
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+
+    // Look for existing draft/sent report with selected photos
+    const { data: draftReport } = await supabase
+      .from('montree_weekly_reports')
+      .select('id')
+      .eq('child_id', childId)
+      .eq('week_start', weekStartStr)
+      .single();
+
+    let selectedPhotoIds: string[] = [];
+
+    if (draftReport) {
+      // Get explicitly selected photos from junction table
+      const { data: reportMedia } = await supabase
+        .from('montree_report_media')
+        .select('media_id, display_order')
+        .eq('report_id', draftReport.id)
+        .order('display_order', { ascending: true });
+
+      if (reportMedia && reportMedia.length > 0) {
+        selectedPhotoIds = reportMedia.map(rm => rm.media_id);
+      }
+    }
+
+    // Get ALL photos for this child (both individual and group)
     const { data: mediaPhotos } = await supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
@@ -201,11 +229,17 @@ export async function GET(request: NextRequest) {
       `)
       .eq('child_id', childId);
 
-    // Combine both photo sources
-    const allMediaPhotos = [
-      ...(mediaPhotos || []),
-      ...(groupPhotos || []).map((gp: any) => gp.media).filter(Boolean)
-    ];
+    // Combine both photo sources and deduplicate
+    const photoMap = new Map();
+    for (const p of mediaPhotos || []) {
+      photoMap.set(p.id, p);
+    }
+    for (const gp of groupPhotos || []) {
+      if (gp.media) {
+        photoMap.set(gp.media.id, gp.media);
+      }
+    }
+    const allMediaPhotos = Array.from(photoMap.values());
 
     // Get curriculum works to map work_id to work_name
     const { data: curriculumWorksForPhotos } = await supabase
@@ -218,7 +252,7 @@ export async function GET(request: NextRequest) {
       workIdToName.set(w.id, w.name);
     }
 
-    // Transform media photos to have work_name and proper URL
+    // Transform media photos to have work_name, proper URL, and selection status
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const allPhotos = allMediaPhotos.map((p: any) => ({
       id: p.id,
@@ -227,17 +261,25 @@ export async function GET(request: NextRequest) {
       work_name: p.work_id ? workIdToName.get(p.work_id) : p.caption,
       caption: p.caption,
       created_at: p.captured_at,
+      is_selected: selectedPhotoIds.includes(p.id), // Track if teacher selected this photo
     }));
+
+    // Separate selected photos (for preview) from available photos
+    const selectedPhotos = allPhotos.filter(p => p.is_selected);
+    const availablePhotos = allPhotos.filter(p => !p.is_selected);
 
     // Load parent descriptions
     const parentDescriptions = loadParentDescriptions();
 
     // Build report items with matched photos and descriptions
+    // Use SELECTED photos for preview (or all if no selections yet for backwards compat)
+    const photosForMatching = selectedPhotoIds.length > 0 ? selectedPhotos : allPhotos;
+
     const reportItems = (progress || []).map(p => {
       const workNameLower = p.work_name?.toLowerCase() || '';
 
-      // Find photo for this work
-      const photo = allPhotos?.find(
+      // Find photo for this work (only from selected photos if selections exist)
+      const photo = photosForMatching?.find(
         ph => ph.work_name?.toLowerCase() === workNameLower
       );
 
@@ -261,16 +303,6 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Get unassigned photos (photos without work_id) to show in report
-    const unassignedPhotos = allPhotos
-      .filter(p => !p.work_name)
-      .map(p => ({
-        id: p.id,
-        url: p.url,
-        caption: p.caption,
-        created_at: p.created_at,
-      }));
-
     // Count stats
     const stats = {
       total: reportItems.length,
@@ -279,7 +311,9 @@ export async function GET(request: NextRequest) {
       mastered: reportItems.filter(r => r.status === 'mastered').length,
       practicing: reportItems.filter(r => r.status === 'practicing').length,
       presented: reportItems.filter(r => r.status === 'presented').length,
-      unassigned_photos: unassignedPhotos.length,
+      selected_photos: selectedPhotos.length,
+      available_photos: availablePhotos.length,
+      has_selections: selectedPhotoIds.length > 0,
     };
 
     return NextResponse.json({
@@ -288,7 +322,10 @@ export async function GET(request: NextRequest) {
       child_photo: child.photo_url,
       last_report_date: lastReportDate,
       items: reportItems,
-      unassigned_photos: unassignedPhotos,
+      // Include all photos for the photo selection modal
+      selected_photos: selectedPhotos,
+      available_photos: availablePhotos,
+      all_photos: allPhotos, // For backwards compatibility
       stats,
     });
 

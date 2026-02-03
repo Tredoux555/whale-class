@@ -162,13 +162,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get report
+    // Get report (include content field which has saved works/photos)
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
         id, week_number, report_year, parent_summary,
         highlights, areas_of_growth, recommendations,
-        created_at, child_id, classroom_id
+        created_at, child_id, classroom_id, content
       `)
       .eq('id', reportId)
       .single();
@@ -194,6 +194,33 @@ export async function GET(
 
     const classroomId = report.classroom_id || child?.classroom_id;
 
+    // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions)
+    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string }>; photos?: any[] } | null;
+
+    if (savedContent?.works && savedContent.works.length > 0) {
+      // USE SAVED CONTENT - This is the preferred path for new reports
+      // The content was saved at send time with all descriptions and photos
+      const worksCompleted = savedContent.works.map(w => ({
+        work_name: w.name,
+        area: w.area || 'unknown',
+        status: w.status,
+        completed_at: report.created_at,
+        photo_url: w.photo_url || null,
+        photo_caption: null,
+        parent_description: w.parent_description || null,
+        why_it_matters: w.why_it_matters || null,
+      }));
+
+      return NextResponse.json({
+        report: {
+          ...report,
+          child,
+          works_completed: worksCompleted
+        }
+      });
+    }
+
+    // FALLBACK: Regenerate from progress (for backwards compatibility with old reports)
     // Get works completed that week
     const startOfWeek = getWeekStart(report.report_year, report.week_number);
     const endOfWeek = new Date(startOfWeek);
