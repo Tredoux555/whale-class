@@ -26,17 +26,30 @@ export async function GET(request: NextRequest) {
 
     // If childId is specified, check BOTH direct photos AND group photos via junction table
     if (childId) {
-      // Query 1: Direct photos where child_id matches
+      // First, get the child's classroom to fetch curriculum works
+      const { data: childData } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', childId)
+        .single();
+
+      // Get curriculum works to map work_id to work_name and area
+      const workIdToInfo = new Map<string, { name: string; area: string }>();
+      if (childData?.classroom_id) {
+        const { data: curriculumWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id, name, area')
+          .eq('classroom_id', childData.classroom_id);
+
+        for (const w of curriculumWorks || []) {
+          workIdToInfo.set(w.id, { name: w.name, area: w.area });
+        }
+      }
+
+      // Query 1: Direct photos where child_id matches (simple query, no FK join)
       const { data: directMedia } = await supabase
         .from('montree_media')
-        .select(`
-          *,
-          work:work_id (
-            work_id,
-            name,
-            area
-          )
-        `)
+        .select('*')
         .eq('child_id', childId)
         .order('captured_at', { ascending: false });
 
@@ -52,14 +65,7 @@ export async function GET(request: NextRequest) {
       if (groupMediaIds.length > 0) {
         const { data: groupMediaData } = await supabase
           .from('montree_media')
-          .select(`
-            *,
-            work:work_id (
-              work_id,
-              name,
-              area
-            )
-          `)
+          .select('*')
           .in('id', groupMediaIds)
           .order('captured_at', { ascending: false });
 
@@ -82,12 +88,15 @@ export async function GET(request: NextRequest) {
       // Apply pagination
       const paginatedMedia = allMedia.slice(offset, offset + limit);
 
-      // Add area and work name info
-      const mediaWithArea = paginatedMedia.map((item: any) => ({
-        ...item,
-        area: item.work?.area || null,
-        work_name: item.work?.name || null,
-      }));
+      // Add area and work name info from curriculum lookup
+      const mediaWithArea = paginatedMedia.map((item: any) => {
+        const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
+        return {
+          ...item,
+          area: workInfo?.area || null,
+          work_name: workInfo?.name || item.caption || null,  // Fallback to caption if no work_id
+        };
+      });
 
       return NextResponse.json({
         success: true,
@@ -98,17 +107,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Standard query for non-child-specific requests
+    // Standard query for non-child-specific requests (simple query, no FK join)
     let query = supabase
       .from('montree_media')
-      .select(`
-        *,
-        work:work_id (
-          work_id,
-          name,
-          area
-        )
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
       .order('captured_at', { ascending: false });
 
     if (schoolId) {
@@ -123,11 +125,6 @@ export async function GET(request: NextRequest) {
       query = query.is('child_id', null);
     }
 
-    // Filter by area (requires work_id to be set)
-    if (area && area !== 'all') {
-      query = query.eq('work.area', area);
-    }
-
     query = query.range(offset, offset + limit - 1);
 
     const { data: media, error, count } = await query;
@@ -137,12 +134,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Add area and work name info to each media item for frontend use
-    const mediaWithArea = (media || []).map((item: any) => ({
-      ...item,
-      area: item.work?.area || null,
-      work_name: item.work?.name || null,
-    }));
+    // Get curriculum works to map work_id to work_name and area
+    const workIdToInfo = new Map<string, { name: string; area: string }>();
+    if (classroomId) {
+      const { data: curriculumWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area')
+        .eq('classroom_id', classroomId);
+
+      for (const w of curriculumWorks || []) {
+        workIdToInfo.set(w.id, { name: w.name, area: w.area });
+      }
+    }
+
+    // Add area and work name info to each media item
+    let mediaWithArea = (media || []).map((item: any) => {
+      const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
+      return {
+        ...item,
+        area: workInfo?.area || null,
+        work_name: workInfo?.name || item.caption || null,
+      };
+    });
+
+    // Filter by area if specified (do it in JS since we removed the FK join)
+    if (area && area !== 'all') {
+      mediaWithArea = mediaWithArea.filter((item: any) => item.area === area);
+    }
 
     return NextResponse.json({
       success: true,
