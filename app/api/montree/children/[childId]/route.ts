@@ -121,19 +121,19 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
     }
 
-    const { data: child, error } = await supabase
+    const { data: updatedChild, error: updateError } = await supabase
       .from('montree_children')
       .update(updates)
       .eq('id', childId)
       .select()
       .single();
 
-    if (error) {
-      console.error('Update child error:', error);
+    if (updateError) {
+      console.error('Update child error:', updateError);
       return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, child });
+    return NextResponse.json({ success: true, child: updatedChild });
   } catch (error: any) {
     console.error('Update child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
