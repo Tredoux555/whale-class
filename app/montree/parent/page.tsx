@@ -49,6 +49,25 @@ function ParentPortalContent() {
       const data = await res.json();
       
       if (data.success) {
+        // Clear any old session and save the new one to localStorage
+        // This ensures dashboard reads the correct child data
+        const newSession = {
+          parentId: data.parentId || `code-${accessCode}`,
+          name: data.parentName || 'Parent',
+          childId: data.child?.id,
+          childName: data.child?.name,
+          expires: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
+        };
+        localStorage.setItem('montree_parent_session', JSON.stringify(newSession));
+
+        // Also save selected child for dashboard
+        if (data.child) {
+          localStorage.setItem('montree_selected_child', JSON.stringify({
+            id: data.child.id,
+            name: data.child.name
+          }));
+        }
+
         router.push(data.redirect || '/montree/parent/dashboard');
       } else {
         setError(data.error || 'Invalid access code. Please check and try again.');

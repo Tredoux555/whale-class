@@ -24,7 +24,81 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Base query with work area info via join
+    // If childId is specified, check BOTH direct photos AND group photos via junction table
+    if (childId) {
+      // Query 1: Direct photos where child_id matches
+      const { data: directMedia } = await supabase
+        .from('montree_media')
+        .select(`
+          *,
+          work:work_id (
+            work_id,
+            name,
+            area
+          )
+        `)
+        .eq('child_id', childId)
+        .order('captured_at', { ascending: false });
+
+      // Query 2: Group photos via junction table
+      const { data: groupLinks } = await supabase
+        .from('montree_media_children')
+        .select('media_id')
+        .eq('child_id', childId);
+
+      const groupMediaIds = (groupLinks || []).map((link: any) => link.media_id);
+
+      let groupMedia: any[] = [];
+      if (groupMediaIds.length > 0) {
+        const { data: groupMediaData } = await supabase
+          .from('montree_media')
+          .select(`
+            *,
+            work:work_id (
+              work_id,
+              name,
+              area
+            )
+          `)
+          .in('id', groupMediaIds)
+          .order('captured_at', { ascending: false });
+
+        groupMedia = groupMediaData || [];
+      }
+
+      // Combine and deduplicate by ID
+      const mediaMap = new Map();
+      for (const item of [...(directMedia || []), ...groupMedia]) {
+        if (!mediaMap.has(item.id)) {
+          mediaMap.set(item.id, item);
+        }
+      }
+
+      // Sort by captured_at descending
+      const allMedia = Array.from(mediaMap.values()).sort((a, b) =>
+        new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+      );
+
+      // Apply pagination
+      const paginatedMedia = allMedia.slice(offset, offset + limit);
+
+      // Add area and work name info
+      const mediaWithArea = paginatedMedia.map((item: any) => ({
+        ...item,
+        area: item.work?.area || null,
+        work_name: item.work?.name || null,
+      }));
+
+      return NextResponse.json({
+        success: true,
+        media: mediaWithArea,
+        total: allMedia.length,
+        limit,
+        offset
+      });
+    }
+
+    // Standard query for non-child-specific requests
     let query = supabase
       .from('montree_media')
       .select(`
@@ -45,15 +119,11 @@ export async function GET(request: NextRequest) {
       query = query.eq('classroom_id', classroomId);
     }
 
-    if (childId) {
-      query = query.eq('child_id', childId);
-    }
-
     if (untaggedOnly) {
       query = query.is('child_id', null);
     }
 
-    // New: Filter by area (requires work_id to be set)
+    // Filter by area (requires work_id to be set)
     if (area && area !== 'all') {
       query = query.eq('work.area', area);
     }
