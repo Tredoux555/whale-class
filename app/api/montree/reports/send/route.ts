@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
       .eq('id', child.classroom_id)
       .single();
 
+    if (!classroom) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
     // Get last report date
     const { data: lastReport } = await supabase
       .from('montree_weekly_reports')
@@ -155,22 +159,31 @@ export async function POST(request: NextRequest) {
     weekEndDate.setDate(nowDate.getDate() + (6 - nowDate.getDay()));
     const weekEndStr = weekEndDate.toISOString().split('T')[0];
 
+    // Calculate week_number and report_year (required NOT NULL columns)
+    const reportYear = weekStart.getFullYear();
+    const startOfYear = new Date(reportYear, 0, 1);
+    const daysSinceStart = Math.floor((weekStart.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+    const weekNumber = Math.ceil((daysSinceStart + startOfYear.getDay() + 1) / 7);
+
     // Save report to mark as sent (upsert to handle duplicate week)
-    // Note: Table has UNIQUE(child_id, week_start, report_type)
     const { error: insertError } = await supabase
       .from('montree_weekly_reports')
       .upsert({
-        school_id: classroom?.school_id,
+        school_id: classroom.school_id,
         classroom_id: child.classroom_id,
         child_id: child.id,
+        week_number: weekNumber,
+        report_year: reportYear,
         week_start: weekStartStr,
         week_end: weekEndStr,
         report_type: 'parent',
         status: 'sent',
         content: reportContent,
+        is_published: true,
+        published_at: now,
         generated_at: now,
         sent_at: now,
-      }, { onConflict: 'child_id,week_start,report_type' });
+      }, { onConflict: 'child_id,week_number,report_year' });
 
     if (insertError) {
       console.error('Report insert error:', insertError);
