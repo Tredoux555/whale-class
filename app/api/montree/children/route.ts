@@ -18,7 +18,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { classroomId, name, age, progress } = await request.json();
+    const { classroomId, name, age, enrolled_at, progress } = await request.json();
 
     if (!classroomId || !name?.trim()) {
       return NextResponse.json({ error: 'Classroom ID and name required' }, { status: 400 });
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         classroom_id: classroomId,
         name: name.trim(),
         age: Math.round(age || 4),
+        enrolled_at: enrolled_at || new Date().toISOString().split('T')[0],
       })
       .select()
       .single();
@@ -140,7 +141,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('montree_children')
-      .select('id, name, age, photo_url, notes, classroom_id')
+      .select('id, name, age, photo_url, notes, classroom_id, enrolled_at')
       .order('name');
 
     if (classroomId) {

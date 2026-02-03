@@ -30,6 +30,40 @@ const AGE_OPTIONS = [
   { value: 6, label: '6' },
 ];
 
+// Tenure options - how long has student been in the program
+const TENURE_OPTIONS = [
+  { value: 'new', label: 'Just started (less than 2 weeks)', months: 0 },
+  { value: 'few_weeks', label: 'A few weeks (2-4 weeks)', months: 1 },
+  { value: '1_3_months', label: '1-3 months', months: 2 },
+  { value: '3_6_months', label: '3-6 months', months: 4 },
+  { value: '6_12_months', label: '6-12 months', months: 9 },
+  { value: '1_year_plus', label: 'More than a year', months: 15 },
+];
+
+// Helper to calculate enrolled_at from tenure selection
+function getEnrolledAtFromTenure(tenure: string): string {
+  const option = TENURE_OPTIONS.find(t => t.value === tenure);
+  if (!option) return new Date().toISOString().split('T')[0];
+  const date = new Date();
+  date.setMonth(date.getMonth() - option.months);
+  return date.toISOString().split('T')[0];
+}
+
+// Helper to get tenure value from enrolled_at date
+function getTenureFromEnrolledAt(enrolledAt: string | null): string {
+  if (!enrolledAt) return 'new';
+  const enrolled = new Date(enrolledAt);
+  const now = new Date();
+  const monthsDiff = (now.getFullYear() - enrolled.getFullYear()) * 12 + (now.getMonth() - enrolled.getMonth());
+
+  if (monthsDiff < 1) return 'new';
+  if (monthsDiff < 2) return 'few_weeks';
+  if (monthsDiff < 4) return '1_3_months';
+  if (monthsDiff < 7) return '3_6_months';
+  if (monthsDiff < 13) return '6_12_months';
+  return '1_year_plus';
+}
+
 type Work = {
   id: string;
   name: string;
@@ -42,6 +76,7 @@ type Student = {
   name: string;
   age: number;
   photo_url?: string;
+  enrolled_at?: string;
   progress?: { [areaId: string]: { workId: string | null; workName?: string } };
 };
 
@@ -148,7 +183,12 @@ export default function StudentsPage() {
   // Add/Edit form state
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [formData, setFormData] = useState({ name: '', age: 3.5, progress: {} as { [k: string]: { workId: string | null; workName?: string } } });
+  const [formData, setFormData] = useState({
+    name: '',
+    age: 3.5,
+    tenure: 'new' as string,
+    progress: {} as { [k: string]: { workId: string | null; workName?: string } }
+  });
   const [saving, setSaving] = useState(false);
 
   // Delete confirmation
@@ -209,7 +249,7 @@ export default function StudentsPage() {
 
   const openAddForm = () => {
     setEditingStudent(null);
-    setFormData({ name: '', age: 3.5, progress: {} });
+    setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
     setShowForm(true);
   };
 
@@ -218,6 +258,7 @@ export default function StudentsPage() {
     setFormData({
       name: student.name,
       age: student.age || 3.5,
+      tenure: getTenureFromEnrolledAt(student.enrolled_at || null),
       progress: student.progress || {},
     });
     setShowForm(true);
@@ -226,7 +267,7 @@ export default function StudentsPage() {
   const closeForm = () => {
     setShowForm(false);
     setEditingStudent(null);
-    setFormData({ name: '', age: 3.5, progress: {} });
+    setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
   };
 
   const handleSave = async () => {
@@ -234,6 +275,8 @@ export default function StudentsPage() {
     setSaving(true);
 
     try {
+      const enrolledAt = getEnrolledAtFromTenure(formData.tenure);
+
       if (editingStudent) {
         // Update existing student
         const res = await fetch(`/api/montree/children/${editingStudent.id}`, {
@@ -242,6 +285,7 @@ export default function StudentsPage() {
           body: JSON.stringify({
             name: formData.name,
             age: formData.age,
+            enrolled_at: enrolledAt,
           }),
         });
         if (!res.ok) throw new Error('Failed to update');
@@ -255,6 +299,7 @@ export default function StudentsPage() {
             classroomId: session.classroom.id,
             name: formData.name,
             age: formData.age,
+            enrolled_at: enrolledAt,
             progress: Object.fromEntries(
               Object.entries(formData.progress).map(([areaId, data]) => [areaId, data.workId])
             ),
@@ -440,6 +485,23 @@ export default function StudentsPage() {
                 >
                   {AGE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label} years old</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Tenure - How long in program */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Time in program
+                  <span className="text-slate-400 font-normal ml-1">(helps Guru give better advice)</span>
+                </label>
+                <select
+                  value={formData.tenure}
+                  onChange={(e) => setFormData({ ...formData, tenure: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:border-blue-400 outline-none"
+                >
+                  {TENURE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
               </div>

@@ -4,6 +4,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Load parent descriptions for saving in report content
+function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
+  const descriptions = new Map();
+  const files = [
+    'practical-life-guides.json',
+    'sensorial-guides.json',
+    'math-guides.json',
+    'language-guides.json',
+    'cultural-guides.json'
+  ];
+
+  for (const file of files) {
+    try {
+      const filePath = join(process.cwd(), `lib/curriculum/comprehensive-guides/${file}`);
+      const data = JSON.parse(readFileSync(filePath, 'utf-8'));
+      const works = data.works || data;
+      for (const item of works) {
+        if (item.name && item.parent_description) {
+          descriptions.set(item.name.toLowerCase(), {
+            description: item.parent_description,
+            why_it_matters: item.why_it_matters || '',
+          });
+        }
+      }
+    } catch (err) {
+      // File not found, skip
+    }
+  }
+  return descriptions;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,7 +117,7 @@ export async function POST(request: NextRequest) {
       .eq('report_type', 'teacher')
       .single();
 
-    let photos: Array<{ storage_path: string; work_id: string | null; captured_at: string; url: string; id: string }> = [];
+    let photos: Array<{ storage_path: string; work_id: string | null; caption: string | null; captured_at: string; url: string; id: string }> = [];
 
     if (draftReport) {
       // Get explicitly selected photos from the junction table
@@ -100,7 +133,7 @@ export async function POST(request: NextRequest) {
         // Fetch the actual media records for selected photos
         const { data: selectedPhotos } = await supabase
           .from('montree_media')
-          .select('id, storage_path, work_id, captured_at')
+          .select('id, storage_path, work_id, caption, captured_at')
           .in('id', mediaIds);
 
         if (selectedPhotos) {
@@ -112,6 +145,7 @@ export async function POST(request: NextRequest) {
               id: p.id,
               storage_path: p.storage_path,
               work_id: p.work_id,
+              caption: p.caption,
               captured_at: p.captured_at,
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
             }));
@@ -123,7 +157,7 @@ export async function POST(request: NextRequest) {
     if (photos.length === 0) {
       let photoQuery = supabase
         .from('montree_media')
-        .select('id, storage_path, work_id, captured_at')
+        .select('id, storage_path, work_id, caption, captured_at')
         .eq('child_id', child_id);
 
       if (lastReportDate) {
@@ -136,20 +170,63 @@ export async function POST(request: NextRequest) {
         id: p.id,
         storage_path: p.storage_path,
         work_id: p.work_id,
+        caption: p.caption,
         captured_at: p.captured_at,
         url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
       }));
     }
 
-    // Build report content
+    // Load parent descriptions
+    const parentDescriptions = loadParentDescriptions();
+
+    // Get curriculum works to map work_id to work_name for photos
+    const { data: curriculumWorks } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('id, name, parent_description, why_it_matters')
+      .eq('classroom_id', child.classroom_id);
+
+    const workIdToName = new Map<string, string>();
+    const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
+    for (const w of curriculumWorks || []) {
+      workIdToName.set(w.id, w.name);
+      if (w.parent_description) {
+        dbDescriptions.set(w.name.toLowerCase(), {
+          description: w.parent_description,
+          why_it_matters: w.why_it_matters || '',
+        });
+      }
+    }
+
+    // Build photo map by work name (use caption as fallback if no work_id)
+    const photosByWorkName = new Map<string, { url: string; caption?: string }>();
+    for (const p of photos) {
+      // work_name can come from work_id lookup OR from caption (which stores work name when captured from Week view)
+      const workName = p.work_id ? workIdToName.get(p.work_id) : p.caption;
+      if (workName) {
+        photosByWorkName.set(workName.toLowerCase(), { url: p.url, caption: p.caption || undefined });
+      }
+    }
+
+    // Build report content with FULL descriptions (so parent view doesn't need to regenerate)
     const now = new Date().toISOString();
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
-      works: works.map(w => ({
-        name: w.work_name,
-        area: w.area,
-        status: w.status === 'completed' ? 'mastered' : w.status,
-      })),
+      works: works.map(w => {
+        const workNameLower = (w.work_name || '').toLowerCase();
+        // Get description from JSON or DB
+        let desc = parentDescriptions.get(workNameLower) || dbDescriptions.get(workNameLower);
+        // Get photo if matched
+        const photo = photosByWorkName.get(workNameLower);
+
+        return {
+          name: w.work_name,
+          area: w.area,
+          status: w.status === 'completed' ? 'mastered' : w.status,
+          parent_description: desc?.description || null,
+          why_it_matters: desc?.why_it_matters || null,
+          photo_url: photo?.url || null,
+        };
+      }),
       photos: photos || [],
       generated_at: now,
     };
