@@ -32,8 +32,12 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
     setSession(sess);
 
     // Fetch child info immediately (don't wait for state update)
-    if (childId) {
-      fetch(`/api/montree/children/${childId}`)
+    if (childId && sess.school?.id) {
+      fetch(`/api/montree/children/${childId}`, {
+        headers: {
+          'x-school-id': sess.school.id,
+        }
+      })
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data?.child) setChild(data.child);
