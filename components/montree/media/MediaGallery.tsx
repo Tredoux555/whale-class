@@ -14,12 +14,15 @@ interface MediaGalleryProps {
   thumbnailUrls?: Record<string, string>;
   loading?: boolean;
   onMediaClick?: (media: MontreeMedia) => void;
+  onMediaEdit?: (media: MontreeMedia) => void;
+  onMediaDelete?: (media: MontreeMedia) => void;
   emptyMessage?: string;
   emptyIcon?: string;
   columns?: 2 | 3 | 4;
   selectedIds?: Set<string>;
   onSelectionChange?: (id: string, selected: boolean) => void;
   selectionMode?: boolean;
+  showActions?: boolean;
 }
 
 export default function MediaGallery({
@@ -28,12 +31,15 @@ export default function MediaGallery({
   thumbnailUrls = {},
   loading = false,
   onMediaClick,
+  onMediaEdit,
+  onMediaDelete,
   emptyMessage = 'No photos yet',
   emptyIcon = '📷',
   columns = 3,
   selectedIds = new Set(),
   onSelectionChange,
   selectionMode = false,
+  showActions = true,
 }: MediaGalleryProps) {
   // Build child name lookup
   const childNameMap = React.useMemo(() => {
@@ -82,9 +88,12 @@ export default function MediaGallery({
           childName={item.child_id ? childNameMap[item.child_id] : undefined}
           thumbnailUrl={thumbnailUrls[item.thumbnail_path || item.storage_path]}
           onClick={() => onMediaClick?.(item)}
+          onEdit={() => onMediaEdit?.(item)}
+          onDelete={() => onMediaDelete?.(item)}
           isSelected={selectedIds.has(item.id)}
           onSelectionChange={(selected) => onSelectionChange?.(item.id, selected)}
           selectionMode={selectionMode}
+          showActions={showActions}
         />
       ))}
     </div>

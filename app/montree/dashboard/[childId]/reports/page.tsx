@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 
 interface ReportItem {
   work_name: string;
@@ -34,6 +35,14 @@ interface UnassignedPhoto {
   created_at: string;
 }
 
+interface Photo {
+  id: string;
+  url: string;
+  caption: string | null;
+  created_at: string;
+  work_name?: string;
+}
+
 export default function ReportsPage() {
   const params = useParams();
   const childId = params.childId as string;
@@ -46,19 +55,43 @@ export default function ReportsPage() {
   const [lastReportDate, setLastReportDate] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [unassignedPhotos, setUnassignedPhotos] = useState<UnassignedPhoto[]>([]);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [currentPhotos, setCurrentPhotos] = useState<Photo[]>([]);
+  const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
 
   // Fetch report preview
   const fetchPreview = async () => {
     try {
-      const res = await fetch(`/api/montree/reports/preview?child_id=${childId}`);
-      const data = await res.json();
+      const [previewRes, photosRes] = await Promise.all([
+        fetch(`/api/montree/reports/preview?child_id=${childId}`),
+        fetch(`/api/montree/reports/available-photos?child_id=${childId}`),
+      ]);
 
-      if (data.success) {
-        setChildName(data.child_name || 'Student');
-        setItems(data.items || []);
-        setStats(data.stats || null);
-        setLastReportDate(data.last_report_date);
-        setUnassignedPhotos(data.unassigned_photos || []);
+      const previewData = await previewRes.json();
+      const photosData = await photosRes.json();
+
+      if (previewData.success && photosData.success) {
+        setChildName(previewData.child_name || 'Student');
+        setItems(previewData.items || []);
+        setStats(previewData.stats || null);
+        setLastReportDate(previewData.last_report_date);
+        setUnassignedPhotos(previewData.unassigned_photos || []);
+
+        // Build photo lists for modal using actual media photos
+        const allAvailablePhotos = photosData.photos || [];
+        const reportedWorkNames = new Set(
+          (previewData.items || [])
+            .filter((item: ReportItem) => item.photo_url)
+            .map((item: ReportItem) => item.work_name)
+        );
+
+        // Find which photos are currently selected (by matching work_name)
+        const reportedPhotos = allAvailablePhotos.filter((p: Photo) =>
+          p.work_name && reportedWorkNames.has(p.work_name)
+        );
+
+        setCurrentPhotos(reportedPhotos);
+        setAllPhotos(allAvailablePhotos);
       }
     } catch (err) {
       console.error('Failed to fetch:', err);
@@ -70,6 +103,31 @@ export default function ReportsPage() {
   useEffect(() => {
     if (childId) fetchPreview();
   }, [childId]);
+
+  // Update selected photos for the report
+  const handlePhotoSelectionSave = async (selectedMediaIds: string[]) => {
+    try {
+      const res = await fetch('/api/montree/reports/photos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          selected_media_ids: selectedMediaIds,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Refresh preview to show updated photos
+        await fetchPreview();
+      } else {
+        throw new Error(data.error || 'Failed to update photos');
+      }
+    } catch (err) {
+      console.error('Failed to update photos:', err);
+      throw err;
+    }
+  };
 
   // Send report to parents
   const sendReport = async () => {
@@ -174,7 +232,7 @@ export default function ReportsPage() {
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="font-bold text-lg">📋 Report Preview</h3>
                   <p className="text-emerald-100 text-sm">This is what parents will see</p>
@@ -186,6 +244,13 @@ export default function ReportsPage() {
                   ×
                 </button>
               </div>
+              {/* Edit Photos Button */}
+              <button
+                onClick={() => setShowPhotoModal(true)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all text-sm"
+              >
+                ✏️ Edit Photos
+              </button>
             </div>
 
             {/* Modal Body - Scrollable */}
@@ -291,6 +356,16 @@ export default function ReportsPage() {
           </div>
         </div>
       )}
+
+      {/* Photo Selection Modal */}
+      <PhotoSelectionModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onSave={handlePhotoSelectionSave}
+        currentPhotos={currentPhotos}
+        availablePhotos={allPhotos.filter(p => !currentPhotos.some(cp => cp.id === p.id))}
+        childId={childId}
+      />
 
       {/* Info */}
       <p className="text-xs text-gray-400 text-center">

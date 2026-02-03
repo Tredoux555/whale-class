@@ -47,6 +47,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
     if (pathname.endsWith('/progress')) return 'progress';
     if (pathname.endsWith('/profile')) return 'profile';
     if (pathname.endsWith('/observations')) return 'observations';
+    if (pathname.endsWith('/gallery')) return 'gallery';
     if (pathname.endsWith('/reports')) return 'reports';
     return 'week';
   };
@@ -56,6 +57,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   const tabs = [
     { id: 'week', label: '📋 Week', href: `/montree/dashboard/${childId}` },
     { id: 'progress', label: '📊 Progress', href: `/montree/dashboard/${childId}/progress` },
+    { id: 'gallery', label: '📷 Gallery', href: `/montree/dashboard/${childId}/gallery` },
     { id: 'reports', label: '📄 Reports', href: `/montree/dashboard/${childId}/reports` },
   ];
   // Hidden but functional: /profile, /observations

@@ -17,6 +17,9 @@ interface MediaCardProps {
   isSelected?: boolean;
   onSelectionChange?: (selected: boolean) => void;
   selectionMode?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  showActions?: boolean;
 }
 
 export default function MediaCard({
@@ -29,6 +32,9 @@ export default function MediaCard({
   isSelected = false,
   onSelectionChange,
   selectionMode = false,
+  onEdit,
+  onDelete,
+  showActions = true,
 }: MediaCardProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(thumbnailUrl || null);
   const [loading, setLoading] = useState(!thumbnailUrl);
@@ -89,10 +95,10 @@ export default function MediaCard({
   };
 
   return (
-    <div className="relative aspect-square">
+    <div className="relative aspect-square group">
       <button
         onClick={handleClick}
-        className={`relative inset-0 w-full h-full bg-gray-100 rounded-xl overflow-hidden group transition-all ${
+        className={`relative inset-0 w-full h-full bg-gray-100 rounded-xl overflow-hidden transition-all ${
           selectionMode ? 'cursor-pointer' : ''
         } ${
           isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : 'hover:ring-2 hover:ring-blue-500'
@@ -124,6 +130,34 @@ export default function MediaCard({
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        {/* Action buttons */}
+        {showActions && !selectionMode && (onEdit || onDelete) && (
+          <div className="absolute top-2 left-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                className="flex-1 px-2 py-1 bg-emerald-500 text-white rounded text-xs font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1"
+              >
+                ✏️ Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="flex-1 px-2 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-1"
+              >
+                🗑️ Delete
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Info overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">

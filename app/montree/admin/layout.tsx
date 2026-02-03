@@ -10,6 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   
   const navItems = [
     { href: '/montree/admin', label: 'Overview', icon: '📊' },
+    { href: '/montree/admin/activity', label: 'Activity', icon: '⚡' },
     { href: '/montree/admin/students', label: 'Students', icon: '👧' },
     { href: '/montree/admin/teachers', label: 'Teachers', icon: '👩‍🏫' },
     { href: '/montree/admin/settings', label: 'Settings', icon: '⚙️' },
