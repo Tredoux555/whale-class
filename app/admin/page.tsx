@@ -202,6 +202,55 @@ export default function AdminDashboard() {
           </Link>
         </section>
 
+        {/* English Teaching Guides - PDF Downloads */}
+        <section className="mb-8">
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">📚 English Teaching Guides</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <a
+              href="/guides/Montessori-English-Teaching-Guide.pdf"
+              target="_blank"
+              className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-xl p-4 hover:border-blue-400 hover:bg-blue-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">📖</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Teaching Guide</h3>
+              <p className="text-blue-300 text-xs mt-1">PDF • How to teach</p>
+            </a>
+            <a
+              href="/guides/Montessori-English-Shelf-Layout.pdf"
+              target="_blank"
+              className="bg-gradient-to-br from-teal-600/20 to-emerald-600/20 border border-teal-500/30 rounded-xl p-4 hover:border-teal-400 hover:bg-teal-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🗄️</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Shelf Layout</h3>
+              <p className="text-teal-300 text-xs mt-1">PDF • 72 works</p>
+            </a>
+            <Link
+              href="/admin/english-guide"
+              className="bg-gradient-to-br from-purple-600/20 to-violet-600/20 border border-purple-500/30 rounded-xl p-4 hover:border-purple-400 hover:bg-purple-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🎯</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Interactive Guide</h3>
+              <p className="text-purple-300 text-xs mt-1">Web • I-Spy lists</p>
+            </Link>
+            <Link
+              href="/admin/english-setup"
+              className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-xl p-4 hover:border-amber-400 hover:bg-amber-600/30 transition-all group"
+            >
+              <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🔧</span>
+              </div>
+              <h3 className="font-bold text-white text-sm">Setup Tool</h3>
+              <p className="text-amber-300 text-xs mt-1">Web • Materials list</p>
+            </Link>
+          </div>
+        </section>
+
         {/* Print & Reports */}
         <section className="mb-8">
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Print & Reports</h2>
