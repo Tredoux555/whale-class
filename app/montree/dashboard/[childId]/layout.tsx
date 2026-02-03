@@ -100,7 +100,14 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
             
-            {/* Guru/Camera buttons removed - routes still work if accessed directly */}
+            {/* Guru button */}
+            <Link
+              href={`/montree/dashboard/guru?child=${childId}`}
+              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
+              title="Ask Guru"
+            >
+              🧠
+            </Link>
           </div>
         </div>
       </header>
