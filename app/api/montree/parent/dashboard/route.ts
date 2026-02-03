@@ -124,34 +124,28 @@ const GAMES_BY_AREA: Record<string, Array<{
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { searchParams } = new URL(request.url);
-    const testChild = searchParams.get('test'); // For testing without auth
-    
-    // Get child ID from session or test param
+
+    // Get child ID from authenticated session
     let childId: string | null = null;
-    
-    if (testChild) {
-      childId = testChild;
-    } else {
-      const cookieStore = await cookies();
-      const sessionCookie = cookieStore.get('montree_parent_session');
-      
-      if (!sessionCookie?.value) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Not authenticated' 
-        }, { status: 401 });
-      }
-      
-      try {
-        const session = JSON.parse(atob(sessionCookie.value));
-        childId = session.child_id;
-      } catch {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Invalid session' 
-        }, { status: 401 });
-      }
+
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('montree_parent_session');
+
+    if (!sessionCookie?.value) {
+      return NextResponse.json({
+        success: false,
+        error: 'Not authenticated'
+      }, { status: 401 });
+    }
+
+    try {
+      const session = JSON.parse(atob(sessionCookie.value));
+      childId = session.child_id;
+    } catch {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid session'
+      }, { status: 401 });
     }
     
     if (!childId) {

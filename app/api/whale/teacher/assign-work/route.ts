@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify teacher has access to all students
+    // SECURITY: Verify teacher has access to ALL requested students
     const { data: access } = await supabase
       .from('teacher_students')
       .select('student_id')
@@ -34,9 +34,18 @@ export async function POST(request: NextRequest) {
     const authorizedIds = access?.map(a => a.student_id) || [];
     const unauthorizedIds = studentIds.filter(id => !authorizedIds.includes(id));
 
+    // SECURITY: Deny if ANY students are unauthorized (fail securely)
     if (unauthorizedIds.length > 0) {
       return NextResponse.json(
-        { error: 'Not authorized for some students', unauthorizedIds },
+        { error: 'Not authorized for some students' },
+        { status: 403 }
+      );
+    }
+    
+    // SECURITY: Verify all requested students were authorized
+    if (authorizedIds.length !== studentIds.length) {
+      return NextResponse.json(
+        { error: 'Not authorized for some students' },
         { status: 403 }
       );
     }

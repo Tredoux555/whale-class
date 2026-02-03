@@ -41,8 +41,20 @@ export async function POST(request: NextRequest) {
     const schoolId = request.headers.get('x-school-id');
     const classroomId = request.headers.get('x-classroom-id');
     
+    // SECURITY: Require authentication
     if (!schoolId || !classroomId) {
       return NextResponse.json({ error: 'Missing school or classroom ID' }, { status: 401 });
+    }
+    
+    // SECURITY: Verify classroom belongs to school
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('school_id')
+      .eq('id', classroomId)
+      .single();
+    
+    if (!classroom || classroom.school_id !== schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const formData = await request.formData();

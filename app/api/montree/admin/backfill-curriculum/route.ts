@@ -43,7 +43,28 @@ function buildCurriculumRecords(classroomId: string) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { classroomId, schoolId } = await request.json();
+    
+    // SECURITY: Require authentication
+    const headerSchoolId = request.headers.get('x-school-id');
+    if (!headerSchoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    
+    const { classroomId, schoolId: bodySchoolId } = await request.json();
+    const schoolId = bodySchoolId || headerSchoolId;
+    
+    // SECURITY: Verify classroom belongs to authenticated school
+    if (classroomId) {
+      const { data: classroom } = await supabase
+        .from('montree_classrooms')
+        .select('school_id')
+        .eq('id', classroomId)
+        .single();
+      
+      if (!classroom || classroom.school_id !== headerSchoolId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    }
 
     const results: any[] = [];
 
@@ -80,6 +101,11 @@ export async function POST(request: NextRequest) {
 
     // If school provided, backfill all classrooms in that school
     if (schoolId) {
+      // SECURITY: Can only backfill own school
+      if (schoolId !== headerSchoolId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+      
       const { data: classrooms } = await supabase
         .from('montree_classrooms')
         .select('id, name')
@@ -112,10 +138,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, results });
     }
 
-    // No classroom or school - backfill ALL classrooms
+    // SECURITY: Prevent backfilling ALL classrooms globally - only allow specific school
+    // Default to authenticated school
     const { data: allClassrooms } = await supabase
       .from('montree_classrooms')
-      .select('id, name, school_id');
+      .select('id, name, school_id')
+      .eq('school_id', headerSchoolId);
 
     for (const classroom of allClassrooms || []) {
       const { count } = await supabase

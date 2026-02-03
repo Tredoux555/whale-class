@@ -21,6 +21,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { childId } = await context.params;
     const supabase = getSupabase();
 
+    // Check for authentication header
+    const schoolId = request.headers.get('x-school-id');
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
     const { data: child, error } = await supabase
       .from('montree_children')
       .select('*')
@@ -29,6 +35,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     if (error || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+    }
+
+    // Verify child belongs to this school via classroom
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', child.classroom_id)
+      .eq('school_id', schoolId)
+      .single();
+
+    if (!classroom) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Fetch photos from montree_media
@@ -61,7 +79,37 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { childId } = await context.params;
     const supabase = getSupabase();
+
+    // Check for authentication header
+    const schoolId = request.headers.get('x-school-id');
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
     const body = await request.json();
+
+    // Fetch child to verify it exists and get classroom_id
+    const { data: child, error: fetchError } = await supabase
+      .from('montree_children')
+      .select('id, classroom_id')
+      .eq('id', childId)
+      .single();
+
+    if (fetchError || !child) {
+      return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+    }
+
+    // Verify child belongs to this school via classroom
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', child.classroom_id)
+      .eq('school_id', schoolId)
+      .single();
+
+    if (!classroom) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
     const updates: any = {};
     if (body.name !== undefined) updates.name = body.name.trim();
@@ -98,6 +146,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     const { childId } = await context.params;
     const supabase = getSupabase();
 
+    // Check for authentication header
+    const schoolId = request.headers.get('x-school-id');
+    if (!schoolId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
     // Verify child exists
     const { data: child, error: findError } = await supabase
       .from('montree_children')
@@ -107,6 +161,18 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     if (findError || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+    }
+
+    // Verify child belongs to this school via classroom
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', child.classroom_id)
+      .eq('school_id', schoolId)
+      .single();
+
+    if (!classroom) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Delete related records first (foreign key constraints)

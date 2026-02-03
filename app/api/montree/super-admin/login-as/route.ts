@@ -16,7 +16,13 @@ export async function POST(req: NextRequest) {
     const { schoolId, superAdminPassword } = await req.json();
 
     // Verify super admin password
-    if (superAdminPassword !== '870602') {
+    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
+    if (!expectedPassword) {
+      console.error('SUPER_ADMIN_PASSWORD environment variable is not set');
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+    }
+
+    if (superAdminPassword !== expectedPassword) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
