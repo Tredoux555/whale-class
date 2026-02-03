@@ -2,14 +2,97 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 3, 2026)
+## Current State (Feb 4, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
-**Deployed**: Railway (API) + Vercel (frontend) at teacherpotato.xyz
-**Status**: TESTING WEEK - Bug Fixes + Student Tenure Feature 🧪
+**Deployed**: Railway at teacherpotato.xyz
+**Status**: ✅ WORKING - All deployment issues fixed
 
 ## Recent Changes
+
+### Session 140 - Feb 4, 2026 (ROOT CAUSE ANALYSIS + FIXES)
+
+**🔧 SYSTEMATIC INVESTIGATION COMPLETED:**
+
+Used parallel agents + Chrome MCP to diagnose deployment/build issues.
+
+**Root Causes Found & Fixed:**
+
+| Issue | Root Cause | Fix Applied |
+|-------|------------|-------------|
+| MESSAGE_ENCRYPTION_KEY warning spam | .env.local had 33-char key | Synced to Railway's 32-char key |
+| React version conflict | montree/ had React 18, main had 19 | Updated montree/package.json to React 19 |
+| Port mismatch | .env.local=3001, start.sh=3000 | Changed .env.local to 3000 |
+| Middleware disabled | middleware.ts.disabled | Renamed to middleware.ts (re-enabled) |
+| No Node version lock | Missing .nvmrc | Created .nvmrc with Node 20 |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `.env.local` | MESSAGE_ENCRYPTION_KEY 32 chars + port 3000 |
+| `montree/package.json` | React 19.2.0, Next.js 16.1.1, TypeScript 5.9.3 |
+| `middleware.ts` | Re-enabled (renamed from .disabled) |
+| `.nvmrc` | NEW - Node 20 |
+
+**Railway Dashboard Verified:**
+- GitHub integration: ✅ Connected to Tredoux555/whale-class
+- Auto-deploy: ✅ Working (last deploy 7h ago successful)
+- Health check: ✅ /api/health endpoint with 60s timeout
+- Env vars: ✅ MESSAGE_ENCRYPTION_KEY correctly set to 32 chars
+
+**Next: Gallery + Reports systematic fix loop with Chrome MCP**
+
+---
+
+### Session 139 - Feb 3, 2026 Late Night (REPORT DATA CONSISTENCY FIX - UNTESTED!)
+
+**⚠️ CRITICAL: Railway NOT auto-deploying from GitHub. Code is committed but NOT live!**
+
+**🔴 MAIN ISSUE FIXED: Report Preview vs Parent View Mismatch**
+
+Teacher preview showed 7 works + photos, but parent view only showed 2 works + no photos.
+
+**Root Causes Found & Fixed:**
+
+| Issue | Root Cause | Fix |
+|-------|------------|-----|
+| Preview showed ALL photos | Ignored `montree_report_media` junction table | Now respects teacher's photo selections |
+| Parent missing works | Used ISO week dates instead of `lastReportDate` | Uses saved content instead of regenerating |
+| Parent missing descriptions | Send route didn't save `parent_description` | Now saves full content with descriptions |
+| Parent missing photos | Different photo matching logic | Caption fallback added for photos without work_id |
+| 500 Error on send | Missing `week_number` and `report_year` NOT NULL columns | Added both columns with proper calculations |
+
+**Files Changed (committed to GitHub, NOT deployed):**
+
+| File | Change |
+|------|--------|
+| `app/api/montree/reports/preview/route.ts` | Respect photo selections from junction table |
+| `app/api/montree/reports/send/route.ts` | Save full descriptions + fix caption matching + add week_number/report_year |
+| `app/api/montree/parent/report/[reportId]/route.ts` | Use saved content instead of regenerating |
+| `scripts/verify_reports_tables.sql` | **NEW** - DB verification script |
+
+**Data Flow (After Fix):**
+```
+Preview → shows SELECTED photos from junction table
+    ↓
+Send → saves works WITH descriptions & photo URLs in content
+    ↓
+Parent → reads saved content directly (no regeneration)
+```
+
+**Git:** Commit `8fd6678` pushed to GitHub ✅, Railway deploy ❌
+
+**First Thing Tomorrow:**
+1. Fix Railway deployment - Check Settings → Source → verify GitHub webhook
+2. Manually trigger deploy or push empty commit
+3. Test the Publish Report button
+4. Verify preview matches parent view
+
+**Handoff:** `/HANDOFF.md`
+
+---
 
 ### Session - Feb 3, 2026 (BUGS FIXED + STUDENT TENURE! 🎯)
 

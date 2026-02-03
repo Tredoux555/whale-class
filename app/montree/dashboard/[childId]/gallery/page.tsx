@@ -221,7 +221,7 @@ export default function GalleryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{childName}'s Gallery</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{childName ? `${childName}'s Gallery` : 'Photo Gallery'}</h1>
           <p className="text-sm text-gray-500 mt-1">{photos.length} photos total</p>
         </div>
 
