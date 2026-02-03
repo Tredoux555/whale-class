@@ -64,6 +64,9 @@ export async function PATCH(
       if (status === 'sent') {
         updates.sent_at = new Date().toISOString();
         updates.sent_to = sent_to || [];
+        // Mark as published so parents can see it
+        updates.is_published = true;
+        updates.published_at = new Date().toISOString();
       }
     }
 

@@ -33,14 +33,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get weekly reports for this child (only published ones)
+    // Get weekly reports for this child (published ones OR status='sent')
     const { data: reports, error } = await supabase
       .from('montree_weekly_reports')
-      .select('id, week_number, report_year, parent_summary, created_at, is_published')
+      .select('id, week_number, report_year, parent_summary, created_at, is_published, status, week_start, week_end, content')
       .eq('child_id', childId)
-      .eq('is_published', true)
-      .order('report_year', { ascending: false })
-      .order('week_number', { ascending: false })
+      .or('is_published.eq.true,status.eq.sent')
+      .order('created_at', { ascending: false })
       .limit(20);
 
     if (error) {
