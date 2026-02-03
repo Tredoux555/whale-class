@@ -141,9 +141,10 @@ export async function buildChildContext(
   childId: string
 ): Promise<ChildContext | null> {
   // 1. Fetch basic child info
+  // Note: montree_children has 'age' (integer years) not 'date_of_birth'
   const { data: child, error: childError } = await supabase
     .from('montree_children')
-    .select('id, name, date_of_birth, classroom_id, created_at')
+    .select('id, name, age, classroom_id, created_at')
     .eq('id', childId)
     .single();
 
@@ -152,7 +153,8 @@ export async function buildChildContext(
     return null;
   }
 
-  const age = calculateAge(child.date_of_birth);
+  // Age is stored as integer years, estimate months as 6
+  const age = { years: child.age || 4, months: 6 };
   const timeAtSchool = calculateTimeAtSchool(child.created_at);
 
   // 2. Fetch mental profile (if exists)
