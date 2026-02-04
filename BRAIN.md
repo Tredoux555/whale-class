@@ -11,6 +11,42 @@
 
 ## Recent Changes
 
+### Session 143 - Feb 4, 2026 Late Night (CURRICULUM SAFETY + BUG FIXES)
+
+**🔧 CRITICAL FIX: Re-import Master was deleting custom works!**
+
+The "Re-import Master" button deleted ALL curriculum works including custom teacher-added works.
+
+**Fix:** Only delete non-custom works:
+```javascript
+.or('is_custom.is.null,is_custom.eq.false')
+```
+
+**Other Fixes:**
+
+| Issue | Root Cause | Fix |
+|-------|------------|-----|
+| Position insertion wrong | `sequence: idx + 1` used array index instead of DB sequence | Changed to `w.sequence \|\| idx + 1` |
+| Modal inputs unresponsive | Textareas had inconsistent styling | Added explicit `bg-white`, `border`, `text-gray-900` |
+| Eye icon confusing | `is_active: false` made work disappear (GET filters by `is_active: true`) | Changed to 🗑️ trash icon with actual delete |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `app/montree/dashboard/[childId]/page.tsx` | Fixed sequence bug (3 places) |
+| `app/montree/dashboard/curriculum/page.tsx` | Textarea styling + trash icon + delete function |
+| `app/api/montree/curriculum/route.ts` | Re-import preserves custom works |
+| `app/api/montree/curriculum/delete/route.ts` | **NEW** - Delete work endpoint |
+
+**Custom Works Protection:**
+- Works with `is_custom: true` → Protected from re-import
+- Works from Master Montessori Brain → Replaced on re-import
+
+**Git:** Pending commit
+
+---
+
 ### Session 142 - Feb 4, 2026 Evening (CURRICULUM-PROGRESS DATA SYNC)
 
 **🔧 ROOT CAUSE FIX: Orphaned Works**

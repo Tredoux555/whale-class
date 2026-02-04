@@ -98,8 +98,12 @@ export async function POST(request: NextRequest) {
         for (const area of existingAreas) {
           areaMap[area.area_key] = area.id;
         }
-        // Clear existing works only
-        await supabase.from('montree_classroom_curriculum_works').delete().eq('classroom_id', classroom_id);
+        // Clear ONLY non-custom works (preserve custom works added by teacher)
+        await supabase
+          .from('montree_classroom_curriculum_works')
+          .delete()
+          .eq('classroom_id', classroom_id)
+          .or('is_custom.is.null,is_custom.eq.false');
       } else {
         // Create new areas
         const areasToInsert = DEFAULT_AREAS.map(area => ({

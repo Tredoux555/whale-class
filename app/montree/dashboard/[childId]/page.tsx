@@ -343,7 +343,7 @@ export default function WeekPage() {
           name: w.name,
           name_chinese: w.chinese_name,
           status: 'not_started',
-          sequence: idx + 1,
+          sequence: w.sequence || idx + 1,
         }));
         setCurriculum(prev => ({ ...prev, [areaKey]: works }));
       } catch (err) {
@@ -403,7 +403,7 @@ export default function WeekPage() {
           name: w.name,
           name_chinese: w.chinese_name,
           status: progress?.status || 'not_started',
-          sequence: idx + 1,
+          sequence: w.sequence || idx + 1,
         };
       });
 
@@ -447,7 +447,7 @@ export default function WeekPage() {
           name: w.name,
           name_chinese: w.chinese_name,
           status: progress?.status || 'not_started',
-          sequence: idx + 1,
+          sequence: w.sequence || idx + 1,
         };
       });
 
