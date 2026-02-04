@@ -1,43 +1,51 @@
-# WHALE HANDOFF - February 4, 2026 (Evening)
-## Session 142: Curriculum-Progress Data Sync + Modal Fix
+# WHALE HANDOFF - February 4, 2026 (Late Evening)
+## Session 143: Sequence Bug + Modal Inputs + Curriculum Safety
 
 ---
 
 ## Summary
 
-Fixed critical data architecture issue where works could exist in progress without corresponding curriculum entries, causing "orphaned" works that appeared in Week view but not Curriculum page.
+Fixed multiple bugs and safety issues:
+1. Position insertion bug - works were inserted at first position regardless of selection
+2. Modal inputs not responsive
+3. Re-import Master was deleting custom works (dangerous!)
+4. Eye icon was confusing - changed to trash icon with proper delete functionality
 
 ---
 
 ## Fixes Applied This Session
 
-### 1. Modal Input Bug (Curriculum Page)
-**Problem:** Edit Work modal inputs were unresponsive - couldn't type in fields
-**Root Cause:** CSS conflict - `overflow-hidden` on modal container + `max-h-[70vh]` on content created event handling issues
-**Fix:** Changed modal to use `flex flex-col` layout with `flex-shrink-0` for header/footer and `flex-1` for scrollable content
+### 1. Position Insertion Bug (ROOT CAUSE FOUND & FIXED)
+**Problem:** When adding a new work via "Insert after position..." picker, work always went to first position
+**Root Cause:** In `/app/montree/dashboard/[childId]/page.tsx`, the `sequence` property was being set as `idx + 1` (array index) instead of the actual database sequence value `w.sequence`
+**Fix:** Changed from `sequence: idx + 1` to `sequence: w.sequence || idx + 1` in three places
 
-### 2. Curriculum-Progress Data Sync Gap (ROOT CAUSE)
-**Problem:** "Word Building Work with /u/" appeared in KK's Week view and Gallery but NOT in Curriculum page
-**Root Cause:** Two independent tables with NO foreign key relationship:
-- `montree_child_progress` stores `work_name` as TEXT
-- `montree_classroom_curriculum_works` stores proper UUID records
-- Works could be added to progress without curriculum entries = "orphaned works"
+### 2. Modal Input Styling (Textareas)
+**Problem:** Edit Work modal textareas had inconsistent styling
+**Fix:** Applied consistent styling with explicit `bg-white`, `border border-gray-300`, `text-gray-900`
 
-**Fix:** Auto-sync in `/api/montree/progress/update/route.ts`:
-- When progress is saved with an `area`, checks if work exists in curriculum
-- If not found, auto-creates curriculum entry with `is_custom=true`
-- Uses `ilike()` for case-insensitive matching
+### 3. Re-import Master Safety (CRITICAL)
+**Problem:** "Re-import Master" button was deleting ALL curriculum works, including custom works added by the teacher
+**Fix:** Changed delete query to preserve custom works:
+```javascript
+// OLD (dangerous): Delete everything
+await supabase.from('montree_classroom_curriculum_works').delete().eq('classroom_id', classroom_id);
 
-**Important:** Only works for NEW progress updates. Existing orphaned works need to be re-saved to trigger sync.
+// NEW (safe): Only delete non-custom works
+await supabase
+  .from('montree_classroom_curriculum_works')
+  .delete()
+  .eq('classroom_id', classroom_id)
+  .or('is_custom.is.null,is_custom.eq.false');
+```
 
-### 3. Dashboard Header Links
-Added 📚 Curriculum and 🧠 Guru buttons to main dashboard (student picker page)
-
-### 4. Earlier Fixes (Same Session)
-- Added `classroom_id` to photo/video uploads in capture page
-- Added `res.ok` check on work search API
-- Added empty state handling in WorkWheelPicker
-- Added 20+ fallback descriptions for common Montessori works
+### 4. Eye Icon → Trash Icon
+**Problem:** Eye icon (👁️) was setting `is_active: false`, but since the GET query filtered by `is_active: true`, the work would disappear completely - users perceived this as deletion
+**Fix:**
+- Changed icon from 👁️ to 🗑️ (trash)
+- Changed function from `toggleWorkActive` to `deleteWork`
+- Added confirmation dialog before delete
+- Created new `/api/montree/curriculum/delete` endpoint that actually deletes
 
 ---
 
@@ -45,61 +53,45 @@ Added 📚 Curriculum and 🧠 Guru buttons to main dashboard (student picker pa
 
 | File | Change |
 |------|--------|
-| `app/api/montree/progress/update/route.ts` | AUTO-SYNC: Creates curriculum entry when progress saved |
-| `app/montree/dashboard/curriculum/page.tsx` | Fixed modal CSS layout |
-| `app/montree/dashboard/page.tsx` | Added Curriculum + Guru links to header |
-| `app/montree/dashboard/capture/page.tsx` | Added classroom_id to uploads |
-| `app/api/montree/reports/preview/route.ts` | Added 20+ fallback descriptions |
-| `components/montree/WorkWheelPicker.tsx` | Empty state handling |
-
----
-
-## Data Architecture Insight
-
-```
-BEFORE (Broken):
-┌─────────────────────┐     ┌──────────────────────────────┐
-│ montree_child_      │     │ montree_classroom_           │
-│ progress            │     │ curriculum_works             │
-├─────────────────────┤     ├──────────────────────────────┤
-│ work_name (TEXT)    │──X──│ name (TEXT), id (UUID)       │
-│ No FK constraint    │     │ Has proper relationships     │
-└─────────────────────┘     └──────────────────────────────┘
-        ↓ WEEK VIEW              ↓ CURRICULUM PAGE
-    Shows ALL works          Only shows curriculum works
-    (including orphans)
-
-AFTER (Fixed):
-Progress Update → Checks curriculum → Auto-creates if missing
-```
+| `app/montree/dashboard/[childId]/page.tsx` | Fixed sequence: `idx + 1` → `w.sequence \|\| idx + 1` (3 places) |
+| `app/montree/dashboard/curriculum/page.tsx` | Textarea styling + trash icon + delete function |
+| `app/api/montree/curriculum/route.ts` | Re-import preserves custom works |
+| `app/api/montree/curriculum/delete/route.ts` | NEW - Delete work endpoint |
 
 ---
 
 ## Test Checklist
 
-- [ ] Edit Work modal - inputs should be typable now
-- [ ] Add new work to child's progress → should auto-appear in Curriculum
-- [ ] Main dashboard shows 📚 and 🧠 buttons
-- [ ] KK's "Word Building Work with /u/" - re-save progress to sync to curriculum
+- [ ] Position insertion: Select position #22, work should appear at position #22
+- [ ] Modal inputs: All text inputs and textareas should be typable
+- [ ] Re-import Master: Custom works should NOT be deleted
+- [ ] Trash icon: Should show confirmation, then delete work
+
+---
+
+## Custom Works Protection
+
+Works are marked as `is_custom: true` when:
+- Created via progress auto-sync (progress/update route)
+- Added manually via curriculum "Add Work"
+
+Works with `is_custom: false` or `NULL`:
+- Imported from Master Montessori Brain
+- Will be replaced on "Re-import Master"
 
 ---
 
 ## Git Status
 
-**Latest commit:** `b618d21` - "feat: Add Curriculum and Guru links to main dashboard"
-**Pushed to:** GitHub ✅ (user pushed via terminal)
-**Deployed to:** Railway ⏳ (should auto-deploy)
+**Ready to commit:** Changes not yet committed
+**Files modified:**
+- `app/montree/dashboard/[childId]/page.tsx`
+- `app/montree/dashboard/curriculum/page.tsx`
+- `app/api/montree/curriculum/route.ts`
+- `app/api/montree/curriculum/delete/route.ts` (NEW)
 
 ---
 
-## Known Limitations
-
-1. **Existing orphaned works** won't auto-sync - must re-save progress to trigger
-2. **Works without `area`** won't auto-sync (need area to know which curriculum section)
-3. **Case sensitivity** - uses `ilike()` but hyphenation differences may still cause duplicates
-
----
-
-*Updated: February 4, 2026 ~8pm*
-*Session: 142*
-*Status: DEPLOYED*
+*Updated: February 4, 2026 ~Late Evening*
+*Session: 143*
+*Status: READY TO DEPLOY*

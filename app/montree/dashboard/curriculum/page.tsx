@@ -221,24 +221,27 @@ export default function CurriculumPage() {
     setSaving(false);
   };
 
-  // Toggle work active/inactive
-  const toggleWorkActive = async (work: Work) => {
+  // Delete work from curriculum
+  const deleteWork = async (work: Work) => {
+    if (!confirm(`Delete "${work.name}" from curriculum?\n\nThis cannot be undone.`)) return;
+
     try {
-      const res = await fetch('/api/montree/curriculum/update', {
+      const res = await fetch('/api/montree/curriculum/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           work_id: work.id,
-          is_active: !work.is_active,
         })
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(work.is_active ? 'Work hidden' : 'Work restored');
+        toast.success('Work deleted');
         fetchCurriculum();
+      } else {
+        toast.error(data.error || 'Failed to delete');
       }
     } catch (err) {
-      toast.error('Failed to update');
+      toast.error('Failed to delete');
     }
   };
 
@@ -416,7 +419,6 @@ export default function CurriculumPage() {
                         onDrop={(e) => handleDrop(e, work)}
                         onDragEnd={handleDragEnd}
                         className={`bg-gray-50 rounded-xl overflow-hidden transition-all
-                          ${!work.is_active ? 'opacity-50' : ''}
                           ${isDragging ? 'opacity-50 scale-95' : ''}
                           ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
                       >
@@ -445,10 +447,11 @@ export default function CurriculumPage() {
                             className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-200">
                             ✏️
                           </button>
-                          {/* Hide/Show button */}
-                          <button onClick={() => toggleWorkActive(work)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center ${work.is_active ? 'bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}>
-                            {work.is_active ? '👁️' : '👁️‍🗨️'}
+                          {/* Delete button */}
+                          <button onClick={() => deleteWork(work)}
+                            className="w-8 h-8 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center hover:bg-red-100 hover:text-red-600"
+                            title="Delete work">
+                            🗑️
                           </button>
                         </div>
                         
@@ -607,22 +610,35 @@ export default function CurriculumPage() {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={e => setEditForm({...editForm, name: e.target.value})}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900"
+                />
               </div>
-              
+
               {/* Chinese Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Chinese Name</label>
-                <input type="text" value={editForm.name_chinese} onChange={e => setEditForm({...editForm, name_chinese: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <input
+                  type="text"
+                  value={editForm.name_chinese}
+                  onChange={e => setEditForm({...editForm, name_chinese: e.target.value})}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900"
+                />
               </div>
-              
+
               {/* Age Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
-                <input type="text" value={editForm.age_range} onChange={e => setEditForm({...editForm, age_range: e.target.value})}
-                  placeholder="e.g. 3-6" className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <input
+                  type="text"
+                  value={editForm.age_range}
+                  onChange={e => setEditForm({...editForm, age_range: e.target.value})}
+                  placeholder="e.g. 3-6"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400"
+                />
               </div>
               
               {/* AI Generate Button */}
@@ -652,49 +668,73 @@ export default function CurriculumPage() {
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description (for parents)</label>
-                <textarea value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})}
-                  rows={3} placeholder="What parents will see about this work..."
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" />
+                <textarea
+                  value={editForm.description}
+                  onChange={e => setEditForm({...editForm, description: e.target.value})}
+                  rows={3}
+                  placeholder="What parents will see about this work..."
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
+                />
               </div>
 
               {/* Why It Matters */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">💡 Why It Matters</label>
-                <textarea value={editForm.why_it_matters} onChange={e => setEditForm({...editForm, why_it_matters: e.target.value})}
-                  rows={2} placeholder="The developmental significance..."
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" />
+                <textarea
+                  value={editForm.why_it_matters}
+                  onChange={e => setEditForm({...editForm, why_it_matters: e.target.value})}
+                  rows={2}
+                  placeholder="The developmental significance..."
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
+                />
               </div>
-              
+
               {/* Direct Aims */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Direct Aims (one per line)</label>
-                <textarea value={editForm.direct_aims} onChange={e => setEditForm({...editForm, direct_aims: e.target.value})}
-                  rows={3} placeholder="Control of movement&#10;Balance" 
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-sm" />
+                <textarea
+                  value={editForm.direct_aims}
+                  onChange={e => setEditForm({...editForm, direct_aims: e.target.value})}
+                  rows={3}
+                  placeholder="Control of movement&#10;Balance"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
+                />
               </div>
-              
+
               {/* Indirect Aims */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">🌱 Indirect Aims (one per line)</label>
-                <textarea value={editForm.indirect_aims} onChange={e => setEditForm({...editForm, indirect_aims: e.target.value})}
-                  rows={3} placeholder="Concentration&#10;Independence" 
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-sm" />
+                <textarea
+                  value={editForm.indirect_aims}
+                  onChange={e => setEditForm({...editForm, indirect_aims: e.target.value})}
+                  rows={3}
+                  placeholder="Concentration&#10;Independence"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
+                />
               </div>
-              
+
               {/* Materials */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">🧰 Materials (one per line)</label>
-                <textarea value={editForm.materials} onChange={e => setEditForm({...editForm, materials: e.target.value})}
-                  rows={3} placeholder="Pink Tower cubes&#10;Work mat" 
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-sm" />
+                <textarea
+                  value={editForm.materials}
+                  onChange={e => setEditForm({...editForm, materials: e.target.value})}
+                  rows={3}
+                  placeholder="Pink Tower cubes&#10;Work mat"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
+                />
               </div>
-              
+
               {/* Teacher Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">📝 Teacher Notes (private)</label>
-                <textarea value={editForm.teacher_notes} onChange={e => setEditForm({...editForm, teacher_notes: e.target.value})}
-                  rows={3} placeholder="Notes for yourself about this work..."
-                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-sm bg-yellow-50" />
+                <textarea
+                  value={editForm.teacher_notes}
+                  onChange={e => setEditForm({...editForm, teacher_notes: e.target.value})}
+                  rows={3}
+                  placeholder="Notes for yourself about this work..."
+                  className="w-full px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
+                />
               </div>
             </div>
             
