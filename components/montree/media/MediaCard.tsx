@@ -41,12 +41,14 @@ export default function MediaCard({
   const [error, setError] = useState(false);
 
   // Fetch signed URL if not provided
+  // Always use storage_path (full quality) - thumbnail_path is lower quality
   useEffect(() => {
     if (thumbnailUrl) return;
 
     const fetchUrl = async () => {
       try {
-        const path = media.thumbnail_path || media.storage_path;
+        // Use storage_path for full quality images
+        const path = media.storage_path;
         const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(path)}`);
         const data = await response.json();
 
@@ -63,7 +65,7 @@ export default function MediaCard({
     };
 
     fetchUrl();
-  }, [media.thumbnail_path, media.storage_path, thumbnailUrl]);
+  }, [media.storage_path, thumbnailUrl]);
 
   // Format date
   const formatDate = (dateStr: string) => {
