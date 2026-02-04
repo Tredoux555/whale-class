@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
+import AddWorkModal from '@/components/montree/AddWorkModal';
 
 interface Work {
   id: string;
@@ -76,6 +77,13 @@ export default function CurriculumPage() {
   const [draggedWork, setDraggedWork] = useState<Work | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
+
+  // Add work modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Scroll container ref for auto-scroll during drag
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef<number | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_session');
@@ -245,6 +253,26 @@ export default function CurriculumPage() {
     }
   };
 
+  // Auto-scroll during drag
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+  }, []);
+
+  const startAutoScroll = useCallback((direction: 'up' | 'down', speed: number) => {
+    const scroll = () => {
+      if (scrollContainerRef.current) {
+        const scrollAmount = direction === 'up' ? -speed : speed;
+        scrollContainerRef.current.scrollTop += scrollAmount;
+      }
+      autoScrollRef.current = requestAnimationFrame(scroll);
+    };
+    stopAutoScroll();
+    autoScrollRef.current = requestAnimationFrame(scroll);
+  }, [stopAutoScroll]);
+
   // Drag-drop handlers
   const handleDragStart = (e: React.DragEvent, work: Work) => {
     setDraggedWork(work);
@@ -258,6 +286,27 @@ export default function CurriculumPage() {
     if (draggedWork && workId !== draggedWork.id) {
       setDragOverId(workId);
     }
+
+    // Auto-scroll when near edges
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const rect = container.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const edgeThreshold = 60; // pixels from edge to trigger scroll
+      const scrollSpeed = 8;
+
+      if (mouseY < rect.top + edgeThreshold) {
+        // Near top edge - scroll up
+        const proximity = 1 - (mouseY - rect.top) / edgeThreshold;
+        startAutoScroll('up', scrollSpeed * Math.max(0.5, proximity));
+      } else if (mouseY > rect.bottom - edgeThreshold) {
+        // Near bottom edge - scroll down
+        const proximity = 1 - (rect.bottom - mouseY) / edgeThreshold;
+        startAutoScroll('down', scrollSpeed * Math.max(0.5, proximity));
+      } else {
+        stopAutoScroll();
+      }
+    }
   };
 
   const handleDragLeave = () => {
@@ -267,6 +316,7 @@ export default function CurriculumPage() {
   const handleDrop = async (e: React.DragEvent, targetWork: Work) => {
     e.preventDefault();
     setDragOverId(null);
+    stopAutoScroll();
 
     if (!draggedWork || !selectedArea || draggedWork.id === targetWork.id) {
       setDraggedWork(null);
@@ -324,6 +374,7 @@ export default function CurriculumPage() {
   const handleDragEnd = () => {
     setDraggedWork(null);
     setDragOverId(null);
+    stopAutoScroll();
   };
 
   if (loading) {
@@ -342,13 +393,22 @@ export default function CurriculumPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/montree/dashboard')} 
+              <button onClick={() => router.push('/montree/dashboard')}
                 className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">←</button>
               <div>
                 <h1 className="text-xl font-bold">Curriculum</h1>
                 <p className="text-emerald-100 text-sm">{curriculum.length} works available</p>
               </div>
             </div>
+            {curriculum.length > 0 && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-colors"
+              >
+                <span className="text-lg">➕</span>
+                <span className="hidden sm:inline">Add Work</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -404,7 +464,31 @@ export default function CurriculumPage() {
                     ↕️ Drag to reorder
                   </span>
                 </div>
-                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                <div
+                  ref={scrollContainerRef}
+                  className="space-y-2 max-h-[60vh] overflow-y-auto scroll-smooth"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    // Auto-scroll when near edges of container
+                    if (scrollContainerRef.current && draggedWork) {
+                      const rect = scrollContainerRef.current.getBoundingClientRect();
+                      const mouseY = e.clientY;
+                      const edgeThreshold = 60;
+                      const scrollSpeed = 8;
+
+                      if (mouseY < rect.top + edgeThreshold) {
+                        const proximity = 1 - (mouseY - rect.top) / edgeThreshold;
+                        startAutoScroll('up', scrollSpeed * Math.max(0.5, proximity));
+                      } else if (mouseY > rect.bottom - edgeThreshold) {
+                        const proximity = 1 - (rect.bottom - mouseY) / edgeThreshold;
+                        startAutoScroll('down', scrollSpeed * Math.max(0.5, proximity));
+                      } else {
+                        stopAutoScroll();
+                      }
+                    }
+                  }}
+                  onDragLeave={() => stopAutoScroll()}
+                >
                   {byArea[selectedArea].map(work => {
                     const isExpanded = expandedWork === work.id;
                     const isDragging = draggedWork?.id === work.id;
@@ -751,6 +835,27 @@ export default function CurriculumPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ADD WORK MODAL */}
+      {session?.classroom?.id && (
+        <AddWorkModal
+          classroomId={session.classroom.id}
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={fetchCurriculum}
+          defaultArea={selectedArea || undefined}
+        />
+      )}
+
+      {/* Floating Add Button (mobile) */}
+      {curriculum.length > 0 && (
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
+        >
+          ➕
+        </button>
       )}
 
       {/* Bottom Nav */}

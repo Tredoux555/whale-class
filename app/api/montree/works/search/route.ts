@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
 
         if (!error && data && data.length > 0) {
           let works = data.map(w => ({
-            id: w.work_key,
+            id: w.id, // Use actual database id for linking photos
+            work_key: w.work_key, // Keep work_key for reference
             name: w.name,
             chinese_name: w.name_chinese,
             description: w.description,

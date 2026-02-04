@@ -211,11 +211,39 @@ export async function GET(
         why_it_matters: w.why_it_matters || null,
       }));
 
+      // Include all photos from saved content OR fetch from that week
+      let allPhotos = savedContent.photos || [];
+
+      // If no saved photos array, fetch all photos for that week
+      if (allPhotos.length === 0) {
+        const startOfWeek = getWeekStart(report.report_year, report.week_number);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+        const { data: weekPhotos } = await supabase
+          .from('montree_media')
+          .select('id, storage_path, work_id, caption, captured_at')
+          .eq('child_id', report.child_id)
+          .eq('media_type', 'photo')
+          .gte('captured_at', startOfWeek.toISOString())
+          .lt('captured_at', endOfWeek.toISOString());
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        allPhotos = (weekPhotos || []).map(p => ({
+          id: p.id,
+          url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
+          caption: p.caption,
+          work_name: null,
+          captured_at: p.captured_at,
+        }));
+      }
+
       return NextResponse.json({
         report: {
           ...report,
           child,
-          works_completed: worksCompleted
+          works_completed: worksCompleted,
+          all_photos: allPhotos,
         }
       });
     }
@@ -293,8 +321,10 @@ export async function GET(
       }
     }
 
-    // Build photo map
+    // Build photo map AND track which photos are used
     const photosByWorkName = new Map<string, { url: string; caption: string | null }>();
+    const usedPhotoIds = new Set<string>();
+
     for (const p of mediaPhotos || []) {
       const workName = p.work_id ? workIdToName.get(p.work_id) : p.caption;
       if (workName && p.storage_path) {
@@ -302,6 +332,7 @@ export async function GET(
           url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
           caption: p.caption,
         });
+        usedPhotoIds.add(p.id);
       }
     }
 
@@ -334,11 +365,21 @@ export async function GET(
       };
     });
 
+    // Collect ALL photos for the week (including ones not matched to works)
+    const allPhotos = (mediaPhotos || []).map(p => ({
+      id: p.id,
+      url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      caption: p.caption,
+      work_name: p.work_id ? workIdToName.get(p.work_id) : null,
+      captured_at: p.captured_at,
+    }));
+
     return NextResponse.json({
       report: {
         ...report,
         child,
-        works_completed: worksCompleted
+        works_completed: worksCompleted,
+        all_photos: allPhotos, // Include ALL photos from the week
       }
     });
   } catch (error: any) {
