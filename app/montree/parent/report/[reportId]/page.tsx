@@ -11,8 +11,10 @@ interface HighlightItem {
 
 interface ReportData {
   id: string;
-  week_number: number;
-  report_year: number;
+  week_number: number | null;
+  report_year: number | null;
+  week_start: string | null;
+  week_end: string | null;
   parent_summary: string | null;
   highlights: HighlightItem[] | string[] | null;
   areas_of_growth: string[] | null;
@@ -80,11 +82,30 @@ export default function ParentReportPage() {
     practical_life: '🧹',
     sensorial: '👁️',
     mathematics: '🔢',
+    math: '🔢',
     language: '📚',
     cultural: '🌍',
     art: '🎨',
     music: '🎵',
     physical: '🏃'
+  };
+
+  // Format week display with fallback to date range
+  const formatWeekDisplay = () => {
+    if (!report) return '';
+    if (report.week_number && report.report_year) {
+      return `Week ${report.week_number}, ${report.report_year}`;
+    }
+    // Fallback to date range
+    if (report.week_start) {
+      const start = new Date(report.week_start);
+      const end = report.week_end ? new Date(report.week_end) : start;
+      const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `${formatDate(start)} - ${formatDate(end)}`;
+    }
+    // Last resort: use created_at
+    const created = new Date(report.created_at);
+    return `Week of ${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
   if (loading) {
@@ -134,7 +155,7 @@ export default function ParentReportPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">{childName}'s Weekly Report</h1>
-              <p className="text-gray-500">Week {report.week_number}, {report.report_year}</p>
+              <p className="text-gray-500">{formatWeekDisplay()}</p>
             </div>
           </div>
           
@@ -232,6 +253,11 @@ export default function ParentReportPage() {
                       </div>
                     )}
                   </div>
+                ) : work.photo_url ? (
+                  <p className="text-gray-600 text-sm">
+                    {areaEmoji[work.area] || '📌'} Your child practiced this{' '}
+                    <span className="capitalize">{work.area.replace('_', ' ')}</span> activity.
+                  </p>
                 ) : (
                   <p className="text-gray-500 text-sm capitalize">
                     {areaEmoji[work.area] || '📌'} {work.area.replace('_', ' ')}

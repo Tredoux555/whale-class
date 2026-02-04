@@ -166,7 +166,7 @@ export async function GET(
     const { data: report, error: reportError } = await supabase
       .from('montree_weekly_reports')
       .select(`
-        id, week_number, report_year, parent_summary,
+        id, week_number, report_year, week_start, week_end, parent_summary,
         highlights, areas_of_growth, recommendations,
         created_at, child_id, classroom_id, content
       `)

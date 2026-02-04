@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     // Accept: status='sent' (new way) OR generated_at is set (old way - indicates report was sent)
     const { data: reports, error } = await supabase
       .from('montree_weekly_reports')
-      .select('id, status, created_at, week_start, week_end, content, generated_at, sent_at')
+      .select('id, status, created_at, week_start, week_end, week_number, report_year, parent_summary, content, generated_at, sent_at')
       .eq('child_id', childId)
       .or('status.eq.sent,generated_at.not.is.null')
       .order('created_at', { ascending: false })

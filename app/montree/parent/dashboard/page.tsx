@@ -15,8 +15,10 @@ interface Child {
 
 interface WeeklyReport {
   id: string;
-  week_number: number;
-  report_year: number;
+  week_number: number | null;
+  report_year: number | null;
+  week_start: string | null;
+  week_end: string | null;
   parent_summary: string | null;
   created_at: string;
 }
@@ -237,6 +239,23 @@ export default function ParentDashboardPage() {
     return `${years}y ${months}mo`;
   };
 
+  // Format week display with fallback to date range
+  const formatWeekDisplay = (report: WeeklyReport) => {
+    if (report.week_number && report.report_year) {
+      return `Week ${report.week_number}, ${report.report_year}`;
+    }
+    // Fallback to date range
+    if (report.week_start) {
+      const start = new Date(report.week_start);
+      const end = report.week_end ? new Date(report.week_end) : start;
+      const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `${formatDate(start)} - ${formatDate(end)}`;
+    }
+    // Last resort: use created_at
+    const created = new Date(report.created_at);
+    return `Week of ${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
@@ -374,7 +393,7 @@ export default function ParentDashboardPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium text-gray-800">
-                            Week {report.week_number}, {report.report_year}
+                            {formatWeekDisplay(report)}
                           </div>
                           {report.parent_summary && (
                             <p className="text-sm text-gray-500 mt-1 line-clamp-2">
