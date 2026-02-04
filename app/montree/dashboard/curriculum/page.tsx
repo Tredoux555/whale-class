@@ -595,15 +595,15 @@ export default function CurriculumPage() {
       {/* EDIT MODAL */}
       {editingWork && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setEditingWork(null)}>
-          <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+          <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex-shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-lg">Edit Work</h3>
                 <button onClick={() => setEditingWork(null)} className="text-white/80 hover:text-white text-2xl">×</button>
               </div>
             </div>
-            
-            <div className="p-4 overflow-y-auto max-h-[70vh] space-y-4">
+
+            <div className="p-4 overflow-y-auto flex-1 space-y-4">
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -699,7 +699,7 @@ export default function CurriculumPage() {
             </div>
             
             {/* Actions */}
-            <div className="p-4 border-t flex gap-3">
+            <div className="p-4 border-t flex gap-3 flex-shrink-0">
               <button onClick={() => setEditingWork(null)} 
                 className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200">
                 Cancel
