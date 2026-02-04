@@ -34,6 +34,13 @@ interface ReportData {
     parent_description: string | null;
     why_it_matters: string | null;
   }[];
+  all_photos?: {
+    id: string;
+    url: string;
+    caption: string | null;
+    work_name: string | null;
+    captured_at: string;
+  }[];
 }
 
 export default function ParentReportPage() {
@@ -265,6 +272,33 @@ export default function ParentReportPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Photo Gallery - Show ALL photos from the week */}
+        {report.all_photos && report.all_photos.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span>📸</span> Photos This Week ({report.all_photos.length})
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {report.all_photos.map((photo, i) => (
+                <div key={photo.id || i} className="relative group">
+                  <div className="aspect-square rounded-xl overflow-hidden shadow-md">
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || photo.work_name || 'Activity photo'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {(photo.caption || photo.work_name) && (
+                    <p className="mt-1 text-xs text-gray-600 text-center truncate">
+                      {photo.caption || photo.work_name}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

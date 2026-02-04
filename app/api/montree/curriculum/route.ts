@@ -202,7 +202,21 @@ export async function POST(request: NextRequest) {
     }
 
     // ADD SINGLE WORK - supports inserting at specific position
-    const { work_key, name, name_chinese, area_key, description, after_sequence } = body;
+    const {
+      work_key,
+      name,
+      name_chinese,
+      area_key,
+      description,
+      after_sequence,
+      age_range,
+      why_it_matters,
+      direct_aims,
+      indirect_aims,
+      materials,
+      teacher_notes,
+      is_custom,
+    } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'name required' }, { status: 400 });
@@ -256,7 +270,8 @@ export async function POST(request: NextRequest) {
 
     let newSequence: number;
 
-    if (after_sequence !== undefined && after_sequence !== null) {
+    // Check if we should insert at a specific position (after_sequence can be 0)
+    if (typeof after_sequence === 'number') {
       // INSERT AFTER SPECIFIC SEQUENCE
       // First, shift all works with sequence > after_sequence by 1
       const { error: shiftError } = await supabase.rpc('increment_sequences_after', {
@@ -308,6 +323,13 @@ export async function POST(request: NextRequest) {
       description: description || null,
       sequence: newSequence,
       is_active: true,
+      age_range: age_range || '3-6',
+      why_it_matters: why_it_matters || null,
+      direct_aims: direct_aims || [],
+      indirect_aims: indirect_aims || [],
+      materials: materials || [],
+      teacher_notes: teacher_notes || null,
+      is_custom: is_custom || true,
     };
 
     const { data, error } = await supabase
