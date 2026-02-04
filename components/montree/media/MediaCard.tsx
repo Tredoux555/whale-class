@@ -40,15 +40,14 @@ export default function MediaCard({
   const [loading, setLoading] = useState(!thumbnailUrl);
   const [error, setError] = useState(false);
 
-  // Fetch signed URL if not provided (with thumbnail transform for gallery view)
+  // Fetch signed URL if not provided
   useEffect(() => {
     if (thumbnailUrl) return;
 
     const fetchUrl = async () => {
       try {
         const path = media.thumbnail_path || media.storage_path;
-        // Request thumbnail-sized image for gallery cards
-        const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(path)}&size=thumbnail`);
+        const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(path)}`);
         const data = await response.json();
 
         if (data.url) {
@@ -118,7 +117,8 @@ export default function MediaCard({
           <img
             src={imageUrl}
             alt={media.caption || 'Photo'}
-            className="absolute inset-0 w-full h-full object-contain bg-gray-900"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
           />
         )}
 
