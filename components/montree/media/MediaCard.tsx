@@ -78,10 +78,10 @@ export default function MediaCard({
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -95,7 +95,7 @@ export default function MediaCard({
   };
 
   return (
-    <div className="relative aspect-[4/3] group">
+    <div className="relative aspect-square group">
       <button
         onClick={handleClick}
         className={`relative inset-0 w-full h-full bg-gray-100 rounded-xl overflow-hidden transition-all ${
@@ -118,7 +118,6 @@ export default function MediaCard({
             src={imageUrl}
             alt={media.caption || 'Photo'}
             className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
           />
         )}
 

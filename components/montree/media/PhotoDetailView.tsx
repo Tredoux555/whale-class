@@ -28,7 +28,7 @@ export default function PhotoDetailView({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load image URL (full size for detail view)
+  // Load image URL
   useEffect(() => {
     if (!media || !isOpen) return;
 

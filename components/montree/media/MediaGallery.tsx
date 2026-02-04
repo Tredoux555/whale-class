@@ -55,7 +55,7 @@ export default function MediaGallery({
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="aspect-[4/3] bg-gray-100 rounded-xl animate-pulse"
+            className="aspect-square bg-gray-100 rounded-xl animate-pulse"
           />
         ))}
       </div>
@@ -73,9 +73,9 @@ export default function MediaGallery({
   }
 
   // Grid display
-  const gridClass = columns === 2 
-    ? 'grid-cols-2' 
-    : columns === 4 
+  const gridClass = columns === 2
+    ? 'grid-cols-2'
+    : columns === 4
       ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
       : 'grid-cols-2 sm:grid-cols-3';
 
