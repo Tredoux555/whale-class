@@ -73,6 +73,7 @@ export async function middleware(req: NextRequest) {
     '/games',      // Games hub and all game routes
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
+    '/montree',    // Montree app - has its own auth system (teacher/parent logins)
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
