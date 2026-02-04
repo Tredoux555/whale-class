@@ -102,16 +102,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    // Get descriptions from classroom curriculum as fallback
+    // ============================================================
+    // STEP 1: Get curriculum works (the source of truth for work info)
+    // ============================================================
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('name, parent_description, why_it_matters')
+      .select('id, name, area, parent_description, why_it_matters')
       .eq('classroom_id', child.classroom_id);
 
-    // Build DB descriptions map for fuzzy matching
+    // Build lookup maps from curriculum
+    const workIdToInfo = new Map<string, { name: string; area: string; description: string; why_it_matters: string }>();
+    const workNameToId = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string; originalName: string }>();
+
     for (const work of curriculumWorks || []) {
-      if (work.name && work.parent_description) {
+      workIdToInfo.set(work.id, {
+        name: work.name,
+        area: work.area || 'practical_life',
+        description: work.parent_description || '',
+        why_it_matters: work.why_it_matters || '',
+      });
+      workNameToId.set(work.name.toLowerCase(), work.id);
+      if (work.parent_description) {
         dbDescriptions.set(work.name.toLowerCase(), {
           description: work.parent_description,
           why_it_matters: work.why_it_matters || '',
@@ -120,87 +132,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get last report date
-    const { data: lastReport } = await supabase
-      .from('montree_weekly_reports')
-      .select('generated_at')
-      .eq('child_id', childId)
-      .order('generated_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    const lastReportDate = lastReport?.generated_at || null;
-
-    // Check if user wants to see all progress or just unreported
-    const showAll = searchParams.get('show_all') === 'true';
-
-    // Calculate this week's date range for fallback
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay()); // Sunday
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-
-    // Get progress based on mode
-    let progressQuery = supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, updated_at, presented_at')
-      .eq('child_id', childId)
-      .neq('status', 'not_started');
-
-    if (showAll) {
-      // Show all progress from this week (for "Show This Week's Progress" button)
-      progressQuery = progressQuery.or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
-    } else if (lastReportDate) {
-      // Try to get progress updated since last report
-      progressQuery = progressQuery.or(`updated_at.gt.${lastReportDate},presented_at.gt.${lastReportDate}`);
-    }
-    // If no lastReportDate and not showAll, get all progress (first report ever)
-
-    let { data: progress } = await progressQuery;
-
-    // If no unreported progress found (and not in showAll mode), fall back to this week's progress
-    if ((!progress || progress.length === 0) && !showAll && lastReportDate) {
-      const { data: weekProgress } = await supabase
-        .from('montree_child_progress')
-        .select('work_name, area, status, updated_at, presented_at')
-        .eq('child_id', childId)
-        .neq('status', 'not_started')
-        .or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
-
-      progress = weekProgress;
-    }
-
-    // Look for existing draft/sent report with selected photos (uses weekStartStr from above)
-    const { data: draftReport } = await supabase
-      .from('montree_weekly_reports')
-      .select('id')
-      .eq('child_id', childId)
-      .eq('week_start', weekStartStr)
-      .single();
-
-    let selectedPhotoIds: string[] = [];
-
-    if (draftReport) {
-      // Get explicitly selected photos from junction table
-      const { data: reportMedia } = await supabase
-        .from('montree_report_media')
-        .select('media_id, display_order')
-        .eq('report_id', draftReport.id)
-        .order('display_order', { ascending: true });
-
-      if (reportMedia && reportMedia.length > 0) {
-        selectedPhotoIds = reportMedia.map(rm => rm.media_id);
-      }
-    }
-
-    // Get ALL photos for this child (both individual and group)
+    // ============================================================
+    // STEP 2: Get ALL photos for this child
+    // ============================================================
     const { data: mediaPhotos } = await supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
       .eq('child_id', childId)
       .eq('media_type', 'photo');
 
-    // Also check junction table for group photos where child is included
+    // Also check junction table for group photos
     const { data: groupPhotos } = await supabase
       .from('montree_media_children')
       .select(`
@@ -210,7 +151,7 @@ export async function GET(request: NextRequest) {
       `)
       .eq('child_id', childId);
 
-    // Combine both photo sources and deduplicate
+    // Combine and deduplicate photos
     const photoMap = new Map();
     for (const p of mediaPhotos || []) {
       photoMap.set(p.id, p);
@@ -222,84 +163,221 @@ export async function GET(request: NextRequest) {
     }
     const allMediaPhotos = Array.from(photoMap.values());
 
-    // Get curriculum works to map work_id to work_name
-    const { data: curriculumWorksForPhotos } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('id, name')
-      .eq('classroom_id', child.classroom_id);
+    // Transform photos with work info from curriculum (using work_id directly)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const allPhotos = allMediaPhotos.map((p: any) => {
+      // Get work info from curriculum using work_id (the reliable connection)
+      const workInfo = p.work_id ? workIdToInfo.get(p.work_id) : null;
+      return {
+        id: p.id,
+        work_id: p.work_id,
+        url: p.storage_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}` : null,
+        work_name: workInfo?.name || p.caption || null,
+        area: workInfo?.area || null,
+        caption: p.caption,
+        created_at: p.captured_at,
+        is_selected: false, // Will be updated below
+      };
+    });
 
-    const workIdToName = new Map<string, string>();
-    for (const w of curriculumWorksForPhotos || []) {
-      workIdToName.set(w.id, w.name);
+    // ============================================================
+    // STEP 3: Get selected photos for this week's report
+    // ============================================================
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+
+    const { data: draftReport } = await supabase
+      .from('montree_weekly_reports')
+      .select('id')
+      .eq('child_id', childId)
+      .eq('week_start', weekStartStr)
+      .single();
+
+    let selectedPhotoIds: string[] = [];
+    if (draftReport) {
+      const { data: reportMedia } = await supabase
+        .from('montree_report_media')
+        .select('media_id, display_order')
+        .eq('report_id', draftReport.id)
+        .order('display_order', { ascending: true });
+
+      if (reportMedia && reportMedia.length > 0) {
+        selectedPhotoIds = reportMedia.map(rm => rm.media_id);
+      }
     }
 
-    // Transform media photos to have work_name, proper URL, and selection status
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const allPhotos = allMediaPhotos.map((p: any) => ({
-      id: p.id,
-      url: p.storage_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}` : null,
-      // work_name can come from work_id lookup OR from caption (which stores work name when captured from Week view)
-      work_name: p.work_id ? workIdToName.get(p.work_id) : p.caption,
-      caption: p.caption,
-      created_at: p.captured_at,
-      is_selected: selectedPhotoIds.includes(p.id), // Track if teacher selected this photo
-    }));
+    // Mark selected photos
+    for (const photo of allPhotos) {
+      photo.is_selected = selectedPhotoIds.includes(photo.id);
+    }
 
-    // Separate selected photos (for preview) from available photos
-    const selectedPhotos = allPhotos.filter(p => p.is_selected);
-    const availablePhotos = allPhotos.filter(p => !p.is_selected);
+    // ============================================================
+    // STEP 4: Get progress data
+    // ============================================================
+    const { data: lastReport } = await supabase
+      .from('montree_weekly_reports')
+      .select('generated_at')
+      .eq('child_id', childId)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single();
 
-    // Build report items with matched photos and descriptions
-    // Use SELECTED photos for preview (or all if no selections yet for backwards compat)
-    const photosForMatching = selectedPhotoIds.length > 0 ? selectedPhotos : allPhotos;
+    const lastReportDate = lastReport?.generated_at || null;
+    const showAll = searchParams.get('show_all') === 'true';
 
-    const reportItems = (progress || []).map(p => {
-      const workNameLower = p.work_name?.toLowerCase() || '';
+    let progressQuery = supabase
+      .from('montree_child_progress')
+      .select('work_name, area, status, updated_at, presented_at')
+      .eq('child_id', childId)
+      .neq('status', 'not_started');
 
-      // Find photo for this work using fuzzy matching
-      // Priority: exact match > contains match > keyword match
-      let photo = photosForMatching?.find(
-        ph => ph.work_name?.toLowerCase() === workNameLower
-      );
+    if (showAll) {
+      progressQuery = progressQuery.or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
+    } else if (lastReportDate) {
+      progressQuery = progressQuery.or(`updated_at.gt.${lastReportDate},presented_at.gt.${lastReportDate}`);
+    }
 
-      // Try contains match if no exact match
+    let { data: progress } = await progressQuery;
+
+    // Fallback to this week's progress if empty
+    if ((!progress || progress.length === 0) && !showAll && lastReportDate) {
+      const { data: weekProgress } = await supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, updated_at, presented_at')
+        .eq('child_id', childId)
+        .neq('status', 'not_started')
+        .or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
+      progress = weekProgress;
+    }
+
+    // ============================================================
+    // STEP 5: BUILD UNIFIED REPORT - Photo-first approach
+    // ============================================================
+    // Key insight: Start from PHOTOS (they have work_id) and UNION with progress
+
+    // Build a map of work_id -> photos
+    const photosByWorkId = new Map<string, typeof allPhotos[0][]>();
+    for (const photo of allPhotos) {
+      if (photo.work_id) {
+        const existing = photosByWorkId.get(photo.work_id) || [];
+        existing.push(photo);
+        photosByWorkId.set(photo.work_id, existing);
+      }
+    }
+
+    // Get photos for matching (selected if any, otherwise all)
+    const photosForMatching = selectedPhotoIds.length > 0
+      ? allPhotos.filter(p => p.is_selected)
+      : allPhotos;
+
+    // Build map of selected/available photos by work_id
+    const selectedPhotosByWorkId = new Map<string, typeof allPhotos[0]>();
+    for (const photo of photosForMatching) {
+      if (photo.work_id && !selectedPhotosByWorkId.has(photo.work_id)) {
+        selectedPhotosByWorkId.set(photo.work_id, photo);
+      }
+    }
+
+    // Track which works we've added (by work_id or name)
+    const addedWorkIds = new Set<string>();
+    const addedWorkNames = new Set<string>();
+    const reportItems: Array<{
+      work_id: string | null;
+      work_name: string;
+      area: string;
+      status: string;
+      photo_url: string | null;
+      photo_id: string | null;
+      photo_caption: string | null;
+      parent_description: string | null;
+      why_it_matters: string | null;
+      has_description: boolean;
+      source: 'progress' | 'photo';
+    }> = [];
+
+    // First: Add works from progress
+    for (const p of progress || []) {
+      const workNameLower = (p.work_name || '').toLowerCase();
+      const workId = workNameToId.get(workNameLower);
+      const workInfo = workId ? workIdToInfo.get(workId) : null;
+
+      // Find matching photo by work_id (direct match - most reliable)
+      let photo = workId ? selectedPhotosByWorkId.get(workId) : null;
+
+      // Fallback: fuzzy name match for photos without work_id
       if (!photo) {
-        photo = photosForMatching?.find(ph => {
-          const photoName = ph.work_name?.toLowerCase() || '';
-          return photoName && (workNameLower.includes(photoName) || photoName.includes(workNameLower));
+        photo = photosForMatching.find(ph => {
+          if (!ph.work_name) return false;
+          const photoNameLower = ph.work_name.toLowerCase();
+          return photoNameLower === workNameLower ||
+                 photoNameLower.includes(workNameLower) ||
+                 workNameLower.includes(photoNameLower);
         });
       }
 
-      // Try keyword match (at least 2 significant words overlap)
-      if (!photo) {
-        const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 2);
-        photo = photosForMatching?.find(ph => {
-          const photoName = ph.work_name?.toLowerCase() || '';
-          const photoWords = photoName.split(/[\s\-_]+/).filter(w => w.length > 2);
-          const overlap = workWords.filter(w => photoWords.some(pw => pw.includes(w) || w.includes(pw)));
-          return overlap.length >= 2;
-        });
-      }
-
-      // Find parent description from database using fuzzy matching
+      // Get description
       let desc = findBestDescription(p.work_name || '', dbDescriptions);
-
-      // Direct lookup fallback
       if (!desc && dbDescriptions.has(workNameLower)) {
         desc = dbDescriptions.get(workNameLower)!;
       }
 
-      return {
+      reportItems.push({
+        work_id: workId || null,
         work_name: p.work_name,
-        area: p.area,
+        area: p.area || workInfo?.area || 'practical_life',
         status: p.status === 'completed' ? 'mastered' : p.status,
         photo_url: photo?.url || null,
+        photo_id: photo?.id || null,
         photo_caption: photo?.caption || null,
-        parent_description: desc?.description || null,
-        why_it_matters: desc?.why_it_matters || null,
-        has_description: !!desc,
-      };
-    });
+        parent_description: desc?.description || workInfo?.description || null,
+        why_it_matters: desc?.why_it_matters || workInfo?.why_it_matters || null,
+        has_description: !!(desc || workInfo?.description),
+        source: 'progress',
+      });
+
+      if (workId) addedWorkIds.add(workId);
+      addedWorkNames.add(workNameLower);
+    }
+
+    // Second: Add works that have PHOTOS but no progress entry
+    // This is the key improvement - photos drive report content too!
+    for (const photo of photosForMatching) {
+      if (!photo.work_id) continue;
+      if (addedWorkIds.has(photo.work_id)) continue; // Already added from progress
+
+      const workInfo = workIdToInfo.get(photo.work_id);
+      if (!workInfo) continue; // Unknown work
+
+      // Don't add if work name already added (handles case where progress uses different name)
+      if (addedWorkNames.has(workInfo.name.toLowerCase())) continue;
+
+      reportItems.push({
+        work_id: photo.work_id,
+        work_name: workInfo.name,
+        area: workInfo.area || 'practical_life',
+        status: 'documented', // Special status: photo exists but no formal progress
+        photo_url: photo.url,
+        photo_id: photo.id,
+        photo_caption: photo.caption,
+        parent_description: workInfo.description || null,
+        why_it_matters: workInfo.why_it_matters || null,
+        has_description: !!workInfo.description,
+        source: 'photo',
+      });
+
+      addedWorkIds.add(photo.work_id);
+      addedWorkNames.add(workInfo.name.toLowerCase());
+    }
+
+    // Separate photos by selection status
+    const selectedPhotos = allPhotos.filter(p => p.is_selected);
+    const availablePhotos = allPhotos.filter(p => !p.is_selected);
+
+    // Identify unassigned photos (photos not matched to any report item)
+    const matchedPhotoIds = new Set(reportItems.filter(r => r.photo_id).map(r => r.photo_id));
+    const unassignedPhotos = allPhotos.filter(p => p.url && !matchedPhotoIds.has(p.id));
 
     // Count stats
     const stats = {
@@ -309,14 +387,13 @@ export async function GET(request: NextRequest) {
       mastered: reportItems.filter(r => r.status === 'mastered').length,
       practicing: reportItems.filter(r => r.status === 'practicing').length,
       presented: reportItems.filter(r => r.status === 'presented').length,
+      documented: reportItems.filter(r => r.status === 'documented').length,
       selected_photos: selectedPhotos.length,
       available_photos: availablePhotos.length,
       has_selections: selectedPhotoIds.length > 0,
+      from_progress: reportItems.filter(r => r.source === 'progress').length,
+      from_photos: reportItems.filter(r => r.source === 'photo').length,
     };
-
-    // Build unassigned photos list (photos that didn't match any work)
-    const matchedPhotoUrls = new Set(reportItems.filter(r => r.photo_url).map(r => r.photo_url));
-    const unassignedPhotos = allPhotos.filter(p => p.url && !matchedPhotoUrls.has(p.url));
 
     return NextResponse.json({
       success: true,
@@ -324,11 +401,10 @@ export async function GET(request: NextRequest) {
       child_photo: child.photo_url,
       last_report_date: lastReportDate,
       items: reportItems,
-      // Include all photos for the photo selection modal
       selected_photos: selectedPhotos,
       available_photos: availablePhotos,
-      unassigned_photos: unassignedPhotos, // Photos not matched to any work
-      all_photos: allPhotos, // For backwards compatibility
+      unassigned_photos: unassignedPhotos,
+      all_photos: allPhotos,
       stats,
     });
 
