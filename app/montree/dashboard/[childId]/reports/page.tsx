@@ -258,7 +258,31 @@ export default function ReportsPage() {
         <div className="bg-gray-50 rounded-2xl p-8 text-center border-2 border-dashed border-gray-200">
           <span className="text-4xl mb-3 block">✅</span>
           <p className="text-gray-600 font-medium">All caught up!</p>
-          <p className="text-gray-400 text-sm mt-1">Mark works on the Week tab to report progress</p>
+          <p className="text-gray-400 text-sm mt-1">No new progress since last report</p>
+          <button
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const res = await fetch(`/api/montree/reports/preview?child_id=${childId}&show_all=true`);
+                const data = await res.json();
+                if (data.success) {
+                  setItems(data.items || []);
+                  setStats(data.stats || null);
+                  if (data.items?.length > 0) {
+                    toast.success(`Found ${data.items.length} works from this week`);
+                  } else {
+                    toast.info('No progress recorded this week');
+                  }
+                }
+              } catch (err) {
+                toast.error('Failed to load');
+              }
+              setLoading(false);
+            }}
+            className="mt-4 px-4 py-2 rounded-xl font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 active:scale-95 transition-all"
+          >
+            📊 Show This Week's Progress
+          </button>
         </div>
       )}
 

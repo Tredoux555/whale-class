@@ -131,26 +131,46 @@ export async function GET(request: NextRequest) {
 
     const lastReportDate = lastReport?.generated_at || null;
 
-    // Get progress since last report
+    // Check if user wants to see all progress or just unreported
+    const showAll = searchParams.get('show_all') === 'true';
+
+    // Calculate this week's date range for fallback
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay()); // Sunday
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+
+    // Get progress based on mode
     let progressQuery = supabase
       .from('montree_child_progress')
-      .select('work_name, area, status, updated_at')
+      .select('work_name, area, status, updated_at, presented_at')
       .eq('child_id', childId)
       .neq('status', 'not_started');
 
-    if (lastReportDate) {
-      progressQuery = progressQuery.gt('updated_at', lastReportDate);
+    if (showAll) {
+      // Show all progress from this week (for "Show This Week's Progress" button)
+      progressQuery = progressQuery.or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
+    } else if (lastReportDate) {
+      // Try to get progress updated since last report
+      progressQuery = progressQuery.or(`updated_at.gt.${lastReportDate},presented_at.gt.${lastReportDate}`);
+    }
+    // If no lastReportDate and not showAll, get all progress (first report ever)
+
+    let { data: progress } = await progressQuery;
+
+    // If no unreported progress found (and not in showAll mode), fall back to this week's progress
+    if ((!progress || progress.length === 0) && !showAll && lastReportDate) {
+      const { data: weekProgress } = await supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, updated_at, presented_at')
+        .eq('child_id', childId)
+        .neq('status', 'not_started')
+        .or(`updated_at.gte.${weekStartStr},presented_at.gte.${weekStartStr}`);
+
+      progress = weekProgress;
     }
 
-    const { data: progress } = await progressQuery;
-
-    // Check for draft report with SELECTED photos first (respect teacher's photo selections)
-    const nowDate = new Date();
-    const weekStart = new Date(nowDate);
-    weekStart.setDate(nowDate.getDate() - nowDate.getDay());
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-
-    // Look for existing draft/sent report with selected photos
+    // Look for existing draft/sent report with selected photos (uses weekStartStr from above)
     const { data: draftReport } = await supabase
       .from('montree_weekly_reports')
       .select('id')
