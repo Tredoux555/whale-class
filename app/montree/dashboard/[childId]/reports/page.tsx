@@ -58,6 +58,9 @@ export default function ReportsPage() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [currentPhotos, setCurrentPhotos] = useState<Photo[]>([]);
   const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
+  const [showLastReport, setShowLastReport] = useState(false);
+  const [lastReport, setLastReport] = useState<any>(null);
+  const [loadingLastReport, setLoadingLastReport] = useState(false);
 
   // Fetch report preview
   const fetchPreview = async () => {
@@ -103,6 +106,28 @@ export default function ReportsPage() {
   useEffect(() => {
     if (childId) fetchPreview();
   }, [childId]);
+
+  // Fetch the last sent report
+  const fetchLastReport = async () => {
+    if (!lastReportDate) return;
+
+    setLoadingLastReport(true);
+    try {
+      const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1`);
+      const data = await res.json();
+
+      if (data.success && data.reports && data.reports.length > 0) {
+        setLastReport(data.reports[0]);
+        setShowLastReport(true);
+      } else {
+        toast.error('No sent reports found');
+      }
+    } catch (err) {
+      console.error('Failed to fetch last report:', err);
+      toast.error('Failed to load last report');
+    }
+    setLoadingLastReport(false);
+  };
 
   // Update selected photos for the report
   const handlePhotoSelectionSave = async (selectedMediaIds: string[]) => {
@@ -183,14 +208,25 @@ export default function ReportsPage() {
               <p className="text-xs text-gray-400">No reports sent yet</p>
             )}
           </div>
-          {hasItems && (
-            <button
-              onClick={() => setShowPreview(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
-            >
-              👁️ Preview Report
-            </button>
-          )}
+          <div className="flex gap-2">
+            {lastReportDate && (
+              <button
+                onClick={fetchLastReport}
+                disabled={loadingLastReport}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50"
+              >
+                {loadingLastReport ? '⏳' : '📄'} Last Report
+              </button>
+            )}
+            {hasItems && (
+              <button
+                onClick={() => setShowPreview(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
+              >
+                👁️ Preview Report
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -366,6 +402,130 @@ export default function ReportsPage() {
         availablePhotos={allPhotos.filter(p => !currentPhotos.some(cp => cp.id === p.id))}
         childId={childId}
       />
+
+      {/* Last Sent Report Modal */}
+      {showLastReport && lastReport && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg">📄 Last Sent Report</h3>
+                  <p className="text-blue-100 text-sm">
+                    Sent on {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowLastReport(false)}
+                  className="text-white/80 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {lastReport.content ? (
+                <>
+                  {/* Child header */}
+                  <div className="text-center pb-4 border-b">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 mx-auto mb-2 flex items-center justify-center text-2xl">
+                      {lastReport.content.child?.name?.charAt(0) || childName.charAt(0)}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {lastReport.content.child?.name || childName}'s Progress
+                    </h2>
+                    <p className="text-gray-500 text-sm">
+                      Week of {new Date(lastReport.week_start).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Summary Stats */}
+                  {lastReport.content.summary && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-gray-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">📚</span>
+                        <p className="text-xl font-bold text-gray-700">{lastReport.content.summary.works_this_week || 0}</p>
+                        <p className="text-xs text-gray-500">Works</p>
+                      </div>
+                      <div className="bg-blue-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">📸</span>
+                        <p className="text-xl font-bold text-blue-600">{lastReport.content.summary.photos_this_week || 0}</p>
+                        <p className="text-xs text-gray-500">Photos</p>
+                      </div>
+                      <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">⭐</span>
+                        <p className="text-xl font-bold text-emerald-600">{lastReport.content.summary.overall_progress?.mastered || 0}</p>
+                        <p className="text-xs text-gray-500">Mastered</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Works */}
+                  {lastReport.content.works && lastReport.content.works.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-700">Activities Reported</h4>
+                      {lastReport.content.works.map((work: any, i: number) => (
+                        <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{work.area_icon || '📋'}</span>
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-800">{work.name}</p>
+                              <p className="text-xs text-gray-500">{work.area} • {work.status_label}</p>
+                            </div>
+                          </div>
+                          {work.parent_explanation && (
+                            <p className="mt-2 text-sm text-gray-600">{work.parent_explanation}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Photos */}
+                  {lastReport.content.photos && lastReport.content.photos.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-700">Photos</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {lastReport.content.photos.map((photo: any) => (
+                          <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
+                            <div className="aspect-[4/3] w-full bg-gray-100">
+                              <img
+                                src={photo.url || photo.thumbnail_url}
+                                alt={photo.caption || 'Photo'}
+                                className="w-full h-full object-contain bg-gray-900"
+                              />
+                            </div>
+                            {photo.caption && (
+                              <p className="p-2 text-xs text-gray-600 bg-white">{photo.caption}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Report content not available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50">
+              <button
+                onClick={() => setShowLastReport(false)}
+                className="w-full py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info */}
       <p className="text-xs text-gray-400 text-center">

@@ -55,7 +55,7 @@ export default function MediaGallery({
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="aspect-square bg-gray-100 rounded-xl animate-pulse"
+            className="aspect-[4/3] bg-gray-100 rounded-xl animate-pulse"
           />
         ))}
       </div>
