@@ -1,13 +1,14 @@
 // /montree/admin/layout.tsx
-// Admin layout with navigation
+// Admin layout with navigation and feedback button
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import FeedbackButton from '@/components/montree/FeedbackButton';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  
+
   const navItems = [
     { href: '/montree/admin', label: 'Overview', icon: '📊' },
     { href: '/montree/admin/activity', label: 'Activity', icon: '⚡' },
@@ -54,6 +55,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="p-4">
         {children}
       </main>
+
+      {/* Feedback Button */}
+      <FeedbackButton userType="principal" />
     </div>
   );
 }
