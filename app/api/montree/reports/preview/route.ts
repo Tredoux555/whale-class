@@ -3,40 +3,29 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+
+// Import JSON files directly so they're bundled with the build (readFileSync doesn't work in Vercel)
+import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
+import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
+import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
+import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
+import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
 
 // Load all parent descriptions from the MAIN guides JSON files (which have ALL works)
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; originalName: string }> {
   const descriptions = new Map();
+  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
 
-  // Use the main guides files which have ALL works with parent descriptions
-  const files = [
-    'practical-life-guides.json',
-    'sensorial-guides.json',
-    'math-guides.json',
-    'language-guides.json',
-    'cultural-guides.json'
-  ];
-
-  for (const file of files) {
-    try {
-      const filePath = join(process.cwd(), `lib/curriculum/comprehensive-guides/${file}`);
-      const data = JSON.parse(readFileSync(filePath, 'utf-8'));
-
-      // JSON structure: { area: "...", works: [...] }
-      const works = data.works || data;
-      for (const item of works) {
-        if (item.name && item.parent_description) {
-          descriptions.set(item.name.toLowerCase(), {
-            description: item.parent_description,
-            why_it_matters: item.why_it_matters || '',
-            originalName: item.name,
-          });
-        }
+  for (const data of allGuides) {
+    const works = (data as any).works || data;
+    for (const item of works) {
+      if (item.name && item.parent_description) {
+        descriptions.set(item.name.toLowerCase(), {
+          description: item.parent_description,
+          why_it_matters: item.why_it_matters || '',
+          originalName: item.name,
+        });
       }
-    } catch (err) {
-      console.log(`Could not load ${file}:`, err);
     }
   }
 

@@ -4,35 +4,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+
+// Import JSON files directly so they're bundled with the build (readFileSync doesn't work in Vercel)
+import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
+import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
+import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
+import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
+import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
 
 // Load parent descriptions for saving in report content
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
   const descriptions = new Map();
-  const files = [
-    'practical-life-guides.json',
-    'sensorial-guides.json',
-    'math-guides.json',
-    'language-guides.json',
-    'cultural-guides.json'
-  ];
+  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
 
-  for (const file of files) {
-    try {
-      const filePath = join(process.cwd(), `lib/curriculum/comprehensive-guides/${file}`);
-      const data = JSON.parse(readFileSync(filePath, 'utf-8'));
-      const works = data.works || data;
-      for (const item of works) {
-        if (item.name && item.parent_description) {
-          descriptions.set(item.name.toLowerCase(), {
-            description: item.parent_description,
-            why_it_matters: item.why_it_matters || '',
-          });
-        }
+  for (const data of allGuides) {
+    const works = (data as any).works || data;
+    for (const item of works) {
+      if (item.name && item.parent_description) {
+        descriptions.set(item.name.toLowerCase(), {
+          description: item.parent_description,
+          why_it_matters: item.why_it_matters || '',
+        });
       }
-    } catch (err) {
-      // File not found, skip
     }
   }
   return descriptions;
