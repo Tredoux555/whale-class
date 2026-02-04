@@ -27,10 +27,10 @@ export async function PATCH(request: NextRequest) {
     weekStart.setDate(now.getDate() - now.getDay());
     const weekStartStr = weekStart.toISOString().split('T')[0];
 
-    // Get child classroom_id
+    // Get child info including classroom
     const { data: child } = await supabase
       .from('montree_children')
-      .select('classroom_id')
+      .select('classroom_id, classroom:montree_classrooms!classroom_id(school_id)')
       .eq('id', child_id)
       .single();
 
@@ -38,33 +38,52 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    // Upsert draft report if it doesn't exist
-    const { data: report, error: reportError } = await supabase
+    const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
+    const school_id = classroom?.school_id;
+
+    // Calculate week_number and report_year
+    const reportYear = weekStart.getFullYear();
+    const startOfYear = new Date(reportYear, 0, 1);
+    const daysSinceStart = Math.floor((weekStart.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+    const weekNumber = Math.ceil((daysSinceStart + startOfYear.getDay() + 1) / 7);
+
+    // First try to find existing report for this week
+    const { data: existingReport } = await supabase
       .from('montree_weekly_reports')
-      .upsert(
-        {
+      .select('id')
+      .eq('child_id', child_id)
+      .eq('week_start', weekStartStr)
+      .single();
+
+    let report = existingReport;
+
+    // If no existing report, create one
+    if (!report) {
+      const { data: newReport, error: reportError } = await supabase
+        .from('montree_weekly_reports')
+        .insert({
           child_id,
           classroom_id: child.classroom_id,
+          school_id,
           week_start: weekStartStr,
           week_end: weekStartStr,
+          week_number: weekNumber,
+          report_year: reportYear,
           report_type: 'teacher',
           status: 'draft',
           content: {},
-        },
-        {
-          onConflict: 'child_id,week_start,report_type',
-          ignoreDuplicates: false,
-        }
-      )
-      .select('id')
-      .single();
+        })
+        .select('id')
+        .single();
 
-    if (reportError || !report) {
-      console.error('Report upsert error:', reportError);
-      return NextResponse.json(
-        { error: 'Failed to create/get report' },
-        { status: 500 }
-      );
+      if (reportError || !newReport) {
+        console.error('Report insert error:', reportError);
+        return NextResponse.json(
+          { error: 'Failed to create/get report', details: reportError?.message },
+          { status: 500 }
+        );
+      }
+      report = newReport;
     }
 
     // Delete existing report media for this report
