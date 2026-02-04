@@ -54,6 +54,82 @@ const FALLBACK_DESCRIPTIONS: Record<string, { description: string; why_it_matter
     description: 'Your child is developing language skills through activities that build vocabulary, reading, and writing foundations.',
     why_it_matters: 'Strong language skills open doors to learning in every subject area.'
   },
+  // Additional practical life works
+  'snapping': {
+    description: 'Your child is practicing snapping fasteners on a wooden frame. This precise work develops finger strength and coordination needed for dressing.',
+    why_it_matters: 'Snapping develops fine motor control and builds independence in self-care skills.'
+  },
+  'sweeping': {
+    description: 'Your child is learning to sweep with a child-sized broom and dustpan. This practical skill builds coordination and care for the environment.',
+    why_it_matters: 'Sweeping develops gross motor coordination while teaching responsibility for keeping shared spaces clean.'
+  },
+  'sponging': {
+    description: 'Your child is learning to use a sponge to transfer water or clean surfaces. This activity develops hand strength and teaches care of the environment.',
+    why_it_matters: 'Sponging activities build hand strength needed for writing while teaching responsibility and independence.'
+  },
+  'spooning': {
+    description: 'Your child is practicing transferring objects with a spoon, developing the control and precision needed for self-feeding.',
+    why_it_matters: 'Spooning develops fine motor control and prepares children for independent eating.'
+  },
+  'transferring': {
+    description: 'Your child is practicing transferring objects between containers, developing focus and motor control.',
+    why_it_matters: 'Transfer activities build concentration and the precision needed for many practical tasks.'
+  },
+  'threading': {
+    description: 'Your child is practicing threading beads onto a string, developing fine motor skills and hand-eye coordination.',
+    why_it_matters: 'Threading develops the pincer grip and concentration needed for writing and detailed work.'
+  },
+  // Sensorial works
+  'pink tower': {
+    description: 'Your child is working with the Pink Tower, building a tower from largest to smallest cube. This classic Montessori material teaches visual discrimination of size.',
+    why_it_matters: 'The Pink Tower develops visual discrimination and prepares the mind for understanding mathematical concepts.'
+  },
+  'brown stair': {
+    description: 'Your child is working with the Brown Stair, arranging prisms from thickest to thinnest. This material develops visual discrimination of dimension.',
+    why_it_matters: 'The Brown Stair refines visual perception and prepares the mind for mathematical thinking.'
+  },
+  'cylinder': {
+    description: 'Your child is working with cylinder blocks, matching cylinders to their correct holes by size. This precise work develops visual discrimination.',
+    why_it_matters: 'Cylinder work develops visual discrimination and the pincer grip used in writing.'
+  },
+  'color': {
+    description: 'Your child is working with color tablets, learning to distinguish and match colors or arrange them in gradation.',
+    why_it_matters: 'Color work refines visual perception and builds vocabulary for describing the world.'
+  },
+  'geometric': {
+    description: 'Your child is exploring geometric shapes, learning names and properties through hands-on manipulation.',
+    why_it_matters: 'Geometric exploration builds spatial awareness and vocabulary for mathematical concepts.'
+  },
+  'bell': {
+    description: 'Your child is working with the bells, learning to distinguish and match musical tones through careful listening.',
+    why_it_matters: 'Bell work develops auditory discrimination and prepares the ear for music and language.'
+  },
+  // Math works
+  'bead': {
+    description: 'Your child is working with bead materials that make quantities concrete and visible, building strong number sense.',
+    why_it_matters: 'Bead materials make abstract numbers real, building deep mathematical understanding.'
+  },
+  'golden bead': {
+    description: 'Your child is working with golden beads, exploring place value through hands-on manipulation of units, tens, hundreds, and thousands.',
+    why_it_matters: 'Golden beads make the decimal system concrete, building understanding that lasts a lifetime.'
+  },
+  'spindle': {
+    description: 'Your child is counting spindles into compartments, learning that numbers represent specific quantities including zero.',
+    why_it_matters: 'Spindle work reinforces one-to-one correspondence and introduces the concept of zero.'
+  },
+  'number rod': {
+    description: 'Your child is working with number rods, experiencing quantities as lengths that can be compared and combined.',
+    why_it_matters: 'Number rods make quantity physical and visual, preparing for addition and subtraction.'
+  },
+  // Language works
+  'movable alphabet': {
+    description: 'Your child is building words with the movable alphabet, expressing thoughts in writing before pencil skills are fully developed.',
+    why_it_matters: 'The movable alphabet frees children to compose words and sentences while still developing writing skills.'
+  },
+  'metal inset': {
+    description: 'Your child is tracing metal insets, developing the hand control and lightness of touch needed for beautiful handwriting.',
+    why_it_matters: 'Metal insets prepare the hand for writing through engaging artistic work.'
+  },
 };
 
 // Fuzzy match work name to find best description

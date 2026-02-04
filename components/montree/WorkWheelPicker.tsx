@@ -157,6 +157,34 @@ export default function WorkWheelPicker({
 
   if (!isOpen) return null;
 
+  // Handle empty works array
+  if (!works || works.length === 0) {
+    return (
+      <div
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center"
+        onClick={onClose}
+      >
+        <div className="text-center text-white p-8" onClick={e => e.stopPropagation()}>
+          <span className="text-5xl mb-4 block">{areaConfig.icon}</span>
+          <h2 className="font-bold text-xl mb-2">{areaConfig.name}</h2>
+          <p className="text-white/70 mb-6">No works available in this area yet.</p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="px-6 py-3 bg-white/20 rounded-xl text-white font-semibold hover:bg-white/30 transition-colors"
+          >
+            ➕ Add First Work
+          </button>
+          <button
+            onClick={onClose}
+            className="block mx-auto mt-4 text-white/60 hover:text-white"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const selectedWork = works[selectedIndex];
 
   return (

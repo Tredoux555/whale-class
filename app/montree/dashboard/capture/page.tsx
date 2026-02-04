@@ -101,6 +101,10 @@ function CaptureContent() {
       try {
         // Use the search API with q parameter for searching
         const res = await fetch(`/api/montree/works/search?q=${encodeURIComponent(workName)}&classroom_id=${classroomId}`);
+        if (!res.ok) {
+          console.error('Work search API error:', res.status);
+          return;
+        }
         const data = await res.json();
         if (data.works && data.works.length > 0) {
           // Find exact match first, then partial match
@@ -172,6 +176,7 @@ function CaptureContent() {
 
         const result = await uploadPhoto(photo, {
           school_id: schoolId || 'default-school',
+          classroom_id: classroomId || undefined, // Add classroom context
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
@@ -194,6 +199,7 @@ function CaptureContent() {
 
         const result = await uploadVideo(video, {
           school_id: schoolId || 'default-school',
+          classroom_id: classroomId || undefined, // Add classroom context
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
