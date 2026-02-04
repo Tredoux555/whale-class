@@ -331,36 +331,65 @@ export default function WorkWheelPicker({
               </button>
             </div>
 
-            {/* Position Picker Modal */}
+            {/* Position Picker Modal - Wheel Style */}
             {showPositionPicker && (
-              <div className="absolute inset-0 bg-black/80 rounded-2xl flex flex-col z-10">
-                <div className="p-3 border-b border-white/20 flex items-center justify-between">
-                  <span className="text-white font-medium">Insert after position...</span>
-                  <button
-                    onClick={() => setShowPositionPicker(false)}
-                    className="text-white/60 hover:text-white"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto max-h-48">
-                  {works.map((work, idx) => (
-                    <button
-                      key={work.id || idx}
-                      onClick={() => {
-                        setInsertAfterIndex(idx);
-                        setShowPositionPicker(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left text-sm border-b border-white/10 flex items-center gap-3 ${
-                        insertAfterIndex === idx ? 'bg-emerald-500/30 text-white' : 'text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      <span className="text-white/50 w-8">#{work.sequence}</span>
-                      <span className="flex-1 truncate">{work.name}</span>
-                      {insertAfterIndex === idx && <span>✓</span>}
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-50">
+                {/* Header */}
+                <div className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-4">
+                  <div className="flex items-center justify-between text-white">
+                    <button onClick={() => setShowPositionPicker(false)} className="p-2 -ml-2">
+                      <span className="text-2xl">✕</span>
                     </button>
-                  ))}
+                    <div className="text-center">
+                      <span className="text-3xl">{areaConfig.icon}</span>
+                      <h2 className="font-bold text-lg">Insert after position...</h2>
+                    </div>
+                    <div className="w-10" />
+                  </div>
                 </div>
+
+                {/* Wheel Container */}
+                <div className="flex-1 relative overflow-hidden">
+                  {/* Gradient overlays */}
+                  <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
+
+                  {/* Selection highlight */}
+                  <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[70px] bg-white/15 rounded-2xl border-2 border-white/40 z-5 pointer-events-none" />
+
+                  {/* Scrollable wheel */}
+                  <div
+                    className="h-full overflow-y-auto scrollbar-hide"
+                    style={{ scrollSnapType: 'y mandatory' }}
+                  >
+                    <div style={{ height: 'calc(50% - 35px)' }} />
+                    {works.map((work, idx) => {
+                      const isSelected = insertAfterIndex === idx;
+                      return (
+                        <div
+                          key={work.id || idx}
+                          onClick={() => {
+                            setInsertAfterIndex(idx);
+                            setShowPositionPicker(false);
+                          }}
+                          className="h-[70px] flex items-center justify-center px-6 snap-center cursor-pointer"
+                        >
+                          <div className={`flex items-center gap-3 w-full max-w-md transition-all duration-200 ${
+                            isSelected ? 'opacity-100 scale-100' : 'opacity-60 scale-95'
+                          }`}>
+                            <span className="text-white/70 font-bold w-10 text-right">#{work.sequence}</span>
+                            <span className="flex-1 text-white font-medium truncate">{work.name}</span>
+                            {isSelected && <span className="text-emerald-400 text-xl">✓</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div style={{ height: 'calc(50% - 35px)' }} />
+                  </div>
+                </div>
+
+                {/* Bottom safe area */}
+                <div className="pb-[max(1rem,env(safe-area-inset-bottom))]" />
               </div>
             )}
 
