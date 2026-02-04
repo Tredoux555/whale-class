@@ -4,6 +4,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Fallback descriptions for common Montessori works when database has none
+const FALLBACK_DESCRIPTIONS: Record<string, { description: string; why_it_matters: string }> = {
+  'hand washing': {
+    description: 'Your child is learning the important routine of hand washing - using soap, scrubbing thoroughly, rinsing, and drying. This essential life skill promotes health and independence.',
+    why_it_matters: 'Hand washing teaches children to take care of their health independently. The step-by-step process develops sequencing skills and builds confidence in self-care.'
+  },
+  'lacing': {
+    description: 'Your child is practicing lacing on a wooden frame. This challenging work develops fine motor skills and hand-eye coordination essential for writing.',
+    why_it_matters: 'Lacing develops the pincer grip and bilateral coordination needed for writing, while building patience and concentration.'
+  },
+  'pouring': {
+    description: 'Your child is learning to pour with control and precision. This practical life activity develops hand-eye coordination and prepares for serving independently.',
+    why_it_matters: 'Pouring activities build concentration, independence, and the motor control needed for daily tasks.'
+  },
+  'button': {
+    description: 'Your child is practicing buttoning skills on a wooden frame. This precise work develops fine motor control needed for dressing independently.',
+    why_it_matters: 'Buttoning develops finger dexterity and builds the independence needed for self-care.'
+  },
+  'zipper': {
+    description: 'Your child is practicing zipping on a wooden frame. This common fastener requires coordination of both hands working together.',
+    why_it_matters: 'Zipper work develops bilateral coordination and prepares children for independence with jackets and bags.'
+  },
+  'sandpaper': {
+    description: 'Your child is tracing sandpaper letters, learning letter shapes through touch. This multi-sensory approach connects the feel of letters with their sounds.',
+    why_it_matters: 'Sandpaper letters engage muscle memory for letter formation, making writing more natural when children begin with pencils.'
+  },
+  'counting': {
+    description: 'Your child is working on counting activities, building number sense through hands-on materials that make quantities concrete and real.',
+    why_it_matters: 'Concrete counting builds the foundation for all mathematical understanding, making abstract numbers meaningful.'
+  },
+  'puzzle': {
+    description: 'Your child is working with puzzles that teach vocabulary and develop fine motor skills through hands-on exploration.',
+    why_it_matters: 'Puzzle work develops visual discrimination, concentration, and teaches scientific or geographic vocabulary.'
+  },
+  'practical life': {
+    description: 'Your child is engaged in practical life activities that build independence, concentration, and fine motor skills through real-world tasks.',
+    why_it_matters: 'Practical life activities develop self-confidence and the coordination needed for academic work.'
+  },
+  'sensorial': {
+    description: 'Your child is exploring sensorial materials that refine the senses and develop careful observation skills.',
+    why_it_matters: 'Sensorial work builds the perceptual skills that underlie reading, math, and scientific observation.'
+  },
+  'math': {
+    description: 'Your child is working with math materials that make abstract concepts concrete through hands-on manipulation.',
+    why_it_matters: 'Concrete math materials build deep understanding that lasts a lifetime.'
+  },
+  'language': {
+    description: 'Your child is developing language skills through activities that build vocabulary, reading, and writing foundations.',
+    why_it_matters: 'Strong language skills open doors to learning in every subject area.'
+  },
+};
+
 // Fuzzy match work name to find best description
 // Handles cases like "Dressing Frame Shoes" matching "Lacing Frame" or generic dressing frames
 function findBestDescription(
@@ -74,7 +126,45 @@ function findBestDescription(
     }
   }
 
-  return bestMatch?.desc || null;
+  if (bestMatch) {
+    return bestMatch.desc;
+  }
+
+  // 4. Try fallback descriptions based on keywords in work name
+  for (const [keyword, fallbackDesc] of Object.entries(FALLBACK_DESCRIPTIONS)) {
+    if (workNameLower.includes(keyword)) {
+      return fallbackDesc;
+    }
+  }
+
+  // 5. Try to determine area and provide generic description
+  const areaKeywords: Record<string, string> = {
+    'frame': 'practical life',
+    'pour': 'practical life',
+    'wash': 'practical life',
+    'polish': 'practical life',
+    'fold': 'practical life',
+    'cut': 'practical life',
+    'tablet': 'sensorial',
+    'cylinder': 'sensorial',
+    'tower': 'sensorial',
+    'bead': 'math',
+    'number': 'math',
+    'spindle': 'math',
+    'rod': 'math',
+    'letter': 'language',
+    'alphabet': 'language',
+    'phonetic': 'language',
+    'puzzle': 'puzzle',
+  };
+
+  for (const [keyword, area] of Object.entries(areaKeywords)) {
+    if (workNameLower.includes(keyword)) {
+      return FALLBACK_DESCRIPTIONS[area] || null;
+    }
+  }
+
+  return null;
 }
 
 export async function GET(request: NextRequest) {
