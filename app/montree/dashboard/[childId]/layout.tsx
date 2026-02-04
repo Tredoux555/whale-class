@@ -104,14 +104,23 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
             
-            {/* Guru button */}
-            <Link
-              href={`/montree/dashboard/guru?child=${childId}`}
-              className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
-              title="Ask Guru"
-            >
-              🧠
-            </Link>
+            {/* Curriculum & Guru buttons */}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/montree/dashboard/curriculum"
+                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
+                title="Curriculum Editor"
+              >
+                📚
+              </Link>
+              <Link
+                href={`/montree/dashboard/guru?child=${childId}`}
+                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
+                title="Montessori Guru"
+              >
+                🧠
+              </Link>
+            </div>
           </div>
         </div>
       </header>
