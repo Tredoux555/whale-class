@@ -49,6 +49,10 @@ function CaptureContent() {
   // Get work context from URL (passed from Week view Capture button)
   const workName = searchParams.get('workName');
   const workArea = searchParams.get('area');
+  const workIdFromUrl = searchParams.get('workId'); // May be passed directly
+
+  // State for looked-up work_id
+  const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
 
   // State
   const [step, setStep] = useState<FlowStep>(preSelectedChildId ? 'camera' : (isClassMode ? 'camera' : 'select-child'));
@@ -65,9 +69,11 @@ function CaptureContent() {
   const [schoolId, setSchoolId] = useState<string>('');
 
   // ============================================
-  // GET SCHOOL ID FROM SESSION
+  // GET SCHOOL ID AND CLASSROOM ID FROM SESSION
   // ============================================
-  
+
+  const [classroomId, setClassroomId] = useState<string>('');
+
   useEffect(() => {
     const stored = localStorage.getItem('montree_session');
     if (stored) {
@@ -76,9 +82,43 @@ function CaptureContent() {
         if (session.school?.id) {
           setSchoolId(session.school.id);
         }
+        if (session.classroom?.id) {
+          setClassroomId(session.classroom.id);
+        }
       } catch {}
     }
   }, []);
+
+  // ============================================
+  // LOOK UP WORK_ID FROM CURRICULUM (if not passed in URL)
+  // ============================================
+
+  useEffect(() => {
+    // If we already have work_id from URL, don't look it up
+    if (workIdFromUrl || !workName || !classroomId) return;
+
+    const lookupWorkId = async () => {
+      try {
+        // Use the search API with q parameter for searching
+        const res = await fetch(`/api/montree/works/search?q=${encodeURIComponent(workName)}&classroom_id=${classroomId}`);
+        const data = await res.json();
+        if (data.works && data.works.length > 0) {
+          // Find exact match first, then partial match
+          const exactMatch = data.works.find((w: any) =>
+            w.name?.toLowerCase() === workName.toLowerCase()
+          );
+          const match = exactMatch || data.works[0];
+          if (match?.id) {
+            setWorkId(match.id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to lookup work_id:', err);
+      }
+    };
+
+    lookupWorkId();
+  }, [workName, classroomId, workIdFromUrl]);
 
   // ============================================
   // FETCH CHILDREN
@@ -135,6 +175,7 @@ function CaptureContent() {
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
+          work_id: workId || undefined, // Link photo to curriculum work
           caption: workName || undefined,
           tags: workArea ? [workArea] : undefined,
           onProgress: setUploadProgress,
@@ -156,6 +197,7 @@ function CaptureContent() {
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
+          work_id: workId || undefined, // Link video to curriculum work
           caption: workName || undefined,
           tags: workArea ? [workArea] : undefined,
           onProgress: setUploadProgress,
