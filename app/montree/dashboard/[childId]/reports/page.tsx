@@ -464,77 +464,103 @@ export default function ReportsPage() {
                   )}
 
                   {/* Works with Photos - Same layout as Preview */}
-                  {lastReport.content.works && lastReport.content.works.length > 0 && (
-                    <div className="space-y-4">
-                      {lastReport.content.works.map((work: any, i: number) => {
-                        // Find matching photo for this work
-                        const workPhoto = lastReport.content.photos?.find(
-                          (p: any) => p.work_id === work.work_id || p.work_name === work.name
-                        );
+                  {lastReport.content.works && lastReport.content.works.length > 0 && (() => {
+                    // Build lookup for backwards compatibility with old reports
+                    // Old reports might have work_name OR caption as the work identifier
+                    const photosByWorkName = new Map<string, any>();
+                    for (const p of lastReport.content.photos || []) {
+                      const key = p.work_name || p.caption;
+                      if (key) {
+                        photosByWorkName.set(key.toLowerCase(), p);
+                      }
+                    }
 
-                        return (
-                          <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
-                            {/* Work header */}
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                work.status === 'mastered' || work.status === 'completed'
-                                  ? 'bg-emerald-100 text-emerald-700'
-                                  : work.status === 'practicing'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-amber-100 text-amber-700'
-                              }`}>
-                                {work.status_label || work.status}
-                              </span>
-                              <h4 className="font-bold text-gray-800">{work.name}</h4>
-                            </div>
+                    return (
+                      <div className="space-y-4">
+                        {lastReport.content.works.map((work: any, i: number) => {
+                          // Use photo_url from work if available, otherwise try to match from photos array
+                          const photoUrl = work.photo_url || photosByWorkName.get(work.name?.toLowerCase())?.url;
+                          const photoCaption = work.photo_caption || photosByWorkName.get(work.name?.toLowerCase())?.caption;
 
-                            {/* Photo - Hero style (same as Preview) */}
-                            {workPhoto && (
-                              <div className="relative -mx-4 my-3">
-                                <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
-                                  <img
-                                    src={workPhoto.url || workPhoto.thumbnail_url}
-                                    alt={work.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                {workPhoto.caption && (
-                                  <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{workPhoto.caption}</p>
-                                )}
+                          return (
+                            <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                              {/* Work header */}
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  work.status === 'mastered' || work.status === 'completed'
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : work.status === 'practicing'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : 'bg-amber-100 text-amber-700'
+                                }`}>
+                                  {work.status_label || work.status}
+                                </span>
+                                <h4 className="font-bold text-gray-800">{work.name}</h4>
                               </div>
-                            )}
 
-                            {/* Description */}
-                            {work.parent_explanation ? (
-                              <div className="space-y-2">
-                                <p className="text-gray-700 text-sm leading-relaxed">
-                                  {work.parent_explanation}
-                                </p>
-                                {work.why_it_matters && (
-                                  <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                                    <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
-                                    <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                              {/* Photo - Hero style */}
+                              {photoUrl && (
+                                <div className="relative -mx-4 my-3">
+                                  <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                                    <img
+                                      src={photoUrl}
+                                      alt={work.name}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-gray-400 text-sm italic">
-                                No description available for this work
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                                  {photoCaption && (
+                                    <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{photoCaption}</p>
+                                  )}
+                                </div>
+                              )}
 
-                  {/* Unassigned Photos (photos not linked to works) */}
-                  {lastReport.content.photos && lastReport.content.photos.length > 0 && (() => {
-                    const workIds = new Set(lastReport.content.works?.map((w: any) => w.work_id) || []);
-                    const workNames = new Set(lastReport.content.works?.map((w: any) => w.name) || []);
-                    const unassignedPhotos = lastReport.content.photos.filter(
-                      (p: any) => !workIds.has(p.work_id) && !workNames.has(p.work_name)
+                              {/* Description - use parent_description (from send API) */}
+                              {work.parent_description ? (
+                                <div className="space-y-2">
+                                  <p className="text-gray-700 text-sm leading-relaxed">
+                                    {work.parent_description}
+                                  </p>
+                                  {work.why_it_matters && (
+                                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                                      <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                                      <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-gray-400 text-sm italic">
+                                  No description available for this work
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     );
+                  })()}
+
+                  {/* Unassigned Photos (photos not matched to any work) */}
+                  {lastReport.content.photos && lastReport.content.photos.length > 0 && (() => {
+                    // Build set of work names (lowercase) for matching
+                    const workNames = new Set(
+                      (lastReport.content.works || []).map((w: any) => w.name?.toLowerCase())
+                    );
+
+                    // Get all photo URLs that are already matched to works
+                    const matchedPhotoUrls = new Set(
+                      (lastReport.content.works || [])
+                        .filter((w: any) => w.photo_url)
+                        .map((w: any) => w.photo_url)
+                    );
+
+                    // Filter to photos not matched to any work
+                    // Check: URL not matched AND (work_name OR caption) not in work names
+                    const unassignedPhotos = lastReport.content.photos.filter((p: any) => {
+                      if (matchedPhotoUrls.has(p.url)) return false;
+                      const photoKey = (p.work_name || p.caption || '').toLowerCase();
+                      if (photoKey && workNames.has(photoKey)) return false;
+                      return true;
+                    });
 
                     if (unassignedPhotos.length === 0) return null;
 
