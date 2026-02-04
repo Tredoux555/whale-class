@@ -11,6 +11,35 @@
 
 ## Recent Changes
 
+### Session 141 - Feb 4, 2026 (PARENT REPORT FIXES + 3-PART CARDS)
+
+**✅ Gallery Testing:** PASSED - Photo viewer modal, filters all working.
+
+**🔧 Parent Report Display Fixes:**
+
+| Issue | Fix |
+|-------|-----|
+| "Week ," showing empty | Added `formatWeekDisplay()` fallback to date range |
+| Works with photos had no description | Added fallback: "Your child practiced this [Area] activity" |
+| Missing week fields in API | Added `week_number`, `report_year`, `week_start`, `week_end` to queries |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `app/api/montree/parent/reports/route.ts` | Added week fields to select |
+| `app/api/montree/parent/report/[reportId]/route.ts` | Added week_start, week_end |
+| `app/montree/parent/dashboard/page.tsx` | Added formatWeekDisplay() helper |
+| `app/montree/parent/report/[reportId]/page.tsx` | Added formatWeekDisplay() + fallback description |
+
+**⚠️ Git:** Commit `9f62782` local only - **NEEDS MANUAL PUSH**
+
+**3-Part Card Images:** Abandoned due to proxy restrictions. Existing images at `/out/images/words/` (cat.jpeg, fan.jpeg, hat.png, mat.jpeg, pan.jpeg, etc.)
+
+**Handoff:** `/docs/HANDOFF_SESSION_141.md`
+
+---
+
 ### Session 140 - Feb 4, 2026 (ROOT CAUSE ANALYSIS + FIXES)
 
 **🔧 SYSTEMATIC INVESTIGATION COMPLETED:**
@@ -715,6 +744,19 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
+
+### ⚠️ IMMEDIATE: Push Commit 9f62782
+Parent report fixes committed locally but not pushed. Run:
+```bash
+git push origin main
+```
+
+### 📸 3-Part Card Images
+**Existing images:** `/out/images/words/` (cat.jpeg, fan.jpeg, hat.png, mat.jpeg, pan.jpeg)
+**Still needed:** bat, sat, rat, can, man, cap, tap, bag, tag
+**Target:** 15 CVC "a" series words for Montessori 3-part cards
+
+---
 
 ### 🚀 TESTING WEEK MISSION PLAN (Feb 2, 2026)
 

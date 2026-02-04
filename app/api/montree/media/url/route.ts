@@ -1,5 +1,5 @@
 // /api/montree/media/url/route.ts
-// Generate signed URL for media file
+// Generate signed URL for media file with optional image transforms
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -16,15 +16,39 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path');
+    const size = searchParams.get('size'); // 'thumbnail' | 'medium' | 'full'
 
     if (!path) {
       return NextResponse.json({ error: 'path required' }, { status: 400 });
     }
 
-    // Generate signed URL (1 hour expiry)
+    // Check if this is an image (for transforms)
+    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(path);
+
+    // Define transform options based on size
+    let transformOptions: { width?: number; height?: number; quality?: number } | undefined;
+
+    if (isImage && size) {
+      switch (size) {
+        case 'thumbnail':
+          transformOptions = { width: 400, height: 400, quality: 80 };
+          break;
+        case 'medium':
+          transformOptions = { width: 800, height: 800, quality: 85 };
+          break;
+        case 'full':
+        default:
+          // No transform for full size
+          break;
+      }
+    }
+
+    // Generate signed URL (1 hour expiry) with optional transform
     const { data, error } = await supabase.storage
       .from('montree-media')
-      .createSignedUrl(path, 3600);
+      .createSignedUrl(path, 3600, {
+        transform: transformOptions
+      });
 
     if (error) {
       console.error('Failed to create signed URL:', error);

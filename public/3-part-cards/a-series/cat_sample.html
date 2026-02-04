@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cat - 3-Part Card Sample</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+    .label {
+      margin-top: 16px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <!-- Background -->
+      <rect width="300" height="300" fill="#FFF8F0"/>
+
+      <!-- Cat body -->
+      <ellipse cx="150" cy="200" rx="70" ry="55" fill="#FF9E5E"/>
+
+      <!-- Cat head -->
+      <circle cx="150" cy="120" r="55" fill="#FF9E5E"/>
+
+      <!-- Left ear -->
+      <polygon points="105,85 95,40 130,70" fill="#FF9E5E"/>
+      <polygon points="108,82 102,52 125,72" fill="#FFB8A0"/>
+
+      <!-- Right ear -->
+      <polygon points="195,85 205,40 170,70" fill="#FF9E5E"/>
+      <polygon points="192,82 198,52 175,72" fill="#FFB8A0"/>
+
+      <!-- Face markings -->
+      <ellipse cx="150" cy="130" rx="40" ry="35" fill="#FFCAA8"/>
+
+      <!-- Eyes -->
+      <ellipse cx="125" cy="115" rx="15" ry="18" fill="white"/>
+      <ellipse cx="175" cy="115" rx="15" ry="18" fill="white"/>
+      <circle cx="127" cy="117" r="8" fill="#3A5F3A"/>
+      <circle cx="177" cy="117" r="8" fill="#3A5F3A"/>
+      <circle cx="129" cy="115" r="3" fill="white"/>
+      <circle cx="179" cy="115" r="3" fill="white"/>
+
+      <!-- Nose -->
+      <ellipse cx="150" cy="140" rx="8" ry="6" fill="#FF7B7B"/>
+
+      <!-- Mouth -->
+      <path d="M142 150 Q150 160 158 150" stroke="#8B6F5C" stroke-width="2" fill="none"/>
+      <path d="M150 148 L150 155" stroke="#8B6F5C" stroke-width="2"/>
+
+      <!-- Whiskers -->
+      <line x1="95" y1="135" x2="125" y2="140" stroke="#8B6F5C" stroke-width="1.5"/>
+      <line x1="95" y1="145" x2="125" y2="145" stroke="#8B6F5C" stroke-width="1.5"/>
+      <line x1="95" y1="155" x2="125" y2="150" stroke="#8B6F5C" stroke-width="1.5"/>
+      <line x1="205" y1="135" x2="175" y2="140" stroke="#8B6F5C" stroke-width="1.5"/>
+      <line x1="205" y1="145" x2="175" y2="145" stroke="#8B6F5C" stroke-width="1.5"/>
+      <line x1="205" y1="155" x2="175" y2="150" stroke="#8B6F5C" stroke-width="1.5"/>
+
+      <!-- Front paws -->
+      <ellipse cx="115" cy="250" rx="20" ry="12" fill="#FF9E5E"/>
+      <ellipse cx="185" cy="250" rx="20" ry="12" fill="#FF9E5E"/>
+
+      <!-- Tail -->
+      <path d="M220 200 Q260 180 250 140" stroke="#FF9E5E" stroke-width="20" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="label">cat</div>
+  </div>
+</body>
+</html>

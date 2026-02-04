@@ -28,15 +28,16 @@ export default function PhotoDetailView({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load image URL
+  // Load image URL (full size for detail view)
   useEffect(() => {
     if (!media || !isOpen) return;
 
     setLoading(true);
     const fetchUrl = async () => {
       try {
+        // Request medium size for detail view (good balance of quality and speed)
         const response = await fetch(
-          `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}`
+          `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}&size=medium`
         );
         const data = await response.json();
         if (data.url) {
