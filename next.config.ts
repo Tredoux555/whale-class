@@ -46,17 +46,18 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
-  // Redirect non-www to www
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'teacherpotato.xyz' }],
-        destination: 'https://www.teacherpotato.xyz/:path*',
-        permanent: true,
-      },
-    ];
-  },
+  // Both www and non-www work now via Railway custom domains
+  // Redirect temporarily disabled for debugging mobile access issue
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: '/:path*',
+  //       has: [{ type: 'host', value: 'teacherpotato.xyz' }],
+  //       destination: 'https://www.teacherpotato.xyz/:path*',
+  //       permanent: true,
+  //     },
+  //   ];
+  // },
   
   // Enable Turbopack
   turbopack: {},
