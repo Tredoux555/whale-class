@@ -35,9 +35,8 @@ export default function PhotoDetailView({
     setLoading(true);
     const fetchUrl = async () => {
       try {
-        // Request medium size for detail view (good balance of quality and speed)
         const response = await fetch(
-          `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}&size=medium`
+          `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}`
         );
         const data = await response.json();
         if (data.url) {
