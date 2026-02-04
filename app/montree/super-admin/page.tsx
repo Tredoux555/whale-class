@@ -23,6 +23,20 @@ interface School {
   student_count?: number;
 }
 
+interface Feedback {
+  id: string;
+  school_id: string | null;
+  user_type: string;
+  user_id: string | null;
+  user_name: string | null;
+  page_url: string | null;
+  feedback_type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  school?: { id: string; name: string } | null;
+}
+
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 export default function SuperAdminPage() {
@@ -34,6 +48,12 @@ export default function SuperAdminPage() {
   const [error, setError] = useState('');
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [sessionWarning, setSessionWarning] = useState(false);
+
+  // Feedback state
+  const [activeTab, setActiveTab] = useState<'schools' | 'feedback'>('schools');
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Simple audit logging
   const logAction = useCallback(async (action: string, details?: any) => {
@@ -89,6 +109,7 @@ export default function SuperAdminPage() {
       setLastActivity(Date.now());
       await logAction('login_success');
       fetchSchools();
+      fetchFeedback();
     } else {
       await logAction('login_failed', { attempted: true });
       setError('Invalid password');
@@ -106,6 +127,62 @@ export default function SuperAdminPage() {
       console.error('Failed to fetch schools:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFeedback = async () => {
+    setLoadingFeedback(true);
+    try {
+      const res = await fetch('/api/montree/feedback', {
+        headers: { 'x-super-admin-password': password }
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      setFeedback(data.feedback || []);
+      setUnreadCount((data.feedback || []).filter((f: Feedback) => !f.is_read).length);
+    } catch (err) {
+      console.error('Failed to fetch feedback:', err);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  const markFeedbackRead = async (feedbackId: string) => {
+    try {
+      await fetch('/api/montree/feedback', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-password': password
+        },
+        body: JSON.stringify({ feedback_id: feedbackId, is_read: true })
+      });
+      // Update local state
+      setFeedback(prev => prev.map(f =>
+        f.id === feedbackId ? { ...f, is_read: true } : f
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Failed to mark feedback read:', err);
+    }
+  };
+
+  const getFeedbackEmoji = (type: string) => {
+    switch (type) {
+      case 'bug': return '🐛';
+      case 'idea': return '💡';
+      case 'help': return '❓';
+      case 'praise': return '👍';
+      default: return '💬';
+    }
+  };
+
+  const getUserTypeColor = (type: string) => {
+    switch (type) {
+      case 'teacher': return 'bg-blue-500/20 text-blue-400';
+      case 'principal': return 'bg-purple-500/20 text-purple-400';
+      case 'parent': return 'bg-emerald-500/20 text-emerald-400';
+      default: return 'bg-slate-500/20 text-slate-400';
     }
   };
 
@@ -202,7 +279,7 @@ export default function SuperAdminPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <span>🌳</span> Montree Master Admin
@@ -219,6 +296,110 @@ export default function SuperAdminPage() {
           </Link>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('schools')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'schools'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            🏫 Schools
+          </button>
+          <button
+            onClick={() => { setActiveTab('feedback'); if (feedback.length === 0) fetchFeedback(); }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              activeTab === 'feedback'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            💬 Feedback
+            {unreadCount > 0 && (
+              <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'feedback' ? (
+          /* Feedback View */
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">User Feedback</h2>
+              <button
+                onClick={fetchFeedback}
+                className="text-sm text-slate-400 hover:text-white"
+              >
+                ↻ Refresh
+              </button>
+            </div>
+
+            {loadingFeedback ? (
+              <div className="p-12 text-center">
+                <div className="animate-pulse text-4xl">💬</div>
+                <p className="text-slate-400 mt-2">Loading feedback...</p>
+              </div>
+            ) : feedback.length === 0 ? (
+              <div className="p-12 text-center">
+                <span className="text-5xl block mb-4">📭</span>
+                <h3 className="text-xl font-semibold text-white mb-2">No feedback yet</h3>
+                <p className="text-slate-400">Feedback from teachers, principals, and parents will appear here.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-700">
+                {feedback.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`p-4 hover:bg-slate-800/50 transition-colors ${
+                      !item.is_read ? 'bg-emerald-500/5 border-l-4 border-emerald-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-2xl">{getFeedbackEmoji(item.feedback_type)}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getUserTypeColor(item.user_type)}`}>
+                            {item.user_type}
+                          </span>
+                          {item.user_name && (
+                            <span className="text-white font-medium">{item.user_name}</span>
+                          )}
+                          {item.school?.name && (
+                            <span className="text-slate-500 text-sm">@ {item.school.name}</span>
+                          )}
+                          <span className="text-slate-500 text-sm ml-auto">
+                            {new Date(item.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-white whitespace-pre-wrap">{item.message}</p>
+                        {item.page_url && (
+                          <p className="text-slate-500 text-sm mt-2">
+                            📍 {item.page_url}
+                          </p>
+                        )}
+                      </div>
+                      {!item.is_read && (
+                        <button
+                          onClick={() => markFeedbackRead(item.id)}
+                          className="px-3 py-1 text-sm bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg"
+                        >
+                          ✓ Mark Read
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Schools View */
+          <>
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
@@ -351,6 +532,8 @@ export default function SuperAdminPage() {
               </tbody>
             </table>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
