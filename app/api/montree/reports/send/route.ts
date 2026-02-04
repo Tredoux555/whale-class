@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
     const getStatusLabel = (status: string) => {
       if (status === 'mastered' || status === 'completed') return 'mastered';
       if (status === 'practicing') return 'practicing';
+      if (status === 'documented') return 'documented'; // Photo exists but no formal progress
       return 'presented';
     };
 
@@ -263,6 +264,7 @@ export async function POST(request: NextRequest) {
       const statusEmoji = (s: string) => {
         if (s === 'mastered' || s === 'completed') return '⭐';
         if (s === 'practicing') return '🔄';
+        if (s === 'documented') return '📸'; // Has photo documentation
         return '🌱';
       };
 
@@ -282,7 +284,7 @@ export async function POST(request: NextRequest) {
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
           <p style="color: #999; font-size: 12px;">
-            ⭐ Mastered • 🔄 Practicing • 🌱 Introduced
+            ⭐ Mastered • 🔄 Practicing • 🌱 Introduced • 📸 Documented
           </p>
         </div>
       `;

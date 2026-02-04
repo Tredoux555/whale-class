@@ -8,14 +8,17 @@ import { toast, Toaster } from 'sonner';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 
 interface ReportItem {
+  work_id: string | null;
   work_name: string;
   area: string;
   status: string;
   photo_url: string | null;
+  photo_id: string | null;
   photo_caption: string | null;
   parent_description: string | null;
   why_it_matters: string | null;
   has_description: boolean;
+  source: 'progress' | 'photo';
 }
 
 interface ReportStats {
@@ -25,7 +28,11 @@ interface ReportStats {
   mastered: number;
   practicing: number;
   presented: number;
+  documented: number;
   unassigned_photos?: number;
+  from_progress: number;
+  from_photos: number;
+  has_selections: boolean;
 }
 
 interface UnassignedPhoto {
@@ -661,6 +668,7 @@ function StatusBadge({ status }: { status: string }) {
     practicing: { bg: 'bg-blue-100', text: 'text-blue-700', label: '🔄 Practicing' },
     mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastered' },
     completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastered' },
+    documented: { bg: 'bg-purple-100', text: 'text-purple-700', label: '📸 Documented' },
   };
 
   const style = styles[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: '○ Started' };
