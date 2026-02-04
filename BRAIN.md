@@ -11,6 +11,46 @@
 
 ## Recent Changes
 
+### Session 142 - Feb 4, 2026 Evening (CURRICULUM-PROGRESS DATA SYNC)
+
+**🔧 ROOT CAUSE FIX: Orphaned Works**
+
+Works like "Word Building Work with /u/" appeared in Week view but NOT in Curriculum page.
+
+**Root Cause:** Two independent tables with NO foreign key:
+- `montree_child_progress` stores `work_name` as TEXT
+- `montree_classroom_curriculum_works` stores proper UUID records
+
+**Fix Applied:** Auto-sync in `/api/montree/progress/update/route.ts`
+- When progress saved with `area`, checks if work exists in curriculum
+- If not found, auto-creates with `is_custom=true`
+- Only for NEW updates - existing orphans need re-save to sync
+
+**Other Fixes:**
+
+| Issue | Fix |
+|-------|-----|
+| Modal inputs not working | Changed CSS from `overflow-hidden` to `flex flex-col` layout |
+| Missing classroom_id in uploads | Added to capture page photo/video uploads |
+| Empty WorkWheelPicker crash | Added empty state handling |
+| Missing Montessori descriptions | Added 20+ fallback descriptions (pink tower, golden beads, etc.) |
+| Dashboard missing links | Added 📚 Curriculum + 🧠 Guru to main dashboard header |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `app/api/montree/progress/update/route.ts` | Auto-sync curriculum entries |
+| `app/montree/dashboard/curriculum/page.tsx` | Fixed modal layout |
+| `app/montree/dashboard/page.tsx` | Added Curriculum + Guru links |
+| `app/montree/dashboard/capture/page.tsx` | Added classroom_id |
+| `app/api/montree/reports/preview/route.ts` | 20+ fallback descriptions |
+| `components/montree/WorkWheelPicker.tsx` | Empty state handling |
+
+**Git:** Commits `35b7564` through `b618d21` pushed and deployed
+
+---
+
 ### Session 141 - Feb 4, 2026 (PARENT REPORT FIXES + 3-PART CARDS)
 
 **✅ Gallery Testing:** PASSED - Photo viewer modal, filters all working.
