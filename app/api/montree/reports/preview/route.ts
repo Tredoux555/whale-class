@@ -4,35 +4,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Import JSON files directly so they're bundled with the build (readFileSync doesn't work in Vercel)
-import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
-import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
-import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
-import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
-import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
-
-// Load all parent descriptions from the MAIN guides JSON files (which have ALL works)
-function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; originalName: string }> {
-  const descriptions = new Map();
-  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
-
-  for (const data of allGuides) {
-    const works = (data as any).works || data;
-    for (const item of works) {
-      if (item.name && item.parent_description) {
-        descriptions.set(item.name.toLowerCase(), {
-          description: item.parent_description,
-          why_it_matters: item.why_it_matters || '',
-          originalName: item.name,
-        });
-      }
-    }
-  }
-
-  console.log(`Loaded ${descriptions.size} parent descriptions from guides files`);
-  return descriptions;
-}
-
 // Fuzzy match work name to find best description
 // Handles cases like "Dressing Frame Shoes" matching "Lacing Frame" or generic dressing frames
 function findBestDescription(
@@ -137,13 +108,14 @@ export async function GET(request: NextRequest) {
       .select('name, parent_description, why_it_matters')
       .eq('classroom_id', child.classroom_id);
 
-    // Build DB descriptions map as fallback
-    const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
+    // Build DB descriptions map for fuzzy matching
+    const dbDescriptions = new Map<string, { description: string; why_it_matters: string; originalName: string }>();
     for (const work of curriculumWorks || []) {
       if (work.name && work.parent_description) {
         dbDescriptions.set(work.name.toLowerCase(), {
           description: work.parent_description,
           why_it_matters: work.why_it_matters || '',
+          originalName: work.name,
         });
       }
     }
@@ -257,9 +229,6 @@ export async function GET(request: NextRequest) {
     const selectedPhotos = allPhotos.filter(p => p.is_selected);
     const availablePhotos = allPhotos.filter(p => !p.is_selected);
 
-    // Load parent descriptions
-    const parentDescriptions = loadParentDescriptions();
-
     // Build report items with matched photos and descriptions
     // Use SELECTED photos for preview (or all if no selections yet for backwards compat)
     const photosForMatching = selectedPhotoIds.length > 0 ? selectedPhotos : allPhotos;
@@ -272,10 +241,10 @@ export async function GET(request: NextRequest) {
         ph => ph.work_name?.toLowerCase() === workNameLower
       );
 
-      // Find parent description using fuzzy matching from JSON files
-      let desc = findBestDescription(p.work_name || '', parentDescriptions);
+      // Find parent description from database using fuzzy matching
+      let desc = findBestDescription(p.work_name || '', dbDescriptions);
 
-      // Fallback to database descriptions if JSON fuzzy match fails
+      // Direct lookup fallback
       if (!desc && dbDescriptions.has(workNameLower)) {
         desc = dbDescriptions.get(workNameLower)!;
       }

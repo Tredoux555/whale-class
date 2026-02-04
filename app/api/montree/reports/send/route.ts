@@ -5,32 +5,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
-// Import JSON files directly so they're bundled with the build (readFileSync doesn't work in Vercel)
-import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
-import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
-import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
-import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
-import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
-
-// Load parent descriptions for saving in report content
-function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
-  const descriptions = new Map();
-  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
-
-  for (const data of allGuides) {
-    const works = (data as any).works || data;
-    for (const item of works) {
-      if (item.name && item.parent_description) {
-        descriptions.set(item.name.toLowerCase(), {
-          description: item.parent_description,
-          why_it_matters: item.why_it_matters || '',
-        });
-      }
-    }
-  }
-  return descriptions;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(
@@ -169,9 +143,6 @@ export async function POST(request: NextRequest) {
       }));
     }
 
-    // Load parent descriptions
-    const parentDescriptions = loadParentDescriptions();
-
     // Get curriculum works to map work_id to work_name for photos
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
@@ -214,8 +185,8 @@ export async function POST(request: NextRequest) {
       child: { name: child.name, photo_url: child.photo_url },
       works: works.map(w => {
         const workNameLower = (w.work_name || '').toLowerCase();
-        // Get description from JSON or DB
-        let desc = parentDescriptions.get(workNameLower) || dbDescriptions.get(workNameLower);
+        // Get description from database
+        const desc = dbDescriptions.get(workNameLower);
         // Get photo if matched
         const photo = photosByWorkName.get(workNameLower);
 

@@ -5,13 +5,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Import JSON files directly so they're bundled with the build
-import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
-import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
-import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
-import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
-import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
-
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,34 +12,36 @@ function getSupabase() {
   );
 }
 
-// Load parent descriptions from bundled JSON files
-function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
-  const descriptions = new Map();
-  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
+// Enrich stored report content with descriptions from database
+async function enrichReportContent(
+  content: any,
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string | null
+) {
+  if (!content || !content.works || !classroomId) return content;
 
-  for (const data of allGuides) {
-    const works = (data as any).works || data;
-    for (const item of works) {
-      if (item.name && item.parent_description) {
-        descriptions.set(item.name.toLowerCase(), {
-          description: item.parent_description,
-          why_it_matters: item.why_it_matters || '',
-        });
-      }
+  // Get curriculum works with descriptions from database
+  const { data: curriculumWorks } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('name, parent_description, why_it_matters')
+    .eq('classroom_id', classroomId);
+
+  // Build lookup map
+  const descriptions = new Map<string, { description: string; why_it_matters: string }>();
+  for (const work of curriculumWorks || []) {
+    if (work.name && work.parent_description) {
+      descriptions.set(work.name.toLowerCase(), {
+        description: work.parent_description,
+        why_it_matters: work.why_it_matters || '',
+      });
     }
   }
-  return descriptions;
-}
-
-// Enrich stored report content with descriptions (for old reports that don't have them)
-function enrichReportContent(content: any, descriptions: Map<string, { description: string; why_it_matters: string }>) {
-  if (!content || !content.works) return content;
 
   const enrichedWorks = content.works.map((work: any) => {
     // If work already has a description, keep it
     if (work.parent_description) return work;
 
-    // Otherwise, look up description from JSON
+    // Otherwise, look up description from database
     const workNameLower = (work.name || '').toLowerCase();
     const desc = descriptions.get(workNameLower);
 
@@ -92,12 +87,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
     }
 
-    // Load descriptions and enrich all reports
-    const descriptions = loadParentDescriptions();
-    const enrichedReports = (data || []).map((report: any) => ({
-      ...report,
-      content: enrichReportContent(report.content, descriptions),
-    }));
+    // Enrich all reports with descriptions from database
+    const enrichedReports = await Promise.all(
+      (data || []).map(async (report: any) => ({
+        ...report,
+        content: await enrichReportContent(report.content, supabase, report.classroom_id),
+      }))
+    );
 
     return NextResponse.json({ success: true, reports: enrichedReports });
   } catch (error) {
