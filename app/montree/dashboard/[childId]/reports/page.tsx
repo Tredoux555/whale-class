@@ -463,49 +463,106 @@ export default function ReportsPage() {
                     </div>
                   )}
 
-                  {/* Works */}
+                  {/* Works with Photos - Same layout as Preview */}
                   {lastReport.content.works && lastReport.content.works.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700">Activities Reported</h4>
-                      {lastReport.content.works.map((work: any, i: number) => (
-                        <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{work.area_icon || '📋'}</span>
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-800">{work.name}</p>
-                              <p className="text-xs text-gray-500">{work.area} • {work.status_label}</p>
+                    <div className="space-y-4">
+                      {lastReport.content.works.map((work: any, i: number) => {
+                        // Find matching photo for this work
+                        const workPhoto = lastReport.content.photos?.find(
+                          (p: any) => p.work_id === work.work_id || p.work_name === work.name
+                        );
+
+                        return (
+                          <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                            {/* Work header */}
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                work.status === 'mastered' || work.status === 'completed'
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : work.status === 'practicing'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {work.status_label || work.status}
+                              </span>
+                              <h4 className="font-bold text-gray-800">{work.name}</h4>
                             </div>
+
+                            {/* Photo - Hero style (same as Preview) */}
+                            {workPhoto && (
+                              <div className="relative -mx-4 my-3">
+                                <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                                  <img
+                                    src={workPhoto.url || workPhoto.thumbnail_url}
+                                    alt={work.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                {workPhoto.caption && (
+                                  <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{workPhoto.caption}</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Description */}
+                            {work.parent_explanation ? (
+                              <div className="space-y-2">
+                                <p className="text-gray-700 text-sm leading-relaxed">
+                                  {work.parent_explanation}
+                                </p>
+                                {work.why_it_matters && (
+                                  <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                                    <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                                    <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-gray-400 text-sm italic">
+                                No description available for this work
+                              </p>
+                            )}
                           </div>
-                          {work.parent_explanation && (
-                            <p className="mt-2 text-sm text-gray-600">{work.parent_explanation}</p>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
-                  {/* Photos */}
-                  {lastReport.content.photos && lastReport.content.photos.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700">Photos</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {lastReport.content.photos.map((photo: any) => (
-                          <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
-                            <div className="aspect-[4/3] w-full bg-gray-100">
-                              <img
-                                src={photo.url || photo.thumbnail_url}
-                                alt={photo.caption || 'Photo'}
-                                className="w-full h-full object-contain bg-gray-900"
-                              />
+                  {/* Unassigned Photos (photos not linked to works) */}
+                  {lastReport.content.photos && lastReport.content.photos.length > 0 && (() => {
+                    const workIds = new Set(lastReport.content.works?.map((w: any) => w.work_id) || []);
+                    const workNames = new Set(lastReport.content.works?.map((w: any) => w.name) || []);
+                    const unassignedPhotos = lastReport.content.photos.filter(
+                      (p: any) => !workIds.has(p.work_id) && !workNames.has(p.work_name)
+                    );
+
+                    if (unassignedPhotos.length === 0) return null;
+
+                    return (
+                      <div className="bg-blue-50 rounded-xl p-4 space-y-3">
+                        <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                          📸 Additional Photos
+                          <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {unassignedPhotos.map((photo: any) => (
+                            <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
+                              <div className="aspect-square w-full">
+                                <img
+                                  src={photo.url || photo.thumbnail_url}
+                                  alt={photo.caption || 'Learning moment'}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              {photo.caption && (
+                                <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
+                              )}
                             </div>
-                            {photo.caption && (
-                              <p className="p-2 text-xs text-gray-600 bg-white">{photo.caption}</p>
-                            )}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </>
               ) : (
                 <div className="text-center py-8 text-gray-500">
