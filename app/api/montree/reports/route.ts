@@ -5,6 +5,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Import JSON files directly so they're bundled with the build
+import practicalLifeGuides from '@/lib/curriculum/comprehensive-guides/practical-life-guides.json';
+import sensorialGuides from '@/lib/curriculum/comprehensive-guides/sensorial-guides.json';
+import mathGuides from '@/lib/curriculum/comprehensive-guides/math-guides.json';
+import languageGuides from '@/lib/curriculum/comprehensive-guides/language-guides.json';
+import culturalGuides from '@/lib/curriculum/comprehensive-guides/cultural-guides.json';
+
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +19,51 @@ function getSupabase() {
   );
 }
 
-// GET - Fetch reports
+// Load parent descriptions from bundled JSON files
+function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string }> {
+  const descriptions = new Map();
+  const allGuides = [practicalLifeGuides, sensorialGuides, mathGuides, languageGuides, culturalGuides];
+
+  for (const data of allGuides) {
+    const works = (data as any).works || data;
+    for (const item of works) {
+      if (item.name && item.parent_description) {
+        descriptions.set(item.name.toLowerCase(), {
+          description: item.parent_description,
+          why_it_matters: item.why_it_matters || '',
+        });
+      }
+    }
+  }
+  return descriptions;
+}
+
+// Enrich stored report content with descriptions (for old reports that don't have them)
+function enrichReportContent(content: any, descriptions: Map<string, { description: string; why_it_matters: string }>) {
+  if (!content || !content.works) return content;
+
+  const enrichedWorks = content.works.map((work: any) => {
+    // If work already has a description, keep it
+    if (work.parent_description) return work;
+
+    // Otherwise, look up description from JSON
+    const workNameLower = (work.name || '').toLowerCase();
+    const desc = descriptions.get(workNameLower);
+
+    return {
+      ...work,
+      parent_description: desc?.description || null,
+      why_it_matters: desc?.why_it_matters || null,
+    };
+  });
+
+  return {
+    ...content,
+    works: enrichedWorks,
+  };
+}
+
+// GET - Fetch reports (with enriched descriptions)
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -41,7 +92,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, reports: data || [] });
+    // Load descriptions and enrich all reports
+    const descriptions = loadParentDescriptions();
+    const enrichedReports = (data || []).map((report: any) => ({
+      ...report,
+      content: enrichReportContent(report.content, descriptions),
+    }));
+
+    return NextResponse.json({ success: true, reports: enrichedReports });
   } catch (error) {
     console.error('Reports GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
