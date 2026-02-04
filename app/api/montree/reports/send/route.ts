@@ -209,6 +209,14 @@ export async function POST(request: NextRequest) {
 
     // Build report content with FULL descriptions (so parent view doesn't need to regenerate)
     const now = new Date().toISOString();
+
+    // Helper for status labels
+    const getStatusLabel = (status: string) => {
+      if (status === 'mastered' || status === 'completed') return 'mastered';
+      if (status === 'practicing') return 'practicing';
+      return 'presented';
+    };
+
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
       works: works.map(w => {
@@ -222,12 +230,18 @@ export async function POST(request: NextRequest) {
           name: w.work_name,
           area: w.area,
           status: w.status === 'completed' ? 'mastered' : w.status,
+          status_label: getStatusLabel(w.status),
           parent_description: desc?.description || null,
           why_it_matters: desc?.why_it_matters || null,
           photo_url: photo?.url || null,
+          photo_caption: photo?.caption || null,
         };
       }),
-      photos: photos || [],
+      // Include work_name in photos for better frontend matching
+      photos: photos.map(p => ({
+        ...p,
+        work_name: p.work_id ? workIdToName.get(p.work_id) : p.caption,
+      })),
       generated_at: now,
     };
 
