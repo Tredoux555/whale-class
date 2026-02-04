@@ -63,12 +63,14 @@ export default function CurriculumPage() {
     name: '',
     name_chinese: '',
     description: '',
+    why_it_matters: '',
     age_range: '',
     direct_aims: '',
     indirect_aims: '',
     materials: '',
     teacher_notes: '',
   });
+  const [generating, setGenerating] = useState(false);
 
   // Drag-drop state
   const [draggedWork, setDraggedWork] = useState<Work | null>(null);
@@ -135,12 +137,52 @@ export default function CurriculumPage() {
       name: work.name || '',
       name_chinese: work.name_chinese || '',
       description: work.parent_explanation || work.description || '',
+      why_it_matters: work.why_it_matters || '',
       age_range: work.age_range || '3-6',
       direct_aims: (work.direct_aims || []).join('\n'),
       indirect_aims: (work.indirect_aims || []).join('\n'),
       materials: (work.materials_needed || []).join('\n'),
       teacher_notes: work.teacher_notes || '',
     });
+  };
+
+  // Generate AI description
+  const handleGenerateAI = async () => {
+    if (!editForm.name.trim()) {
+      toast.error('Please enter a work name first');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/montree/curriculum/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          work_name: editForm.name,
+          teacher_notes: editForm.teacher_notes, // Use teacher notes as context
+          area: editingWork?.area_id || selectedArea,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.description || data.why_it_matters) {
+        setEditForm(prev => ({
+          ...prev,
+          description: data.description || prev.description,
+          why_it_matters: data.why_it_matters || prev.why_it_matters,
+        }));
+        toast.success('✨ Descriptions generated!');
+      } else if (data.error) {
+        toast.error(data.error);
+      } else {
+        toast.error('Failed to generate');
+      }
+    } catch (err) {
+      console.error('AI generation error:', err);
+      toast.error('Failed to generate description');
+    }
+    setGenerating(false);
   };
 
   // Save edit
@@ -156,6 +198,8 @@ export default function CurriculumPage() {
           name: editForm.name,
           name_chinese: editForm.name_chinese,
           description: editForm.description,
+          parent_description: editForm.description, // Also save to parent_description for reports
+          why_it_matters: editForm.why_it_matters,
           age_range: editForm.age_range,
           direct_aims: editForm.direct_aims.split('\n').filter(s => s.trim()),
           indirect_aims: editForm.indirect_aims.split('\n').filter(s => s.trim()),
@@ -581,11 +625,44 @@ export default function CurriculumPage() {
                   placeholder="e.g. 3-6" className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               
+              {/* AI Generate Button */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-xl border border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-purple-700">✨ AI Description Generator</p>
+                  <button
+                    onClick={handleGenerateAI}
+                    disabled={generating || !editForm.name.trim()}
+                    className="px-4 py-1.5 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {generating ? (
+                      <>
+                        <span className="animate-spin">⏳</span>
+                        Generating...
+                      </>
+                    ) : (
+                      <>🧠 Generate with AI</>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-purple-600">
+                  AI will generate parent-friendly descriptions matching the Montessori Guru style
+                </p>
+              </div>
+
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description (for parents)</label>
                 <textarea value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})}
-                  rows={2} className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" />
+                  rows={3} placeholder="What parents will see about this work..."
+                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" />
+              </div>
+
+              {/* Why It Matters */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">💡 Why It Matters</label>
+                <textarea value={editForm.why_it_matters} onChange={e => setEditForm({...editForm, why_it_matters: e.target.value})}
+                  rows={2} placeholder="The developmental significance..."
+                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" />
               </div>
               
               {/* Direct Aims */}

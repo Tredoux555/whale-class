@@ -41,7 +41,8 @@ export default function WorkWheelPicker({
   // Add Work form state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newWorkName, setNewWorkName] = useState('');
-  const [insertPosition, setInsertPosition] = useState<'after' | 'end'>('after');
+  const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
+  const [showPositionPicker, setShowPositionPicker] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
   const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[area.replace('math', 'mathematics')] || {
@@ -102,6 +103,13 @@ export default function WorkWheelPicker({
     }
   };
 
+  // Initialize insert position to current selection when form opens
+  useEffect(() => {
+    if (showAddForm && insertAfterIndex === null) {
+      setInsertAfterIndex(selectedIndex);
+    }
+  }, [showAddForm, selectedIndex]);
+
   // Handle adding a new work
   const handleAddWork = async () => {
     if (!newWorkName.trim()) return;
@@ -114,10 +122,9 @@ export default function WorkWheelPicker({
 
     setIsAdding(true);
     try {
-      const selectedWork = works[selectedIndex];
-      const afterSequence = insertPosition === 'after' && selectedWork?.sequence
-        ? selectedWork.sequence
-        : undefined;
+      // Get the sequence number from the selected position
+      const afterWork = insertAfterIndex !== null ? works[insertAfterIndex] : null;
+      const afterSequence = afterWork?.sequence;
 
       const response = await fetch('/api/montree/curriculum', {
         method: 'POST',
@@ -134,6 +141,7 @@ export default function WorkWheelPicker({
       if (response.ok) {
         setNewWorkName('');
         setShowAddForm(false);
+        setInsertAfterIndex(null);
         onWorkAdded?.(); // Trigger refresh
       } else {
         const err = await response.json();
@@ -274,22 +282,19 @@ export default function WorkWheelPicker({
               }}
             />
 
-            {/* Position selector */}
+            {/* Position selector - tap to open picker */}
             <div className="flex gap-2">
               <button
-                onClick={() => setInsertPosition('after')}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  insertPosition === 'after'
-                    ? 'bg-white/30 text-white'
-                    : 'bg-white/10 text-white/60'
-                }`}
+                onClick={() => setShowPositionPicker(true)}
+                className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white border border-white/30 flex items-center justify-center gap-2"
               >
-                After #{works[selectedIndex]?.sequence || '?'}
+                <span>After #{insertAfterIndex !== null ? works[insertAfterIndex]?.sequence || '?' : '?'}</span>
+                <span className="text-white/60">▼</span>
               </button>
               <button
-                onClick={() => setInsertPosition('end')}
+                onClick={() => setInsertAfterIndex(null)}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  insertPosition === 'end'
+                  insertAfterIndex === null
                     ? 'bg-white/30 text-white'
                     : 'bg-white/10 text-white/60'
                 }`}
@@ -297,6 +302,39 @@ export default function WorkWheelPicker({
                 End of list
               </button>
             </div>
+
+            {/* Position Picker Modal */}
+            {showPositionPicker && (
+              <div className="absolute inset-0 bg-black/80 rounded-2xl flex flex-col z-10">
+                <div className="p-3 border-b border-white/20 flex items-center justify-between">
+                  <span className="text-white font-medium">Insert after position...</span>
+                  <button
+                    onClick={() => setShowPositionPicker(false)}
+                    className="text-white/60 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto max-h-48">
+                  {works.map((work, idx) => (
+                    <button
+                      key={work.id || idx}
+                      onClick={() => {
+                        setInsertAfterIndex(idx);
+                        setShowPositionPicker(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left text-sm border-b border-white/10 flex items-center gap-3 ${
+                        insertAfterIndex === idx ? 'bg-emerald-500/30 text-white' : 'text-white/80 hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="text-white/50 w-8">#{work.sequence}</span>
+                      <span className="flex-1 truncate">{work.name}</span>
+                      {insertAfterIndex === idx && <span>✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Action buttons */}
             <div className="flex gap-2">
