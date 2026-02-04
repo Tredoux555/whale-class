@@ -256,10 +256,30 @@ export async function GET(request: NextRequest) {
     const reportItems = (progress || []).map(p => {
       const workNameLower = p.work_name?.toLowerCase() || '';
 
-      // Find photo for this work (only from selected photos if selections exist)
-      const photo = photosForMatching?.find(
+      // Find photo for this work using fuzzy matching
+      // Priority: exact match > contains match > keyword match
+      let photo = photosForMatching?.find(
         ph => ph.work_name?.toLowerCase() === workNameLower
       );
+
+      // Try contains match if no exact match
+      if (!photo) {
+        photo = photosForMatching?.find(ph => {
+          const photoName = ph.work_name?.toLowerCase() || '';
+          return photoName && (workNameLower.includes(photoName) || photoName.includes(workNameLower));
+        });
+      }
+
+      // Try keyword match (at least 2 significant words overlap)
+      if (!photo) {
+        const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 2);
+        photo = photosForMatching?.find(ph => {
+          const photoName = ph.work_name?.toLowerCase() || '';
+          const photoWords = photoName.split(/[\s\-_]+/).filter(w => w.length > 2);
+          const overlap = workWords.filter(w => photoWords.some(pw => pw.includes(w) || w.includes(pw)));
+          return overlap.length >= 2;
+        });
+      }
 
       // Find parent description from database using fuzzy matching
       let desc = findBestDescription(p.work_name || '', dbDescriptions);
@@ -294,6 +314,10 @@ export async function GET(request: NextRequest) {
       has_selections: selectedPhotoIds.length > 0,
     };
 
+    // Build unassigned photos list (photos that didn't match any work)
+    const matchedPhotoUrls = new Set(reportItems.filter(r => r.photo_url).map(r => r.photo_url));
+    const unassignedPhotos = allPhotos.filter(p => p.url && !matchedPhotoUrls.has(p.url));
+
     return NextResponse.json({
       success: true,
       child_name: child.name,
@@ -303,6 +327,7 @@ export async function GET(request: NextRequest) {
       // Include all photos for the photo selection modal
       selected_photos: selectedPhotos,
       available_photos: availablePhotos,
+      unassigned_photos: unassignedPhotos, // Photos not matched to any work
       all_photos: allPhotos, // For backwards compatibility
       stats,
     });
