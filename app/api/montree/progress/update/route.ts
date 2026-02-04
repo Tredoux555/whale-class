@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
     }
 
-    // Verify child exists
+    // Verify child exists and get classroom_id for curriculum sync
     const { data: child, error: childError } = await supabase
       .from('montree_children')
-      .select('id')
+      .select('id, classroom_id')
       .eq('id', child_id)
       .single();
 
@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
       console.error('[progress/update] Child not found:', child_id);
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
+
+    const classroomId = child.classroom_id;
 
     // Normalize status
     const statusStr = normalizeStatus(status);
@@ -134,6 +136,61 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[progress/update] Success:', { child_id, work_name: workNameToSave, status: statusStr });
+
+    // AUTO-SYNC: Ensure work exists in curriculum (prevents orphaned progress records)
+    if (classroomId && workNameToSave && area) {
+      try {
+        // Check if work exists in curriculum
+        const { data: existingWork } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id')
+          .eq('classroom_id', classroomId)
+          .ilike('name', workNameToSave)
+          .maybeSingle();
+
+        if (!existingWork) {
+          // Get area_id for this area
+          const { data: areaData } = await supabase
+            .from('montree_classroom_curriculum_areas')
+            .select('id')
+            .eq('classroom_id', classroomId)
+            .eq('area_key', area)
+            .maybeSingle();
+
+          if (areaData) {
+            // Get next sequence number
+            const { data: maxSeq } = await supabase
+              .from('montree_classroom_curriculum_works')
+              .select('sequence')
+              .eq('area_id', areaData.id)
+              .order('sequence', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            const nextSeq = (maxSeq?.sequence || 0) + 1;
+
+            // Create curriculum entry for this work
+            const workKey = `custom_${area}_${Date.now()}`;
+            await supabase
+              .from('montree_classroom_curriculum_works')
+              .insert({
+                classroom_id: classroomId,
+                area_id: areaData.id,
+                work_key: workKey,
+                name: workNameToSave,
+                sequence: nextSeq,
+                is_custom: true,
+                is_active: true,
+              });
+
+            console.log('[progress/update] Auto-created curriculum entry for:', workNameToSave);
+          }
+        }
+      } catch (syncErr) {
+        // Don't fail the request if sync fails - progress was already saved
+        console.error('[progress/update] Curriculum sync error (non-fatal):', syncErr);
+      }
+    }
 
     // If is_focus is true, also update the focus-works table
     if (is_focus && area) {
