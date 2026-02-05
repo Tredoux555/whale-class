@@ -1,5 +1,5 @@
 // /montree/super-admin/page.tsx
-// Secure Super Admin Dashboard - All access is logged
+// Secure Super Admin Dashboard - Simplified
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,6 +15,7 @@ interface School {
   subscription_status: string;
   subscription_tier: string;
   plan_type: string;
+  account_type?: string;
   is_active: boolean;
   created_at: string;
   trial_ends_at: string | null;
@@ -38,6 +39,8 @@ interface Feedback {
   school?: { id: string; name: string } | null;
 }
 
+type TabType = 'schools' | 'feedback';
+
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 export default function SuperAdminPage() {
@@ -50,11 +53,16 @@ export default function SuperAdminPage() {
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [sessionWarning, setSessionWarning] = useState(false);
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('schools');
+
   // Feedback state
-  const [activeTab, setActiveTab] = useState<'schools' | 'feedback'>('schools');
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // School being edited
+  const [editingSchool, setEditingSchool] = useState<string | null>(null);
 
   // Simple audit logging
   const logAction = useCallback(async (action: string, details?: any) => {
@@ -69,7 +77,7 @@ export default function SuperAdminPage() {
     }
   }, []);
 
-  // Session timeout - auto logout after 15 min inactivity
+  // Session timeout
   useEffect(() => {
     if (!authenticated) return;
 
@@ -158,13 +166,42 @@ export default function SuperAdminPage() {
         },
         body: JSON.stringify({ feedback_id: feedbackId, is_read: true })
       });
-      // Update local state
       setFeedback(prev => prev.map(f =>
         f.id === feedbackId ? { ...f, is_read: true } : f
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Failed to mark feedback read:', err);
+    }
+  };
+
+  // Update school subscription status
+  const updateSchoolStatus = async (schoolId: string, newTier: string) => {
+    try {
+      const res = await fetch('/api/montree/super-admin/schools', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schoolId,
+          subscription_tier: newTier,
+          subscription_status: newTier === 'free' ? 'active' : (newTier === 'paid' ? 'active' : 'trialing'),
+          password: '870602'
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to update');
+
+      // Update local state
+      setSchools(prev => prev.map(s =>
+        s.id === schoolId
+          ? { ...s, subscription_tier: newTier, subscription_status: newTier === 'free' ? 'active' : (newTier === 'paid' ? 'active' : 'trialing') }
+          : s
+      ));
+      setEditingSchool(null);
+      await logAction('update_school_status', { schoolId, newTier });
+    } catch (err) {
+      console.error('Failed to update school:', err);
+      alert('Failed to update school status');
     }
   };
 
@@ -187,6 +224,14 @@ export default function SuperAdminPage() {
     }
   };
 
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'free': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
+      case 'paid': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
+      default: return 'bg-amber-500/20 text-amber-400 border-amber-500/50';
+    }
+  };
+
   const deleteSchool = async (school: School) => {
     const confirmMsg = `🚨 DELETE "${school.name}"?\n\nThis will permanently delete:\n• ${school.classroom_count || 0} classrooms\n• ${school.teacher_count || 0} teachers\n• ${school.student_count || 0} students\n• All curriculum and progress data\n\nType "DELETE" to confirm:`;
 
@@ -206,7 +251,6 @@ export default function SuperAdminPage() {
         throw new Error(data.error || 'Failed to delete');
       }
 
-      // Remove from local state
       setSchools(prev => prev.filter(s => s.id !== school.id));
       alert(`✅ "${school.name}" deleted successfully`);
     } catch (err) {
@@ -224,14 +268,12 @@ export default function SuperAdminPage() {
       });
 
       if (!res.ok) throw new Error('Failed to login');
-      
+
       const data = await res.json();
-      
-      // Store session (same as regular principal login)
+
       localStorage.setItem('montree_principal', JSON.stringify(data.principal));
       localStorage.setItem('montree_school', JSON.stringify(data.school));
-      
-      // Redirect to principal admin
+
       if (data.needsSetup) {
         router.push('/montree/principal/setup');
       } else {
@@ -243,6 +285,11 @@ export default function SuperAdminPage() {
     }
   };
 
+  // Stats
+  const trialSchools = schools.filter(s => s.subscription_tier === 'trial' || s.subscription_status === 'trialing');
+  const freeSchools = schools.filter(s => s.subscription_tier === 'free');
+  const paidSchools = schools.filter(s => s.subscription_tier === 'paid');
+
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -252,7 +299,7 @@ export default function SuperAdminPage() {
             <h1 className="text-xl font-bold text-white">Master Admin</h1>
             <p className="text-slate-400 text-sm">Enter password to continue</p>
           </div>
-          
+
           <input
             type="password"
             value={password}
@@ -262,9 +309,9 @@ export default function SuperAdminPage() {
             className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-emerald-500 outline-none"
             autoFocus
           />
-          
+
           {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
-          
+
           <button
             onClick={handleLogin}
             className="mt-4 w-full py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600"
@@ -283,21 +330,36 @@ export default function SuperAdminPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <span>🌳</span> Montree Master Admin
+              <span>🌳</span> Montree Admin
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              {schools.length} registered school{schools.length !== 1 ? 's' : ''}
+              {schools.length} schools • {trialSchools.length} trial • {freeSchools.length} free • {paidSchools.length} paid
             </p>
           </div>
-          <Link
-            href="/montree/onboarding"
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"
-          >
-            + Register School
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/montree/teacher/register"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-sm"
+            >
+              Teacher Trial →
+            </Link>
+            <Link
+              href="/montree/onboarding"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 text-sm"
+            >
+              + Register School
+            </Link>
+          </div>
         </div>
 
-        {/* Tabs */}
+        {/* Session Warning */}
+        {sessionWarning && (
+          <div className="mb-4 p-3 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-400 text-sm">
+            ⚠️ Session expiring soon. Move mouse to stay logged in.
+          </div>
+        )}
+
+        {/* Tabs - Simplified */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab('schools')}
@@ -326,16 +388,159 @@ export default function SuperAdminPage() {
           </button>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'feedback' ? (
-          /* Feedback View */
+        {/* Schools Tab */}
+        {activeTab === 'schools' && (
+          <>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                <p className="text-slate-400 text-sm">Total Schools</p>
+                <p className="text-2xl font-bold text-white">{schools.length}</p>
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                <p className="text-amber-400 text-sm">Trial</p>
+                <p className="text-2xl font-bold text-amber-400">{trialSchools.length}</p>
+              </div>
+              <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+                <p className="text-purple-400 text-sm">Free (NPO)</p>
+                <p className="text-2xl font-bold text-purple-400">{freeSchools.length}</p>
+              </div>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+                <p className="text-emerald-400 text-sm">Paid</p>
+                <p className="text-2xl font-bold text-emerald-400">{paidSchools.length}</p>
+              </div>
+            </div>
+
+            {/* Schools Table */}
+            {loading ? (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
+                <div className="animate-pulse">
+                  <div className="h-6 w-48 bg-slate-700 rounded mx-auto mb-4"></div>
+                  <div className="h-4 w-32 bg-slate-700 rounded mx-auto"></div>
+                </div>
+              </div>
+            ) : schools.length === 0 ? (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
+                <span className="text-5xl block mb-4">📭</span>
+                <h2 className="text-xl font-semibold text-white mb-2">No schools registered yet</h2>
+                <p className="text-slate-400 mb-6">Be the first to register a school!</p>
+                <Link
+                  href="/montree/onboarding"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
+                >
+                  Register First School
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-slate-800">
+                    <tr>
+                      <th className="text-left p-4 text-slate-400 font-medium text-sm">School</th>
+                      <th className="text-left p-4 text-slate-400 font-medium text-sm">Owner</th>
+                      <th className="text-left p-4 text-slate-400 font-medium text-sm">Status</th>
+                      <th className="text-left p-4 text-slate-400 font-medium text-sm">Stats</th>
+                      <th className="text-right p-4 text-slate-400 font-medium text-sm">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                    {schools.map((school) => (
+                      <tr key={school.id} className="hover:bg-slate-800/50">
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">
+                              {school.subscription_tier === 'free' ? '🌍' :
+                               school.subscription_tier === 'paid' ? '⭐' : '🎓'}
+                            </span>
+                            <div>
+                              <p className="font-medium text-white">{school.name}</p>
+                              <p className="text-slate-500 text-sm">{school.slug}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <p className="text-white">{school.owner_name || '-'}</p>
+                          <p className="text-slate-400 text-sm">{school.owner_email}</p>
+                        </td>
+                        <td className="p-4">
+                          {editingSchool === school.id ? (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => updateSchoolStatus(school.id, 'trial')}
+                                className="px-2 py-1 text-xs rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                              >
+                                Trial
+                              </button>
+                              <button
+                                onClick={() => updateSchoolStatus(school.id, 'free')}
+                                className="px-2 py-1 text-xs rounded bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
+                              >
+                                Free
+                              </button>
+                              <button
+                                onClick={() => updateSchoolStatus(school.id, 'paid')}
+                                className="px-2 py-1 text-xs rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                              >
+                                Paid
+                              </button>
+                              <button
+                                onClick={() => setEditingSchool(null)}
+                                className="px-2 py-1 text-xs rounded bg-slate-700 text-slate-400"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setEditingSchool(school.id)}
+                              className={`px-3 py-1 rounded-full text-xs font-medium border ${getTierColor(school.subscription_tier || 'trial')} hover:opacity-80`}
+                            >
+                              {school.subscription_tier === 'free' ? '🌍 Free (NPO)' :
+                               school.subscription_tier === 'paid' ? '⭐ Paid' :
+                               '🎓 Trial'}
+                              <span className="ml-1 opacity-50">✎</span>
+                            </button>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm text-slate-300">
+                            {school.classroom_count || 0} classrooms • {school.student_count || 0} students
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            Created {new Date(school.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => loginAsSchool(school.id)}
+                              className="px-3 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              Login As →
+                            </button>
+                            <button
+                              onClick={() => deleteSchool(school)}
+                              className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-sm transition-colors"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Feedback Tab */}
+        {activeTab === 'feedback' && (
           <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">User Feedback</h2>
-              <button
-                onClick={fetchFeedback}
-                className="text-sm text-slate-400 hover:text-white"
-              >
+              <button onClick={fetchFeedback} className="text-sm text-slate-400 hover:text-white">
                 ↻ Refresh
               </button>
             </div>
@@ -380,25 +585,17 @@ export default function SuperAdminPage() {
                         <p className="text-white whitespace-pre-wrap">{item.message}</p>
                         {item.screenshot_url && (
                           <div className="mt-3">
-                            <a
-                              href={item.screenshot_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
+                            <a href={item.screenshot_url} target="_blank" rel="noopener noreferrer" className="block">
                               <img
                                 src={item.screenshot_url}
                                 alt="Screenshot"
                                 className="max-w-md max-h-48 rounded-lg border border-slate-600 hover:border-emerald-500 transition-colors cursor-pointer"
                               />
                             </a>
-                            <p className="text-slate-500 text-xs mt-1">📸 Click to view full size</p>
                           </div>
                         )}
                         {item.page_url && (
-                          <p className="text-slate-500 text-sm mt-2">
-                            📍 {item.page_url}
-                          </p>
+                          <p className="text-slate-500 text-sm mt-2">📍 {item.page_url}</p>
                         )}
                       </div>
                       {!item.is_read && (
@@ -406,7 +603,7 @@ export default function SuperAdminPage() {
                           onClick={() => markFeedbackRead(item.id)}
                           className="px-3 py-1 text-sm bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg"
                         >
-                          ✓ Mark Read
+                          ✓ Read
                         </button>
                       )}
                     </div>
@@ -415,143 +612,6 @@ export default function SuperAdminPage() {
               </div>
             )}
           </div>
-        ) : (
-          /* Schools View */
-          <>
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-400 text-sm">Total Schools</p>
-            <p className="text-2xl font-bold text-white">{schools.length}</p>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-400 text-sm">Active</p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {schools.filter(s => s.is_active).length}
-            </p>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-400 text-sm">Trialing</p>
-            <p className="text-2xl font-bold text-amber-400">
-              {schools.filter(s => s.subscription_status === 'trialing').length}
-            </p>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-400 text-sm">Total Classrooms</p>
-            <p className="text-2xl font-bold text-blue-400">
-              {schools.reduce((sum, s) => sum + (s.classroom_count || 0), 0)}
-            </p>
-          </div>
-        </div>
-
-        {/* Schools Table */}
-        {loading ? (
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-            <div className="animate-pulse">
-              <div className="h-6 w-48 bg-slate-700 rounded mx-auto mb-4"></div>
-              <div className="h-4 w-32 bg-slate-700 rounded mx-auto"></div>
-            </div>
-          </div>
-        ) : schools.length === 0 ? (
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-            <span className="text-5xl block mb-4">📭</span>
-            <h2 className="text-xl font-semibold text-white mb-2">No schools registered yet</h2>
-            <p className="text-slate-400 mb-6">Be the first to register a school!</p>
-            <Link
-              href="/montree/onboarding"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
-            >
-              Register First School
-            </Link>
-          </div>
-        ) : (
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-800">
-                <tr>
-                  <th className="text-left p-4 text-slate-400 font-medium text-sm">School</th>
-                  <th className="text-left p-4 text-slate-400 font-medium text-sm">Owner</th>
-                  <th className="text-left p-4 text-slate-400 font-medium text-sm">Status</th>
-                  <th className="text-left p-4 text-slate-400 font-medium text-sm">Stats</th>
-                  <th className="text-left p-4 text-slate-400 font-medium text-sm">Created</th>
-                  <th className="text-right p-4 text-slate-400 font-medium text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700">
-                {schools.map((school) => (
-                  <tr key={school.id} className="hover:bg-slate-800/50">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">🏫</span>
-                        <div>
-                          <p className="font-medium text-white">{school.name}</p>
-                          <p className="text-slate-500 text-sm">{school.slug}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-white">{school.owner_name || '-'}</p>
-                      <p className="text-slate-400 text-sm">{school.owner_email}</p>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-col gap-1">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium w-fit ${
-                          school.is_active 
-                            ? 'bg-emerald-500/20 text-emerald-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {school.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium w-fit ${
-                          school.subscription_status === 'trialing'
-                            ? 'bg-amber-500/20 text-amber-400'
-                            : school.subscription_status === 'active'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-slate-500/20 text-slate-400'
-                        }`}>
-                          {school.subscription_status} / {school.subscription_tier}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm">
-                        <p className="text-slate-300">
-                          <span className="text-slate-500">Classrooms:</span> {school.classroom_count || 0}
-                        </p>
-                        <p className="text-slate-300">
-                          <span className="text-slate-500">Teachers:</span> {school.teacher_count || 0}
-                        </p>
-                        <p className="text-slate-300">
-                          <span className="text-slate-500">Students:</span> {school.student_count || 0}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="p-4 text-slate-400 text-sm">
-                      {new Date(school.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => loginAsSchool(school.id)}
-                          className="px-3 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Login As →
-                        </button>
-                        <button
-                          onClick={() => deleteSchool(school)}
-                          className="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors"
-                        >
-                          🗑️ Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-          </>
         )}
       </div>
     </div>

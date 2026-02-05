@@ -61,6 +61,47 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// PATCH - Update school status (subscription tier)
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { schoolId, subscription_tier, subscription_status, password } = body;
+
+    // Verify super admin password
+    if (password !== '870602') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!schoolId) {
+      return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
+    }
+
+    const updateData: any = {};
+    if (subscription_tier) updateData.subscription_tier = subscription_tier;
+    if (subscription_status) updateData.subscription_status = subscription_status;
+
+    const { data, error } = await supabase
+      .from('montree_schools')
+      .update(updateData)
+      .eq('id', schoolId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to update school:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    console.log(`✅ School ${schoolId} updated:`, updateData);
+    return NextResponse.json({ school: data });
+
+  } catch (error) {
+    console.error('Update school error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 // DELETE - Delete a school and all its data
 export async function DELETE(request: NextRequest) {
   try {

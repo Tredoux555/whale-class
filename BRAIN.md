@@ -7,9 +7,61 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 NEAR LAUNCH READY - Multiple critical fixes done
+**Status**: 🚀 NEAR LAUNCH READY - Education for All pricing system complete
 
 ## Recent Changes
+
+### Session 146 - Feb 5, 2026 Late Night (EDUCATION FOR ALL PRICING SYSTEM)
+
+**🎯 MISSION: Make Montree accessible to everyone who needs it.**
+
+Built complete pricing and access system:
+- Individual teachers can try without registering a school (90-day trial)
+- NPOs serving underprivileged communities get free lifetime access
+- Schools can apply for reduced rates ($500/$250/$100/custom)
+- 10% Impact Fund for equipment, donations, building schools
+
+**Database Migration 115 - Schema Changes:**
+| Change | Status |
+|--------|--------|
+| `account_type` column (personal_classroom/school/community_impact) | ✅ |
+| Trial tracking columns (trial_started_at, trial_ends_at, trial_status) | ✅ |
+| `montree_npo_applications` table | ✅ |
+| `montree_reduced_rate_applications` table | ✅ |
+| `montree_impact_fund_transactions` table | ✅ |
+| `montree_npo_outreach` table | ✅ |
+| Views + Triggers + Indexes | ✅ |
+
+**Database Migration 116 - NPO Seed Data:**
+14 organizations seeded for outreach (Kenya, India, Philippines, Mexico, USA, Global)
+
+**Files Created:**
+| File | Purpose |
+|------|---------|
+| `migrations/115_account_types_and_impact_fund.sql` | Schema for pricing system |
+| `migrations/116_seed_npo_outreach.sql` | NPO outreach seed data |
+| `app/api/montree/teacher/register/route.ts` | Personal Classroom registration |
+| `app/api/montree/apply/npo/route.ts` | NPO application endpoint |
+| `app/api/montree/apply/reduced-rate/route.ts` | Reduced rate application |
+| `app/montree/teacher/register/page.tsx` | Teacher trial registration form |
+| `app/montree/super-admin/page.tsx` | Simplified admin with inline status toggle |
+
+**Critical Fixes Applied:**
+- Migration SQL syntax (CHECK constraints)
+- Missing trial_ends_at column
+- Missing FK indexes (6 added)
+- Reduced rate API column mismatch
+- Password hashing: SHA-256 → bcrypt
+- Added slug generation for schools
+
+**Super-Admin Simplified:**
+- Schools tab with inline status toggle (Trial/Free/Paid)
+- One-click to change any school's subscription tier
+- Hidden unused tabs (Impact Fund, Outreach, NPO Apps, Rate Apps)
+
+**Handoff:** `/docs/HANDOFF_SESSION_146_PRICING.md`
+
+---
 
 ### Session 145 - Feb 5, 2026 Evening (PRE-LAUNCH POLISH)
 
@@ -816,6 +868,15 @@ All 309 Montessori works now have comprehensive teacher guides.
 
 | File | Purpose |
 |------|---------|
+| **EDUCATION FOR ALL PRICING** | |
+| `migrations/115_account_types_and_impact_fund.sql` | Schema for pricing tiers, NPO apps, impact fund |
+| `migrations/116_seed_npo_outreach.sql` | 14 NPO organizations for outreach |
+| `app/api/montree/teacher/register/route.ts` | Personal Classroom registration (90-day trial) |
+| `app/api/montree/apply/npo/route.ts` | NPO Community Impact application |
+| `app/api/montree/apply/reduced-rate/route.ts` | Reduced rate application |
+| `app/montree/teacher/register/page.tsx` | Teacher trial registration form |
+| `app/montree/super-admin/page.tsx` | Simplified admin with status toggle |
+| `docs/HANDOFF_SESSION_146_PRICING.md` | Full pricing system handoff |
 | **MONTESSORI GURU (MVP COMPLETE!)** | |
 | `data/guru_knowledge/sources/*.txt` | 7 Montessori books (96,877 lines) |
 | `data/guru_knowledge/topic_index.json` | Topic→line ranges for RAG (auto-generated) |
@@ -899,7 +960,18 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 
 ## Pending / Next Up
 
-### ⚠️ IMMEDIATE: Push Commit 9f62782
+### ⚠️ IMMEDIATE: Test Education for All System
+1. Test teacher registration at `/montree/teacher/register`
+2. Test super-admin status changes at `/montree/super-admin`
+3. Push all changes to GitHub and deploy
+
+### 📋 Education for All - Next Steps
+- [ ] **Test teacher registration** - Create account, verify 90-day trial in DB
+- [ ] **Test super-admin** - Change school status (Trial → Free → Paid)
+- [ ] **Start NPO outreach** - Contact 14 seeded organizations
+- [ ] **Build Impact Fund dashboard** - Track contributions when revenue starts
+
+### ⚠️ PREVIOUS: Push Commit 9f62782
 Parent report fixes committed locally but not pushed. Run:
 ```bash
 git push origin main
@@ -995,6 +1067,9 @@ git push origin main
 
 ## Gotchas
 - **🚨 `/montree` MUST be in middleware.ts publicPaths** - Montree uses its OWN auth (teacher codes, parent codes), NOT Supabase. Without this, middleware redirects all /montree requests to `/`!
+- **Account types**: `personal_classroom`, `school`, `community_impact` (CHECK constraint on montree_schools)
+- **Subscription tiers**: `trial`, `free`, `paid` (for super-admin status toggle)
+- **Teacher registration needs bcryptjs** - `npm install bcryptjs @types/bcryptjs`
 - **`montree_children.age` is INTEGER** - must use `Math.round()` on decimals like 3.5
 - **`montree_children` has NO `school_id` column** - only use `classroom_id`
 - **Curriculum sequence** - ALWAYS use `/lib/montree/curriculum-loader.ts`, NOT Brain database
