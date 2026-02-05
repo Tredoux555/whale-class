@@ -88,11 +88,11 @@ function convertArea(jsonArea: any, areaId: string, icon: string, color: string)
 
 // Build the curriculum from existing JSON files
 export const CURRICULUM: CurriculumArea[] = [
-  convertArea(practicalLifeData, 'practical_life', '🧹', '#22c55e'),
-  convertArea(sensorialData, 'sensorial', '👁️', '#f97316'),
-  convertArea(mathData, 'mathematics', '🔢', '#3b82f6'),
-  convertArea(languageData, 'language', '📚', '#ec4899'),
-  convertArea(culturalData, 'cultural', '🌍', '#8b5cf6'),
+  convertArea(practicalLifeData, 'practical_life', 'P', '#22c55e'),
+  convertArea(sensorialData, 'sensorial', 'S', '#f97316'),
+  convertArea(mathData, 'mathematics', 'M', '#3b82f6'),
+  convertArea(languageData, 'language', 'L', '#ec4899'),
+  convertArea(culturalData, 'cultural', 'C', '#8b5cf6'),
 ];
 
 // Helper to get all works flat

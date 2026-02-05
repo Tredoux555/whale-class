@@ -42,11 +42,11 @@ interface FocusModeViewProps {
 // ============================================
 
 const AREAS = [
-  { key: 'practical_life', icon: '🧹', label: 'Practical Life', color: 'amber' },
-  { key: 'sensorial', icon: '👁️', label: 'Sensorial', color: 'purple' },
-  { key: 'mathematics', icon: '🔢', label: 'Math', color: 'blue' },
-  { key: 'language', icon: '📚', label: 'Language', color: 'emerald' },
-  { key: 'cultural', icon: '🌍', label: 'Cultural', color: 'rose' },
+  { key: 'practical_life', icon: 'P', label: 'Practical Life', color: 'amber' },
+  { key: 'sensorial', icon: 'S', label: 'Sensorial', color: 'purple' },
+  { key: 'mathematics', icon: 'M', label: 'Math', color: 'blue' },
+  { key: 'language', icon: 'L', label: 'Language', color: 'emerald' },
+  { key: 'cultural', icon: 'C', label: 'Cultural', color: 'rose' },
 ];
 
 // ============================================

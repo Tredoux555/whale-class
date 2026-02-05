@@ -33,12 +33,12 @@ interface WorkNavigatorProps {
 }
 
 const AREAS = [
-  { key: 'all', label: 'All', icon: '📋' },
-  { key: 'practical_life', label: 'Practical', icon: '🧹' },
-  { key: 'sensorial', label: 'Sensorial', icon: '👁️' },
-  { key: 'math', label: 'Math', icon: '🔢' },
-  { key: 'language', label: 'Language', icon: '📖' },
-  { key: 'cultural', label: 'Cultural', icon: '🌍' },
+  { key: 'all', label: 'All', icon: 'All' },
+  { key: 'practical_life', label: 'Practical', icon: 'P' },
+  { key: 'sensorial', label: 'Sensorial', icon: 'S' },
+  { key: 'math', label: 'Math', icon: 'M' },
+  { key: 'language', label: 'Language', icon: 'L' },
+  { key: 'cultural', label: 'Cultural', icon: 'C' },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; next: string; level: number }> = {
