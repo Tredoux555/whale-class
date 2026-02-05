@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
       user_name,
       page_url,
       feedback_type,
-      message
+      message,
+      screenshot_url
     } = body;
 
     // Validate required fields
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
         user_name: user_name || null,
         page_url: page_url || null,
         feedback_type,
-        message: message.trim()
+        message: message.trim(),
+        screenshot_url: screenshot_url || null
       })
       .select()
       .single();
