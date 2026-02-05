@@ -4,8 +4,10 @@
 // Quick feedback button for teachers, principals, and parents
 // Floating button → expands to quick form → 2-3 taps to submit
 // Auto-detects user type and session data from localStorage
+// Supports one-tap screenshot capture via html2canvas
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
 
 interface FeedbackButtonProps {
   // Optional overrides - if not provided, auto-detects from session
@@ -76,6 +78,7 @@ export default function FeedbackButton({
   userName: propUserName
 }: FeedbackButtonProps) {
   const [sessionData, setSessionData] = useState<DetectedSession | null>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   // Detect session on mount
   useEffect(() => {
@@ -88,11 +91,16 @@ export default function FeedbackButton({
   const schoolId = propSchoolId || sessionData?.schoolId;
   const userId = propUserId || sessionData?.userId;
   const userName = propUserName || sessionData?.userName;
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<FeedbackType | null>(null);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Screenshot state
+  const [screenshot, setScreenshot] = useState<string | null>(null); // base64 data URL
+  const [isCapturing, setIsCapturing] = useState(false);
 
   // Reset form when closed
   useEffect(() => {
@@ -101,10 +109,82 @@ export default function FeedbackButton({
       const timer = setTimeout(() => {
         setSelectedType(null);
         setMessage('');
+        setScreenshot(null);
       }, 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  // Capture screenshot of the page
+  const captureScreenshot = async () => {
+    setIsCapturing(true);
+
+    try {
+      // Temporarily hide the feedback button during capture
+      if (buttonRef.current) {
+        buttonRef.current.style.visibility = 'hidden';
+      }
+
+      // Small delay to ensure button is hidden
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 0.5, // Reduce size for faster upload
+        logging: false,
+        ignoreElements: (element) => {
+          // Ignore the feedback button itself
+          return element.closest('[data-feedback-button]') !== null;
+        }
+      });
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      setScreenshot(dataUrl);
+
+    } catch (error) {
+      console.error('Screenshot capture failed:', error);
+      alert('Failed to capture screenshot. Please try again.');
+    } finally {
+      // Show the feedback button again
+      if (buttonRef.current) {
+        buttonRef.current.style.visibility = 'visible';
+      }
+      setIsCapturing(false);
+    }
+  };
+
+  // Upload screenshot to Supabase storage and get URL
+  const uploadScreenshot = async (base64Data: string): Promise<string | null> => {
+    try {
+      // Convert base64 to blob
+      const response = await fetch(base64Data);
+      const blob = await response.blob();
+
+      // Generate unique filename
+      const filename = `feedback-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+      // Upload to API endpoint
+      const formData = new FormData();
+      formData.append('file', blob, filename);
+      formData.append('bucket', 'feedback-screenshots');
+
+      const uploadRes = await fetch('/api/montree/feedback/upload-screenshot', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const { url } = await uploadRes.json();
+      return url;
+    } catch (error) {
+      console.error('Screenshot upload failed:', error);
+      return null;
+    }
+  };
 
   const handleSubmit = async () => {
     if (!selectedType || !message.trim()) return;
@@ -112,6 +192,12 @@ export default function FeedbackButton({
     setIsSubmitting(true);
 
     try {
+      // Upload screenshot if exists
+      let screenshotUrl: string | null = null;
+      if (screenshot) {
+        screenshotUrl = await uploadScreenshot(screenshot);
+      }
+
       const res = await fetch('/api/montree/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,7 +208,8 @@ export default function FeedbackButton({
           user_name: userName,
           page_url: window.location.pathname,
           feedback_type: selectedType,
-          message: message.trim()
+          message: message.trim(),
+          screenshot_url: screenshotUrl
         })
       });
 
@@ -156,7 +243,7 @@ export default function FeedbackButton({
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div ref={buttonRef} className="fixed bottom-6 right-6 z-50" data-feedback-button>
       {/* Expanded Form */}
       {isOpen && (
         <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
@@ -190,6 +277,46 @@ export default function FeedbackButton({
               ))}
             </div>
 
+            {/* Screenshot Capture */}
+            <div className="mb-3">
+              {screenshot ? (
+                <div className="relative">
+                  <img
+                    src={screenshot}
+                    alt="Screenshot preview"
+                    className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    onClick={() => setScreenshot(null)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-sm flex items-center justify-center hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                  <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 text-white text-xs rounded">
+                    📸 Screenshot attached
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={captureScreenshot}
+                  disabled={isCapturing}
+                  className="w-full py-2.5 bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl text-blue-600 font-medium hover:bg-blue-100 hover:border-blue-300 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isCapturing ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      Capturing...
+                    </>
+                  ) : (
+                    <>
+                      <span>📸</span>
+                      Capture Screen
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
             {/* Message Input */}
             <textarea
               value={message}
@@ -201,7 +328,7 @@ export default function FeedbackButton({
                 selectedType === 'praise' ? "What do you love?" :
                 "Select a type above, then tell us..."
               }
-              className="w-full h-24 p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full h-20 p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               disabled={!selectedType}
             />
 
@@ -220,7 +347,7 @@ export default function FeedbackButton({
                   <span className="animate-spin">⏳</span> Sending...
                 </span>
               ) : (
-                'Send Feedback →'
+                `Send${screenshot ? ' with Screenshot' : ''} →`
               )}
             </button>
           </div>

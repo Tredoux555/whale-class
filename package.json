@@ -39,6 +39,7 @@
     "crypto-js": "^4.2.0",
     "dagre": "^0.8.5",
     "framer-motion": "^12.27.5",
+    "html2canvas": "^1.4.1",
     "jose": "^5.10.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",

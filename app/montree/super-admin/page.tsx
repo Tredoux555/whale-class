@@ -32,6 +32,7 @@ interface Feedback {
   page_url: string | null;
   feedback_type: string;
   message: string;
+  screenshot_url: string | null;
   is_read: boolean;
   created_at: string;
   school?: { id: string; name: string } | null;
@@ -377,6 +378,23 @@ export default function SuperAdminPage() {
                           </span>
                         </div>
                         <p className="text-white whitespace-pre-wrap">{item.message}</p>
+                        {item.screenshot_url && (
+                          <div className="mt-3">
+                            <a
+                              href={item.screenshot_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <img
+                                src={item.screenshot_url}
+                                alt="Screenshot"
+                                className="max-w-md max-h-48 rounded-lg border border-slate-600 hover:border-emerald-500 transition-colors cursor-pointer"
+                              />
+                            </a>
+                            <p className="text-slate-500 text-xs mt-1">📸 Click to view full size</p>
+                          </div>
+                        )}
                         {item.page_url && (
                           <p className="text-slate-500 text-sm mt-2">
                             📍 {item.page_url}

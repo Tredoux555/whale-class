@@ -789,7 +789,8 @@ export default function WeekPage() {
                   <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                     {/* Area icon - tap or long-press to swap focus work */}
                     <button
-                      className="text-xl active:scale-90 transition-transform"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-sm active:scale-90 transition-transform"
+                      style={{ backgroundColor: areaConfig.color }}
                       onClick={() => openWheelPicker(work.area, work.work_name)}
                       onContextMenu={(e) => {
                         e.preventDefault();
