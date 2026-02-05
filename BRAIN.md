@@ -2,14 +2,49 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 4, 2026)
+## Current State (Feb 5, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: ✅ WORKING - All deployment issues fixed
+**Status**: ⚠️ AWAITING PUSH - Critical mobile fix ready
 
 ## Recent Changes
+
+### Session 144 - Feb 5, 2026 (CRITICAL MOBILE FIX + ADD WORK MODAL)
+
+**🚨 CRITICAL BUG FIXED: Mobile access completely broken!**
+
+Going to `www.teacherpotato.xyz/montree` was redirecting to `www.teacherpotato.xyz` (dropping the /montree path).
+
+**Root Cause:** `/montree` was NOT in `publicPaths` in `middleware.ts`. Since Montree uses its own auth (not Supabase), unauthenticated requests were redirected to `/` by line 174.
+
+**Fix:** Added `/montree` to publicPaths array (line 76).
+
+**Other Changes:**
+
+| Feature | Change |
+|---------|--------|
+| AddWorkModal | NEW component for adding curriculum works with full form |
+| Photo linking | Fixed `id: w.work_key` → `id: w.id` in works/search API |
+| Report photos | Added `all_photos` array to show ALL photos in weekly reports |
+| Railway domain | Added `teacherpotato.xyz` (non-www) - waiting for DNS |
+| www redirect | Commented out in next.config.ts (was red herring) |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `middleware.ts` | **CRITICAL** - Added `/montree` to publicPaths |
+| `components/montree/AddWorkModal.tsx` | NEW - Full-featured work creation modal |
+| `app/montree/dashboard/curriculum/page.tsx` | Add Work button + modal + auto-scroll |
+| `app/api/montree/works/search/route.ts` | id fix for photo linking |
+| `app/api/montree/parent/report/[reportId]/route.ts` | all_photos array |
+| `app/montree/parent/report/[reportId]/page.tsx` | Photo gallery section |
+
+**Git:** Committed locally, needs push
+
+---
 
 ### Session 143 - Feb 4, 2026 Late Night (CURRICULUM SAFETY + BUG FIXES)
 
@@ -916,6 +951,7 @@ git push origin main
 - [x] **PUSHED**: Git commits including migrations 104-108 (Feb 1, 2026)
 
 ## Gotchas
+- **🚨 `/montree` MUST be in middleware.ts publicPaths** - Montree uses its OWN auth (teacher codes, parent codes), NOT Supabase. Without this, middleware redirects all /montree requests to `/`!
 - **`montree_children.age` is INTEGER** - must use `Math.round()` on decimals like 3.5
 - **`montree_children` has NO `school_id` column** - only use `classroom_id`
 - **Curriculum sequence** - ALWAYS use `/lib/montree/curriculum-loader.ts`, NOT Brain database
