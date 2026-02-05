@@ -28,9 +28,9 @@ interface BillingRecord {
 }
 
 const PLANS = [
-  { id: 'basic', name: 'Basic', price: 50, students: 50, features: ['50 students', 'All Montessori works', 'Parent portal', 'Email support'] },
-  { id: 'standard', name: 'Standard', price: 100, students: 200, features: ['200 students', 'All Basic features', 'School reports', 'Priority support'] },
-  { id: 'premium', name: 'Premium', price: 200, students: 9999, features: ['Unlimited students', 'All Standard features', 'Custom branding', 'Phone support'] },
+  { id: 'classroom', name: 'Classroom', price: 499, period: 'month', students: 50, features: ['Up to 50 students', 'Full Montessori curriculum', 'Parent portal access', 'Progress tracking & reports', 'Email support'] },
+  { id: 'school', name: 'School', price: 999, period: 'month', students: 200, features: ['Up to 200 students', 'All Classroom features', 'Multi-classroom management', 'Advanced analytics', 'Priority support'] },
+  { id: 'enterprise', name: 'Enterprise', price: 1999, period: 'month', students: 9999, features: ['Unlimited students', 'All School features', 'Custom branding', 'API access', 'Dedicated account manager', 'Phone & video support'] },
 ];
 
 function BillingContent() {
@@ -178,8 +178,8 @@ function BillingContent() {
             >
               <h3 className="text-xl font-bold text-white">{plan.name}</h3>
               <div className="mt-2 mb-4">
-                <span className="text-4xl font-bold text-white">${plan.price}</span>
-                <span className="text-white/50">/year</span>
+                <span className="text-4xl font-bold text-white">${plan.price.toLocaleString()}</span>
+                <span className="text-white/50">/{plan.period}</span>
               </div>
               <ul className="space-y-2 mb-6">
                 {plan.features.map(feature => (
