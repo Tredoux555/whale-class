@@ -3,12 +3,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+// Hash code the same way as teacher creation
+function hashCode(code: string): string {
+  return crypto.createHash('sha256').update(code).digest('hex');
 }
 
 export async function POST(request: NextRequest) {
@@ -19,11 +25,14 @@ export async function POST(request: NextRequest) {
 
     let teacher: any = null;
 
-    // Method 1: Login with code
+    // Method 1: Login with code (hash and compare against password_hash)
     if (code) {
       if (code.length !== 6) {
         return NextResponse.json({ error: 'Invalid code format' }, { status: 400 });
       }
+
+      // Hash the entered code to compare against stored password_hash
+      const codeHash = hashCode(code.toUpperCase()); // Codes are uppercase
 
       const { data, error } = await supabase
         .from('montree_teachers')
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
           id, name, email, classroom_id, school_id, is_active,
           password_hash, password_set_at
         `)
-        .eq('login_code', code.toLowerCase())
+        .eq('password_hash', codeHash)
         .eq('is_active', true)
         .single();
 
