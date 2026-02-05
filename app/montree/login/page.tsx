@@ -24,9 +24,6 @@ export default function TeacherLoginPage() {
       const data = await res.json();
 
       if (data.success) {
-        // Check if this is first time login (no password set yet)
-        const isFirstLogin = !data.teacher.password_set_at;
-
         localStorage.setItem('montree_session', JSON.stringify({
           teacher: data.teacher,
           school: data.school,
@@ -35,15 +32,12 @@ export default function TeacherLoginPage() {
           onboarded: data.onboarded || false,
         }));
 
-        // Redirect based on state
-        if (isFirstLogin) {
-          // First time login with code - go to account setup (username/password)
-          router.push('/montree/setup');
-        } else if (!data.onboarded) {
-          // Account set up but students not added - go to onboarding
+        // Redirect based on state - skip setup, go straight to work!
+        if (!data.onboarded) {
+          // No students yet - go to onboarding to add them
           router.push('/montree/onboarding');
         } else {
-          // Fully set up - go to dashboard
+          // Ready to go - straight to dashboard
           router.push('/montree/dashboard');
         }
       } else {

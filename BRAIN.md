@@ -7,9 +7,52 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: ⚠️ AWAITING PUSH - Critical mobile fix ready
+**Status**: 🚀 NEAR LAUNCH READY - Multiple critical fixes done
 
 ## Recent Changes
+
+### Session 145 - Feb 5, 2026 Evening (PRE-LAUNCH POLISH)
+
+**🔧 CRITICAL FIX: Teacher login with codes was completely broken!**
+
+The auth API was looking for a `login_code` column that doesn't exist. Teacher creation hashes the code with SHA256 and stores in `password_hash`, but auth was trying `.eq('login_code', code)` which always failed.
+
+**Fix:** Hash entered code and compare against `password_hash`:
+```javascript
+const codeHash = hashCode(code.toUpperCase());
+.eq('password_hash', codeHash)
+```
+
+**Other Changes:**
+
+| Feature | Change |
+|---------|--------|
+| Teacher Setup | REMOVED - Teachers go straight to dashboard after code login |
+| Area Icons | Letters (P,S,M,L,C) now display with colored circular backgrounds |
+| Billing | Updated to $499-$1,999/month (was $50-200/year) |
+| Feedback | Added screenshot capture with html2canvas |
+| Camera | Added front/back camera switching |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `app/api/montree/auth/teacher/route.ts` | **CRITICAL** - Hash code before comparing |
+| `app/montree/login/page.tsx` | Skip setup, go straight to dashboard |
+| `app/montree/dashboard/[childId]/page.tsx` | Area icons with colored circles |
+| `app/montree/admin/billing/page.tsx` | $499-$1,999/month pricing |
+| `components/montree/FeedbackButton.tsx` | Screenshot capture |
+| `lib/montree/types.ts` | Area icons = letters P, S, M, L, C |
+
+**Teacher Login Flow (Streamlined):**
+```
+Principal creates teacher → Gets 6-char code → Teacher enters code → Dashboard
+```
+No more mandatory username/password setup!
+
+**Git:** Multiple commits, needs push
+
+---
 
 ### Session 144 - Feb 5, 2026 (CRITICAL MOBILE FIX + ADD WORK MODAL)
 
