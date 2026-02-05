@@ -3,16 +3,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminToken } from '@/lib/auth';
 
+// Valid admin credentials
+const ADMIN_CREDENTIALS = [
+  { username: 'Tredoux', password: '870602' },
+  { username: 'Teacher', password: 'Potato' },
+];
+
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    // Get credentials from environment
-    const adminUsername = process.env.ADMIN_USERNAME || 'Tredoux';
-    const adminPassword = process.env.ADMIN_PASSWORD || '870602';
+    // Check against all valid credentials
+    const isValid = ADMIN_CREDENTIALS.some(
+      cred => cred.username === username && cred.password === password
+    );
 
-    // Validate credentials
-    if (username !== adminUsername || password !== adminPassword) {
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
