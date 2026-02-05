@@ -331,6 +331,13 @@ export default function CameraCapture({
         </div>
       )}
 
+      {/* Camera indicator (top right) */}
+      {!isCaptured && (
+        <div className="absolute top-4 right-4 z-10 px-3 py-1.5 bg-black/50 rounded-full text-white text-xs font-medium">
+          {currentFacing === 'user' ? '🤳 Front' : '📷 Back'}
+        </div>
+      )}
+
       {/* Recording indicator */}
       {isRecording && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-full">
@@ -456,9 +463,15 @@ export default function CameraCapture({
             <button
               onClick={switchCamera}
               disabled={cameraState !== 'ready'}
-              className="w-14 h-14 flex items-center justify-center text-white text-2xl disabled:opacity-50"
+              className="w-14 h-14 flex items-center justify-center bg-white/20 rounded-full text-white disabled:opacity-50 active:scale-90 transition-transform"
             >
-              🔄
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+                <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="m18 22-3-3 3-3" />
+                <path d="m6 2 3 3-3 3" />
+              </svg>
             </button>
           </div>
         )}

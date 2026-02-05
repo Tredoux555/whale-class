@@ -59,13 +59,13 @@ const STATUS_CONFIG = {
 };
 
 const AREA_CONFIG: Record<string, { name: string; color: string; icon: string }> = {
-  practical_life: { name: 'Practical Life', color: 'from-pink-500 to-rose-500', icon: '🧹' },
-  sensorial: { name: 'Sensorial', color: 'from-purple-500 to-violet-500', icon: '👁️' },
-  mathematics: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: '🔢' },
-  math: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: '🔢' },
-  language: { name: 'Language', color: 'from-green-500 to-emerald-500', icon: '📖' },
-  cultural: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: '🌍' },
-  culture: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: '🌍' },
+  practical_life: { name: 'Practical Life', color: 'from-pink-500 to-rose-500', icon: 'P' },
+  sensorial: { name: 'Sensorial', color: 'from-purple-500 to-violet-500', icon: 'S' },
+  mathematics: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: 'M' },
+  math: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: 'M' },
+  language: { name: 'Language', color: 'from-green-500 to-emerald-500', icon: 'L' },
+  cultural: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: 'C' },
+  culture: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: 'C' },
 };
 
 export default function WorkDetailModal({

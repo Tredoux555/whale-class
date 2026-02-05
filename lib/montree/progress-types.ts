@@ -95,11 +95,11 @@ export interface CurriculumArea {
 // ============================================
 
 export const CURRICULUM_AREAS: CurriculumArea[] = [
-  { id: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#22c55e' },
-  { id: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#f97316' },
-  { id: 'mathematics', name: 'Mathematics', icon: '🔢', color: '#3b82f6' },
-  { id: 'language', name: 'Language', icon: '📚', color: '#ec4899' },
-  { id: 'cultural', name: 'Cultural', icon: '🌍', color: '#8b5cf6' },
+  { id: 'practical_life', name: 'Practical Life', icon: 'P', color: '#22c55e' },
+  { id: 'sensorial', name: 'Sensorial', icon: 'S', color: '#f97316' },
+  { id: 'mathematics', name: 'Mathematics', icon: 'M', color: '#3b82f6' },
+  { id: 'language', name: 'Language', icon: 'L', color: '#ec4899' },
+  { id: 'cultural', name: 'Cultural', icon: 'C', color: '#8b5cf6' },
 ];
 
 export const STATUS_CONFIGS: Record<WorkStatus, StatusConfig> = {

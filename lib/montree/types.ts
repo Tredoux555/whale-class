@@ -115,11 +115,11 @@ export interface AreaProgressBar {
 // ============================================
 
 export const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
-  practical_life: { name: 'Practical Life', icon: '🧹', color: '#ec4899' },
-  sensorial: { name: 'Sensorial', icon: '👁️', color: '#8b5cf6' },
-  mathematics: { name: 'Math', icon: '🔢', color: '#3b82f6' },
-  language: { name: 'Language', icon: '📖', color: '#22c55e' },
-  cultural: { name: 'Cultural', icon: '🌍', color: '#f97316' },
+  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899' },
+  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6' },
+  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6' },
+  language: { name: 'Language', icon: 'L', color: '#22c55e' },
+  cultural: { name: 'Cultural', icon: 'C', color: '#f97316' },
 };
 
 export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;

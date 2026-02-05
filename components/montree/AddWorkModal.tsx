@@ -12,11 +12,11 @@ interface AddWorkModalProps {
 }
 
 const AREAS = [
-  { key: 'practical_life', name: 'Practical Life', icon: '🧹', color: 'from-green-400 to-emerald-500' },
-  { key: 'sensorial', name: 'Sensorial', icon: '👁️', color: 'from-orange-400 to-amber-500' },
-  { key: 'mathematics', name: 'Mathematics', icon: '🔢', color: 'from-blue-400 to-indigo-500' },
-  { key: 'language', name: 'Language', icon: '📚', color: 'from-pink-400 to-rose-500' },
-  { key: 'cultural', name: 'Cultural', icon: '🌍', color: 'from-purple-400 to-violet-500' },
+  { key: 'practical_life', name: 'Practical Life', icon: 'P', color: 'from-green-400 to-emerald-500' },
+  { key: 'sensorial', name: 'Sensorial', icon: 'S', color: 'from-orange-400 to-amber-500' },
+  { key: 'mathematics', name: 'Mathematics', icon: 'M', color: 'from-blue-400 to-indigo-500' },
+  { key: 'language', name: 'Language', icon: 'L', color: 'from-pink-400 to-rose-500' },
+  { key: 'cultural', name: 'Cultural', icon: 'C', color: 'from-purple-400 to-violet-500' },
 ];
 
 const AGE_OPTIONS = ['2-3', '3-4', '3-6', '4-5', '5-6', '6+'];

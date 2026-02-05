@@ -212,9 +212,9 @@ export const STATUS_COLORS = {
 } as const;
 
 export const AREA_COLORS = {
-  practical_life: { primary: '#22c55e', light: '#bbf7d0', icon: '🌱' },
-  sensorial: { primary: '#f97316', light: '#fed7aa', icon: '👁️' },
-  math: { primary: '#3b82f6', light: '#bfdbfe', icon: '🔢' },
-  language: { primary: '#ec4899', light: '#fbcfe8', icon: '📚' },
-  cultural: { primary: '#8b5cf6', light: '#ddd6fe', icon: '🌍' },
+  practical_life: { primary: '#22c55e', light: '#bbf7d0', icon: 'P' },
+  sensorial: { primary: '#f97316', light: '#fed7aa', icon: 'S' },
+  math: { primary: '#3b82f6', light: '#bfdbfe', icon: 'M' },
+  language: { primary: '#ec4899', light: '#fbcfe8', icon: 'L' },
+  cultural: { primary: '#8b5cf6', light: '#ddd6fe', icon: 'C' },
 } as const;
