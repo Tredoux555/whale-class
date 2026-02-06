@@ -197,7 +197,16 @@ export default function SuperAdminPage() {
       const res = await fetch('/api/montree/leads', {
         headers: { 'x-super-admin-password': password }
       });
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Failed to fetch leads:', {
+          status: res.status,
+          statusText: res.statusText,
+          error: errorData,
+          passwordSent: password ? `${password.substring(0, 2)}***` : 'none'
+        });
+        throw new Error(`Failed to fetch leads (${res.status}): ${errorData.error || res.statusText}`);
+      }
       const data = await res.json();
       setLeads(data.leads || []);
       setNewLeadCount(data.new_count || 0);

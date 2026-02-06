@@ -1,6 +1,7 @@
 // /montree/layout.tsx
 // Montree PWA layout with manifest for "Add to Home Screen"
 import type { Metadata, Viewport } from "next";
+import InboxFloat from '@/components/montree/InboxFloat';
 
 export const metadata: Metadata = {
   title: "Montree",
@@ -27,5 +28,10 @@ export default function MontreeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {children}
+      <InboxFloat />
+    </>
+  );
 }
