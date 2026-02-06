@@ -96,6 +96,25 @@ function ParentPhotosContent() {
     }
   };
 
+  // Download a photo by fetching as blob and triggering save
+  const downloadPhoto = async (url: string, name: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab so they can long-press/right-click to save
+      if (url) window.open(url, '_blank');
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -221,11 +240,22 @@ function ParentPhotosContent() {
               )}
             </div>
 
-            {/* Close button */}
-            <div className="p-4 border-t">
+            {/* Actions */}
+            <div className="p-4 border-t flex gap-3">
+              {fullImageUrl && (
+                <button
+                  onClick={() => downloadPhoto(
+                    fullImageUrl,
+                    selectedPhoto.caption || `${childName || 'photo'}_${formatDate(selectedPhoto.captured_at)}`
+                  )}
+                  className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+                >
+                  ⬇ Save Photo
+                </button>
+              )}
               <button
                 onClick={() => setSelectedPhoto(null)}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
               >
                 Close
               </button>
