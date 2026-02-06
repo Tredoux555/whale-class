@@ -142,6 +142,25 @@ export default function ParentReportPage() {
 
   const childName = report.child.nickname || report.child.name;
 
+  // Download a photo by fetching as blob and triggering save
+  const downloadPhoto = async (url: string, name: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab so they can long-press/right-click to save
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       {/* Header */}
@@ -234,12 +253,19 @@ export default function ParentReportPage() {
                 {/* Photo */}
                 {work.photo_url && (
                   <div className="relative -mx-4 my-3">
-                    <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg relative group">
                       <img
                         src={work.photo_url}
                         alt={work.work_name}
                         className="w-full h-full object-cover"
                       />
+                      <button
+                        onClick={() => downloadPhoto(work.photo_url!, work.work_name)}
+                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                        title="Save photo"
+                      >
+                        ⬇
+                      </button>
                     </div>
                     {work.photo_caption && (
                       <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
@@ -284,12 +310,19 @@ export default function ParentReportPage() {
             <div className="grid grid-cols-2 gap-3">
               {report.all_photos.map((photo, i) => (
                 <div key={photo.id || i} className="relative group">
-                  <div className="aspect-square rounded-xl overflow-hidden shadow-md">
+                  <div className="aspect-square rounded-xl overflow-hidden shadow-md relative">
                     <img
                       src={photo.url}
                       alt={photo.caption || photo.work_name || 'Activity photo'}
                       className="w-full h-full object-cover"
                     />
+                    <button
+                      onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
+                      className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
+                      title="Save photo"
+                    >
+                      ⬇
+                    </button>
                   </div>
                   {(photo.caption || photo.work_name) && (
                     <p className="mt-1 text-xs text-gray-600 text-center truncate">
