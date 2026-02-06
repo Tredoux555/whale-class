@@ -173,9 +173,13 @@ function CaptureContent() {
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
 
-    // Instant feedback — go right back to camera
-    toast.success(`${label} captured!`, { duration: 1500 });
-    setStep('camera');
+    // Instant feedback — navigate back to where user came from
+    toast.success(`${label} captured! Uploading...`, { duration: 2000 });
+    if (preSelectedChildId) {
+      router.push(`/montree/dashboard/${preSelectedChildId}`);
+    } else {
+      router.push('/montree/dashboard');
+    }
 
     // Upload in background (fire and forget)
     pendingUploadsRef.current++;
