@@ -4,9 +4,10 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { toast, Toaster } from 'sonner';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
@@ -161,66 +162,60 @@ function CaptureContent() {
     }
   };
 
-  const handleMediaCapture = async (media: CapturedMedia) => {
-    setStep('uploading');
+  // Track pending background uploads
+  const pendingUploadsRef = useRef(0);
+
+  const handleMediaCapture = (media: CapturedMedia) => {
     setError(null);
 
     // For class photos, tag all children
     const idsToTag = isClassMode ? children.map(c => c.id) : selectedChildIds;
+    const isVideo = media.type === 'video';
+    const label = isVideo ? 'Video' : 'Photo';
 
-    try {
-      if (media.type === 'photo') {
-        const photo = media.data;
-        setCapturedPhoto(photo);
-        setMediaType('photo');
+    // Instant feedback — go right back to camera
+    toast.success(`${label} captured!`, { duration: 1500 });
+    setStep('camera');
 
-        const result = await uploadPhoto(photo, {
+    // Upload in background (fire and forget)
+    pendingUploadsRef.current++;
+
+    const uploadPromise = isVideo
+      ? uploadVideo(media.data as CapturedVideo, {
           school_id: schoolId || 'default-school',
-          classroom_id: classroomId || undefined, // Add classroom context
+          classroom_id: classroomId || undefined,
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
-          work_id: workId || undefined, // Link photo to curriculum work
+          work_id: workId || undefined,
           caption: workName || undefined,
           tags: workArea ? [workArea] : undefined,
-          onProgress: setUploadProgress,
-        });
-
-        if (result.success) {
-          setStep('success');
-        } else {
-          setError(result.error || 'Upload failed');
-          setStep('error');
-        }
-      } else if (media.type === 'video') {
-        const video = media.data;
-        setCapturedVideo(video);
-        setMediaType('video');
-
-        const result = await uploadVideo(video, {
+        })
+      : uploadPhoto(media.data as CapturedPhoto, {
           school_id: schoolId || 'default-school',
-          classroom_id: classroomId || undefined, // Add classroom context
+          classroom_id: classroomId || undefined,
           child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
           child_ids: idsToTag.length > 1 ? idsToTag : undefined,
           is_class_photo: isClassMode,
-          work_id: workId || undefined, // Link video to curriculum work
+          work_id: workId || undefined,
           caption: workName || undefined,
           tags: workArea ? [workArea] : undefined,
-          onProgress: setUploadProgress,
         });
 
+    uploadPromise
+      .then(result => {
+        pendingUploadsRef.current--;
         if (result.success) {
-          setStep('success');
+          toast.success(`${label} saved`, { duration: 2000 });
         } else {
-          setError(result.error || 'Upload failed');
-          setStep('error');
+          toast.error(`${label} upload failed: ${result.error}`, { duration: 5000 });
         }
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
-      setStep('error');
-    }
+      })
+      .catch(err => {
+        pendingUploadsRef.current--;
+        console.error('Background upload error:', err);
+        toast.error(`${label} upload failed`, { duration: 5000 });
+      });
   };
 
   const handleCameraCancel = () => {
@@ -262,20 +257,24 @@ function CaptureContent() {
   // Camera step
   if (step === 'camera') {
     return (
-      <CameraCapture
-        onCapture={handleMediaCapture}
-        onCancel={handleCameraCancel}
-        allowVideo={true}
-      />
+      <>
+        <Toaster position="top-center" />
+        <CameraCapture
+          onCapture={handleMediaCapture}
+          onCancel={handleCameraCancel}
+          allowVideo={true}
+        />
+      </>
     );
   }
 
-  // Upload progress / success / error steps
+  // Upload progress / success / error steps (kept for fallback/legacy, but background upload is now default)
   if (step === 'uploading' || step === 'success' || step === 'error') {
     const selectedChildren = children.filter(c => selectedChildIds.includes(c.id));
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
+        <Toaster position="top-center" />
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🌳</span>
