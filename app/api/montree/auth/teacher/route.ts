@@ -1,16 +1,9 @@
 // /api/montree/auth/teacher/route.ts
 // Teacher login with 6-character code OR email+password
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/montree/supabase';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Hash code the same way as teacher creation
 function hashCode(code: string): string {

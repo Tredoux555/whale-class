@@ -48,20 +48,26 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Load curriculum with guides
+    // Load curriculum with guides - NO filter on quick_guide
+    // Any work with parent_description OR quick_guide should be in the map
     const allWorks = loadAllCurriculumWorks();
-    const guideMap = new Map<string, any>();
+    const guideMapByName = new Map<string, any>();
+    const guideMapByKey = new Map<string, any>();
 
     for (const work of allWorks) {
-      if (work.quick_guide) {
-        guideMap.set(work.name.toLowerCase().trim(), work);
+      // Include ALL works that have any guide data (not just quick_guide)
+      if (work.quick_guide || work.parent_description || work.why_it_matters) {
+        guideMapByName.set(work.name.toLowerCase().trim(), work);
+        if (work.work_key) {
+          guideMapByKey.set(work.work_key.toLowerCase().trim(), work);
+        }
       }
     }
 
     // Get existing works to update
     let query = supabase
       .from('montree_classroom_curriculum_works')
-      .select('id, name, classroom_id');
+      .select('id, name, work_key, classroom_id');
 
     if (classroomId) {
       query = query.eq('classroom_id', classroomId);
@@ -86,7 +92,9 @@ export async function GET(request: NextRequest) {
     const errors: string[] = [];
 
     for (const work of existingWorks) {
-      const guide = guideMap.get(work.name.toLowerCase().trim());
+      // Try name match first, then work_key match as fallback
+      const guide = guideMapByName.get(work.name.toLowerCase().trim())
+        || (work.work_key ? guideMapByKey.get(work.work_key.toLowerCase().trim()) : null);
 
       if (!guide) {
         skipped++;

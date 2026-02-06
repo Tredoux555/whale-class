@@ -18,7 +18,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { classroomId, name, age, enrolled_at, progress } = await request.json();
+    const { classroomId, name, age, enrolled_at, progress, gender, notes } = await request.json();
 
     if (!classroomId || !name?.trim()) {
       return NextResponse.json({ error: 'Classroom ID and name required' }, { status: 400 });
@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         age: Math.round(age || 4),
         enrolled_at: enrolled_at || new Date().toISOString().split('T')[0],
+        notes: notes || null,
+        ...(gender ? { settings: { gender } } : {}),
       })
       .select()
       .single();
@@ -120,13 +122,13 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Single batch insert instead of one-by-one
+      // Upsert to avoid duplicate progress records (if child already has progress for a work)
       if (progressRecords.length > 0) {
         const { error: progressErr } = await supabase
           .from('montree_child_progress')
-          .insert(progressRecords);
+          .upsert(progressRecords, { onConflict: 'child_id,work_name' });
         if (progressErr) {
-          console.error('Progress insert error:', JSON.stringify(progressErr));
+          console.error('Progress upsert error:', JSON.stringify(progressErr));
         }
       }
     }

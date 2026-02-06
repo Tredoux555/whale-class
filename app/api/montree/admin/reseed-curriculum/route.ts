@@ -134,6 +134,11 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
         indirect_aims: work.indirect_aims || [],
         control_of_error: work.control_of_error || null,
         prerequisites: work.prerequisites || [],
+        // Parent-facing descriptions (from comprehensive-guides)
+        quick_guide: work.quick_guide || null,
+        presentation_steps: work.presentation_steps || [],
+        parent_description: work.parent_description || null,
+        why_it_matters: work.why_it_matters || null,
       };
     }).filter(Boolean);
 

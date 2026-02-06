@@ -2,16 +2,89 @@
 // Zero-friction instant trial - generates account + code in one shot
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { getSupabase } from '@/lib/montree/supabase';
+import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error(`Missing env vars: URL=${!!url}, KEY=${!!key}`);
+/**
+ * Seed full Montessori curriculum for a new classroom
+ * Non-blocking: failures here don't prevent trial creation
+ */
+async function seedCurriculumForClassroom(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string
+): Promise<{ success: boolean; worksCount: number }> {
+  try {
+    // Create curriculum areas
+    const areas = loadCurriculumAreas();
+    const areasToInsert = areas.map(area => ({
+      classroom_id: classroomId,
+      area_key: area.area_key,
+      name: area.name,
+      icon: area.icon,
+      color: area.color,
+      sequence: area.sequence,
+      is_active: true,
+    }));
+
+    const { data: insertedAreas, error: areaError } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .insert(areasToInsert)
+      .select();
+
+    if (areaError) {
+      console.error('[Trial] Area seed error:', areaError.message);
+      return { success: false, worksCount: 0 };
+    }
+
+    const areaMap: Record<string, string> = {};
+    for (const area of insertedAreas || []) {
+      areaMap[area.area_key] = area.id;
+    }
+
+    // Load and insert all works with descriptions
+    const allWorks = loadAllCurriculumWorks();
+    const worksToInsert = allWorks.map(work => {
+      const areaUuid = areaMap[work.area_key];
+      if (!areaUuid) return null;
+      return {
+        classroom_id: classroomId,
+        area_id: areaUuid,
+        work_key: work.work_key,
+        name: work.name,
+        description: work.description || null,
+        age_range: work.age_range || '3-6',
+        sequence: work.sequence,
+        is_active: true,
+        materials: work.materials || [],
+        direct_aims: work.direct_aims || [],
+        indirect_aims: work.indirect_aims || [],
+        control_of_error: work.control_of_error || null,
+        prerequisites: work.prerequisites || [],
+        quick_guide: work.quick_guide || null,
+        presentation_steps: work.presentation_steps || [],
+        parent_description: work.parent_description || null,
+        why_it_matters: work.why_it_matters || null,
+      };
+    }).filter(Boolean);
+
+    // Insert in batches
+    const BATCH_SIZE = 50;
+    let count = 0;
+    for (let i = 0; i < worksToInsert.length; i += BATCH_SIZE) {
+      const batch = worksToInsert.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .insert(batch);
+      if (!error) count += batch.length;
+    }
+
+    console.log(`[Trial] Seeded ${count} curriculum works for classroom ${classroomId}`);
+    return { success: true, worksCount: count };
+  } catch (err) {
+    console.error('[Trial] Curriculum seed error:', err);
+    return { success: false, worksCount: 0 };
   }
-  return createClient(url, key);
 }
 
 // Same charset as existing teacher codes - no confusing chars
@@ -99,6 +172,17 @@ export async function POST(req: NextRequest) {
       steps.push('3-classroom-fail:' + classroomErr.message);
     } else {
       steps.push('3-classroom-ok');
+    }
+
+    // ── Step 2b: Seed curriculum for classroom (non-blocking) ──
+    if (classroom?.id) {
+      steps.push('3b-curriculum');
+      const seedResult = await seedCurriculumForClassroom(supabase, classroom.id);
+      if (seedResult.success) {
+        steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
+      } else {
+        steps.push('3b-curriculum-fail');
+      }
     }
 
     // ── Step 3: Create user account ──
