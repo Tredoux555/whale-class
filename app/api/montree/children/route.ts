@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Create progress records
+      // Build all progress records in one batch for speed
+      const progressRecords: any[] = [];
+      const now = new Date().toISOString();
+
       for (const [areaKey, workId] of Object.entries(progress)) {
         if (!workId) continue;
 
@@ -100,16 +103,30 @@ export async function POST(request: NextRequest) {
 
         if (selectedIndex >= 0) {
           const worksToMark = areaWorks.slice(0, selectedIndex + 1);
-          for (const w of worksToMark) {
-            await supabase.from('montree_child_progress').insert({
+          for (let i = 0; i < worksToMark.length; i++) {
+            const w = worksToMark[i];
+            const isSelected = (i === worksToMark.length - 1);
+            progressRecords.push({
               child_id: child.id,
               work_name: w.name,
               work_name_chinese: w.name_chinese || null,
               area: areaKey,
-              status: 'presented',
-              presented_at: new Date().toISOString(),
+              // Prior works = mastered, the selected work = presented
+              status: isSelected ? 'presented' : 'mastered',
+              presented_at: now,
+              mastered_at: isSelected ? null : now,
             });
           }
+        }
+      }
+
+      // Single batch insert instead of one-by-one
+      if (progressRecords.length > 0) {
+        const { error: progressErr } = await supabase
+          .from('montree_child_progress')
+          .insert(progressRecords);
+        if (progressErr) {
+          console.error('Progress insert error:', JSON.stringify(progressErr));
         }
       }
     }

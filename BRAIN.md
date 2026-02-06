@@ -2,14 +2,133 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 5, 2026)
+## Current State (Feb 6, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 NEAR LAUNCH READY - Education for All pricing system complete
+**Status**: 🚀 NEAR LAUNCH READY - Onboarding system designed, ready to build
 
 ## Recent Changes
+
+### Session 148 - Feb 6, 2026 (INSTANT TRIAL FIX + DM NOTIFICATIONS + BULLETPROOFING)
+
+**🔥 INSTANT TRIAL 500 ERROR FIXED (after 4 attempts!):**
+
+The `/api/montree/try/instant` endpoint was returning 500 errors. After adding diagnostic output, the actual error was:
+```
+null value in column "owner_email" of relation "montree_schools" violates not-null constraint (code 23502)
+```
+
+**Key Lesson:** The deployed Supabase DB has ALL columns from ALL migrations (028→067→070→080→098→115). Previous "fix" attempts were wrong because they removed columns thinking they didn't exist.
+
+**Fix:** Restored `owner_email` and all other columns to the school insert:
+```typescript
+owner_email: `trial-${code.toLowerCase()}@montree.app`,
+owner_name: role === 'principal' ? 'Principal' : 'Teacher',
+subscription_status: 'trialing',
+plan_type: role === 'principal' ? 'school' : 'personal_classroom',
+subscription_tier: 'trial',
+is_active: true,
+trial_ends_at: trialEndsAt.toISOString(),
+max_students: 30,
+```
+
+**🎓 STUDENT CREATION FIXES:**
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| Slow student add ("loooong time") | Individual `await supabase.insert()` in a nested loop | Single batch `.insert(progressRecords)` |
+| Prerequisites marked "presented" | All works got `status: 'presented'` | Prior works → `mastered` with `mastered_at`, only selected work → `presented` |
+| Old emoji icons in Add Student | CURRICULUM_AREAS had emojis (🧹👁️🔢📚🌍) | Changed to letters (P, S, M, L, C) |
+
+**Files changed:** `/api/montree/children/route.ts`, `/api/montree/onboarding/students/route.ts`, `/dashboard/students/page.tsx`
+
+**📬 DM UNREAD NOTIFICATIONS FOR SUPER-ADMIN (NEW FEATURE):**
+
+Added real-time unread message notifications across the super-admin page:
+
+| Component | What it does |
+|-----------|-------------|
+| DM API global endpoint | `GET /api/montree/dm?reader_type=admin` (no conversation_id) returns `{ total_unread, per_conversation }` |
+| Leads tab badge | Red **✉ N** pill showing total unread messages from users |
+| Per-lead badge | Red dot on each "💬 Message" button showing that lead's unread count |
+| 30s polling | Auto-refreshes unread counts; deduplicates overlapping requests |
+| Mark-as-read | Opening a DM conversation clears its unread count (locally + server) |
+
+**🛡️ BULLETPROOFING PASS (3-agent audit + fixes):**
+
+| Fix | Category |
+|-----|----------|
+| Combined two global unread queries into one (eliminates race condition) | DM API |
+| Added `.limit(500)` cap on unread query | DM API |
+| Added error handling on all Supabase queries (global unread, per-convo, mark-as-read PATCH) | DM API |
+| `useRef`-based fetch deduplication — prevents overlapping 30s polls | Super-admin |
+| Password guard — `fetchDmUnread` returns early if password is empty | Super-admin |
+| JSON content-type check before `res.json()` — won't crash on HTML error pages | Super-admin |
+| Wrapped `openDm` in `useCallback([password])` — eliminates stale closure | Super-admin |
+| Functional `setState` inside `openDm` — reads current state not captured closure | Super-admin |
+| UUID regex `[a-fA-F0-9-]` — handles uppercase UUIDs | Super-admin |
+| Fallback unread lookup checks both principal ID AND lead.id (pre/post-bridge) | Super-admin |
+| `isMountedRef` with cleanup — prevents setState on unmounted component | InboxButton |
+| All async functions check `isMountedRef` before every setState | InboxButton |
+| Fixed mark-as-read `useEffect` missing `conversationId` dependency | InboxButton |
+| Quieted polling error logging (warn on first fail, only escalate after 3) | InboxButton |
+| Added `pb-16` bottom padding to avoid overlap with feedback bubble | InboxButton |
+
+**Files Modified:**
+
+| File | Change |
+|------|--------|
+| `app/api/montree/try/instant/route.ts` | Fixed school insert (owner_email + all columns), added diagnostic output |
+| `app/montree/try/page.tsx` | Added debug error display (pre tag) |
+| `app/api/montree/dm/route.ts` | Global unread summary endpoint, error handling, mark-as-read fix |
+| `app/montree/super-admin/page.tsx` | DM unread polling, badges on Leads tab + per-lead, bulletproofed |
+| `components/montree/InboxButton.tsx` | isMountedRef, dependency fix, quiet errors, pb-16 overlap fix |
+| `app/montree/dashboard/students/page.tsx` | Emoji → letter icons (P, S, M, L, C) |
+| `app/api/montree/children/route.ts` | Batch insert + mastered status for prerequisites |
+| `app/api/montree/onboarding/students/route.ts` | Same batch insert + mastered fix |
+
+---
+
+### Session 147 - Feb 6, 2026 (CURRICULUM AUDIT + ONBOARDING DESIGN)
+
+**🔍 CURRICULUM AUDIT COMPLETED:**
+
+Audited curriculum seeding process and fixed parent description propagation:
+
+**Root Cause Found:** Reports showing "no description available" because:
+- `seed-school.ts` wasn't copying `parent_description` from comprehensive guides
+- `seed-classroom.ts` wasn't copying fields from school to classroom
+
+**Fixes Applied:**
+
+| File | Change |
+|------|--------|
+| `lib/montree/seed/seed-school.ts` | Added `buildDescriptionLookup()` function, imports all `*-guides.json` files, maps descriptions to works during seeding |
+| `lib/montree/seed/seed-classroom.ts` | Now copies `parent_description` and `why_it_matters` from school curriculum to classroom |
+
+**Curriculum Data Verified:**
+- 268 works in `*-guides.json` files with 100% `parent_description` coverage
+- Original `parent-*.json` files preserved (106 hand-crafted entries)
+- Seeding is now idempotent (run 1 time or 10,000 times = same result)
+
+**🎓 ONBOARDING SYSTEM DESIGNED:**
+
+Created complete design for Excel-style student onboarding:
+- Spreadsheet: Name | Age | Time at School | 5 Areas | Temperament | Focus
+- Guru recommends works with prerequisite alerts
+- Teacher approves → works appear in child's profile tab
+
+**Files Created:**
+| File | Purpose |
+|------|---------|
+| `/docs/HANDOFF_ONBOARDING_SYSTEM.md` | Complete handoff with implementation plan |
+| `/onboarding-mockup.jsx` | Visual React mockup of the system |
+
+**Earmarked as FIRST PROJECT for next session.**
+
+---
 
 ### Session 146 - Feb 5, 2026 Late Night (EDUCATION FOR ALL PRICING SYSTEM)
 
@@ -868,6 +987,14 @@ All 309 Montessori works now have comprehensive teacher guides.
 
 | File | Purpose |
 |------|---------|
+| **DM / MESSAGING SYSTEM** | |
+| `app/api/montree/dm/route.ts` | DM API: GET (messages + global unread), POST (send), PATCH (mark-read + bridge) |
+| `components/montree/InboxButton.tsx` | Floating inbox for teachers/principals with polling + unread badge |
+| `migrations/117_montree_leads.sql` | Leads table schema |
+| `MESSAGING_SYSTEM_HANDOFF.md` | Full messaging system handoff doc |
+| **INSTANT TRIAL SYSTEM** | |
+| `app/api/montree/try/instant/route.ts` | Zero-friction trial: creates school + classroom + teacher + lead |
+| `app/montree/try/page.tsx` | Landing page with instant trial button |
 | **EDUCATION FOR ALL PRICING** | |
 | `migrations/115_account_types_and_impact_fund.sql` | Schema for pricing tiers, NPO apps, impact fund |
 | `migrations/116_seed_npo_outreach.sql` | 14 NPO organizations for outreach |
@@ -959,6 +1086,44 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Parents get invite codes from teachers
 
 ## Pending / Next Up
+
+### ⚠️ IMMEDIATE: Cleanup from Session 148
+- [ ] **Remove diagnostic debug output** from `/api/montree/try/instant/route.ts` (currently returns full error details — not production-safe)
+- [ ] **Fix onboarding page old emoji icons** — `/app/montree/onboarding/page.tsx` still has old emoji CURRICULUM_AREAS
+- [ ] **Verify 220 works is correct** — master data defines 214, 6 extra in Practical Life may be from custom additions
+- [ ] **Push all changes to GitHub and deploy**
+
+### 🥇 FIRST PROJECT: Student Onboarding System
+
+**Handoff:** `/docs/HANDOFF_ONBOARDING_SYSTEM.md`
+**Mockup:** `/onboarding-mockup.jsx`
+
+**What it does:**
+Excel-style spreadsheet for onboarding students:
+1. Teacher fills in: Name, Age, Time at School, current level per area, Temperament, Focus
+2. Clicks "Ask Guru" → Guru recommends specific works with prerequisite alerts
+3. Teacher approves → Works appear in child's profile tab for the week
+
+**Key Features:**
+- Prerequisite intelligence (if child attempts pencil grip → redirect to tonging)
+- Voice input option (Web Speech API)
+- Integrates with existing Guru system (`/lib/montree/guru/`)
+
+**Implementation Phases:**
+1. Spreadsheet UI (2-3 hrs)
+2. Guru Integration (3-4 hrs)
+3. Approval Flow (2-3 hrs)
+4. Profile Integration (1-2 hrs)
+5. Voice Input (2-3 hrs) - optional
+
+**Start prompt:**
+```
+Build the Student Onboarding System.
+Read HANDOFF_ONBOARDING_SYSTEM.md first.
+The design mockup is at /mnt/whale/onboarding-mockup.jsx
+```
+
+---
 
 ### ⚠️ IMMEDIATE: Test Education for All System
 1. Test teacher registration at `/montree/teacher/register`
@@ -1066,6 +1231,7 @@ git push origin main
 - [x] **PUSHED**: Git commits including migrations 104-108 (Feb 1, 2026)
 
 ## Gotchas
+- **🚨 DEPLOYED DB HAS ALL COLUMNS FROM ALL MIGRATIONS** — The Supabase DB was built by running ALL migrations (028→067→070→080→098→115). `owner_email` is NOT NULL. Don't strip columns from inserts assuming they don't exist — check the actual error message!
 - **🚨 `/montree` MUST be in middleware.ts publicPaths** - Montree uses its OWN auth (teacher codes, parent codes), NOT Supabase. Without this, middleware redirects all /montree requests to `/`!
 - **Account types**: `personal_classroom`, `school`, `community_impact` (CHECK constraint on montree_schools)
 - **Subscription tiers**: `trial`, `free`, `paid` (for super-admin status toggle)

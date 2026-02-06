@@ -83,12 +83,12 @@ export async function seedClassroomCurriculum(
     // Copy each work to classroom
     for (const schoolWork of schoolWorks || []) {
       const classroomAreaId = areaIdMap.get(schoolWork.area_id);
-      
+
       if (!classroomAreaId) {
         console.error(`No classroom area found for school area ${schoolWork.area_id}`);
         continue;
       }
-      
+
       const { error: workError } = await supabase
         .from('montree_classroom_curriculum_works')
         .upsert({
@@ -111,6 +111,9 @@ export async function seedClassroomCurriculum(
           sequence: schoolWork.sequence,
           is_active: true,
           teacher_notes: null, // Fresh for teacher to customize
+          // Include parent descriptions from school curriculum
+          parent_description: schoolWork.parent_description,
+          why_it_matters: schoolWork.why_it_matters,
         }, {
           onConflict: 'classroom_id,work_key',
         });
