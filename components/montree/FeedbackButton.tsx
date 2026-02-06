@@ -101,6 +101,7 @@ export default function FeedbackButton({
   // Screenshot state
   const [screenshot, setScreenshot] = useState<string | null>(null); // base64 data URL
   const [isCapturing, setIsCapturing] = useState(false);
+  const [screenshotError, setScreenshotError] = useState(false);
 
   // Reset form when closed
   useEffect(() => {
@@ -126,25 +127,39 @@ export default function FeedbackButton({
       }
 
       // Small delay to ensure button is hidden
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
-      const canvas = await html2canvas(document.body, {
+      // Mobile-friendly html2canvas settings
+      const isMobile = window.innerWidth < 768;
+      const canvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
-        scale: 0.5, // Reduce size for faster upload
+        scale: isMobile ? 0.4 : 0.5,   // Lower scale on mobile to avoid memory issues
         logging: false,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        foreignObjectRendering: false,  // More compatible on iOS
+        removeContainer: true,
         ignoreElements: (element) => {
-          // Ignore the feedback button itself
-          return element.closest('[data-feedback-button]') !== null;
+          // Ignore feedback button and any video/canvas elements that cause issues
+          if (element.closest('[data-feedback-button]')) return true;
+          if (element.tagName === 'VIDEO') return true;
+          return false;
         }
       });
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
       setScreenshot(dataUrl);
 
     } catch (error) {
       console.error('Screenshot capture failed:', error);
-      alert('Failed to capture screenshot. Please try again.');
+      // Don't use alert() on mobile - it's jarring. Just show inline feedback.
+      setScreenshotError(true);
+      setTimeout(() => setScreenshotError(false), 3000);
     } finally {
       // Show the feedback button again
       if (buttonRef.current) {
@@ -300,12 +315,21 @@ export default function FeedbackButton({
                 <button
                   onClick={captureScreenshot}
                   disabled={isCapturing}
-                  className="w-full py-2.5 bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl text-blue-600 font-medium hover:bg-blue-100 hover:border-blue-300 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className={`w-full py-2.5 border-2 border-dashed rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
+                    screenshotError
+                      ? 'bg-red-50 border-red-200 text-red-500'
+                      : 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300'
+                  }`}
                 >
                   {isCapturing ? (
                     <>
                       <span className="animate-spin">⏳</span>
                       Capturing...
+                    </>
+                  ) : screenshotError ? (
+                    <>
+                      <span>⚠️</span>
+                      Capture failed — tap to retry
                     </>
                   ) : (
                     <>
