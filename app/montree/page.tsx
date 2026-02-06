@@ -26,22 +26,22 @@ export default function MontreeLanding() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col gap-4 justify-center">
-          {/* Setup Button */}
+          {/* Try Button - primary CTA */}
           <a
-            href="/montree/principal/register"
+            href="/montree/try"
             className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
           >
-            <span>🏫</span>
-            <span>Set Up School</span>
+            <span>🌱</span>
+            <span>I want to try</span>
           </a>
 
-          {/* Login Button - goes to login selection page */}
+          {/* Login Button - existing users */}
           <a
             href="/montree/login-select"
             className="px-8 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-2"
           >
             <span>🔑</span>
-            <span>Login</span>
+            <span>I already have an account</span>
           </a>
         </div>
       </div>

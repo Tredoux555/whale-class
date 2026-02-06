@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import InboxButton from '@/components/montree/InboxButton';
 
 interface Classroom {
   id: string;
@@ -308,6 +309,12 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {principal?.id && (
+              <InboxButton
+                conversationId={principal.id}
+                userName={principal.name || 'Principal'}
+              />
+            )}
             <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600">⚙️</button>
             <button onClick={handleLogout} className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30">Logout</button>
           </div>

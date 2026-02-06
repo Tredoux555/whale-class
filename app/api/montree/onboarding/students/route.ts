@@ -104,58 +104,52 @@ export async function POST(request: NextRequest) {
 
       createdStudents.push(createdChild);
 
-      // Create progress records for each selected work
-      // When a student is marked as "on" a particular work, we record all works up to that point as "presented"
+      // Build all progress records in one batch for speed
+      const progressBatch: any[] = [];
+      const now = new Date().toISOString();
+
       for (const [areaKey, workId] of Object.entries(student.progress)) {
-        if (!workId) continue; // Skip if not started
+        if (!workId) continue;
 
         const work = workMap.get(workId);
-        if (!work) {
-          console.warn(`Work not found: ${workId}`);
-          continue;
-        }
+        if (!work) { console.warn(`Work not found: ${workId}`); continue; }
 
-        // Convert area_key (like "practical_life") to area_id (UUID)
         const areaUuid = areaKeyToId.get(areaKey);
-        if (!areaUuid) {
-          console.warn(`Area not found for key: ${areaKey}`);
-          continue;
-        }
+        if (!areaUuid) { console.warn(`Area not found for key: ${areaKey}`); continue; }
 
-        // Get all works in this area up to and including the selected work
         const areaWorks = curriculumWorks?.filter(w => w.area_id === areaUuid) || [];
         areaWorks.sort((a, b) => a.sequence - b.sequence);
-
-        // Find index of selected work
         const selectedIndex = areaWorks.findIndex(w => w.id === workId || w.work_key === workId);
 
         if (selectedIndex >= 0) {
-          // Mark all works up to this point as "presented"
           const worksToMark = areaWorks.slice(0, selectedIndex + 1);
-
-          for (const w of worksToMark) {
-            const progressRecord = {
+          for (let i = 0; i < worksToMark.length; i++) {
+            const w = worksToMark[i];
+            const isSelected = (i === worksToMark.length - 1);
+            progressBatch.push({
               child_id: createdChild.id,
               work_name: w.name,
               work_name_chinese: w.name_chinese || null,
-              area: areaKey,  // Use area_key string (like "practical_life"), not UUID
-              status: 'presented',
-              presented_at: new Date().toISOString(),
-              notes: selectedIndex === worksToMark.indexOf(w)
-                ? 'Current work during onboarding'
-                : 'Prior work during onboarding',
-            };
-
-            const { error: progressError } = await supabase
-              .from('montree_child_progress')
-              .insert(progressRecord);
-
-            if (progressError) {
-              console.error(`Failed to create progress for ${student.name}:`, progressError);
-            } else {
-              createdProgress.push(progressRecord);
-            }
+              area: areaKey,
+              // Prior works = mastered, selected work = presented
+              status: isSelected ? 'presented' : 'mastered',
+              presented_at: now,
+              mastered_at: isSelected ? null : now,
+              notes: isSelected ? 'Current work during onboarding' : 'Prior work during onboarding',
+            });
           }
+        }
+      }
+
+      // Single batch insert instead of one-by-one
+      if (progressBatch.length > 0) {
+        const { error: progressError } = await supabase
+          .from('montree_child_progress')
+          .insert(progressBatch);
+        if (progressError) {
+          console.error(`Failed to create progress for ${student.name}:`, JSON.stringify(progressError));
+        } else {
+          createdProgress.push(...progressBatch);
         }
       }
     }

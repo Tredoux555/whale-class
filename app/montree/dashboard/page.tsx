@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, clearSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
+import InboxButton from '@/components/montree/InboxButton';
 
 interface Child {
   id: string;
@@ -90,6 +91,12 @@ export default function DashboardPage() {
             >
               🖨️
             </Link>
+            {session?.teacher?.id && (
+              <InboxButton
+                conversationId={session.teacher.id}
+                userName={session.teacher.name || 'Teacher'}
+              />
+            )}
             <button
               onClick={() => { clearSession(); router.push('/montree/login'); }}
               className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
