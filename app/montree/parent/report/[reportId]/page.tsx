@@ -261,7 +261,7 @@ export default function ParentReportPage() {
                       />
                       <button
                         onClick={() => downloadPhoto(work.photo_url!, work.work_name)}
-                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm"
                         title="Save photo"
                       >
                         ⬇
@@ -318,7 +318,7 @@ export default function ParentReportPage() {
                     />
                     <button
                       onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
-                      className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
+                      className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
                       title="Save photo"
                     >
                       ⬇
