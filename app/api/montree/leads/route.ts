@@ -162,6 +162,11 @@ export async function GET(req: NextRequest) {
                     superAdminPassword === fallbackPassword;
 
     if (!isValid) {
+      console.error('Super admin auth failed:', {
+        receivedPassword: superAdminPassword ? superAdminPassword.substring(0, 2) + '***' : 'none',
+        expectedPassword: expectedPassword ? 'set' : 'not set',
+        fallbackPassword: fallbackPassword ? 'set' : 'not set'
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -182,8 +187,15 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Leads fetch error:', error);
-      return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
+      console.error('Leads fetch error:', {
+        message: error.message,
+        code: (error as any).code,
+        details: (error as any).details
+      });
+      return NextResponse.json({
+        error: 'Failed to fetch leads',
+        details: error.message
+      }, { status: 500 });
     }
 
     // Count new leads
