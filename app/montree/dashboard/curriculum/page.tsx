@@ -113,7 +113,7 @@ export default function CurriculumPage() {
 
   const handleImportCurriculum = async () => {
     if (!session?.classroom?.id) return;
-    if (!confirm('This will import the master Montessori curriculum (220 works). Your classroom will have its own copy to customize. Continue?')) return;
+    if (!confirm('This will import the master Montessori curriculum (268 works). Your classroom will have its own copy to customize. Continue?')) return;
     
     setImporting(true);
     try {

@@ -2,15 +2,8 @@
 // Principal setup - add classrooms and teachers
 // OVERHAULED: Use static curriculum as PRIMARY source for correct sequencing
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/montree/supabase';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 function generateLoginCode(): string {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
@@ -84,6 +77,11 @@ async function seedCurriculumForClassroom(
         indirect_aims: work.indirect_aims || [],
         control_of_error: work.control_of_error || null,
         prerequisites: work.prerequisites || [],
+        // Parent-facing descriptions (from comprehensive-guides)
+        quick_guide: work.quick_guide || null,
+        presentation_steps: work.presentation_steps || [],
+        parent_description: work.parent_description || null,
+        why_it_matters: work.why_it_matters || null,
       };
     }).filter(Boolean);
 

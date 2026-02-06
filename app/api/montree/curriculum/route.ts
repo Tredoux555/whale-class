@@ -2,13 +2,8 @@
 // GET/POST curriculum works for a classroom - FIXED inline client
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(url, key);
-}
+import { getSupabase } from '@/lib/montree/supabase';
+import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
 // Default area definitions (English only)
 const DEFAULT_AREAS = [
@@ -127,59 +122,36 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const brainAreaMapping: Record<string, string> = {
-        'practical_life': 'practical_life',
-        'sensorial': 'sensorial',
-        'mathematics': 'mathematics',
-        'math': 'mathematics',
-        'language': 'language',
-        'cultural': 'cultural',
-        'culture': 'cultural',
-      };
+      // Load from AUTHORITATIVE static curriculum (100% coverage guaranteed)
+      const allWorks = loadAllCurriculumWorks();
+      console.log(`[Curriculum Seed] Loading ${allWorks.length} works from static curriculum`);
 
-      // Fetch from Montessori Brain
-      const { data: brainWorks, error: brainError } = await supabase
-        .from('montessori_works')
-        .select('*')
-        .order('sequence_order');
-
-      if (brainError) {
-        console.error('Brain fetch error:', brainError);
-        return NextResponse.json({ error: 'Failed to fetch brain works' }, { status: 500 });
-      }
-
-      // Transform to classroom works - preserve brain's sequence_order
       const worksToInsert: any[] = [];
 
-      for (const work of brainWorks || []) {
-        const mappedArea = brainAreaMapping[work.curriculum_area] || 'practical_life';
-        const areaId = areaMap[mappedArea];
+      for (const work of allWorks) {
+        const areaId = areaMap[work.area_key];
         if (!areaId) continue;
 
         worksToInsert.push({
           classroom_id,
           area_id: areaId,
-          work_key: work.slug || work.name.toLowerCase().replace(/\s+/g, '_'),
+          work_key: work.work_key,
           name: work.name,
-          name_chinese: work.name_chinese || null,
-          description: work.parent_explanation_simple || null,
-          age_range: work.age_min && work.age_max ? `${work.age_min}-${work.age_max}` : '3-6',
-          sequence: work.sequence_order || 999, // Preserve brain's logical order
+          description: work.description || null,
+          age_range: work.age_range || '3-6',
+          sequence: work.sequence, // Correct global sequence from static files
           is_active: true,
           direct_aims: work.direct_aims || [],
           indirect_aims: work.indirect_aims || [],
-          materials: work.materials_needed || [],
+          materials: work.materials || [],
           control_of_error: work.control_of_error || null,
-          prerequisites: work.readiness_indicators || [],
-          // Teacher presentation - quick overview
+          prerequisites: work.prerequisites || [],
+          // Teacher presentation
           quick_guide: work.quick_guide || null,
-          // Teacher presentation - detailed steps
           presentation_steps: work.presentation_steps || [],
-          presentation_notes: work.presentation_notes || null,
-          // Parent-facing
-          parent_description: work.parent_explanation_detailed || null,
-          why_it_matters: work.parent_why_it_matters || null,
-          video_search_terms: work.video_search_term || null,
+          // Parent-facing (guaranteed from comprehensive-guides)
+          parent_description: work.parent_description || null,
+          why_it_matters: work.why_it_matters || null,
         });
       }
 

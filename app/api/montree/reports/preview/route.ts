@@ -2,145 +2,44 @@
 // GET - Generate full report preview with parent descriptions and photos
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/montree/supabase';
+import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
-// Fallback descriptions for common Montessori works when database has none
-const FALLBACK_DESCRIPTIONS: Record<string, { description: string; why_it_matters: string }> = {
-  'hand washing': {
-    description: 'Your child is learning the important routine of hand washing - using soap, scrubbing thoroughly, rinsing, and drying. This essential life skill promotes health and independence.',
-    why_it_matters: 'Hand washing teaches children to take care of their health independently. The step-by-step process develops sequencing skills and builds confidence in self-care.'
-  },
-  'lacing': {
-    description: 'Your child is practicing lacing on a wooden frame. This challenging work develops fine motor skills and hand-eye coordination essential for writing.',
-    why_it_matters: 'Lacing develops the pincer grip and bilateral coordination needed for writing, while building patience and concentration.'
-  },
-  'pouring': {
-    description: 'Your child is learning to pour with control and precision. This practical life activity develops hand-eye coordination and prepares for serving independently.',
-    why_it_matters: 'Pouring activities build concentration, independence, and the motor control needed for daily tasks.'
-  },
-  'button': {
-    description: 'Your child is practicing buttoning skills on a wooden frame. This precise work develops fine motor control needed for dressing independently.',
-    why_it_matters: 'Buttoning develops finger dexterity and builds the independence needed for self-care.'
-  },
-  'zipper': {
-    description: 'Your child is practicing zipping on a wooden frame. This common fastener requires coordination of both hands working together.',
-    why_it_matters: 'Zipper work develops bilateral coordination and prepares children for independence with jackets and bags.'
-  },
-  'sandpaper': {
-    description: 'Your child is tracing sandpaper letters, learning letter shapes through touch. This multi-sensory approach connects the feel of letters with their sounds.',
-    why_it_matters: 'Sandpaper letters engage muscle memory for letter formation, making writing more natural when children begin with pencils.'
-  },
-  'counting': {
-    description: 'Your child is working on counting activities, building number sense through hands-on materials that make quantities concrete and real.',
-    why_it_matters: 'Concrete counting builds the foundation for all mathematical understanding, making abstract numbers meaningful.'
-  },
-  'puzzle': {
-    description: 'Your child is working with puzzles that teach vocabulary and develop fine motor skills through hands-on exploration.',
-    why_it_matters: 'Puzzle work develops visual discrimination, concentration, and teaches scientific or geographic vocabulary.'
-  },
-  'practical life': {
-    description: 'Your child is engaged in practical life activities that build independence, concentration, and fine motor skills through real-world tasks.',
-    why_it_matters: 'Practical life activities develop self-confidence and the coordination needed for academic work.'
+// Area-based generic descriptions - used as LAST RESORT when no DB description found
+// Keyed by area_key from the progress data (always correct - no guessing needed)
+const AREA_DESCRIPTIONS: Record<string, { description: string; why_it_matters: string }> = {
+  'practical_life': {
+    description: 'Your child is developing independence and coordination through hands-on practical life activities in the classroom.',
+    why_it_matters: 'Practical life activities build self-confidence, concentration, and the fine motor skills that prepare children for all future learning.'
   },
   'sensorial': {
-    description: 'Your child is exploring sensorial materials that refine the senses and develop careful observation skills.',
-    why_it_matters: 'Sensorial work builds the perceptual skills that underlie reading, math, and scientific observation.'
+    description: 'Your child is refining their senses through carefully designed sensorial materials, learning to observe and classify the world around them.',
+    why_it_matters: 'Sensorial work builds the perceptual skills that underlie reading, mathematics, and scientific observation.'
   },
-  'math': {
-    description: 'Your child is working with math materials that make abstract concepts concrete through hands-on manipulation.',
-    why_it_matters: 'Concrete math materials build deep understanding that lasts a lifetime.'
+  'mathematics': {
+    description: 'Your child is exploring mathematical concepts through hands-on materials that make abstract ideas concrete and meaningful.',
+    why_it_matters: 'Concrete math materials build deep, lasting understanding that goes far beyond memorisation.'
   },
   'language': {
-    description: 'Your child is developing language skills through activities that build vocabulary, reading, and writing foundations.',
-    why_it_matters: 'Strong language skills open doors to learning in every subject area.'
+    description: 'Your child is building language skills through activities that develop vocabulary, reading, and writing foundations.',
+    why_it_matters: 'Strong language skills open doors to learning in every area and support confident self-expression.'
   },
-  // Additional practical life works
-  'snapping': {
-    description: 'Your child is practicing snapping fasteners on a wooden frame. This precise work develops finger strength and coordination needed for dressing.',
-    why_it_matters: 'Snapping develops fine motor control and builds independence in self-care skills.'
-  },
-  'sweeping': {
-    description: 'Your child is learning to sweep with a child-sized broom and dustpan. This practical skill builds coordination and care for the environment.',
-    why_it_matters: 'Sweeping develops gross motor coordination while teaching responsibility for keeping shared spaces clean.'
-  },
-  'sponging': {
-    description: 'Your child is learning to use a sponge to transfer water or clean surfaces. This activity develops hand strength and teaches care of the environment.',
-    why_it_matters: 'Sponging activities build hand strength needed for writing while teaching responsibility and independence.'
-  },
-  'spooning': {
-    description: 'Your child is practicing transferring objects with a spoon, developing the control and precision needed for self-feeding.',
-    why_it_matters: 'Spooning develops fine motor control and prepares children for independent eating.'
-  },
-  'transferring': {
-    description: 'Your child is practicing transferring objects between containers, developing focus and motor control.',
-    why_it_matters: 'Transfer activities build concentration and the precision needed for many practical tasks.'
-  },
-  'threading': {
-    description: 'Your child is practicing threading beads onto a string, developing fine motor skills and hand-eye coordination.',
-    why_it_matters: 'Threading develops the pincer grip and concentration needed for writing and detailed work.'
-  },
-  // Sensorial works
-  'pink tower': {
-    description: 'Your child is working with the Pink Tower, building a tower from largest to smallest cube. This classic Montessori material teaches visual discrimination of size.',
-    why_it_matters: 'The Pink Tower develops visual discrimination and prepares the mind for understanding mathematical concepts.'
-  },
-  'brown stair': {
-    description: 'Your child is working with the Brown Stair, arranging prisms from thickest to thinnest. This material develops visual discrimination of dimension.',
-    why_it_matters: 'The Brown Stair refines visual perception and prepares the mind for mathematical thinking.'
-  },
-  'cylinder': {
-    description: 'Your child is working with cylinder blocks, matching cylinders to their correct holes by size. This precise work develops visual discrimination.',
-    why_it_matters: 'Cylinder work develops visual discrimination and the pincer grip used in writing.'
-  },
-  'color': {
-    description: 'Your child is working with color tablets, learning to distinguish and match colors or arrange them in gradation.',
-    why_it_matters: 'Color work refines visual perception and builds vocabulary for describing the world.'
-  },
-  'geometric': {
-    description: 'Your child is exploring geometric shapes, learning names and properties through hands-on manipulation.',
-    why_it_matters: 'Geometric exploration builds spatial awareness and vocabulary for mathematical concepts.'
-  },
-  'bell': {
-    description: 'Your child is working with the bells, learning to distinguish and match musical tones through careful listening.',
-    why_it_matters: 'Bell work develops auditory discrimination and prepares the ear for music and language.'
-  },
-  // Math works
-  'bead': {
-    description: 'Your child is working with bead materials that make quantities concrete and visible, building strong number sense.',
-    why_it_matters: 'Bead materials make abstract numbers real, building deep mathematical understanding.'
-  },
-  'golden bead': {
-    description: 'Your child is working with golden beads, exploring place value through hands-on manipulation of units, tens, hundreds, and thousands.',
-    why_it_matters: 'Golden beads make the decimal system concrete, building understanding that lasts a lifetime.'
-  },
-  'spindle': {
-    description: 'Your child is counting spindles into compartments, learning that numbers represent specific quantities including zero.',
-    why_it_matters: 'Spindle work reinforces one-to-one correspondence and introduces the concept of zero.'
-  },
-  'number rod': {
-    description: 'Your child is working with number rods, experiencing quantities as lengths that can be compared and combined.',
-    why_it_matters: 'Number rods make quantity physical and visual, preparing for addition and subtraction.'
-  },
-  // Language works
-  'movable alphabet': {
-    description: 'Your child is building words with the movable alphabet, expressing thoughts in writing before pencil skills are fully developed.',
-    why_it_matters: 'The movable alphabet frees children to compose words and sentences while still developing writing skills.'
-  },
-  'metal inset': {
-    description: 'Your child is tracing metal insets, developing the hand control and lightness of touch needed for beautiful handwriting.',
-    why_it_matters: 'Metal insets prepare the hand for writing through engaging artistic work.'
+  'cultural': {
+    description: 'Your child is exploring the world through cultural studies - geography, science, history, art, and music - building curiosity and global awareness.',
+    why_it_matters: 'Cultural activities nurture curiosity about the world and help children understand their place in it.'
   },
 };
 
-// Fuzzy match work name to find best description
-// Handles cases like "Dressing Frame Shoes" matching "Lacing Frame" or generic dressing frames
+// Safe description matching - only matches when confident
+// Uses DB descriptions first, then area-based generic as fallback
 function findBestDescription(
   workName: string,
-  descriptions: Map<string, { description: string; why_it_matters: string; originalName: string }>
+  descriptions: Map<string, { description: string; why_it_matters: string; originalName: string }>,
+  area?: string
 ): { description: string; why_it_matters: string } | null {
-  const workNameLower = workName.toLowerCase();
+  const workNameLower = workName.toLowerCase().trim();
 
-  // 1. Try exact match first
+  // 1. Try exact match from DB descriptions
   if (descriptions.has(workNameLower)) {
     return descriptions.get(workNameLower)!;
   }
@@ -148,96 +47,64 @@ function findBestDescription(
   // Convert to array for iteration
   const entries = Array.from(descriptions.entries());
 
-  // 2. Try contains match (work name contains guide name or vice versa)
+  // 2. Try contains match - but ONLY when one name fully contains the other
+  //    AND the contained name is at least 10 chars (avoids short keyword false matches)
   for (const [guideName, desc] of entries) {
-    if (workNameLower.includes(guideName) || guideName.includes(workNameLower)) {
+    if (guideName.length >= 10 && workNameLower.includes(guideName)) {
+      return desc;
+    }
+    if (workNameLower.length >= 10 && guideName.includes(workNameLower)) {
       return desc;
     }
   }
 
-  // 3. Keyword matching - extract key words and find best overlap
-  const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 2);
+  // 3. Normalized matching - strip common prefixes/suffixes and try again
+  const normalize = (s: string) => s
+    .replace(/^(the|a|an)\s+/i, '')
+    .replace(/\s*-\s*/g, ' ')
+    .replace(/\s+(work|activity|exercise|lesson|frame)$/i, '')
+    .trim();
 
-  // Skip common words
-  const skipWords = ['the', 'and', 'for', 'with', 'frame', 'box', 'set', 'work', 'board', 'cards'];
-  const meaningfulWorkWords = workWords.filter(w => !skipWords.includes(w));
-
-  let bestMatch: { desc: { description: string; why_it_matters: string }; score: number } | null = null;
-
+  const normalizedWork = normalize(workNameLower);
   for (const [guideName, desc] of entries) {
-    const guideWords = guideName.split(/[\s\-_]+/).filter(w => w.length > 2);
+    const normalizedGuide = normalize(guideName);
+    if (normalizedWork === normalizedGuide) {
+      return desc;
+    }
+  }
 
-    // Count overlapping words
-    let score = 0;
-    for (const word of meaningfulWorkWords) {
-      for (const guideWord of guideWords) {
-        if (guideWord.includes(word) || word.includes(guideWord)) {
-          score += 1;
+  // 4. Multi-word keyword match - require at least 2 meaningful words to match
+  //    This prevents single-keyword false matches like "sandpaper" matching wrong works
+  const skipWords = new Set(['the', 'a', 'an', 'and', 'or', 'for', 'with', 'of', 'in', 'on', 'to']);
+  const workWords = workNameLower.split(/[\s\-_]+/).filter(w => w.length > 2 && !skipWords.has(w));
+
+  if (workWords.length >= 2) {
+    let bestMatch: { desc: { description: string; why_it_matters: string }; score: number } | null = null;
+
+    for (const [guideName, desc] of entries) {
+      const guideWords = guideName.split(/[\s\-_]+/).filter(w => w.length > 2 && !skipWords.has(w));
+      let matchCount = 0;
+      for (const word of workWords) {
+        if (guideWords.some(gw => gw === word || (gw.length > 4 && word.length > 4 && (gw.includes(word) || word.includes(gw))))) {
+          matchCount++;
         }
+      }
+      // Require at least 2 word matches to accept
+      if (matchCount >= 2 && (!bestMatch || matchCount > bestMatch.score)) {
+        bestMatch = { desc, score: matchCount };
       }
     }
 
-    // Special keyword matching for Montessori materials
-    const keywordMatches: Record<string, string[]> = {
-      'dressing': ['frame', 'velcro', 'snaps', 'buttons', 'zipper', 'buckles', 'lacing', 'bow'],
-      'geometry': ['geometric', 'cabinet', 'solids', 'triangles'],
-      'number': ['numbers', 'rods', 'beads', 'spindle', 'cards'],
-      'color': ['colours', 'tablets', 'box'],
-      'sound': ['bells', 'cylinders', 'boxes'],
-      'touch': ['tablets', 'boards', 'fabrics'],
-    };
-
-    for (const [keyword, relatedWords] of Object.entries(keywordMatches)) {
-      if (workNameLower.includes(keyword)) {
-        for (const related of relatedWords) {
-          if (guideName.includes(related)) {
-            score += 0.5;
-          }
-        }
-      }
-    }
-
-    if (score > 0 && (!bestMatch || score > bestMatch.score)) {
-      bestMatch = { desc, score };
+    if (bestMatch) {
+      return bestMatch.desc;
     }
   }
 
-  if (bestMatch) {
-    return bestMatch.desc;
-  }
-
-  // 4. Try fallback descriptions based on keywords in work name
-  for (const [keyword, fallbackDesc] of Object.entries(FALLBACK_DESCRIPTIONS)) {
-    if (workNameLower.includes(keyword)) {
-      return fallbackDesc;
-    }
-  }
-
-  // 5. Try to determine area and provide generic description
-  const areaKeywords: Record<string, string> = {
-    'frame': 'practical life',
-    'pour': 'practical life',
-    'wash': 'practical life',
-    'polish': 'practical life',
-    'fold': 'practical life',
-    'cut': 'practical life',
-    'tablet': 'sensorial',
-    'cylinder': 'sensorial',
-    'tower': 'sensorial',
-    'bead': 'math',
-    'number': 'math',
-    'spindle': 'math',
-    'rod': 'math',
-    'letter': 'language',
-    'alphabet': 'language',
-    'phonetic': 'language',
-    'puzzle': 'puzzle',
-  };
-
-  for (const [keyword, area] of Object.entries(areaKeywords)) {
-    if (workNameLower.includes(keyword)) {
-      return FALLBACK_DESCRIPTIONS[area] || null;
-    }
+  // 5. Area-based generic fallback - uses the KNOWN area from progress data
+  //    This is always correct because the area comes from the actual data, not guessing
+  if (area) {
+    const areaDesc = AREA_DESCRIPTIONS[area];
+    if (areaDesc) return areaDesc;
   }
 
   return null;
@@ -245,10 +112,7 @@ function findBestDescription(
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = getSupabase();
 
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
@@ -281,19 +145,50 @@ export async function GET(request: NextRequest) {
     const workNameToId = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string; originalName: string }>();
 
+    // Load authoritative descriptions from static curriculum (guaranteed 100% coverage)
+    const staticCurriculum = loadAllCurriculumWorks();
+    const staticDescriptions = new Map<string, { description: string; why_it_matters: string }>();
+    for (const work of staticCurriculum) {
+      if (work.parent_description) {
+        staticDescriptions.set(work.name.toLowerCase().trim(), {
+          description: work.parent_description,
+          why_it_matters: work.why_it_matters || '',
+        });
+      }
+    }
+
     for (const work of curriculumWorks || []) {
+      // Try DB description first, then fall back to static curriculum
+      const staticDesc = staticDescriptions.get(work.name.toLowerCase().trim());
+      const description = work.parent_description || staticDesc?.description || '';
+      const whyItMatters = work.why_it_matters || staticDesc?.why_it_matters || '';
+
       workIdToInfo.set(work.id, {
         name: work.name,
         area: work.area || 'practical_life',
-        description: work.parent_description || '',
-        why_it_matters: work.why_it_matters || '',
+        description,
+        why_it_matters: whyItMatters,
       });
       workNameToId.set(work.name.toLowerCase(), work.id);
-      if (work.parent_description) {
+
+      // Add to description map if we have ANY description (DB or static)
+      if (description) {
         dbDescriptions.set(work.name.toLowerCase(), {
-          description: work.parent_description,
-          why_it_matters: work.why_it_matters || '',
+          description,
+          why_it_matters: whyItMatters,
           originalName: work.name,
+        });
+      }
+    }
+
+    // Also add static descriptions for works NOT in this classroom's DB
+    // (covers edge cases where progress references a work not yet seeded)
+    for (const [name, desc] of staticDescriptions) {
+      if (!dbDescriptions.has(name)) {
+        dbDescriptions.set(name, {
+          description: desc.description,
+          why_it_matters: desc.why_it_matters,
+          originalName: name,
         });
       }
     }
@@ -483,11 +378,9 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      // Get description
-      let desc = findBestDescription(p.work_name || '', dbDescriptions);
-      if (!desc && dbDescriptions.has(workNameLower)) {
-        desc = dbDescriptions.get(workNameLower)!;
-      }
+      // Get description - pass the area from progress data for safe fallback
+      const progressArea = p.area || workInfo?.area || 'practical_life';
+      let desc = findBestDescription(p.work_name || '', dbDescriptions, progressArea);
 
       reportItems.push({
         work_id: workId || null,

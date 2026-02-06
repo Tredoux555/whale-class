@@ -30,6 +30,12 @@ const AGE_OPTIONS = [
   { value: 6, label: '6' },
 ];
 
+// Gender options
+const GENDER_OPTIONS = [
+  { value: 'boy', label: 'Boy' },
+  { value: 'girl', label: 'Girl' },
+];
+
 // Tenure options - how long has student been in the program
 const TENURE_OPTIONS = [
   { value: 'new', label: 'Just started (less than 2 weeks)', months: 0 },
@@ -80,6 +86,15 @@ type Student = {
   progress?: { [areaId: string]: { workId: string | null; workName?: string } };
 };
 
+type BulkStudentForm = {
+  name: string;
+  age: number;
+  gender: string;
+  tenure: string;
+  progress: { [areaId: string]: { workId: string | null; workName?: string } };
+  notes: string;
+};
+
 // Compact Curriculum Picker for student management
 function CurriculumPicker({
   areaId,
@@ -89,6 +104,8 @@ function CurriculumPicker({
   works,
   selectedWorkId,
   onSelect,
+  classroomId,
+  onWorkAdded,
 }: {
   areaId: string;
   areaName: string;
@@ -97,9 +114,14 @@ function CurriculumPicker({
   works: Work[];
   selectedWorkId: string | null;
   onSelect: (workId: string | null, workName?: string) => void;
+  classroomId: string;
+  onWorkAdded?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [customWorkName, setCustomWorkName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,6 +134,37 @@ function CurriculumPicker({
     if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
+
+  const handleAddCustomWork = async () => {
+    if (!customWorkName.trim() || !classroomId) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroom_id: classroomId,
+          name: customWorkName.trim(),
+          area_key: areaId,
+          is_custom: true,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to add work');
+      const data = await res.json();
+      // Select the new work
+      onSelect(data.work?.id || data.id, customWorkName.trim());
+      // Notify parent to refresh curriculum
+      if (onWorkAdded) onWorkAdded();
+      // Reset
+      setCustomWorkName('');
+      setIsAddingCustom(false);
+      setIsOpen(false);
+    } catch (err) {
+      console.error('Failed to add custom work:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const selectedWork = works.find(w => w.id === selectedWorkId);
   const displayLabel = selectedWork?.name || 'Not started';
@@ -126,7 +179,7 @@ function CurriculumPicker({
         className="w-full p-2 bg-white border border-slate-200 rounded-lg text-left flex items-center gap-2 hover:border-blue-300 transition-colors text-sm"
         style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
       >
-        <span>{icon}</span>
+        <span className="w-6 h-6 rounded-full text-xs font-bold text-white flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color }}>{icon}</span>
         <span className="flex-1 truncate text-slate-600">{displayLabel}</span>
         <span className="text-slate-400 text-xs">{isOpen ? '▲' : '▼'}</span>
       </button>
@@ -167,6 +220,38 @@ function CurriculumPicker({
               </button>
             ))}
           </div>
+
+          {/* Divider and Add Custom Work */}
+          <div className="border-t border-slate-100 p-2">
+            {!isAddingCustom ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsAddingCustom(true); }}
+                className="w-full px-3 py-2 text-left text-sm text-teal-600 hover:bg-teal-50 rounded flex items-center gap-2"
+              >
+                <span>+</span>
+                <span>Add custom work</span>
+              </button>
+            ) : (
+              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="text"
+                  value={customWorkName}
+                  onChange={(e) => setCustomWorkName(e.target.value)}
+                  placeholder="Work name..."
+                  className="flex-1 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm placeholder-slate-400 focus:border-teal-400 outline-none"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomWork(); if (e.key === 'Escape') { setIsAddingCustom(false); setCustomWorkName(''); } }}
+                />
+                <button
+                  onClick={handleAddCustomWork}
+                  disabled={!customWorkName.trim() || isSubmitting}
+                  className="px-3 py-1.5 bg-teal-500 text-white rounded text-sm font-medium disabled:opacity-50"
+                >
+                  {isSubmitting ? '...' : 'Add'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -182,6 +267,7 @@ export default function StudentsPage() {
 
   // Add/Edit form state
   const [showForm, setShowForm] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -189,6 +275,9 @@ export default function StudentsPage() {
     tenure: 'new' as string,
     progress: {} as { [k: string]: { workId: string | null; workName?: string } }
   });
+  const [bulkStudents, setBulkStudents] = useState<BulkStudentForm[]>([
+    { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+  ]);
   const [saving, setSaving] = useState(false);
 
   // Delete confirmation
@@ -249,12 +338,16 @@ export default function StudentsPage() {
 
   const openAddForm = () => {
     setEditingStudent(null);
-    setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
+    setBulkMode(true);
+    setBulkStudents([
+      { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+    ]);
     setShowForm(true);
   };
 
   const openEditForm = (student: Student) => {
     setEditingStudent(student);
+    setBulkMode(false);
     setFormData({
       name: student.name,
       age: student.age || 3.5,
@@ -267,7 +360,11 @@ export default function StudentsPage() {
   const closeForm = () => {
     setShowForm(false);
     setEditingStudent(null);
+    setBulkMode(false);
     setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
+    setBulkStudents([
+      { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+    ]);
   };
 
   const handleSave = async () => {
@@ -281,7 +378,7 @@ export default function StudentsPage() {
         // Update existing student
         const res = await fetch(`/api/montree/children/${editingStudent.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-school-id': session.school?.id || '' },
           body: JSON.stringify({
             name: formData.name,
             age: formData.age,
@@ -318,11 +415,57 @@ export default function StudentsPage() {
     }
   };
 
+  const handleBulkSave = async () => {
+    const validStudents = bulkStudents.filter(s => s.name.trim());
+    if (validStudents.length === 0 || !session?.classroom?.id) return;
+
+    setSaving(true);
+    const toastId = toast.loading(`Saving ${validStudents.length} student${validStudents.length !== 1 ? 's' : ''}...`);
+
+    try {
+      const payload = validStudents.map(student => ({
+        name: student.name,
+        age: student.age,
+        gender: student.gender,
+        tenure: student.tenure,
+        progress: Object.fromEntries(
+          Object.entries(student.progress).map(([areaId, data]) => [areaId, data.workId])
+        ),
+        notes: student.notes,
+      }));
+
+      const res = await fetch('/api/montree/children/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classroomId: session.classroom!.id,
+          students: payload,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to save students');
+      }
+
+      toast.dismiss(toastId);
+      toast.success(`${validStudents.length} student${validStudents.length !== 1 ? 's' : ''} added to your classroom!`);
+      closeForm();
+      loadStudents(session.classroom?.id);
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error(err instanceof Error ? err.message : 'Failed to save students');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDelete = async (studentId: string) => {
     if (!session?.classroom?.id) return;
     try {
       const res = await fetch(`/api/montree/children/${studentId}`, {
         method: 'DELETE',
+        headers: { 'x-school-id': session.school?.id || '' },
       });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Student removed');
@@ -331,6 +474,33 @@ export default function StudentsPage() {
     } catch (err) {
       toast.error('Failed to remove student');
     }
+  };
+
+  const addAnotherStudent = () => {
+    if (bulkStudents.length < 30) {
+      setBulkStudents([
+        ...bulkStudents,
+        { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
+      ]);
+    }
+  };
+
+  const removeStudent = (index: number) => {
+    if (bulkStudents.length > 1) {
+      setBulkStudents(bulkStudents.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateBulkStudent = (index: number, field: keyof BulkStudentForm, value: any) => {
+    const updated = [...bulkStudents];
+    updated[index] = { ...updated[index], [field]: value };
+    setBulkStudents(updated);
+  };
+
+  const updateBulkProgress = (index: number, areaId: string, workId: string | null, workName?: string) => {
+    const updated = [...bulkStudents];
+    updated[index].progress[areaId] = { workId, workName };
+    setBulkStudents(updated);
   };
 
   if (!session || loading) {
@@ -449,7 +619,7 @@ export default function StudentsPage() {
       </main>
 
       {/* Add/Edit Form Modal */}
-      {showForm && (
+      {showForm && !bulkMode && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
           <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
@@ -529,6 +699,8 @@ export default function StudentsPage() {
                             [area.id]: { workId, workName },
                           },
                         })}
+                        classroomId={session.classroom?.id || ''}
+                        onWorkAdded={() => loadCurriculum(session.classroom?.id)}
                       />
                     ))}
                   </div>
@@ -550,6 +722,187 @@ export default function StudentsPage() {
               >
                 {saving ? 'Saving...' : editingStudent ? 'Update Student' : 'Add Student'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import Form Modal */}
+      {showForm && bulkMode && (
+        <div className="fixed inset-0 z-50 bg-black/50 overflow-y-auto">
+          <div className="min-h-screen flex items-start justify-center py-8 px-4">
+            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl">
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+                <h2 className="font-bold text-xl text-slate-800">Add Students</h2>
+                <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-2xl">
+                  ✕
+                </button>
+              </div>
+
+              {/* Banner */}
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 p-6 flex gap-4">
+                <div className="text-3xl flex-shrink-0">🌱</div>
+                <div>
+                  <h3 className="font-bold text-slate-900 mb-1">Building Student Profiles</h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    Welcome! You're creating developmental profiles that will grow with each child over time. The more context you provide — their strengths, challenges, learning style, and personality — the better our Montessori Guru can support you with personalized guidance, activity recommendations, and insights. Think of this as the beginning of a living portrait of each child.
+                  </p>
+                </div>
+              </div>
+
+              {/* Students List */}
+              <div className="p-6 space-y-6 max-h-[calc(100vh-280px)] overflow-y-auto">
+                {bulkStudents.map((student, index) => (
+                  <div key={index} className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:shadow-md transition-shadow">
+                    {/* Student Number Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-lg text-slate-800">
+                        Student {index + 1}
+                      </h4>
+                      {index > 0 && (
+                        <button
+                          onClick={() => removeStudent(index)}
+                          className="text-slate-400 hover:text-red-500 text-2xl font-light"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Row 1: Basic Info */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                      {/* Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+                        <input
+                          type="text"
+                          value={student.name}
+                          onChange={(e) => updateBulkStudent(index, 'name', e.target.value)}
+                          placeholder="Student's name"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm"
+                        />
+                      </div>
+
+                      {/* Age */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                        <select
+                          value={student.age}
+                          onChange={(e) => updateBulkStudent(index, 'age', parseFloat(e.target.value))}
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                        >
+                          {AGE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Gender */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
+                        <select
+                          value={student.gender}
+                          onChange={(e) => updateBulkStudent(index, 'gender', e.target.value)}
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                        >
+                          {GENDER_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Tenure */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Time at School</label>
+                      <select
+                        value={student.tenure}
+                        onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                      >
+                        {TENURE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Row 3: Curriculum */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Current Work in Each Area
+                      </label>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Select the most recent work each child has been presented in each area. Earlier works will be marked as mastered.
+                      </p>
+                      <div className="space-y-2">
+                        {CURRICULUM_AREAS.map((area) => (
+                          <CurriculumPicker
+                            key={area.id}
+                            areaId={area.id}
+                            areaName={area.name}
+                            icon={area.icon}
+                            color={area.color}
+                            works={curriculumWorks[area.id] || []}
+                            selectedWorkId={student.progress[area.id]?.workId || null}
+                            onSelect={(workId, workName) =>
+                              updateBulkProgress(index, area.id, workId, workName)
+                            }
+                            classroomId={session.classroom?.id || ''}
+                            onWorkAdded={() => loadCurriculum(session.classroom?.id)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Row 4: Notes */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Profile Notes
+                      </label>
+                      <textarea
+                        value={student.notes}
+                        onChange={(e) => updateBulkStudent(index, 'notes', e.target.value)}
+                        placeholder="Share anything that helps us understand this child — strengths, challenges, interests, temperament, sensitivities, family context, learning style... The more detail, the better the Guru can help."
+                        rows={4}
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm resize-none"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        This information is kept private and only used by the Guru to provide personalized support.
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Another Student Button */}
+              {bulkStudents.length < 30 && (
+                <div className="px-6 py-4 border-t border-slate-100">
+                  <button
+                    onClick={addAnotherStudent}
+                    className="w-full py-2.5 px-4 bg-teal-50 border-2 border-dashed border-teal-200 text-teal-700 rounded-lg font-medium hover:bg-teal-100 transition-colors text-sm"
+                  >
+                    + Add Another Student
+                  </button>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="p-6 border-t border-slate-100 flex gap-3 bg-slate-50 rounded-b-2xl">
+                <button
+                  onClick={closeForm}
+                  className="flex-1 py-3 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBulkSave}
+                  disabled={bulkStudents.filter(s => s.name.trim()).length === 0 || saving}
+                  className="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium disabled:opacity-50 hover:shadow-lg transition-all"
+                >
+                  {saving ? 'Saving...' : `Save All (${bulkStudents.filter(s => s.name.trim()).length})`}
+                </button>
+              </div>
             </div>
           </div>
         </div>

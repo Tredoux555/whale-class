@@ -2,14 +2,7 @@
 // Direct messages between super admin and users (leads/teachers/principals)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/montree/supabase';
 
 // Helper function to verify super-admin access
 function verifySuperAdminPassword(req: NextRequest): boolean {
