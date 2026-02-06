@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabase } from '@/lib/montree/supabase';
 
 const ADMIN_PASSWORD = '870602';
 
@@ -18,7 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { data: outreach, error } = await supabase
+    const { data: outreach, error } = await getSupabase()
       .from('montree_npo_outreach')
       .select('*')
       .order('priority', { ascending: true })
@@ -68,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Organization name and country are required' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('montree_npo_outreach')
       .insert({
         organization_name: organizationName,
@@ -130,7 +125,7 @@ export async function PATCH(request: NextRequest) {
       updateData.contact_notes = contactNotes;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('montree_npo_outreach')
       .update(updateData)
       .eq('id', outreachId)
