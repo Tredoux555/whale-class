@@ -9,15 +9,20 @@ import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
+import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
+import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
+import { useWorkOperations } from '@/hooks/useWorkOperations';
 
 interface Assignment {
   work_name: string;
   area: string;
   status: string;
   notes?: string;
-  is_focus?: boolean; // true = priority work for area, false = extra work child chose
+  is_focus?: boolean;
 }
 
 interface CurriculumWork {
@@ -27,157 +32,33 @@ interface CurriculumWork {
   area_id?: string;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-  not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
-  presented: { label: 'P', bg: 'bg-amber-300', text: 'text-amber-800' },
-  practicing: { label: 'Pr', bg: 'bg-blue-400', text: 'text-blue-800' },
-  mastered: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' },
-  completed: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' }, // Legacy alias
-};
-
-const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'];
-
-// Fuzzy matching for intelligent work placement
-const fuzzyScore = (str1: string, str2: string): number => {
-  const s1 = str1.toLowerCase().trim();
-  const s2 = str2.toLowerCase().trim();
-
-  // Exact match
-  if (s1 === s2) return 1;
-
-  // One contains the other
-  if (s1.includes(s2) || s2.includes(s1)) return 0.85;
-
-  // Word-level matching
-  const words1 = s1.split(/[\s\-_]+/).filter(w => w.length > 2);
-  const words2 = s2.split(/[\s\-_]+/).filter(w => w.length > 2);
-
-  let matchScore = 0;
-  for (const w1 of words1) {
-    for (const w2 of words2) {
-      if (w1 === w2) matchScore += 0.3;
-      else if (w1.includes(w2) || w2.includes(w1)) matchScore += 0.2;
-      else if (w1.slice(0, 4) === w2.slice(0, 4)) matchScore += 0.1; // Same prefix
-    }
-  }
-
-  return Math.min(matchScore, 0.8);
-};
-
-// Find best insertion position for a work based on fuzzy matching
-const findBestPosition = (workName: string, curriculumWorks: any[]): number => {
-  if (curriculumWorks.length === 0) return 0;
-
-  let bestScore = 0;
-  let bestIndex = curriculumWorks.length; // Default: end of list
-
-  for (let i = 0; i < curriculumWorks.length; i++) {
-    const score = fuzzyScore(workName, curriculumWorks[i].name);
-    if (score > bestScore) {
-      bestScore = score;
-      bestIndex = i + 1; // Insert after the match
-    }
-  }
-
-  // If very low score, try to group by keywords
-  if (bestScore < 0.2) {
-    const lowerName = workName.toLowerCase();
-    // Common Montessori groupings
-    const keywords = [
-      { terms: ['pour', 'transfer', 'spoon', 'tong', 'scoop'], range: [0, 10] },
-      { terms: ['button', 'zip', 'snap', 'lace', 'bow', 'dress'], range: [10, 20] },
-      { terms: ['wash', 'clean', 'polish', 'fold', 'sweep'], range: [20, 35] },
-      { terms: ['food', 'cut', 'slice', 'peel', 'prepare', 'cook'], range: [35, 50] },
-      { terms: ['count', 'number', 'bead', 'rod'], range: [0, 30] },
-      { terms: ['add', 'subtract', 'plus', 'minus'], range: [30, 60] },
-      { terms: ['multiply', 'divide', 'stamp'], range: [60, 90] },
-      { terms: ['letter', 'sound', 'phonetic', 'alphabet'], range: [0, 20] },
-      { terms: ['word', 'read', 'sentence', 'story'], range: [40, 80] },
-      { terms: ['cylinder', 'block', 'tower', 'stair'], range: [0, 15] },
-      { terms: ['color', 'tablet', 'shade'], range: [15, 25] },
-      { terms: ['geometry', 'shape', 'triangle', 'square'], range: [25, 50] },
-    ];
-
-    for (const group of keywords) {
-      if (group.terms.some(t => lowerName.includes(t))) {
-        // Place within the range, or at start of range if curriculum is shorter
-        bestIndex = Math.min(group.range[0], curriculumWorks.length);
-        break;
-      }
-    }
-  }
-
-  return bestIndex;
-};
-
-// Merge imported works into curriculum with intelligent positioning
-const mergeWorksWithCurriculum = (
-  curriculumWorks: any[],
-  assignedWorks: Assignment[],
-  areaKey: string
-): any[] => {
-  // Start with curriculum works
-  const merged = [...curriculumWorks];
-
-  // Find assigned works in this area that aren't in curriculum
-  const areaAssignments = assignedWorks.filter(a => {
-    const assignedArea = a.area === 'math' ? 'mathematics' : a.area;
-    const checkArea = areaKey === 'math' ? 'mathematics' : areaKey;
-    return assignedArea === checkArea || a.area === areaKey;
-  });
-
-  const missingWorks = areaAssignments.filter(a =>
-    !curriculumWorks.find(c => c.name?.toLowerCase() === a.work_name?.toLowerCase())
-  );
-
-  // Insert each missing work at its best position
-  for (const missing of missingWorks) {
-    const position = findBestPosition(missing.work_name, merged);
-    const newWork = {
-      id: `imported-${missing.work_name}`,
-      name: missing.work_name,
-      status: missing.status || 'presented',
-      sequence: 0, // Will be recalculated
-      isImported: true,
-    };
-    merged.splice(position, 0, newWork);
-  }
-
-  // Recalculate sequences
-  return merged.map((w, idx) => ({
-    ...w,
-    sequence: idx + 1,
-  }));
-};
-
 export default function WeekPage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
   const session = getSession();
-  
+
   // Invite parent modal
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  
-  const [focusWorks, setFocusWorks] = useState<Assignment[]>([]); // One per area, always visible
-  const [extraWorks, setExtraWorks] = useState<Assignment[]>([]); // Ad-hoc works child chose
+
+  const [focusWorks, setFocusWorks] = useState<Assignment[]>([]);
+  const [extraWorks, setExtraWorks] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedIndex, setExpandedIndex] = useState<string | null>(null); // Use work_name as key
-  const [notes, setNotes] = useState<Record<string, string>>({}); // keyed by work_name
-  const [savingNote, setSavingNote] = useState<string | null>(null); // work_name being saved
-  
+  const [expandedIndex, setExpandedIndex] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [savingNote, setSavingNote] = useState<string | null>(null);
+
   // Work picker state
   const [pickerOpen, setPickerOpen] = useState(false);
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
   // All works combined (for checking if already added)
   const allWorks = [...focusWorks, ...extraWorks];
 
   // CRITICAL: Block refetch while saving to prevent race conditions
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Next work suggestion state (removed modal - using wheel picker now)
 
   // Wheel picker state
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
@@ -459,183 +340,82 @@ export default function WeekPage() {
     }
   };
 
-  // Handle work selection from wheel picker - sets as new FOCUS work for area
-  const handleWheelPickerSelect = async (work: any, status: string) => {
-    const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
-    const newStatus = status; // Use status as-is (mastered, not completed)
+  // Use work operations hook
+  const {
+    cycleStatus,
+    removeExtra,
+    handleWheelPickerSelect,
+    handleWheelPickerAddExtra,
+    addWork: addWorkFromHook,
+    saveNote: saveNoteFromHook,
+  } = useWorkOperations({
+    childId,
+    focusWorks,
+    setFocusWorks,
+    extraWorks,
+    setExtraWorks,
+    wheelPickerArea,
+    session,
+    allWorks,
+    setWheelPickerOpen,
+    fetchAssignments,
+  });
 
-    // CRITICAL: Block refetch while saving
+  // Wrapper for saveNote to update local notes state
+  const onSaveNote = async (work: Assignment) => {
+    const noteText = notes[work.work_name];
+    if (!noteText?.trim()) return;
+
+    setSavingNote(work.work_name);
+    const success = await saveNoteFromHook(work, noteText);
+    if (success) {
+      setNotes(prev => ({ ...prev, [work.work_name]: '' }));
+    }
+    setSavingNote(null);
+  };
+
+  // Wrapper for addWork to handle picker state
+  const onAddWork = async (work: CurriculumWork) => {
+    await addWorkFromHook(work, selectedArea);
+    setPickerOpen(false);
+    setSelectedArea(null);
+  };
+
+  // Handle wheel picker select with isSaving flag
+  const onWheelPickerSelect = async (work: any, status: string) => {
     setIsSaving(true);
-
-    // Store old focus work for revert
-    const oldFocusWork = focusWorks.find(w => {
-      const wArea = w.area === 'math' ? 'mathematics' : w.area;
-      return wArea === area;
-    });
-
-    // OPTIMISTIC UPDATE - update UI immediately
-    setFocusWorks(prev => prev.map(w => {
-      const wArea = w.area === 'math' ? 'mathematics' : w.area;
-      if (wArea === area) {
-        return { work_name: work.name, area: area, status: newStatus, is_focus: true };
-      }
-      return w;
-    }));
-    setWheelPickerOpen(false);
-    toast.success(`Focus: ${work.name}`);
-
-    // Background API call
     try {
-      const res = await fetch('/api/montree/progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.name,
-          area: area,
-          status: newStatus,
-          is_focus: true,
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-    } catch {
-      // Revert on failure
-      if (oldFocusWork) {
-        setFocusWorks(prev => prev.map(w => {
-          const wArea = w.area === 'math' ? 'mathematics' : w.area;
-          if (wArea === area) return oldFocusWork;
-          return w;
-        }));
-      }
-      toast.error('Failed to update');
+      await handleWheelPickerSelect(work, status);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Handle adding a work as an EXTRA (not focus) from wheel picker
-  const handleWheelPickerAddExtra = async (work: any) => {
-    const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
-
-    // Check if already exists
-    const existing = allWorks.find(w => w.work_name?.toLowerCase() === work.name?.toLowerCase());
-    if (existing) {
-      toast.error('Already added');
-      return;
-    }
-
-    // CRITICAL: Block refetch while saving
+  // Handle wheel picker add extra with isSaving flag
+  const onWheelPickerAddExtra = async (work: any) => {
     setIsSaving(true);
-
-    // OPTIMISTIC UPDATE - add to UI immediately
-    const newExtra: Assignment = {
-      work_name: work.name,
-      area: area,
-      status: 'presented',
-      is_focus: false,
-    };
-    setExtraWorks(prev => [...prev, newExtra]);
-    setWheelPickerOpen(false);
-    toast.success(`Added: ${work.name}`);
-
-    // Background API call
     try {
-      const res = await fetch('/api/montree/progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.name,
-          area: area,
-          status: 'presented',
-          is_focus: false,
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-    } catch {
-      // Revert on failure
-      setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
-      toast.error('Failed to add');
+      await handleWheelPickerAddExtra(work);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Cycle status on tap (works for both focus and extras)
-  const cycleStatus = async (work: Assignment, isFocus: boolean) => {
-    const currentIdx = STATUS_FLOW.indexOf(work.status || 'not_started');
-    const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length];
-
-    // CRITICAL: Block refetch while saving
+  // Handle cycle status with isSaving flag
+  const onCycleStatus = async (work: Assignment, isFocus: boolean) => {
     setIsSaving(true);
-
-    // Optimistic update
-    if (isFocus) {
-      setFocusWorks(prev => prev.map(w =>
-        w.work_name === work.work_name ? { ...w, status: nextStatus } : w
-      ));
-    } else {
-      setExtraWorks(prev => prev.map(w =>
-        w.work_name === work.work_name ? { ...w, status: nextStatus } : w
-      ));
-    }
-
     try {
-      const res = await fetch('/api/montree/progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.work_name,
-          area: work.area,
-          status: nextStatus
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-    } catch {
-      toast.error('Failed to update');
-      // Revert optimistic update
-      if (isFocus) {
-        setFocusWorks(prev => prev.map(w =>
-          w.work_name === work.work_name ? { ...w, status: work.status } : w
-        ));
-      } else {
-        setExtraWorks(prev => prev.map(w =>
-          w.work_name === work.work_name ? { ...w, status: work.status } : w
-        ));
-      }
+      await cycleStatus(work, isFocus);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Remove an extra work (not for focus works) - OPTIMISTIC
-  const removeExtra = async (work: Assignment) => {
-    // CRITICAL: Block refetch while saving
+  // Handle remove extra with isSaving flag
+  const onRemoveExtra = async (work: Assignment) => {
     setIsSaving(true);
-
-    // OPTIMISTIC - remove from UI immediately
-    const removedWork = work;
-    setExtraWorks(prev => prev.filter(w => w.work_name !== work.work_name));
-    toast.success('Removed');
-
-    // Background API call
     try {
-      const res = await fetch('/api/montree/progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.work_name,
-          area: work.area,
-          status: 'mastered'  // Mark as mastered (not completed) to hide from extras
-        }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-    } catch {
-      // Revert on failure
-      setExtraWorks(prev => [...prev, removedWork]);
-      toast.error('Failed to remove');
+      await removeExtra(work);
     } finally {
       setIsSaving(false);
     }
@@ -650,7 +430,7 @@ export default function WeekPage() {
         // Load all works at once
         const res = await fetch(`/api/montree/works/search`);
         const data = await res.json();
-        
+
         // Group by area
         const byArea: Record<string, CurriculumWork[]> = {};
         for (const w of data.works || []) {
@@ -667,67 +447,6 @@ export default function WeekPage() {
       } catch {}
       setLoadingCurriculum(false);
     }
-  };
-
-  // Add work as an EXTRA (not focus)
-  const addWork = async (work: CurriculumWork) => {
-    // Check if already exists in focus or extras
-    const allWorks = [...focusWorks, ...extraWorks];
-    const existing = allWorks.find(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
-    if (existing) {
-      toast.error('Already added');
-      return;
-    }
-
-    try {
-      // Add the new work as an extra (presented status)
-      await fetch('/api/montree/progress/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.name,
-          area: work.area_id || selectedArea,
-          status: 'presented'
-        }),
-      });
-      
-      toast.success(`Added: ${work.name}`);
-      setPickerOpen(false);
-      setSelectedArea(null);
-      fetchAssignments();
-    } catch {
-      toast.error('Failed to add');
-    }
-  };
-
-  // Save note (uses work_name as key)
-  const saveNote = async (work: Assignment) => {
-    const noteText = notes[work.work_name];
-    if (!noteText?.trim()) return;
-
-    setSavingNote(work.work_name);
-
-    try {
-      const res = await fetch('/api/montree/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          work_name: work.work_name,
-          area: work.area,
-          notes: noteText,
-          teacher_id: session?.teacher?.id,
-        }),
-      });
-      if (res.ok) {
-        toast.success('Note saved!');
-        setNotes(prev => ({ ...prev, [work.work_name]: '' }));
-      }
-    } catch {
-      toast.error('Error saving');
-    }
-    setSavingNote(null);
   };
 
   // Get area config
@@ -747,7 +466,7 @@ export default function WeekPage() {
   return (
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
-      
+
       {/* Invite Parent Modal */}
       <InviteParentModal
         childId={childId}
@@ -756,7 +475,7 @@ export default function WeekPage() {
         isOpen={inviteModalOpen}
         onClose={() => setInviteModalOpen(false)}
       />
-      
+
       {/* Invite Button - subtle, right-aligned */}
       <div className="flex justify-end">
         <button
@@ -768,155 +487,27 @@ export default function WeekPage() {
       </div>
 
       {/* FOCUS WORKS - One per area, with extras grouped underneath */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h2 className="font-bold text-gray-800 mb-3">This Week's Focus</h2>
-        {focusWorks.length > 0 ? (
-          <div className="space-y-3">
-            {focusWorks.map((work) => {
-              const status = STATUS_CONFIG[work.status] || STATUS_CONFIG.not_started;
-              const areaConfig = getAreaConfig(work.area);
-              const isExpanded = expandedIndex === work.work_name;
-              // Get extras for this area
-              const areaExtras = extraWorks.filter(e => {
-                const eArea = e.area === 'math' ? 'mathematics' : e.area;
-                const wArea = work.area === 'math' ? 'mathematics' : work.area;
-                return eArea === wArea;
-              });
-
-              return (
-                <div key={`focus-${work.area}-${work.work_name}`} className="space-y-1">
-                  {/* Focus work row */}
-                  <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
-                    {/* Area icon - tap or long-press to swap focus work */}
-                    <button
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-sm active:scale-90 transition-transform"
-                      style={{ backgroundColor: areaConfig.color }}
-                      onClick={() => openWheelPicker(work.area, work.work_name)}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        openWheelPicker(work.area, work.work_name);
-                      }}
-                      onTouchStart={(e) => {
-                        const timer = setTimeout(() => {
-                          openWheelPicker(work.area, work.work_name);
-                        }, 500);
-                        const clear = () => clearTimeout(timer);
-                        e.currentTarget.addEventListener('touchend', clear, { once: true });
-                        e.currentTarget.addEventListener('touchmove', clear, { once: true });
-                      }}
-                      title="Tap to change work"
-                    >
-                      {areaConfig.icon}
-                    </button>
-
-                    {/* Work name - tap to expand */}
-                    <button onClick={() => setExpandedIndex(isExpanded ? null : work.work_name)} className="flex-1 text-left">
-                      <p className="font-medium text-gray-800 text-sm">{work.work_name}</p>
-                    </button>
-
-                    {/* Status badge - tap to cycle */}
-                    <button
-                      onClick={() => cycleStatus(work, true)}
-                      className={`w-9 h-9 rounded-full ${status.bg} ${status.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90 transition-transform`}
-                    >
-                      {status.label}
-                    </button>
-
-                    {/* Expand arrow */}
-                    <button
-                      onClick={() => setExpandedIndex(isExpanded ? null : work.work_name)}
-                      className={`text-gray-400 text-sm transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    >
-                      ▼
-                    </button>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="mt-1 ml-7 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 space-y-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => openQuickGuide(work.work_name)}
-                          className="flex-[1] py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
-                        >
-                          📖
-                        </button>
-                        <button
-                          onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(work.work_name + ' Montessori presentation')}`, '_blank')}
-                          className="flex-[2] py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-red-600 active:scale-95"
-                        >
-                          ▶️ Demo
-                        </button>
-                        <button
-                          onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(work.work_name)}&area=${encodeURIComponent(work.area)}`}
-                          className="flex-[2] py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
-                        >
-                          📸 Capture
-                        </button>
-                      </div>
-
-                      {/* Notes */}
-                      <div className="relative">
-                        <textarea
-                          value={notes[work.work_name] || ''}
-                          onChange={(e) => setNotes(prev => ({ ...prev, [work.work_name]: e.target.value }))}
-                          placeholder="Add observation..."
-                          className="w-full p-3 rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:outline-none
-                            bg-gradient-to-b from-amber-100 to-amber-50 border-0 shadow-md
-                            text-amber-900 placeholder-amber-400"
-                          rows={2}
-                        />
-                        <button
-                          onClick={() => saveNote(work)}
-                          disabled={!notes[work.work_name]?.trim() || savingNote === work.work_name}
-                          className="absolute bottom-2 right-2 px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
-                            disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
-                        >
-                          {savingNote === work.work_name ? '...' : '📌 Save'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Extra works for this area - grouped under the focus work */}
-                  {areaExtras.length > 0 && (
-                    <div className="ml-8 space-y-1">
-                      {areaExtras.map((extra, idx) => {
-                        const extraStatus = STATUS_CONFIG[extra.status] || STATUS_CONFIG.not_started;
-                        return (
-                          <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
-                            <span className="text-xs text-gray-400">└</span>
-                            <span className="flex-1 text-sm text-gray-600">{extra.work_name}</span>
-                            <button
-                              onClick={() => cycleStatus(extra, false)}
-                              className={`w-7 h-7 rounded-full ${extraStatus.bg} ${extraStatus.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90`}
-                            >
-                              {extraStatus.label}
-                            </button>
-                            <button
-                              onClick={() => removeExtra(extra)}
-                              className="text-gray-400 hover:text-red-500 text-xs p-1"
-                              title="Remove"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">Tap an area icon below to set focus works.</p>
-        )}
-      </div>
+      <FocusWorksSection
+        focusWorks={focusWorks}
+        extraWorks={extraWorks}
+        expandedIndex={expandedIndex}
+        setExpandedIndex={setExpandedIndex}
+        notes={notes}
+        setNotes={setNotes}
+        savingNote={savingNote}
+        onSaveNote={onSaveNote}
+        onCycleStatus={onCycleStatus}
+        onRemoveExtra={onRemoveExtra}
+        onOpenWheelPicker={openWheelPicker}
+        onOpenQuickGuide={openQuickGuide}
+        childId={childId}
+        getAreaConfig={getAreaConfig}
+      />
 
       {/* Add Work Button */}
       <button
         onClick={openPicker}
-        className="w-full py-4 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300 
+        className="w-full py-4 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300
           hover:border-emerald-400 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
       >
         <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -942,174 +533,32 @@ export default function WeekPage() {
         area={wheelPickerArea}
         works={wheelPickerWorks}
         currentWorkName={wheelPickerCurrentWork}
-        onSelectWork={handleWheelPickerSelect}
-        onAddExtra={handleWheelPickerAddExtra}
+        onSelectWork={onWheelPickerSelect}
+        onAddExtra={onWheelPickerAddExtra}
         onWorkAdded={refreshWheelPickerWorks}
       />
 
       {/* Work Picker Modal (for Add Work button) */}
-      {pickerOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center"
-          onClick={() => { setPickerOpen(false); setSelectedArea(null); }}
-        >
-          <div
-            className="bg-white w-full max-w-lg max-h-[80vh] rounded-t-3xl sm:rounded-3xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg">
-                  {selectedArea ? getAreaConfig(selectedArea).name : 'Add Extra Work'}
-                </h3>
-                <button
-                  onClick={() => { setPickerOpen(false); setSelectedArea(null); }}
-                  className="text-white/80 hover:text-white text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
-              {loadingCurriculum ? (
-                <div className="text-center py-8">
-                  <div className="animate-bounce text-3xl mb-2">📚</div>
-                  <p className="text-gray-500">Loading curriculum...</p>
-                </div>
-              ) : !selectedArea ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(AREA_CONFIG).map(([key, config]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedArea(key)}
-                      className="p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-all text-left"
-                    >
-                      <span className="text-3xl block mb-2">{config.icon}</span>
-                      <span className="font-medium text-gray-800">{config.name}</span>
-                      <span className="text-xs text-gray-500 block">
-                        {curriculum[key]?.length || curriculum[key === 'mathematics' ? 'math' : key]?.length || 0} works
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button onClick={() => setSelectedArea(null)} className="text-emerald-600 text-sm mb-2">
-                    ← Back to areas
-                  </button>
-                  {(curriculum[selectedArea] || curriculum[selectedArea === 'mathematics' ? 'math' : selectedArea] || []).map((work, i) => {
-                    const isAdded = allWorks.some(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
-                    return (
-                      <button
-                        key={`curriculum-${selectedArea}-${work.name || work.id || i}`}
-                        onClick={() => !isAdded && addWork(work)}
-                        disabled={isAdded}
-                        className={`w-full p-3 rounded-xl text-left transition-all flex items-center gap-3
-                          ${isAdded ? 'bg-gray-100 opacity-50' : 'bg-gray-50 hover:bg-emerald-50 active:scale-98'}`}
-                      >
-                        <span className="text-xl">{getAreaConfig(selectedArea).icon}</span>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-800">{work.name}</p>
-                        </div>
-                        {isAdded ? (
-                          <span className="text-xs text-gray-400">Added ✓</span>
-                        ) : (
-                          <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg">+</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <WorkPickerModal
+        isOpen={pickerOpen}
+        onClose={() => { setPickerOpen(false); setSelectedArea(null); }}
+        curriculum={curriculum}
+        selectedArea={selectedArea}
+        setSelectedArea={setSelectedArea}
+        loadingCurriculum={loadingCurriculum}
+        allWorks={allWorks}
+        onAddWork={onAddWork}
+        getAreaConfig={getAreaConfig}
+      />
 
       {/* Quick Guide Modal */}
-      {quickGuideOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center"
-          onClick={() => setQuickGuideOpen(false)}
-        >
-          <div
-            className="bg-white w-full max-w-lg max-h-[80vh] rounded-t-3xl sm:rounded-3xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="p-4 border-b bg-gradient-to-r from-amber-500 to-yellow-500 text-white">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg">📖 Quick Guide</h3>
-                <button
-                  onClick={() => setQuickGuideOpen(false)}
-                  className="text-white/80 hover:text-white text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-              <p className="text-amber-100 text-sm">{quickGuideWork}</p>
-            </div>
-
-            <div className="p-4 overflow-y-auto max-h-[50vh]">
-              {quickGuideLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-bounce text-3xl mb-2">📖</div>
-                  <p className="text-gray-500">Loading guide...</p>
-                </div>
-              ) : quickGuideData?.quick_guide ? (
-                <div className="space-y-4">
-                  {/* Quick Guide Content */}
-                  <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-xl border border-amber-200">
-                    <p className="font-bold text-amber-800 mb-2">⚡ 10-Second Guide</p>
-                    <div className="text-sm text-amber-900 space-y-2">
-                      {quickGuideData.quick_guide.split('\n').map((line: string, i: number) => (
-                        <p key={i} className="leading-relaxed">{line}</p>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Materials if available */}
-                  {quickGuideData.materials?.length > 0 && (
-                    <div className="bg-gray-50 p-3 rounded-xl">
-                      <p className="font-semibold text-gray-700 text-sm mb-1">🧰 Materials</p>
-                      <ul className="text-sm text-gray-600">
-                        {quickGuideData.materials.map((m: string, i: number) => (
-                          <li key={i}>• {m}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">No quick guide available yet for this work.</p>
-                  <p className="text-sm text-gray-400">Check the curriculum page for more details.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="p-4 border-t flex gap-2">
-              <button
-                onClick={() => window.open(`https://youtube.com/results?search_query=${encodeURIComponent(quickGuideData?.video_search_term || quickGuideWork + ' Montessori presentation')}`, '_blank')}
-                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-600"
-              >
-                🎬 Watch Video
-              </button>
-              <button
-                onClick={() => {
-                  setQuickGuideOpen(false);
-                  router.push('/montree/dashboard/curriculum');
-                }}
-                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600"
-              >
-                📚 Full Details
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <QuickGuideModal
+        isOpen={quickGuideOpen}
+        onClose={() => setQuickGuideOpen(false)}
+        workName={quickGuideWork}
+        guideData={quickGuideData}
+        loading={quickGuideLoading}
+      />
     </div>
   );
 }
