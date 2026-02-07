@@ -24,18 +24,25 @@ export default function ChildProgressPage() {
   const [areas, setAreas] = useState<AreaProgress[]>([]);
   const [overall, setOverall] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!childId) return;
 
     fetch(`/api/home/progress/summary?child_id=${childId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to fetch');
+        return r.json();
+      })
       .then((data) => {
         setAreas(data.areas || []);
         setOverall(data.overall || 0);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
   }, [childId]);
 
   if (loading) {
@@ -43,6 +50,16 @@ export default function ChildProgressPage() {
       <div className="bg-white rounded-2xl p-8 text-center">
         <div className="animate-bounce text-3xl mb-2">📊</div>
         <p className="text-gray-500">Loading progress...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-2xl p-8 text-center">
+        <div className="text-3xl mb-2">⚠️</div>
+        <p className="text-gray-600 font-medium mb-1">Failed to load progress</p>
+        <p className="text-gray-400 text-sm">Please check your connection and try again.</p>
       </div>
     );
   }

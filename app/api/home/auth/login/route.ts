@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error || !family) {
+      // Constant-time: always run bcrypt even if user not found to prevent timing attacks
+      await bcrypt.compare(password, '$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012');
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 

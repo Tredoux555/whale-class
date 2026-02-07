@@ -41,19 +41,18 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Group by area
-    const byArea: Record<string, typeof enriched> = {};
+    // Group by area with proper typed structure
+    const byArea: Record<string, { meta: ReturnType<typeof getAreaMeta>; works: typeof enriched }> = {};
     for (const areaKey of getAreaKeys()) {
       const areaMeta = getAreaMeta(areaKey);
       const areaWorks = enriched
         .filter((p) => p.area === areaKey)
         .sort((a, b) => a.home_sequence - b.home_sequence);
       if (areaWorks.length > 0) {
-        byArea[areaKey] = areaWorks;
-      }
-      // Attach area display info
-      if (areaMeta && byArea[areaKey]) {
-        (byArea[areaKey] as unknown as Record<string, unknown>)._meta = areaMeta;
+        byArea[areaKey] = {
+          meta: areaMeta,
+          works: areaWorks,
+        };
       }
     }
 
