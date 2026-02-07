@@ -26,6 +26,32 @@ export default function CurriculumPage() {
   // Add work modal state
   const [showAddModal, setShowAddModal] = useState(false);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('montree_session');
+    if (!stored) { router.push('/montree/login'); return; }
+    try { setSession(JSON.parse(stored)); }
+    catch { router.push('/montree/login'); }
+  }, [router]);
+
+  async function fetchCurriculum() {
+    if (!session?.classroom?.id) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/montree/curriculum?classroom_id=${session.classroom.id}`);
+      const data = await res.json();
+      setCurriculum(data.curriculum || []);
+      setByArea(data.byArea || {});
+    } catch (err) {
+      toast.error('Failed to load curriculum');
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (!session?.classroom?.id) return;
+    fetchCurriculum();
+  }, [session?.classroom?.id]);
+
   // Drag-drop hook
   const {
     draggedWork,
@@ -46,32 +72,6 @@ export default function CurriculumPage() {
     session,
     fetchCurriculum,
   });
-
-  useEffect(() => {
-    const stored = localStorage.getItem('montree_session');
-    if (!stored) { router.push('/montree/login'); return; }
-    try { setSession(JSON.parse(stored)); } 
-    catch { router.push('/montree/login'); }
-  }, [router]);
-
-  useEffect(() => {
-    if (!session?.classroom?.id) return;
-    fetchCurriculum();
-  }, [session?.classroom?.id]);
-
-  const fetchCurriculum = async () => {
-    if (!session?.classroom?.id) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/montree/curriculum?classroom_id=${session.classroom.id}`);
-      const data = await res.json();
-      setCurriculum(data.curriculum || []);
-      setByArea(data.byArea || {});
-    } catch (err) {
-      toast.error('Failed to load curriculum');
-    }
-    setLoading(false);
-  };
 
   const handleImportCurriculum = async () => {
     if (!session?.classroom?.id) return;
