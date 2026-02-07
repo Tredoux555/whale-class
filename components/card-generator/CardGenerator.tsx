@@ -2,6 +2,9 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CropData } from './types';
+import CropOverlay from './CropOverlay';
+import CardPreview from './CardPreview';
+import { generateCards, generateLargeCards } from './print-utils';
 
 interface HeaderConfig {
   showBackButton?: boolean;
@@ -399,6 +402,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
   };
 
   // Generate optimized print layout - 4 cards per page with white cutting guides
+  // Generate optimized print layout - standard size control, picture, and label cards
   const generatePrintableSheet = async () => {
     if (cards.length === 0) {
       alert('Please upload some images first!');
@@ -408,7 +412,6 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
     setGenerating(true);
     
     try {
-      // Create print window
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
         alert('Please allow pop-ups to use the print feature');
@@ -416,318 +419,14 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
         return;
       }
 
-      // Capture current settings
-      const currentBorderColor = borderColor;
-      const currentFontFamily = fontFamily;
-      
-      // A4 dimensions at 96 DPI for print
-      const A4_WIDTH_CM = 21;
-      const A4_HEIGHT_CM = 29.7;
-      
-      // Card dimensions - fixed sizes for Montessori three-part cards
-      // KEY PRINCIPLE: Picture + Label = Control (when placed on mat)
-      // Optimized to fit 3 rows of control cards on A4 (29.7cm height)
-      const PICTURE_CARD_SIZE_CM = 7.5; // 7.5cm × 7.5cm for picture cards
-      const LABEL_INTERNAL_CM = 1.8; // 1.8cm internal label area 
-      const LABEL_CARD_HEIGHT_CM = 2.4; // Standalone label: matches control card label portion
-      const CONTROL_CARD_HEIGHT_CM = PICTURE_CARD_SIZE_CM + LABEL_CARD_HEIGHT_CM; // 9.9cm = 7.5 + 2.4 (fits 3 rows on A4)
-      
-      // Zero margins to allow cutting lines to reach page edges
-      const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
-      const CUTTING_LINE_WIDTH = 0.02; // Slightly thicker for better visibility (0.02cm ≈ 0.76pt)
-      const WHITE_BORDER_CM = 0.5; // White border around card content (~5mm for comfortable cutting)
-      const CARD_BORDER_RADIUS = 0.4; // Rounded corners (~4mm or ~15px - aesthetically pleasing)
-      
-      // Calculate grid positioning (center cards on page)
-      // For 2 columns of 7.5cm cards: 2 × 7.5 = 15cm, leaving 6cm total margin (3cm each side)
-      const gridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-      
-      // For 3 rows of 7.5cm picture cards: 3 × 7.5 = 22.5cm, leaving 7.2cm total margin
-      const pictureGridMarginTop = (A4_HEIGHT_CM - (PICTURE_CARD_SIZE_CM * 3)) / 2;
-      
-      // For 3 rows of control cards (~9.5cm each): 3 × 9.5 = 28.5cm, leaving 1.2cm total margin
-      const controlGridMarginTop = (A4_HEIGHT_CM - (CONTROL_CARD_HEIGHT_CM * 3)) / 2;
-      
-      // For label cards: 2 columns × 8 rows layout (labels are 2.4cm each)
-      const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 8)) / 2;
-      
-      // Build HTML for print
-      let html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Montessori Cards - Print</title>
-  <style>
-    @page {
-      size: A4;
-      margin: ${MARGIN_CM}cm;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: system-ui, sans-serif;
-      background: white;
-      position: relative;
-    }
-    
-    .page {
-      page-break-after: always;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${A4_HEIGHT_CM}cm;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .page:last-child {
-      page-break-after: auto;
-    }
-    
-    .page-title {
-      font-size: 10pt;
-      color: #999;
-      margin-bottom: 0.5cm;
-      text-align: center;
-    }
-    
-    
-    .grid {
-      display: grid;
-      grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
-      gap: 0;
-      position: relative;
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* Grid for picture cards - 2 columns × 3 rows */
-    .grid-picture {
-      grid-template-rows: repeat(3, ${PICTURE_CARD_SIZE_CM}cm);
-      margin-left: ${gridMarginLeft}cm;
-      margin-top: ${pictureGridMarginTop}cm;
-    }
-    
-    /* Grid for control cards - 2 columns × 3 rows */
-    .grid-control {
-      grid-template-rows: repeat(3, ${CONTROL_CARD_HEIGHT_CM}cm);
-      margin-left: ${gridMarginLeft}cm;
-      margin-top: ${controlGridMarginTop}cm;
-    }
-    
-    
-    .card {
-      background: ${currentBorderColor};
-      padding: ${WHITE_BORDER_CM}cm;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      gap: 0.5cm;
-      border-radius: ${CARD_BORDER_RADIUS}cm;
-      margin: 0;
-      border: none;
-    }
-    
-    .card-control {
-      height: ${CONTROL_CARD_HEIGHT_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
-    }
-    
-    .card-picture {
-      height: ${PICTURE_CARD_SIZE_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
-    }
-    
-    .card-label-only {
-      height: ${LABEL_CARD_HEIGHT_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
-    }
-    
-    .card-label-only .label-area {
-      height: auto;
-      flex: 1;
-    }
-    
-    .image-area {
-      background: white;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: ${CARD_BORDER_RADIUS}cm;
-    }
-    
-    .image-area img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .label-area {
-      background: white;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      height: ${LABEL_INTERNAL_CM}cm;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "${currentFontFamily}", cursive;
-      font-size: 24pt;
-      font-weight: bold;
-      text-align: center;
-      padding: 0.2cm 0.3cm;
-      line-height: 1.2;
-      overflow: hidden;
-      word-wrap: break-word;
-      max-width: 100%;
-      border-radius: ${CARD_BORDER_RADIUS}cm;
-    }
-    
-    @media print {
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color-adjust: exact !important;
-      }
-      
-      body {
-        margin: 0;
-        padding: 0;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      
-      .page-title {
-        display: none; /* Hide labels when printing */
-      }
-      
-      /* Force card borders to print */
-      .card {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        background: ${currentBorderColor} !important;
-      }
-    }
-    
-    @media screen {
-      body {
-        padding: 20px;
-        background: #f0f0f0;
-      }
-      
-      .page {
-        background: white;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-    }
-  </style>
-</head>
-<body>
-`;
-
-      // Helper to create card HTML
-      const createCardHTML = (card: Card, type: 'control' | 'picture' | 'label') => {
-        if (type === 'control') {
-          return `
-            <div class="card card-control">
-              <div class="image-area">
-                <img src="${card.croppedImage}" alt="${card.label}">
-              </div>
-              <div class="label-area">${card.label}</div>
-            </div>
-          `;
-        } else if (type === 'picture') {
-          return `
-            <div class="card card-picture">
-              <div class="image-area">
-                <img src="${card.croppedImage}" alt="${card.label}">
-              </div>
-            </div>
-          `;
-        } else {
-          return `
-            <div class="card card-label-only">
-              <div class="label-area" style="flex: 1;">${card.label}</div>
-            </div>
-          `;
-        }
-      };
-
-      // Generate Control Cards pages (6 per page in 2x3 grid)
-      const controlCards = cards.map(card => createCardHTML(card, 'control'));
-      for (let i = 0; i < controlCards.length; i += 6) {
-        const pageCards = controlCards.slice(i, i + 6);
-        const pageNum = Math.floor(i / 6) + 1;
-        html += `
-          <div class="page page-has-3rows-control">
-            <div class="page-title">Control Cards - Page ${pageNum}</div>
-            <div class="grid grid-control">
-              ${pageCards.join('')}
-              ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      // Generate Picture Cards pages (6 per page in 2x3 grid)
-      const pictureCards = cards.map(card => createCardHTML(card, 'picture'));
-      for (let i = 0; i < pictureCards.length; i += 6) {
-        const pageCards = pictureCards.slice(i, i + 6);
-        const pageNum = Math.floor(i / 6) + 1;
-        html += `
-          <div class="page page-has-3rows-picture">
-            <div class="page-title">Picture Cards - Page ${pageNum}</div>
-            <div class="grid grid-picture">
-              ${pageCards.join('')}
-              ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      // Generate Label Cards pages (16 per page in 2x8 grid - labels are 2.4cm tall)
-      const labelCards = cards.map(card => createCardHTML(card, 'label'));
-      const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-      for (let i = 0; i < labelCards.length; i += 16) {
-        const pageCards = labelCards.slice(i, i + 16);
-        const pageNum = Math.floor(i / 16) + 1;
-        html += `
-          <div class="page">
-            <div class="page-title">Label Cards - Page ${pageNum}</div>
-            <div class="grid" style="grid-template-rows: repeat(8, ${LABEL_CARD_HEIGHT_CM}cm); grid-auto-rows: ${LABEL_CARD_HEIGHT_CM}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
-              ${pageCards.join('')}
-              ${pageCards.length < 16 ? '<div></div>'.repeat(16 - pageCards.length) : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      html += `
-  <script>
-    window.onload = function() {
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    };
-  </script>
-</body>
-</html>
-`;
+      const html = generateCards({
+        cards,
+        borderColor,
+        fontFamily
+      });
 
       printWindow.document.write(html);
       printWindow.document.close();
-      
     } catch (error) {
       console.error('Error generating print sheets:', error);
       alert('Error generating print sheets. Please try again.');
@@ -736,7 +435,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
     setGenerating(false);
   };
 
-  // Generate images-only print layout
+  // Generate images-only print layout (2x2 grid per page)
   const generateImagesOnlySheet = async () => {
     if (cards.length === 0) {
       alert('Please upload some images first!');
@@ -746,7 +445,6 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
     setGenerating(true);
     
     try {
-      // Create print window
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
         alert('Please allow pop-ups to use the print feature');
@@ -754,184 +452,14 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
         return;
       }
 
-      // Capture current settings
-      const currentBorderColor = borderColor;
-
-      // A4 dimensions at 96 DPI for print
-      const A4_WIDTH_CM = 21;
-      const A4_HEIGHT_CM = 29.7;
-      
-      // Calculate image size for 2x2 grid on A4
-      // Zero margins to allow cutting lines to reach page edges
-      const MARGIN_CM = 0; // No margin - cutting lines extend to page edges
-      const CUTTING_LINE_WIDTH = 0.01; // 1px cutting line (0.01cm ≈ 0.38pt)
-      const WHITE_BORDER_CM = 0.5; // White border around card content (~5mm for comfortable cutting)
-      const CARD_BORDER_RADIUS = 0.4; // Rounded corners (~4mm or ~15px - aesthetically pleasing)
-      
-      const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
-      const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
-      
-      // For 2x2 grid - cards touch each other, no gap
-      const imageSize = Math.min(
-        usableWidth / 2,
-        usableHeight / 2
-      );
-      
-      // Build HTML for print
-      let html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Montessori Images - Print</title>
-  <style>
-    @page {
-      size: A4;
-      margin: 0;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: system-ui, sans-serif;
-      background: white;
-      position: relative;
-    }
-    
-    .page {
-      page-break-after: always;
-      width: ${A4_WIDTH_CM}cm;
-      height: ${A4_HEIGHT_CM}cm;
-      padding: 0;
-      margin: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .page:last-child {
-      page-break-after: auto;
-    }
-    
-    .page-title {
-      font-size: 10pt;
-      color: #999;
-      margin-bottom: 0.5cm;
-      text-align: center;
-    }
-    
-    
-    .grid {
-      display: grid;
-      grid-template-columns: ${imageSize}cm ${imageSize}cm;
-      grid-template-rows: ${imageSize}cm ${imageSize}cm;
-      gap: 0;
-      position: relative;
-      margin: 0 auto;
-      padding: 0;
-    }
-    
-    
-    .image-box {
-      background: ${currentBorderColor};
-      padding: ${WHITE_BORDER_CM}cm;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: ${CARD_BORDER_RADIUS}cm;
-      margin: 0;
-      border: none;
-    }
-    
-    .image-inner {
-      background: white;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: ${CARD_BORDER_RADIUS}cm;
-    }
-    
-    .image-inner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      
-      .page-title {
-        display: none;
-      }
-    }
-    
-    @media screen {
-      body {
-        padding: 20px;
-        background: #f0f0f0;
-      }
-      
-      .page {
-        background: white;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-    }
-  </style>
-</head>
-<body>
-`;
-
-      // Generate pages with 4 images each
-      for (let i = 0; i < cards.length; i += 4) {
-        const pageCards = cards.slice(i, i + 4);
-        const pageNum = Math.floor(i / 4) + 1;
-        html += `
-          <div class="page">
-            <div class="page-title">Images - Page ${pageNum}</div>
-            <div class="grid">
-              ${pageCards.map(card => `
-                <div class="image-box">
-                  <div class="image-inner">
-                    <img src="${card.croppedImage}" alt="${card.label}">
-                  </div>
-                </div>
-              `).join('')}
-              ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      html += `
-  <script>
-    window.onload = function() {
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    };
-  </script>
-</body>
-</html>
-`;
+      const html = generateLargeCards({
+        cards,
+        borderColor,
+        fontFamily
+      });
 
       printWindow.document.write(html);
       printWindow.document.close();
-      
     } catch (error) {
       console.error('Error generating images print:', error);
       alert('Error generating images print. Please try again.');
@@ -939,6 +467,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
     
     setGenerating(false);
   };
+
 
   // Download all cards individually
   const downloadAllCards = async () => {
@@ -957,373 +486,11 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
   };
 
   // Crop overlay component - using useMemo to avoid recreation
-  const CropOverlay = React.useMemo(() => {
-    const card = cards.find(c => c.id === cropMode);
-    if (!card) return null;
+  // Get card in crop mode
+  const cardInCropMode = cards.find(c => c.id === cropMode);
 
-    const left = Math.min(cropData.startX, cropData.endX);
-    const top = Math.min(cropData.startY, cropData.endY);
-    const width = Math.abs(cropData.endX - cropData.startX);
-    const height = Math.abs(cropData.endY - cropData.startY);
-
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px'
-      }}>
-        <div style={{
-          backgroundColor: '#1a1a2e',
-          borderRadius: '16px',
-          padding: '24px',
-          maxWidth: '90vw',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <h3 style={{ margin: 0, color: '#fff', fontFamily: 'system-ui' }}>
-              ✂️ Crop Image: {card.label}
-            </h3>
-            <button
-              onClick={() => setCropMode(null)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#fff',
-                fontSize: '24px',
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-          
-          <p style={{ color: '#aaa', margin: 0, fontFamily: 'system-ui', fontSize: '14px' }}>
-            Click and drag to select the area you want to keep
-          </p>
-          
-          <div
-            ref={cropCanvasRef}
-            onMouseDown={handleCropStart}
-            onMouseMove={handleCropMove}
-            onMouseUp={handleCropEnd}
-            onMouseLeave={handleCropEnd}
-            onTouchStart={handleCropStart}
-            onTouchMove={handleCropMove}
-            onTouchEnd={handleCropEnd}
-            style={{
-              position: 'relative',
-              cursor: 'crosshair',
-              maxHeight: '60vh',
-              overflow: 'hidden',
-              borderRadius: '8px'
-            }}
-          >
-            <img
-              ref={cropImageRef}
-              src={card.originalImage}
-              alt="Crop preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '60vh',
-                display: 'block',
-                userSelect: 'none',
-                pointerEvents: 'none'
-              }}
-              draggable={false}
-            />
-            {(width > 0 || height > 0) && (
-              <div style={{
-                position: 'absolute',
-                left: `${left}px`,
-                top: `${top}px`,
-                width: `${width}px`,
-                height: `${height}px`,
-                border: '2px dashed #4CAF50',
-                backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                pointerEvents: 'none'
-              }} />
-            )}
-          </div>
-          
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => setCropMode(null)}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                border: '1px solid #555',
-                backgroundColor: 'transparent',
-                color: '#fff',
-                cursor: 'pointer',
-                fontFamily: 'system-ui'
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={applyCrop}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#4CAF50',
-                color: '#fff',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontFamily: 'system-ui'
-              }}
-            >
-              Apply Crop
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }, [cards, cropMode, cropData, cropCanvasRef, cropImageRef, handleCropStart, handleCropMove, handleCropEnd, applyCrop, setCropMode]);
 
   // Card preview component
-  const CardPreview = ({ card }: { card: Card }) => (
-    <div style={{
-      backgroundColor: '#fff',
-      borderRadius: '12px',
-      padding: '16px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px'
-    }}>
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        flexWrap: 'wrap',
-        justifyContent: 'center'
-      }}>
-        {/* Control Card Preview */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Control</span>
-          <div style={{
-            width: '100px',
-            backgroundColor: borderColor,
-            padding: '4px',
-            borderRadius: '4px'
-          }}>
-            <div style={{
-              backgroundColor: '#fff',
-              width: '92px',
-              height: '92px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }}>
-              <img
-                src={card.croppedImage}
-                alt={card.label}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-            </div>
-            <div style={{
-              backgroundColor: '#fff',
-              marginTop: '4px',
-              padding: '4px',
-              textAlign: 'center',
-              fontFamily: fontFamily,
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}>
-              {card.label}
-            </div>
-          </div>
-        </div>
-        
-        {/* Picture Card Preview */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Picture</span>
-          <div style={{
-            width: '100px',
-            backgroundColor: borderColor,
-            padding: '4px',
-            borderRadius: '4px'
-          }}>
-            <div style={{
-              backgroundColor: '#fff',
-              width: '92px',
-              height: '92px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }}>
-              <img
-                src={card.croppedImage}
-                alt={card.label}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Label Card Preview */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span style={{ fontSize: '10px', color: '#666', fontFamily: 'system-ui' }}>Label</span>
-          <div style={{
-            width: '100px',
-            backgroundColor: borderColor,
-            padding: '4px',
-            borderRadius: '4px'
-          }}>
-            <div style={{
-              backgroundColor: '#fff',
-              padding: '8px 4px',
-              textAlign: 'center',
-              fontFamily: fontFamily,
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}>
-              {card.label}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Card controls */}
-      <input
-        type="text"
-        value={card.label}
-        onChange={(e) => updateCardLabel(card.id, e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '6px',
-          border: '2px solid #e0e0e0',
-          fontFamily: 'system-ui',
-          fontSize: '14px',
-          textAlign: 'center'
-        }}
-      />
-      
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        flexWrap: 'wrap',
-        justifyContent: 'center'
-      }}>
-        <button
-          onClick={() => startCrop(card.id)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#2196F3',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
-        >
-          ✂️ Crop
-        </button>
-        <button
-          onClick={() => downloadCard(card, 'control')}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#4CAF50',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
-        >
-          ⬇ Control
-        </button>
-        <button
-          onClick={() => downloadCard(card, 'picture')}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#FF9800',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
-        >
-          ⬇ Picture
-        </button>
-        <button
-          onClick={() => downloadCard(card, 'label')}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#9C27B0',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
-        >
-          ⬇ Label
-        </button>
-        <button
-          onClick={() => removeCard(card.id)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#f44336',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontFamily: 'system-ui'
-          }}
-        >
-          🗑️
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div style={{
@@ -1695,7 +862,16 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
             gap: '20px'
           }}>
             {cards.map(card => (
-              <CardPreview key={card.id} card={card} />
+              <CardPreview 
+                key={card.id} 
+                card={card}
+                borderColor={borderColor}
+                fontFamily={fontFamily}
+                onUpdateLabel={updateCardLabel}
+                onStartCrop={startCrop}
+                onDownloadCard={downloadCard}
+                onRemoveCard={removeCard}
+              />
             ))}
           </div>
         </>
@@ -1716,7 +892,19 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
       )}
 
       {/* Crop overlay */}
-      {cropMode && CropOverlay}
+      {cropMode && (
+        <CropOverlay
+          card={cardInCropMode}
+          cropData={cropData}
+          cropCanvasRef={cropCanvasRef}
+          cropImageRef={cropImageRef}
+          onCropStart={handleCropStart}
+          onCropMove={handleCropMove}
+          onCropEnd={handleCropEnd}
+          onClose={() => setCropMode(null)}
+          onApplyCrop={applyCrop}
+        />
+      )}
 
       {/* Info section */}
       <div style={{

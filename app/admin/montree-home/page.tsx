@@ -1,131 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  Home, Users, Baby, BookOpen, Play, Settings, Plus, Trash2, 
+import {
+  Plus, Trash2, Settings,
   Edit2, Save, X, ChevronRight, ChevronDown, RefreshCw, Check,
   Eye, Mail, Calendar, TreeDeciduous
 } from 'lucide-react';
-
-// ============================================================
-// TYPES
-// ============================================================
-
-interface Family {
-  id: string;
-  email: string;
-  name: string;
-  timezone: string;
-  onboarding_completed: boolean;
-  created_at: string;
-  children?: HomeChild[];
-}
-
-interface HomeChild {
-  id: string;
-  family_id: string;
-  name: string;
-  birth_date: string;
-  color: string;
-  start_date: string;
-  created_at: string;
-}
-
-interface HomeCurriculumWork {
-  id: string;
-  family_id: string;
-  area: string;
-  category: string;
-  name: string;
-  description: string;
-  age_range: string;
-  sequence: number;
-  video_url: string | null;
-  materials: { name: string; price?: number; essential?: boolean }[];
-  is_active: boolean;
-  created_at: string;
-}
-
-interface ChildProgress {
-  id: string;
-  child_id: string;
-  curriculum_work_id: string;
-  status: number;
-  presented_date: string | null;
-  practicing_date: string | null;
-  mastered_date: string | null;
-  times_practiced: number;
-}
-
-interface TodayActivity {
-  id: string;
-  name: string;
-  area: string;
-  category: string;
-  description: string;
-  video_url: string | null;
-  status: number;
-}
-
-interface ProgressSummary {
-  total_works: number;
-  mastered: number;
-  practicing: number;
-  presented: number;
-  overall_percent: number;
-  by_area: Record<string, { total: number; mastered: number; percent: number }>;
-}
-
-// ============================================================
-// CONSTANTS
-// ============================================================
-
-const AREA_CONFIG: Record<string, { label: string; color: string; bgColor: string; emoji: string }> = {
-  practical_life: { label: 'Practical Life', color: '#EF4444', bgColor: '#FEE2E2', emoji: '🔴' },
-  sensorial: { label: 'Sensorial', color: '#EC4899', bgColor: '#FCE7F3', emoji: '🩷' },
-  mathematics: { label: 'Mathematics', color: '#3B82F6', bgColor: '#DBEAFE', emoji: '🔵' },
-  language: { label: 'Language', color: '#22C55E', bgColor: '#DCFCE7', emoji: '🟢' },
-  cultural: { label: 'Cultural', color: '#EAB308', bgColor: '#FEF9C3', emoji: '🟡' },
-};
-
-const STATUS_CONFIG: Record<number, { label: string; color: string; bgColor: string }> = {
-  0: { label: 'Not Started', color: '#9CA3AF', bgColor: '#F3F4F6' },
-  1: { label: 'Presented', color: '#F59E0B', bgColor: '#FEF3C7' },
-  2: { label: 'Practicing', color: '#3B82F6', bgColor: '#DBEAFE' },
-  3: { label: 'Mastered', color: '#22C55E', bgColor: '#DCFCE7' },
-};
-
-const TABS = [
-  { id: 'overview', label: 'Overview', icon: Home },
-  { id: 'families', label: 'Families', icon: Users },
-  { id: 'children', label: 'Children', icon: Baby },
-  { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
-  { id: 'demo', label: 'Demo Mode', icon: Play },
-];
-
-// ============================================================
-// HELPER FUNCTIONS
-// ============================================================
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function calculateAge(birthDate: string): string {
-  const birth = new Date(birthDate);
-  const now = new Date();
-  const years = now.getFullYear() - birth.getFullYear();
-  const months = now.getMonth() - birth.getMonth();
-  const adjustedMonths = months < 0 ? months + 12 : months;
-  const adjustedYears = months < 0 ? years - 1 : years;
-  
-  if (adjustedYears === 0) return `${adjustedMonths}mo`;
-  return `${adjustedYears}y ${adjustedMonths}mo`;
-}
+import type { Family, HomeChild, HomeCurriculumWork, ChildProgress, TodayActivity, ProgressSummary } from './types';
+import { AREA_CONFIG, STATUS_CONFIG, TABS, formatDate, calculateAge } from './constants';
 
 // ============================================================
 // MAIN COMPONENT
