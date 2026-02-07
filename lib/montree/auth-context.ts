@@ -3,7 +3,7 @@
 // Ensures data isolation between schools
 
 import { NextRequest } from 'next/server';
-import { getSupabase } from './supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 // ============================================
 // TYPES
