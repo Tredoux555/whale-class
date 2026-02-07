@@ -1,53 +1,75 @@
 # Whale-Class / Montree - Developer Brain
 
 ## Project Overview
-Next.js 14 app with two systems:
+Next.js 16.1.1 app with three systems:
 - **Whale Class** (`/admin/*`) - Admin tools (card generators, description review, etc.)
 - **Montree** (`/montree/*`) - Real SaaS multi-tenant Montessori school management
-- **Montree Home** (planned) - Parent home program with 68 curated works
+- **Montree Home** (`/home/*`) - Parent home program with 68 curated works (code-based auth, partially deployed)
 
 Production: `https://teacherpotato.xyz`
 Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-## CURRENT STATUS (Feb 7, 2026)
+## CURRENT STATUS (Feb 8, 2026)
 
-### Active: Codebase Cleanup (5 remaining phases)
+### URGENT: Home Registration 500 Error
+
+`/api/home/auth/try` returns 500 on live site. Debug error surfacing added but NOT yet deployed. See `docs/HANDOFF_SESSION_155_HOME_AUTH.md` for diagnosis steps.
+
+**Uncommitted + unpushed changes exist.** Run:
+```bash
+git add -A && git commit -m "feat: complete code-based auth for Home (login, register, super-admin)" && git push
+```
+
+### Active: Montree Home Auth (Session 155)
+
+Full code-based auth system built for Montree Home. Replaces old email/password flow.
+
+**What works:** Registration page UI, login page UI, code generation API, name collection
+**What's broken:** API 500 on insert into `home_families` (likely schema mismatch — check with SQL in handoff)
+**Handoff:** `docs/HANDOFF_SESSION_155_HOME_AUTH.md`
+
+### Backlog: Codebase Cleanup (5 remaining phases)
 
 Phase 1 DONE. Phases 2-6 ready to execute. Full plan in `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md`.
 
 | Phase | What | Status | Time |
 |-------|------|--------|------|
 | 1 | Security fixes (secret + dead auth route) | DONE | 10 min |
-| 2 | Consolidate 3 Supabase clients into one | NEXT | 30 min |
+| 2 | Consolidate 3 Supabase clients into one | Pending | 30 min |
 | 3 | Delete dead code + dedup 27 game routes | Pending | 10 min |
 | 4 | Split 3 oversized files (918, 1115, 1243 lines) | Pending | 45 min |
 | 5 | Strip 400+ console.log statements | Pending | 15 min |
 | 6 | Fix 23 `: any` type annotations | Pending | 10 min |
 
-**Ground rules:** Commit after every phase. Test after every phase. Don't touch working UI. Leave auth structure alone (multi-session project).
-
-**Verification after each phase:**
-1. `npm run dev` starts without errors
-2. `/montree/login` — teacher login works
-3. `/montree/dashboard` — loads with children
-4. `/montree/dashboard/curriculum` — 5 areas + teaching tools
-5. Child detail page loads with focus works
-6. `/montree/dashboard/games/letter-tracer` — game loads
-
 ---
 
-### Recent Changes (Session 152, Feb 7)
+### Recent Changes (Session 155, Feb 8)
 
-**Security (Phase 1 done):**
-- `lib/auth.ts`: Removed hardcoded fallback secret — throws if `ADMIN_SECRET` env var missing
-- Deleted `app/api/montree/auth/route.ts` — dead code with plain text password comparison
+**Montree Home — Code-Based Auth:**
+- `app/home/page.tsx` — Added name input, sends name to API
+- `app/home/register/page.tsx` — Full rewrite: working code-based registration (was redirect stub)
+- `app/home/login/page.tsx` — Full rewrite: 6-digit code entry with auto-advance (was email/password)
+- `app/api/home/auth/try/route.ts` — Accept name, added debug error output
+- `app/api/home/auth/login/route.ts` — Converted from bcrypt to SHA256 code lookup
+- `app/api/home/auth/register/route.ts` — Replaced with 410 stub
 
-**Teaching Tools (Session 151-152):**
-- New section on curriculum page below 5 area cards
-- `app/montree/dashboard/card-generator/page.tsx` — 3-Part Cards (copied from admin, separate system)
-- `app/montree/dashboard/vocabulary-flashcards/page.tsx` — Vocab Flashcards (copied from admin)
+**Montree Classroom — Name Collection:**
+- `app/montree/try/page.tsx` — Added 'details' step (name + school name between role pick and creation)
+- `app/api/montree/try/instant/route.ts` — Accept name + schoolName, use in all DB inserts + leads
+
+**Super-Admin:**
+- `components/montree/super-admin/FamiliesTab.tsx` — Shows join_code instead of email
+
+**SQL Migrations Applied:**
+- Migration 121 (`home_join_code.sql`) — adds join_code column to home_families ✅
+- Migration 120 (`home_tables.sql`) — was already applied previously
+
+**Previous Sessions (152, Feb 7):**
+- `lib/auth.ts`: Removed hardcoded fallback secret
+- Deleted dead auth route
+- Teaching Tools section on curriculum page
 - Language Making Guide download button (43 works, all 5 categories)
 
 **Home Curriculum Curated:**
@@ -70,6 +92,11 @@ Phase 1 DONE. Phases 2-6 ready to execute. Full plan in `docs/HANDOFF_SESSION_15
 - `montree_report_media` — junction table linking reports to selected photos
 - `montree_media_children` — links group photos to multiple children
 - `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
+- `home_families` — parent accounts (id, email, password_hash, name, plan, join_code, created_at, trial_ends_at)
+- `home_children` — kids per family
+- `home_progress` — per-child per-work status
+- `home_curriculum` — 68-work curriculum seeded per family on registration
+- `home_sessions` — work session logs (future use)
 
 ### Whale Class Data
 - Classroom ID: `945c846d-fb33-4370-8a95-a29b7767af54`
@@ -113,6 +140,14 @@ SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
 | `/montree/parent/photos` | Child's photos |
 | `/montree/parent/milestones` | Progress timeline |
 
+### Montree Home (Parent Home Product)
+| Route | Purpose |
+|-------|---------|
+| `/home` | Landing page + registration (name → Start Free → code) |
+| `/home/register` | Same registration flow (alt URL) |
+| `/home/login` | Login with 6-char code (digit boxes with auto-advance) |
+| `/home/dashboard` | Family dashboard (not yet built) |
+
 ### Admin
 | Route | Purpose |
 |-------|---------|
@@ -126,7 +161,7 @@ SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
 
 ## Authentication (Current State — Messy but Functional)
 
-7 separate auth systems that don't talk to each other. All work in production. NOT being restructured during cleanup (too risky for one session).
+8 separate auth systems that don't talk to each other. Most work in production. NOT being restructured during cleanup (too risky for one session).
 
 | System | How | Used By |
 |--------|-----|---------|
@@ -137,21 +172,22 @@ SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
 | Teacher sessions | localStorage (NOT httpOnly cookie — known debt) | `lib/montree/auth.ts` |
 | Story auth | Separate system | `lib/story-auth.ts` |
 | Multi-auth | Another separate system | `lib/auth-multi.ts` |
+| **Home family** | **6-char code (SHA256), localStorage** | **`/api/home/auth/try` + `/api/home/auth/login`** |
+
+**Home auth pattern:** Code `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (6 chars, no I/L/O/0/1). SHA256 hash stored as `password_hash`. Code stored as `join_code` for admin visibility. Session in localStorage (`home_session` key). See `lib/home/auth.ts`.
 
 **Deleted:** `/api/montree/auth/route.ts` (dead code, plain text password comparison)
+**Deprecated:** `/api/home/auth/register/route.ts` (returns 410, registration via `/try`)
 
 ---
 
-## Supabase Client (Current State — Being Consolidated in Phase 2)
+## Supabase Client (Consolidated)
 
-3 client files exist:
-1. `lib/montree/supabase.ts` — **BEST** (singleton, retry logic for Cloudflare timeouts) — used by 23 routes
-2. `lib/supabase.ts` — older, has `getPublicUrl()` helper
-3. `lib/supabase/server.ts` — used by 2 routes
-
-47 routes create their own inline `function getSupabase()`.
-
-**Phase 2 plan:** Merge all into `lib/supabase-client.ts`, update all 72 routes to use single import.
+Single client: `lib/supabase-client.ts` — singleton pattern with retry logic for Cloudflare timeouts.
+- `getSupabase()` — service role (server-side, bypasses RLS)
+- `createSupabaseClient()` — anon key (browser-side)
+- Aliases: `createSupabaseAdmin`, `createAdminClient`, `createServerClient` (backward compat)
+- Also exports: `getPublicUrl()`, `getSupabaseUrl()`, storage bucket constants
 
 ---
 
@@ -167,7 +203,9 @@ SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
 
 ### Home Curriculum
 - `lib/curriculum/data/home-curriculum.json` — 68 curated works for parent home program
-- NOT built yet — just the data file
+- `lib/home/curriculum-helpers.ts` — seedHomeCurriculum() seeds 68 works into home_curriculum table on registration
+- `lib/home/auth.ts` — localStorage session management for home product
+- Registration + login pages built. Dashboard NOT yet built.
 
 ### Teaching Guides
 - `public/guides/Montessori_Language_Making_Guide.docx` — 43 works, all 5 categories
@@ -241,7 +279,7 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | **CURRENT** — Full cleanup plan with all 6 phases |
+| `docs/HANDOFF_SESSION_155_HOME_AUTH.md` | **CURRENT** — Home code-based auth, 500 bug diagnosis, uncommitted changes |
+| `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | Codebase cleanup plan (5 remaining phases) |
 | `docs/MONTREE_HOME_HANDOFF.md` | Architecture for Montree Home (250-activity version — outdated, use 68-work JSON instead) |
 | `docs/HANDOFF_SESSION_151_LANGUAGE_MAKING_GUIDE.md` | Language guide + API download route |
-| `.claude/plans/toasty-finding-ritchie.md` | Detailed cleanup plan (same as Session 152 handoff) |

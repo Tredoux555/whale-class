@@ -1,13 +1,28 @@
 {
   "project": "Montree",
-  "session": 136,
-  "lastUpdated": "2026-02-02T15:00:00+08:00",
+  "session": 155,
+  "lastUpdated": "2026-02-08T12:00:00+08:00",
 
-  "STATUS": "✅ ALL 6 PHASES COMPLETE + PARENT PORTAL DOCS READY",
+  "STATUS": "⚠️ HOME AUTH BUILT — 500 BUG ON LIVE — UNCOMMITTED CHANGES",
 
-  "HANDOFF": "HANDOFF.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_TESTING_WEEK.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_155_HOME_AUTH.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
+
+  "SESSION_155_HOME_AUTH": {
+    "summary": "Code-based auth for Montree Home (replaces email/password)",
+    "bug": "/api/home/auth/try returns 500 on live site",
+    "uncommitted_files": 8,
+    "unpushed_commits": 1,
+    "action": "git add -A && git commit && git push, then diagnose 500"
+  },
+
+  "HOME_UI": {
+    "landing": "/home",
+    "register": "/home/register",
+    "login": "/home/login",
+    "dashboard": "/home/dashboard (not built yet)"
+  },
 
   "SESSION_136_QUICK_UPDATE": {
     "summary": "Documented parent portal access flow for teachers",

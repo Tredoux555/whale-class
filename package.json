@@ -14,6 +14,7 @@
     "validate:curriculum": "npx ts-node --esm scripts/validate-curriculum.ts"
   },
   "dependencies": {
+    "@alloc/quick-lru": "^5.2.0",
     "@anthropic-ai/sdk": "^0.71.2",
     "@capacitor-community/sqlite": "^8.0.0",
     "@capacitor/android": "^8.0.1",
@@ -39,6 +40,7 @@
     "bcryptjs": "^3.0.3",
     "crypto-js": "^4.2.0",
     "dagre": "^0.8.5",
+    "docx": "^9.5.1",
     "framer-motion": "^12.27.5",
     "html2canvas": "^1.4.1",
     "jose": "^5.10.0",
