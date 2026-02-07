@@ -21,10 +21,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ areas: areas || [] });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const details = error instanceof Error ? error.message : String(error);
     console.error('Error fetching areas:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch areas', details: error?.message },
+      { error: 'Failed to fetch areas', details },
       { status: 500 }
     );
   }

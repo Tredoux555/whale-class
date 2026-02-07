@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   // Create a readable stream for SSE
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (event: string, data: any) => {
+      const send = (event: string, data: Record<string, unknown>) => {
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
@@ -69,9 +69,17 @@ export async function POST(request: NextRequest) {
 
         send('progress', { step: 'verified', message: `Found ${school.name}`, emoji: '✅' });
 
-        const createdTeachers: any[] = [];
+        const createdTeachers: Array<{
+          id: string;
+          name: string;
+          email: string | null;
+          login_code: string;
+          classroom_id: string;
+          classroom_name: string;
+          classroom_icon: string;
+        }> = [];
         const errors: string[] = [];
-        const totalClassrooms = classrooms.filter((c: any) => c.name?.trim()).length;
+        const totalClassrooms = classrooms.filter((c: { name?: string }) => c.name?.trim()).length;
         let classroomIndex = 0;
 
         for (const classroom of classrooms) {
@@ -140,8 +148,8 @@ export async function POST(request: NextRequest) {
           });
 
           // Fetch with timeout to prevent hanging
-          let brainWorks: any[] | null = null;
-          let brainError: any = null;
+          let brainWorks: Array<Record<string, unknown>> | null = null;
+          let brainError: Error | null = null;
 
           try {
             const timeoutPromise = new Promise((_, reject) =>
@@ -153,7 +161,7 @@ export async function POST(request: NextRequest) {
               .select('*')
               .order('sequence_order');
 
-            const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+            const result = await Promise.race([fetchPromise, timeoutPromise]) as { data: Array<Record<string, unknown>>; error: Error | null };
             brainWorks = result.data;
             brainError = result.error;
           } catch (timeoutErr) {
@@ -183,7 +191,7 @@ export async function POST(request: NextRequest) {
               total: brainWorks.length
             });
 
-            const worksToInsert: any[] = [];
+            const worksToInsert: Array<Record<string, unknown>> = [];
             for (const work of brainWorks) {
               const mappedAreaKey = BRAIN_AREA_MAPPING[work.curriculum_area] || 'practical_life';
               const areaUuid = areaMap[mappedAreaKey];
@@ -260,7 +268,7 @@ export async function POST(request: NextRequest) {
           });
 
           // Create teachers
-          const teachersToCreate = classroom.teachers.filter((t: any) => t.name?.trim());
+          const teachersToCreate = classroom.teachers.filter((t: { name?: string }) => t.name?.trim());
 
           if (teachersToCreate.length > 0) {
             send('progress', {
@@ -338,15 +346,15 @@ export async function POST(request: NextRequest) {
 
 // Fallback function for static curriculum - NOW WITH GUIDE DATA!
 async function seedFromStaticCurriculum(
-  supabase: any,
+  supabase: ReturnType<typeof getSupabase>,
   classroomId: string,
   areaMap: Record<string, string>,
-  send: (event: string, data: any) => void
+  send: (event: string, data: Record<string, unknown>) => void
 ): Promise<number> {
   // Use the new curriculum loader that merges structure + guides
   const allWorks = loadAllCurriculumWorks();
 
-  const worksToInsert: any[] = [];
+  const worksToInsert: Array<Record<string, unknown>> = [];
 
   for (const work of allWorks) {
     const areaUuid = areaMap[work.area_key];

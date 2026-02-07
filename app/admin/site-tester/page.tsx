@@ -278,13 +278,14 @@ export default function SiteTesterPage() {
           details: result.details,
           duration: result.duration || 0,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         newResults.push({
           id: test.id,
           name: test.name,
           category: test.category,
           status: 'failed',
-          details: error.message || 'Unknown error',
+          details: message,
           duration: 0,
         });
       }

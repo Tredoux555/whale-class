@@ -101,12 +101,13 @@ export async function GET(request: NextRequest) {
         })) || [],
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching curriculum progress:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to fetch curriculum progress',
+        error: message || 'Failed to fetch curriculum progress',
       },
       { status: 500 }
     );

@@ -40,8 +40,8 @@ export default function ParentSignupsPage() {
       if (!response.ok) throw new Error('Failed to fetch signups');
       const data = await response.json();
       setSignups(data.signups || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -65,8 +65,9 @@ export default function ParentSignupsPage() {
 
       await fetchSignups();
       alert('Signup approved successfully! Child account created/updated.');
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${message}`);
     } finally {
       setProcessingId(null);
     }
@@ -97,8 +98,9 @@ export default function ParentSignupsPage() {
       await fetchSignups();
       setRejectionNotes({ ...rejectionNotes, [signupId]: '' });
       alert('Signup rejected successfully.');
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${message}`);
     } finally {
       setProcessingId(null);
     }

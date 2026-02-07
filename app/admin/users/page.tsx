@@ -74,8 +74,8 @@ export default function UserManagementPage() {
         setShowForm(false);
         setFormSuccess('');
       }, 2000);
-    } catch (error: any) {
-      setFormError(error.message);
+    } catch (error: unknown) {
+      setFormError(error instanceof Error ? error.message : String(error));
     } finally {
       setSubmitting(false);
     }

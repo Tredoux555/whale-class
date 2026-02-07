@@ -132,9 +132,10 @@ async function getCurriculumWorks(
     if (worksError) throw worksError;
 
     return { areaMap, works: works || [] };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
     throw new Error(
-      `Failed to fetch curriculum: ${error?.message || JSON.stringify(error)}`
+      `Failed to fetch curriculum: ${message}`
     );
   }
 }

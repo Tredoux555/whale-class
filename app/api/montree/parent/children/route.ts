@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     // For standard login, this endpoint should not be used
     // The frontend should track authenticated children from the login response
     return NextResponse.json({ children: [] });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get children error:', error);
     return NextResponse.json({
       error: 'Internal server error'

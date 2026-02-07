@@ -36,10 +36,11 @@ export async function GET(request: NextRequest) {
       success: true,
       data: data || []
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching photos:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch photos' },
+      { error: message || 'Failed to fetch photos' },
       { status: 500 }
     );
   }
@@ -101,8 +102,8 @@ export async function POST(request: NextRequest) {
       // Create directory if it doesn't exist
       try {
         await mkdir(uploadDir, { recursive: true });
-      } catch (err: any) {
-        if (err.code !== 'EEXIST') throw err;
+      } catch (err: unknown) {
+        if (err instanceof Error && 'code' in err && (err as any).code !== 'EEXIST') throw err;
       }
 
       const fileName = `${Date.now()}-${photo.name}`;
@@ -132,10 +133,11 @@ export async function POST(request: NextRequest) {
       success: true,
       data
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error uploading photo:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to upload photo' },
+      { error: message || 'Failed to upload photo' },
       { status: 500 }
     );
   }
@@ -177,10 +179,11 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Photo deleted'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error deleting photo:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete photo' },
+      { error: message || 'Failed to delete photo' },
       { status: 500 }
     );
   }

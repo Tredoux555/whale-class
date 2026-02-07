@@ -9,8 +9,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const child = await getChildById(id);
     if (!child) return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     return NextResponse.json({ data: child });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to fetch child' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to fetch child' }, { status: 500 });
   }
 }
 
@@ -35,8 +36,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const child = await updateChild(id, input);
     return NextResponse.json({ data: child, message: 'Child updated successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to update child' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to update child' }, { status: 500 });
   }
 }
 
@@ -45,7 +47,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { id } = await params;
     await deactivateChild(id);
     return NextResponse.json({ message: 'Child deactivated' });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to delete child' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to delete child' }, { status: 500 });
   }
 }

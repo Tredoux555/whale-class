@@ -292,8 +292,8 @@ function ThisWeekTab({ childId, childName, childAge, onMediaUploaded }: {
   const handleStatusTap = async (assignment: WorkAssignment) => {
     const nextStatus = STATUS_CONFIG[assignment.progress_status].next;
     
-    setAssignments(prev => prev.map(a => 
-      a.id === assignment.id ? { ...a, progress_status: nextStatus as any } : a
+    setAssignments(prev => prev.map(a =>
+      a.id === assignment.id ? { ...a, progress_status: nextStatus as 'not_started' | 'presented' | 'practicing' | 'mastered' } : a
     ));
 
     try {
@@ -531,18 +531,18 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
       const data = await res.json();
       
       const progressByArea = AREAS.map(area => {
-        const areaWorks = (data.works || []).filter((w: any) => 
+        const areaWorks = (data.works || []).filter((w: { area?: string; status?: number }) =>
           w.area === area.id || w.area === area.name.toLowerCase().replace(' ', '_')
         );
-        
+
         return {
           ...area,
           works: areaWorks,
           stats: {
             total: areaWorks.length,
-            presented: areaWorks.filter((w: any) => w.status === 1).length,
-            practicing: areaWorks.filter((w: any) => w.status === 2).length,
-            mastered: areaWorks.filter((w: any) => w.status === 3).length,
+            presented: areaWorks.filter((w: { status?: number }) => w.status === 1).length,
+            practicing: areaWorks.filter((w: { status?: number }) => w.status === 2).length,
+            mastered: areaWorks.filter((w: { status?: number }) => w.status === 3).length,
           }
         };
       });
@@ -577,7 +577,7 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
     }
   };
 
-  const handleWorkClick = async (work: any) => {
+  const handleWorkClick = async (work: { id: string; status?: number }) => {
     const newStatus = work.status === 3 ? 0 : 3;
     try {
       await fetch(`/api/classroom/child/${childId}/progress/${work.id}`, {
@@ -734,7 +734,7 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
               {isExpanded && area.works.length > 0 && (
                 <div className={`border-t ${area.bgColor} p-3`}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {area.works.map((work: any) => (
+                    {area.works.map((work: { id: string; name: string; status?: number }) => (
                       <button
                         key={work.id}
                         onClick={() => handleWorkClick(work)}
@@ -777,9 +777,9 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
 // PORTFOLIO TAB
 // ============================================
 function PortfolioTab({ childId, childName }: { childId: string; childName: string }) {
-  const [media, setMedia] = useState<any[]>([]);
+  const [media, setMedia] = useState<Array<{ id: string; media_type: 'image' | 'video'; media_url: string; work_name: string; taken_at: string }>>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<{ id: string; media_type: 'image' | 'video'; media_url: string; work_name: string; taken_at: string } | null>(null);
 
   useEffect(() => {
     fetchMedia();

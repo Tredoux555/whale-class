@@ -158,10 +158,11 @@ export async function GET(request: NextRequest) {
         }
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching enhanced progress:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch enhanced progress' },
+      { error: message || 'Failed to fetch enhanced progress' },
       { status: 500 }
     );
   }

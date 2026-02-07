@@ -147,8 +147,9 @@ export default function DaughterActivityPage() {
 
       const data = await response.json();
       setTodayActivity(data.data);
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Error: ${message}`);
     } finally {
       setGenerating(false);
     }
@@ -175,8 +176,9 @@ export default function DaughterActivityPage() {
 
       // Auto-generate next activity
       await generateActivity();
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Error: ${message}`);
     }
   };
 

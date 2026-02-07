@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
         .select('media_id')
         .eq('child_id', childId);
 
-      const groupMediaIds = (groupLinks || []).map((link: any) => link.media_id);
+      const groupMediaIds = (groupLinks || []).map((link: { media_id: string }) => link.media_id);
 
-      let groupMedia: any[] = [];
+      let groupMedia: Array<Record<string, unknown>> = [];
       if (groupMediaIds.length > 0) {
         const { data: groupMediaData } = await supabase
           .from('montree_media')
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       const paginatedMedia = allMedia.slice(offset, offset + limit);
 
       // Add area and work name info from curriculum lookup
-      const mediaWithArea = paginatedMedia.map((item: any) => {
+      const mediaWithArea = paginatedMedia.map((item: Record<string, unknown>) => {
         const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
         return {
           ...item,
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Add area and work name info to each media item
-    let mediaWithArea = (media || []).map((item: any) => {
+    let mediaWithArea = (media || []).map((item: Record<string, unknown>) => {
       const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
       return {
         ...item,
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by area if specified (do it in JS since we removed the FK join)
     if (area && area !== 'all') {
-      mediaWithArea = mediaWithArea.filter((item: any) => item.area === area);
+      mediaWithArea = mediaWithArea.filter((item: Record<string, unknown>) => item.area === area);
     }
 
     return NextResponse.json({
@@ -183,7 +183,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString()
     };
 

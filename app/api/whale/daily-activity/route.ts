@@ -35,10 +35,11 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: data || null });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch daily activity';
     console.error('Error fetching daily activity:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch daily activity' },
+      { error: message },
       { status: 500 }
     );
   }
@@ -234,7 +235,7 @@ export async function POST(request: NextRequest) {
           },
         },
       });
-    } catch (curriculumError: any) {
+    } catch (curriculumError) {
       console.error('Curriculum progression error:', curriculumError);
       // Fall back to old random selection if curriculum fails
       // (This ensures backward compatibility)
@@ -280,10 +281,11 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true, data: assignment });
     }
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to generate daily activity';
     console.error('Error generating daily activity:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate daily activity' },
+      { error: message },
       { status: 500 }
     );
   }
@@ -304,7 +306,7 @@ export async function PUT(request: NextRequest) {
 
     const supabase = createSupabaseAdmin();
 
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       completed,
       notes: notes || null,
     };
@@ -336,10 +338,11 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update activity';
     console.error('Error updating activity:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update activity' },
+      { error: message },
       { status: 500 }
     );
   }

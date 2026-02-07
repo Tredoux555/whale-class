@@ -382,7 +382,7 @@ export async function GET(
         all_photos: allPhotos, // Include ALL photos from the week
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get report error:', error);
     return NextResponse.json({ error: 'Failed to load report' }, { status: 500 });
   }

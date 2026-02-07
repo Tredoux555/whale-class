@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
         loginAt: new Date().toISOString()
       }
     });
-    
-  } catch (error: any) {
+
+  } catch (error: unknown) {
     console.error('Parent login error:', error);
     return NextResponse.json({
       error: 'Internal server error'

@@ -22,12 +22,13 @@ export async function GET(request: NextRequest) {
       data: roadmap || [],
       count: roadmap?.length || 0,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching curriculum roadmap:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to fetch curriculum roadmap',
+        error: message || 'Failed to fetch curriculum roadmap',
       },
       { status: 500 }
     );

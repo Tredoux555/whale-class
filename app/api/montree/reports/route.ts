@@ -7,7 +7,7 @@ import { getSupabase } from '@/lib/supabase-client';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
-  content: any,
+  content: Record<string, unknown>,
   supabase: ReturnType<typeof getSupabase>,
   classroomId: string | null
 ) {
@@ -30,7 +30,7 @@ async function enrichReportContent(
     }
   }
 
-  const enrichedWorks = content.works.map((work: any) => {
+  const enrichedWorks = (content.works as Array<Record<string, unknown>>).map((work) => {
     // If work already has a description, keep it
     if (work.parent_description) return work;
 
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     // Enrich all reports with descriptions from database
     const enrichedReports = await Promise.all(
-      (data || []).map(async (report: any) => ({
+      (data || []).map(async (report: { content: Record<string, unknown>; classroom_id: string | null }) => ({
         ...report,
         content: await enrichReportContent(report.content, supabase, report.classroom_id),
       }))
@@ -134,9 +134,10 @@ export async function POST(request: NextRequest) {
       .eq('classroom_id', child.classroom_id);
 
     // Build curriculum lookup by lowercase name
-    const curriculumByName = new Map();
+    const curriculumByName = new Map<string, Record<string, unknown>>();
     for (const cw of curriculumWorks || []) {
-      curriculumByName.set(cw.name?.toLowerCase(), cw);
+      const name = cw.name as string | undefined;
+      if (name) curriculumByName.set(name.toLowerCase(), cw);
     }
 
     // STEP 2: Get ALL brain works (parent descriptions)
@@ -145,9 +146,10 @@ export async function POST(request: NextRequest) {
       .select('slug, parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters');
 
     // Build brain lookup by slug (work_key)
-    const brainBySlug = new Map();
+    const brainBySlug = new Map<string, Record<string, unknown>>();
     for (const bw of brainWorks || []) {
-      brainBySlug.set(bw.slug, bw);
+      const slug = bw.slug as string | undefined;
+      if (slug) brainBySlug.set(slug, bw);
     }
 
     // STEP 3: Get child's progress for this week
@@ -176,7 +178,7 @@ export async function POST(request: NextRequest) {
 
     // STEP 4: Build works with parent descriptions using the CHAIN
     // progress.work_name → curriculum.name → work_key → brain.slug → descriptions
-    const worksWithDetails = (weekProgress || []).map(progress => {
+    const worksWithDetails = (weekProgress || []).map((progress: { work_name?: string; area?: string; status?: number; notes?: string }) => {
       // Find curriculum work by name (case insensitive)
       const curriculum = curriculumByName.get(progress.work_name?.toLowerCase());
       
@@ -216,7 +218,7 @@ export async function POST(request: NextRequest) {
       .limit(10);
 
     // Build photo URLs
-    const photos = (mediaItems || []).map(item => ({
+    const photos = (mediaItems || []).map((item: { id: string; storage_path: string; thumbnail_path?: string; caption?: string; captured_at: string; work_id?: string }) => ({
       id: item.id,
       url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.storage_path}`,
       thumbnail_url: item.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.thumbnail_path}` : null,
@@ -240,9 +242,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Group by area
-    const worksByArea: Record<string, any[]> = {};
+    const worksByArea: Record<string, Array<Record<string, unknown>>> = {};
     for (const work of worksWithDetails) {
-      const areaName = work.area;
+      const areaName = work.area as string | undefined;
+      if (!areaName) continue;
       if (!worksByArea[areaName]) worksByArea[areaName] = [];
       worksByArea[areaName].push(work);
     }
@@ -292,7 +295,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getStatusLabel(status: any): string {
+function getStatusLabel(status: number | string): string {
   if (status === 1 || status === 'presented') return 'Introduced';
   if (status === 2 || status === 'practicing') return 'Practicing';
   if (status === 3 || status === 'mastered' || status === 'completed') return 'Mastered';

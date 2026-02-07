@@ -75,8 +75,8 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
         const activityData = await activityRes.json();
         setTodayActivity(activityData.data);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load child data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load child data');
     } finally {
       setLoading(false);
     }
@@ -96,8 +96,8 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
       }
       const data = await res.json();
       setTodayActivity(data.data);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to generate activity';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate activity';
       alert(`Error: ${errorMessage}\n\nIf you see "No activities found", you need to add activities to the database first.`);
     }
   }
@@ -135,14 +135,15 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
               alert('Activity completed! No more activities available for today.');
             }
           }
-        } catch (nextErr: any) {
+        } catch (nextErr: unknown) {
           setTodayActivity(data.data);
         }
       } else {
         setTodayActivity(data.data);
       }
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Error: ${message}`);
     }
   }
 

@@ -26,10 +26,11 @@ export async function GET(request: NextRequest) {
       success: true,
       data: data || []
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching favorites:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch favorites' },
+      { error: message || 'Failed to fetch favorites' },
       { status: 500 }
     );
   }
@@ -83,10 +84,11 @@ export async function POST(request: NextRequest) {
       success: true,
       data
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error adding favorite:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to add favorite' },
+      { error: message || 'Failed to add favorite' },
       { status: 500 }
     );
   }
@@ -120,10 +122,11 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Favorite removed'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error removing favorite:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to remove favorite' },
+      { error: message || 'Failed to remove favorite' },
       { status: 500 }
     );
   }

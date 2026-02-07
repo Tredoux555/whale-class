@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ invites: enrichedInvites });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get invites error:', error);
     return NextResponse.json({ error: 'Failed to load invites' }, { status: 500 });
   }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       invite,
       accessUrl: `/montree/parent?code=${inviteCode}`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create invite error:', error);
     return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 });
   }
@@ -136,7 +136,7 @@ export async function PUT(request: NextRequest) {
       invite,
       accessUrl: `/montree/parent?code=${inviteCode}`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Reset code error:', error);
     return NextResponse.json({ error: 'Failed to reset code' }, { status: 500 });
   }
@@ -162,7 +162,7 @@ export async function DELETE(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Revoke invite error:', error);
     return NextResponse.json({ error: 'Failed to revoke invite' }, { status: 500 });
   }

@@ -29,10 +29,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ categories: categories || [] });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const details = error instanceof Error ? error.message : String(error);
     console.error('Error fetching categories:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch categories', details: error?.message },
+      { error: 'Failed to fetch categories', details },
       { status: 500 }
     );
   }

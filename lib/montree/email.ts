@@ -51,9 +51,10 @@ export async function sendReportReadyEmail(
     }
 
     return { success: true, messageId: data?.id };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error('Email exception:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: message };
   }
 }
 
@@ -82,9 +83,10 @@ export async function sendWelcomeEmail(
     }
 
     return { success: true, messageId: data?.id };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error('Email exception:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: message };
   }
 }
 
@@ -320,9 +322,10 @@ export async function sendParentInviteEmail(
     }
 
     return { success: true, messageId: data?.id };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error('Email exception:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: message };
   }
 }
 
