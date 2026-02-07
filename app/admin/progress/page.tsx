@@ -164,8 +164,8 @@ export default function ProgressDashboard() {
             {view === 'montree' && selectedChild && (
               <div className="bg-white rounded-xl p-6">
                 <h2 className="text-xl font-bold mb-4">🌳 Montree Progress View</h2>
-                <Link 
-                  href={`/admin/montree-progress?child=${selectedChild}`}
+                <Link
+                  href={`/admin/child-progress/${selectedChild}`}
                   className="inline-block px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
                 >
                   Open Full Montree View →
