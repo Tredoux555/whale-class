@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
 import { readFileSync } from 'fs';
 import { join } from 'path';

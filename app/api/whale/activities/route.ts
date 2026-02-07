@@ -1,6 +1,6 @@
 // app/api/whale/activities/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get all activities with optional filtering
 export async function GET(request: NextRequest) {

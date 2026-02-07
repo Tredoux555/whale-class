@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const area = searchParams.get('area');
     const status = searchParams.get('status');
 
-    const supabase = createClient();
+    const supabase = getSupabase();
     
     // Fetch from curriculum_roadmap instead of montessori_works
     let query = supabase
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('montessori_works')

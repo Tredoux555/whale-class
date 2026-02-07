@@ -1,15 +1,8 @@
 // /api/montree/admin/import/route.ts
 // Bulk import students and work progress from docx
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 function getAnthropic(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Anthropic API key not configured');

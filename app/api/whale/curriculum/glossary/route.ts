@@ -2,10 +2,10 @@
 // Get all works with parent descriptions for glossary
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = getSupabase();
 
   try {
     // Get all works with parent descriptions

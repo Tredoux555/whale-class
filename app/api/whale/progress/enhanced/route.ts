@@ -1,6 +1,6 @@
 // app/api/whale/progress/enhanced/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get enhanced progress data for charts and visualizations
 export async function GET(request: NextRequest) {

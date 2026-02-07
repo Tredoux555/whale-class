@@ -1,6 +1,6 @@
 // app/api/whale/favorites/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get all favorited activities for current user
 export async function GET(request: NextRequest) {

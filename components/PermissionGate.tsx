@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import type { FeatureKey, PermissionLevel } from '@/lib/permissions/roles';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase-client';
 
 interface PermissionGateProps {
   featureKey: FeatureKey;

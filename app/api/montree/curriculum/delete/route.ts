@@ -2,13 +2,7 @@
 // Delete a work from curriculum
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(url, key);
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {

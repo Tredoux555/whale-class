@@ -2,10 +2,10 @@
 // Assign a work to one or more students
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = getSupabase();
 
   try {
     const { data: { user } } = await supabase.auth.getUser();

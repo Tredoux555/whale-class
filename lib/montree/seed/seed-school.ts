@@ -2,7 +2,7 @@
 // Seeds a school's curriculum from the master stem files
 // Master → School (school can then customize)
 
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 import type { StemArea, StemWork, SchoolCurriculumArea, SchoolCurriculumWork } from '../types';
 
 // Import stem data
@@ -137,7 +137,7 @@ export async function seedSchoolCurriculum(schoolId: string): Promise<{
   worksCreated: number;
   error?: string;
 }> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
 
   let areasCreated = 0;
   let worksCreated = 0;
@@ -227,7 +227,7 @@ export async function seedSchoolCurriculum(schoolId: string): Promise<{
 
 // Check if school curriculum already exists
 export async function isSchoolSeeded(schoolId: string): Promise<boolean> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { count, error } = await supabase
     .from('montree_school_curriculum_areas')
@@ -247,7 +247,7 @@ export async function getSchoolCurriculumStats(schoolId: string): Promise<{
   areas: number;
   works: number;
 }> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { count: areaCount } = await supabase
     .from('montree_school_curriculum_areas')

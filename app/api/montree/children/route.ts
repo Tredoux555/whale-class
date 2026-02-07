@@ -3,16 +3,7 @@
 // Fixed: Inline client creation to avoid any import issues
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase env vars');
-  }
-  return createClient(supabaseUrl, supabaseKey);
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // Add a new child to classroom
 export async function POST(request: NextRequest) {
@@ -147,16 +138,7 @@ export async function GET(request: NextRequest) {
 
     console.log('[children API] GET request, classroom_id:', classroomId);
 
-    // Create client inline to guarantee fresh connection
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('[children API] Missing Supabase env vars:', { url: !!supabaseUrl, key: !!supabaseKey });
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = getSupabase();
 
     let query = supabase
       .from('montree_children')

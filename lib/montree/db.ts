@@ -1,7 +1,7 @@
 // lib/montree/db.ts
 // Database operations using EXISTING tables (montree_children, child_work_completion)
 
-import { createServerClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { 
   Child, 
   ChildProgress, 
@@ -17,7 +17,7 @@ import { createHash } from 'crypto';
 // ============================================
 
 export async function getChildren(): Promise<Child[]> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { data, error } = await supabase
     .from('montree_children')
@@ -37,7 +37,7 @@ export async function getChildren(): Promise<Child[]> {
 }
 
 export async function getChildById(childId: string): Promise<Child | null> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { data, error } = await supabase
     .from('montree_children')
@@ -57,7 +57,7 @@ export async function getChildById(childId: string): Promise<Child | null> {
 }
 
 export async function createChild(name: string, dateOfBirth?: string, parentId?: string): Promise<Child> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   // Calculate age from dateOfBirth if provided
   let age: number | null = null;
@@ -91,7 +91,7 @@ export async function createChild(name: string, dateOfBirth?: string, parentId?:
 }
 
 export async function deleteChild(childId: string): Promise<void> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { error } = await supabase
     .from('montree_children')
@@ -122,7 +122,7 @@ function mapStatusFromDb(dbStatus: string | null): WorkStatus {
 }
 
 export async function getChildProgress(childId: string): Promise<ChildProgress[]> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { data, error } = await supabase
     .from('child_work_completion')
@@ -145,7 +145,7 @@ export async function getChildProgress(childId: string): Promise<ChildProgress[]
 }
 
 export async function getWorkProgress(childId: string, workId: string): Promise<ChildProgress | null> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { data, error } = await supabase
     .from('child_work_completion')
@@ -183,7 +183,7 @@ function generateUUIDFromString(str: string): string {
 // This is needed because child_work_completion has a foreign key to children(id)
 async function ensureChildExistsInChildrenTable(childId: string): Promise<void> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     
     // Check if child exists in children table
     const { data: existingChild, error: checkError } = await supabase
@@ -290,7 +290,7 @@ export async function updateWorkProgress(
   notes: string = ''
 ): Promise<ChildProgress> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     const now = new Date().toISOString();
     
     // Ensure child exists in children table (required for foreign key constraint)
@@ -414,7 +414,7 @@ export async function completeWork(childId: string, workId: string, finalLevel: 
 
 export async function resetWork(childId: string, workId: string): Promise<ChildProgress> {
   // Delete the record to reset to not_started
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { error } = await supabase
     .from('child_work_completion')

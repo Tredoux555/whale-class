@@ -2,7 +2,7 @@
 // GET/POST curriculum works for a classroom - FIXED inline client
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
 // Default area definitions (English only)

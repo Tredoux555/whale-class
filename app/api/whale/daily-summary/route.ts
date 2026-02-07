@@ -1,7 +1,7 @@
 // app/api/whale/daily-summary/route.ts
 // Get all activity for a specific date across all children
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {

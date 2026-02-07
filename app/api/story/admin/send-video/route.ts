@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { encryptMessage } from '@/lib/message-encryption';
 
 // Route segment config for App Router - allow large uploads
 export const maxDuration = 60; // 60 seconds timeout for video processing
 export const dynamic = 'force-dynamic';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
 
 function getJWTSecret(): Uint8Array {
   const secret = process.env.STORY_JWT_SECRET;

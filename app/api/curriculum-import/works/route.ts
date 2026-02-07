@@ -3,7 +3,7 @@
 // Session: Curriculum Import System
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { v4 as uuidv4 } from 'uuid';
 import {
   matchStudentToFilename,
@@ -12,17 +12,6 @@ import {
   CurriculumItem,
   StudentInfo
 } from '@/lib/curriculum/import-ai';
-
-function getSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-
-  return createClient(supabaseUrl, supabaseKey);
-}
 
 // ============================================
 // GET: List work imports for classroom

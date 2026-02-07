@@ -2,7 +2,7 @@
 // Curriculum-related API endpoints
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { getChildProgress, getNextCurriculumWork } from '@/lib/curriculum/progression';
 
 /**
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     // Get child info
     const { data: child, error: childError } = await supabase

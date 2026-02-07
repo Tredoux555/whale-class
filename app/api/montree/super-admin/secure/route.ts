@@ -2,7 +2,7 @@
 // Maximum security super admin API with full audit trail
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import {
   logAudit,
   validateSession,
@@ -14,13 +14,6 @@ import {
   sendAlert,
   verifyTOTP,
 } from '@/lib/montree/super-admin-security';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 function getClientIP(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||

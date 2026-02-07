@@ -2,14 +2,7 @@
 // Calculate progress based on current work position
 // If student is at Work #15, works #1-14 are considered completed
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
   practical_life: { name: 'Practical Life', icon: '🧹', color: '#22c55e' },

@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase-client';
 import type { UserRole, FeatureKey, PermissionLevel } from '@/lib/permissions/roles';
 import {
   ALL_PERMISSION_LEVELS,

@@ -6,15 +6,7 @@
 // Session 126: Fixed to read env vars at runtime
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Get supabase at runtime, not module load time
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // ============================================
 // GET: Get focus works for a child

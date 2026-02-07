@@ -2,7 +2,7 @@
 // Get AI-powered guidance for presenting a specific work
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, MAX_TOKENS, AI_ENABLED } from '@/lib/ai/anthropic';
 import { SYSTEM_PROMPT, buildActivityGuidancePrompt } from '@/lib/ai/prompts';
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const body = await request.json();
   const { workId, childId, currentLevel } = body;
 

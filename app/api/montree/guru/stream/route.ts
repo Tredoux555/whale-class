@@ -2,18 +2,11 @@
 // Streaming version of Montessori Guru API
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt } from '@/lib/montree/guru/prompt-builder';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();

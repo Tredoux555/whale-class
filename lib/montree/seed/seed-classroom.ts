@@ -2,7 +2,7 @@
 // Seeds a classroom's curriculum from the school's curriculum
 // School → Classroom (teacher can then customize)
 
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 // Main seeding function - copies from school curriculum to classroom
 export async function seedClassroomCurriculum(
@@ -14,7 +14,7 @@ export async function seedClassroomCurriculum(
   worksCreated: number;
   error?: string;
 }> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   let areasCreated = 0;
   let worksCreated = 0;
@@ -145,7 +145,7 @@ export async function seedClassroomCurriculum(
 
 // Check if classroom curriculum already exists
 export async function isClassroomSeeded(classroomId: string): Promise<boolean> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { count, error } = await supabase
     .from('montree_classroom_curriculum_areas')
@@ -165,7 +165,7 @@ export async function getClassroomCurriculumStats(classroomId: string): Promise<
   areas: number;
   works: number;
 }> {
-  const supabase = await createServerClient();
+  const supabase = getSupabase();
   
   const { count: areaCount } = await supabase
     .from('montree_classroom_curriculum_areas')

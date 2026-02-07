@@ -6,7 +6,7 @@
 //              its own parent-friendly explanation of WHAT the child is doing, WHY it matters,
 //              and HOW it connects to home.
 
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 import { getWorkDefinition, generateReportSummary } from './work-definitions';
 import type { 
   MontreeWeeklyReport, 
@@ -42,7 +42,7 @@ export async function generateWeeklyReport(params: {
   const school_id = params.school_id || DEFAULT_SCHOOL_UUID;
 
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     // 1. Get child info
     const { data: child, error: childError } = await supabase
@@ -299,7 +299,7 @@ export async function regenerateReportContent(
   new_content: Partial<ReportContent>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     const { data: existing } = await supabase
       .from('montree_weekly_reports')

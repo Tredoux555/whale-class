@@ -1,12 +1,5 @@
 // Re-export from story-db for backwards compatibility
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // Compatibility layer - simulates pg query interface using Supabase
 export async function query<T = Record<string, unknown>>(

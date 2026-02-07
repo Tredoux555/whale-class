@@ -2,11 +2,11 @@
 // Returns children for admin classroom view
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     
     // Get all children (they're all Whale Class for now)
     const { data: children, error } = await supabase

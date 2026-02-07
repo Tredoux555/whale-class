@@ -1,6 +1,6 @@
 // /api/montree/admin/teachers/[teacherId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 // Update teacher (activate/deactivate)
 export async function PATCH(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 const ADMIN_PASSWORD = '870602';
 

@@ -1,14 +1,7 @@
 // /api/montree/media/route.ts
 // Media CRUD operations: list, update, delete
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // GET - List media with filters
 export async function GET(request: NextRequest) {

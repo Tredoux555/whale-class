@@ -1,7 +1,7 @@
 // /api/montree/teacher/register/route.ts
 // Session: Personal Classroom - Creates personal classroom school + teacher account
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import bcrypt from 'bcryptjs';
 
 function hashPassword(password: string): string {

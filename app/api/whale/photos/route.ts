@@ -1,6 +1,6 @@
 // app/api/whale/photos/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 

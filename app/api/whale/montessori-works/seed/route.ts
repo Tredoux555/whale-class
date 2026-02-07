@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 const works = [
   // PRACTICAL LIFE (17 works)
@@ -75,7 +75,7 @@ const works = [
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     // Insert all works in one batch
     const { data, error } = await supabase

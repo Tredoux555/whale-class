@@ -2,7 +2,7 @@
 // Principal setup - add classrooms and teachers
 // OVERHAULED: Use static curriculum as PRIMARY source for correct sequencing
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 
 function generateLoginCode(): string {

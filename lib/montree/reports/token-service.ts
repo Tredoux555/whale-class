@@ -2,7 +2,7 @@
 // Secure token generation and management for Parent Portal
 // Phase 6 - Session 57
 
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 import type {
   MontreeReportToken,
   CreateTokenResponse,
@@ -61,7 +61,7 @@ export async function createReportToken(params: {
   } = params;
 
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     // 1. Verify report exists and is ready to share
     const { data: report, error: reportError } = await supabase
@@ -122,7 +122,7 @@ export async function validateTokenAndGetReport(
   token: string
 ): Promise<ValidateTokenResponse> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     // 1. Find token - using montree_report_tokens table (same as create)
     const { data: tokenRecord, error: tokenError } = await supabase
@@ -294,7 +294,7 @@ export async function revokeReportToken(params: {
   const { token_id, revoked_by } = params;
 
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     // Verify token exists and is not already revoked
     const { data: existingToken, error: fetchError } = await supabase
@@ -341,7 +341,7 @@ export async function getTokensForReport(
   report_id: string
 ): Promise<{ success: boolean; tokens?: MontreeReportToken[]; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     const { data: tokens, error } = await supabase
       .from('montree_report_tokens')

@@ -1,15 +1,8 @@
 // /api/montree/parent/stats/route.ts
 // Get child stats for parent dashboard
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Helper function to extract authenticated session data from cookie
 async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {

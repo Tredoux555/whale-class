@@ -2,8 +2,8 @@
 // Generate AI-powered daily activity plan
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, MAX_TOKENS, AI_ENABLED } from '@/lib/ai/anthropic';
 import { SYSTEM_PROMPT, buildDailyPlanPrompt } from '@/lib/ai/prompts';
 
@@ -18,7 +18,7 @@ export async function GET(
     );
   }
 
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const adminSupabase = createSupabaseAdmin();
   const { childId } = await params;
 

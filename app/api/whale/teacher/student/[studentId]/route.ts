@@ -2,13 +2,13 @@
 // Get detailed progress for a specific student
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ studentId: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const { studentId } = await params;
 
   try {

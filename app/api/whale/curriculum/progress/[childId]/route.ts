@@ -2,13 +2,13 @@
 // Get and update child's curriculum progress
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const { childId } = await params;
 
   try {
@@ -117,7 +117,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const { childId } = await params;
   const body = await request.json();
 

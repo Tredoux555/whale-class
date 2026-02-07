@@ -4,7 +4,7 @@
 // Session 125: Fixed to hash passwords with bcrypt
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { sendWelcomeEmail } from '@/lib/montree/email';
 import bcrypt from 'bcryptjs';
 

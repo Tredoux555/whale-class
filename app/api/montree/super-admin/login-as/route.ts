@@ -1,14 +1,7 @@
 // /api/montree/super-admin/login-as/route.ts
 // DEV ONLY: Allow super admin to login as any principal
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(req: NextRequest) {
   try {

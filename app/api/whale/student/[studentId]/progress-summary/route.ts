@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { NextRequest, NextResponse } from 'next/server';
 
 // ============================================================================
@@ -158,7 +158,7 @@ export async function GET(
       );
     }
 
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
 
     // ========================================================================
     // FETCH CHILD DATA
