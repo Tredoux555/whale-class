@@ -11,6 +11,14 @@ import LeadsTab from '@/components/montree/super-admin/LeadsTab';
 import FeedbackTab from '@/components/montree/super-admin/FeedbackTab';
 import DmPanel from '@/components/montree/super-admin/DmPanel';
 
+interface DmMessage {
+  id: string;
+  sender_type: 'admin' | 'user';
+  sender_name: string;
+  message: string;
+  created_at: string;
+}
+
 type TabType = 'schools' | 'feedback' | 'leads';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
@@ -28,12 +36,12 @@ export default function SuperAdminPage() {
   const [dmOpenFor, setDmOpenFor] = useState<string | null>(null);
   const [dmLeadName, setDmLeadName] = useState<string>('');
   const [dmLeadEmail, setDmLeadEmail] = useState<string>('');
-  const [dmMessages, setDmMessages] = useState<any[]>([]);
+  const [dmMessages, setDmMessages] = useState<DmMessage[]>([]);
   const [dmNewMsg, setDmNewMsg] = useState('');
   const [dmSending, setDmSending] = useState(false);
 
   // Simple audit logging
-  const logAction = useCallback(async (action: string, details?: any) => {
+  const logAction = useCallback(async (action: string, details?: Record<string, unknown>) => {
     try {
       await fetch('/api/montree/super-admin/audit', {
         method: 'POST',

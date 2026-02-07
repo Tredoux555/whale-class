@@ -34,7 +34,7 @@ export const fuzzyScore = (str1: string, str2: string): number => {
  * Find best insertion position for a work based on fuzzy matching
  * Uses keyword-based grouping for low-score matches (Montessori categories)
  */
-export const findBestPosition = (workName: string, curriculumWorks: any[]): number => {
+export const findBestPosition = (workName: string, curriculumWorks: Array<Record<string, unknown>>): number => {
   if (curriculumWorks.length === 0) return 0;
 
   let bestScore = 0;
@@ -93,10 +93,10 @@ interface Assignment {
  * at the best position based on fuzzy matching
  */
 export const mergeWorksWithCurriculum = (
-  curriculumWorks: any[],
+  curriculumWorks: Array<Record<string, unknown>>,
   assignedWorks: Assignment[],
   areaKey: string
-): any[] => {
+): Array<Record<string, unknown>> => {
   // Start with curriculum works
   const merged = [...curriculumWorks];
 

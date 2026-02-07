@@ -1,5 +1,7 @@
 'use client';
 
+import { AreaConfig } from '@/components/montree/curriculum/types';
+
 export interface Assignment {
   work_name: string;
   area: string;
@@ -22,7 +24,7 @@ export interface FocusWorksSectionProps {
   onOpenWheelPicker: (area: string, workName?: string) => void;
   onOpenQuickGuide: (workName: string) => void;
   childId: string;
-  getAreaConfig: (area: string) => any;
+  getAreaConfig: (area: string) => AreaConfig;
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {

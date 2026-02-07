@@ -8,7 +8,7 @@ interface UseLeadOperationsProps {
   setLeads: (leads: Lead[] | ((prev: Lead[]) => Lead[])) => void;
   schools: School[];
   setSchools: (schools: School[] | ((prev: School[]) => School[])) => void;
-  logAction: (action: string, details?: any) => Promise<void>;
+  logAction: (action: string, details?: Record<string, unknown>) => Promise<void>;
   setNewLeadCount: (count: number | ((prev: number) => number)) => void;
   setDmUnreadTotal: (count: number | ((prev: number) => number)) => void;
   setDmUnreadPerConvo: (convo: Record<string, { count: number; sender_name: string }> | ((prev: Record<string, { count: number; sender_name: string }>) => Record<string, { count: number; sender_name: string }>)) => void;

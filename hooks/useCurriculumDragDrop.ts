@@ -6,7 +6,7 @@ interface UseCurriculumDragDropProps {
   selectedArea: string | null;
   byArea: Record<string, Work[]>;
   setByArea: (update: Record<string, Work[]> | ((prev: Record<string, Work[]>) => Record<string, Work[]>)) => void;
-  session: any;
+  session: { classroom: { id: string } };
   fetchCurriculum: () => Promise<void>;
 }
 

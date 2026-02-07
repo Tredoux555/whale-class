@@ -50,6 +50,50 @@ interface Photo {
   work_name?: string;
 }
 
+interface ReportWork {
+  name: string;
+  status: string;
+  status_label?: string;
+  photo_url?: string | null;
+  photo_caption?: string | null;
+  parent_description?: string | null;
+  why_it_matters?: string | null;
+}
+
+interface ReportPhoto {
+  id: string;
+  url?: string;
+  thumbnail_url?: string;
+  caption?: string | null;
+  work_name?: string | null;
+}
+
+interface ReportChild {
+  name?: string;
+}
+
+interface ReportSummary {
+  works_this_week?: number;
+  photos_this_week?: number;
+  overall_progress?: {
+    mastered?: number;
+  };
+}
+
+interface SentReport {
+  id?: string;
+  sent_at?: string;
+  published_at?: string;
+  created_at: string;
+  week_start: string;
+  content: {
+    child?: ReportChild;
+    summary?: ReportSummary;
+    works?: ReportWork[];
+    photos?: ReportPhoto[];
+  };
+}
+
 export default function ReportsPage() {
   const params = useParams();
   const childId = params.childId as string;
@@ -66,7 +110,7 @@ export default function ReportsPage() {
   const [currentPhotos, setCurrentPhotos] = useState<Photo[]>([]);
   const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
   const [showLastReport, setShowLastReport] = useState(false);
-  const [lastReport, setLastReport] = useState<any>(null);
+  const [lastReport, setLastReport] = useState<SentReport | null>(null);
   const [loadingLastReport, setLoadingLastReport] = useState(false);
 
   // Fetch report preview
@@ -498,7 +542,7 @@ export default function ReportsPage() {
                   {lastReport.content.works && lastReport.content.works.length > 0 && (() => {
                     // Build lookup for backwards compatibility with old reports
                     // Old reports might have work_name OR caption as the work identifier
-                    const photosByWorkName = new Map<string, any>();
+                    const photosByWorkName = new Map<string, ReportPhoto>();
                     for (const p of lastReport.content.photos || []) {
                       const key = p.work_name || p.caption;
                       if (key) {
@@ -508,7 +552,7 @@ export default function ReportsPage() {
 
                     return (
                       <div className="space-y-4">
-                        {lastReport.content.works.map((work: any, i: number) => {
+                        {lastReport.content.works.map((work: ReportWork, i: number) => {
                           // Use photo_url from work if available, otherwise try to match from photos array
                           const photoUrl = work.photo_url || photosByWorkName.get(work.name?.toLowerCase())?.url;
                           const photoCaption = work.photo_caption || photosByWorkName.get(work.name?.toLowerCase())?.caption;
@@ -574,19 +618,19 @@ export default function ReportsPage() {
                   {lastReport.content.photos && lastReport.content.photos.length > 0 && (() => {
                     // Build set of work names (lowercase) for matching
                     const workNames = new Set(
-                      (lastReport.content.works || []).map((w: any) => w.name?.toLowerCase())
+                      (lastReport.content.works || []).map((w: ReportWork) => w.name?.toLowerCase())
                     );
 
                     // Get all photo URLs that are already matched to works
                     const matchedPhotoUrls = new Set(
                       (lastReport.content.works || [])
-                        .filter((w: any) => w.photo_url)
-                        .map((w: any) => w.photo_url)
+                        .filter((w: ReportWork) => w.photo_url)
+                        .map((w: ReportWork) => w.photo_url)
                     );
 
                     // Filter to photos not matched to any work
                     // Check: URL not matched AND (work_name OR caption) not in work names
-                    const unassignedPhotos = lastReport.content.photos.filter((p: any) => {
+                    const unassignedPhotos = lastReport.content.photos.filter((p: ReportPhoto) => {
                       if (matchedPhotoUrls.has(p.url)) return false;
                       const photoKey = (p.work_name || p.caption || '').toLowerCase();
                       if (photoKey && workNames.has(photoKey)) return false;
@@ -602,7 +646,7 @@ export default function ReportsPage() {
                           <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
                         </h4>
                         <div className="grid grid-cols-2 gap-2">
-                          {unassignedPhotos.map((photo: any) => (
+                          {unassignedPhotos.map((photo: ReportPhoto) => (
                             <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
                               <div className="aspect-square w-full">
                                 <img

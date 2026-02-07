@@ -11,7 +11,28 @@ import languageData from '@/lib/curriculum/data/language.json';
 import culturalData from '@/lib/curriculum/data/cultural.json';
 
 // Convert JSON work to our Work interface
-function convertWork(jsonWork: any): Work {
+interface JsonWork {
+  id: string;
+  name: string;
+  chineseName?: string;
+  chinese_name?: string;
+  description?: string;
+  ageRange?: string;
+  age_range?: string;
+  materials?: unknown[];
+  levels?: Array<{ level?: number; name?: string; description?: string; videoSearchTerms?: string[] }>;
+  prerequisites?: unknown[];
+  directAims?: unknown;
+  direct_aims?: unknown;
+  indirectAims?: unknown;
+  indirect_aims?: unknown;
+  controlOfError?: unknown;
+  control_of_error?: unknown;
+  videoSearchTerms?: string[];
+  video_search_terms?: string[];
+}
+
+function convertWork(jsonWork: JsonWork): Work {
   // Extract all videoSearchTerms from levels and combine with work-level terms
   const levelVideoTerms: string[] = [];
   const levels = jsonWork.levels || [
@@ -20,7 +41,7 @@ function convertWork(jsonWork: any): Work {
     { level: 3, name: 'Mastery', description: 'Full mastery' },
   ];
   
-  levels.forEach((level: any) => {
+  levels.forEach((level) => {
     if (level.videoSearchTerms && Array.isArray(level.videoSearchTerms)) {
       levelVideoTerms.push(...level.videoSearchTerms);
     }
@@ -46,7 +67,14 @@ function convertWork(jsonWork: any): Work {
 }
 
 // Convert JSON category to our Category interface
-function convertCategory(jsonCategory: any): Category {
+interface JsonCategory {
+  id: string;
+  name: string;
+  works?: JsonWork[];
+  activities?: JsonWork[];
+}
+
+function convertCategory(jsonCategory: JsonCategory): Category {
   return {
     id: jsonCategory.id,
     name: jsonCategory.name,
@@ -55,13 +83,19 @@ function convertCategory(jsonCategory: any): Category {
 }
 
 // Convert JSON area to our CurriculumArea interface
-function convertArea(jsonArea: any, areaId: string, icon: string, color: string): CurriculumArea {
+interface JsonArea {
+  name?: string;
+  categories?: JsonCategory[];
+  works?: JsonWork[];
+}
+
+function convertArea(jsonArea: JsonArea | JsonWork[], areaId: string, icon: string, color: string): CurriculumArea {
   // Handle both array of categories and direct works array
   let categories: Category[] = [];
-  
-  if (jsonArea.categories) {
+
+  if (!Array.isArray(jsonArea) && jsonArea.categories) {
     categories = jsonArea.categories.map(convertCategory);
-  } else if (jsonArea.works) {
+  } else if (!Array.isArray(jsonArea) && jsonArea.works) {
     // If works are directly on the area, create a single "All" category
     categories = [{
       id: `${areaId}_all`,
@@ -76,10 +110,12 @@ function convertArea(jsonArea: any, areaId: string, icon: string, color: string)
       works: jsonArea.map(convertWork),
     }];
   }
-  
+
+  const areaName = !Array.isArray(jsonArea) && jsonArea.name ? jsonArea.name : areaId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   return {
     id: areaId,
-    name: jsonArea.name || areaId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    name: areaName,
     icon,
     color,
     categories,
