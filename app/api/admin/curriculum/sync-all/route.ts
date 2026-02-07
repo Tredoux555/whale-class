@@ -50,18 +50,19 @@ function findBestMatch(workName: string, curriculumWorks: any[]): any | null {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = getSupabase();
+  try {
+    const supabase = getSupabase();
 
-  // Get classroom areas
-  const { data: areas } = await supabase
-    .from('montree_classroom_curriculum_areas')
-    .select('id, area_key')
-    .eq('classroom_id', WHALE_CLASSROOM_ID)
-    .eq('is_active', true);
+    // Get classroom areas
+    const { data: areas } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id, area_key')
+      .eq('classroom_id', WHALE_CLASSROOM_ID)
+      .eq('is_active', true);
 
-  if (!areas || areas.length === 0) {
-    return NextResponse.json({ error: 'No curriculum areas found' }, { status: 500 });
-  }
+    if (!areas || areas.length === 0) {
+      return NextResponse.json({ error: 'No curriculum areas found' }, { status: 500 });
+    }
 
   const areaKeyToId = new Map(areas.map(a => [a.area_key, a.id]));
   const areaIdToKey = new Map(areas.map(a => [a.id, a.area_key]));
@@ -282,15 +283,20 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({
-    success: true,
-    message: `Synced ${results.childrenSynced.size} children. Matched ${results.matched} works, auto-added ${results.autoAdded}, backfilled ${results.backfilled} progress records.`,
-    results: {
-      matched: results.matched,
-      autoAdded: results.autoAdded,
-      childrenSynced: results.childrenSynced.size,
-      backfilled: results.backfilled,
-      totalAssignments: allAssignments.length
-    }
-  });
+    return NextResponse.json({
+      success: true,
+      message: `Synced ${results.childrenSynced.size} children. Matched ${results.matched} works, auto-added ${results.autoAdded}, backfilled ${results.backfilled} progress records.`,
+      results: {
+        matched: results.matched,
+        autoAdded: results.autoAdded,
+        childrenSynced: results.childrenSynced.size,
+        backfilled: results.backfilled,
+        totalAssignments: allAssignments.length
+      }
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    console.error('[Sync-All] Error:', error);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
