@@ -2,10 +2,22 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+interface YTPlayerEvent {
+  target: {
+    getDuration(): number;
+    getCurrentTime(): number;
+    getPlayerState(): number;
+    destroy(): void;
+  };
+  data?: number;
+}
+
 // Declare YouTube IFrame API types
 declare global {
   interface Window {
-    YT: any;
+    YT: {
+      Player: new (element: HTMLDivElement, config: Record<string, unknown>) => void;
+    };
     onYouTubeIframeAPIReady: () => void;
   }
 }
@@ -31,7 +43,7 @@ export function VideoPlayer({
   curriculumWorkId,
   onWatchComplete,
 }: VideoPlayerProps) {
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<{ destroy(): void; getPlayerState(): number; getCurrentTime(): number; getDuration(): number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isApiReady, setIsApiReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -155,11 +167,11 @@ export function VideoPlayer({
           modestbranding: 1,
         },
         events: {
-          onReady: (event: any) => {
+          onReady: (event: YTPlayerEvent) => {
             const player = event.target;
             watchDataRef.current.videoDuration = player.getDuration();
           },
-          onStateChange: (event: any) => {
+          onStateChange: (event: YTPlayerEvent) => {
             const player = event.target;
             const currentTime = player.getCurrentTime();
             const duration = player.getDuration();
@@ -187,7 +199,7 @@ export function VideoPlayer({
               reportWatchProgress();
             }
           },
-          onError: (event: any) => {
+          onError: (event: YTPlayerEvent) => {
             console.error('YouTube player error:', event.data);
             setError('Failed to load video');
           },

@@ -62,10 +62,11 @@ export async function GET(request: NextRequest) {
       data: filteredData,
       count: filteredData.length
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching activities:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch activities' },
+      { error: message || 'Failed to fetch activities' },
       { status: 500 }
     );
   }

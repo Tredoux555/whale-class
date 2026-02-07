@@ -64,7 +64,7 @@ export default function ActivityHistory({ childId }: ActivityHistoryProps) {
       const data = await res.json();
       setHistory(data.data.history);
       setSummary(data.data.summary);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading history:', err);
     } finally {
       setLoading(false);

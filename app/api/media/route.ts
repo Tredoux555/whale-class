@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
 
       try {
         await mkdir(uploadDir, { recursive: true });
-      } catch (err: any) {
-        if (err.code !== 'EEXIST') throw err;
+      } catch (err: unknown) {
+        if (err instanceof Error && 'code' in err && (err as any).code !== 'EEXIST') throw err;
       }
 
       const fileBuffer = await file.arrayBuffer();

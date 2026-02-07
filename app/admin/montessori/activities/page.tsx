@@ -206,9 +206,10 @@ export default function ActivitiesLibraryPage() {
 
       alert("Activity assigned successfully!");
       closeAssignModal();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error("Error assigning activity:", error);
-      alert(`Failed to assign activity: ${error.message}`);
+      alert(`Failed to assign activity: ${message}`);
     }
   };
 

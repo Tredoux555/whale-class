@@ -57,10 +57,11 @@ export async function POST(request: NextRequest) {
         'Content-Disposition': `attachment; filename="progress_report_${reportData.child.name.replace(/\s+/g, '_')}.pdf"`,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error generating PDF:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate PDF' },
+      { error: message || 'Failed to generate PDF' },
       { status: 500 }
     );
   }

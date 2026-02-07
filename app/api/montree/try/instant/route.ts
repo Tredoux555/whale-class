@@ -320,15 +320,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    const name = err instanceof Error ? err.name : undefined;
+    const cause = err instanceof Error && err.cause ? String(err.cause) : undefined;
+    const stack = err instanceof Error && err.stack ? err.stack.split('\n').slice(0, 5) : undefined;
     console.error('INSTANT TRIAL CRASH:', err);
     return NextResponse.json({
       error: 'Unexpected error',
       debug: {
-        message: err?.message || String(err),
-        name: err?.name,
-        cause: err?.cause ? String(err.cause) : undefined,
-        stack: err?.stack?.split('\n').slice(0, 5),
+        message: message || String(err),
+        name,
+        cause,
+        stack,
       },
       steps,
     }, { status: 500 });

@@ -13,8 +13,9 @@ export async function GET(request: NextRequest) {
 
     const children = await getChildren({ activeOnly, ageGroup: ageGroup || undefined, limit, offset });
     return NextResponse.json({ data: children, total: children.length });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to fetch children' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to fetch children' }, { status: 500 });
   }
 }
 
@@ -41,7 +42,8 @@ export async function POST(request: NextRequest) {
 
     const child = await createChild(input);
     return NextResponse.json({ data: child, message: 'Child created successfully' }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to create child' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to create child' }, { status: 500 });
   }
 }

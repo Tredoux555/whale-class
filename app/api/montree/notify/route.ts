@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       failed: result.failed
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Notify error:', error);
     return NextResponse.json({ error: 'Failed to send notifications' }, { status: 500 });
   }

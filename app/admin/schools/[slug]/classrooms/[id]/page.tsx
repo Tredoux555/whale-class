@@ -42,8 +42,8 @@ export default function ClassroomPage() {
       const data = await res.json();
       setClassroom(data.classroom);
       setStudents(data.students || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

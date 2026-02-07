@@ -27,8 +27,15 @@ const AREA_COLORS: Record<CurriculumArea, string> = {
   cultural: '#EAB308',
 };
 
+interface ProgressData {
+  areaProgress: Array<{ area: string; label: string; averageStatus: number; introduced: number; practicing: number; independent: number; mastery: number }>;
+  overallStats: { totalActivities: number; completedActivities: number; completionRate: number; totalSkills: number; masteredSkills: number; skillMasteryRate: number };
+  activitiesByArea: Record<string, number>;
+  timelineData: Array<{ date: string; count: number }>;
+}
+
 export default function ProgressVisualization({ childId }: ProgressVisualizationProps) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +50,7 @@ export default function ProgressVisualization({ childId }: ProgressVisualization
       
       const result = await res.json();
       setData(result.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading progress:', err);
     } finally {
       setLoading(false);
@@ -131,7 +138,7 @@ export default function ProgressVisualization({ childId }: ProgressVisualization
         </h3>
 
         <div className="space-y-6">
-          {areaProgress.map((area: any) => {
+          {areaProgress.map((area) => {
             const color = AREA_COLORS[area.area as CurriculumArea];
             const progressPercentage = (area.averageStatus / 5) * 100;
 
@@ -190,8 +197,8 @@ export default function ProgressVisualization({ childId }: ProgressVisualization
           
           <div className="space-y-3">
             {Object.entries(activitiesByArea).map(([area, count]) => {
-              const total = Object.values(activitiesByArea).reduce((sum: number, c) => sum + (c as number), 0);
-              const countNum = count as number;
+              const total = Object.values(activitiesByArea).reduce((sum: number, c) => sum + (typeof c === 'number' ? c : 0), 0);
+              const countNum = typeof count === 'number' ? count : 0;
               const percentage = (countNum / total) * 100;
               const color = AREA_COLORS[area as CurriculumArea] || '#6B7280';
 
@@ -223,8 +230,8 @@ export default function ProgressVisualization({ childId }: ProgressVisualization
           <h3 className="text-lg font-semibold mb-4">Activity Completion Timeline</h3>
           
           <div className="space-y-2">
-            {timelineData.slice(-14).map((day: any) => {
-              const maxCount = Math.max(...timelineData.map((d: any) => d.count));
+            {timelineData.slice(-14).map((day) => {
+              const maxCount = Math.max(...timelineData.map((d) => d.count));
               const percentage = (day.count / maxCount) * 100;
               const date = new Date(day.date);
               const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

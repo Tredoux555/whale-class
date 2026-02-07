@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .order('captured_at', { ascending: false });
 
     // Build photo URLs
-    const formattedPhotos = (photos || []).map((photo: any) => ({
+    const formattedPhotos = (photos || []).map((photo: { id: string; storage_path: string; work_id?: string; captured_at: string; thumbnail_path?: string }) => ({
       id: photo.id,
       storage_path: photo.storage_path,
       work_id: photo.work_id,
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }));
 
     return NextResponse.json({ success: true, child, photos: formattedPhotos });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -104,7 +104,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const updates: any = {};
+    const updates: Record<string, unknown> = {};
     if (body.name !== undefined) updates.name = body.name.trim();
     if (body.age !== undefined) updates.age = Math.round(body.age);
     if (body.photo_url !== undefined) updates.photo_url = body.photo_url;
@@ -128,7 +128,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json({ success: true, child: updatedChild });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Update child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -225,7 +225,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         name: child.name,
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

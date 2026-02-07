@@ -109,9 +109,10 @@ export default function ReportsPage() {
       document.body.removeChild(a);
 
       alert("Report downloaded successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error("Error generating report:", error);
-      alert(`Failed to generate report: ${error.message}`);
+      alert(`Failed to generate report: ${message}`);
     } finally {
       setGenerating(false);
     }

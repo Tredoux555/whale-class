@@ -71,10 +71,11 @@ export async function GET(request: NextRequest) {
       photos: photos || [],
       completions: completions || [],
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching daily summary:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch daily summary' },
+      { error: message || 'Failed to fetch daily summary' },
       { status: 500 }
     );
   }

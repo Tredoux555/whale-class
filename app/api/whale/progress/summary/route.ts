@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
 
     const summary = await getProgressSummaryByArea(childId);
     return NextResponse.json({ data: summary });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to fetch progress summary' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || 'Failed to fetch progress summary' }, { status: 500 });
   }
 }

@@ -30,7 +30,7 @@ const AREA_COLORS: Record<CurriculumArea, string> = {
 export default function ChildDashboard({ childId }: ChildDashboardProps) {
   const [child, setChild] = useState<Child | null>(null);
   const [todayActivity, setTodayActivity] = useState<DailyActivityAssignmentWithDetails | null>(null);
-  const [progressSummary, setProgressSummary] = useState<any[]>([]);
+  const [progressSummary, setProgressSummary] = useState<Array<{ area: string; average_status: number; total_skills: number; independent: number; mastery: number }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,8 +59,8 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
         const progressData = await progressRes.json();
         setProgressSummary(progressData.data);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
     } finally {
       setLoading(false);
     }
@@ -80,8 +80,8 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
       }
       const data = await res.json();
       setTodayActivity(data.data);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to generate activity';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate activity';
       alert(`Error: ${errorMessage}\n\nIf you see "No activities found", you need to add activities to the database first.`);
     }
   }
@@ -124,15 +124,16 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
               alert('Activity completed! No more activities available for today.');
             }
           }
-        } catch (nextErr: any) {
+        } catch (nextErr: unknown) {
           // If error generating next, keep showing completed activity
           setTodayActivity(data.data);
         }
       } else {
         setTodayActivity(data.data);
       }
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Error: ${message}`);
     }
   }
 
@@ -260,7 +261,7 @@ export default function ChildDashboard({ childId }: ChildDashboardProps) {
           <p className="text-gray-600">No progress recorded yet</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {progressSummary.map((area: any) => (
+            {progressSummary.map((area) => (
               <div key={area.area} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className={`px-2 py-1 rounded text-sm font-medium ${AREA_COLORS[area.area as CurriculumArea]}`}>
