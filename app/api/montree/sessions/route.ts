@@ -3,7 +3,7 @@
 // Data is linked by child_id so ALL teachers in classroom see it
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     
     const { data, error } = await supabase
       .from('montree_work_sessions')
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     
     let query = supabase
       .from('montree_work_sessions')

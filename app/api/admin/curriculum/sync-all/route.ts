@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { v4 as uuidv4 } from 'uuid';
 
 // POST /api/admin/curriculum/sync-all
@@ -7,13 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 // auto-adds missing works, AND BACKFILLS mastered works based on sequence
 
 const WHALE_CLASSROOM_ID = 'bf0daf1b-cd46-4fba-9c2f-d3297bd11fc6';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Status mapping from string to number
 const statusToNumber: Record<string, number> = {

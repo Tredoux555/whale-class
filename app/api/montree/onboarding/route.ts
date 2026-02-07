@@ -1,15 +1,8 @@
 // /api/montree/onboarding/route.ts
 // Session 105: Real onboarding API - saves to Supabase
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import crypto from 'crypto';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Simple hash for login codes (not bcrypt, but sufficient for 6-char codes)
 function hashLoginCode(code: string): string {

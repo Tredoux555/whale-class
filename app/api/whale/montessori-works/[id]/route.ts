@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('montessori_works')
@@ -53,7 +53,7 @@ export async function PUT(
     const body = await request.json();
     const { name, curriculum_area, video_url, status } = body;
 
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
@@ -97,7 +97,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     // First get the work to check if it has a video
     const { data: work } = await supabase

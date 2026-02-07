@@ -1,15 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase-based database connection
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    console.error('Supabase credentials not configured');
-    throw new Error('Database not configured');
-  }
-  return createClient(url, key);
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // Compatibility layer for old pg-style queries
 export const db = {

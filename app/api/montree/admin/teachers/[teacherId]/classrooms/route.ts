@@ -1,6 +1,6 @@
 // /api/montree/admin/teachers/[teacherId]/classrooms/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 // Assign classrooms to teacher
 export async function PUT(

@@ -3,7 +3,7 @@
 // Based on SoftTFIDF (TF-IDF + Jaro-Winkler) - 85-91% F1 accuracy
 
 import { CURRICULUM, getAllWorks } from './curriculum-data';
-import { createServerClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import type { Work } from './types';
 
 // ============================================
@@ -356,7 +356,7 @@ interface SynonymRecord {
 
 async function lookupSynonym(rawText: string, schoolId?: string): Promise<SynonymRecord | null> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     
     // School-specific first
     if (schoolId) {
@@ -389,7 +389,7 @@ async function lookupSynonym(rawText: string, schoolId?: string): Promise<Synony
 
 async function incrementSynonymUsage(synonymId: string): Promise<void> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     await supabase.rpc('increment_synonym_usage', { synonym_id: synonymId });
   } catch (error) {
     console.warn('Failed to increment synonym usage:', error);
@@ -406,7 +406,7 @@ export async function learnFromCorrection(
   createdBy?: string
 ): Promise<boolean> {
   try {
-    const supabase = await createServerClient();
+    const supabase = getSupabase();
     const normalized = rawText.toLowerCase().trim();
     
     const { data: existing } = await supabase

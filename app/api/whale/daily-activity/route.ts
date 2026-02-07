@@ -1,6 +1,6 @@
 // app/api/whale/daily-activity/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 import { getNextCurriculumWork, markWorkComplete } from '@/lib/curriculum/progression';
 
 // GET - Get today's activity for a child

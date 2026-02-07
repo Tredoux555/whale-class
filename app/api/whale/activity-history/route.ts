@@ -1,6 +1,6 @@
 // app/api/whale/activity-history/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get activity history for a child
 export async function GET(request: NextRequest) {

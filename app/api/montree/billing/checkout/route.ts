@@ -2,7 +2,7 @@
 // Create Stripe checkout session
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe, PRICE_IDS } from '@/lib/montree/stripe';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {

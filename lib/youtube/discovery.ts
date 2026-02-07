@@ -5,7 +5,7 @@
 // Purpose: Coordinate automated video discovery
 // =====================================================
 
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import type {
   CurriculumWork,
   YouTubeVideo,

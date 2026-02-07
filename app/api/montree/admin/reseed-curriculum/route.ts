@@ -1,15 +1,8 @@
 // /api/montree/admin/reseed-curriculum/route.ts
 // Re-seed curriculum for an existing classroom with CORRECT static data
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {

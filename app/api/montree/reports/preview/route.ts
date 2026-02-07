@@ -2,7 +2,7 @@
 // GET - Generate full report preview with parent descriptions and photos
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found

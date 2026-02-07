@@ -1,14 +1,7 @@
 // /api/montree/admin/students/route.ts
 // CRUD for students (children)
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // Get all students for school (via classroom relationship)
 export async function GET(request: NextRequest) {

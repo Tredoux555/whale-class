@@ -3,14 +3,7 @@
 // Uses child_work_media table (for weekly planning flow)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // POST - Upload media from classroom
 export async function POST(request: NextRequest) {

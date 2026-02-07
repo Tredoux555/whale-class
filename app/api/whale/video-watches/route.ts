@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import { markWorkComplete } from '@/lib/curriculum/progression';
 import type { 
   CreateVideoWatchRequest, 

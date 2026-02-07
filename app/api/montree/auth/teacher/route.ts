@@ -1,7 +1,7 @@
 // /api/montree/auth/teacher/route.ts
 // Teacher login with 6-character code OR email+password
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 

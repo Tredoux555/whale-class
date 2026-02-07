@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 
 // HARDCODED ADMIN CREDENTIALS - fallback if DB/bcrypt fails
 const ADMIN_USERS: Record<string, string> = {
   'T': 'redoux',
   'Z': 'oe',
 };
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-  return createClient(url, key);
-}
 
 function getJWTSecret(): Uint8Array {
   const secret = process.env.STORY_JWT_SECRET;

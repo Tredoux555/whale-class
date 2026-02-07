@@ -2,7 +2,7 @@
 // Get all curriculum categories
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   // Use admin client to bypass RLS for public curriculum data

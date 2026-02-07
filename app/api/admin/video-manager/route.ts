@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getVideos, saveVideos, addVideo, deleteVideo, Video } from '@/lib/data';
-import { createSupabaseAdmin, STORAGE_BUCKET } from '@/lib/supabase';
+import { createSupabaseAdmin, STORAGE_BUCKET } from '@/lib/supabase-client';
 
 // GET - Fetch all videos with optional search
 export async function GET(request: NextRequest) {

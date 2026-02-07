@@ -1,6 +1,6 @@
 // app/api/whale/themes/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get all activities with a specific theme, or get all themes
 export async function GET(request: NextRequest) {

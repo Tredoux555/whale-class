@@ -1,7 +1,7 @@
 // /api/montree/admin/reports/route.ts
 // School-wide analytics and reports
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {

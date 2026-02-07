@@ -2,7 +2,7 @@
 // Stripe webhook handler
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe, PLAN_LIMITS, PlanType } from '@/lib/montree/stripe';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {

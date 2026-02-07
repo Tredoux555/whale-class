@@ -1,16 +1,9 @@
 // /api/montree/reports/pdf/route.ts
 // Generate downloadable PDF report for parents
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { generateReportPDF } from '@/lib/montree/reports/pdf-generator';
 import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 export async function GET(request: NextRequest) {
   try {

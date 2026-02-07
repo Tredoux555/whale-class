@@ -5,7 +5,7 @@
 // Purpose: Server-side permission checking and validation
 // =====================================================
 
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
 import type {
   UserRole,
@@ -27,7 +27,7 @@ import { groupPermissionsByFeature } from './roles';
  * Uses service role key for admin operations
  */
 export function getSupabaseClient() {
-  return createClient(); // Uses createClient() from lib/supabase.ts which returns admin client
+  return getSupabase(); // Uses getSupabase() from lib/supabase-client.ts which returns admin client
 }
 
 /**

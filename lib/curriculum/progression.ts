@@ -1,7 +1,7 @@
 // lib/curriculum/progression.ts
 // Core curriculum progression logic for Montessori curriculum tracking
 
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export interface CurriculumWork {
   id: string;

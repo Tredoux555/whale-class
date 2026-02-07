@@ -3,14 +3,7 @@
 // POST: { classroomId, students: [{ name, age?, works: { practical_life, sensorial, math, language, cultural }}] }
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // ============================================
 // FUZZY MATCHING

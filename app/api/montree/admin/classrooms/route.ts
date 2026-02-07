@@ -1,14 +1,7 @@
 // /api/montree/admin/classrooms/route.ts
 // CRUD for classrooms
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // Create new classroom
 export async function POST(request: NextRequest) {

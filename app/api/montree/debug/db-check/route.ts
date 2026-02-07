@@ -1,6 +1,6 @@
 // Debug endpoint to check Supabase connection
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,16 +1,9 @@
 // /api/montree/principal/setup-stream/route.ts
 // Real-time streaming setup with Server-Sent Events
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 function generateLoginCode(): string {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';

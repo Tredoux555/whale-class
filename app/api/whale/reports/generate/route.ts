@@ -1,6 +1,6 @@
 // app/api/whale/reports/generate/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase';
+import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Generate report data for a child
 export async function GET(request: NextRequest) {

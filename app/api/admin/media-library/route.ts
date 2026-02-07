@@ -1,14 +1,7 @@
 // /api/admin/media-library/route.ts
 // Admin API for managing media library files
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { getSupabase } from '@/lib/supabase-client';
 
 // GET - Fetch all documents with optional filtering
 export async function GET(request: NextRequest) {

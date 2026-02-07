@@ -4,7 +4,7 @@
 // This runs daily at 2 AM to find new videos
 // Configure in your hosting provider (Vercel, etc.)
 
-import { createClient } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { getWorksNeedingDiscovery, discoverVideosForAllWorks } from '@/lib/youtube/discovery';
 
 export async function runVideoDiscoveryCron() {

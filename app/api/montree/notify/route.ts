@@ -2,7 +2,7 @@
 // Session 118: Send email notifications to parents
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import { notifyParentsOfReport, sendReportReadyEmail } from '@/lib/montree/email';
 
 // POST - Notify parents of a report

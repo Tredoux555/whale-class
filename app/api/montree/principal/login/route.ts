@@ -1,7 +1,7 @@
 // /api/montree/principal/login/route.ts
 // Session 105: Principal login - email + password
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/montree/supabase';
+import { getSupabase } from '@/lib/supabase-client';
 import crypto from 'crypto';
 
 function hashPassword(password: string): string {

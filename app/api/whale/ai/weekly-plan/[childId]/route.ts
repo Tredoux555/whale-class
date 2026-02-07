@@ -2,7 +2,7 @@
 // Generate AI-powered weekly lesson plan
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, MAX_TOKENS, AI_ENABLED } from '@/lib/ai/anthropic';
 import { SYSTEM_PROMPT, buildWeeklyPlanPrompt } from '@/lib/ai/prompts';
 
@@ -17,7 +17,7 @@ export async function POST(
     );
   }
 
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const { childId } = await params;
   const body = await request.json();
   const { focusAreas } = body; // Optional: areas to focus on this week

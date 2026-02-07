@@ -3,15 +3,8 @@
 // Auth: Cookie-based parent session OR test mode with child ID
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 // Area icons for display
 const AREA_ICONS: Record<string, string> = {
