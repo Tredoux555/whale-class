@@ -18,7 +18,6 @@ export function useVideoPlayback(
     try {
       if ('wakeLock' in navigator) {
         wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
-        console.log('Screen wake lock activated');
       }
     } catch (err) {
       console.warn('Wake lock not supported or failed:', err);
@@ -31,7 +30,6 @@ export function useVideoPlayback(
       if (wakeLockRef.current) {
         await wakeLockRef.current.release();
         wakeLockRef.current = null;
-        console.log('Screen wake lock released');
       }
     } catch (err) {
       console.warn('Failed to release wake lock:', err);

@@ -147,8 +147,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[Onboarding] Created ${createdStudents.length} students, ${createdProgress.length} progress records`);
-
     return NextResponse.json({
       success: true,
       students: createdStudents,

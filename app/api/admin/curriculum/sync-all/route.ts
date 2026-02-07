@@ -130,7 +130,6 @@ export async function POST(request: NextRequest) {
     const areaId = areaKeyToId.get(normalizedAreaKey);
     
     if (!areaId) {
-      console.log(`[Sync-All] Unknown area: ${assignment.area}`);
       continue;
     }
 
@@ -184,8 +183,6 @@ export async function POST(request: NextRequest) {
           }
           worksByAreaId.get(areaId)!.push({ id: newWorkId, sequence: newSequence });
           workIdToInfo.set(newWorkId, { area_id: areaId, sequence: newSequence });
-          
-          console.log(`[Sync-All] Auto-added: "${assignment.work_name}" to ${normalizedAreaKey}`);
         }
       }
       
@@ -279,7 +276,6 @@ export async function POST(request: NextRequest) {
       
       if (!error) {
         results.backfilled = toInsert.length;
-        console.log(`[Sync-All] Backfilled ${toInsert.length} progress records`);
       } else {
         console.error('[Sync-All] Backfill error:', error);
       }

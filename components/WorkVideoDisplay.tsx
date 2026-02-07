@@ -37,8 +37,6 @@ export function WorkVideoDisplay({ work, childId, onWatchComplete }: WorkVideoDi
   }, [work.id]);
 
   const handleWatchComplete = (workId: string) => {
-    console.log(`🎉 Work ${workId} completed via video watch!`);
-    
     // Show completion message
     setShowCompletionMessage(true);
     setTimeout(() => setShowCompletionMessage(false), 5000);

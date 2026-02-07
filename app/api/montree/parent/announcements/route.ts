@@ -73,7 +73,6 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       // Table might not exist yet - return empty array
-      console.log('Announcements query error (table may not exist):', error.message);
       return NextResponse.json({
         success: true,
         announcements: []

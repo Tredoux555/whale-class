@@ -32,15 +32,12 @@ async function logAdminLogin(
       ip_address: ip,
       user_agent: userAgent
     });
-    console.log('[AdminAuth] Login logged for:', username);
   } catch (e) {
     console.error('[AdminAuth] Login log failed:', e);
   }
 }
 
 export async function POST(req: NextRequest) {
-  console.log('[AdminAuth] POST request');
-  
   if (!process.env.STORY_JWT_SECRET) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
@@ -53,7 +50,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { username, password } = body;
-  console.log('[AdminAuth] Login:', username);
 
   if (!username || !password) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
@@ -63,7 +59,6 @@ export async function POST(req: NextRequest) {
 
   // CHECK 1: Hardcoded fallback (always works)
   if (ADMIN_USERS[username] === password) {
-    console.log('[AdminAuth] Hardcoded auth success');
     const token = await new SignJWT({ username, role: 'admin' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
@@ -88,9 +83,8 @@ export async function POST(req: NextRequest) {
       if (!error && users && users.length > 0) {
         const bcrypt = await import('bcryptjs');
         const valid = await bcrypt.compare(password, users[0].password_hash);
-        
+
         if (valid) {
-          console.log('[AdminAuth] DB auth success');
           const token = await new SignJWT({ username, role: 'admin' })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()

@@ -80,14 +80,12 @@ export default function DaughterActivityPage() {
 
   const findDaughterChild = async () => {
     try {
-      console.log('Daughter Activity: Finding child...');
       // Fetch all children and find one close to DAUGHTER_AGE
       const response = await fetch("/api/whale/children?active=true");
       if (response.ok) {
         const data = await response.json();
         const children = data.data || [];
-        console.log('Daughter Activity: Found', children.length, 'children');
-        
+
         // Find child closest to DAUGHTER_AGE (2.5)
         // age_group is stored as '2-3', '3-4', etc.
         const daughter = children.find((c: any) => {
@@ -98,14 +96,10 @@ export default function DaughterActivityPage() {
         });
 
         if (daughter) {
-          console.log('Daughter Activity: Found daughter:', daughter.name, daughter.id);
           setDaughterChildId(daughter.id);
         } else if (children.length > 0) {
           // Fallback to first child
-          console.log('Daughter Activity: Using fallback child:', children[0].name);
           setDaughterChildId(children[0].id);
-        } else {
-          console.log('Daughter Activity: No children found');
         }
       }
     } catch (error) {
@@ -115,18 +109,14 @@ export default function DaughterActivityPage() {
 
   const loadTodayActivity = async () => {
     if (!daughterChildId) {
-      console.log('Daughter Activity: No childId, skipping activity load');
       return;
     }
 
     try {
-      console.log('Daughter Activity: Loading activity for childId:', daughterChildId);
       setLoading(true);
       const response = await fetch(`/api/whale/daily-activity?childId=${daughterChildId}`);
-      console.log('Daughter Activity: Activity response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('Daughter Activity: Activity data:', data);
         setTodayActivity(data.data);
       }
     } catch (error) {

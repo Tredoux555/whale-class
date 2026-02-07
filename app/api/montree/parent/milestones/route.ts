@@ -79,7 +79,6 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (error) {
-      console.log('Milestones query error:', error.message);
       return NextResponse.json({
         success: true,
         milestones: []

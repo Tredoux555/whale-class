@@ -91,7 +91,7 @@ export default function LetterTraceGame() {
         const data = await res.json();
         if (data.sessionId) setSessionId(data.sessionId);
       } catch (e) {
-        console.log('Session tracking not available');
+        // Session tracking not available
       }
     };
     startSession();
@@ -123,7 +123,7 @@ export default function LetterTraceGame() {
             }),
           });
         } catch (e) {
-          console.log('Failed to end session');
+          // Failed to end session
         }
       };
       endSession();

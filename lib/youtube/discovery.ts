@@ -40,7 +40,6 @@ export async function discoverVideoForWork(
         .limit(1);
 
       if (existing && existing.length > 0) {
-        console.log(`Skipping ${work.work_name} - already has approved video`);
         return null;
       }
 
@@ -53,7 +52,6 @@ export async function discoverVideoForWork(
         .limit(1);
 
       if (cache && cache.length > 0 && cache[0].best_video_id) {
-        console.log(`Using cached result for ${work.work_name}`);
         // Return cached result (simplified)
         return null; // Would reconstruct from cache
       }
@@ -61,7 +59,6 @@ export async function discoverVideoForWork(
 
     // Build search query
     const searchQuery = buildMontessoriSearchQuery(work.work_name);
-    console.log(`Searching for: ${searchQuery}`);
 
     // Search YouTube
     const { videos, status } = await searchYouTubeVideos(
@@ -86,7 +83,6 @@ export async function discoverVideoForWork(
     }
 
     if (videos.length === 0) {
-      console.log(`No videos found for ${work.work_name}`);
       return null;
     }
 
@@ -98,11 +94,8 @@ export async function discoverVideoForWork(
     );
 
     if (!bestResult) {
-      console.log(`No suitable video found for ${work.work_name}`);
       return null;
     }
-
-    console.log(`Found video for ${work.work_name}: ${bestResult.video.title} (score: ${bestResult.relevanceScore})`);
 
     // Save to database
     await saveVideoToDatabase(work, bestResult, options);
@@ -141,8 +134,6 @@ export async function discoverVideosForAllWorks(
 ): Promise<VideoSearchStatus[]> {
   const statuses: VideoSearchStatus[] = [];
 
-  console.log(`Starting discovery for ${works.length} works...`);
-
   for (let i = 0; i < works.length; i++) {
     const work = works[i];
     const status: VideoSearchStatus = {
@@ -153,8 +144,6 @@ export async function discoverVideosForAllWorks(
     };
 
     statuses.push(status);
-
-    console.log(`\nProgress: ${i + 1}/${works.length} - ${work.work_name}`);
 
     try {
       const startTime = Date.now();
@@ -167,11 +156,9 @@ export async function discoverVideosForAllWorks(
         status.bestScore = result.relevanceScore;
         status.videosFound = 1;
         status.timeElapsed = timeElapsed;
-        console.log(`✅ Found (score: ${result.relevanceScore})`);
       } else {
         status.status = 'no_video';
         status.timeElapsed = timeElapsed;
-        console.log(`❌ No video found`);
       }
 
       // Rate limiting: wait 1 second between searches
@@ -181,18 +168,8 @@ export async function discoverVideosForAllWorks(
     } catch (error) {
       status.status = 'error';
       status.error = error instanceof Error ? error.message : 'Unknown error';
-      console.log(`⚠️ Error: ${status.error}`);
     }
   }
-
-  const found = statuses.filter(s => s.status === 'found').length;
-  const missing = statuses.filter(s => s.status === 'no_video').length;
-  const errors = statuses.filter(s => s.status === 'error').length;
-
-  console.log(`\n\nDiscovery complete!`);
-  console.log(`✅ Found: ${found}/${works.length} (${Math.round(found / works.length * 100)}%)`);
-  console.log(`❌ Missing: ${missing}`);
-  console.log(`⚠️ Errors: ${errors}`);
 
   return statuses;
 }
@@ -274,7 +251,6 @@ async function updateSearchCache(
     });
 
   if (error) {
-    console.error('Error updating cache:', error);
   }
 }
 

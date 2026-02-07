@@ -124,7 +124,6 @@ export async function POST(request: NextRequest) {
 
       // Load from AUTHORITATIVE static curriculum (100% coverage guaranteed)
       const allWorks = loadAllCurriculumWorks();
-      console.log(`[Curriculum Seed] Loading ${allWorks.length} works from static curriculum`);
 
       const worksToInsert: any[] = [];
 
@@ -208,8 +207,6 @@ export async function POST(request: NextRequest) {
 
     // If area doesn't exist, auto-seed all areas for this classroom
     if (!areaData) {
-      console.log('Auto-seeding curriculum areas for classroom:', classroom_id);
-
       const areasToInsert = DEFAULT_AREAS.map(area => ({
         classroom_id,
         ...area,

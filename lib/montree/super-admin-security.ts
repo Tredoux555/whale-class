@@ -263,9 +263,7 @@ export async function sendAlert(
   if (config.email && process.env.RESEND_API_KEY) {
     try {
       // Would use Resend here
-      console.log(`[ALERT] Email to ${config.email}:`, message);
     } catch (e) {
-      console.error('[ALERT] Failed to send email:', e);
     }
   }
 

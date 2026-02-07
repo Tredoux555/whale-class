@@ -81,7 +81,7 @@ export default function PortfolioTab({ childId, childName }: PortfolioTabProps) 
 
       setCategoryGroups(groups);
     } catch (error) {
-      console.error('Failed to fetch media:', error);
+      // Error fetching media
     } finally {
       setLoading(false);
     }
@@ -381,7 +381,7 @@ function MediaThumbnail({ media, onClick }: { media: Media; onClick: () => void 
         ctx?.drawImage(video, 0, 0);
         setVideoThumb(canvas.toDataURL('image/jpeg'));
       } catch (e) {
-        console.log('Could not generate thumbnail');
+        // Could not generate thumbnail
       }
     };
   };

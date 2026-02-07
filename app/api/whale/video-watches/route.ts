@@ -149,7 +149,6 @@ export async function POST(request: NextRequest) {
     if (workCompleted) {
       try {
         await markWorkComplete(childId, curriculumWorkId);
-        console.log(`✅ Auto-completed work ${curriculumWorkId} for child ${childId} via video watch`);
       } catch (completionError) {
         // Log error but don't fail the request
         console.error('❌ Error marking curriculum work complete:', completionError);

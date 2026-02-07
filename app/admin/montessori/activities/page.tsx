@@ -90,10 +90,7 @@ export default function ActivitiesLibraryPage() {
         throw new Error('Failed to fetch activities');
       }
       const result = await response.json();
-      console.log('Activities API response:', result);
       const activitiesData = result.data || [];
-      console.log('Activities count:', activitiesData.length);
-      console.log('Setting activities state with', activitiesData.length, 'activities');
       setActivities(activitiesData);
       // Force filter update after setting activities
       setTimeout(() => {
@@ -120,7 +117,6 @@ export default function ActivitiesLibraryPage() {
   };
 
   const filterActivities = () => {
-    console.log('filterActivities called with', activities.length, 'activities');
     let filtered = [...activities];
 
     // Search filter
@@ -154,7 +150,6 @@ export default function ActivitiesLibraryPage() {
       );
     }
 
-    console.log('Setting filtered activities:', filtered.length);
     setFilteredActivities(filtered);
   };
 

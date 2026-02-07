@@ -201,18 +201,9 @@ export function getCurriculumStats(): {
  */
 export function debugCurriculumStats(): void {
   const stats = getCurriculumStats();
-  console.log('=== CURRICULUM STATS ===');
-  console.log(`Total works: ${stats.totalWorks}`);
-  console.log(`With guides: ${stats.withGuides} (${Math.round(100 * stats.withGuides / stats.totalWorks)}%)`);
-  console.log('By area:', stats.byArea);
 }
 
 // Debug: Print first 10 math works to verify sequence
 export function debugMathSequence(): void {
   const mathWorks = loadWorksForArea('mathematics');
-  console.log('=== MATH CURRICULUM SEQUENCE (first 20) ===');
-  for (const work of mathWorks.slice(0, 20)) {
-    const hasGuide = work.quick_guide ? '✓' : '✗';
-    console.log(`${work.sequence}: ${work.name} [${hasGuide}] (${work.category_name})`);
-  }
 }

@@ -53,7 +53,6 @@ async function seedCurriculumForClassroom(
 
     // Step 2: Load ALL works from static curriculum (correctly sequenced!)
     const allWorks = loadAllCurriculumWorks();
-    console.log(`[Setup] Loading ${allWorks.length} works from static curriculum`);
 
     // Step 3: Transform to database format
     const worksToInsert = allWorks.map(work => {
@@ -111,7 +110,6 @@ async function seedCurriculumForClassroom(
       }
     }
 
-    console.log(`[Setup] Seeded ${insertedCount}/${worksToInsert.length} works for classroom ${classroomId}`);
     return { success: true, worksCount: insertedCount };
 
   } catch (err) {
@@ -144,7 +142,6 @@ export async function POST(request: NextRequest) {
       classrooms: ClassroomInput[];
     };
 
-    console.log(`[Setup] Starting for school ${schoolId} with ${classrooms.length} classrooms`);
 
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID required' }, { status: 400 });
@@ -205,15 +202,12 @@ export async function POST(request: NextRequest) {
 
       if (!createdClassroom) continue;
 
-      console.log(`[Setup] Created classroom: ${createdClassroom.name}`);
       createdClassrooms.push(createdClassroom);
 
       // Seed curriculum with CORRECT sequencing
       const curriculumResult = await seedCurriculumForClassroom(supabase, createdClassroom.id);
       if (!curriculumResult.success) {
         errors.push(`Curriculum seeding failed for ${createdClassroom.name}: ${curriculumResult.error}`);
-      } else {
-        console.log(`[Setup] Seeded ${curriculumResult.worksCount} works for ${createdClassroom.name}`);
       }
 
       // Create teachers
@@ -253,7 +247,6 @@ export async function POST(request: NextRequest) {
         }
 
         if (createdTeacher) {
-          console.log(`[Setup] Created teacher: ${createdTeacher.name} (code: ${loginCode})`);
           createdTeachers.push({
             id: createdTeacher.id,
             name: createdTeacher.name,
@@ -270,7 +263,6 @@ export async function POST(request: NextRequest) {
     }
 
     const totalTime = Date.now() - startTime;
-    console.log(`[Setup] Complete! ${createdTeachers.length} teachers (${totalTime}ms)`);
 
     return NextResponse.json({
       success: true,

@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     
     // Extract text from docx
     const textContent = await extractDocxText(buffer);
-    console.log('[Upload] Extracted text length:', textContent.length);
 
     // Get existing translations for context
     const { data: translations } = await supabase
@@ -65,11 +64,10 @@ export async function POST(request: NextRequest) {
     let translatedPlan: TranslatedPlan;
     try {
       translatedPlan = await translatePlanWithClaude(
-        textContent, 
+        textContent,
         translations || [],
         curriculumWorks || []
       );
-      console.log('[Upload] Parsed assignments:', translatedPlan.assignments?.length || 0);
     } catch (claudeError: any) {
       console.error('[Upload] Claude API error:', claudeError.message);
       return NextResponse.json({ 
@@ -123,7 +121,6 @@ export async function POST(request: NextRequest) {
       if (syncResponse.ok) {
         const syncData = await syncResponse.json();
         syncResult = syncData.results || syncResult;
-        console.log(`[Upload] Auto-sync complete: ${syncData.message}`);
       }
     } catch (syncError) {
       console.error('[Upload] Auto-sync failed (non-fatal):', syncError);
@@ -283,7 +280,6 @@ async function createChildrenAndAssignments(
       
       if (newChild && !error) {
         childrenMap.set(childNameLower, newChild.id);
-        console.log(`[Upload] Created child: ${assignment.childName}`);
       } else {
         console.error(`[Upload] Failed to create child: ${assignment.childName}`, error);
       }
@@ -297,7 +293,6 @@ async function createChildrenAndAssignments(
     const childId = childrenMap.get(assignment.childName.toLowerCase());
 
     if (!childId) {
-      console.log(`[Upload] Child still not found: ${assignment.childName}`);
       continue;
     }
 
@@ -331,8 +326,6 @@ async function createChildrenAndAssignments(
 
     if (error) {
       console.error('Failed to insert assignments:', error);
-    } else {
-      console.log(`[Upload] Created ${assignments.length} weekly assignments (unlinked, sync-all will match)`);
     }
   }
 

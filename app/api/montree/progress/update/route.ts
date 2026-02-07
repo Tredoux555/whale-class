@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
     if (error) {
       // If unique constraint doesn't exist yet, fall back to manual check
       if (error.code === '42P10' || error.message?.includes('constraint')) {
-        console.log('[progress/update] Falling back to manual upsert (constraint may not exist yet)');
 
         // Check if exists
         const { data: existing } = await supabase
@@ -134,8 +133,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 });
       }
     }
-
-    console.log('[progress/update] Success:', { child_id, work_name: workNameToSave, status: statusStr });
 
     // AUTO-SYNC: Ensure work exists in curriculum (prevents orphaned progress records)
     if (classroomId && workNameToSave && area) {
@@ -182,8 +179,6 @@ export async function POST(request: NextRequest) {
                 is_custom: true,
                 is_active: true,
               });
-
-            console.log('[progress/update] Auto-created curriculum entry for:', workNameToSave);
           }
         }
       } catch (syncErr) {
@@ -211,8 +206,6 @@ export async function POST(request: NextRequest) {
         if (focusError) {
           console.error('[progress/update] Focus works update failed:', focusError);
           // Don't fail the whole request, progress was saved successfully
-        } else {
-          console.log('[progress/update] Focus work updated for area:', area);
         }
       } catch (focusErr) {
         console.error('[progress/update] Focus works error:', focusErr);

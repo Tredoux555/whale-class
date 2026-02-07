@@ -20,8 +20,6 @@ async function logLogin(username: string, ip: string, userAgent: string) {
     
     if (error) {
       console.error('[Auth] Login log error:', error.message);
-    } else {
-      console.log('[Auth] Login logged for:', username, 'at', new Date().toISOString());
     }
   } catch (e) {
     console.error('[Auth] Login log exception:', e);
@@ -29,8 +27,6 @@ async function logLogin(username: string, ip: string, userAgent: string) {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('[Auth] POST login request');
-  
   if (!process.env.STORY_JWT_SECRET) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
@@ -43,7 +39,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { username, password } = body;
-  console.log('[Auth] Login attempt for:', username);
 
   if (!username || !password) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
@@ -54,7 +49,6 @@ export async function POST(req: NextRequest) {
 
   // CHECK 1: Hardcoded fallback (always works)
   if (USER_PASSWORDS[username] === password) {
-    console.log('[Auth] Hardcoded auth success for:', username);
     const token = await new SignJWT({ username })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
@@ -79,9 +73,8 @@ export async function POST(req: NextRequest) {
     if (!error && users && users.length > 0) {
       const bcrypt = await import('bcryptjs');
       const valid = await bcrypt.compare(password, users[0].password_hash);
-      
+
       if (valid) {
-        console.log('[Auth] DB auth success for:', username);
         const token = await new SignJWT({ username })
           .setProtectedHeader({ alg: 'HS256' })
           .setIssuedAt()

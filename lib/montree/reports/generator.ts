@@ -88,14 +88,6 @@ export async function generateWeeklyReport(params: {
 
     const weekNumber = latestPlan.week_number;
     const year = latestPlan.year;
-    
-    console.log('🔍 Report generator debug:', {
-      child_id,
-      week_start,
-      week_end,
-      usingPlanWeek: weekNumber,
-      usingPlanYear: year
-    });
 
     // 4. Fetch assignments for this child this week - THE CORRECT TABLE!
     const { data: assignments, error: assignError } = await supabase
@@ -104,12 +96,6 @@ export async function generateWeeklyReport(params: {
       .eq('child_id', child_id)
       .eq('week_number', weekNumber)
       .eq('year', year);
-
-    console.log('🔍 Assignments query result:', {
-      error: assignError?.message,
-      count: assignments?.length || 0,
-      assignments: assignments?.slice(0, 3) // First 3 for brevity
-    });
 
     if (assignError) {
       console.error('Assignments fetch error:', assignError);
@@ -128,12 +114,6 @@ export async function generateWeeklyReport(params: {
         .select('id, assignment_id, media_url, notes, taken_at')
         .in('assignment_id', assignmentIds)
         .order('taken_at', { ascending: true });
-
-      console.log('🔍 Media query result:', {
-        error: mediaError?.message,
-        count: mediaData?.length || 0,
-        media: mediaData?.slice(0, 3)
-      });
 
       allMedia = mediaData || [];
     }

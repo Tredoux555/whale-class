@@ -54,7 +54,6 @@ export function usePWA() {
       navigator.serviceWorker
         .register('/montree-sw.js', { scope: '/montree/' })
         .then((registration) => {
-          console.log('[Montree] SW registered:', registration.scope);
         })
         .catch((error) => {
           console.error('[Montree] SW registration failed:', error);

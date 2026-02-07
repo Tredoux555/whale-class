@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
       throw error;
     }
 
-    console.log('[MessageHistory] Found', rows?.length || 0, 'messages');
-
     const messages = (rows || []).map(row => {
       // Handle both column names: content OR message_content
       let content = row.content || row.message_content || null;

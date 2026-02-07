@@ -142,13 +142,11 @@ function updateSyncState(updates: Partial<SyncState>) {
 }
 
 async function handleOnline() {
-  console.log('📶 Online');
   updateSyncState({ isOnline: true });
   processQueue();
 }
 
 function handleOffline() {
-  console.log('📴 Offline');
   updateSyncState({ isOnline: false });
 }
 
@@ -267,12 +265,9 @@ async function uploadItem(item: MediaQueueItem): Promise<boolean> {
     media.syncError = undefined;
     await db.saveMedia(media);
     
-    console.log(`✅ Uploaded: ${media.id}`);
     return true;
     
   } catch (error) {
-    console.error(`❌ Upload failed: ${media.id}`, error);
-    
     item.error = error instanceof Error ? error.message : 'Unknown error';
     media.syncStatus = 'pending';
     media.syncError = item.error;

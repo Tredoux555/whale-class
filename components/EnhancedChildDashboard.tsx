@@ -42,10 +42,8 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
 
   useEffect(() => {
     if (childId) {
-      console.log('EnhancedChildDashboard: useEffect triggered, childId:', childId);
       loadChildData();
     } else {
-      console.error('EnhancedChildDashboard: No childId provided');
       setError('No child ID provided');
       setLoading(false);
     }
@@ -53,47 +51,33 @@ export default function EnhancedChildDashboard({ childId }: EnhancedChildDashboa
 
   const loadChildData = async () => {
     try {
-      console.log('loadChildData: Starting, childId:', childId);
       setLoading(true);
       setError(null);
 
-      console.log('loadChildData: Fetching child data...');
       const childRes = await fetch(`/api/whale/children/${childId}`);
-      console.log('loadChildData: Child response status:', childRes.status);
-      
+
       if (!childRes.ok) {
         const errorData = await childRes.json().catch(() => ({ error: 'Failed to load child data' }));
         throw new Error(errorData.error || `Failed to load child data: ${childRes.status}`);
       }
-      
+
       const childData = await childRes.json();
-      console.log('loadChildData: Child data response:', childData);
-      console.log('loadChildData: Child data.data:', childData.data);
-      
+
       if (!childData.data) {
-        console.error('loadChildData: No child data in response:', childData);
         throw new Error('Child data not found in response');
       }
-      
-      console.log('loadChildData: Setting child state:', childData.data);
+
       setChild(childData.data);
-      console.log('loadChildData: Child state set, fetching activity...');
 
       const activityRes = await fetch(`/api/whale/daily-activity?childId=${childId}`);
-      console.log('loadChildData: Activity response status:', activityRes.status);
-      
+
       if (activityRes.ok) {
         const activityData = await activityRes.json();
-        console.log('loadChildData: Activity data response:', activityData);
         setTodayActivity(activityData.data);
       }
-      
-      console.log('loadChildData: Completed successfully');
     } catch (err: any) {
-      console.error('loadChildData: Error occurred:', err);
       setError(err.message || 'Failed to load child data');
     } finally {
-      console.log('loadChildData: Setting loading to false');
       setLoading(false);
     }
   };

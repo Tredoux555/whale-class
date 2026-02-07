@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     try {
       await execAsync('python3 -c "import reportlab"');
     } catch {
-      console.log('Installing reportlab...');
       await execAsync('pip3 install reportlab --break-system-packages').catch(() => {
         // Try without --break-system-packages flag
         return execAsync('pip3 install reportlab');
