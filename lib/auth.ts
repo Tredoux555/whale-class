@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
-const SECRET = process.env.ADMIN_SECRET || "whale-class-secret-change-in-production";
+const SECRET = process.env.ADMIN_SECRET;
+if (!SECRET) {
+  throw new Error("ADMIN_SECRET environment variable is required");
+}
 const SECRET_KEY = new TextEncoder().encode(SECRET);
 
 export interface AdminSession {
