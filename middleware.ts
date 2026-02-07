@@ -74,6 +74,7 @@ export async function middleware(req: NextRequest) {
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
     '/montree',    // Montree app - has its own auth system (teacher/parent logins)
+    '/home',       // Montree Home - has its own auth system (family logins)
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
