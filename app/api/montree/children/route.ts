@@ -136,8 +136,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
 
-    console.log('[children API] GET request, classroom_id:', classroomId);
-
     const supabase = getSupabase();
 
     let query = supabase
@@ -156,7 +154,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch children', details: error.message }, { status: 500 });
     }
 
-    console.log('[children API] Found', data?.length || 0, 'children');
     return NextResponse.json({ children: data || [] });
 
   } catch (error) {

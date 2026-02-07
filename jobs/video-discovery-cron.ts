@@ -8,7 +8,6 @@ import { getSupabase } from '@/lib/supabase-client';
 import { getWorksNeedingDiscovery, discoverVideosForAllWorks } from '@/lib/youtube/discovery';
 
 export async function runVideoDiscoveryCron() {
-  console.log('[CRON] Starting daily video discovery...');
   const startTime = Date.now();
 
   try {
@@ -16,7 +15,6 @@ export async function runVideoDiscoveryCron() {
     const works = await getWorksNeedingDiscovery();
 
     if (works.length === 0) {
-      console.log('[CRON] No works need discovery');
       return {
         success: true,
         worksProcessed: 0,
@@ -24,8 +22,6 @@ export async function runVideoDiscoveryCron() {
         duration: Date.now() - startTime,
       };
     }
-
-    console.log(`[CRON] Discovering videos for ${works.length} works...`);
 
     // Run discovery
     const results = await discoverVideosForAllWorks(works, {
@@ -37,9 +33,6 @@ export async function runVideoDiscoveryCron() {
     const failed = results.filter(r => r.status === 'error' || r.status === 'no_video').length;
 
     const duration = Date.now() - startTime;
-
-    console.log(`[CRON] Discovery complete: ${found} videos found, ${failed} failed`);
-    console.log(`[CRON] Duration: ${duration}ms`);
 
     return {
       success: true,
@@ -71,7 +64,6 @@ export default async function handler() {
 if (require.main === module) {
   runVideoDiscoveryCron()
     .then(result => {
-      console.log('Result:', result);
       process.exit(result.success ? 0 : 1);
     })
     .catch(error => {

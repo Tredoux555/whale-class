@@ -145,7 +145,6 @@ export async function seedSchoolCurriculum(schoolId: string): Promise<{
   // Build the description lookup from comprehensive guides
   // This ensures all parent descriptions are included during seeding
   const descriptionLookup = buildDescriptionLookup();
-  console.log(`Loaded ${descriptionLookup.size} parent descriptions from guides`);
 
   try {
     // Process each area from stem

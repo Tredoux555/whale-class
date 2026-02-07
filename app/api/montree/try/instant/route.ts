@@ -79,7 +79,6 @@ async function seedCurriculumForClassroom(
       if (!error) count += batch.length;
     }
 
-    console.log(`[Trial] Seeded ${count} curriculum works for classroom ${classroomId}`);
     return { success: true, worksCount: count };
   } catch (err) {
     console.error('[Trial] Curriculum seed error:', err);

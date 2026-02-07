@@ -23,7 +23,6 @@ export function GlobalVideoSetup() {
             try {
               if ('wakeLock' in navigator && !wakeLock) {
                 wakeLock = await (navigator as any).wakeLock.request('screen');
-                console.log('Screen wake lock activated for video playback');
               }
             } catch (err) {
               console.warn('Wake lock failed:', err);
@@ -35,7 +34,6 @@ export function GlobalVideoSetup() {
               if (wakeLock) {
                 await wakeLock.release();
                 wakeLock = null;
-                console.log('Screen wake lock released');
               }
             } catch (err) {
               console.warn('Failed to release wake lock:', err);
@@ -47,7 +45,6 @@ export function GlobalVideoSetup() {
               if (wakeLock) {
                 await wakeLock.release();
                 wakeLock = null;
-                console.log('Screen wake lock released (video ended)');
               }
             } catch (err) {
               console.warn('Failed to release wake lock:', err);
@@ -76,7 +73,6 @@ export function GlobalVideoSetup() {
         try {
           await wakeLock.release();
           wakeLock = null;
-          console.log('Screen wake lock released (page hidden)');
         } catch (err) {
           console.warn('Failed to release wake lock:', err);
         }

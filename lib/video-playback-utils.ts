@@ -65,7 +65,6 @@ export async function requestGlobalWakeLock() {
   try {
     if ('wakeLock' in navigator) {
       globalWakeLock = await (navigator as any).wakeLock.request('screen');
-      console.log('Global screen wake lock activated');
       return globalWakeLock;
     }
   } catch (err) {
@@ -79,7 +78,6 @@ export async function releaseGlobalWakeLock() {
     if (globalWakeLock) {
       await globalWakeLock.release();
       globalWakeLock = null;
-      console.log('Global screen wake lock released');
     }
   } catch (err) {
     console.warn('Failed to release wake lock:', err);

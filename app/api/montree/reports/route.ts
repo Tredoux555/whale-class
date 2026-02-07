@@ -155,8 +155,6 @@ export async function POST(request: NextRequest) {
     const weekStartTime = `${week_start}T00:00:00`;
     const weekEndTime = week_end ? `${week_end}T23:59:59` : new Date().toISOString();
 
-    console.log(`[Reports] Querying progress for ${child_id} from ${weekStartTime} to ${weekEndTime}`);
-
     // Get ALL progress for this child, then filter by date in JS
     // This handles records with NULL updated_at (old records before fix)
     const { data: allProgress, error: progressError } = await supabase
@@ -173,16 +171,8 @@ export async function POST(request: NextRequest) {
 
     // Debug: show sample dates
     if (allProgress && allProgress.length > 0) {
-      const sample = allProgress.slice(0, 3).map(p => ({
-        work: p.work_name?.substring(0, 20),
-        updated: p.updated_at?.substring(0, 10),
-        presented: p.presented_at?.substring(0, 10),
-      }));
-      console.log(`[Reports] Sample records:`, JSON.stringify(sample));
-      console.log(`[Reports] Week range: ${weekStartTime} to ${weekEndTime}`);
+      // stripped
     }
-
-    console.log(`[Reports] Found ${weekProgress?.length || 0} progress records for week (from ${allProgress?.length || 0} total)`, progressError || '');
 
     // STEP 4: Build works with parent descriptions using the CHAIN
     // progress.work_name → curriculum.name → work_key → brain.slug → descriptions
@@ -215,7 +205,6 @@ export async function POST(request: NextRequest) {
     // Log matching stats for debugging
     const matched = worksWithDetails.filter(w => w._matched_brain).length;
     const unmatched = worksWithDetails.filter(w => !w._matched_brain).map(w => w.name);
-    console.log(`Report: ${matched}/${worksWithDetails.length} works matched. Unmatched:`, unmatched);
 
     // Get photos from montree_media
     const { data: mediaItems } = await supabase
@@ -249,7 +238,6 @@ export async function POST(request: NextRequest) {
       else if (s === 2 || s === 'practicing') stats.practicing++;
       else if (s === 3 || s === 'mastered' || s === 'completed') stats.mastered++;
     }
-    console.log('[Reports] Stats calculated:', stats);
 
     // Group by area
     const worksByArea: Record<string, any[]> = {};

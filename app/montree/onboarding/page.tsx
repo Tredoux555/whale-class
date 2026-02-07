@@ -604,14 +604,9 @@ export default function OnboardingPage() {
           }
           return prev;
         });
-
-        console.log(`Custom work "${workName}" saved to classroom curriculum`);
-      } else {
-        console.error('Failed to save custom work');
-        // Could rollback optimistic update here if needed
       }
     } catch (err) {
-      console.error('Error saving custom work:', err);
+      // Error saving custom work
     }
   };
 

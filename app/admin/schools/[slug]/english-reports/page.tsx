@@ -158,7 +158,6 @@ export default function EnglishReportsPage() {
           setConnected(false);
         }
       } catch (err) {
-        console.log('API failed, using fallback');
         setChildren(FALLBACK_STUDENTS);
         setConnected(false);
       } finally {

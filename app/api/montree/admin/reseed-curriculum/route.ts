@@ -52,7 +52,6 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    console.log(`[Reseed] Starting for classroom: ${classroom.name} (${classroomId})`);
 
     // Step 1: Delete existing curriculum works and areas
     const { error: deleteWorksErr } = await supabase
@@ -103,7 +102,6 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
 
     // Step 3: Load ALL works from static curriculum
     const allWorks = loadAllCurriculumWorks();
-    console.log(`[Reseed] Loading ${allWorks.length} works from static curriculum`);
 
     // Step 4: Transform to database format
     const worksToInsert = allWorks.map(work => {
@@ -152,7 +150,6 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
       }
     }
 
-    console.log(`[Reseed] Complete! Seeded ${insertedCount} works for ${classroom.name}`);
 
     // Verify by getting a sample
     const { data: sampleWorks } = await supabase

@@ -224,13 +224,9 @@ async function buildProgressRecords(
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Starting bulk import endpoint');
-
     // Parse and validate request
     const body = await request.json();
     const { classroomId, students } = validateRequest(body);
-
-    console.log(`Processing bulk import: classroomId=${classroomId}, studentCount=${students.length}`);
 
     const supabase = getSupabase();
 
@@ -297,7 +293,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Batch insert children
-    console.log(`Inserting ${childrenToInsert.length} children records`);
     const { data: insertedChildren, error: insertError } = await supabase
       .from('montree_children')
       .insert(childrenToInsert)
@@ -340,7 +335,6 @@ export async function POST(request: NextRequest) {
 
     // Batch insert progress records if any
     if (progressRecordsToInsert.length > 0) {
-      console.log(`Upserting ${progressRecordsToInsert.length} progress records`);
       const { error: progressError } = await supabase
         .from('montree_child_progress')
         .upsert(progressRecordsToInsert, { onConflict: 'child_id,work_name' });
@@ -361,8 +355,6 @@ export async function POST(request: NextRequest) {
       response.failed = students.length - createdCount;
       response.errors = errors;
     }
-
-    console.log(`Bulk import completed: created=${createdCount}, errors=${errors.length}`);
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

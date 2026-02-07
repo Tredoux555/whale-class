@@ -63,11 +63,10 @@ export function FlashcardMaker() {
     try {
       const res = await fetch('/api/admin/flashcard-maker/videos');
       const data = await res.json();
-      console.log('[FlashcardMaker] Videos API response:', data);
       if (data.success) {
         setUploadedVideos(data.videos || []);
       } else {
-        console.error('[FlashcardMaker] API error:', data.error);
+        console.error('API error:', data.error);
       }
     } catch (err) {
       console.error('Failed to load videos:', err);
@@ -182,8 +181,7 @@ export function FlashcardMaker() {
         throw new Error(error.message || 'Failed to extract frames');
       }
       
-      const { frames: extractedFrames, debug } = await extractRes.json();
-      console.log('Extraction debug:', debug);
+      const { frames: extractedFrames } = await extractRes.json();
       setFrames(extractedFrames);
 
       setStatus({ 

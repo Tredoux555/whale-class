@@ -87,8 +87,6 @@ export function VideoPlayer({
       const data = await response.json();
 
       if (data.success) {
-        console.log('✅ Watch progress recorded:', data.message);
-
         // If work was completed, trigger callback
         if (data.workCompleted && !watchData.hasReportedCompletion) {
           watchData.hasReportedCompletion = true;
@@ -97,10 +95,10 @@ export function VideoPlayer({
           }
         }
       } else {
-        console.error('❌ Failed to record watch progress:', data.error);
+        console.error('Failed to record watch progress:', data.error);
       }
     } catch (error) {
-      console.error('❌ Error reporting watch progress:', error);
+      console.error('Error reporting watch progress:', error);
       // Don't throw - video should still play even if tracking fails
     }
   };
@@ -160,7 +158,6 @@ export function VideoPlayer({
           onReady: (event: any) => {
             const player = event.target;
             watchDataRef.current.videoDuration = player.getDuration();
-            console.log('🎬 Video player ready, duration:', watchDataRef.current.videoDuration);
           },
           onStateChange: (event: any) => {
             const player = event.target;
@@ -182,24 +179,22 @@ export function VideoPlayer({
 
             // State 1 = playing, 2 = paused, 0 = ended
             if (event.data === 1) {
-              console.log('▶️ Video playing');
+              // Video playing
             } else if (event.data === 2) {
-              console.log('⏸️ Video paused, reporting progress...');
               reportWatchProgress();
             } else if (event.data === 0) {
-              console.log('🏁 Video ended, reporting final progress...');
               watchDataRef.current.totalWatchedSeconds = duration; // Mark as fully watched
               reportWatchProgress();
             }
           },
           onError: (event: any) => {
-            console.error('❌ YouTube player error:', event.data);
+            console.error('YouTube player error:', event.data);
             setError('Failed to load video');
           },
         },
       });
     } catch (err) {
-      console.error('❌ Error creating YouTube player:', err);
+      console.error('Error creating YouTube player:', err);
       setError('Failed to initialize video player');
     }
 

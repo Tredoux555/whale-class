@@ -80,7 +80,6 @@ export const CurriculumVisualization: React.FC<
       setError(
         err instanceof Error ? err.message : 'Failed to load curriculum data'
       );
-      console.error('Error fetching curriculum data:', err);
     } finally {
       setLoading(false);
     }
@@ -182,8 +181,7 @@ export const CurriculumVisualization: React.FC<
         onClose={() => setSelectedActivityId(null)}
         onViewDetails={handleActivityDetail}
         onAssign={() => {
-          // You can add assign logic here
-          console.log('Assigning activity:', selectedActivityId);
+          // Assign logic here
         }}
       />
 

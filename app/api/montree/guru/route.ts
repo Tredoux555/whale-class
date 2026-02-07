@@ -75,7 +75,6 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // 1. Build child context
-    console.log('[Guru] Building child context for:', child_id);
     const childContext = await buildChildContext(supabase, child_id);
 
     if (!childContext) {
@@ -86,16 +85,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Retrieve relevant knowledge
-    console.log('[Guru] Retrieving knowledge for question:', question.slice(0, 50));
     const knowledge = await retrieveKnowledge(question, 4);
 
     // 3. Build prompt
-    console.log('[Guru] Building prompt...');
     const { systemPrompt, userPrompt } = buildGuruPrompt(question, childContext, knowledge);
 
     // 4. Call Claude API
-    console.log('[Guru] Calling Claude API...');
-    
     // Ensure anthropic is not null (already checked above, but TypeScript needs this)
     if (!anthropic) {
       return NextResponse.json(
@@ -124,7 +119,6 @@ export async function POST(request: NextRequest) {
 
     // 6. Save to database
     const processingTime = Date.now() - startTime;
-    console.log('[Guru] Saving interaction, processing time:', processingTime, 'ms');
 
     const { data: saved, error: saveError } = await supabase
       .from('montree_guru_interactions')

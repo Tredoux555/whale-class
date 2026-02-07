@@ -86,7 +86,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log(`✅ School ${schoolId} updated:`, updateData);
     return NextResponse.json({ school: data });
 
   } catch (error) {
@@ -111,8 +110,6 @@ export async function DELETE(request: NextRequest) {
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
     }
-
-    console.log(`🗑️ Deleting school ${schoolId} and all related data...`);
 
     // Delete in order to respect foreign keys
     // 1. Delete student aliases
@@ -146,7 +143,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: schoolError.message }, { status: 500 });
     }
 
-    console.log(`✅ School ${schoolId} deleted successfully`);
     return NextResponse.json({ success: true });
 
   } catch (error) {

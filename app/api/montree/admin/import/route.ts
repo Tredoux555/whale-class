@@ -63,11 +63,9 @@ export async function POST(request: NextRequest) {
     
     // Extract text from docx
     const textContent = await extractDocxText(buffer);
-    console.log('[Import] Extracted text length:', textContent.length);
 
     // Use Claude to parse
     const parsedPlan = await parseWithClaude(textContent);
-    console.log('[Import] Parsed assignments:', parsedPlan.assignments?.length || 0);
 
     if (!parsedPlan.assignments?.length) {
       return NextResponse.json({ error: 'No students found in document' }, { status: 400 });
