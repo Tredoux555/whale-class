@@ -7,21 +7,26 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 LAUNCH READY — Codebase cleanup complete (health 5.5 → 9.5+/10)
+**Status**: 🚀 LAUNCH READY — Codebase cleanup complete (health 5.5 → ~9.1/10). Next: Montree Home clone.
 
 ## Recent Changes
 
 ### Session 154 - Feb 7, 2026 (CLEANUP FINAL PUSH — 8.5+ TARGET HIT)
 
-**Handoff:** `docs/HANDOFF_SESSION_154_CLEANUP_FINAL.md`
+**Handoff:** `HANDOFF.md`
 
-**Health Score: 7.7 → ~9.1/10** — exceeded the 8.5 target.
+**Health Score: 7.7 → ~9.1/10** — exceeded the 8.5 target. All pushed to GitHub.
 
 1. **Type safety blitz** — Fixed 135 `:any` annotations across 95 files. Proper `unknown` for catch blocks, `Record<string, unknown>` for dynamic objects, domain interfaces where possible. Only 27 remaining (all legitimate casts).
-2. **File splits** — Story admin dashboard (1,437→279 lines, 20 files) and demo tutorial (1,132→239 lines, 10 files)
+2. **File splits (round 1)** — Story admin dashboard (1,437→279 lines, 20 files) and demo tutorial (1,132→239 lines, 10 files).
 3. **Dead code purge** — Deleted 44 orphaned components (-10,189 lines). Assessment test games, old dashboard components, unused reports, tree visualizations, etc. Also deleted orphaned `/admin/montree-progress` page.
 4. **Import cleanup** — Fixed 5 stale imports (lib/db/children.ts, lib/db/progress.ts, video-watches, activity-selection, auth-context). 100% Supabase consolidation achieved.
 5. **Broken link fix** — `/admin/progress` linked to deleted page, redirected to active route.
+6. **File splits (round 2)** — Split last 4 oversized files:
+   - CardGenerator: 1,760 → 948 (print-utils.ts, CropOverlay.tsx, CardPreview.tsx extracted)
+   - Onboarding: 982 → 582 (CurriculumPicker.tsx, AgePicker.tsx extracted)
+   - english-procurement: 1,083 → 702 (SequenceView.tsx extracted)
+   - montree-home: 1,032 → 900 (types.ts + constants.ts extracted)
 
 **Files Created (key new files):**
 
@@ -34,24 +39,18 @@
 | `app/montree/demo/tutorial/components/` | 7 components extracted from tutorial |
 | `app/montree/demo/tutorial/data.ts` | Tutorial configuration data |
 | `app/montree/demo/tutorial/types.ts` | Tutorial interfaces |
+| `components/card-generator/print-utils.ts` | Print HTML generation (484 lines) |
+| `components/card-generator/CropOverlay.tsx` | Crop modal component (167 lines) |
+| `components/card-generator/CardPreview.tsx` | Card preview component (251 lines) |
+| `app/montree/onboarding/components/` | CurriculumPicker + AgePicker extracted |
+| `app/montree/onboarding/types.ts` | Onboarding interfaces |
+| `app/admin/montree-home/types.ts` | Family, HomeChild, HomeCurriculumWork types |
+| `app/admin/montree-home/constants.ts` | AREA_CONFIG, STATUS_CONFIG, TABS |
+| `app/admin/english-procurement/components/SequenceView.tsx` | Sequence view (435 lines) |
 
-**Commits (5 this session):**
+**Commits (8 total, all pushed):**
 ```
-6fd3149 fix: update broken link to deleted /admin/montree-progress page
-f444f68 fix: repair last 2 stale supabase imports (100% consolidation)
-cd14a03 chore: remove 44 orphaned components and 1 dead admin page (-10,189 lines)
-f9f4ada refactor: split story dashboard (1437→279) and tutorial (1132→239)
-d7cd388 fix: replace all :any annotations with proper types across 95 files
-```
-
-6. **Final file splits** — Split last 4 oversized files:
-   - CardGenerator: 1,760 → 948 (print-utils, CropOverlay, CardPreview extracted)
-   - Onboarding: 982 → 582 (CurriculumPicker, AgePicker extracted)
-   - english-procurement: 1,083 → 702 (SequenceView extracted)
-   - montree-home: 1,032 → 900 (types + constants extracted)
-
-**Commits (7 this session):**
-```
+80083d0 docs: update BRAIN.md with final file splits
 e59bc65 refactor: split 4 remaining large files under 1,000 lines
 bcc11b3 docs: update BRAIN.md and HANDOFF.md for session 154
 6fd3149 fix: update broken link to deleted /admin/montree-progress page
@@ -60,8 +59,6 @@ cd14a03 chore: remove 44 orphaned components and 1 dead admin page (-10,189 line
 f9f4ada refactor: split story dashboard (1437→279) and tutorial (1132→239)
 d7cd388 fix: replace all :any annotations with proper types across 95 files
 ```
-
-**⚠️ PENDING:** `git push` needed (1 commit). Next project: Montree Home.
 
 ---
 
@@ -126,7 +123,7 @@ b6630f9 fix: resolve fetchCurriculum reference-before-initialization
 203fd9e refactor: consolidate 3 Supabase clients into single lib/supabase-client.ts
 ```
 
-**⚠️ PENDING:** `git push` needed. Next project: Montree Home (parent-facing home program).
+**All pushed to GitHub.** Next project: Montree Home (parent-facing home program).
 
 ---
 
@@ -1319,7 +1316,7 @@ All 309 Montessori works now have comprehensive teacher guides.
 | `app/montree/principal/setup/page.tsx` | School setup flow |
 | `app/api/montree/principal/setup/route.ts` | Setup API - uses curriculum-loader.ts now |
 | `app/api/montree/analysis/route.ts` | AI analysis API |
-| `lib/montree/supabase.ts` | **Shared Supabase client with retry logic** — use this, NOT inline `getSupabase()` |
+| `lib/supabase-client.ts` | **CONSOLIDATED Supabase client** (singleton + retry). `getSupabase()` for server (service role), `createSupabaseClient()` for browser (anon key). ALL routes import from here. |
 | `lib/montree/db.ts` | Database operations |
 
 ## Database
@@ -1362,153 +1359,56 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 
 ## Pending / Next Up
 
-### ⚠️ IMMEDIATE: Cleanup from Sessions 148-150
-- [ ] **Push all changes to GitHub and deploy** — Session 150 has 6 commits (`68fc6f5` → `8a6e085`) ready to push
+### 🚀 NEXT PROJECT: Montree Home (Parent-Facing Home Program)
+
+**Assessment (from Session 153): 47-66 hours estimated.**
+
+Clone the existing Montree classroom system for home use by parents.
+
+**What copies as-is:**
+- 27 game routes (letter-tracer, word-building, etc.)
+- 35 reusable components
+- 68-work home curriculum at `lib/curriculum/data/home-curriculum.json`
+
+**What changes:**
+- Email/password auth (no school login flow, no teacher codes)
+- No classroom abstractions (parent → children directly)
+- 5 new DB tables needed (home_families, home_children, home_progress, home_curriculum, home_sessions)
+- 15 components need modification (remove classroom references)
+- Simplified UI (no teacher dashboard, no principal flow)
+
+**Key decisions for cloning session:**
+- Route structure: `/home/*` or `/montree-home/*`?
+- Shared vs duplicated components strategy
+- DB migration approach (new tables vs extending existing)
+
+**Handoff:** `HANDOFF.md` (oriented for cloning)
+
+---
+
+### 📋 Backlog (Lower Priority)
 - [ ] **Reseed Language curriculum** — Hit `/api/montree/admin/reseed-curriculum` to populate all 43 language works (DB only has 18)
-- [ ] **Remove diagnostic debug output** from `/api/montree/try/instant/route.ts` (currently returns full error details — not production-safe)
-- [ ] **Fix onboarding page old emoji icons** — `/app/montree/onboarding/page.tsx` still has old emoji CURRICULUM_AREAS
-- [x] **~~Verify 220 works is correct~~** — FIXED: Was hardcoded "220", changed to "268" (Session 149)
-- [ ] **Migrate remaining 64 API routes to shared Supabase client** — Currently use inline `getSupabase()` without retry logic (includes `leads/route.ts` noted in Session 150 audit)
-- [ ] **Investigate Supabase connection timeouts** — Root cause appears to be network instability to Cloudflare edge (172.64.149.246:443). Retry logic helps but doesn't solve root cause
-- [ ] **Clean up `montessori_works` brain table** — No longer used by any seeding path (all use curriculum-loader now), but table still exists
-- [ ] **Remove `seed/parent-descriptions.ts`** — 995 lines, only imported by a script with a field mapping bug. comprehensive-guides now provides 100% coverage
-
-### 🥇 FIRST PROJECT: Student Onboarding System
-
-**Handoff:** `/docs/HANDOFF_ONBOARDING_SYSTEM.md`
-**Mockup:** `/onboarding-mockup.jsx`
-
-**What it does:**
-Excel-style spreadsheet for onboarding students:
-1. Teacher fills in: Name, Age, Time at School, current level per area, Temperament, Focus
-2. Clicks "Ask Guru" → Guru recommends specific works with prerequisite alerts
-3. Teacher approves → Works appear in child's profile tab for the week
-
-**Key Features:**
-- Prerequisite intelligence (if child attempts pencil grip → redirect to tonging)
-- Voice input option (Web Speech API)
-- Integrates with existing Guru system (`/lib/montree/guru/`)
-
-**Implementation Phases:**
-1. Spreadsheet UI (2-3 hrs)
-2. Guru Integration (3-4 hrs)
-3. Approval Flow (2-3 hrs)
-4. Profile Integration (1-2 hrs)
-5. Voice Input (2-3 hrs) - optional
-
-**Start prompt:**
-```
-Build the Student Onboarding System.
-Read HANDOFF_ONBOARDING_SYSTEM.md first.
-The design mockup is at /mnt/whale/onboarding-mockup.jsx
-```
-
----
-
-### ⚠️ IMMEDIATE: Test Education for All System
-1. Test teacher registration at `/montree/teacher/register`
-2. Test super-admin status changes at `/montree/super-admin`
-3. Push all changes to GitHub and deploy
-
-### 📋 Education for All - Next Steps
-- [ ] **Test teacher registration** - Create account, verify 90-day trial in DB
-- [ ] **Test super-admin** - Change school status (Trial → Free → Paid)
-- [ ] **Start NPO outreach** - Contact 14 seeded organizations
-- [ ] **Build Impact Fund dashboard** - Track contributions when revenue starts
-
-### ⚠️ PREVIOUS: Push Commit 9f62782
-Parent report fixes committed locally but not pushed. Run:
-```bash
-git push origin main
-```
-
-### 📸 3-Part Card Images
-**Existing images:** `/out/images/words/` (cat.jpeg, fan.jpeg, hat.png, mat.jpeg, pan.jpeg)
-**Still needed:** bat, sat, rat, can, man, cap, tap, bag, tag
-**Target:** 15 CVC "a" series words for Montessori 3-part cards
-
----
-
-### 🚀 TESTING WEEK MISSION PLAN (Feb 2, 2026)
-
-**Handoff:** `/docs/HANDOFF_TESTING_WEEK.md`
-
-#### Phase 1: Quick Fixes (1-2 hours)
-- [ ] **FIX: Capture retake bug** - Camera stream doesn't restart properly
-  - File: `components/montree/media/CameraCapture.tsx`
-- [ ] **ADD: Note save confirmation** - Add toast when note saved
-
-#### Phase 2: Photo Management System (4-6 hours)
-- [ ] **BUILD: Photo Manager Page** - `/montree/dashboard/photos/page.tsx`
-  - Grid view, filter by child/date/area
-  - Edit caption, delete, bulk actions
-- [ ] **BUILD: Photo Editor Modal** - View, edit tags, delete, reassign
-
-#### Phase 3: Video Capture (3-4 hours)
-- [ ] **ADD: Video mode** to CameraCapture component
-  - Toggle 📷/🎥, MediaRecorder API, 30 sec max
-  - Upload to Supabase storage
-
-#### Phase 4: Teacher Summary System (6-8 hours) ⭐ USE GURU!
-- [ ] **BUILD: Summary Generator** - `/montree/dashboard/[childId]/summary/page.tsx`
-  - Collect: Focus works, progress, areas worked vs ignored
-  - AI Summary: "This week {child} focused on... achieved... consider..."
-- [ ] **BUILD: Summary Dashboard** - Week selector, area chart, productivity score
-  - Neglected areas warning, "Ask Guru" button, Export to PDF
-
-#### Phase 5: Curriculum Sequence Editor (2-3 hours)
-- [ ] **ENHANCE: Curriculum page** - `/montree/dashboard/curriculum`
-  - Drag-and-drop reordering, add/remove works
-
-#### Phase 6: Parent Portal Enhancements (4-6 hours)
-- [ ] **BUILD: Parent communication** - Inbox, announcements
-- [ ] **BUILD: Approved photo gallery** for parents
-- [ ] **BUILD: Report history** and milestones timeline
-
-#### Quick Access URLs
-| Feature | URL |
-|---------|-----|
-| Curriculum Editor | `/montree/dashboard/curriculum` |
-| Photo Gallery | `/montree/dashboard/media` |
-| Print Weekly | `/montree/dashboard/print` |
-| Parent Portal | `/montree/parent` |
-
----
-
-### Focus Work System (FIXED! 🎯)
-- [x] **FIXED: Focus work not persisting** - Now saves to `montree_child_focus_works` table
-- [x] **FIXED: Progress API missing is_focus** - Now fetches and marks focus works
-- [x] **FIXED: WorkWheelPicker duplicate buttons** - Simplified to just "Add Work"
-- [x] **FIXED: Photo-work association** - Capture passes workName/area params
-
-### MONTESSORI GURU (ALL PHASES COMPLETE! 🔮✅)
-- [x] **COMPLETE: Knowledge base** - 7 books, 96,877 lines collected
-- [x] **COMPLETE: Architecture** - System design documented
-- [x] **COMPLETE: Topic index** - Auto-generated with 34 topics, 1869 line ranges
-- [x] **COMPLETE: Database tables** - Migration 110 created and run
-- [x] **COMPLETE: Guru API** - `/api/montree/guru/route.ts` + streaming
-- [x] **COMPLETE: Guru UI** - `/app/montree/dashboard/guru/page.tsx` with streaming
-- [x] **COMPLETE: Ask Guru button** - Added to child detail pages
-- [x] **COMPLETE: Mental profile editor** - `/app/montree/dashboard/[childId]/profile/page.tsx`
-- [x] **COMPLETE: Observation logging** - `/app/montree/dashboard/[childId]/observations/page.tsx`
-- [x] **COMPLETE: Response streaming** - SSE via `/api/montree/guru/stream/route.ts`
-- [x] **COMPLETE: Pattern detection** - Auto-detects from observations
-- [x] **COMPLETE: Few-shot examples** - 6 comprehensive Q&A pairs
-- [x] **COMPLETE: Follow-up tracking** - `/api/montree/guru/followup/route.ts`
-
-### Previous Items
-- [x] **FIXED: Students not saving** - age must be INT, no school_id column
-- [x] **FIXED: Curriculum sequence** - Now uses static JSON loader
-- [x] **FIXED: Chinese removed** - English only curriculum
-- [x] **COMPLETE: Curriculum Guides** - 309/309 works (100%)! All have quick_guide + presentation_steps
-- [x] **COMPLETE: Parent Descriptions** - 490/490 works (100%)! All have parent_description + why_it_matters
-- [x] **BACKFILLED: Panda & Whale classrooms** - Both have full guide data
-- [ ] **TEST: Add student from dashboard** - Should work now! Try adding Amy again.
-- [ ] **FIX: Subscription status** - New schools show "Inactive" not "trialing"
-- [ ] **FIX: Teachers page** - "Failed to load data" error
-- [ ] **FIX: Remove hardcoded password** - `870602` in super-admin page
+- [ ] **Remove diagnostic debug output** from `/api/montree/try/instant/route.ts`
+- [ ] **Clean up `montessori_works` brain table** — No longer used by any seeding path
+- [ ] **Test Education for All system** — teacher registration, super-admin status changes
+- [ ] **Start NPO outreach** — 14 organizations seeded in DB
+- [ ] **FIX: Subscription status** — New schools show "Inactive" not "trialing"
+- [ ] **FIX: Remove hardcoded password** — `870602` in super-admin page
 - [ ] Run migration `099_super_admin_security.sql` for audit tables
-- [x] **PUSHED**: Git commits including migrations 104-108 (Feb 1, 2026)
+
+### Completed Items (Sessions 141-154)
+- [x] Codebase cleanup: health 5.5 → ~9.1/10 (Sessions 152-154)
+- [x] Focus work persistence fix
+- [x] Montessori Guru complete (all 5 phases)
+- [x] Curriculum guides 309/309 (100%)
+- [x] Parent descriptions 490/490 (100%)
+- [x] Student tenure feature
+- [x] Education for All pricing system
+- [x] DM/messaging system
+- [x] Instant trial system
+- [x] Report preview + send flow
+- [x] Photo-work association
+- [x] All changes pushed to GitHub
 
 ## Gotchas
 - **🚨 DEPLOYED DB HAS ALL COLUMNS FROM ALL MIGRATIONS** — The Supabase DB was built by running ALL migrations (028→067→070→080→098→115). `owner_email` is NOT NULL. Don't strip columns from inserts assuming they don't exist — check the actual error message!
@@ -1520,7 +1420,7 @@ git push origin main
 - **`montree_children` has NO `school_id` column** - only use `classroom_id`
 - **Curriculum sequence** - ALWAYS use `/lib/montree/curriculum-loader.ts`, NOT Brain database
 - **🚨 ALL 4 seeding routes must include descriptions** — `parent_description`, `why_it_matters`, `quick_guide`, `presentation_steps` — if you add a new seeding route, include all 4 fields!
-- **🚨 Supabase connection can timeout** — Use shared client from `lib/montree/supabase.ts` (has retry logic). Don't create inline `getSupabase()` in new routes
+- **🚨 Supabase connection can timeout** — Use shared client from `lib/supabase-client.ts` (has retry logic). Import `getSupabase` for server-side, `createSupabaseClient` for browser. ALL routes consolidated to this single file.
 - **🚨 Report preview has static fallback** — If DB descriptions are NULL, `reports/preview/route.ts` falls back to `loadAllCurriculumWorks()`. This means seeding bugs won't break reports, but existing classrooms seeded before Session 149 may still have NULL descriptions in DB
 - **🚨 Static file downloads DON'T work with Turbopack** — `<a href="/guides/file.docx">` will serve HTML, not the file. Use API routes instead (`app/api/guides/*/route.ts`) that read the file with `readFile()` and return with correct `Content-Type` header. See `app/api/guides/language-making-guide/route.ts` for the pattern.
 - **🚨 Never use `opacity-0 group-hover:opacity-100` alone** — Invisible on mobile touch devices! Always use `opacity-70 md:opacity-0 md:group-hover:opacity-100` pattern (visible on mobile, hover-reveal on desktop)
