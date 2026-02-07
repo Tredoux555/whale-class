@@ -7,7 +7,7 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 LAUNCH READY — Codebase cleanup complete (health 5.5 → ~9.1/10)
+**Status**: 🚀 LAUNCH READY — Codebase cleanup complete (health 5.5 → 9.5+/10)
 
 ## Recent Changes
 
@@ -44,7 +44,24 @@ f9f4ada refactor: split story dashboard (1437→279) and tutorial (1132→239)
 d7cd388 fix: replace all :any annotations with proper types across 95 files
 ```
 
-**⚠️ PENDING:** `git push` needed (18 commits total across sessions 152-154). Next project: Montree Home.
+6. **Final file splits** — Split last 4 oversized files:
+   - CardGenerator: 1,760 → 948 (print-utils, CropOverlay, CardPreview extracted)
+   - Onboarding: 982 → 582 (CurriculumPicker, AgePicker extracted)
+   - english-procurement: 1,083 → 702 (SequenceView extracted)
+   - montree-home: 1,032 → 900 (types + constants extracted)
+
+**Commits (7 this session):**
+```
+e59bc65 refactor: split 4 remaining large files under 1,000 lines
+bcc11b3 docs: update BRAIN.md and HANDOFF.md for session 154
+6fd3149 fix: update broken link to deleted /admin/montree-progress page
+f444f68 fix: repair last 2 stale supabase imports (100% consolidation)
+cd14a03 chore: remove 44 orphaned components and 1 dead admin page (-10,189 lines)
+f9f4ada refactor: split story dashboard (1437→279) and tutorial (1132→239)
+d7cd388 fix: replace all :any annotations with proper types across 95 files
+```
+
+**⚠️ PENDING:** `git push` needed (1 commit). Next project: Montree Home.
 
 ---
 
