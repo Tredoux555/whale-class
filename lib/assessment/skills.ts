@@ -19,7 +19,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Letter Recognition',
     order: 1,
     itemCount: 8,
-    gameRoute: '/games/letter-match',
+    gameRoute: '/montree/dashboard/games/letter-match',
     audioIntro: '/audio-new/assessment/skill_letter_recognition.mp3',
     description: 'Find the matching letters'
   },
@@ -28,7 +28,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Letter Sounds',
     order: 2,
     itemCount: 6,
-    gameRoute: '/games/letter-sounds',
+    gameRoute: '/montree/dashboard/games/letter-sounds',
     audioIntro: '/audio-new/assessment/skill_letter_sounds.mp3',
     description: 'Match sounds to letters'
   },
@@ -37,7 +37,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Beginning Sounds',
     order: 3,
     itemCount: 6,
-    gameRoute: '/games/sound-games/beginning',
+    gameRoute: '/montree/dashboard/games/sound-games/beginning',
     audioIntro: '/audio-new/assessment/skill_beginning_sounds.mp3',
     description: 'What sound does it start with?'
   },
@@ -46,7 +46,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Ending Sounds',
     order: 4,
     itemCount: 5,
-    gameRoute: '/games/sound-games/ending',
+    gameRoute: '/montree/dashboard/games/sound-games/ending',
     audioIntro: '/audio-new/assessment/skill_ending_sounds.mp3',
     description: 'What sound does it end with?'
   },
@@ -55,7 +55,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Middle Sounds',
     order: 5,
     itemCount: 4,
-    gameRoute: '/games/sound-games/middle',
+    gameRoute: '/montree/dashboard/games/sound-games/middle',
     audioIntro: '/audio-new/assessment/skill_middle_sounds.mp3',
     description: 'What sound is in the middle?'
   },
@@ -64,7 +64,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Sound Blending',
     order: 6,
     itemCount: 5,
-    gameRoute: '/games/sound-games/blending',
+    gameRoute: '/montree/dashboard/games/sound-games/blending',
     audioIntro: '/audio-new/assessment/skill_blending.mp3',
     description: 'Put the sounds together'
   },
@@ -73,7 +73,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Word Reading',
     order: 7,
     itemCount: 10,
-    gameRoute: '/games/reading/words',
+    gameRoute: '/montree/dashboard/games/reading/words',
     audioIntro: '/audio-new/assessment/skill_reading_words.mp3',
     description: 'Read simple words',
     teacherAssisted: true
@@ -83,7 +83,7 @@ export const ASSESSMENT_SKILLS: SkillConfig[] = [
     name: 'Sentence Reading',
     order: 8,
     itemCount: 5,
-    gameRoute: '/games/reading/sentences',
+    gameRoute: '/montree/dashboard/games/reading/sentences',
     audioIntro: '/audio-new/assessment/skill_reading_sentences.mp3',
     description: 'Read simple sentences',
     teacherAssisted: true
