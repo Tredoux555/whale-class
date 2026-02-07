@@ -52,10 +52,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform curriculum_roadmap data to match MontessoriWork interface
-    let works = (roadmapData || []).map((work: any) => {
+    let works = (roadmapData || []).map((work: Record<string, unknown>) => {
       // Get approved video URL if available
-      const approvedVideo = Array.isArray(work.curriculum_videos) 
-        ? work.curriculum_videos.find((v: any) => v.is_approved && v.is_active)
+      const approvedVideo = Array.isArray(work.curriculum_videos)
+        ? work.curriculum_videos.find((v: Record<string, unknown>) => v.is_approved && v.is_active)
         : null;
       
       // Determine status based on whether work has an approved video
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by status if specified
     if (status && status !== '' && status !== 'all') {
-      works = works.filter((work: any) => work.status === status);
+      works = works.filter((work: Record<string, unknown>) => work.status === status);
     }
 
     return NextResponse.json({

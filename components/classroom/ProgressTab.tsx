@@ -75,10 +75,10 @@ export default function ProgressTab({ childId, childName }: ProgressTabProps) {
       setOrphanedWorks(data.orphanedWorks || []);
       
       const progressByArea = AREAS.map(area => {
-        const areaWorks = (data.works || []).filter((w: any) => 
+        const areaWorks = (data.works || []).filter((w: WorkProgress) =>
           w.area === area.id || w.area === area.name.toLowerCase().replace(' ', '_')
         );
-        
+
         return {
           ...area,
           works: areaWorks,

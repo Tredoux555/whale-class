@@ -127,13 +127,13 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
   }
 
   // Transform to Permission objects
-  const permissions: Permission[] = (data || []).map((row: any) => ({
+  const permissions: Permission[] = (data || []).map((row: Record<string, unknown>) => ({
     feature_key: row.feature_key as FeatureKey,
-    feature_name: row.features?.feature_name || '',
+    feature_name: ((row.features as Record<string, unknown>)?.feature_name as string) || '',
     permission_level: row.permission_level as PermissionLevel,
-    can_share_with_others: row.can_share_with_others,
-    category: row.features?.category || 'tools',
-    description: row.features?.description || null,
+    can_share_with_others: row.can_share_with_others as boolean,
+    category: ((row.features as Record<string, unknown>)?.category as string) || 'tools',
+    description: ((row.features as Record<string, unknown>)?.description as string) || null,
   }));
 
   // Group by feature

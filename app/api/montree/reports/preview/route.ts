@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
 
     // Transform photos with work info from curriculum (using work_id directly)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const allPhotos = allMediaPhotos.map((p: any) => {
+    const allPhotos = allMediaPhotos.map((p: Record<string, unknown>) => {
       // Get work info from curriculum using work_id (the reliable connection)
       const workInfo = p.work_id ? workIdToInfo.get(p.work_id) : null;
       return {

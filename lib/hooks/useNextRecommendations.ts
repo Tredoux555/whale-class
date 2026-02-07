@@ -3,6 +3,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+interface Level {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface RecommendedWork {
   id: string;
   name: string;
@@ -10,7 +16,7 @@ interface RecommendedWork {
   area_id: string;
   age_range: string;
   materials: string[];
-  levels: any[];
+  levels: Level[];
   parent_description: string | null;
   why_it_matters: string | null;
   home_connection: string | null;

@@ -121,7 +121,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update the application
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       status,
       reviewed_by: 'super-admin',
       reviewed_at: now,

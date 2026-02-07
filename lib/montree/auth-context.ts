@@ -171,7 +171,8 @@ export async function canAccessChild(
       .single();
 
     if (!child) return false;
-    return (child.montree_classrooms as any).school_id === session.schoolId;
+    const classroomData = child.montree_classrooms as unknown as { school_id: string };
+    return classroomData.school_id === session.schoolId;
   }
 
   return false;

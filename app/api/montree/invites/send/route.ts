@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invite not found' }, { status: 404 });
     }
 
-    const child = invite.child as any;
+    const child = invite.child as Record<string, unknown>;
     const childName = child?.name || 'Your Child';
     const schoolName = child?.classroom?.school?.name || 'School';
     const inviteCode = invite.invite_code;

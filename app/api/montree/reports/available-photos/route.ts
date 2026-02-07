@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     // Combine both photo sources
     const allMediaPhotos = [
       ...(mediaPhotos || []),
-      ...(groupPhotos || []).map((gp: any) => gp.media).filter(Boolean)
+      ...(groupPhotos || []).map((gp: Record<string, unknown>) => gp.media).filter(Boolean)
     ];
 
     // Deduplicate by media id
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     // Transform media photos to have work_name and proper URL
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const allPhotos = Array.from(photoMap.values()).map((p: any) => ({
+    const allPhotos = Array.from(photoMap.values()).map((p: Record<string, unknown>) => ({
       id: p.id,  // Actual media ID
       url: p.storage_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}` : null,
       work_name: p.work_id ? workIdToName.get(p.work_id) : null,

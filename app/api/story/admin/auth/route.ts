@@ -16,8 +16,8 @@ function getJWTSecret(): Uint8Array {
 
 // Log admin login to database
 async function logAdminLogin(
-  supabase: any, 
-  username: string, 
+  supabase: Record<string, unknown>,
+  username: string,
   token: string,
   req: NextRequest
 ): Promise<void> {

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build update object - only include provided fields
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.name_chinese !== undefined) updateData.name_chinese = updates.name_chinese;

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       }));
 
     // Build PDF data
-    const classroom = child.classroom as any;
+    const classroom = child.classroom as Record<string, unknown>;
     const pdfData: PDFReportData = {
       schoolName: classroom?.school?.name || 'Montree School',
       childName: child.name,

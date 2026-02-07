@@ -52,19 +52,19 @@ export async function POST(req: NextRequest) {
       `)
       .eq('parent_id', parent.id);
     
-    const children = (links || []).map((link: any) => ({
+    const children = (links || []).map((link: Record<string, unknown>) => ({
       id: link.montree_children.id,
       name: link.montree_children.name,
       classroom_name: link.montree_children.montree_classrooms.name
     }));
-    
+
     // 4. Update last login
     await supabase
       .from('montree_parents')
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', parent.id);
 
-    const school = parent.montree_schools as any;
+    const school = parent.montree_schools as Record<string, unknown>;
 
     // 5. Set session cookie
     const sessionData = {

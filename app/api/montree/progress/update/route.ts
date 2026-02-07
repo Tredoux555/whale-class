@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Normalize status to standard string format
-function normalizeStatus(status: any): string {
+function normalizeStatus(status: unknown): string {
   if (typeof status === 'number') {
     const map: Record<number, string> = {
       0: 'not_started',
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     // Build the record for upsert
-    const record: any = {
+    const record: Record<string, unknown> = {
       child_id,
       work_name: workNameToSave,
       area: area || null,

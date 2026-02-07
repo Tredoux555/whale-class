@@ -37,7 +37,7 @@ async function verifyAdminToken(authHeader: string | null): Promise<string | nul
   }
 }
 
-async function getAdminLoginLogId(supabase: any, sessionToken: string | null): Promise<number | null> {
+async function getAdminLoginLogId(supabase: Record<string, unknown>, sessionToken: string | null): Promise<number | null> {
   if (!sessionToken) return null;
   try {
     const { data } = await supabase

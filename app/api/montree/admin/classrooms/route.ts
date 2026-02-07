@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest) {
 
     const { id, name, icon, color, is_active } = await request.json();
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
     if (icon !== undefined) updateData.icon = icon;
     if (color !== undefined) updateData.color = color;

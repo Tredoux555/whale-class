@@ -1,5 +1,5 @@
 // lib/db/children.ts
-import { createServerClient, createAdminClient } from '../supabase';
+import { createServerClient, createAdminClient } from '@/lib/supabase-client';
 import type { Child, CreateChildInput, UpdateChildInput, AgeGroup } from '@/types/database';
 
 export async function createChild(input: CreateChildInput): Promise<Child> {

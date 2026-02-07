@@ -10,7 +10,7 @@ export function setupVideoForBackgroundPlayback(video: HTMLVideoElement) {
   
   // Enable background audio playback on iOS
   if (video instanceof HTMLVideoElement) {
-    (video as any).webkitPreservesPitch = true;
+    (video as unknown as { webkitPreservesPitch: boolean }).webkitPreservesPitch = true;
   }
 }
 
@@ -24,9 +24,9 @@ export function setupMediaSessionForVideo(
     return;
   }
 
-  const mediaSession = (navigator as any).mediaSession;
+  const mediaSession = (navigator as unknown as { mediaSession: unknown }).mediaSession;
 
-  mediaSession.metadata = new (window as any).MediaMetadata({
+  mediaSession.metadata = new (window as unknown as { MediaMetadata: unknown }).MediaMetadata({
     title,
     artist,
     artwork: thumbnail
@@ -42,12 +42,14 @@ export function setupMediaSessionForVideo(
     video.pause();
   });
   
-  mediaSession.setActionHandler('seekbackward', (details: any) => {
-    video.currentTime = Math.max(0, video.currentTime - (details.seekOffset || 10));
+  mediaSession.setActionHandler('seekbackward', (details: unknown) => {
+    const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
+    video.currentTime = Math.max(0, video.currentTime - offset);
   });
-  
-  mediaSession.setActionHandler('seekforward', (details: any) => {
-    video.currentTime = Math.min(video.duration, video.currentTime + (details.seekOffset || 10));
+
+  mediaSession.setActionHandler('seekforward', (details: unknown) => {
+    const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
+    video.currentTime = Math.min(video.duration, video.currentTime + offset);
   });
   
   mediaSession.setActionHandler('previoustrack', () => {
@@ -64,7 +66,7 @@ let globalWakeLock: WakeLockSentinel | null = null;
 export async function requestGlobalWakeLock() {
   try {
     if ('wakeLock' in navigator) {
-      globalWakeLock = await (navigator as any).wakeLock.request('screen');
+      globalWakeLock = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
       return globalWakeLock;
     }
   } catch (err) {

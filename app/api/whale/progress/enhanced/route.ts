@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     if (historyError) throw historyError;
 
     // Calculate progress by area
-    const areaProgress: Record<string, any> = {};
+    const areaProgress: Record<string, Record<string, unknown>> = {};
     const areaLabels: Record<string, string> = {
       practical_life: 'Practical Life',
       sensorial: 'Sensorial',
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       cultural: 'Cultural Studies'
     };
 
-    progressData?.forEach((progress: any) => {
+    progressData?.forEach((progress: Record<string, unknown>) => {
       // Handle Supabase join structure - skill might be object or array
       const skill = Array.isArray(progress.skill) ? progress.skill[0] : progress.skill;
       const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;

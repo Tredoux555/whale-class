@@ -48,7 +48,7 @@ export async function GET(
 
     // Get work details separately
     const workIds = completedWorksData?.map(w => w.work_id).filter(Boolean) || [];
-    let completedWorks: any[] = [];
+    let completedWorks: Record<string, unknown>[] = [];
     
     if (workIds.length > 0) {
       const { data: worksData, error: worksError } = await supabase
@@ -75,7 +75,7 @@ export async function GET(
       .eq('child_id', childId)
       .single();
 
-    let position: any = null;
+    let position: Record<string, unknown> | null = null;
     if (positionData?.current_work_id) {
       const { data: currentWork } = await supabase
         .from('curriculum_roadmap')

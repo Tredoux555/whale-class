@@ -10,12 +10,17 @@ interface Props {
   onComplete: () => void;
 }
 
+interface WorkLevel {
+  id: string;
+  sequence: number;
+}
+
 interface Work {
   id: string;
   name: string;
   area_id: string;
   category_id: string;
-  levels: any[];
+  levels: WorkLevel[];
 }
 
 interface Area {

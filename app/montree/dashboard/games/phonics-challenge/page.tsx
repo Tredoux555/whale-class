@@ -178,13 +178,20 @@ const PHONICS_STAGES = {
 type Stage = keyof typeof PHONICS_STAGES;
 type GameMode = 'select' | 'wordMatch' | 'soundSort' | 'results';
 
+interface QuestionOption {
+  type: string;
+  picture: string;
+  correctAnswer: string;
+  options: string[];
+}
+
 interface GameState {
   stage: Stage | null;
   mode: GameMode;
   currentQuestion: number;
   score: number;
   totalQuestions: number;
-  questions: any[];
+  questions: QuestionOption[];
   answers: boolean[];
   startTime: number | null;
 }

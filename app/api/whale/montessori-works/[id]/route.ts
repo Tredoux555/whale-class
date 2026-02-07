@@ -55,7 +55,7 @@ export async function PUT(
 
     const supabase = getSupabase();
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
     if (curriculum_area !== undefined) updateData.curriculum_area = curriculum_area;
     if (video_url !== undefined) updateData.video_url = video_url;

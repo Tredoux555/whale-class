@@ -7,6 +7,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Users, ClipboardList, TrendingUp, Clock } from 'lucide-react';
 
+interface Session {
+  id: string;
+  status: string;
+  child_name: string;
+  started_at: string;
+  overall_percentage: number;
+  overall_level: string;
+}
+
 interface DashboardStats {
   totalSessions: number;
   completedSessions: number;
@@ -14,7 +23,7 @@ interface DashboardStats {
   totalChildren: number;
   childrenTested: number;
   avgPercentage: number;
-  recentSessions: any[];
+  recentSessions: Session[];
 }
 
 export default function AssessmentAdminDashboard() {
@@ -35,15 +44,22 @@ export default function AssessmentAdminDashboard() {
       const childrenRes = await fetch('/api/assessment/children');
       const childrenData = await childrenRes.json();
 
-      const sessions = sessionsData.sessions || [];
-      const children = childrenData.children || [];
-      
-      const completed = sessions.filter((s: any) => s.status === 'completed');
-      const inProgress = sessions.filter((s: any) => s.status === 'in_progress');
-      const childrenWithTests = children.filter((c: any) => c.assessment_count > 0);
+      interface SessionData {
+        status: string;
+        overall_percentage?: number;
+      }
+      interface ChildData {
+        assessment_count: number;
+      }
+      const sessions: SessionData[] = sessionsData.sessions || [];
+      const children: ChildData[] = childrenData.children || [];
+
+      const completed = sessions.filter((s: SessionData) => s.status === 'completed');
+      const inProgress = sessions.filter((s: SessionData) => s.status === 'in_progress');
+      const childrenWithTests = children.filter((c: ChildData) => c.assessment_count > 0);
       
       const avgPercentage = completed.length > 0
-        ? completed.reduce((sum: number, s: any) => sum + (s.overall_percentage || 0), 0) / completed.length
+        ? completed.reduce((sum: number, s: SessionData) => sum + (s.overall_percentage || 0), 0) / completed.length
         : 0;
 
       setStats({
@@ -198,7 +214,7 @@ export default function AssessmentAdminDashboard() {
           
           {stats?.recentSessions && stats.recentSessions.length > 0 ? (
             <div className="divide-y divide-gray-700">
-              {stats.recentSessions.map((session: any) => (
+              {stats.recentSessions.map((session: Session) => (
                 <Link
                   key={session.id}
                   href={`/admin/test/sessions/${session.id}`}

@@ -80,12 +80,16 @@ export default function HandbookPage() {
       .then(res => res.json())
       .then(data => {
         const works = data.data || [];
-        
+
         // Count works by area
         const areaCounts: Record<string, number> = {};
         let gateways = 0;
-        
-        works.forEach((work: any) => {
+
+        interface Work {
+          curriculum_area?: string;
+          is_gateway?: boolean;
+        }
+        works.forEach((work: Work) => {
           const area = work.curriculum_area || 'other';
           areaCounts[area] = (areaCounts[area] || 0) + 1;
           if (work.is_gateway) gateways++;

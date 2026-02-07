@@ -3,6 +3,14 @@
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 
+interface UploadedMedia {
+  id: string;
+  type: 'photo' | 'video';
+  url: string;
+  size: number;
+  duration?: number;
+}
+
 interface WorkMediaCaptureProps {
   childId: string;
   childName: string;
@@ -10,7 +18,7 @@ interface WorkMediaCaptureProps {
   workName: string;
   isOpen: boolean;
   onClose: () => void;
-  onMediaUploaded: (media: any) => void;
+  onMediaUploaded: (media: UploadedMedia) => void;
 }
 
 export default function WorkMediaCapture({

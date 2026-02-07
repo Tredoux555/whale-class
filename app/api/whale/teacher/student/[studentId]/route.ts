@@ -134,9 +134,9 @@ export async function GET(
     return NextResponse.json({
       student: {
         ...student,
-        avatar_url: (student as any)?.photo_url, // Map photo_url to avatar_url
-        age: (student as any)?.date_of_birth
-          ? Math.floor((Date.now() - new Date((student as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        avatar_url: (student as Record<string, unknown>)?.photo_url, // Map photo_url to avatar_url
+        age: (student as Record<string, unknown>)?.date_of_birth
+          ? Math.floor((Date.now() - new Date((student as Record<string, unknown>).date_of_birth as string).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
           : null,
       },
       areaProgress: areaProgress || [],

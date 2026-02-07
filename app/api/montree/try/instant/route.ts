@@ -224,8 +224,9 @@ export async function POST(req: NextRequest) {
           notes: `Instant trial - Code: ${code}\nTeacher ID: ${teacher.id}\nSchool: ${school.name} (${school.id})`,
         });
         steps.push('5-lead-ok');
-      } catch (e: any) {
-        steps.push('5-lead-fail:' + e?.message);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        steps.push('5-lead-fail:' + message);
       }
 
       return NextResponse.json({
@@ -294,8 +295,9 @@ export async function POST(req: NextRequest) {
           notes: `Instant trial - Code: ${code}\nPrincipal ID: ${principal.id}\nSchool: ${school.name} (${school.id})`,
         });
         steps.push('5-lead-ok');
-      } catch (e: any) {
-        steps.push('5-lead-fail:' + e?.message);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        steps.push('5-lead-fail:' + message);
       }
 
       return NextResponse.json({

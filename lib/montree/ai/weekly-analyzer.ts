@@ -216,20 +216,20 @@ export function analyzeWeeklyProgress(input: WeeklyAnalysisInput): WeeklyAnalysi
     progress.map(p => ({
       work_name: p.work_name,
       area: p.area,
-      status: p.status as any,
+      status: p.status as 'not_started' | 'presented' | 'practicing' | 'mastered',
       last_worked: p.date,
     }))
   );
 
   // Generate recommendations
   const allProgress = [
-    ...progress.map(p => ({ ...p, status: p.status as any })),
-    ...(historicalProgress || []).map(p => ({ ...p, status: p.status as any })),
+    ...progress.map(p => ({ ...p, status: p.status as 'not_started' | 'presented' | 'practicing' | 'mastered' })),
+    ...(historicalProgress || []).map(p => ({ ...p, status: p.status as 'not_started' | 'presented' | 'practicing' | 'mastered' })),
   ];
   
   const recommendations = availableWorks ? generateRecommendations({
     childAge,
-    recentProgress: progress.map(p => ({ ...p, status: p.status as any })),
+    recentProgress: progress.map(p => ({ ...p, status: p.status as 'not_started' | 'presented' | 'practicing' | 'mastered' })),
     allProgress,
     availableWorks,
     activeSensitivePeriods: detectedPeriods,
@@ -265,7 +265,7 @@ export function analyzeWeeklyProgress(input: WeeklyAnalysisInput): WeeklyAnalysi
 
   // Calculate distributions
   const areaDistribution = calculateAreaDistribution(
-    progress.map(p => ({ ...p, status: p.status as any }))
+    progress.map(p => ({ ...p, status: p.status as 'not_started' | 'presented' | 'practicing' | 'mastered' }))
   );
   const expectedDistribution = EXPECTED_BALANCE[ageBracket];
 

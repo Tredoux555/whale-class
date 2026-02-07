@@ -68,11 +68,12 @@ export async function POST(request: NextRequest) {
         translations || [],
         curriculumWorks || []
       );
-    } catch (claudeError: any) {
-      console.error('[Upload] Claude API error:', claudeError.message);
-      return NextResponse.json({ 
-        error: 'Claude API failed', 
-        details: claudeError.message 
+    } catch (claudeError: unknown) {
+      const message = claudeError instanceof Error ? claudeError.message : String(claudeError);
+      console.error('[Upload] Claude API error:', message);
+      return NextResponse.json({
+        error: 'Claude API failed',
+        details: message
       }, { status: 500 });
     }
 
@@ -158,9 +159,9 @@ async function extractDocxText(buffer: Buffer): Promise<string> {
 
 
 async function translatePlanWithClaude(
-  content: string, 
-  translations: any[],
-  curriculumWorks: any[]
+  content: string,
+  translations: Record<string, unknown>[],
+  curriculumWorks: Record<string, unknown>[]
 ): Promise<TranslatedPlan> {
   const anthropic = getAnthropic();
   

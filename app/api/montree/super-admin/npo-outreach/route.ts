@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Outreach ID is required' }, { status: 400 });
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (status) {
       updateData.outreach_status = status;

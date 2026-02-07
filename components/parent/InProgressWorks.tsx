@@ -2,20 +2,27 @@
 
 import React, { useState } from 'react';
 
+interface WorkLevel {
+  id: string;
+  sequence: number;
+}
+
+interface CurriculumRoadmap {
+  name: string;
+  levels: WorkLevel[];
+  parent_description: string | null;
+  why_it_matters: string | null;
+  home_connection: string | null;
+  curriculum_areas: { name: string; color: string; icon: string };
+  curriculum_categories: { name: string };
+}
+
 interface WorkCompletion {
   work_id: string;
   current_level: number;
   max_level: number;
   started_at: string | null;
-  curriculum_roadmap: {
-    name: string;
-    levels: any[];
-    parent_description: string | null;
-    why_it_matters: string | null;
-    home_connection: string | null;
-    curriculum_areas: { name: string; color: string; icon: string };
-    curriculum_categories: { name: string };
-  };
+  curriculum_roadmap: CurriculumRoadmap;
 }
 
 interface Props {

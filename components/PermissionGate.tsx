@@ -134,8 +134,21 @@ export function usePermission(featureKey: FeatureKey, permissionLevel: Permissio
 /**
  * Hook to get all user permissions
  */
+interface UserPermissions {
+  features: Array<{
+    feature_key: string;
+    feature_name: string;
+    permissions: {
+      view?: boolean;
+      edit?: boolean;
+      create?: boolean;
+      delete?: boolean;
+    };
+  }>;
+}
+
 export function useUserPermissions() {
-  const [permissions, setPermissions] = useState<any>(null);
+  const [permissions, setPermissions] = useState<UserPermissions | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -259,7 +272,7 @@ export function FeatureAccessList({ className = '' }: FeatureAccessListProps) {
   return (
     <div className={className}>
       <ul className="space-y-2">
-        {permissions.features.map((feature: any) => (
+        {permissions.features.map((feature) => (
           <li key={feature.feature_key} className="flex items-center justify-between">
             <span className="font-medium">{feature.feature_name}</span>
             <div className="flex gap-1">

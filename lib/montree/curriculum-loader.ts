@@ -40,7 +40,7 @@ export interface CurriculumWork {
   prerequisites?: string[];
   // Guide fields (from comprehensive-guides)
   quick_guide?: string;
-  presentation_steps?: any[];
+  presentation_steps?: Array<Record<string, unknown>>;
   points_of_interest?: string[];
   variations?: string[];
   extensions?: string[];
@@ -61,9 +61,9 @@ export interface CurriculumArea {
 /**
  * Build a lookup map from guide data by work name (case-insensitive)
  */
-function buildGuideMap(guidesData: any): Map<string, any> {
-  const map = new Map<string, any>();
-  const works = guidesData?.works || guidesData || [];
+function buildGuideMap(guidesData: Record<string, unknown>): Map<string, Record<string, unknown>> {
+  const map = new Map<string, Record<string, unknown>>();
+  const works = ((guidesData?.works as Array<Record<string, unknown>>) || (guidesData as Array<Record<string, unknown>>)) || [];
 
   for (const work of works) {
     if (work?.name) {
@@ -105,7 +105,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
   const works: CurriculumWork[] = [];
 
   for (const area of AREAS) {
-    const areaData = area.data as any;
+    const areaData = area.data as unknown as { categories?: Array<{ sequence?: number; name: string; works?: Array<{ id: string; name: string; description?: string; ageRange?: string; materials?: string[]; directAims?: string[]; indirectAims?: string[]; controlOfError?: string; prerequisites?: string[]; sequence?: number }> }> };
     const areaSeq = area.sequence;
 
     // Build guide lookup for this area

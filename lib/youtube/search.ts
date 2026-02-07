@@ -58,7 +58,7 @@ export async function searchYouTubeVideos(
     }
 
     // Extract video IDs
-    const videoIds = searchData.items.map((item: any) => item.id.videoId);
+    const videoIds = searchData.items.map((item: Record<string, unknown>) => (item.id as Record<string, string>).videoId);
 
     // Get detailed video information
     const videos = await getVideoDetails(videoIds);
@@ -103,7 +103,7 @@ export async function getVideoDetails(
       return [];
     }
 
-    return data.items.map((item: any) => convertToYouTubeVideo(item));
+    return data.items.map((item: Record<string, unknown>) => convertToYouTubeVideo(item));
   } catch (error) {
     console.error('Error fetching video details:', error);
     return [];
@@ -199,26 +199,31 @@ function buildSearchUrl(params: YouTubeSearchParams): string {
 /**
  * Convert YouTube API response to YouTubeVideo type
  */
-function convertToYouTubeVideo(item: any): YouTubeVideo {
+function convertToYouTubeVideo(item: Record<string, unknown>): YouTubeVideo {
+  const snippet = item.snippet as Record<string, unknown>;
+  const contentDetails = item.contentDetails as Record<string, unknown>;
+  const statistics = item.statistics as Record<string, unknown>;
+  const thumbnails = snippet.thumbnails as Record<string, unknown>;
+
   return {
-    videoId: item.id,
-    title: item.snippet.title,
-    description: item.snippet.description || '',
-    channelTitle: item.snippet.channelTitle,
-    channelId: item.snippet.channelId,
+    videoId: item.id as string,
+    title: snippet.title as string,
+    description: (snippet.description as string) || '',
+    channelTitle: snippet.channelTitle as string,
+    channelId: snippet.channelId as string,
     thumbnails: {
-      default: item.snippet.thumbnails.default,
-      medium: item.snippet.thumbnails.medium,
-      high: item.snippet.thumbnails.high,
-      standard: item.snippet.thumbnails.standard,
-      maxres: item.snippet.thumbnails.maxres,
+      default: thumbnails.default as Record<string, string>,
+      medium: thumbnails.medium as Record<string, string>,
+      high: thumbnails.high as Record<string, string>,
+      standard: thumbnails.standard as Record<string, string>,
+      maxres: thumbnails.maxres as Record<string, string>,
     },
-    publishedAt: item.snippet.publishedAt,
-    duration: item.contentDetails ? parseDuration(item.contentDetails.duration) : undefined,
-    viewCount: item.statistics ? parseInt(item.statistics.viewCount || '0') : undefined,
-    likeCount: item.statistics ? parseInt(item.statistics.likeCount || '0') : undefined,
-    commentCount: item.statistics ? parseInt(item.statistics.commentCount || '0') : undefined,
-    tags: item.snippet.tags || [],
+    publishedAt: snippet.publishedAt as string,
+    duration: contentDetails ? parseDuration(contentDetails.duration as string) : undefined,
+    viewCount: statistics ? parseInt(String(statistics.viewCount) || '0') : undefined,
+    likeCount: statistics ? parseInt(String(statistics.likeCount) || '0') : undefined,
+    commentCount: statistics ? parseInt(String(statistics.commentCount) || '0') : undefined,
+    tags: (snippet.tags as string[]) || [],
   };
 }
 

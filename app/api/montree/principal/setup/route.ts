@@ -19,7 +19,7 @@ function generateLoginCode(): string {
  * This ensures correct Montessori sequencing (not Brain's unreliable order)
  */
 async function seedCurriculumForClassroom(
-  supabase: any,
+  supabase: Record<string, unknown>,
   classroomId: string
 ): Promise<{ success: boolean; worksCount: number; error?: string }> {
   try {
@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    const createdClassrooms: any[] = [];
-    const createdTeachers: any[] = [];
+    const createdClassrooms: Record<string, unknown>[] = [];
+    const createdTeachers: Record<string, unknown>[] = [];
     const errors: string[] = [];
 
     // Process each classroom

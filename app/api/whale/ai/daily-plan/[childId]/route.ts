@@ -198,14 +198,14 @@ export async function GET(
 }
 
 // Helper functions
-async function getAllCompletedWorkIds(supabaseClient: any, childId: string): Promise<Set<string>> {
+async function getAllCompletedWorkIds(supabaseClient: Record<string, unknown>, childId: string): Promise<Set<string>> {
   const { data } = await supabaseClient
     .from('child_work_completion')
     .select('work_id')
     .eq('child_id', childId)
     .eq('status', 'completed');
-  
-  return new Set(data?.map((d: any) => d.work_id) || []);
+
+  return new Set(data?.map((d: Record<string, unknown>) => d.work_id) || []);
 }
 
 function getAgeRanges(age: number): string[] {

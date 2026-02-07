@@ -22,6 +22,12 @@ interface AreaProgress {
   completion_percentage: number;
 }
 
+interface Level {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface WorkCompletion {
   work_id: string;
   status: string;
@@ -34,7 +40,7 @@ interface WorkCompletion {
     name: string;
     area_id: string;
     category_id: string;
-    levels: any[];
+    levels: Level[];
     parent_description: string | null;
     why_it_matters: string | null;
     home_connection: string | null;

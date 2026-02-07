@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invite code has expired' }, { status: 400 });
     }
     
-    const child = invite.montree_children as any;
+    const child = invite.montree_children as Record<string, unknown>;
     const classroom = child.montree_classrooms;
     const school = classroom.montree_schools;
     

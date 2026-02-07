@@ -17,7 +17,7 @@ export function useVideoPlayback(
   const requestWakeLock = async () => {
     try {
       if ('wakeLock' in navigator) {
-        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        wakeLockRef.current = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
       }
     } catch (err) {
       console.warn('Wake lock not supported or failed:', err);
@@ -42,10 +42,10 @@ export function useVideoPlayback(
       return;
     }
 
-    const mediaSession = (navigator as any).mediaSession;
+    const mediaSession = (navigator as unknown as { mediaSession: unknown }).mediaSession;
 
     // Set metadata
-    mediaSession.metadata = new (window as any).MediaMetadata({
+    mediaSession.metadata = new (window as unknown as { MediaMetadata: unknown }).MediaMetadata({
       title: options.videoTitle || 'Video',
       artist: options.videoArtist || 'Whale Class',
       artwork: options.videoThumbnail
@@ -64,15 +64,17 @@ export function useVideoPlayback(
     });
 
     // Seek backward
-    mediaSession.setActionHandler('seekbackward', (details: any) => {
-      video.currentTime = Math.max(0, video.currentTime - (details.seekOffset || 10));
+    mediaSession.setActionHandler('seekbackward', (details: unknown) => {
+      const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
+      video.currentTime = Math.max(0, video.currentTime - offset);
     });
 
     // Seek forward
-    mediaSession.setActionHandler('seekforward', (details: any) => {
+    mediaSession.setActionHandler('seekforward', (details: unknown) => {
+      const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
       video.currentTime = Math.min(
         video.duration,
-        video.currentTime + (details.seekOffset || 10)
+        video.currentTime + offset
       );
     });
 
@@ -92,7 +94,7 @@ export function useVideoPlayback(
   // Update playback state
   const updatePlaybackState = (playing: boolean) => {
     if ('mediaSession' in navigator) {
-      const mediaSession = (navigator as any).mediaSession;
+      const mediaSession = (navigator as unknown as { mediaSession: { playbackState: string } }).mediaSession;
       mediaSession.playbackState = playing ? 'playing' : 'paused';
     }
   };

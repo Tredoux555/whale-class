@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { code, email, password } = body;
 
-    let teacher: any = null;
+    let teacher: Record<string, unknown> | null = null;
 
     // Method 1: Login with code (hash and compare against password_hash)
     if (code) {

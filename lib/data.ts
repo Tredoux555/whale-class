@@ -117,7 +117,7 @@ export async function saveVideos(videos: Video[]): Promise<void> {
       const supabase = createSupabaseAdmin();
       
       // Retry logic for Supabase Storage
-      let lastError: any;
+      let lastError: unknown;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           const { error: uploadError } = await supabase.storage
@@ -213,7 +213,7 @@ export async function addVideo(video: Video): Promise<void> {
 
 export async function deleteVideo(id: string): Promise<boolean> {
   // Retry logic to handle race conditions
-  let lastError: any;
+  let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const videos = await getVideos();

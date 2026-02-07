@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Group by area
-    const byArea: Record<string, any> = {};
+    const byArea: Record<string, Record<string, unknown>> = {};
     activities?.forEach(assignment => {
       const area = assignment.activity.area;
       if (!byArea[area]) {
@@ -90,8 +90,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Progress by area
-    const progressByArea: Record<string, any> = {};
-    progress?.forEach((p: any) => {
+    const progressByArea: Record<string, Record<string, unknown>> = {};
+    progress?.forEach((p: Record<string, unknown>) => {
       // Handle Supabase join structure - skill might be object or array
       const skill = Array.isArray(p.skill) ? p.skill[0] : p.skill;
       const category = Array.isArray(skill?.category) ? skill?.category[0] : skill?.category;

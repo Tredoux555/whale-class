@@ -109,12 +109,12 @@ function CaptureContent() {
         const data = await res.json();
         if (data.works && data.works.length > 0) {
           // Find exact match first, then partial match
-          const exactMatch = data.works.find((w: any) =>
-            w.name?.toLowerCase() === workName.toLowerCase()
+          const exactMatch = data.works.find((w: Record<string, unknown>) =>
+            (w.name as string)?.toLowerCase() === workName.toLowerCase()
           );
           const match = exactMatch || data.works[0];
-          if (match?.id) {
-            setWorkId(match.id);
+          if (match && typeof match === 'object' && 'id' in match) {
+            setWorkId((match as Record<string, unknown>).id as string);
           }
         }
       } catch (err) {

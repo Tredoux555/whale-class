@@ -238,8 +238,9 @@ export async function POST(request: NextRequest) {
       const curriculum = await getCurriculumWorks(supabase, classroomId);
       areaMap = curriculum.areaMap;
       works = curriculum.works;
-    } catch (currErr: any) {
-      console.warn('Curriculum fetch failed (non-fatal, students will still be created):', currErr?.message);
+    } catch (currErr: unknown) {
+      const message = currErr instanceof Error ? currErr.message : String(currErr);
+      console.warn('Curriculum fetch failed (non-fatal, students will still be created):', message);
     }
 
     // Prepare data structures

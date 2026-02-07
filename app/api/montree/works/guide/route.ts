@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-    let guideData: any = null;
+    let guideData: Record<string, unknown> | null = null;
 
     // 1. Try classroom curriculum first (if classroom_id provided)
     if (classroomId) {

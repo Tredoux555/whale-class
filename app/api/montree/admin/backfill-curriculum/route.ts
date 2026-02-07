@@ -6,7 +6,7 @@ import { CURRICULUM } from '@/lib/montree/curriculum-data';
 
 // Build curriculum records for a classroom
 function buildCurriculumRecords(classroomId: string) {
-  const records: any[] = [];
+  const records: Record<string, unknown>[] = [];
   let globalSequence = 0;
 
   for (const area of CURRICULUM) {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const results: any[] = [];
+    const results: Record<string, unknown>[] = [];
 
     // If specific classroom provided, just backfill that one
     if (classroomId) {

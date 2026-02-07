@@ -8,6 +8,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ChevronLeft, Clock, Calendar, User } from 'lucide-react';
 
+interface ItemData {
+  correct: boolean;
+  item?: string;
+  targetLetter?: string;
+}
+
 interface SkillResult {
   id: string;
   skill_code: string;
@@ -17,7 +23,7 @@ interface SkillResult {
   total_count: number;
   percentage: number;
   level: string;
-  items_data: any[];
+  items_data: ItemData[];
   duration_seconds: number;
 }
 
@@ -210,7 +216,7 @@ export default function SessionDetailPage() {
               {/* Item details (expandable later) */}
               {result.items_data && result.items_data.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {result.items_data.map((item: any, i: number) => (
+                  {result.items_data.map((item: ItemData, i: number) => (
                     <span 
                       key={i}
                       className={`text-xs px-2 py-1 rounded ${
