@@ -1,11 +1,19 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
-const SECRET = process.env.ADMIN_SECRET;
-if (!SECRET) {
-  throw new Error("ADMIN_SECRET environment variable is required");
+// Lazy secret — evaluated on first use, not at module import time
+// This prevents build failures when env vars aren't available (e.g. Railway build step)
+let _secretKey: Uint8Array | null = null;
+function getSecretKey(): Uint8Array {
+  if (!_secretKey) {
+    const secret = process.env.ADMIN_SECRET;
+    if (!secret) {
+      throw new Error("ADMIN_SECRET environment variable is required");
+    }
+    _secretKey = new TextEncoder().encode(secret);
+  }
+  return _secretKey;
 }
-const SECRET_KEY = new TextEncoder().encode(SECRET);
 
 export interface AdminSession {
   isAdmin: boolean;
@@ -17,7 +25,7 @@ export async function createAdminToken(): Promise<string> {
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("30d")
-      .sign(SECRET_KEY);
+      .sign(getSecretKey());
     return token;
   } catch (error) {
     console.error('Error creating admin token:', error);
@@ -27,7 +35,7 @@ export async function createAdminToken(): Promise<string> {
 
 export async function verifyAdminToken(token: string): Promise<boolean> {
   try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
+    const { payload } = await jwtVerify(token, getSecretKey());
     return payload.isAdmin === true;
   } catch {
     return false;
