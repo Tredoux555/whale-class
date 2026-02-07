@@ -84,6 +84,7 @@ export default function ChildWorksPage() {
         body: JSON.stringify({
           child_id: childId,
           work_name: work.work_name,
+          area: work.area,
           status: nextStatus,
         }),
       });

@@ -14,7 +14,7 @@ const STATUS_ORDER: Record<string, number> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { child_id, work_name, status } = await request.json();
+    const { child_id, work_name, area, status } = await request.json();
 
     if (!child_id || !work_name) {
       return NextResponse.json({ error: 'child_id and work_name required' }, { status: 400 });
@@ -55,17 +55,20 @@ export async function POST(request: NextRequest) {
       updateData.mastered_at = null;
     }
 
+    // Build upsert payload — include area for INSERT half (NOT NULL in schema)
+    const upsertPayload: Record<string, unknown> = {
+      child_id,
+      work_name,
+      ...updateData,
+    };
+    if (area) {
+      upsertPayload.area = area;
+    }
+
     // Use upsert to handle missing records gracefully
     const { data: progress, error } = await supabase
       .from('home_progress')
-      .upsert(
-        {
-          child_id,
-          work_name,
-          ...updateData,
-        },
-        { onConflict: 'child_id,work_name' }
-      )
+      .upsert(upsertPayload, { onConflict: 'child_id,work_name' })
       .select()
       .single();
 

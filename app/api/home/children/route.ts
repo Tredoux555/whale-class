@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     if (isNaN(rawAge)) {
       return NextResponse.json({ error: 'Age must be a valid number' }, { status: 400 });
     }
-    const childAge = Math.round(rawAge || 3);
+    const childAge = Math.round(rawAge);
     if (childAge < 0 || childAge > 12) {
       return NextResponse.json({ error: 'Age must be between 0 and 12' }, { status: 400 });
     }
