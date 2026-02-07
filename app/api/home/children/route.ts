@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'family_id and name required' }, { status: 400 });
     }
 
-    const childAge = Math.round(age || 3);
+    const rawAge = typeof age === 'number' ? age : Number(age);
+    if (isNaN(rawAge)) {
+      return NextResponse.json({ error: 'Age must be a valid number' }, { status: 400 });
+    }
+    const childAge = Math.round(rawAge || 3);
     if (childAge < 0 || childAge > 12) {
       return NextResponse.json({ error: 'Age must be between 0 and 12' }, { status: 400 });
     }
@@ -64,10 +68,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize progress records from family curriculum
-    const { data: curriculum } = await supabase
+    const { data: curriculum, error: currError } = await supabase
       .from('home_curriculum')
       .select('work_name, area')
       .eq('family_id', family_id);
+
+    if (currError) {
+      console.error('Failed to fetch curriculum for progress init:', currError.message);
+    }
 
     let progressCount = 0;
     if (curriculum && curriculum.length > 0) {

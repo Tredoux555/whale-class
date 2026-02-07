@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
 const VALID_STATUSES = ['not_started', 'presented', 'practicing', 'mastered'];
+const STATUS_ORDER: Record<string, number> = {
+  not_started: 0,
+  presented: 1,
+  practicing: 2,
+  mastered: 3,
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,26 +34,38 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     const now = new Date().toISOString();
 
-    // Build update object
+    // Build update object with timestamp management
     const updateData: Record<string, unknown> = {
       status: normalizedStatus,
       updated_at: now,
     };
 
-    // Set timestamp for status transitions
+    // Set timestamps for forward transitions, clear for backward
+    const targetOrder = STATUS_ORDER[normalizedStatus] ?? 0;
+
     if (normalizedStatus === 'presented') {
       updateData.presented_at = now;
-    }
-    if (normalizedStatus === 'mastered') {
-      updateData.mastered_at = now;
+    } else if (targetOrder < STATUS_ORDER.presented) {
+      updateData.presented_at = null;
     }
 
-    // Upsert progress record
+    if (normalizedStatus === 'mastered') {
+      updateData.mastered_at = now;
+    } else if (targetOrder < STATUS_ORDER.mastered) {
+      updateData.mastered_at = null;
+    }
+
+    // Use upsert to handle missing records gracefully
     const { data: progress, error } = await supabase
       .from('home_progress')
-      .update(updateData)
-      .eq('child_id', child_id)
-      .eq('work_name', work_name)
+      .upsert(
+        {
+          child_id,
+          work_name,
+          ...updateData,
+        },
+        { onConflict: 'child_id,work_name' }
+      )
       .select()
       .single();
 
