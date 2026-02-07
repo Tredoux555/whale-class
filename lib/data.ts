@@ -1,6 +1,6 @@
 // Lazy filesystem imports - only load when needed (not at module level)
 // This prevents filesystem operations from executing during Vercel build
-import { createSupabaseAdmin, STORAGE_BUCKET, METADATA_FILE } from "./supabase";
+import { createSupabaseAdmin, STORAGE_BUCKET, METADATA_FILE } from "@/lib/supabase-client";
 
 export interface Video {
   id: string;
