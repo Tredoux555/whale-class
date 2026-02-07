@@ -40,15 +40,31 @@ interface TrialResponse {
 
 export default function TryMontreePage() {
   const router = useRouter();
-  const [step, setStep] = useState<'role' | 'creating' | 'code'>('role');
+  const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
+  const [userName, setUserName] = useState('');
+  const [schoolName, setSchoolName] = useState('');
   const [code, setCode] = useState('');
   const [responseData, setResponseData] = useState<TrialResponse | null>(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const handleRoleSelect = async (role: 'teacher' | 'principal') => {
+  const handleRoleSelect = (role: 'teacher' | 'principal') => {
     setSelectedRole(role);
+    setStep('details');
+    setError('');
+  };
+
+  const handleDetailsSubmit = async () => {
+    if (!userName.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    if (!schoolName.trim()) {
+      setError(selectedRole === 'principal' ? 'Please enter your school name' : 'Please enter your school or classroom name');
+      return;
+    }
+
     setStep('creating');
     setError('');
 
@@ -56,7 +72,11 @@ export default function TryMontreePage() {
       const res = await fetch('/api/montree/try/instant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role })
+        body: JSON.stringify({
+          role: selectedRole,
+          name: userName.trim(),
+          schoolName: schoolName.trim(),
+        })
       });
 
       const data: TrialResponse = await res.json();
@@ -68,8 +88,7 @@ export default function TryMontreePage() {
         const stepsStr = (data as any).steps ? `\nSteps: ${(data as any).steps.join(' → ')}` : '';
         console.error('Trial API error:', JSON.stringify(data, null, 2));
         setError(((data as any).error || 'Something went wrong') + debugStr + stepsStr);
-        setStep('role');
-        setSelectedRole(null);
+        setStep('details');
         return;
       }
 
@@ -78,8 +97,7 @@ export default function TryMontreePage() {
       setStep('code');
     } catch (err) {
       setError('Failed to connect. Please try again.');
-      setStep('role');
-      setSelectedRole(null);
+      setStep('details');
     }
   };
 
@@ -125,7 +143,14 @@ export default function TryMontreePage() {
       e.preventDefault();
       return;
     }
-    // Step 1 goes back to /montree
+    if (step === 'details') {
+      e.preventDefault();
+      setStep('role');
+      setSelectedRole(null);
+      setError('');
+      return;
+    }
+    // Step 1 (role) goes back to /montree
   };
 
   return (
@@ -139,7 +164,7 @@ export default function TryMontreePage() {
           href="/montree"
           onClick={handleBackClick}
           className={`inline-flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors ${
-            step !== 'role' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            step === 'creating' || step === 'code' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           }`}
         >
           <span>←</span> Back
@@ -172,7 +197,71 @@ export default function TryMontreePage() {
           </div>
         )}
 
-        {/* Step 2: Creating (Loading) */}
+        {/* Step 2: Details (Name + School) */}
+        {step === 'details' && selectedRole && (
+          <div className="text-center">
+            <h1 className="text-3xl font-light text-white mb-2">
+              Quick details
+            </h1>
+            <p className="text-slate-400 text-sm mb-8">
+              So we know who you are
+            </p>
+
+            <div className="flex flex-col gap-4 text-left">
+              <div>
+                <label className="block text-sm text-emerald-300/70 mb-2">Your Name</label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder={selectedRole === 'principal' ? 'e.g. Sarah Johnson' : 'e.g. Miss Chen'}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-emerald-300/70 mb-2">
+                  {selectedRole === 'principal' ? 'School Name' : 'School / Classroom Name'}
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder={selectedRole === 'principal' ? 'e.g. Bright Stars Academy' : 'e.g. Sunshine Montessori'}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
+                />
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleDetailsSubmit}
+                className="w-full mt-2 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+              >
+                Get my code →
+              </button>
+
+              <button
+                onClick={() => {
+                  setStep('role');
+                  setSelectedRole(null);
+                  setError('');
+                }}
+                className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
+              >
+                ← Back to role selection
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Creating (Loading) */}
         {step === 'creating' && (
           <div className="text-center py-16">
             <div className="mb-8 flex justify-center">
