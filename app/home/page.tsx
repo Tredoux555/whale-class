@@ -26,7 +26,7 @@ export default function HomeLandingPage() {
           Montessori at Home
         </p>
         <p className="text-sm text-emerald-300/50 mb-12">
-          Track your child&apos;s learning journey with 68 curated Montessori activities
+          Track your child&apos;s learning journey with 66 curated Montessori activities
         </p>
 
         {/* CTA Buttons */}
