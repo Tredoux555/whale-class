@@ -1,11 +1,19 @@
 'use client';
 
+interface DmMessage {
+  id: string;
+  sender_type: 'admin' | 'user';
+  sender_name: string;
+  message: string;
+  created_at: string;
+}
+
 interface DmPanelProps {
   isOpen: boolean;
   onClose: () => void;
   leadName: string;
   leadEmail: string;
-  messages: any[];
+  messages: DmMessage[];
   newMsg: string;
   setNewMsg: (msg: string) => void;
   onSend: () => void;
@@ -51,7 +59,7 @@ export default function DmPanel({
               <p className="text-slate-500 text-xs mt-1">Send the first message</p>
             </div>
           ) : (
-            messages.map((msg: any) => (
+            messages.map((msg: DmMessage) => (
               <div key={msg.id} className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                   msg.sender_type === 'admin'

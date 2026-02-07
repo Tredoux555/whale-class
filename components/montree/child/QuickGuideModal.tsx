@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { QuickGuideData } from '@/components/montree/curriculum/types';
 
 export interface QuickGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
   workName: string;
-  guideData: any;
+  guideData: QuickGuideData | null;
   loading: boolean;
 }
 

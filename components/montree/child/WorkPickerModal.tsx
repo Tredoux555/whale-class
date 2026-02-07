@@ -1,6 +1,7 @@
 'use client';
 
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { AreaConfig } from '@/components/montree/curriculum/types';
 
 export interface CurriculumWork {
   id: string;
@@ -26,7 +27,7 @@ export interface WorkPickerModalProps {
   loadingCurriculum: boolean;
   allWorks: Assignment[];
   onAddWork: (work: CurriculumWork) => void;
-  getAreaConfig: (area: string) => any;
+  getAreaConfig: (area: string) => AreaConfig;
 }
 
 export default function WorkPickerModal({

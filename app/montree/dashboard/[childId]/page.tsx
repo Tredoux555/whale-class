@@ -10,6 +10,7 @@ import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
+import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
@@ -30,6 +31,11 @@ interface CurriculumWork {
   name: string;
   name_chinese?: string;
   area_id?: string;
+}
+
+interface Child {
+  id: string;
+  name: string;
 }
 
 export default function WeekPage() {
@@ -63,13 +69,13 @@ export default function WeekPage() {
   // Wheel picker state
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
   const [wheelPickerArea, setWheelPickerArea] = useState<string>('');
-  const [wheelPickerWorks, setWheelPickerWorks] = useState<any[]>([]);
+  const [wheelPickerWorks, setWheelPickerWorks] = useState<MergedWork[]>([]);
   const [wheelPickerCurrentWork, setWheelPickerCurrentWork] = useState<string>('');
 
   // Quick Guide modal state
   const [quickGuideOpen, setQuickGuideOpen] = useState(false);
   const [quickGuideWork, setQuickGuideWork] = useState<string>('');
-  const [quickGuideData, setQuickGuideData] = useState<any>(null);
+  const [quickGuideData, setQuickGuideData] = useState<QuickGuideData | null>(null);
   const [quickGuideLoading, setQuickGuideLoading] = useState(false);
 
   // Fetch quick guide for a work
@@ -219,12 +225,12 @@ export default function WeekPage() {
           : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
         const res = await fetch(url);
         const data = await res.json();
-        const works = (data.works || []).map((w: any, idx: number) => ({
-          id: w.id,
-          name: w.name,
-          name_chinese: w.chinese_name,
+        const works = (data.works || []).map((w: Record<string, unknown>, idx: number) => ({
+          id: String(w.id),
+          name: String(w.name),
+          name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: 'not_started',
-          sequence: w.sequence || idx + 1,
+          sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         }));
         setCurriculum(prev => ({ ...prev, [areaKey]: works }));
       } catch (err) {
@@ -248,11 +254,11 @@ export default function WeekPage() {
     if (cachedCurriculum.length > 0) {
       // INSTANT - use cached data with current progress
       const currentWorks = [...focusWorks, ...extraWorks];
-      const updatedCurriculum = cachedCurriculum.map((w: any) => {
+      const updatedCurriculum = cachedCurriculum.map((w: CurriculumWork) => {
         const progress = currentWorks.find(a =>
           a.work_name?.toLowerCase() === w.name?.toLowerCase()
         );
-        return { ...w, status: progress?.status || w.status || 'not_started' };
+        return { ...w, status: progress?.status || 'not_started' };
       });
       const mergedWorks = mergeWorksWithCurriculum(updatedCurriculum, currentWorks, areaKey);
       setWheelPickerWorks(mergedWorks);
@@ -275,16 +281,16 @@ export default function WeekPage() {
       const res = await fetch(url);
       const data = await res.json();
 
-      const curriculumWorks = (data.works || []).map((w: any, idx: number) => {
+      const curriculumWorks = (data.works || []).map((w: Record<string, unknown>, idx: number) => {
         const progress = allWorks.find(a =>
-          a.work_name?.toLowerCase() === w.name?.toLowerCase()
+          a.work_name?.toLowerCase() === String(w.name).toLowerCase()
         );
         return {
-          id: w.id,
-          name: w.name,
-          name_chinese: w.chinese_name,
+          id: String(w.id),
+          name: String(w.name),
+          name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: progress?.status || 'not_started',
-          sequence: w.sequence || idx + 1,
+          sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         };
       });
 
@@ -319,16 +325,16 @@ export default function WeekPage() {
       const data = await res.json();
 
       const currentWorks = [...focusWorks, ...extraWorks];
-      const worksWithStatus = (data.works || []).map((w: any, idx: number) => {
+      const worksWithStatus = (data.works || []).map((w: Record<string, unknown>, idx: number) => {
         const progress = currentWorks.find(a =>
-          a.work_name?.toLowerCase() === w.name?.toLowerCase()
+          a.work_name?.toLowerCase() === String(w.name).toLowerCase()
         );
         return {
-          id: w.id,
-          name: w.name,
-          name_chinese: w.chinese_name,
+          id: String(w.id),
+          name: String(w.name),
+          name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: progress?.status || 'not_started',
-          sequence: w.sequence || idx + 1,
+          sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         };
       });
 
@@ -382,7 +388,7 @@ export default function WeekPage() {
   };
 
   // Handle wheel picker select with isSaving flag
-  const onWheelPickerSelect = async (work: any, status: string) => {
+  const onWheelPickerSelect = async (work: MergedWork, status: string) => {
     setIsSaving(true);
     try {
       await handleWheelPickerSelect(work, status);
@@ -392,7 +398,7 @@ export default function WeekPage() {
   };
 
   // Handle wheel picker add extra with isSaving flag
-  const onWheelPickerAddExtra = async (work: any) => {
+  const onWheelPickerAddExtra = async (work: MergedWork) => {
     setIsSaving(true);
     try {
       await handleWheelPickerAddExtra(work);
@@ -450,7 +456,7 @@ export default function WeekPage() {
   };
 
   // Get area config
-  const getAreaConfig = (area: string) => {
+  const getAreaConfig = (area: string): AreaConfig => {
     return AREA_CONFIG[area] || AREA_CONFIG[area.replace('mathematics', 'math')] || { name: area, icon: '📋', color: '#888' };
   };
 
@@ -470,7 +476,7 @@ export default function WeekPage() {
       {/* Invite Parent Modal */}
       <InviteParentModal
         childId={childId}
-        childName={session?.classroom?.children?.find((c: any) => c.id === childId)?.name || 'Child'}
+        childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
         teacherId={session?.teacher?.id}
         isOpen={inviteModalOpen}
         onClose={() => setInviteModalOpen(false)}

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { MergedWork } from '@/components/montree/curriculum/types';
 
 interface Assignment {
   work_name: string;
@@ -16,6 +17,15 @@ interface CurriculumWork {
   area_id?: string;
 }
 
+interface Session {
+  teacher?: {
+    id: string;
+  };
+  classroom?: {
+    id: string;
+  };
+}
+
 const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'];
 
 interface UseWorkOperationsParams {
@@ -25,7 +35,7 @@ interface UseWorkOperationsParams {
   extraWorks: Assignment[];
   setExtraWorks: (works: Assignment[] | ((prev: Assignment[]) => Assignment[])) => void;
   wheelPickerArea: string;
-  session: any;
+  session: Session | null;
   allWorks: Assignment[];
   setWheelPickerOpen: (open: boolean) => void;
   fetchAssignments: () => void;
@@ -114,7 +124,7 @@ export function useWorkOperations({
   }, [childId, setExtraWorks]);
 
   // Handle work selection from wheel picker - sets as new FOCUS work for area
-  const handleWheelPickerSelect = useCallback(async (work: any, status: string) => {
+  const handleWheelPickerSelect = useCallback(async (work: MergedWork, status: string) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
     const newStatus = status;
 
@@ -163,7 +173,7 @@ export function useWorkOperations({
   }, [childId, wheelPickerArea, focusWorks, setFocusWorks, setWheelPickerOpen]);
 
   // Handle adding a work as an EXTRA (not focus) from wheel picker
-  const handleWheelPickerAddExtra = useCallback(async (work: any) => {
+  const handleWheelPickerAddExtra = useCallback(async (work: MergedWork) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
 
     // Check if already exists

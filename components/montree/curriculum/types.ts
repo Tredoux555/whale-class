@@ -23,6 +23,24 @@ export interface Work {
   sequence?: number;
 }
 
+export interface MergedWork extends Work {
+  status?: string;
+  isImported?: boolean;
+}
+
+export interface AreaConfig {
+  name: string;
+  icon: string;
+  color: string;
+}
+
+export interface QuickGuideData {
+  quick_guide?: string;
+  materials?: string[];
+  video_search_term?: string;
+  error?: boolean;
+}
+
 export interface EditFormData {
   name: string;
   name_chinese: string;

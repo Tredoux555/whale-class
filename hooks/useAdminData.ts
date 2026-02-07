@@ -3,7 +3,7 @@ import { School, Feedback, Lead } from '@/components/montree/super-admin/types';
 
 interface UseAdminDataProps {
   password: string;
-  logAction: (action: string, details?: any) => Promise<void>;
+  logAction: (action: string, details?: Record<string, unknown>) => Promise<void>;
   authenticated: boolean;
 }
 
