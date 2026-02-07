@@ -216,7 +216,6 @@ export function useStudentProgressRealtime(
     const handleRealtimeChange = (
       payload: RealtimePostgresChangesPayload<ChildWorkCompletionRow>
     ) => {
-      console.debug('[useStudentProgressRealtime] Received change:', payload.eventType);
       debouncedRefetch();
     };
 
@@ -256,9 +255,7 @@ export function useStudentProgressRealtime(
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.debug(
-            `[useStudentProgressRealtime] Subscribed to realtime updates for student ${studentId}`
-          );
+          // Subscribed successfully
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error(
             `[useStudentProgressRealtime] Subscription error: ${status}`,
@@ -284,9 +281,7 @@ export function useStudentProgressRealtime(
         supabaseRef.current
           .removeChannel(channelRef.current)
           .then(() => {
-            console.debug(
-              `[useStudentProgressRealtime] Unsubscribed from realtime updates`
-            );
+            // Unsubscribed successfully
           })
           .catch((err) => {
             console.error(
