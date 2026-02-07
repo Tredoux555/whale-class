@@ -112,11 +112,15 @@ export async function POST(req: NextRequest) {
   try {
     steps.push('1-init');
     const supabase = getSupabase();
-    const { role } = await req.json();
+    const { role, name, schoolName } = await req.json();
 
     if (!role || !['teacher', 'principal'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
+
+    // Use provided names or fall back to defaults
+    const userName = (name && name.trim()) || (role === 'principal' ? 'Principal' : 'Teacher');
+    const userSchoolName = (schoolName && schoolName.trim()) || `Trial ${role === 'principal' ? 'School' : 'Classroom'}`;
 
     const code = generateCode();
     const codeHash = hashCode(code);
@@ -128,10 +132,10 @@ export async function POST(req: NextRequest) {
     const { data: school, error: schoolErr } = await supabase
       .from('montree_schools')
       .insert({
-        name: `Trial ${role === 'principal' ? 'School' : 'Classroom'}`,
+        name: userSchoolName,
         slug: schoolSlug,
         owner_email: `trial-${code.toLowerCase()}@montree.app`,
-        owner_name: role === 'principal' ? 'Principal' : 'Teacher',
+        owner_name: userName,
         subscription_status: 'trialing',
         plan_type: role === 'principal' ? 'school' : 'personal_classroom',
         subscription_tier: 'trial',
@@ -190,7 +194,7 @@ export async function POST(req: NextRequest) {
       const { data: teacher, error: teacherErr } = await supabase
         .from('montree_teachers')
         .insert({
-          name: 'Teacher',
+          name: userName,
           school_id: school.id,
           classroom_id: classroom?.id || null,
           password_hash: codeHash,
@@ -221,7 +225,9 @@ export async function POST(req: NextRequest) {
           role,
           interest_type: 'try',
           status: 'new',
-          notes: `Instant trial - Code: ${code}\nTeacher ID: ${teacher.id}\nSchool: ${school.name} (${school.id})`,
+          name: userName,
+          school_name: userSchoolName,
+          notes: `Instant trial - Code: ${code}\nName: ${userName}\nTeacher ID: ${teacher.id}\nSchool: ${userSchoolName} (${school.id})`,
         });
         steps.push('5-lead-ok');
       } catch (e: unknown) {
@@ -263,7 +269,7 @@ export async function POST(req: NextRequest) {
           school_id: school.id,
           email: `trial-${code.toLowerCase()}@montree.app`,
           password_hash: codeHash,
-          name: 'Principal',
+          name: userName,
           role: 'principal',
         })
         .select()
@@ -292,7 +298,9 @@ export async function POST(req: NextRequest) {
           role,
           interest_type: 'try',
           status: 'new',
-          notes: `Instant trial - Code: ${code}\nPrincipal ID: ${principal.id}\nSchool: ${school.name} (${school.id})`,
+          name: userName,
+          school_name: userSchoolName,
+          notes: `Instant trial - Code: ${code}\nName: ${userName}\nPrincipal ID: ${principal.id}\nSchool: ${userSchoolName} (${school.id})`,
         });
         steps.push('5-lead-ok');
       } catch (e: unknown) {
