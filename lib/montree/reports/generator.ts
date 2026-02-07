@@ -106,7 +106,7 @@ export async function generateWeeklyReport(params: {
 
     // 5. Get photos for these assignments - THE CORRECT TABLE!
     const assignmentIds = allAssignments.map(a => a.id);
-    let allMedia: any[] = [];
+    let allMedia: Array<Record<string, unknown>> = [];
 
     if (assignmentIds.length > 0) {
       const { data: mediaData, error: mediaError } = await supabase

@@ -180,10 +180,11 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
+      const errWithCode = error as Error & { code?: string; details?: string };
       console.error('Leads fetch error:', {
         message: error.message,
-        code: (error as any).code,
-        details: (error as any).details
+        code: errWithCode.code,
+        details: errWithCode.details
       });
       return NextResponse.json({
         error: 'Failed to fetch leads',
@@ -238,7 +239,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Build update object
-    const updates: any = { updated_at: new Date().toISOString() };
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (status) updates.status = status;
     if (notes !== undefined) updates.notes = notes;
     if (provisioned_school_id) updates.provisioned_school_id = provisioned_school_id;

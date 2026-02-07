@@ -96,11 +96,11 @@ export async function GET(request: NextRequest) {
       id: string;
       name: string;
       display_order: number | null;
-      assignments: any[];
+      assignments: Record<string, unknown>[];
     }>();
 
     for (const a of (assignments || [])) {
-      const childData = a.children as any;
+      const childData = a.children as Record<string, unknown>;
       if (!childData) continue;
 
       const childId = childData.id;

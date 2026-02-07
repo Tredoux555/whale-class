@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // Add age calculation
-    const childrenWithAge = (children || []).map((child: any) => ({
+    const childrenWithAge = (children || []).map((child: Record<string, unknown>) => ({
       ...child,
       age: child.date_of_birth 
         ? Math.floor((Date.now() - new Date(child.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))

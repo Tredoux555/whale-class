@@ -3,6 +3,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+interface Level {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface Work {
   id: string;
   name: string;
@@ -10,7 +16,7 @@ interface Work {
   area_id: string;
   category_id: string;
   age_range: string;
-  levels: any[];
+  levels: Level[];
 }
 
 interface Area {

@@ -91,9 +91,9 @@ export async function GET(request: NextRequest) {
       .map(p => ({
         id: p.id,
         type: 'mastery',
-        title: `Mastered: ${(p.work as any).name}`,
-        area: (p.work as any).area_id,
-        area_label: AREA_LABELS[(p.work as any).area_id] || 'Other',
+        title: `Mastered: ${(p.work as Record<string, unknown>).name}`,
+        area: (p.work as Record<string, unknown>).area_id,
+        area_label: AREA_LABELS[(p.work as Record<string, unknown>).area_id as string] || 'Other',
         date: p.mastery_date || p.updated_at,
         icon: p.status === 'mastered' ? '⭐' : '✓'
       }));

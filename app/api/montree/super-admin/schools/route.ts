@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (subscription_tier) updateData.subscription_tier = subscription_tier;
     if (subscription_status) updateData.subscription_status = subscription_status;
 

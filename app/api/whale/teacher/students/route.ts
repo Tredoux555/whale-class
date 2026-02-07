@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Combine data
-    const studentsWithStats = (students || []).map((student: any) => {
+    const studentsWithStats = (students || []).map((student: Record<string, unknown>) => {
       const age = student.date_of_birth
         ? Math.floor((Date.now() - new Date(student.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : null;

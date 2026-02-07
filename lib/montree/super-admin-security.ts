@@ -138,9 +138,10 @@ interface AuditLogEntry {
   isSensitive?: boolean;
 }
 
-export async function logAudit(supabase: any, entry: AuditLogEntry): Promise<void> {
+export async function logAudit(supabase: unknown, entry: AuditLogEntry): Promise<void> {
   try {
-    await supabase.from('montree_super_admin_audit').insert({
+    const client = supabase as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<unknown> } };
+    await client.from('montree_super_admin_audit').insert({
       admin_identifier: entry.adminIdentifier,
       action: entry.action,
       resource_type: entry.resourceType,
@@ -170,7 +171,7 @@ export function hashSessionToken(token: string): string {
 }
 
 export async function createSession(
-  supabase: any,
+  supabase: unknown,
   ipAddress: string,
   userAgent: string,
   timeoutMinutes: number = 15
@@ -179,7 +180,8 @@ export async function createSession(
   const tokenHash = hashSessionToken(token);
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
-  await supabase.from('montree_super_admin_sessions').insert({
+  const client = supabase as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<unknown> } };
+  await client.from('montree_super_admin_sessions').insert({
     token_hash: tokenHash,
     ip_address: ipAddress,
     user_agent: userAgent,
@@ -190,13 +192,22 @@ export async function createSession(
 }
 
 export async function validateSession(
-  supabase: any,
+  supabase: unknown,
   token: string,
   ipAddress: string
 ): Promise<{ valid: boolean; totpVerified: boolean; reason?: string }> {
   const tokenHash = hashSessionToken(token);
 
-  const { data: session, error } = await supabase
+  const client = supabase as {
+    from: (table: string) => {
+      select: (query: string) => {
+        eq: (key: string, value: string) => {
+          single: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>
+        }
+      }
+    }
+  };
+  const { data: session, error } = await client
     .from('montree_super_admin_sessions')
     .select('*')
     .eq('token_hash', tokenHash)

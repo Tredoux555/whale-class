@@ -195,7 +195,7 @@ export async function GET(
     const classroomId = report.classroom_id || child?.classroom_id;
 
     // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions)
-    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string }>; photos?: any[] } | null;
+    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string }>; photos?: Record<string, unknown>[] } | null;
 
     if (savedContent?.works && savedContent.works.length > 0) {
       // USE SAVED CONTENT - This is the preferred path for new reports

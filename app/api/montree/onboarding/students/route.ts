@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       .select('id, work_key, name, name_chinese, area_id, sequence')
       .eq('classroom_id', classroomId);
 
-    const workMap = new Map<string, any>();
+    const workMap = new Map<string, Record<string, unknown>>();
     if (curriculumWorks) {
       for (const work of curriculumWorks) {
         workMap.set(work.id, work);
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const createdStudents: any[] = [];
-    const createdProgress: any[] = [];
+    const createdStudents: Record<string, unknown>[] = [];
+    const createdProgress: Record<string, unknown>[] = [];
     const errors: string[] = [];
 
     for (const student of students) {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       createdStudents.push(createdChild);
 
       // Build all progress records in one batch for speed
-      const progressBatch: any[] = [];
+      const progressBatch: Record<string, unknown>[] = [];
       const now = new Date().toISOString();
 
       for (const [areaKey, workId] of Object.entries(student.progress)) {

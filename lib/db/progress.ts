@@ -1,5 +1,5 @@
 // lib/db/progress.ts
-import { createServerClient } from '../supabase';
+import { createServerClient } from '@/lib/supabase-client';
 import type { ChildProgress, ChildProgressWithSkill, CreateProgressInput, StatusLevel, CurriculumArea, ProgressSummaryByArea } from '@/types/database';
 
 export async function upsertProgress(input: CreateProgressInput): Promise<ChildProgress> {
@@ -33,7 +33,7 @@ export async function getChildProgress(childId: string, area?: CurriculumArea): 
 
   const { data, error } = await query;
   if (error) throw new Error(`Failed to get child progress: ${error.message}`);
-  return (data || []) as any;
+  return (data || []) as ChildProgressWithSkill[];
 }
 
 export async function getProgressSummaryByArea(childId: string): Promise<ProgressSummaryByArea[]> {
@@ -46,8 +46,8 @@ export async function getProgressSummaryByArea(childId: string): Promise<Progres
   if (error) throw new Error(`Failed to calculate progress summary: ${error.message}`);
 
   const summaryMap = new Map<CurriculumArea, ProgressSummaryByArea>();
-  progressData?.forEach((progress: any) => {
-    const area = progress.skill.category.area as CurriculumArea;
+  progressData?.forEach((progress: Record<string, unknown>) => {
+    const area = (progress.skill as unknown as { category: { area: CurriculumArea } }).category.area;
     if (!summaryMap.has(area)) {
       summaryMap.set(area, {
         area, total_skills: 0, not_introduced: 0, observed: 0,

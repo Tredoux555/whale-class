@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       // Load from AUTHORITATIVE static curriculum (100% coverage guaranteed)
       const allWorks = loadAllCurriculumWorks();
 
-      const worksToInsert: any[] = [];
+      const worksToInsert: Record<string, unknown>[] = [];
 
       for (const work of allWorks) {
         const areaId = areaMap[work.area_key];

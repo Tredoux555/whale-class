@@ -491,7 +491,7 @@ export default function StudentsPage() {
     }
   };
 
-  const updateBulkStudent = (index: number, field: keyof BulkStudentForm, value: any) => {
+  const updateBulkStudent = (index: number, field: keyof BulkStudentForm, value: unknown) => {
     const updated = [...bulkStudents];
     updated[index] = { ...updated[index], [field]: value };
     setBulkStudents(updated);

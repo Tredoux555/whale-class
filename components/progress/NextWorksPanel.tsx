@@ -2,22 +2,36 @@
 
 import React, { useEffect, useState } from 'react';
 
+interface WorkLevel {
+  id: string;
+  sequence: number;
+}
+
+interface Material {
+  id: string;
+  name: string;
+}
+
+interface CurriculumArea {
+  name: string;
+  color: string;
+  icon: string;
+}
+
+interface CurriculumCategory {
+  name: string;
+}
+
 interface Work {
   id: string;
   name: string;
   description: string;
   area_id: string;
   age_range: string;
-  materials: string[];
-  levels: any[];
-  curriculum_areas: {
-    name: string;
-    color: string;
-    icon: string;
-  };
-  curriculum_categories: {
-    name: string;
-  };
+  materials: Material[];
+  levels: WorkLevel[];
+  curriculum_areas: CurriculumArea;
+  curriculum_categories: CurriculumCategory;
 }
 
 interface Props {

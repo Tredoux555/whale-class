@@ -13,25 +13,31 @@ interface ParsedAssignment {
   }[];
 }
 
+interface CurriculumSync {
+  matched: number;
+  autoAdded: number;
+  childrenSynced: number;
+  backfilled: number;
+}
+
+interface DebugInfo {
+  childrenCount: number;
+  totalWorks: number;
+  assignmentsCreated: number;
+  curriculumSync: CurriculumSync;
+}
+
+interface TranslatedContent {
+  weekNumber: number;
+  assignments: ParsedAssignment[];
+}
+
 interface UploadResult {
   success: boolean;
-  plan?: any;
-  translatedContent?: {
-    weekNumber: number;
-    assignments: ParsedAssignment[];
-  };
+  plan?: Record<string, unknown>;
+  translatedContent?: TranslatedContent;
   error?: string;
-  debug?: {
-    childrenCount: number;
-    totalWorks: number;
-    assignmentsCreated: number;
-    curriculumSync: {
-      matched: number;
-      autoAdded: number;
-      childrenSynced: number;
-      backfilled: number;
-    };
-  };
+  debug?: DebugInfo;
 }
 
 interface WeeklyPlan {

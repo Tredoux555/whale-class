@@ -50,8 +50,8 @@ const PHONOGRAM_GROUPS = ['long-a', 'long-i', 'long-o', 'long-u', 'long-e', 'dig
 export default function MaterialOptions({ type, options, onChange, onGenerate, generating }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  
-  const update = (key: keyof GeneratorOptions, value: any) => {
+
+  const update = (key: keyof GeneratorOptions, value: unknown) => {
     onChange({ ...options, [key]: value });
   };
 

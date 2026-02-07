@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           await supabase
             .from('montree_schools')
             .update({
-              subscription_status: subscription.status as any,
+              subscription_status: subscription.status as unknown as string,
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             })
             .eq('id', school.id);

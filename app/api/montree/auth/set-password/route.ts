@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const password_hash = await bcrypt.hash(password, 10);
     
     // Update teacher record
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       password_hash,
       password_set_at: new Date().toISOString()
     };

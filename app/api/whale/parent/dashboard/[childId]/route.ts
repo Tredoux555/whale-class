@@ -52,7 +52,7 @@ export async function GET(
 
     // Get work details separately
     const workIds = completedWorksData?.map(c => c.work_id).filter(Boolean) || [];
-    let recentCompletions: any[] = [];
+    let recentCompletions: Record<string, unknown>[] = [];
     
     if (workIds.length > 0) {
       const { data: works } = await supabase
@@ -93,7 +93,7 @@ export async function GET(
       .order('started_at', { ascending: false });
 
     const inProgressWorkIds = inProgressData?.map(w => w.work_id).filter(Boolean) || [];
-    let inProgressWorks: any[] = [];
+    let inProgressWorks: Record<string, unknown>[] = [];
 
     if (inProgressWorkIds.length > 0) {
       const { data: works } = await supabase
@@ -232,8 +232,8 @@ function calculateStreak(completionDates: string[]): number {
 }
 
 function calculateMilestones(
-  areaProgress: any[],
-  recentCompletions: any[]
+  areaProgress: Record<string, unknown>[],
+  recentCompletions: Record<string, unknown>[]
 ): { type: string; title: string; date?: string; area?: string }[] {
   const milestones: { type: string; title: string; date?: string; area?: string }[] = [];
 

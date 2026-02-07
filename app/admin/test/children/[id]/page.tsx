@@ -54,7 +54,11 @@ export default function ChildDetailPage() {
         // Try to get child info from children API
         const childRes = await fetch('/api/assessment/children');
         const childData = await childRes.json();
-        const foundChild = childData.children?.find((c: any) => c.id === childId);
+        interface ChildRecord {
+          id: string;
+          name: string;
+        }
+        const foundChild = childData.children?.find((c: ChildRecord) => c.id === childId);
         if (foundChild) {
           setChild({ id: foundChild.id, name: foundChild.name });
         }

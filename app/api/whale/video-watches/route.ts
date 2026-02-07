@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-client';
+import { getSupabase } from '@/lib/supabase-client';
 import { markWorkComplete } from '@/lib/curriculum/progression';
 import type { 
   CreateVideoWatchRequest, 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = getSupabase();
 
     // Calculate watch percentage
     const watchPercentage = videoDurationSeconds > 0 
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
     const videoId = searchParams.get('videoId');
     const workId = searchParams.get('workId');
 
-    const supabase = createClient();
+    const supabase = getSupabase();
     let query = supabase.from('child_video_watches').select('*');
 
     if (childId) {
@@ -247,7 +247,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = getSupabase();
     const { error } = await supabase
       .from('child_video_watches')
       .delete()

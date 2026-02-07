@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create school' }, { status: 500 });
     }
 
-    const createdClassrooms: any[] = [];
-    const createdTeachers: any[] = [];
+    const createdClassrooms: Record<string, unknown>[] = [];
+    const createdTeachers: Record<string, unknown>[] = [];
 
     // 2. Create classrooms and teachers
     for (const classroom of classrooms) {

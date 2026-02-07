@@ -88,8 +88,8 @@ export default function DaughterActivityPage() {
 
         // Find child closest to DAUGHTER_AGE (2.5)
         // age_group is stored as '2-3', '3-4', etc.
-        const daughter = children.find((c: any) => {
-          const parts = c.age_group.split('-');
+        const daughter = children.find((c: Record<string, unknown>) => {
+          const parts = String(c.age_group).split('-');
           const minAge = parseFloat(parts[0]);
           const maxAge = parseFloat(parts[1] || parts[0]);
           return minAge >= 2.0 && maxAge <= 3.0;
@@ -160,15 +160,16 @@ export default function DaughterActivityPage() {
 
     try {
       // Get curriculum work ID if available
-      const curriculumWorkId = (todayActivity as any).curriculum_work?.id;
+      const curriculumWorkId = (todayActivity as Record<string, unknown>).curriculum_work as Record<string, unknown> | undefined;
+      const workId = curriculumWorkId?.id;
       
       const response = await fetch('/api/whale/daily-activity', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          assignmentId: todayActivity.id, 
+        body: JSON.stringify({
+          assignmentId: todayActivity.id,
           completed: true,
-          curriculumWorkId: curriculumWorkId || null
+          curriculumWorkId: workId || null
         }),
       });
 

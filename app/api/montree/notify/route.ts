@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract parent info
-    const parentEmails = links.map((link: any) => ({
+    const parentEmails = links.map((link: Record<string, unknown>) => ({
       email: link.montree_parents.email,
       name: link.montree_parents.name
     }));

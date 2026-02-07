@@ -108,13 +108,24 @@ export default function SchoolEnglishPage() {
       
       if (data.works && data.works.length > 0) {
         // Map database fields to our format
-        const mappedWorks = data.works.map((w: any) => ({
-          id: w.id || w.work_code || w.code,
-          code: w.work_code || w.code,
-          name: w.work_name || w.name,
+        interface RawWork {
+          id?: string;
+          work_code?: string;
+          code?: string;
+          work_name?: string;
+          name?: string;
+          description?: string;
+          sequence?: number;
+          category?: string;
+          is_active?: boolean;
+        }
+        const mappedWorks = data.works.map((w: RawWork) => ({
+          id: w.id || w.work_code || w.code || '',
+          code: w.work_code || w.code || '',
+          name: w.work_name || w.name || '',
           description: w.description,
-          sequence: w.sequence,
-          category: w.category || 'other',
+          sequence: w.sequence || 0,
+          category: (w.category || 'other') as EnglishWork['category'],
           isActive: w.is_active !== false,
         }));
         setWorks(mappedWorks);
@@ -168,7 +179,14 @@ export default function SchoolEnglishPage() {
     // Save to database - use sequence to find the work (most reliable)
     setSaving(true);
     try {
-      const updateData: any = { sequence: savedSequence };
+      interface UpdateData {
+        sequence: number;
+        name?: string;
+        description?: string;
+        code?: string;
+        old_code?: string;
+      }
+      const updateData: UpdateData = { sequence: savedSequence };
       if (savedField === 'name') updateData.name = savedValue;
       if (savedField === 'description') updateData.description = savedValue;
       if (savedField === 'code') {
@@ -565,7 +583,15 @@ export default function SchoolEnglishPage() {
 }
 
 // Add Work Modal Component
-function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: any) => void }) {
+interface NewWork {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  category: EnglishWork['category'];
+}
+
+function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: NewWork) => void }) {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

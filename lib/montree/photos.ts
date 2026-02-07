@@ -45,7 +45,7 @@ export async function getChildPhotos(
   // Combine both sources
   const allMedia = [
     ...(directPhotos || []),
-    ...(groupPhotos || []).map((gp: any) => gp.media).filter(Boolean)
+    ...(groupPhotos || []).map((gp: Record<string, unknown>) => gp.media).filter(Boolean)
   ];
 
   // Get work_id to work_name mapping if we have classroom_id
@@ -62,7 +62,7 @@ export async function getChildPhotos(
   }
 
   // Transform to standard photo format
-  return allMedia.map((p: any) => ({
+  return allMedia.map((p: Record<string, unknown>) => ({
     id: p.id,
     url: p.storage_path
       ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`

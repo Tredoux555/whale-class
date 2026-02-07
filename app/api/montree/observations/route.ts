@@ -161,8 +161,7 @@ interface ObservationRow {
   behavior_description: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function detectPatterns(supabase: any, childId: string) {
+async function detectPatterns(supabase: Record<string, unknown>, childId: string) {
   try {
     // Get recent observations
     const thirtyDaysAgo = new Date();

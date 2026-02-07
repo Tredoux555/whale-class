@@ -119,7 +119,7 @@ export async function PATCH(request: NextRequest) {
 
     const { id, name, email, classroom_id, is_active, regenerate_code } = await request.json();
 
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
     if (classroom_id !== undefined) updateData.classroom_id = classroom_id;

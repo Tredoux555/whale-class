@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const workMap = new Map<string, any>();
+      const workMap = new Map<string, Record<string, unknown>>();
       if (curriculumWorks) {
         for (const work of curriculumWorks) {
           workMap.set(work.id, work);
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Build all progress records in one batch for speed
-      const progressRecords: any[] = [];
+      const progressRecords: Record<string, unknown>[] = [];
       const now = new Date().toISOString();
 
       for (const [areaKey, workId] of Object.entries(progress)) {

@@ -5,8 +5,8 @@ import { getChildById, calculateDecimalAge } from '../db/children';
 import type { Activity, ActivitySelectionCriteria, ScoredActivity, StatusLevel } from '@/types/database';
 
 export async function selectDailyActivity(childId: string, options?: {
-  preferredAreas?: any[];
-  excludeAreas?: any[];
+  preferredAreas?: string[];
+  excludeAreas?: string[];
   forceNewArea?: boolean;
 }): Promise<Activity> {
   const child = await getChildById(childId);
@@ -75,7 +75,7 @@ async function getCandidateActivities(criteria: ActivitySelectionCriteria): Prom
   return data;
 }
 
-async function scoreActivities(activities: Activity[], criteria: ActivitySelectionCriteria, recentActivities: any[]): Promise<ScoredActivity[]> {
+async function scoreActivities(activities: Activity[], criteria: ActivitySelectionCriteria, recentActivities: Array<Record<string, unknown>>): Promise<ScoredActivity[]> {
   const scored: ScoredActivity[] = [];
 
   for (const activity of activities) {
@@ -152,9 +152,13 @@ async function scoreActivities(activities: Activity[], criteria: ActivitySelecti
   return scored;
 }
 
-function buildSkillLevelMap(progress: any[]): Record<string, StatusLevel> {
+function buildSkillLevelMap(progress: Array<Record<string, unknown>>): Record<string, StatusLevel> {
   const map: Record<string, StatusLevel> = {};
-  progress.forEach(p => { map[p.skill_id] = p.status_level; });
+  progress.forEach(p => {
+    const skillId = p.skill_id as string;
+    const statusLevel = p.status_level as StatusLevel;
+    map[skillId] = statusLevel;
+  });
   return map;
 }
 
@@ -165,16 +169,16 @@ function calculateAverageSkillLevel(skillLevels: Record<string, StatusLevel>): n
   return Math.round(sum / levels.length);
 }
 
-function getDaysSinceActivityDone(activityId: string, recentActivities: any[]): number {
+function getDaysSinceActivityDone(activityId: string, recentActivities: Array<Record<string, unknown>>): number {
   const done = recentActivities.find(a => a.activity_id === activityId);
   if (!done) return 999;
-  const doneDate = new Date(done.activity_date);
+  const doneDate = new Date(done.activity_date as string);
   const today = new Date();
   const diffTime = Math.abs(today.getTime() - doneDate.getTime());
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-async function getRecentActivities(childId: string, days: number): Promise<any[]> {
+async function getRecentActivities(childId: string, days: number): Promise<Array<Record<string, unknown>>> {
   const supabase = await createServerClient();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
@@ -187,7 +191,7 @@ async function getRecentActivities(childId: string, days: number): Promise<any[]
     .order('activity_date', { ascending: false });
 
   if (error) return [];
-  return data || [];
+  return (data || []) as Array<Record<string, unknown>>;
 }
 
 export async function markActivityComplete(childId: string, activityId: string, completed: boolean, notes?: string, engagementLevel?: number): Promise<void> {

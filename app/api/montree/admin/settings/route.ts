@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update principal if info changed
     if (principalId && (principal_name || principal_email || new_password)) {
-      const principalUpdate: any = { updated_at: new Date().toISOString() };
+      const principalUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (principal_name) principalUpdate.name = principal_name;
       if (principal_email) principalUpdate.email = principal_email;
       if (new_password) principalUpdate.password_hash = hashPassword(new_password);

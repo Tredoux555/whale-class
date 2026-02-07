@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true);
 
     // Get students for school classrooms (via classroom_id, not school_id)
-    let students: any[] = [];
+    let students: Record<string, unknown>[] = [];
     if (classroomIds.length > 0) {
       const { data: studentData } = await supabase
         .from('montree_children')

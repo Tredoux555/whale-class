@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
           .select('id', { count: 'exact' })
           .eq('classroom_id', classroomId);
 
-        if (!curriculumCount || (curriculumCount as any).count === 0) {
+        if (!curriculumCount || (curriculumCount as Record<string, unknown>).count === 0) {
           return NextResponse.json(
             { error: 'Cannot lock curriculum - no items added' },
             { status: 400 }

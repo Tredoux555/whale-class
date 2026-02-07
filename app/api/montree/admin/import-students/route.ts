@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
       worksByArea[areaKey].push({ id: work.id, name: work.name });
     }
 
-    const results: any[] = [];
+    const results: Record<string, unknown>[] = [];
     const errors: string[] = [];
 
     for (const student of students) {
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const matchResults: any[] = [];
+      const matchResults: Record<string, unknown>[] = [];
 
       // Create progress for each work
       for (const [area, teacherWork] of Object.entries(student.works)) {

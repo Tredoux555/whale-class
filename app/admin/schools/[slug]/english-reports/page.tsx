@@ -6,13 +6,25 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+interface WorkEntry {
+  id: string;
+  name: string;
+  status: number;
+}
+
+interface SavedLog {
+  works_done: WorkEntry[];
+  next_work: string;
+  report_text: string;
+}
+
 interface Child {
   id: string;
   name: string;
   gender: 'he' | 'she' | 'they';
   order: number;
-  thisWeekWorks?: { id: string; name: string; status: number }[];
-  savedLog?: { works_done: any[]; next_work: string; report_text: string } | null;
+  thisWeekWorks?: WorkEntry[];
+  savedLog?: SavedLog | null;
 }
 
 interface WorkEntry {
@@ -134,7 +146,7 @@ export default function EnglishReportsPage() {
         if (data.children && data.children.length > 0) {
           setChildren(data.children);
           setConnected(true);
-          
+
           // Initialize logs from database
           const initialLogs: Record<string, LocalLog> = {};
           data.children.forEach((child: Child) => {
@@ -371,7 +383,7 @@ export default function EnglishReportsPage() {
                       <option value="">Select work...</option>
                       {ENGLISH_WORKS.map(w => <option key={w.code} value={w.code}>{w.code}</option>)}
                     </select>
-                    <select value={entry.performance} onChange={(e) => updateWorkEntry(child.id, index, { performance: e.target.value as any })} className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-sm">
+                    <select value={entry.performance} onChange={(e) => updateWorkEntry(child.id, index, { performance: e.target.value as 'excellent' | 'good' | 'struggled' | 'repeat' })} className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-sm">
                       {PERFORMANCE.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
                     <button onClick={() => removeWork(child.id, index)} className="text-slate-600 hover:text-red-400 px-2">×</button>

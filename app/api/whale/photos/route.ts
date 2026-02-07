@@ -103,7 +103,10 @@ export async function POST(request: NextRequest) {
       try {
         await mkdir(uploadDir, { recursive: true });
       } catch (err: unknown) {
-        if (err instanceof Error && 'code' in err && (err as any).code !== 'EEXIST') throw err;
+        if (err instanceof Error && 'code' in err) {
+          const errWithCode = err as Error & { code?: string };
+          if (errWithCode.code !== 'EEXIST') throw err;
+        }
       }
 
       const fileName = `${Date.now()}-${photo.name}`;

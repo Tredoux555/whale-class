@@ -24,7 +24,7 @@ function normalizeArea(area: string): string {
   return areaMap[area] || area;
 }
 
-function findBestMatch(workName: string, curriculumWorks: any[]): any | null {
+function findBestMatch(workName: string, curriculumWorks: Record<string, unknown>[]): Record<string, unknown> | null {
   const normalizedName = workName.toLowerCase().trim()
     .replace(/[()]/g, '')
     .replace(/\s+/g, ' ');

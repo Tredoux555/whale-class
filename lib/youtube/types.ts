@@ -341,28 +341,30 @@ export type SearchResultStatus =
 /**
  * Type guard to check if object is YouTubeVideo
  */
-export function isYouTubeVideo(obj: any): obj is YouTubeVideo {
+export function isYouTubeVideo(obj: unknown): obj is YouTubeVideo {
+  const record = obj as Record<string, unknown>;
   return (
-    obj &&
-    typeof obj.videoId === 'string' &&
-    typeof obj.title === 'string' &&
-    typeof obj.channelTitle === 'string' &&
-    obj.thumbnails &&
-    obj.thumbnails.high &&
-    typeof obj.thumbnails.high.url === 'string'
+    record &&
+    typeof record.videoId === 'string' &&
+    typeof record.title === 'string' &&
+    typeof record.channelTitle === 'string' &&
+    record.thumbnails &&
+    (record.thumbnails as Record<string, unknown>).high &&
+    typeof ((record.thumbnails as Record<string, unknown>).high as Record<string, unknown>).url === 'string'
   );
 }
 
 /**
  * Type guard to check if object is CurriculumVideo
  */
-export function isCurriculumVideo(obj: any): obj is CurriculumVideo {
+export function isCurriculumVideo(obj: unknown): obj is CurriculumVideo {
+  const record = obj as Record<string, unknown>;
   return (
-    obj &&
-    typeof obj.id === 'string' &&
-    typeof obj.work_id === 'string' &&
-    typeof obj.youtube_video_id === 'string' &&
-    typeof obj.relevance_score === 'number'
+    record &&
+    typeof record.id === 'string' &&
+    typeof record.work_id === 'string' &&
+    typeof record.youtube_video_id === 'string' &&
+    typeof record.relevance_score === 'number'
   );
 }
 

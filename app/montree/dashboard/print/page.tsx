@@ -86,7 +86,7 @@ function PrintContent() {
       const childList = childData.children || [];
 
       const childrenWithWorks: ChildWithWorks[] = await Promise.all(
-        childList.map(async (child: any) => {
+        childList.map(async (child: ChildWithWorks) => {
           // Get focus works (teacher-assigned works for this week)
           const focusRes = await fetch(`/api/montree/focus-works?child_id=${child.id}`);
           const focusData = await focusRes.json();

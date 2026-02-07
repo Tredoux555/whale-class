@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
           remaining_works:
             progress.stage_progress.total_works - progress.stage_progress.completed_works,
         },
-        recent_activities: recentCompletions?.map((c: any) => ({
+        recent_activities: recentCompletions?.map((c: Record<string, unknown>) => ({
           work_name: c.curriculum_work?.work_name || 'Unknown',
           completion_date: c.completion_date,
           times_practiced: c.times_practiced || 1,

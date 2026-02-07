@@ -151,8 +151,11 @@ export default function WorkDetailModal({
           {/* VIDEO LINK - NEW SECTION */}
           {(() => {
             // Extract all videoSearchTerms from levels (they're stored in levels, not on work directly)
+            interface Level {
+              videoSearchTerms?: string[];
+            }
             const allVideoTerms: string[] = [];
-            work.levels.forEach((level: any) => {
+            work.levels.forEach((level: Level) => {
               if (level.videoSearchTerms && Array.isArray(level.videoSearchTerms)) {
                 allVideoTerms.push(...level.videoSearchTerms);
               }

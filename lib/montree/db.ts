@@ -310,7 +310,7 @@ export async function updateWorkProgress(
   // For Montree works, we use a deterministic UUID based on the work_id string
   const curriculumWorkId = generateUUIDFromString(workId);
   
-  const progressData: any = {
+  const progressData: Record<string, unknown> = {
     child_id: childId,
     work_id: workId,
     curriculum_work_id: curriculumWorkId, // Required field

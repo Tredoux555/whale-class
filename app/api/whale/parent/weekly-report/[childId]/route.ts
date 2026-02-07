@@ -45,7 +45,7 @@ export async function GET(
 
     // Get work details separately
     const workIds = completionsData?.map(c => c.work_id).filter(Boolean) || [];
-    let completions: any[] = [];
+    let completions: Record<string, unknown>[] = [];
 
     if (workIds.length > 0) {
       const { data: works } = await supabase
@@ -85,7 +85,7 @@ export async function GET(
 
     // Get video details separately
     const videoIds = videoWatches?.map(v => v.curriculum_video_id).filter(Boolean) || [];
-    let enrichedVideos: any[] = [];
+    let enrichedVideos: Record<string, unknown>[] = [];
 
     if (videoIds.length > 0) {
       const { data: videos } = await supabase

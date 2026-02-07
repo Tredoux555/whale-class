@@ -55,10 +55,10 @@ export default function CurriculumProgressPage() {
         if (response.ok) {
           const data = await response.json();
           const children = data.data || [];
-          
+
           // Find child with age_group '2-3'
-          const daughter = children.find((c: any) => {
-            const parts = c.age_group.split('-');
+          const daughter = children.find((c: Record<string, unknown>) => {
+            const parts = String(c.age_group).split('-');
             const minAge = parseFloat(parts[0]);
             const maxAge = parseFloat(parts[1] || parts[0]);
             return minAge >= 2.0 && maxAge <= 3.0;

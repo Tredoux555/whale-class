@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
 
     const classroomIds = (classrooms || []).map(c => c.id);
 
-    let students: any[] = [];
+    let students: Record<string, unknown>[] = [];
     if (classroomIds.length > 0) {
       const { data: studentData } = await supabase
         .from('montree_children')
