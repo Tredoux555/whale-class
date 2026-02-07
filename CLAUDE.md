@@ -2,106 +2,74 @@
 
 ## Project Overview
 Next.js 14 app with two systems:
-- **Whale Class** (`/admin/*`) - Mock data, not connected to database
-- **Montree** (`/montree/*`) - Real SaaS multi-tenant school management
+- **Whale Class** (`/admin/*`) - Admin tools (card generators, description review, etc.)
+- **Montree** (`/montree/*`) - Real SaaS multi-tenant Montessori school management
+- **Montree Home** (planned) - Parent home program with 68 curated works
+
+Production: `https://teacherpotato.xyz`
+Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-## 🎯 CURRENT STATUS (Feb 3, 2026)
+## CURRENT STATUS (Feb 7, 2026)
 
-**✅ DEPLOYED - All changes pushed to main**
+### Active: Codebase Cleanup (5 remaining phases)
 
-Git push successful: `3b82f1f..da4b224 main -> main`
+Phase 1 DONE. Phases 2-6 ready to execute. Full plan in `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md`.
 
-### ⚠️ REQUIRED: Add Environment Variable
-In Railway dashboard (NOT terminal), add:
-- **Variable:** `SUPER_ADMIN_PASSWORD`
-- **Value:** A secure password of your choice
+| Phase | What | Status | Time |
+|-------|------|--------|------|
+| 1 | Security fixes (secret + dead auth route) | DONE | 10 min |
+| 2 | Consolidate 3 Supabase clients into one | NEXT | 30 min |
+| 3 | Delete dead code + dedup 27 game routes | Pending | 10 min |
+| 4 | Split 3 oversized files (918, 1115, 1243 lines) | Pending | 45 min |
+| 5 | Strip 400+ console.log statements | Pending | 15 min |
+| 6 | Fix 23 `: any` type annotations | Pending | 10 min |
 
----
+**Ground rules:** Commit after every phase. Test after every phase. Don't touch working UI. Leave auth structure alone (multi-session project).
 
-### Latest Session (Feb 3, 2026)
-
-#### 🔒 Security Audit & Hardening (22 vulnerabilities fixed)
-- **Parent routes (8 fixed):** Added session auth + ownership verification to children, announcements, milestones, photos, stats, reports routes
-- **Admin routes (7 fixed):** Added auth to backfill-curriculum, backfill-guides, reseed-curriculum, import routes; fixed query parameter bypass in reports
-- **Teacher routes (4 fixed):** Fixed student ID enumeration, added school verification
-- **Super admin:** Removed hardcoded password, now uses `SUPER_ADMIN_PASSWORD` env var
-- **Child endpoint:** Added authentication to `/api/montree/children/[childId]`
-
-#### 🐛 Critical Bugs Fixed
-1. **Report Photo Bug:** Teacher-selected photos now properly show in parent view
-   - Fixed: `reports/send/route.ts` and `parent/report/[reportId]/route.ts`
-   - Now queries `montree_report_media` junction table first, falls back to date range
-
-2. **Description Cross-Area Mismatch:** "Primary Phonics - Mac and Tab" no longer matches "Carrying a Table"
-   - Fixed: Area-constrained matching in `findBestDescription()`
-   - Custom works (work_key starts with `custom_`) don't auto-match descriptions
-
-#### ✨ New Features
-- **Description Generator API:** `/api/montree/curriculum/generate-description` - Template-based descriptions for custom works
-- **Description Review UI:** `/admin/description-review` - Wheel picker to review/edit all work descriptions
-- **English Teaching Guides:** PDF downloads added to admin page
-- **Montessori Materials List:** Comprehensive shopping/creation list
-  - PDF: `/public/guides/Montessori-English-Materials-List.pdf`
-  - Word: `/public/guides/Montessori-English-Materials-List.docx`
-  - Totals: 337 pictures, 1011 three-part cards, 115 physical objects
-  - Available at: `teacherpotato.xyz/admin`
-
-### Previous Session Fixes
-- Parent portal working
-- Migration 095 applied
-- Debug endpoint available
+**Verification after each phase:**
+1. `npm run dev` starts without errors
+2. `/montree/login` — teacher login works
+3. `/montree/dashboard` — loads with children
+4. `/montree/dashboard/curriculum` — 5 areas + teaching tools
+5. Child detail page loads with focus works
+6. `/montree/dashboard/games/letter-tracer` — game loads
 
 ---
 
-## 🔐 Parent Auth System
+### Recent Changes (Session 152, Feb 7)
 
-### How It Works
-```
-Teacher: Clicks "Invite Parent" → API generates 6-char code → Saved to montree_parent_invites
-Parent: Enters code at /montree/parent → API validates → Sets cookie → Redirects to dashboard
-```
+**Security (Phase 1 done):**
+- `lib/auth.ts`: Removed hardcoded fallback secret — throws if `ADMIN_SECRET` env var missing
+- Deleted `app/api/montree/auth/route.ts` — dead code with plain text password comparison
 
-### Database Tables
-```sql
-montree_parent_invites (
-  id UUID PRIMARY KEY,
-  child_id UUID REFERENCES montree_children(id),
-  invite_code TEXT UNIQUE,  -- e.g., "ABC123"
-  is_active BOOLEAN DEFAULT true,
-  expires_at TIMESTAMPTZ    -- 30 days from creation
-)
-```
+**Teaching Tools (Session 151-152):**
+- New section on curriculum page below 5 area cards
+- `app/montree/dashboard/card-generator/page.tsx` — 3-Part Cards (copied from admin, separate system)
+- `app/montree/dashboard/vocabulary-flashcards/page.tsx` — Vocab Flashcards (copied from admin)
+- Language Making Guide download button (43 works, all 5 categories)
 
-### Key API Endpoints
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/montree/invites` | POST | Generate invite code |
-| `/api/montree/parent/auth/access-code` | POST | Validate code, create session |
-| `/api/montree/debug/parent-link` | GET | Debug: trace code→child linkage |
-
-### Key Files
-- `app/api/montree/invites/route.ts` - Code generation
-- `app/api/montree/parent/auth/access-code/route.ts` - Code validation
-- `app/montree/parent/page.tsx` - Parent login page
+**Home Curriculum Curated:**
+- `lib/curriculum/data/home-curriculum.json` — 68 works (Practical Life 19, Sensorial 10, Math 15, Language 12, Cultural 10)
+- Each work has: `home_sequence`, `home_priority`, `home_tip`, `buy_or_make`, `estimated_cost`, `home_age_start`
 
 ---
 
-## 🗄️ Database
+## Database
 
-### Supabase Project
+### Supabase
 - URL: `https://dmfncjjtsoxrnvcdnvjq.supabase.co`
 - Both localhost and production use THIS SAME database
+- Service role key used everywhere (bypasses RLS)
 
 ### Key Tables
-- `montree_schools` - Schools
-- `montree_classrooms` - Classrooms
-- `montree_children` - Students
-- `montree_teachers` - Teachers
-- `montree_works` - Curriculum works
-- `montree_child_work_progress` - Progress tracking
-- `montree_parent_invites` - Parent invite codes ← NEW
+- `montree_schools`, `montree_classrooms`, `montree_children`, `montree_teachers`
+- `montree_works`, `montree_child_work_progress`
+- `montree_parent_invites` — 6-char invite codes for parent access
+- `montree_report_media` — junction table linking reports to selected photos
+- `montree_media_children` — links group photos to multiple children
+- `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
 
 ### Whale Class Data
 - Classroom ID: `945c846d-fb33-4370-8a95-a29b7767af54`
@@ -109,159 +77,155 @@ montree_parent_invites (
 
 ---
 
-## 🚀 Deployment
-
-### Railway
-- Auto-deploys on push to `main`
-- Production URL: `https://teacherpotato.xyz`
-
-### Environment Variables (Railway)
+## Environment Variables (Railway)
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://dmfncjjtsoxrnvcdnvjq.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=...
 RESEND_API_KEY=...
 ADMIN_PASSWORD=...
+ADMIN_SECRET=...          # REQUIRED — no fallback (used for JWT signing in lib/auth.ts)
+SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
 ```
 
 ---
 
-## 📱 Key Routes
+## Key Routes
 
 ### Teacher Portal
 | Route | Purpose |
 |-------|---------|
+| `/montree/login` | Teacher login (6-char code or email+password) |
 | `/montree/dashboard` | Class list |
-| `/montree/dashboard/[childId]` | Child week view |
+| `/montree/dashboard/[childId]` | Child week view (1,115 lines — needs splitting) |
 | `/montree/dashboard/[childId]/progress` | All works |
+| `/montree/dashboard/curriculum` | 5 area cards + Teaching Tools section |
+| `/montree/dashboard/card-generator` | 3-Part Cards tool |
+| `/montree/dashboard/vocabulary-flashcards` | Vocab Flashcards tool |
 | `/montree/dashboard/capture` | Photo/video capture |
+| `/montree/dashboard/guru` | AI teacher advisor |
+| `/montree/dashboard/games/*` | 27+ educational games |
 
 ### Parent Portal
 | Route | Purpose |
 |-------|---------|
-| `/montree/parent` | Login (enter code) |
+| `/montree/parent` | Login (enter invite code) |
 | `/montree/parent/dashboard` | Parent home |
 | `/montree/parent/photos` | Child's photos |
 | `/montree/parent/milestones` | Progress timeline |
 
----
-
-## 🐛 Debug Tools
-
-### Parent Link Debug
-```
-GET /api/montree/debug/parent-link?code=ABC123
-```
-Returns: invite data, child lookup result, sample children
-
-### Supabase SQL Editor
-Direct database queries at: https://supabase.com/dashboard
+### Admin
+| Route | Purpose |
+|-------|---------|
+| `/admin` | Admin tools hub |
+| `/admin/card-generator` | 3-Part Cards (admin version) |
+| `/admin/vocabulary-flashcards` | Vocab Flashcards (admin version) |
+| `/admin/description-review` | Work description editor |
+| `/montree/super-admin` | Super admin panel (1,243 lines — needs splitting) |
 
 ---
 
-## 🔐 Security Architecture
+## Authentication (Current State — Messy but Functional)
 
-### Parent Authentication
-- Session stored in `montree_parent_session` cookie (base64 encoded JSON)
-- Contains: `child_id`, `invite_id`
-- All parent routes use `getAuthenticatedSession()` helper
-- Ownership verified: requested child must match session's child_id
+7 separate auth systems that don't talk to each other. All work in production. NOT being restructured during cleanup (too risky for one session).
 
-### Admin/Teacher Authentication
-- Uses `x-school-id` header for school context
-- Service role key used (bypasses Supabase RLS)
-- School ownership verified before data access
+| System | How | Used By |
+|--------|-----|---------|
+| Teacher login | 6-char code (SHA256 hash) or email+bcrypt | `/api/montree/auth/teacher` |
+| Parent access | Invite code → cookie (`montree_parent_session`) | `/api/montree/parent/auth/access-code` |
+| Admin JWT | `jose` library, `ADMIN_SECRET` env var, httpOnly cookie | `lib/auth.ts` |
+| Super admin | Password from env var | `/api/montree/super-admin/login-as` |
+| Teacher sessions | localStorage (NOT httpOnly cookie — known debt) | `lib/montree/auth.ts` |
+| Story auth | Separate system | `lib/story-auth.ts` |
+| Multi-auth | Another separate system | `lib/auth-multi.ts` |
 
-### Security Patterns Applied
-```typescript
-// Parent routes pattern:
-const session = await getAuthenticatedSession();
-if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-if (session.childId !== requestedChildId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-
-// Admin routes pattern:
-const schoolId = request.headers.get('x-school-id');
-if (!schoolId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-```
+**Deleted:** `/api/montree/auth/route.ts` (dead code, plain text password comparison)
 
 ---
 
-## 🧠 Guru System (AI Teacher Advisor)
+## Supabase Client (Current State — Being Consolidated in Phase 2)
 
-### Overview
-AI advisor that helps teachers with child development questions, tracking the full 3-year Montessori journey.
+3 client files exist:
+1. `lib/montree/supabase.ts` — **BEST** (singleton, retry logic for Cloudflare timeouts) — used by 23 routes
+2. `lib/supabase.ts` — older, has `getPublicUrl()` helper
+3. `lib/supabase/server.ts` — used by 2 routes
 
-### Database Tables
-- `montree_guru_interactions` - Conversation history with follow-up tracking
-- `montree_child_mental_profiles` - Temperament, learning style, sensitive periods
-- `montree_behavioral_observations` - ABC model tracking
-- `montree_child_patterns` - Detected developmental patterns
+47 routes create their own inline `function getSupabase()`.
 
-### Key Files
-- `/lib/montree/guru/context-builder.ts` - Builds child context for AI
-- `/lib/montree/guru/knowledge-retrieval.ts` - Retrieves Montessori knowledge
-- `/app/api/montree/guru/route.ts` - Main Guru API endpoint
-
-### Context Gathered
-- Child basic info + age
-- Mental profile (temperament, learning modality)
-- Current work progress (last 30 works)
-- Recent observations (last 10)
-- Past Guru interactions (last 5)
-- Teacher notes from work sessions
+**Phase 2 plan:** Merge all into `lib/supabase-client.ts`, update all 72 routes to use single import.
 
 ---
 
-## 📸 Report & Photo System
+## Curriculum System
 
-### Junction Tables (Important!)
-- `montree_report_media` - Links reports to selected photos
-- `montree_media_children` - Links group photos to multiple children
+### Master Data (JSON files)
+5 area files in `lib/curriculum/data/`:
+- `language.json` (43 works)
+- `practical_life.json`
+- `sensorial.json`
+- `mathematics.json`
+- `cultural.json`
 
-### Photo Selection Flow
+### Home Curriculum
+- `lib/curriculum/data/home-curriculum.json` — 68 curated works for parent home program
+- NOT built yet — just the data file
+
+### Teaching Guides
+- `public/guides/Montessori_Language_Making_Guide.docx` — 43 works, all 5 categories
+- `public/guides/Montessori-English-Materials-List.pdf` — 337 pics, 1011 cards, 115 objects
+- `public/guides/Montessori-English-Materials-List.docx` — Editable version
+
+---
+
+## Known Technical Debt
+
+### Being Fixed (Cleanup Plan)
+- 3 Supabase client files → consolidating to 1
+- 6 debug API endpoints exposed in production → deleting
+- 27 duplicate game routes → deduplicating
+- 3 files over 900 lines → splitting
+- 469 console.log statements → stripping
+- 23 `: any` types → fixing
+
+### Deferred (Future Sessions)
+- Auth restructure (localStorage → httpOnly cookies + middleware)
+- Rate limiting on auth endpoints
+- API route consolidation (106 routes — many could merge)
+- Centralized logging service
+- PWA manifest not linked
+- Email sending not tested
+- DB only has 18/43 language works (needs reseed)
+
+---
+
+## Guru System (AI Teacher Advisor)
+
+AI advisor for child development questions. Uses Anthropic API.
+
+Key files:
+- `lib/montree/guru/context-builder.ts` — builds child context
+- `lib/montree/guru/knowledge-retrieval.ts` — Montessori knowledge
+- `app/api/montree/guru/route.ts` — main endpoint
+
+Tables: `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`, `montree_child_patterns`
+
+---
+
+## Report & Photo System
+
+Photo selection flow:
 ```
 Teacher Preview → Select Photos → Saved to montree_report_media junction table
-Publish Report → send/route.ts queries junction table → Creates final report
-Parent View → parent/report/[id]/route.ts queries junction table → Shows selected photos
+Publish → send/route.ts queries junction table → Creates final report
+Parent View → parent/report/[id]/route.ts queries junction table
 ```
 
-### Key Fix Applied
-Both `send/route.ts` and `parent/report/[reportId]/route.ts` now:
-1. FIRST query `montree_report_media` junction table for explicitly selected photos
-2. FALLBACK to date-range query for backwards compatibility
+Both routes query junction table first, fall back to date-range query for backwards compatibility.
+
+Description matching uses area-constrained whole-word matching. Custom works (`work_key` starts with `custom_`) don't auto-match.
 
 ---
 
-## 📝 Description Matching System
-
-### How It Works
-Parent reports show descriptions for works. System matches work names to curriculum guides.
-
-### Key Fix: Area-Constrained Matching
-```typescript
-// OLD (broken): "Tab" matched "Table" across areas
-if (guideWord.includes(word) || word.includes(guideWord))
-
-// NEW (fixed): Must match area + whole-word matching
-if (normalizeArea(desc.area) !== normalizedWorkArea) continue;
-if (word === guideWord) score += 3;  // Exact word match
-```
-
-### Custom Works
-- Identified by `work_key` starting with `custom_`
-- Do NOT auto-match to standard curriculum descriptions
-- Use description generator or manual entry
-
----
-
-## 📋 Known Issues
-
-1. **PWA icons not linked** - Icons exist in `/public/montree-parent/` but manifest not added to layout
-2. **Email sending not tested** - Resend integration ready but not verified
-3. **Guru UI access** - Currently only at `/montree/dashboard/guru`, should be accessible from child profiles too
-
----
-
-## 🔧 Local Development
+## Local Development
 
 ```bash
 cd ~/whale
@@ -273,92 +237,11 @@ Both local and production connect to the SAME Supabase database.
 
 ---
 
-## 📁 Key Files Modified (Feb 3, 2026 Session)
+## Key Handoff Docs
 
-### Security Fixes
-| File | Change |
-|------|--------|
-| `api/montree/super-admin/login-as/route.ts` | Uses env var for password |
-| `api/montree/children/[childId]/route.ts` | Added auth checks |
-| `api/montree/parent/children/route.ts` | Added session auth |
-| `api/montree/parent/announcements/route.ts` | Added session auth + ownership |
-| `api/montree/parent/milestones/route.ts` | Added session auth + ownership |
-| `api/montree/parent/photos/route.ts` | Added session auth + ownership |
-| `api/montree/parent/stats/route.ts` | Added session auth + ownership |
-| `api/montree/parent/report/[reportId]/route.ts` | Added session auth + ownership |
-| `api/montree/parent/reports/route.ts` | Improved auth |
-| `api/montree/parent/dashboard/route.ts` | Removed test bypass |
-| `api/montree/admin/backfill-curriculum/route.ts` | Added auth |
-| `api/montree/admin/backfill-guides/route.ts` | Added auth |
-| `api/montree/admin/reseed-curriculum/route.ts` | Added auth |
-| `api/montree/admin/import/route.ts` | Early auth check |
-| `api/montree/admin/reports/route.ts` | Fixed query param bypass |
-| `api/montree/admin/teachers/[teacherId]/route.ts` | Added school verification |
-| `api/weekly-planning/list/route.ts` | Added auth |
-| `api/weekly-planning/child-detail/route.ts` | Added auth |
-
-### Bug Fixes
-| File | Change |
-|------|--------|
-| `api/montree/reports/send/route.ts` | Query junction table for photos |
-| `api/montree/parent/report/[reportId]/route.ts` | Query junction table + fix description matching |
-
-### New Features
-| File | Purpose |
-|------|---------|
-| `api/montree/curriculum/generate-description/route.ts` | Generate descriptions for custom works |
-| `app/admin/description-review/page.tsx` | UI to review/edit work descriptions |
-| `api/montree/curriculum/update/route.ts` | Added parent_description, why_it_matters fields |
-| `app/admin/page.tsx` | Added Description Review tool + Materials List downloads |
-| `public/guides/Montessori-English-Materials-List.pdf` | Shopping list PDF (337 pics, 1011 cards, 115 objects) |
-| `public/guides/Montessori-English-Materials-List.docx` | Editable Word version of materials list |
-
----
-
-## 📋 HANDOFF: Next Steps
-
-### ✅ COMPLETED (Feb 3, 2026)
-- [x] Security audit - 22 vulnerabilities fixed
-- [x] Photo bug - Junction table queries fixed
-- [x] Description mismatch - Area-constrained matching
-- [x] Materials list - PDF and DOCX created with exact quantities
-- [x] Git push - Successful: `3b82f1f..da4b224`
-
-### 🔴 IMMEDIATE ACTION REQUIRED
-1. **Add SUPER_ADMIN_PASSWORD in Railway:**
-   - Go to railway.app → Your project → Variables tab
-   - Add: `SUPER_ADMIN_PASSWORD` = `YourSecurePassword123!`
-   - Railway will auto-redeploy
-
-### 🔍 VERIFY AFTER DEPLOY
-2. **Test materials downloads** - Visit `teacherpotato.xyz/admin` and download PDF/Word files
-3. **Test parent portal** - Verify selected photos show in parent view
-4. **Test super-admin** - Login should use the new env var password
-
-### Short-term Features
-5. **Guru enhancement** - Add Guru access button to child profile pages
-6. **3-year journey view** - Timeline visualization of child's development
-7. **Pattern detection** - Auto-detect developmental patterns over time
-
-### Security Recommendations (Optional)
-8. Implement session expiration/refresh
-9. Add rate limiting to auth endpoints
-10. Consider signed session tokens (JWT) instead of base64
-
----
-
-## 📦 Materials List Summary
-
-Created comprehensive Montessori English materials list for the complete Pink/Blue/Green reading program:
-
-| Category | Count | Notes |
-|----------|-------|-------|
-| Pictures/Images | 337 | For phonogram cards and reading materials |
-| 3-Part Cards | 1,011 | Object + Label + Control cards |
-| Physical Objects | 115 | Miniatures and real objects |
-
-**Files Location:**
-- PDF: `/public/guides/Montessori-English-Materials-List.pdf`
-- Word: `/public/guides/Montessori-English-Materials-List.docx`
-
-**Objects Needing Duplicates (17):** bat, box, bun, cap, cat, cup, fan, fox, hat, hen, log, matdb, mop, nut, pan, pen, pig, pot, rat, rug, sun, van, wig (for matching exercises)
+| Doc | What |
+|-----|------|
+| `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | **CURRENT** — Full cleanup plan with all 6 phases |
+| `docs/MONTREE_HOME_HANDOFF.md` | Architecture for Montree Home (250-activity version — outdated, use 68-work JSON instead) |
+| `docs/HANDOFF_SESSION_151_LANGUAGE_MAKING_GUIDE.md` | Language guide + API download route |
+| `.claude/plans/toasty-finding-ritchie.md` | Detailed cleanup plan (same as Session 152 handoff) |
