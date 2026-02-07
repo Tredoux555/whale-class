@@ -1,5 +1,5 @@
 // lib/algorithms/activity-selection.ts
-import { createServerClient } from '../supabase';
+import { createServerClient } from '@/lib/supabase-client';
 import { getChildProgress } from '../db/progress';
 import { getChildById, calculateDecimalAge } from '../db/children';
 import type { Activity, ActivitySelectionCriteria, ScoredActivity, StatusLevel } from '@/types/database';
