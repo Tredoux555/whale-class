@@ -1,4 +1,4 @@
-import LetterTracerNew from '@/components/04-LetterTracerNew';
+import LetterTracerNew from '@/components/games/04-LetterTracerNew';
 
 export default function LetterTracerPage() {
   return <LetterTracerNew />;
