@@ -28,6 +28,7 @@ interface FamilyStat {
   name: string;
   email: string;
   plan: string;
+  join_code: string | null;
   created_at: string;
   children_count: number;
   total_works: number;
@@ -179,7 +180,7 @@ export default function FamiliesTab({ password }: FamiliesTabProps) {
             <thead className="bg-slate-800">
               <tr>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Family</th>
-                <th className="text-left p-4 text-slate-400 font-medium text-sm">Email</th>
+                <th className="text-left p-4 text-slate-400 font-medium text-sm">Code</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Plan</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Children</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Progress</th>
@@ -198,7 +199,13 @@ export default function FamiliesTab({ password }: FamiliesTabProps) {
                     </div>
                   </td>
                   <td className="p-4">
-                    <p className="text-slate-300 text-sm">{family.email}</p>
+                    {family.join_code ? (
+                      <span className="font-mono text-sm bg-slate-700/50 text-emerald-300 px-2 py-1 rounded">
+                        {family.join_code}
+                      </span>
+                    ) : (
+                      <span className="text-slate-500 text-sm">—</span>
+                    )}
                   </td>
                   <td className="p-4">
                     <span className="px-3 py-1 rounded-full text-xs font-medium border bg-emerald-500/20 text-emerald-400 border-emerald-500/50">

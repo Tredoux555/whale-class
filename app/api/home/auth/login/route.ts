@@ -1,37 +1,51 @@
 // /api/home/auth/login/route.ts
-// Session 155: Login for home families
+// Session 155: Code-based login for home families
+// Accepts a 6-char join code, SHA256-hashes it, looks up the family
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+function hashCode(code: string): string {
+  return crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { code } = await request.json();
 
-    if (!email?.trim() || !password) {
-      return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
+    if (!code?.trim()) {
+      return NextResponse.json({ error: 'Code required' }, { status: 400 });
+    }
+
+    const cleaned = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (cleaned.length !== 6) {
+      return NextResponse.json({ error: 'Code must be 6 characters' }, { status: 400 });
+    }
+
+    // Validate against exact charset (no I, L, O, 0, 1 — they're excluded from generation)
+    const VALID_CODE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/;
+    if (!VALID_CODE.test(cleaned)) {
+      return NextResponse.json({ error: 'Code contains invalid characters' }, { status: 400 });
     }
 
     const supabase = getSupabase();
+    const codeHash = hashCode(cleaned);
 
-    // Look up family by email
+    // Look up family by password_hash (SHA256 of code)
+    // No salt — code IS the secret, matches Montree classroom pattern
     const { data: family, error } = await supabase
       .from('home_families')
-      .select('id, name, email, plan, password_hash')
-      .eq('email', email.trim().toLowerCase())
+      .select('id, name, email, plan')
+      .eq('password_hash', codeHash)
       .single();
 
-    if (error || !family) {
-      // Constant-time: always run bcrypt even if user not found to prevent timing attacks
-      await bcrypt.compare(password, '$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012');
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    if (error) {
+      console.error('Login lookup error:', error.code, error.message);
     }
 
-    // Verify password
-    const valid = await bcrypt.compare(password, family.password_hash);
-    if (!valid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    if (error || !family) {
+      return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
     }
 
     return NextResponse.json({
