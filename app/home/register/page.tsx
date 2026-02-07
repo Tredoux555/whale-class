@@ -41,7 +41,8 @@ export default function HomeRegisterPage() {
           loginAt: new Date().toISOString(),
         });
       } else {
-        setError(data.error || 'Something went wrong');
+        const debugStr = data.debug ? `\n${JSON.stringify(data.debug)}` : '';
+        setError((data.error || 'Something went wrong') + debugStr);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
