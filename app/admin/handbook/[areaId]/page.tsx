@@ -514,7 +514,7 @@ export default function AreaPage() {
                   {selectedWork.related_games.map((game) => (
                     <Link
                       key={game.id}
-                      href={`/games/${game.slug}`}
+                      href={`/montree/dashboard/games/${game.slug}`}
                       className="flex items-center gap-3 p-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-lg transition-colors group"
                     >
                       <div className="w-10 h-10 bg-indigo-500/30 rounded-lg flex items-center justify-center text-xl">

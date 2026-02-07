@@ -71,7 +71,7 @@ export default function GamesPanel({ childId }: Props) {
             {GAME_PROGRESS.slice(0, 3).map(game => (
               <Link
                 key={game.game_slug}
-                href={`/games/${game.game_slug}`}
+                href={`/montree/dashboard/games/${game.game_slug}`}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <span className="text-2xl">{game.icon}</span>
@@ -95,7 +95,7 @@ export default function GamesPanel({ childId }: Props) {
             {RECOMMENDED_GAMES.map(game => (
               <Link
                 key={game.game_slug}
-                href={`/games/${game.game_slug}`}
+                href={`/montree/dashboard/games/${game.game_slug}`}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 hover:shadow-md transition-all"
               >
                 <span className="text-2xl">{game.icon}</span>
