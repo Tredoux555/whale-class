@@ -467,7 +467,7 @@ export default function AdminPage() {
             <span className="text-2xl block mb-2">📄</span>
             <span className="text-emerald-300 text-sm">Import</span>
           </Link>
-          <Link href="/montree/games" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
+          <Link href="/montree/dashboard/games" className="bg-white/10 rounded-xl p-4 text-center hover:bg-white/20">
             <span className="text-2xl block mb-2">🎮</span>
             <span className="text-white text-sm">Games</span>
           </Link>
