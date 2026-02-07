@@ -7,9 +7,28 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 LAUNCH READY — Codebase cleanup complete (health 5.5 → ~9.1/10). Next: Montree Home clone.
+**Status**: 🚀 LAUNCH READY — Montree Home clone built (session 155). Codebase health ~9.1/10.
 
 ## Recent Changes
+
+### Session 155 - Feb 7, 2026 (MONTREE HOME — Parent-Facing Product)
+
+**Handoff:** `PLAN_SESSION_155.md`
+
+Built the entire Montree Home product — parent-facing clone of the classroom system. Parents sign up with email/password, add children, track 68-work Montessori curriculum at home.
+
+1. **Database** — Migration 120: 5 tables (home_families, home_children, home_progress, home_curriculum, home_sessions). CHECK constraints, CASCADE deletes, FK indexes. Denormalized `area` on progress for fast reads.
+2. **Auth** — Register (bcrypt hash + curriculum seeding) and login APIs. Handles duplicate email (409). localStorage session management via `lib/home/auth.ts`.
+3. **Shared lib** — `lib/home/curriculum-helpers.ts`: seeds 68 works on registration + `getWorkMeta()` lookup for API enrichment.
+4. **API routes** (8 total): auth/register, auth/login, children (list+create), children/[childId], progress (enriched), progress/update, progress/summary, curriculum.
+5. **Pages** (8 total): landing, register, login, dashboard (children grid), child works view (status cycling), child progress bars, curriculum browser, settings.
+6. **Middleware** — Added `/home` to publicPaths.
+
+**Routes:** `/home/*` pages, `/api/home/*` APIs. All additive — zero changes to existing montree files.
+
+**Files created:** 21 new + 2 edits (middleware.ts, BRAIN.md). ~2,000 lines.
+
+**MVP limitations:** No password reset, no email verification, no gallery/reports/guru, no API-level auth (trusts client IDs, same as montree), no work session logging (table ready), no curriculum editing.
 
 ### Session 154 - Feb 7, 2026 (CLEANUP FINAL PUSH — 8.5+ TARGET HIT)
 
