@@ -43,7 +43,8 @@ export default function HomeLandingPage() {
 
         // No auto-redirect — parent must click "Go to Dashboard" after saving code
       } else {
-        setError(data.error || 'Something went wrong');
+        const debugStr = data.debug ? `\n${JSON.stringify(data.debug)}` : '';
+        setError((data.error || 'Something went wrong') + debugStr);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
