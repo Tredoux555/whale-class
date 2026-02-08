@@ -46,9 +46,16 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
+  // Redirect root to /montree on montree.xyz
   // Redirect old teacherpotato.xyz domain to montree.xyz
   async redirects() {
     return [
+      {
+        source: '/',
+        has: [{ type: 'host', value: 'montree.xyz' }],
+        destination: '/montree',
+        permanent: false,
+      },
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'teacherpotato.xyz' }],
