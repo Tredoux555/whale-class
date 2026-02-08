@@ -1,9 +1,9 @@
 {
-  "appId": "xyz.teacherpotato.montree",
+  "appId": "xyz.montree.app",
   "appName": "Montree",
   "webDir": "out",
   "server": {
-    "url": "https://www.teacherpotato.xyz/montree",
+    "url": "https://montree.xyz/montree",
     "cleartext": true
   },
   "plugins": {

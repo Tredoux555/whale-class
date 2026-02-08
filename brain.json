@@ -26,8 +26,8 @@
 
   "SESSION_136_QUICK_UPDATE": {
     "summary": "Documented parent portal access flow for teachers",
-    "parent_portal_url": "https://teacherpotato.xyz/montree/parent/login",
-    "parent_signup_url": "https://teacherpotato.xyz/montree/parent/signup?code=XXXX-XXXX",
+    "parent_portal_url": "https://montree.xyz/montree/parent/login",
+    "parent_signup_url": "https://montree.xyz/montree/parent/signup?code=XXXX-XXXX",
     "invite_flow": [
       "1. Teacher goes to child detail page /montree/dashboard/[childId]",
       "2. Clicks '👨‍👩‍👧 Invite Parent' button",
@@ -111,5 +111,5 @@
     }
   },
 
-  "LIVE_URL": "https://teacherpotato.xyz/montree"
+  "LIVE_URL": "https://montree.xyz/montree"
 }

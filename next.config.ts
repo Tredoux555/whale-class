@@ -46,18 +46,23 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
-  // Both www and non-www work now via Railway custom domains
-  // Redirect temporarily disabled for debugging mobile access issue
-  // async redirects() {
-  //   return [
-  //     {
-  //       source: '/:path*',
-  //       has: [{ type: 'host', value: 'teacherpotato.xyz' }],
-  //       destination: 'https://www.teacherpotato.xyz/:path*',
-  //       permanent: true,
-  //     },
-  //   ];
-  // },
+  // Redirect old teacherpotato.xyz domain to montree.xyz
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'teacherpotato.xyz' }],
+        destination: 'https://montree.xyz/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.teacherpotato.xyz' }],
+        destination: 'https://montree.xyz/:path*',
+        permanent: true,
+      },
+    ];
+  },
   
   // Enable Turbopack
   turbopack: {},

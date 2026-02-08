@@ -483,7 +483,7 @@ export default function ParentReportPage({ params }: { params: Promise<{ childId
             <div className="mt-4 p-3 bg-white rounded-xl border border-purple-200 text-center">
               <p className="text-sm text-gray-600">
                 <span className="font-semibold">Play online:</span>{' '}
-                <span className="text-purple-600">www.teacherpotato.xyz/games</span>
+                <span className="text-purple-600">www.montree.xyz/games</span>
               </p>
             </div>
           </div>
