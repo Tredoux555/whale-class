@@ -333,7 +333,7 @@ export default function AdminDashboard() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-slate-600 text-sm">
-          <p>🌳 Whale Montessori Platform • teacherpotato.xyz</p>
+          <p>🌳 Whale Montessori Platform • montree.xyz</p>
         </div>
       </main>
     </div>

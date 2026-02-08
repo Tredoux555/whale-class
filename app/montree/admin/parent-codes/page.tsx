@@ -160,7 +160,7 @@ export default function ParentCodesPage() {
 
                 {/* URL */}
                 <p className="text-xs text-center text-gray-400 break-all">
-                  teacherpotato.xyz/montree/parent
+                  montree.xyz/montree/parent
                 </p>
 
                 {/* Status Badge - hide on print */}

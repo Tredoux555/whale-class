@@ -136,7 +136,7 @@ function WelcomeContent() {
 
         {/* Help */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>Need help? Email us at <a href="mailto:support@teacherpotato.xyz" className="text-emerald-600 hover:underline">support@teacherpotato.xyz</a></p>
+          <p>Need help? Email us at <a href="mailto:support@montree.xyz" className="text-emerald-600 hover:underline">support@montree.xyz</a></p>
         </div>
       </div>
     </div>

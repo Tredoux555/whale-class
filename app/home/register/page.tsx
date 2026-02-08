@@ -164,7 +164,7 @@ export default function HomeRegisterPage() {
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
         <p className="text-slate-500 text-xs">
-          🏠 Montree Home • teacherpotato.xyz
+          🏠 Montree Home • montree.xyz
         </p>
       </div>
     </div>

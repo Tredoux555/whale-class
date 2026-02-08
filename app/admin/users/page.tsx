@@ -267,7 +267,7 @@ export default function UserManagementPage() {
           <li>Enter their name and email</li>
           <li>Set a temporary password</li>
           <li>Select &quot;Teacher&quot; role</li>
-          <li>Share the login URL: <code className="bg-blue-100 px-1 rounded">teacherpotato.xyz/teacher/login</code></li>
+          <li>Share the login URL: <code className="bg-blue-100 px-1 rounded">montree.xyz/teacher/login</code></li>
         </ol>
       </div>
     </div>

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const schoolName = child?.classroom?.school?.name || 'School';
     const inviteCode = invite.invite_code;
     
-    const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://teacherpotato.xyz'}/montree/parent/signup`;
+    const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz'}/montree/parent/signup`;
 
     // Send the email
     const result = await sendParentInviteEmail(

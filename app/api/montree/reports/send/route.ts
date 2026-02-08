@@ -292,7 +292,7 @@ export async function POST(request: NextRequest) {
       for (const email of parentEmails) {
         try {
           await resend.emails.send({
-            from: 'Montree <noreply@teacherpotato.xyz>',
+            from: 'Montree <noreply@montree.xyz>',
             to: email,
             subject: `🌳 ${child.name}'s Progress Update`,
             html,

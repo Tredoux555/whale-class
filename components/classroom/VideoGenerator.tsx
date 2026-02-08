@@ -251,7 +251,7 @@ export default function VideoGenerator({ childId, childName, onClose }: VideoGen
     
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.font = '20px Arial';
-    ctx.fillText('teacherpotato.xyz', width / 2, height / 2 + 100);
+    ctx.fillText('montree.xyz', width / 2, height / 2 + 100);
   };
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
