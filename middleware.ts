@@ -55,12 +55,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Static files and Next.js internals - bypass completely
+  // Static files, Next.js internals, and SEO files - bypass completely
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/audio/') ||
     pathname.startsWith('/images/') ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/robots.txt' ||
     /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4)$/i.test(pathname)
   ) {
     return NextResponse.next();
