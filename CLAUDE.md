@@ -6,12 +6,23 @@ Next.js 16.1.1 app with three systems:
 - **Montree** (`/montree/*`) - Real SaaS multi-tenant Montessori school management
 - **Montree Home** (`/home/*`) - Parent home program with 68 curated works (code-based auth, partially deployed)
 
-Production: `https://teacherpotato.xyz`
+Production: `https://teacherpotato.xyz` → **MIGRATING TO `https://montree.xyz`**
 Deploy: Railway auto-deploys on push to `main`
 
 ---
 
 ## CURRENT STATUS (Feb 8, 2026)
+
+### NEXT: Domain Migration — teacherpotato.xyz → montree.xyz
+
+New domain **montree.xyz** purchased on GoDaddy. Full migration plan:
+1. Add montree.xyz + www.montree.xyz as custom domains in Railway (whale-class)
+2. Get Railway CNAME values, configure in GoDaddy DNS
+3. Search codebase for all `teacherpotato` references and update to `montree.xyz`
+4. Update Supabase auth redirect URLs
+5. Update Railway env vars (NEXT_PUBLIC_URL etc.)
+6. Deploy, test all routes, set old domain to redirect
+**Claude will do ALL steps via browser + terminal — no manual user action needed.**
 
 ### URGENT: Home Registration 500 Error
 

@@ -2,33 +2,107 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 7, 2026)
+## Current State (Feb 8, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
-**Deployed**: Railway at teacherpotato.xyz
-**Status**: 🚀 LAUNCH READY — Montree Home clone built (session 155). Codebase health ~9.1/10.
+**Deployed**: Railway at teacherpotato.xyz → MIGRATING TO montree.xyz
+**Status**: 🚀 LAUNCH READY — Domain migration to montree.xyz is NEXT. Codebase health ~9.1/10.
 
 ## Recent Changes
+
+### Session 156 - Feb 8, 2026 (GMAIL CLEANUP + SECURITY AUDIT + MIGRATION PREP)
+
+**Non-code session.** Organized Gmail inbox and ran security audit on Mac + Google account.
+
+**Gmail cleanup:**
+- Created labels: Banking, Projects, Receipts
+- Created 4 filters: Glassdoor (skip inbox), Nedbank→Banking, Railway/Supabase/GitHub→Projects, order confirmations→Receipts
+- Unsubscribed from 5 spam senders: pdfFiller, Maersk, Strikearc, Replit, Base44
+- Bulk archived 896 promotional emails
+
+**Security audit findings:**
+- ✅ FileVault ON, ✅ Guest account disabled, ✅ Google 2FA ON
+- ❌ Mac firewall OFF, ❌ Screen lock not configured, ❌ 4 compromised passwords found
+- ⚠️ Inactive Windows device (64 days), ⚠️ DocHub + Lumin PDF have Google Drive access
+
+**Migration prep:**
+- New domain: **montree.xyz** (GoDaddy)
+- Old domain: teacherpotato.xyz (keep as redirect)
+- Full migration plan written to brain.json
+
+**NEXT SESSION: Migrate Montree from teacherpotato.xyz → montree.xyz**
+1. Add montree.xyz custom domain in Railway
+2. Configure GoDaddy DNS (CNAME to Railway)
+3. Update all hardcoded teacherpotato.xyz refs in codebase
+4. Update Supabase auth redirect URLs
+5. Update env vars, deploy, test all routes
+6. Set teacherpotato.xyz to redirect to montree.xyz
+
+### Session 155 (continued) - Feb 8, 2026 (CODE-BASED AUTH + SUPER-ADMIN FAMILIES TAB)
+
+**Handoff:** `HANDOFF_SESSION_155_CODE_AUTH.md`
+
+Switched Montree Home from email/password auth to **code-based instant trial** matching the Montree classroom pattern exactly. Built super-admin Families tab. Ran audit and fixed all critical/moderate issues.
+
+**Auth Rewrite (code-based):**
+1. **`/api/home/auth/try`** — POST creates family instantly, generates 6-char code (charset `ABCDEFGHJKMNPQRSTUVWXYZ23456789`), stores SHA256 hash in `password_hash`, stores plaintext code in `join_code`. Retries up to 3x on collision (UNIQUE constraint). Seeds curriculum.
+2. **`/api/home/auth/login`** — POST accepts `{ code }`, SHA256 hashes it, looks up family by `password_hash`. Validates against exact charset. Error logging for `.single()` ambiguity.
+3. **Landing page** (`/home`) — "Start Free" button → instant account creation → big code display → manual "Go to Dashboard" (no auto-redirect, so parent has time to save code). Double-click guard. "I have a code" link to login.
+4. **Login page** (`/home/login`) — 6 individual input boxes with auto-advance, backspace handling, paste support, auto-submit on 6th character. Code-only (no email/password).
+5. **Register page/API** — Deprecated. Page redirects to `/home`. API returns 410 Gone.
+6. **Migration 121** — Adds `join_code TEXT` column with UNIQUE constraint + index.
+
+**Super-Admin Families Tab:**
+7. **`/api/montree/super-admin/home`** — Returns `join_code` in both list and detail views.
+8. **`FamiliesTab.tsx`** — Shows join code (mono font, emerald highlight) instead of email. Interface updated with `join_code: string | null`.
+
+**Audit Fixes Applied:**
+- CRITICAL: Added UNIQUE constraint on `join_code` (prevents duplicate codes breaking `.single()` login)
+- CRITICAL: Added collision retry loop in try route (3 attempts on 23505 unique violation)
+- CRITICAL: Added double-click guard (`if (loading) return`) on Start Free button
+- MODERATE: Removed 4-second auto-redirect (parent clicks manually after saving code)
+- MODERATE: Added exact charset validation in login (rejects I, L, O, 0, 1)
+- MINOR: Added error logging for `.single()` lookup failures
+
+**Not fixed (accepted for Montree pattern consistency):**
+- Math.random() for code generation (same as Montree classroom)
+- SHA256 without salt (code IS the secret, same as classroom)
+- No rate limiting on login (would need middleware, deferred)
+
+**Files changed (9 modified, 0 new beyond migration):**
+
+| File | Change |
+|------|--------|
+| `migrations/121_home_join_code.sql` | NEW — join_code column + UNIQUE constraint + index |
+| `app/api/home/auth/try/route.ts` | NEW — instant trial with code gen + collision retry |
+| `app/api/home/auth/login/route.ts` | REWRITTEN — SHA256 code lookup (was bcrypt email) |
+| `app/home/page.tsx` | REWRITTEN — Start Free → code display → manual continue |
+| `app/home/login/page.tsx` | REWRITTEN — 6-box code input (was email+password form) |
+| `app/home/register/page.tsx` | REPLACED — redirect stub to /home |
+| `app/api/home/auth/register/route.ts` | REPLACED — 410 Gone stub |
+| `app/api/montree/super-admin/home/route.ts` | MODIFIED — returns join_code |
+| `components/montree/super-admin/FamiliesTab.tsx` | MODIFIED — shows code instead of email |
 
 ### Session 155 - Feb 7, 2026 (MONTREE HOME — Parent-Facing Product)
 
 **Handoff:** `PLAN_SESSION_155.md`
 
-Built the entire Montree Home product — parent-facing clone of the classroom system. Parents sign up with email/password, add children, track 68-work Montessori curriculum at home.
+Built the entire Montree Home product — parent-facing clone of the classroom system. Parents sign up with email/password, add children, track 66-work Montessori curriculum at home.
 
 1. **Database** — Migration 120: 5 tables (home_families, home_children, home_progress, home_curriculum, home_sessions). CHECK constraints, CASCADE deletes, FK indexes. Denormalized `area` on progress for fast reads.
-2. **Auth** — Register (bcrypt hash + curriculum seeding) and login APIs. Handles duplicate email (409). localStorage session management via `lib/home/auth.ts`.
-3. **Shared lib** — `lib/home/curriculum-helpers.ts`: seeds 68 works on registration + `getWorkMeta()` lookup for API enrichment.
-4. **API routes** (8 total): auth/register, auth/login, children (list+create), children/[childId], progress (enriched), progress/update, progress/summary, curriculum.
-5. **Pages** (8 total): landing, register, login, dashboard (children grid), child works view (status cycling), child progress bars, curriculum browser, settings.
+2. **Auth** — Register (bcrypt hash + curriculum seeding) and login APIs. Handles duplicate email (409). localStorage session management via `lib/home/auth.ts`. **Now replaced with code-based auth (see above).**
+3. **Shared lib** — `lib/home/curriculum-helpers.ts`: seeds 66 works on registration + `getWorkMeta()` lookup for API enrichment.
+4. **API routes** (9 total): auth/try, auth/login, auth/register (deprecated), children (list+create), children/[childId], progress (enriched), progress/update, progress/summary, curriculum.
+5. **Pages** (8 total): landing, register (redirect), login, dashboard (children grid), child works view (status cycling), child progress bars, curriculum browser, settings.
 6. **Middleware** — Added `/home` to publicPaths.
+7. **Super-admin** — Families tab added to existing super-admin page (API + component).
 
-**Routes:** `/home/*` pages, `/api/home/*` APIs. All additive — zero changes to existing montree files.
+**Routes:** `/home/*` pages, `/api/home/*` APIs. All additive — zero changes to existing montree files (except super-admin page for Families tab).
 
-**Files created:** 21 new + 2 edits (middleware.ts, BRAIN.md). ~2,000 lines.
+**Files created:** 24 new + 4 edits. ~2,700 lines.
 
-**MVP limitations:** No password reset, no email verification, no gallery/reports/guru, no API-level auth (trusts client IDs, same as montree), no work session logging (table ready), no curriculum editing.
+**MVP limitations:** No password reset, no gallery/reports/guru, no API-level auth (trusts client IDs, same as montree), no work session logging (table ready), no curriculum editing, no rate limiting on login.
 
 ### Session 154 - Feb 7, 2026 (CLEANUP FINAL PUSH — 8.5+ TARGET HIT)
 
@@ -1327,6 +1401,17 @@ All 309 Montessori works now have comprehensive teacher guides.
 | `app/api/montree/debug/audit/route.ts` | Full data audit for classroom |
 | `app/api/montree/debug/add-child/route.ts` | Test child creation |
 | `app/api/montree/debug/classroom/route.ts` | Debug classroom data |
+| **MONTREE HOME (Parent-Facing)** | |
+| `app/api/home/auth/try/route.ts` | Instant trial: generates 6-char code + SHA256 hash, creates family, seeds curriculum. Collision retry (3x) |
+| `app/api/home/auth/login/route.ts` | Code-based login: SHA256(code) → lookup by password_hash. Charset validation |
+| `app/home/page.tsx` | Landing page: "Start Free" → code display → manual continue. Double-click guarded |
+| `app/home/login/page.tsx` | 6-box code input with auto-advance, paste, auto-submit |
+| `lib/home/auth.ts` | localStorage session: `HomeSession { family: { id, name, email, plan }, loginAt }` |
+| `lib/home/curriculum-helpers.ts` | Seeds 66 works on registration + `getWorkMeta()` lookup |
+| `app/api/montree/super-admin/home/route.ts` | Super-admin API for Home families (GET list, GET detail, DELETE cascade) |
+| `components/montree/super-admin/FamiliesTab.tsx` | Admin tab: stats cards + families table with join codes + drill-down |
+| `migrations/120_home_tables.sql` | 5 home tables (families, children, progress, curriculum, sessions) |
+| `migrations/121_home_join_code.sql` | join_code column + UNIQUE constraint + index |
 | **CORE** | |
 | `components/montree/WorkWheelPicker.tsx` | Drum picker for curriculum navigation |
 | `app/montree/dashboard/[childId]/page.tsx` | Student detail with wheel picker |
@@ -1378,30 +1463,19 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 
 ## Pending / Next Up
 
-### 🚀 NEXT PROJECT: Montree Home (Parent-Facing Home Program)
+### 🚀 Montree Home — BUILT, NEEDS DEPLOYMENT
 
-**Assessment (from Session 153): 47-66 hours estimated.**
+**Status:** Code complete. Needs migrations 120 + 121 run on Supabase, then git push to deploy.
 
-Clone the existing Montree classroom system for home use by parents.
+**Migrations required (IN ORDER):**
+1. `migrations/120_home_tables.sql` — Creates 5 home_* tables (families, children, progress, curriculum, sessions)
+2. `migrations/121_home_join_code.sql` — Adds join_code column + UNIQUE constraint to home_families
 
-**What copies as-is:**
-- 27 game routes (letter-tracer, word-building, etc.)
-- 35 reusable components
-- 68-work home curriculum at `lib/curriculum/data/home-curriculum.json`
+**Auth flow:** Parent clicks "Start Free" → gets 6-char code → code IS their login. Matches Montree classroom pattern (SHA256 hash, same charset).
 
-**What changes:**
-- Email/password auth (no school login flow, no teacher codes)
-- No classroom abstractions (parent → children directly)
-- 5 new DB tables needed (home_families, home_children, home_progress, home_curriculum, home_sessions)
-- 15 components need modification (remove classroom references)
-- Simplified UI (no teacher dashboard, no principal flow)
+**Super-admin:** Families tab at teacherpotato.xyz/montree/super-admin → shows all Home families with join codes, children, progress. Password: `870602`.
 
-**Key decisions for cloning session:**
-- Route structure: `/home/*` or `/montree-home/*`?
-- Shared vs duplicated components strategy
-- DB migration approach (new tables vs extending existing)
-
-**Handoff:** `HANDOFF.md` (oriented for cloning)
+**Access:** teacherpotato.xyz/home
 
 ---
 
@@ -1415,7 +1489,8 @@ Clone the existing Montree classroom system for home use by parents.
 - [ ] **FIX: Remove hardcoded password** — `870602` in super-admin page
 - [ ] Run migration `099_super_admin_security.sql` for audit tables
 
-### Completed Items (Sessions 141-154)
+### Completed Items (Sessions 141-155)
+- [x] Montree Home product built (session 155) — 24 files, code-based auth, super-admin Families tab
 - [x] Codebase cleanup: health 5.5 → ~9.1/10 (Sessions 152-154)
 - [x] Focus work persistence fix
 - [x] Montessori Guru complete (all 5 phases)
@@ -1443,6 +1518,8 @@ Clone the existing Montree classroom system for home use by parents.
 - **🚨 Report preview has static fallback** — If DB descriptions are NULL, `reports/preview/route.ts` falls back to `loadAllCurriculumWorks()`. This means seeding bugs won't break reports, but existing classrooms seeded before Session 149 may still have NULL descriptions in DB
 - **🚨 Static file downloads DON'T work with Turbopack** — `<a href="/guides/file.docx">` will serve HTML, not the file. Use API routes instead (`app/api/guides/*/route.ts`) that read the file with `readFile()` and return with correct `Content-Type` header. See `app/api/guides/language-making-guide/route.ts` for the pattern.
 - **🚨 Never use `opacity-0 group-hover:opacity-100` alone** — Invisible on mobile touch devices! Always use `opacity-70 md:opacity-0 md:group-hover:opacity-100` pattern (visible on mobile, hover-reveal on desktop)
+- **🚨 Home auth is code-based, NOT email/password** — 6-char code from charset `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no I/L/O/0/1). Stored as SHA256 hash in `password_hash`, plaintext in `join_code`. Login hashes input and matches against `password_hash`. UNIQUE constraint on `join_code`. Same pattern as Montree classroom teacher codes.
+- **🚨 Home migrations must run in order** — 120 (tables) THEN 121 (join_code column). Without 120, the home_families table doesn't exist.
 - **Focus works stored separately** - `montree_child_focus_works` table, NOT in `montree_child_progress`
 - **Area values must match** - Focus table CHECK constraint: 'practical_life', 'sensorial', 'mathematics', 'language', 'cultural' (NOT 'math'!)
 - `useSearchParams()` must be wrapped in Suspense boundary (Next.js 16)
@@ -1454,6 +1531,8 @@ Clone the existing Montree classroom system for home use by parents.
 ## URLs
 - **Production**: teacherpotato.xyz
 - **Teacher Dashboard**: teacherpotato.xyz/montree
+- **Montree Home**: teacherpotato.xyz/home
+- **Super Admin**: teacherpotato.xyz/montree/super-admin (password: `870602`)
 - **Admin**: teacherpotato.xyz/admin
 
 ## GitHub
