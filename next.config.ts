@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
         source: '/',
         has: [{ type: 'host', value: 'montree.xyz' }],
         destination: '/montree',
-        permanent: true,
+        statusCode: 301,
       },
     ];
   },
