@@ -1,75 +1,72 @@
 {
   "project": "Montree",
-  "session": 155,
-  "lastUpdated": "2026-02-08T12:00:00+08:00",
+  "session": 157,
+  "lastUpdated": "2026-02-08T16:40:00+02:00",
 
-  "STATUS": "⚠️ HOME AUTH BUILT — 500 BUG ON LIVE — UNCOMMITTED CHANGES",
+  "STATUS": "✅ DOMAIN MIGRATED — montree.xyz LIVE — SEO IS NEXT PRIORITY",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_155_HOME_AUTH.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_157_DOMAIN_MIGRATION.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_155_HOME_AUTH.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
-  "SESSION_155_HOME_AUTH": {
-    "summary": "Code-based auth for Montree Home (replaces email/password)",
-    "bug": "/api/home/auth/try returns 500 on live site",
-    "uncommitted_files": 8,
-    "unpushed_commits": 1,
-    "action": "git add -A && git commit && git push, then diagnose 500"
+  "PRIORITY_NEXT_SESSION": {
+    "task": "SEO — Get 'montree' to #1 on Google",
+    "steps": [
+      "1. Register montree.xyz on Google Search Console (DNS TXT verification via GoDaddy)",
+      "2. Create app/sitemap.ts (Next.js built-in sitemap generation)",
+      "3. Create app/robots.ts (allow public pages, block admin/api/dashboards)",
+      "4. Improve meta tags in root + montree layouts (title, description, OG, Twitter cards)",
+      "5. Create OG image (1200x630 static or generated)",
+      "6. Add JSON-LD structured data (SoftwareApplication schema)",
+      "7. Submit sitemap to Google Search Console"
+    ],
+    "estimated_time": "15-20 minutes automated"
+  },
+
+  "DOMAIN_CONFIG": {
+    "montree_xyz": {
+      "dns_provider": "GoDaddy",
+      "hosting": "Railway (whale-class service)",
+      "ssl": "Let's Encrypt (auto via Railway, expires May 9 2026)",
+      "a_record": "66.33.22.1",
+      "txt_verify": "_railway-verify TXT record added",
+      "root_redirect": "montree.xyz/ → /montree (307)",
+      "env_var": "NEXT_PUBLIC_APP_URL=https://montree.xyz"
+    },
+    "teacherpotato_xyz": {
+      "serves": "Whale Class media site (no redirect)",
+      "hosting": "Same Railway service"
+    }
+  },
+
+  "SEO_STATE": {
+    "google_search_console": "NOT REGISTERED",
+    "sitemap": "MISSING",
+    "robots_txt": "MISSING",
+    "meta_tags": "GENERIC — needs improvement",
+    "og_tags": "MISSING",
+    "structured_data": "MISSING",
+    "https": "WORKING",
+    "mobile": "CONFIGURED"
+  },
+
+  "LIVE_URLS": {
+    "montree_landing": "https://montree.xyz/montree",
+    "montree_try": "https://montree.xyz/montree/try",
+    "montree_login": "https://montree.xyz/montree/login",
+    "montree_dashboard": "https://montree.xyz/montree/dashboard",
+    "parent_login": "https://montree.xyz/montree/parent/login",
+    "parent_signup": "https://montree.xyz/montree/parent/signup?code=XXXX-XXXX",
+    "home_landing": "https://montree.xyz/home",
+    "home_login": "https://montree.xyz/home/login",
+    "whale_class": "https://www.teacherpotato.xyz"
   },
 
   "HOME_UI": {
     "landing": "/home",
     "register": "/home/register",
     "login": "/home/login",
-    "dashboard": "/home/dashboard (not built yet)"
-  },
-
-  "SESSION_136_QUICK_UPDATE": {
-    "summary": "Documented parent portal access flow for teachers",
-    "parent_portal_url": "https://montree.xyz/montree/parent/login",
-    "parent_signup_url": "https://montree.xyz/montree/parent/signup?code=XXXX-XXXX",
-    "invite_flow": [
-      "1. Teacher goes to child detail page /montree/dashboard/[childId]",
-      "2. Clicks '👨‍👩‍👧 Invite Parent' button",
-      "3. Modal generates invite code (XXXX-XXXX), valid 30 days",
-      "4. Teacher shares signup link with parent",
-      "5. Parent creates account with invite code + email + password",
-      "6. Parent logs in with email/password thereafter"
-    ]
-  },
-
-  "SESSION_134_135_TESTING_WEEK": {
-    "summary": "Implemented all 6 phases of Testing Week preparation",
-    "phases_completed": [
-      "Phase 1: Fixed capture retake bug + added note save toast",
-      "Phase 2: Built photo management page with edit/delete modal",
-      "Phase 3: Added video capture mode (30s max, MediaRecorder API)",
-      "Phase 4: Built teacher summary system with Guru AI integration",
-      "Phase 5: Enhanced curriculum editor with drag-drop reordering",
-      "Phase 6: Added parent portal enhancements (announcements, photos, milestones)"
-    ],
-    "new_files": [
-      "app/api/montree/media/route.ts - Media CRUD API",
-      "app/api/montree/media/url/route.ts - Signed URL generator",
-      "app/api/montree/curriculum/reorder/route.ts - Bulk reorder API",
-      "app/api/montree/parent/announcements/route.ts - Announcements API",
-      "app/api/montree/parent/photos/route.ts - Parent photos API",
-      "app/api/montree/parent/milestones/route.ts - Milestones timeline API",
-      "app/montree/dashboard/[childId]/summary/page.tsx - Teacher summary page",
-      "app/montree/parent/photos/page.tsx - Photo gallery page",
-      "app/montree/parent/milestones/page.tsx - Milestones timeline page",
-      "components/montree/media/MediaDetailModal.tsx - Photo edit/delete modal"
-    ]
-  },
-
-  "PARENT_PORTAL_ACCESS": {
-    "login_url": "/montree/parent/login",
-    "signup_url": "/montree/parent/signup?code=XXXX-XXXX",
-    "auth_method": "Email + password (bcrypt hashed)",
-    "session_storage": "localStorage key: montree_parent_session",
-    "invite_generation": "POST /api/montree/invites (from child detail page)",
-    "invite_expiry": "30 days",
-    "teacher_ui_button": "👨‍👩‍👧 Invite Parent (in InviteParentModal)"
+    "dashboard": "/home/dashboard"
   },
 
   "TEACHER_UI": {
@@ -89,6 +86,15 @@
     "photos": "/montree/parent/photos",
     "milestones": "/montree/parent/milestones",
     "report": "/montree/parent/report/[reportId]"
+  },
+
+  "PARENT_PORTAL_ACCESS": {
+    "login_url": "/montree/parent/login",
+    "signup_url": "/montree/parent/signup?code=XXXX-XXXX",
+    "auth_method": "Email + password (bcrypt hashed)",
+    "session_storage": "localStorage key: montree_parent_session",
+    "invite_generation": "POST /api/montree/invites (from child detail page)",
+    "invite_expiry": "30 days"
   },
 
   "KEY_FEATURES": {
@@ -111,5 +117,15 @@
     }
   },
 
-  "LIVE_URL": "https://montree.xyz/montree"
+  "PENDING_SQL": {
+    "description": "From Session 155 — Montree Home columns still need to be added",
+    "sql": "See docs/HANDOFF_SESSION_157_DOMAIN_MIGRATION.md"
+  },
+
+  "KNOWN_ISSUES": [
+    "www.montree.xyz has SSL cert mismatch (shows *.up.railway.app)",
+    "Resend email domain montree.xyz not yet verified — noreply@montree.xyz won't deliver",
+    "GitHub deploy key 'Cowork Deploy Key' still active — remove if not needed",
+    "/api/home/auth/try returns 500 on live (from Session 155, may be fixed by recent pushes)"
+  ]
 }
