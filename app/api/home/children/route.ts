@@ -1,14 +1,19 @@
 // /api/home/children/route.ts
 // Session 155: List + create children for a family
+// Audit fix: standardized error response shapes
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+
+function errorResponse(error: string, debug?: Record<string, unknown>, status = 500) {
+  return NextResponse.json({ success: false, error, ...(debug ? { debug } : {}) }, { status });
+}
 
 export async function GET(request: NextRequest) {
   try {
     const familyId = request.nextUrl.searchParams.get('family_id');
     if (!familyId) {
-      return NextResponse.json({ error: 'family_id required' }, { status: 400 });
+      return errorResponse('family_id required', undefined, 400);
     }
 
     const supabase = getSupabase();
@@ -19,16 +24,17 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch children:', error.message);
-      return NextResponse.json({ error: 'Failed to load children' }, { status: 500 });
+      console.error('Failed to fetch children:', error.message, error.code);
+      return errorResponse('Failed to load children', {
+        message: error.message, code: error.code,
+      });
     }
 
-    return NextResponse.json({ children: children || [] });
+    return NextResponse.json({ success: true, children: children || [] });
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.error('Children GET error:', err.message);
-    }
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Children GET error:', message);
+    return errorResponse('Server error', { message });
   }
 }
 
@@ -37,16 +43,16 @@ export async function POST(request: NextRequest) {
     const { family_id, name, age } = await request.json();
 
     if (!family_id || !name?.trim()) {
-      return NextResponse.json({ error: 'family_id and name required' }, { status: 400 });
+      return errorResponse('family_id and name required', undefined, 400);
     }
 
     const rawAge = typeof age === 'number' ? age : Number(age);
     if (isNaN(rawAge)) {
-      return NextResponse.json({ error: 'Age must be a valid number' }, { status: 400 });
+      return errorResponse('Age must be a valid number', undefined, 400);
     }
     const childAge = Math.round(rawAge);
     if (childAge < 0 || childAge > 12) {
-      return NextResponse.json({ error: 'Age must be between 0 and 12' }, { status: 400 });
+      return errorResponse('Age must be between 0 and 12', undefined, 400);
     }
 
     const supabase = getSupabase();
@@ -63,8 +69,10 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (childError) {
-      console.error('Failed to create child:', childError.message);
-      return NextResponse.json({ error: 'Failed to create child' }, { status: 500 });
+      console.error('Failed to create child:', childError.message, childError.code, childError.details, childError.hint);
+      return errorResponse('Failed to create child', {
+        message: childError.message, code: childError.code, details: childError.details, hint: childError.hint,
+      });
     }
 
     // Initialize progress records from family curriculum
@@ -98,11 +106,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ child, progressCount });
+    return NextResponse.json({ success: true, child, progressCount });
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.error('Children POST error:', err.message);
-    }
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Children POST error:', message);
+    return errorResponse('Server error', { message });
   }
 }

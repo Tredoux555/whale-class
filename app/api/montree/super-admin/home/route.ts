@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (familyId) {
       const { data: family, error: famErr } = await supabase
         .from('home_families')
-        .select('id, name, email, plan, created_at')
+        .select('id, name, email, plan, join_code, created_at')
         .eq('id', familyId)
         .single();
 
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     // List view: all families with counts
     const { data: families, error: famsErr } = await supabase
       .from('home_families')
-      .select('id, name, email, plan, created_at')
+      .select('id, name, email, plan, join_code, created_at')
       .order('created_at', { ascending: false });
 
     if (famsErr) {

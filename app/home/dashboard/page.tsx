@@ -74,7 +74,9 @@ export default function HomeDashboardPage() {
         setShowAddForm(false);
         toast.success(`${data.child.name} added!`);
       } else {
-        toast.error(data.error || 'Failed to add child');
+        const debugMsg = data.debug?.message ? `: ${data.debug.message}` : '';
+        toast.error(`${data.error || 'Failed to add child'}${debugMsg}`);
+        console.error('Add child error:', data);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
