@@ -31,11 +31,12 @@ export async function GET(request: NextRequest) {
       if (childData?.classroom_id) {
         const { data: curriculumWorks } = await supabase
           .from('montree_classroom_curriculum_works')
-          .select('id, name, area')
+          .select('id, name, area_id, area:montree_classroom_curriculum_areas!area_id(area_key)')
           .eq('classroom_id', childData.classroom_id);
 
         for (const w of curriculumWorks || []) {
-          workIdToInfo.set(w.id, { name: w.name, area: w.area });
+          const areaKey = (w as any).area?.area_key || 'other';
+          workIdToInfo.set(w.id, { name: w.name, area: areaKey });
         }
       }
 
@@ -132,11 +133,12 @@ export async function GET(request: NextRequest) {
     if (classroomId) {
       const { data: curriculumWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, area')
+        .select('id, name, area_id, area:montree_classroom_curriculum_areas!area_id(area_key)')
         .eq('classroom_id', classroomId);
 
       for (const w of curriculumWorks || []) {
-        workIdToInfo.set(w.id, { name: w.name, area: w.area });
+        const areaKey = (w as any).area?.area_key || 'other';
+        workIdToInfo.set(w.id, { name: w.name, area: areaKey });
       }
     }
 

@@ -66,10 +66,20 @@ export async function POST(request: NextRequest) {
       updated_at: now,
     };
 
-    // Only set presented_at if not already set (first time)
-    // Only set mastered_at if status is mastered
+    // Only set mastered_at on FIRST transition to mastered (preserve original date)
     if (statusStr === 'mastered') {
-      record.mastered_at = now;
+      // Check if already mastered — don't overwrite existing mastered_at
+      const { data: existing } = await supabase
+        .from('montree_child_progress')
+        .select('mastered_at')
+        .eq('child_id', child_id)
+        .eq('work_name', workNameToSave)
+        .maybeSingle();
+
+      if (!existing?.mastered_at) {
+        record.mastered_at = now;
+      }
+      // If already has mastered_at, keep the original date
     }
     if (notes !== undefined) {
       record.notes = notes;

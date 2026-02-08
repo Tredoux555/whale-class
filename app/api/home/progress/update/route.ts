@@ -56,13 +56,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Build upsert payload — include area for INSERT half (NOT NULL in schema)
+    // If area not provided, look it up from curriculum
+    let resolvedArea = area;
+    if (!resolvedArea) {
+      const supabaseForLookup = getSupabase();
+      const { data: currRow } = await supabaseForLookup
+        .from('home_curriculum')
+        .select('area')
+        .eq('work_name', work_name)
+        .limit(1)
+        .maybeSingle();
+      resolvedArea = currRow?.area || null;
+    }
+
     const upsertPayload: Record<string, unknown> = {
       child_id,
       work_name,
       ...updateData,
     };
-    if (area) {
-      upsertPayload.area = area;
+    if (resolvedArea) {
+      upsertPayload.area = resolvedArea;
     }
 
     // Use upsert to handle missing records gracefully

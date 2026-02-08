@@ -5,6 +5,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
+  // BUG-6 FIX: Only allow in development mode
+  if (process.env.NODE_ENV !== 'development') {
+    return NextResponse.json({ error: 'Debug endpoint disabled in production' }, { status: 403 });
+  }
+
   const familyId = request.nextUrl.searchParams.get('family_id');
   const results: Record<string, unknown> = { timestamp: new Date().toISOString() };
 

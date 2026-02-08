@@ -33,14 +33,21 @@ export async function GET(request: NextRequest) {
 
     if (childError) {
       console.error('Child lookup error:', childError);
-      // Return empty progress instead of error - child might be new
+      // Distinguish between "not found" and actual DB errors
+      if (childError.code === 'PGRST116') {
+        // PGRST116 = .single() found 0 rows → child doesn't exist
+        return NextResponse.json({
+          error: 'Child not found',
+          progress: [],
+          stats: { presented: 0, practicing: 0, mastered: 0 },
+          byArea: {},
+          total: 0,
+        }, { status: 404 });
+      }
+      // Actual database error — don't mask it
       return NextResponse.json({
-        progress: [],
-        stats: { presented: 0, practicing: 0, mastered: 0 },
-        byArea: {},
-        total: 0,
-        debug: `Child not found: ${childId}`
-      });
+        error: `Database error: ${childError.message}`,
+      }, { status: 500 });
     }
 
     let query = supabase
