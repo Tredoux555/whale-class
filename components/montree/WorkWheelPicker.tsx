@@ -12,6 +12,7 @@ interface Work {
   name_chinese?: string;
   status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
   sequence?: number;
+  dbSequence?: number; // Real DB sequence (preserved through merge)
 }
 
 interface WorkWheelPickerProps {
@@ -122,9 +123,9 @@ export default function WorkWheelPicker({
 
     setIsAdding(true);
     try {
-      // Get the sequence number from the selected position
+      // Get the REAL DB sequence from the selected position (not display index)
       const afterWork = insertAfterIndex !== null ? works[insertAfterIndex] : null;
-      const afterSequence = afterWork?.sequence;
+      const afterSequence = afterWork?.dbSequence ?? afterWork?.sequence;
 
       const response = await fetch('/api/montree/curriculum', {
         method: 'POST',

@@ -231,6 +231,7 @@ export default function WeekPage() {
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
+          dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         }));
         setCurriculum(prev => ({ ...prev, [areaKey]: works }));
       } catch (err) {
@@ -291,6 +292,7 @@ export default function WeekPage() {
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: progress?.status || 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
+          dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         };
       });
 
@@ -335,6 +337,7 @@ export default function WeekPage() {
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
           status: progress?.status || 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
+          dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
         };
       });
 
