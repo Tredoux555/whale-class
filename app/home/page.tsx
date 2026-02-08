@@ -14,6 +14,14 @@ export default function HomeLandingPage() {
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [parentName, setParentName] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleStartFree = async () => {
     if (loading) return; // Guard against double-click race
@@ -76,6 +84,14 @@ export default function HomeLandingPage() {
             <p className="text-sm text-emerald-300/60 mb-2 uppercase tracking-wider">Your Code</p>
             <p className="text-5xl font-mono font-bold text-white tracking-[0.3em]">{code}</p>
           </div>
+
+          {/* Copy Button */}
+          <button
+            onClick={handleCopyCode}
+            className="w-full max-w-sm mx-auto mb-4 px-4 py-3 bg-slate-800/60 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-700/60 hover:border-slate-600 transition-all text-sm font-medium block"
+          >
+            {copied ? '✓ Copied!' : 'Copy code'}
+          </button>
 
           <p className="text-sm text-emerald-300/50 mb-6">
             Write this down! You&apos;ll use it to log in next time.
