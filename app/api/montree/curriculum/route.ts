@@ -304,15 +304,16 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .insert(insertData)
-      .select()
-      .single();
+      .select();
 
     if (error) {
-      console.error('Insert error:', error, 'Data:', insertData);
+      console.error('Insert error:', error.message, error.code, error.details, error.hint);
+      console.error('Insert data was:', JSON.stringify(insertData, null, 2));
       return NextResponse.json({ error: `Failed to add work: ${error.message}` }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, work: data });
+    const work = data?.[0] || null;
+    return NextResponse.json({ success: true, work });
 
   } catch (error) {
     console.error('Curriculum POST error:', error);

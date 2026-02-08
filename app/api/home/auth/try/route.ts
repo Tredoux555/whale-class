@@ -65,14 +65,17 @@ export async function POST(req: NextRequest) {
       // If unique violation (23505), retry with new code; else fail
       if (famErr?.code !== '23505') {
         console.error('Failed to create home family:', famErr?.message, famErr?.code, famErr?.details, famErr?.hint);
+        const isDev = process.env.NODE_ENV === 'development';
         return NextResponse.json({
           error: 'Failed to create account',
-          debug: {
-            message: famErr?.message,
-            code: famErr?.code,
-            details: famErr?.details,
-            hint: famErr?.hint,
-          },
+          ...(isDev ? {
+            debug: {
+              message: famErr?.message,
+              code: famErr?.code,
+              details: famErr?.details,
+              hint: famErr?.hint,
+            },
+          } : {}),
         }, { status: 500 });
       }
     }
@@ -103,9 +106,10 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('Home try error:', message);
+    const isDev = process.env.NODE_ENV === 'development';
     return NextResponse.json({
       error: 'Server error',
-      debug: { message },
+      ...(isDev ? { debug: { message } } : {}),
     }, { status: 500 });
   }
 }
