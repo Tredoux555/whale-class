@@ -124,9 +124,10 @@ export const mergeWorksWithCurriculum = (
     merged.splice(position, 0, newWork);
   }
 
-  // Recalculate sequences
+  // Recalculate display sequences, but preserve real DB sequences
   return merged.map((w, idx) => ({
     ...w,
-    sequence: idx + 1,
+    dbSequence: w.sequence, // Preserve real DB value for API calls
+    sequence: idx + 1,      // Display-friendly index
   }));
 };

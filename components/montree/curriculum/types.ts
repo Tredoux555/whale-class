@@ -26,6 +26,7 @@ export interface Work {
 export interface MergedWork extends Work {
   status?: string;
   isImported?: boolean;
+  dbSequence?: number; // Real DB sequence (preserved through merge)
 }
 
 export interface AreaConfig {
