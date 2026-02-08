@@ -46,8 +46,8 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
-  // Redirect root to /montree on montree.xyz
-  // Redirect old teacherpotato.xyz domain to montree.xyz
+  // montree.xyz root → /montree (Montree landing page)
+  // teacherpotato.xyz stays as-is (Whale Class site)
   async redirects() {
     return [
       {
@@ -55,18 +55,6 @@ const nextConfig: NextConfig = {
         has: [{ type: 'host', value: 'montree.xyz' }],
         destination: '/montree',
         permanent: false,
-      },
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'teacherpotato.xyz' }],
-        destination: 'https://montree.xyz/:path*',
-        permanent: true,
-      },
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.teacherpotato.xyz' }],
-        destination: 'https://montree.xyz/:path*',
-        permanent: true,
       },
     ];
   },
