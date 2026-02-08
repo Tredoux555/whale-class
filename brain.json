@@ -1,26 +1,61 @@
 {
   "project": "Montree",
-  "session": 157,
-  "lastUpdated": "2026-02-08T16:40:00+02:00",
+  "session": 159,
+  "lastUpdated": "2026-02-08T21:30:00+02:00",
 
-  "STATUS": "✅ DOMAIN MIGRATED — montree.xyz LIVE — SEO IS NEXT PRIORITY",
+  "STATUS": "✅ SYSTEM AUDIT COMPLETE — 17 bugs found, 10 fixed (code+SQL), sequence positioning fix deployed",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_157_DOMAIN_MIGRATION.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_155_HOME_AUTH.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_159_AUDIT.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_158_SEO.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
   "PRIORITY_NEXT_SESSION": {
-    "task": "SEO — Get 'montree' to #1 on Google",
+    "task": "Verify sequence positioning fix works on live, then continue deferred audit items",
     "steps": [
-      "1. Register montree.xyz on Google Search Console (DNS TXT verification via GoDaddy)",
-      "2. Create app/sitemap.ts (Next.js built-in sitemap generation)",
-      "3. Create app/robots.ts (allow public pages, block admin/api/dashboards)",
-      "4. Improve meta tags in root + montree layouts (title, description, OG, Twitter cards)",
-      "5. Create OG image (1200x630 static or generated)",
-      "6. Add JSON-LD structured data (SoftwareApplication schema)",
-      "7. Submit sitemap to Google Search Console"
+      "1. TEST: Open classroom → child → wheel picker → Add Custom Work → pick position after #17 → verify it lands at #18",
+      "2. TEST: Verify MONTREE-AUDIT-FIX.sql was run (check montree_children table exists, RLS enabled on home tables)",
+      "3. DEFERRED BUG-5: Rate-limit /api/home/auth/try (brute-force risk on 6-char codes)",
+      "4. DEFERRED BUG-8: Harden /api/home/auth/enter (rate-limit code entry)",
+      "5. DEFERRED BUG-12: Race condition in curriculum reorder (concurrent drag-drop)",
+      "6. DEFERRED BUG-13: Standardize error response format across all APIs",
+      "7. DEFERRED BUG-17: Extract shared constants for status strings",
+      "8. Content SEO — Expand landing pages for better Google ranking"
     ],
-    "estimated_time": "15-20 minutes automated"
+    "estimated_time": "5 min to test, then 30-45 min for deferred items"
+  },
+
+  "SESSION_159_AUDIT": {
+    "total_bugs_found": 17,
+    "bugs_fixed_code": 8,
+    "bugs_fixed_sql": 4,
+    "bugs_deferred": 5,
+    "critical_fixes": [
+      "BUG-1: home_curriculum.name NOT NULL prevented seeding (SQL: DROP NOT NULL)",
+      "BUG-2: Missing 12 columns on montree_classroom_curriculum_works (SQL: ADD COLUMN IF NOT EXISTS)",
+      "BUG-3: 5 montree_ tables missing entirely (SQL: CREATE TABLE IF NOT EXISTS)",
+      "BUG-4: curriculum POST .single() + bad error handling (code fix)"
+    ],
+    "sequence_fix": {
+      "root_cause": "mergeWorksWithCurriculum() in lib/montree/work-matching.ts overwrote all DB sequences with array indices",
+      "fix": "Added dbSequence field to preserve real DB sequence through merge, wheel picker sends dbSequence to API",
+      "files_changed": [
+        "lib/montree/work-matching.ts",
+        "components/montree/WorkWheelPicker.tsx",
+        "components/montree/curriculum/types.ts",
+        "app/montree/dashboard/[childId]/page.tsx"
+      ]
+    },
+    "api_fixes": {
+      "app/api/montree/curriculum/route.ts": "Removed .single() on insert, added detailed error logging",
+      "app/api/montree/media/route.ts": "Fixed area → area_id with proper relation join (2 places)",
+      "app/api/home/progress/update/route.ts": "Auto-lookup area from curriculum when not provided",
+      "app/api/home/auth/try/route.ts": "Debug info gated behind NODE_ENV (2 places)",
+      "app/api/home/debug/route.ts": "Returns 403 in production",
+      "app/api/montree/progress/update/route.ts": "Preserves original mastered_at date",
+      "app/api/montree/progress/route.ts": "Returns 404 for missing child, 500 for real DB errors"
+    },
+    "sql_script": "MONTREE-AUDIT-FIX.sql (also saved as RUN_THIS_NOW.sql)",
+    "sql_status": "PROVIDED TO USER — needs to be run in Supabase SQL editor if not already done"
   },
 
   "DOMAIN_CONFIG": {
@@ -29,8 +64,11 @@
       "hosting": "Railway (whale-class service)",
       "ssl": "Let's Encrypt (auto via Railway, expires May 9 2026)",
       "a_record": "66.33.22.1",
-      "txt_verify": "_railway-verify TXT record added",
-      "root_redirect": "montree.xyz/ → /montree (307)",
+      "txt_records": [
+        "_railway-verify (Railway domain verification)",
+        "google-site-verification=95OmIARPuKZzx0lsXGhc52hA-0ie9t9EdClP_lGa7uY"
+      ],
+      "root_redirect": "montree.xyz/ → /montree (301)",
       "env_var": "NEXT_PUBLIC_APP_URL=https://montree.xyz"
     },
     "teacherpotato_xyz": {
@@ -40,14 +78,32 @@
   },
 
   "SEO_STATE": {
-    "google_search_console": "NOT REGISTERED",
-    "sitemap": "MISSING",
-    "robots_txt": "MISSING",
-    "meta_tags": "GENERIC — needs improvement",
-    "og_tags": "MISSING",
-    "structured_data": "MISSING",
-    "https": "WORKING",
-    "mobile": "CONFIGURED"
+    "google_search_console": "✅ VERIFIED — domain property montree.xyz",
+    "sitemap": "✅ LIVE at /sitemap.xml — submitted to GSC",
+    "robots_txt": "✅ LIVE at /robots.txt",
+    "meta_tags": "✅ Rich (title templates, descriptions, canonical URLs)",
+    "og_tags": "✅ All public pages (1200x630 branded image)",
+    "twitter_cards": "✅ summary_large_image on all pages",
+    "structured_data": "✅ JSON-LD SoftwareApplication schema",
+    "canonical_urls": "✅ Correct on all pages including /montree/try",
+    "root_redirect": "✅ 301 (SEO gold standard)",
+    "https": "✅ Working",
+    "mobile": "✅ Configured",
+    "indexing_requested": "Feb 8, 2026 — /montree, /home, /montree/try"
+  },
+
+  "SEO_FILES": {
+    "sitemap": "app/sitemap.ts",
+    "robots": "app/robots.ts",
+    "og_image": "public/og-image.png",
+    "json_ld": "app/layout.tsx (inline script tag)",
+    "meta_tags": [
+      "app/layout.tsx (root — metadataBase, title template, OG, Twitter, canonical, robots)",
+      "app/montree/layout.tsx (Montree landing — OG, Twitter, canonical /montree)",
+      "app/home/layout.tsx (Home landing — server component with metadata)",
+      "app/montree/try/layout.tsx (Try page — own canonical, OG, Twitter)"
+    ],
+    "extracted_components": "components/home/HomeNav.tsx (from home layout client→server conversion)"
   },
 
   "LIVE_URLS": {
@@ -59,7 +115,10 @@
     "parent_signup": "https://montree.xyz/montree/parent/signup?code=XXXX-XXXX",
     "home_landing": "https://montree.xyz/home",
     "home_login": "https://montree.xyz/home/login",
-    "whale_class": "https://www.teacherpotato.xyz"
+    "whale_class": "https://www.teacherpotato.xyz",
+    "sitemap": "https://montree.xyz/sitemap.xml",
+    "robots": "https://montree.xyz/robots.txt",
+    "og_image": "https://montree.xyz/og-image.png"
   },
 
   "HOME_UI": {
@@ -114,18 +173,47 @@
     "teacher_summary": {
       "location": "/montree/dashboard/[childId]/summary",
       "features": ["Week/month toggle", "Area progress bars", "Guru AI insights"]
+    },
+    "work_wheel_picker": {
+      "location": "components/montree/WorkWheelPicker.tsx",
+      "features": ["Drum-style scrolling", "Add custom work", "Position picker", "dbSequence for correct placement"],
+      "data_flow": "API → page caches dbSequence → mergeWorksWithCurriculum preserves as dbSequence → picker sends dbSequence to POST API"
     }
   },
 
+  "SESSION_159_COMMITS": [
+    "963035a — Fix: Montree system audit — 7 API bug fixes + SQL migration script",
+    "7e0dd28 — Fix: Work sequence positioning — preserve real DB sequences through merge"
+  ],
+
+  "SESSION_158_COMMITS": [
+    "0811c87 — SEO foundation (sitemap, robots, meta tags, OG image, structured data)",
+    "befa509 — Fix middleware blocking sitemap.xml/robots.txt",
+    "27c3488 — Fix 308→301 redirect + /montree/try canonical",
+    "47d4359 — Standardize OG image URLs to absolute paths"
+  ],
+
   "PENDING_SQL": {
-    "description": "From Session 155 — Montree Home columns still need to be added",
-    "sql": "See docs/HANDOFF_SESSION_157_DOMAIN_MIGRATION.md"
+    "script": "MONTREE-AUDIT-FIX.sql",
+    "status": "User was given the SQL in chat. CONFIRM it was run — check if montree_children table exists.",
+    "contents": [
+      "BUG-1: ALTER TABLE home_curriculum ALTER COLUMN name DROP NOT NULL",
+      "BUG-10: ADD UNIQUE(family_id, work_name) on home_curriculum",
+      "BUG-3: CREATE TABLE IF NOT EXISTS — montree_children, montree_child_progress, montree_child_focus_works, montree_media, montree_media_children",
+      "BUG-2: ADD COLUMN IF NOT EXISTS — 12 columns on montree_classroom_curriculum_works",
+      "BUG-7: ENABLE RLS + service_role policies on 5 home tables",
+      "NOTIFY pgrst, 'reload schema'"
+    ]
   },
 
   "KNOWN_ISSUES": [
     "www.montree.xyz has SSL cert mismatch (shows *.up.railway.app)",
     "Resend email domain montree.xyz not yet verified — noreply@montree.xyz won't deliver",
     "GitHub deploy key 'Cowork Deploy Key' still active — remove if not needed",
-    "/api/home/auth/try returns 500 on live (from Session 155, may be fixed by recent pushes)"
+    "DEFERRED BUG-5: No rate-limiting on /api/home/auth/try (brute-force risk)",
+    "DEFERRED BUG-8: No rate-limiting on /api/home/auth/enter",
+    "DEFERRED BUG-12: Race condition in curriculum reorder (concurrent drag-drop)",
+    "DEFERRED BUG-13: Inconsistent error response format across APIs",
+    "DEFERRED BUG-17: Hardcoded status strings — should be shared constants"
   ]
 }
