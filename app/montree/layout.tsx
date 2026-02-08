@@ -1,16 +1,48 @@
-// /montree/layout.tsx
+// /montree/layout.tsx — Session 158
 // Montree PWA layout with manifest for "Add to Home Screen"
+// Enhanced metadata for SEO
 import type { Metadata, Viewport } from "next";
 import InboxFloat from '@/components/montree/InboxFloat';
 
 export const metadata: Metadata = {
-  title: "Montree",
-  description: "Montessori progress tracking for teachers",
+  title: {
+    default: "Montree — Montessori Classroom Management",
+    template: "%s | Montree",
+  },
+  description:
+    "Montessori classroom management platform for teachers and schools. Track progress, manage students, generate reports, and share with parents.",
   manifest: "/montree-manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Montree",
+  },
+  openGraph: {
+    title: "Montree — Montessori Classroom Management",
+    description:
+      "Montessori classroom management platform for teachers and schools. Track progress, manage students, generate reports, and share with parents.",
+    url: "https://montree.xyz/montree",
+    siteName: "Montree",
+    images: [
+      {
+        url: "https://montree.xyz/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Montree — Montessori Classroom Management Platform",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Montree — Montessori Classroom Management",
+    description:
+      "Montessori classroom management platform for teachers and schools. Track progress and share with parents.",
+    images: ["https://montree.xyz/og-image.png"],
+  },
+  alternates: {
+    canonical: "https://montree.xyz/montree",
   },
 };
 
