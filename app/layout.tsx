@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "Montree",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://montree.xyz/og-image.png",
         width: 1200,
         height: 630,
         alt: "Montree — Montessori Classroom Management Platform",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     title: "Montree — Montessori Classroom Management",
     description:
       "Track children's Montessori progress, manage classrooms, and share reports with parents.",
-    images: ["/og-image.png"],
+    images: ["https://montree.xyz/og-image.png"],
   },
   alternates: {
     canonical: "https://montree.xyz",
