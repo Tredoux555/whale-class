@@ -46,15 +46,19 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
+  // DOMAIN ISOLATION:
   // montree.xyz root → /montree (Montree landing page)
-  // teacherpotato.xyz stays as-is (Whale Class site)
+  // teacherpotato.xyz stays as-is (Whale Class video site)
+  // NOTE: Using 302 (temporary) instead of 301 (permanent) to prevent
+  // browser caching issues if domains are reconfigured in future.
+  // Middleware also enforces domain isolation as a secondary check.
   async redirects() {
     return [
       {
         source: '/',
         has: [{ type: 'host', value: 'montree.xyz' }],
         destination: '/montree',
-        statusCode: 301,
+        statusCode: 302,
       },
     ];
   },
