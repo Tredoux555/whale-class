@@ -23,6 +23,7 @@ export interface FocusWorksSectionProps {
   onRemoveExtra: (work: Assignment) => void;
   onOpenWheelPicker: (area: string, workName?: string) => void;
   onOpenQuickGuide: (workName: string) => void;
+  onOpenDemo: (workName: string) => void;
   childId: string;
   getAreaConfig: (area: string) => AreaConfig;
 }
@@ -48,6 +49,7 @@ export default function FocusWorksSection({
   onRemoveExtra,
   onOpenWheelPicker,
   onOpenQuickGuide,
+  onOpenDemo,
   childId,
   getAreaConfig,
 }: FocusWorksSectionProps) {
@@ -125,7 +127,7 @@ export default function FocusWorksSection({
                         📖
                       </button>
                       <button
-                        onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(work.work_name + ' Montessori presentation')}`, '_blank')}
+                        onClick={() => onOpenDemo(work.work_name)}
                         className="flex-[2] py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-red-600 active:scale-95"
                       >
                         ▶️ Demo

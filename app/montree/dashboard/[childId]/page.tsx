@@ -15,6 +15,7 @@ import InviteParentModal from '@/components/montree/InviteParentModal';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
+import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 
@@ -77,6 +78,7 @@ export default function WeekPage() {
   const [quickGuideWork, setQuickGuideWork] = useState<string>('');
   const [quickGuideData, setQuickGuideData] = useState<QuickGuideData | null>(null);
   const [quickGuideLoading, setQuickGuideLoading] = useState(false);
+  const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
 
   // Fetch quick guide for a work
   const openQuickGuide = async (workName: string) => {
@@ -98,6 +100,21 @@ export default function WeekPage() {
       setQuickGuideData({ error: true });
     }
     setQuickGuideLoading(false);
+  };
+
+  const openDemo = async (workName: string) => {
+    try {
+      const classroomId = session?.classroom?.id;
+      const url = classroomId
+        ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
+        : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const searchTerm = data.video_search_term || workName + ' Montessori presentation';
+      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`, '_blank');
+    } catch {
+      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(workName + ' Montessori presentation')}`, '_blank');
+    }
   };
 
   // Fetch progress and separate into focus works (1 per area) and extras
@@ -509,6 +526,7 @@ export default function WeekPage() {
         onRemoveExtra={onRemoveExtra}
         onOpenWheelPicker={openWheelPicker}
         onOpenQuickGuide={openQuickGuide}
+        onOpenDemo={openDemo}
         childId={childId}
         getAreaConfig={getAreaConfig}
       />
@@ -564,6 +582,15 @@ export default function WeekPage() {
       <QuickGuideModal
         isOpen={quickGuideOpen}
         onClose={() => setQuickGuideOpen(false)}
+        workName={quickGuideWork}
+        guideData={quickGuideData}
+        loading={quickGuideLoading}
+        onOpenFullDetails={() => { setQuickGuideOpen(false); setFullDetailsOpen(true); }}
+      />
+
+      <FullDetailsModal
+        isOpen={fullDetailsOpen}
+        onClose={() => setFullDetailsOpen(false)}
         workName={quickGuideWork}
         guideData={quickGuideData}
         loading={quickGuideLoading}

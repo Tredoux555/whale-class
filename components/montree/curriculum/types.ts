@@ -40,6 +40,12 @@ export interface QuickGuideData {
   materials?: string[];
   video_search_term?: string;
   error?: boolean;
+  presentation_steps?: Array<{step: number; title: string; description: string; tip: string}>;
+  direct_aims?: string[];
+  indirect_aims?: string[];
+  parent_description?: string;
+  control_of_error?: string;
+  why_it_matters?: string;
 }
 
 export interface EditFormData {

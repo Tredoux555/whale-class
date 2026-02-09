@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { QuickGuideData } from '@/components/montree/curriculum/types';
 
 export interface QuickGuideModalProps {
@@ -9,6 +8,7 @@ export interface QuickGuideModalProps {
   workName: string;
   guideData: QuickGuideData | null;
   loading: boolean;
+  onOpenFullDetails?: () => void;
 }
 
 export default function QuickGuideModal({
@@ -17,8 +17,8 @@ export default function QuickGuideModal({
   workName,
   guideData,
   loading,
+  onOpenFullDetails,
 }: QuickGuideModalProps) {
-  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -91,10 +91,7 @@ export default function QuickGuideModal({
             🎬 Watch Video
           </button>
           <button
-            onClick={() => {
-              onClose();
-              router.push('/montree/dashboard/curriculum');
-            }}
+            onClick={() => onOpenFullDetails?.()}
             className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600"
           >
             📚 Full Details

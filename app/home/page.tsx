@@ -14,6 +14,7 @@ export default function HomeLandingPage() {
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [parentName, setParentName] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
   const [copied, setCopied] = useState(false);
 
   const handleCopyCode = () => {
@@ -36,7 +37,7 @@ export default function HomeLandingPage() {
       const res = await fetch('/api/home/auth/try', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: parentName.trim() }),
+        body: JSON.stringify({ name: parentName.trim(), email: parentEmail.trim() }),
       });
       const data = await res.json();
 
@@ -157,6 +158,18 @@ export default function HomeLandingPage() {
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30 text-center"
               onKeyDown={(e) => e.key === 'Enter' && handleStartFree()}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm text-emerald-300/70 mb-2">Email (optional)</label>
+            <input
+              type="email"
+              value={parentEmail}
+              onChange={(e) => setParentEmail(e.target.value)}
+              placeholder="e.g. sarah@school.com"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+            />
+            <p className="text-xs text-slate-500 mt-1">Only used to recover your code if you ever lose it</p>
           </div>
 
           <button

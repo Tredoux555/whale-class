@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   try {
     steps.push('1-init');
     const supabase = getSupabase();
-    const { role, name, schoolName } = await req.json();
+    const { role, name, schoolName, email } = await req.json();
 
     if (!role || !['teacher', 'principal'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       .insert({
         name: userSchoolName,
         slug: schoolSlug,
-        owner_email: `trial-${code.toLowerCase()}@montree.app`,
+        owner_email: email?.trim() || `trial-${code.toLowerCase()}@montree.app`,
         owner_name: userName,
         subscription_status: 'trialing',
         plan_type: role === 'principal' ? 'school' : 'personal_classroom',
@@ -198,6 +198,7 @@ export async function POST(req: NextRequest) {
           school_id: school.id,
           classroom_id: classroom?.id || null,
           password_hash: codeHash,
+          email: email?.trim() || null,
         })
         .select()
         .single();
@@ -267,7 +268,7 @@ export async function POST(req: NextRequest) {
         .from('montree_school_admins')
         .insert({
           school_id: school.id,
-          email: `trial-${code.toLowerCase()}@montree.app`,
+          email: email?.trim() || `trial-${code.toLowerCase()}@montree.app`,
           password_hash: codeHash,
           name: userName,
           role: 'principal',
