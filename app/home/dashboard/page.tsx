@@ -1,7 +1,7 @@
 'use client';
 
-// /home/dashboard/page.tsx — Session 155
-// Children grid for Montree Home families
+// /home/dashboard/page.tsx
+// Children grid for Montree Home families - shows all children with quick stats
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,12 +12,21 @@ interface Child {
   id: string;
   name: string;
   age: number;
+  photo_url?: string;
+}
+
+interface ChildWithStats extends Child {
+  stats?: {
+    total_works: number;
+    mastered_count: number;
+    practicing_count: number;
+  };
 }
 
 export default function HomeDashboardPage() {
   const router = useRouter();
   const [session, setSession] = useState<HomeSession | null>(null);
-  const [children, setChildren] = useState<Child[]>([]);
+  const [children, setChildren] = useState<ChildWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -42,14 +51,22 @@ export default function HomeDashboardPage() {
     fetch(`/api/home/children?family_id=${session.family.id}`)
       .then((r) => r.json())
       .then((data) => {
-        setChildren(data.children || []);
+        const childrenList = data.children || [];
+        setChildren(childrenList);
         setLoading(false);
+
+        // Auto-redirect if only 1 child
+        if (childrenList.length === 1) {
+          setTimeout(() => {
+            router.push(`/home/dashboard/${childrenList[0].id}`);
+          }, 500);
+        }
       })
       .catch(() => {
         toast.error('Failed to load children');
         setLoading(false);
       });
-  }, [session?.family?.id]);
+  }, [session?.family?.id, router]);
 
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,9 +104,9 @@ export default function HomeDashboardPage() {
     }
   };
 
-  if (!session || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="animate-bounce text-5xl">🏠</div>
       </div>
     );
@@ -106,104 +123,147 @@ export default function HomeDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {session.family.name}&apos;s Family
-            </h1>
-            <p className="text-gray-500">
-              {children.length} {children.length === 1 ? 'child' : 'children'}
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:scale-[1.02] transition-all"
-          >
-            + Add Child
-          </button>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Your Children</h1>
+          <p className="text-gray-500 mt-1">
+            {children.length} {children.length === 1 ? 'child' : 'children'} in {session?.family?.name}
+          </p>
         </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center gap-2"
+        >
+          <span>+</span>
+          <span>Add Child</span>
+        </button>
+      </div>
 
-        {/* Add Child Form */}
-        {showAddForm && (
-          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-            <form onSubmit={handleAddChild} className="flex flex-wrap gap-3 items-end">
-              <div className="flex-1 min-w-[150px]">
-                <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
+      {/* Add Child Form */}
+      {showAddForm && (
+        <div className="bg-white rounded-2xl shadow-md p-6 border border-emerald-100">
+          <form onSubmit={handleAddChild} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Child's Name</label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
-                  placeholder="Child's name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 transition-colors"
+                  placeholder="e.g., Emma"
                   autoFocus
                 />
               </div>
-              <div className="w-24">
-                <label className="block text-sm font-medium text-gray-600 mb-1">Age</label>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Age</label>
                 <select
                   value={newAge}
                   onChange={(e) => setNewAge(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 transition-colors"
                 >
-                  {[2, 3, 4, 5, 6, 7, 8].map((a) => (
+                  {[2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8].map((a) => (
                     <option key={a} value={a}>{a}</option>
                   ))}
                 </select>
               </div>
+            </div>
+            <div className="flex gap-3 pt-2">
               <button
                 type="submit"
                 disabled={adding || !newName.trim()}
-                className="px-6 py-2 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {adding ? 'Adding...' : 'Add'}
+                {adding ? 'Adding...' : 'Add Child'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+                className="px-6 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
               >
                 Cancel
               </button>
-            </form>
-          </div>
-        )}
+            </div>
+          </form>
+        </div>
+      )}
 
-        {/* Children Grid */}
-        {children.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-            <div className="text-5xl mb-4">👶</div>
-            <h2 className="text-xl font-bold text-gray-700 mb-2">No children yet</h2>
-            <p className="text-gray-500 mb-6">Add your first child to start tracking their Montessori journey.</p>
+      {/* Children Grid */}
+      {children.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
+          <div className="text-6xl mb-4">👶</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No children yet</h2>
+          <p className="text-gray-500 mb-8">Add your first child to start tracking their Montessori learning journey.</p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+          >
+            <span>+</span>
+            <span>Add Your First Child</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {children.map((child, i) => (
             <button
-              onClick={() => setShowAddForm(true)}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl shadow-lg"
+              key={child.id}
+              onClick={() => router.push(`/home/dashboard/${child.id}`)}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-6 text-left group overflow-hidden relative"
             >
-              + Add Your First Child
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {children.map((child, i) => (
-              <button
-                key={child.id}
-                onClick={() => router.push(`/home/dashboard/${child.id}`)}
-                className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] p-6 text-center group"
-              >
-                <div className={`w-16 h-16 mx-auto mb-3 bg-gradient-to-br ${colors[i % colors.length]} rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg`}>
-                  {child.name.charAt(0).toUpperCase()}
+              {/* Background accent */}
+              <div className={`absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br ${colors[i % colors.length]} opacity-10 rounded-full`} />
+
+              {/* Content */}
+              <div className="relative z-10">
+                {/* Avatar */}
+                <div className={`w-20 h-20 mb-4 bg-gradient-to-br ${colors[i % colors.length]} rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg`}>
+                  {child.photo_url ? (
+                    <img src={child.photo_url} className="w-full h-full object-cover rounded-2xl" alt="" />
+                  ) : (
+                    child.name.charAt(0).toUpperCase()
+                  )}
                 </div>
-                <h3 className="font-bold text-gray-800 group-hover:text-emerald-600 transition-colors">
+
+                {/* Name & Age */}
+                <h3 className="font-bold text-lg text-gray-800 group-hover:text-emerald-600 transition-colors mb-1">
                   {child.name}
                 </h3>
-                <p className="text-sm text-gray-400">Age {child.age}</p>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                <p className="text-sm text-gray-500 mb-4">Age {child.age}</p>
+
+                {/* Stats */}
+                {child.stats && (
+                  <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-600">{child.stats.mastered_count}</div>
+                      <div className="text-xs text-gray-500">Mastered</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-600">{child.stats.practicing_count}</div>
+                      <div className="text-xs text-gray-500">Practicing</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA */}
+                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                  <span className="text-xs font-semibold text-emerald-600">View Dashboard →</span>
+                </div>
+              </div>
+            </button>
+          ))}
+
+          {/* Add Child Card */}
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-white/50 border-2 border-dashed border-gray-300 rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 transition-all p-6 flex flex-col items-center justify-center min-h-[300px]"
+          >
+            <div className="text-4xl mb-2">+</div>
+            <span className="text-sm font-semibold text-gray-500">Add Another Child</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

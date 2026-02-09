@@ -92,6 +92,7 @@ export function getAreaKeys(): string[] {
 }
 
 // Seed curriculum for a new family (called during registration)
+// Now persists ALL fields from home-curriculum.json into the database
 export async function seedHomeCurriculum(
   supabase: SupabaseClient,
   familyId: string
@@ -101,7 +102,22 @@ export async function seedHomeCurriculum(
     work_name: string;
     area: string;
     category: string;
+    category_key?: string;
+    category_name?: string;
     sequence: number;
+    description?: string;
+    age_range?: string;
+    materials?: unknown;
+    direct_aims?: unknown;
+    indirect_aims?: unknown;
+    control_of_error?: string;
+    prerequisites?: unknown;
+    video_search_terms?: unknown;
+    levels?: unknown;
+    name_chinese?: string;
+    is_custom?: boolean;
+    presentation_notes?: string;
+    home_connection?: string;
   }[] = [];
 
   for (const [areaKey, areaData] of Object.entries(curriculum.areas)) {
@@ -111,7 +127,22 @@ export async function seedHomeCurriculum(
         work_name: work.name,
         area: areaKey,
         category: areaData.name,
+        category_key: areaKey,
+        category_name: areaData.name,
         sequence: work.home_sequence,
+        description: work.description || '',
+        age_range: work.ageRange || '3-6',
+        materials: work.materials || [],
+        direct_aims: work.directAims || [],
+        indirect_aims: work.indirectAims || [],
+        control_of_error: work.controlOfError || '',
+        prerequisites: work.prerequisites || [],
+        video_search_terms: work.levels?.map((l: { videoSearchTerms?: string[] }) => l.videoSearchTerms || []).flat() || [],
+        levels: work.levels || [],
+        name_chinese: work.chineseName || '',
+        is_custom: false,
+        presentation_notes: work.home_tip || '',
+        home_connection: '', // Can be populated from additional data if available
       });
     }
   }

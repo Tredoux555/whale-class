@@ -33,7 +33,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
     // Fetch child info
     if (childId) {
-      fetch(`/api/home/children/${childId}`)
+      fetch(`/api/home/children/${childId}?family_id=${sess.family.id}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.child) setChild(data.child);
@@ -42,11 +42,19 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
     }
   }, [childId, router]);
 
-  const activeTab = pathname.endsWith('/progress') ? 'progress' : 'works';
+  const activeTab = pathname.includes('/progress')
+    ? 'progress'
+    : pathname.includes('/observations')
+    ? 'observations'
+    : pathname.includes('/reports')
+    ? 'reports'
+    : 'works';
 
   const tabs = [
     { id: 'works', label: '📋 Works', href: `/home/dashboard/${childId}` },
     { id: 'progress', label: '📊 Progress', href: `/home/dashboard/${childId}/progress` },
+    { id: 'observations', label: '📝 Observations', href: `/home/dashboard/${childId}/observations` },
+    { id: 'reports', label: '📄 Reports', href: `/home/dashboard/${childId}/reports` },
   ];
 
   if (!session) {
