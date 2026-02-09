@@ -33,7 +33,6 @@ export default function AddWorkModal({
 
   const [form, setForm] = useState({
     name: '',
-    name_chinese: '',
     area_key: defaultArea || 'practical_life',
     age_range: '3-6',
     description: '',
@@ -47,7 +46,6 @@ export default function AddWorkModal({
   const resetForm = () => {
     setForm({
       name: '',
-      name_chinese: '',
       area_key: defaultArea || 'practical_life',
       age_range: '3-6',
       description: '',
@@ -116,7 +114,6 @@ export default function AddWorkModal({
         body: JSON.stringify({
           classroom_id: classroomId,
           name: form.name.trim(),
-          name_chinese: form.name_chinese.trim() || null,
           area_key: form.area_key,
           age_range: form.age_range,
           description: form.description.trim() || null,
@@ -209,18 +206,6 @@ export default function AddWorkModal({
               onChange={e => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. Pouring Water, Pink Tower, Sandpaper Letters"
               className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400"
-            />
-          </div>
-
-          {/* Chinese Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Chinese Name</label>
-            <input
-              type="text"
-              value={form.name_chinese}
-              onChange={e => setForm({ ...form, name_chinese: e.target.value })}
-              placeholder="中文名称（可选）"
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400"
             />
           </div>
 
