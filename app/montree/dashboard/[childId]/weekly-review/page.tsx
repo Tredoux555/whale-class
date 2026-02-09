@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 
 // ============================================
@@ -115,7 +115,6 @@ function getWeekBoundaries(date: Date = new Date()): { start: string; end: strin
 
 export default function WeeklyReviewPage() {
   const params = useParams();
-  const router = useRouter();
   const childId = params.childId as string;
 
   const [activeTab, setActiveTab] = useState<'teacher' | 'parent' | 'ai'>('teacher');
@@ -213,17 +212,14 @@ export default function WeeklyReviewPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <Toaster position="top-center" richColors />
       
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <button 
-              onClick={() => router.back()}
-              className="text-slate-500 hover:text-slate-700"
-            >
-              ← Back
-            </button>
-            <h1 className="font-bold text-slate-800">Weekly Review</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📋</span>
+              <h1 className="font-bold text-slate-800">Weekly Review</h1>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={notifyParents}

@@ -67,19 +67,11 @@ const TOOLS = [
 export default function ToolsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 py-4 px-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link 
-          href="/montree/dashboard" 
-          className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors"
-        >
-          <span className="text-lg">←</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🔧</span>
-          <h1 className="text-xl font-bold text-gray-800">Teacher Tools</h1>
-        </div>
-      </header>
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+        <span className="text-xl">🔧</span>
+        <h1 className="font-bold text-gray-800">Teacher Tools</h1>
+      </div>
 
       {/* Tools Grid */}
       <main className="flex-1 p-4">

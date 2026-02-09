@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { getSession, clearSession } from '@/lib/montree/auth';
 
 const SETTINGS_ITEMS = [
   { emoji: '🖼️', title: 'Media Gallery', desc: 'View captured photos', href: '/montree/dashboard/media' },
@@ -20,44 +21,27 @@ export default function SettingsPage() {
   const [classroomIcon, setClassroomIcon] = useState('🌳');
 
   useEffect(() => {
-    // Load teacher session data
-    const sessionStr = sessionStorage.getItem('teacherSession') || localStorage.getItem('teacherSession');
-    if (sessionStr) {
-      try {
-        const session = JSON.parse(sessionStr);
-        setTeacherName(session.teacherName || session.name || 'Teacher');
-        setClassroomName(session.classroomName || 'My Classroom');
-        setClassroomIcon(session.classroomIcon || '🌳');
-      } catch (e) {
-        console.error('Failed to parse session:', e);
-      }
+    const session = getSession();
+    if (!session) {
+      router.push('/montree/login');
+      return;
     }
-  }, []);
+    setTeacherName(session.teacher?.name || 'Teacher');
+    setClassroomName(session.classroom?.name || 'My Classroom');
+  }, [router]);
 
   const handleSignOut = () => {
-    // Clear teacher session
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('teacherSession');
-      localStorage.removeItem('teacherSession');
-    }
-    router.push('/montree/teacher/login');
+    clearSession();
+    router.push('/montree/login');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 py-4 px-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link
-          href="/montree/dashboard"
-          className="w-10 h-10 bg-emerald-100 hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors"
-        >
-          <span className="text-lg">←</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">⚙️</span>
-          <h1 className="text-xl font-bold text-gray-800">Settings</h1>
-        </div>
-      </header>
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+        <span className="text-xl">⚙️</span>
+        <h1 className="font-bold text-gray-800">Settings</h1>
+      </div>
 
       <main className="p-4 max-w-lg mx-auto space-y-6">
         {/* Profile Section */}

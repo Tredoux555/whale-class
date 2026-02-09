@@ -95,25 +95,17 @@ export default function MontreeGamesHub() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
-      <header className="bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 py-4 px-4 flex items-center gap-3 sticky top-0 z-20">
-        <Link 
-          href="/montree/admin" 
-          className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-xl flex items-center justify-center transition-colors"
-        >
-          <span className="text-lg text-white">←</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🎮</span>
-          <div>
-            <h1 className="text-xl font-bold text-white">Curriculum Games</h1>
-            <p className="text-slate-400 text-xs">{totalGames} games across {CATEGORIES.length} areas</p>
-          </div>
+      {/* Sub-header */}
+      <div className="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center gap-2">
+        <span className="text-xl">🎮</span>
+        <div>
+          <h1 className="font-bold text-white">Curriculum Games</h1>
+          <p className="text-slate-400 text-xs">{totalGames} games across {CATEGORIES.length} areas</p>
         </div>
-      </header>
+      </div>
 
       {/* Category Tabs */}
-      <div className="sticky top-[72px] z-10 bg-slate-800/90 backdrop-blur-sm border-b border-slate-700">
+      <div className="bg-slate-800/90 backdrop-blur-sm border-b border-slate-700">
         <div className="flex overflow-x-auto gap-1 p-2 scrollbar-hide">
           {CATEGORIES.map((category) => (
             <button

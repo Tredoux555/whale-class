@@ -7,9 +7,35 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. 5 UX improvements deployed (session 160).
+**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. Session 161 UX fixes applied locally, pending commit+push.
 
 ## Recent Changes
+
+### Session 161 - Feb 9, 2026 (4 UX FIXES — ✅ APPLIED, ⏳ PENDING PUSH)
+
+**Handoff:** `docs/HANDOFF_SESSION_161_UX_FIXES.md`
+**Status:** All 7 files changed locally. Blocked by stale `.git/index.lock` — needs `rm .git/index.lock` then commit+push.
+
+**4 UX fixes based on live site screenshots, double-audited before execution:**
+
+1. ✅ **Remove envelope icon** — Removed `InboxFloat` import + render from `app/montree/layout.tsx`. FeedbackButton (bottom-right, 💬) untouched.
+2. ✅ **Placeholder text visibility** — `placeholder:text-slate-500` → `placeholder:text-white/50` on 5 input fields across `/montree/try` (3) and `/home` (2).
+3. ✅ **Fix Demo button** — Added `String().trim()` defensive coercion to `video_search_term` on both API side (`route.ts`) and client side (`openDemo`). Named fallback + try/catch.
+4. ✅ **Full Details on curriculum page** — Wired existing `FullDetailsModal` into curriculum page with state, API fetch function, and "📚 Full Details" button in `CurriculumWorkList`.
+
+**Files:** 7 modified, 0 new. Zero migrations. Zero new API routes.
+
+| # | File | Fix |
+|---|------|-----|
+| 1 | `app/montree/layout.tsx` | Remove InboxFloat |
+| 2 | `app/montree/try/page.tsx` | 3× placeholder color |
+| 3 | `app/home/page.tsx` | 2× placeholder color |
+| 4 | `app/montree/dashboard/[childId]/page.tsx` | Robust openDemo |
+| 5 | `app/api/montree/works/guide/route.ts` | Trim video_search_terms |
+| 6 | `app/montree/dashboard/curriculum/page.tsx` | Full Details modal + state + fetch |
+| 7 | `components/montree/curriculum/CurriculumWorkList.tsx` | Optional prop + button |
+
+**NEXT SESSION:** Clear lock, commit, push, browser-test all 4 fixes on live site.
 
 ### Session 160 - Feb 9, 2026 (UX IMPROVEMENTS — ✅ EXECUTED & DEPLOYED)
 
@@ -1491,14 +1517,16 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 
 ## Pending / Next Up
 
-### 🎯 Session 161 — BROWSER TEST + BACKLOG
+### 🎯 Session 162 — COMMIT + PUSH + BROWSER TEST
 
-**Status:** Test all 5 UX changes on live site, then pick from backlog.
-1. Test `/montree/try` — email field, Parent at Home card, role selection all work
-2. Test `/home` — email field captures and stores correctly
-3. Test Demo button on child dashboard — `video_search_term` from guide API
-4. Test Quick Guide → Full Details modal transition
-5. Pick from backlog below
+**Status:** Session 161 fixes applied locally. Need to deploy and verify.
+1. `rm .git/index.lock` → `git add` → `git commit` → `git push`
+2. Test envelope icon removed on all `/montree/*` pages
+3. Test placeholder visibility on `/montree/try` and `/home`
+4. Test Demo button — should open YouTube with meaningful search term
+5. Test Full Details button on curriculum page — modal should match dashboard version
+6. Browser-test session 160 changes too (email capture, Parent at Home card)
+7. Pick from backlog below
 
 ---
 
@@ -1512,7 +1540,8 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - [ ] **FIX: Remove hardcoded password** — `870602` in super-admin page
 - [ ] Run migration `099_super_admin_security.sql` for audit tables
 
-### Completed Items (Sessions 141-160)
+### Completed Items (Sessions 141-161)
+- [x] Session 161 UX fixes — remove envelope, placeholder visibility, Demo button fix, Full Details on curriculum (4 fixes, 7 files, pending push)
 - [x] Session 160 UX improvements — email capture, Parent at Home card, demo button, Full Details modal (5 tasks, 11 files)
 - [x] Montree Home product built (session 155) — 24 files, code-based auth, super-admin Families tab
 - [x] Codebase cleanup: health 5.5 → ~9.1/10 (Sessions 152-154)

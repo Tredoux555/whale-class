@@ -180,17 +180,16 @@ export default function MediaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {selectionMode ? (
-            // Selection mode header
             <>
               <button
                 onClick={exitSelectionMode}
-                className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                <span className="text-lg">←</span>
+                <span className="text-sm">✕</span>
               </button>
               <input
                 type="checkbox"
@@ -199,31 +198,22 @@ export default function MediaPage() {
                 className="w-5 h-5 cursor-pointer accent-blue-500 rounded"
               />
               <div>
-                <h1 className="text-lg font-bold text-gray-800">Select Photos</h1>
+                <h1 className="font-bold text-gray-800">Select Photos</h1>
                 <p className="text-xs text-gray-500">
                   {selectedIds.size} selected
                 </p>
               </div>
             </>
           ) : (
-            // Normal mode header
-            <>
-              <Link
-                href="/montree/dashboard"
-                className="w-10 h-10 flex items-center justify-center bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors"
-              >
-                <span className="text-lg">←</span>
-              </Link>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🖼️</span>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-800">Photo Gallery</h1>
-                  <p className="text-xs text-gray-500">
-                    {media.length} photo{media.length !== 1 ? 's' : ''} • Tap to edit
-                  </p>
-                </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🖼️</span>
+              <div>
+                <h1 className="font-bold text-gray-800">Photo Gallery</h1>
+                <p className="text-xs text-gray-500">
+                  {media.length} photo{media.length !== 1 ? 's' : ''} • Tap to edit
+                </p>
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -233,7 +223,7 @@ export default function MediaPage() {
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={selectedIds.size === 0 || deleting}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 selectedIds.size === 0 || deleting
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
@@ -245,20 +235,20 @@ export default function MediaPage() {
             <>
               <button
                 onClick={() => setSelectionMode(true)}
-                className="w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md"
+                className="w-9 h-9 bg-blue-500 text-white rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm"
               >
-                <span className="text-lg">✓</span>
+                <span className="text-sm">✓</span>
               </button>
               <Link
                 href="/montree/dashboard/capture"
-                className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center hover:bg-emerald-600 transition-colors shadow-md"
+                className="w-9 h-9 bg-emerald-500 text-white rounded-lg flex items-center justify-center hover:bg-emerald-600 transition-colors shadow-sm"
               >
-                <span className="text-xl">+</span>
+                <span className="text-lg">+</span>
               </Link>
             </>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Filter tabs */}
       <div className="bg-white border-b border-gray-100 px-4 py-2 flex gap-2 overflow-x-auto">
