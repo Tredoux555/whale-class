@@ -1,11 +1,11 @@
 // /api/home/curriculum/route.ts
-// Session 155: Get family curriculum enriched with work metadata
-// Added POST for re-seeding empty curriculum
+// Get family curriculum enriched with work metadata from home_master_curriculum
+// POST for re-seeding empty curriculum
 // Audit fixes: race-condition guard on auto-seed, standardized error shapes
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { getWorkMeta, getAreaMeta, getAreaKeys, seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
+import { ensureCaches, getWorkMeta, getAreaMeta, getAreaKeys, seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
 
 function errorResponse(error: string, debug?: Record<string, unknown>, status = 500) {
   return NextResponse.json({ success: false, error, ...(debug ? { debug } : {}) }, { status });
@@ -19,6 +19,10 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // Initialize master curriculum caches from DB
+    await ensureCaches(supabase);
+
     const includeInactive = request.nextUrl.searchParams.get('include_inactive') === 'true';
 
     let query = supabase
@@ -81,7 +85,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Enrich with JSON metadata
+    // Enrich with metadata from home_master_curriculum (cached)
     const enriched = records.map((c) => {
       const meta = getWorkMeta(c.work_name);
       return {
@@ -149,7 +153,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Curriculum already loaded', alreadySeeded: true });
     }
 
-    // Seed the curriculum
+    // Seed the curriculum from home_master_curriculum table
     const count = await seedHomeCurriculum(supabase, family_id);
     return NextResponse.json({ success: true, count, message: `Seeded ${count} curriculum works` });
   } catch (err: unknown) {

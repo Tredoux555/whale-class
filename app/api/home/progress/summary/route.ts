@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
+import { ensureCaches, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
 
 interface AreaSummary {
   area: string;
@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // Initialize master curriculum caches from DB
+    await ensureCaches(supabase);
 
     // Fetch all progress for this child
     const { data: progress, error } = await supabase

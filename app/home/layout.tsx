@@ -1,10 +1,9 @@
-// /home/layout.tsx — Session 158
+// /home/layout.tsx
 // Server component layout for /home/* pages (enables metadata export)
-// Client nav logic extracted to components/home/HomeNav.tsx
+// Navigation is handled by HomeDashboardHeader in the dashboard sub-layout
 
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
-import HomeNav from '@/components/home/HomeNav';
 
 export const metadata: Metadata = {
   title: {
@@ -46,7 +45,6 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Toaster position="top-center" />
-      <HomeNav />
       {children}
     </>
   );

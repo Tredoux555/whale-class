@@ -32,9 +32,5 @@ export type { HomeMediaItem } from './HomeMediaGallery';
 
 export { default as HomeMediaCard } from './HomeMediaCard';
 
-// Child Management
-export { default as HomeChildCard } from './HomeChildCard';
-export type { ChildStats, HomeChild } from './HomeChildCard';
-
-// Navigation
-export { default as HomeNav } from './HomeNav';
+// Child grid is now inlined in dashboard/page.tsx (Montree compact pattern)
+// Navigation is now handled by HomeDashboardHeader
