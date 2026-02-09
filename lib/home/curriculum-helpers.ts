@@ -1,10 +1,35 @@
 // lib/home/curriculum-helpers.ts
-// Updated: Sources from home_master_curriculum DB table instead of JSON file
+// Session 155: Curriculum seeding + work metadata lookup
 // Shared by register API (seeding) and progress/curriculum APIs (enrichment)
 
+import homeCurriculumData from '@/lib/curriculum/data/home-curriculum.json';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-// --- Types ---
+// Types for the JSON structure
+interface WorkJson {
+  id: string;
+  name: string;
+  description: string;
+  home_sequence: number;
+  home_priority: string;
+  home_tip: string;
+  buy_or_make: string;
+  estimated_cost: string;
+  home_age_start: string;
+  [key: string]: unknown;
+}
+
+interface AreaJson {
+  name: string;
+  icon: string;
+  color: string;
+  works: WorkJson[];
+}
+
+interface CurriculumJson {
+  meta: { name: string; version: string; total_works: number };
+  areas: Record<string, AreaJson>;
+}
 
 export interface WorkMeta {
   description: string;
@@ -14,11 +39,6 @@ export interface WorkMeta {
   home_age_start: string;
   home_priority: string;
   home_sequence: number;
-  direct_aims: string[];
-  indirect_aims: string[];
-  materials: string[];
-  control_of_error: string;
-  video_search_term: string;
 }
 
 export interface AreaMeta {
@@ -27,146 +47,79 @@ export interface AreaMeta {
   color: string;
 }
 
-interface MasterWork {
-  id: string;
-  work_name: string;
-  area_key: string;
-  area_name: string;
-  area_icon: string;
-  area_color: string;
-  description: string;
-  age_range: string;
-  sequence: number;
-  home_sequence: number;
-  home_priority: string;
-  home_tip: string;
-  buy_or_make: string;
-  estimated_cost: string;
-  home_age_start: string;
-  materials: unknown;
-  direct_aims: unknown;
-  indirect_aims: unknown;
-  control_of_error: string;
-  prerequisites: unknown;
-  levels: unknown;
-  is_active: boolean;
-}
+// Cast imported JSON
+const curriculum = homeCurriculumData as unknown as CurriculumJson;
 
-// --- In-memory caches (populated once per cold start via ensureCaches) ---
+// Lazy singleton for work metadata lookups
+let workMetaMap: Map<string, WorkMeta> | null = null;
 
-let masterCache: MasterWork[] | null = null;
-let areaCacheMap: Map<string, AreaMeta> | null = null;
-let workMetaCacheMap: Map<string, WorkMeta> | null = null;
-
-// Fetch master curriculum from DB (cached after first call)
-async function getMasterCurriculum(supabase: SupabaseClient): Promise<MasterWork[]> {
-  if (masterCache) return masterCache;
-
-  const { data, error } = await supabase
-    .from('home_master_curriculum')
-    .select('*')
-    .eq('is_active', true)
-    .order('area_key')
-    .order('home_sequence');
-
-  if (error) {
-    console.error('Failed to fetch master curriculum:', error.message);
-    throw error;
-  }
-
-  masterCache = (data as MasterWork[]) || [];
-  return masterCache;
-}
-
-// Build lookup caches from master data
-function buildCaches(masterWorks: MasterWork[]) {
-  if (!areaCacheMap) {
-    areaCacheMap = new Map();
-    for (const w of masterWorks) {
-      if (!areaCacheMap.has(w.area_key)) {
-        areaCacheMap.set(w.area_key, {
-          name: w.area_name,
-          icon: w.area_icon || '',
-          color: w.area_color || '',
-        });
-      }
-    }
-  }
-
-  if (!workMetaCacheMap) {
-    workMetaCacheMap = new Map();
-    for (const w of masterWorks) {
-      // Extract first video search term from levels JSONB
-      const videoTerms = Array.isArray(w.levels)
-        ? (w.levels as { videoSearchTerms?: string[] }[]).flatMap((l) => l.videoSearchTerms || [])
-        : [];
-
-      workMetaCacheMap.set(w.work_name, {
-        description: w.description || '',
-        home_tip: w.home_tip || '',
-        buy_or_make: w.buy_or_make || '',
-        estimated_cost: w.estimated_cost || '',
-        home_age_start: w.home_age_start || '',
-        home_priority: w.home_priority || 'recommended',
-        home_sequence: w.home_sequence,
-        direct_aims: Array.isArray(w.direct_aims) ? w.direct_aims as string[] : [],
-        indirect_aims: Array.isArray(w.indirect_aims) ? w.indirect_aims as string[] : [],
-        materials: Array.isArray(w.materials) ? w.materials as string[] : [],
-        control_of_error: w.control_of_error || '',
-        video_search_term: videoTerms[0] || '',
+function buildWorkMetaMap(): Map<string, WorkMeta> {
+  const map = new Map<string, WorkMeta>();
+  for (const [, areaData] of Object.entries(curriculum.areas)) {
+    for (const work of areaData.works) {
+      map.set(work.name, {
+        description: work.description,
+        home_tip: work.home_tip,
+        buy_or_make: work.buy_or_make,
+        estimated_cost: work.estimated_cost,
+        home_age_start: work.home_age_start,
+        home_priority: work.home_priority,
+        home_sequence: work.home_sequence,
       });
     }
   }
+  return map;
 }
 
-// --- Public API ---
-
-// Initialize caches from DB. Call once per request before using sync lookups.
-export async function ensureCaches(supabase: SupabaseClient): Promise<void> {
-  const master = await getMasterCurriculum(supabase);
-  buildCaches(master);
-}
-
-// Get metadata for a specific work by name (sync — call ensureCaches first)
+// Get metadata for a specific work by name
 export function getWorkMeta(workName: string): WorkMeta | null {
-  if (!workMetaCacheMap) return null;
-  return workMetaCacheMap.get(workName) || null;
+  if (!workMetaMap) {
+    workMetaMap = buildWorkMetaMap();
+  }
+  return workMetaMap.get(workName) || null;
 }
 
-// Get area metadata (name, icon, color) (sync — call ensureCaches first)
+// Get area metadata (name, icon, color)
 export function getAreaMeta(areaKey: string): AreaMeta | null {
-  if (!areaCacheMap) return null;
-  return areaCacheMap.get(areaKey) || null;
+  const area = curriculum.areas[areaKey];
+  if (!area) return null;
+  return { name: area.name, icon: area.icon, color: area.color };
 }
 
-// Get all area keys in display order (sync — call ensureCaches first)
+// Get all area keys in display order
 export function getAreaKeys(): string[] {
-  if (!areaCacheMap) return [];
-  return Array.from(areaCacheMap.keys());
+  return Object.keys(curriculum.areas);
 }
 
-// Seed curriculum for a new family from home_master_curriculum table
-// home_curriculum table columns: id, family_id, work_name, area, category, sequence, is_active
-// All rich metadata (description, home_tip, etc.) lives in home_master_curriculum
-// and is enriched at read time via getWorkMeta()
+// Seed curriculum for a new family (called during registration)
 export async function seedHomeCurriculum(
   supabase: SupabaseClient,
   familyId: string
 ): Promise<number> {
-  const master = await getMasterCurriculum(supabase);
+  const rows: {
+    family_id: string;
+    work_name: string;
+    area: string;
+    category: string;
+    sequence: number;
+  }[] = [];
 
-  const rows = master.map((w) => ({
-    family_id: familyId,
-    work_name: w.work_name,
-    area: w.area_key,
-    category: w.area_name,
-    sequence: w.home_sequence,
-  }));
+  for (const [areaKey, areaData] of Object.entries(curriculum.areas)) {
+    for (const work of areaData.works) {
+      rows.push({
+        family_id: familyId,
+        work_name: work.name,
+        area: areaKey,
+        category: areaData.name,
+        sequence: work.home_sequence,
+      });
+    }
+  }
 
   const { error } = await supabase.from('home_curriculum').insert(rows);
   if (error) {
-    console.error('Failed to seed home curriculum:', error.message, error.code, error.details);
-    throw new Error(`Seed insert failed: ${error.message} (${error.code})`);
+    console.error('Failed to seed home curriculum:', error.message);
+    throw error;
   }
 
   return rows.length;

@@ -1,21 +1,11 @@
 // /api/home/curriculum/route.ts
-// Get family curriculum enriched with work metadata from home_master_curriculum
-// POST for re-seeding empty curriculum
+// Session 155: Get family curriculum enriched with work metadata
+// Added POST for re-seeding empty curriculum
 // Audit fixes: race-condition guard on auto-seed, standardized error shapes
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { ensureCaches, getWorkMeta, getAreaMeta, getAreaKeys, seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
-
-// Row shape returned by home_curriculum queries (Supabase client is untyped)
-interface CurriculumRow {
-  id: string;
-  work_name: string;
-  area: string;
-  category: string;
-  sequence: number;
-  is_active: boolean;
-}
+import { getWorkMeta, getAreaMeta, getAreaKeys, seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
 
 function errorResponse(error: string, debug?: Record<string, unknown>, status = 500) {
   return NextResponse.json({ success: false, error, ...(debug ? { debug } : {}) }, { status });
@@ -29,10 +19,6 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-
-    // Initialize master curriculum caches from DB
-    await ensureCaches(supabase);
-
     const includeInactive = request.nextUrl.searchParams.get('include_inactive') === 'true';
 
     let query = supabase
@@ -55,7 +41,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    let records = (curriculum || []) as CurriculumRow[];
+    let records = curriculum || [];
     let seedError: string | null = null;
 
     // Auto-seed if curriculum is empty for this family
@@ -87,19 +73,15 @@ export async function GET(request: NextRequest) {
           seedError = `Seed succeeded but re-fetch failed: ${refetchErr.message}`;
           console.error(seedError);
         }
-        records = (seeded || []) as CurriculumRow[];
-      } catch (seedErr: unknown) {
-        const msg = seedErr instanceof Error
-          ? seedErr.message
-          : (seedErr && typeof seedErr === 'object' && 'message' in seedErr)
-            ? String((seedErr as { message: string }).message)
-            : String(seedErr);
+        records = seeded || [];
+      } catch (seedErr) {
+        const msg = seedErr instanceof Error ? seedErr.message : String(seedErr);
         seedError = `Auto-seed failed: ${msg}`;
         console.error(seedError);
       }
     }
 
-    // Enrich with metadata from home_master_curriculum (cached)
+    // Enrich with JSON metadata
     const enriched = records.map((c) => {
       const meta = getWorkMeta(c.work_name);
       return {
@@ -110,11 +92,6 @@ export async function GET(request: NextRequest) {
         estimated_cost: meta?.estimated_cost || '',
         home_age_start: meta?.home_age_start || '',
         home_priority: meta?.home_priority || 'recommended',
-        direct_aims: meta?.direct_aims || [],
-        indirect_aims: meta?.indirect_aims || [],
-        materials: meta?.materials || [],
-        control_of_error: meta?.control_of_error || '',
-        video_search_term: meta?.video_search_term || '',
       };
     });
 
@@ -138,11 +115,7 @@ export async function GET(request: NextRequest) {
       ...(seedError ? { seedError } : {}),
     });
   } catch (err: unknown) {
-    const message = err instanceof Error
-      ? err.message
-      : (err && typeof err === 'object' && 'message' in err)
-        ? String((err as { message: string }).message)
-        : String(err);
+    const message = err instanceof Error ? err.message : String(err);
     console.error('Curriculum GET error:', message);
     return errorResponse('Server error', { message });
   }
@@ -176,15 +149,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Curriculum already loaded', alreadySeeded: true });
     }
 
-    // Seed the curriculum from home_master_curriculum table
+    // Seed the curriculum
     const count = await seedHomeCurriculum(supabase, family_id);
     return NextResponse.json({ success: true, count, message: `Seeded ${count} curriculum works` });
   } catch (err: unknown) {
-    const message = err instanceof Error
-      ? err.message
-      : (err && typeof err === 'object' && 'message' in err)
-        ? String((err as { message: string }).message)
-        : String(err);
+    const message = err instanceof Error ? err.message : String(err);
     console.error('Curriculum POST (seed) error:', message);
     return errorResponse('Failed to seed curriculum', { message });
   }
