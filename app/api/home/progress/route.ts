@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { getWorkMeta, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
+import { ensureCaches, getWorkMeta, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // Initialize master curriculum caches from DB
+    await ensureCaches(supabase);
 
     // Fetch all progress for this child
     const { data: progress, error } = await supabase
