@@ -28,6 +28,28 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+  const hostname = req.headers.get('host') || '';
+  
+  // ============================================
+  // DOMAIN ISOLATION — Separate teacherpotato.xyz and montree.xyz
+  // teacherpotato.xyz = Whale Class (videos, games, admin, teacher)
+  // montree.xyz = Montree SaaS (classroom management, home program)
+  // ============================================
+  const isTeacherPotato = hostname.includes('teacherpotato.xyz');
+  const isMontree = hostname.includes('montree.xyz');
+  
+  // Block Montree routes on teacherpotato.xyz
+  if (isTeacherPotato && (pathname.startsWith('/montree') || pathname.startsWith('/home'))) {
+    // Redirect to the correct domain
+    return NextResponse.redirect(new URL(pathname, 'https://montree.xyz'));
+  }
+  
+  // Block Whale Class routes on montree.xyz (root page, admin, teacher, games, story)
+  if (isMontree && pathname === '/') {
+    // montree.xyz root is handled by next.config.ts redirect → /montree
+    // This is a fallback in case that redirect doesn't fire
+    return NextResponse.redirect(new URL('/montree', req.url));
+  }
   
   // EXPLICIT: /teacher routes use simple localStorage auth, not Montree
   // Return immediately - no redirects, no auth checks
@@ -38,6 +60,8 @@ export async function middleware(req: NextRequest) {
   // Create response with pathname header for layouts to read
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-pathname', pathname);
+  // Pass hostname to layouts for domain-aware rendering
+  requestHeaders.set('x-hostname', hostname);
   
   const res = NextResponse.next({
     request: {
