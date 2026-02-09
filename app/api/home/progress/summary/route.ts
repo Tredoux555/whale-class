@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { ensureCaches, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
 
+// Row shape returned by home_progress queries (Supabase client is untyped)
+interface ProgressSummaryRow {
+  area: string;
+  status: string;
+}
+
 interface AreaSummary {
   area: string;
   areaName: string;
@@ -39,7 +45,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to load progress' }, { status: 500 });
     }
 
-    const records = progress || [];
+    const records = (progress || []) as ProgressSummaryRow[];
 
     // Calculate per-area stats
     const areas: AreaSummary[] = [];
