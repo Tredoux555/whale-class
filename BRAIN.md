@@ -7,14 +7,32 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. Session 161 UX fixes applied locally, pending commit+push.
+**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. Session 161 pushed. Session 162 Chinese Name removal applied locally, pending commit+push.
 
 ## Recent Changes
 
-### Session 161 - Feb 9, 2026 (4 UX FIXES — ✅ APPLIED, ⏳ PENDING PUSH)
+### Session 162 - Feb 9, 2026 (GIT PUSH + CHINESE NAME REMOVAL — ⏳ PENDING PUSH)
+
+**Handoff:** `docs/HANDOFF_SESSION_162_CLEANUP.md`
+**Status:** Session 161 pushed to GitHub (`0e44fe6`). Chinese Name removal applied locally, needs commit+push.
+
+**2 tasks completed:**
+
+1. ✅ **Git push Session 161** — Cleared stale `.git/HEAD.lock`, committed 15 files (271 insertions, 204 deletions), pushed `0e44fe6` to main. Session 161 UX fixes now live on Railway.
+2. ✅ **Remove Chinese Name from Add Work modal** — Removed `name_chinese` from form state, reset, JSX input field, and submit payload in `AddWorkModal.tsx`. Database column and all display/type references preserved (existing data still shows).
+
+**Files:** 1 modified (`AddWorkModal.tsx`), 1 new handoff doc. Zero migrations. Zero API changes.
+
+| # | File | Change |
+|---|------|--------|
+| 1 | `components/montree/AddWorkModal.tsx` | Remove Chinese Name field |
+
+**NEXT SESSION:** Commit+push Chinese Name removal. Browser-test Add Work modal on live site.
+
+### Session 161 - Feb 9, 2026 (4 UX FIXES — ✅ PUSHED)
 
 **Handoff:** `docs/HANDOFF_SESSION_161_UX_FIXES.md`
-**Status:** All 7 files changed locally. Blocked by stale `.git/index.lock` — needs `rm .git/index.lock` then commit+push.
+**Status:** ✅ Pushed to main as `0e44fe6`. All 4 UX fixes live on Railway.
 
 **4 UX fixes based on live site screenshots, double-audited before execution:**
 
@@ -35,7 +53,7 @@
 | 6 | `app/montree/dashboard/curriculum/page.tsx` | Full Details modal + state + fetch |
 | 7 | `components/montree/curriculum/CurriculumWorkList.tsx` | Optional prop + button |
 
-**NEXT SESSION:** Clear lock, commit, push, browser-test all 4 fixes on live site.
+**DONE:** Pushed in Session 162. Browser-test all 4 fixes on live site.
 
 ### Session 160 - Feb 9, 2026 (UX IMPROVEMENTS — ✅ EXECUTED & DEPLOYED)
 
