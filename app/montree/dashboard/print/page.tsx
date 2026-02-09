@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import { getSession } from '@/lib/montree/auth';
 
 interface Work {
   id: string;
@@ -41,13 +42,11 @@ function PrintContent() {
   const [weekNum, setWeekNum] = useState(0);
 
   useEffect(() => {
-    const stored = localStorage.getItem('montree_session');
-    if (!stored) {
+    const session = getSession();
+    if (!session) {
       router.push('/montree/login');
       return;
     }
-
-    const session = JSON.parse(stored);
 
     // Calculate current week number
     const now = new Date();

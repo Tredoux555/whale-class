@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
+import { getSession } from '@/lib/montree/auth';
 import AddWorkModal from '@/components/montree/AddWorkModal';
 import EditWorkModal from '@/components/montree/curriculum/EditWorkModal';
 import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsSection';
@@ -34,10 +35,9 @@ export default function CurriculumPage() {
   const [fullDetailsLoading, setFullDetailsLoading] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('montree_session');
-    if (!stored) { router.push('/montree/login'); return; }
-    try { setSession(JSON.parse(stored)); }
-    catch { router.push('/montree/login'); }
+    const sess = getSession();
+    if (!sess) { router.push('/montree/login'); return; }
+    setSession(sess);
   }, [router]);
 
   async function fetchCurriculum() {
