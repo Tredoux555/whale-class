@@ -7,6 +7,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { ensureCaches, getWorkMeta, getAreaMeta, getAreaKeys, seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
 
+// Row shape returned by home_curriculum queries (Supabase client is untyped)
+interface CurriculumRow {
+  id: string;
+  work_name: string;
+  area: string;
+  category: string;
+  sequence: number;
+  is_active: boolean;
+}
+
 function errorResponse(error: string, debug?: Record<string, unknown>, status = 500) {
   return NextResponse.json({ success: false, error, ...(debug ? { debug } : {}) }, { status });
 }
@@ -45,7 +55,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    let records = curriculum || [];
+    let records = (curriculum || []) as CurriculumRow[];
     let seedError: string | null = null;
 
     // Auto-seed if curriculum is empty for this family
@@ -77,7 +87,7 @@ export async function GET(request: NextRequest) {
           seedError = `Seed succeeded but re-fetch failed: ${refetchErr.message}`;
           console.error(seedError);
         }
-        records = seeded || [];
+        records = (seeded || []) as CurriculumRow[];
       } catch (seedErr: unknown) {
         const msg = seedErr instanceof Error
           ? seedErr.message
@@ -100,6 +110,11 @@ export async function GET(request: NextRequest) {
         estimated_cost: meta?.estimated_cost || '',
         home_age_start: meta?.home_age_start || '',
         home_priority: meta?.home_priority || 'recommended',
+        direct_aims: meta?.direct_aims || [],
+        indirect_aims: meta?.indirect_aims || [],
+        materials: meta?.materials || [],
+        control_of_error: meta?.control_of_error || '',
+        video_search_term: meta?.video_search_term || '',
       };
     });
 

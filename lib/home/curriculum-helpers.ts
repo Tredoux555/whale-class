@@ -14,6 +14,11 @@ export interface WorkMeta {
   home_age_start: string;
   home_priority: string;
   home_sequence: number;
+  direct_aims: string[];
+  indirect_aims: string[];
+  materials: string[];
+  control_of_error: string;
+  video_search_term: string;
 }
 
 export interface AreaMeta {
@@ -91,6 +96,11 @@ function buildCaches(masterWorks: MasterWork[]) {
   if (!workMetaCacheMap) {
     workMetaCacheMap = new Map();
     for (const w of masterWorks) {
+      // Extract first video search term from levels JSONB
+      const videoTerms = Array.isArray(w.levels)
+        ? (w.levels as { videoSearchTerms?: string[] }[]).flatMap((l) => l.videoSearchTerms || [])
+        : [];
+
       workMetaCacheMap.set(w.work_name, {
         description: w.description || '',
         home_tip: w.home_tip || '',
@@ -99,6 +109,11 @@ function buildCaches(masterWorks: MasterWork[]) {
         home_age_start: w.home_age_start || '',
         home_priority: w.home_priority || 'recommended',
         home_sequence: w.home_sequence,
+        direct_aims: Array.isArray(w.direct_aims) ? w.direct_aims as string[] : [],
+        indirect_aims: Array.isArray(w.indirect_aims) ? w.indirect_aims as string[] : [],
+        materials: Array.isArray(w.materials) ? w.materials as string[] : [],
+        control_of_error: w.control_of_error || '',
+        video_search_term: videoTerms[0] || '',
       });
     }
   }
