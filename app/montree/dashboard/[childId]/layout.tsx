@@ -80,53 +80,33 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      {/* Header - with safe area for notch */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link 
-                href="/montree/dashboard"
-                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30"
-              >
-                ←
-              </Link>
-              
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-lg font-bold overflow-hidden">
-                {child?.photo_url ? (
-                  <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
-                ) : displayInitial}
-              </div>
-              
-              <div>
-                <h1 className="text-lg font-bold">{displayName}</h1>
-                <p className="text-emerald-100 text-xs">{session.classroom?.name}</p>
-              </div>
+      {/* Child sub-header — main nav is in DashboardHeader above */}
+      <header className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white z-40">
+        <div className="max-w-4xl mx-auto px-4 py-2">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/montree/dashboard"
+              className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30"
+            >
+              ←
+            </Link>
+
+            <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-base font-bold overflow-hidden">
+              {child?.photo_url ? (
+                <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
+              ) : displayInitial}
             </div>
-            
-            {/* Curriculum & Guru buttons */}
-            <div className="flex items-center gap-2">
-              <Link
-                href="/montree/dashboard/curriculum"
-                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
-                title="Curriculum Editor"
-              >
-                📚
-              </Link>
-              <Link
-                href={`/montree/dashboard/guru?child=${childId}`}
-                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 text-lg"
-                title="Montessori Guru"
-              >
-                🧠
-              </Link>
+
+            <div>
+              <h1 className="text-base font-bold">{displayName}</h1>
+              <p className="text-emerald-100 text-xs">{session.classroom?.name}</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Tab Bar - Full width */}
-      <div className="bg-white border-b sticky top-[64px] z-30 shadow-sm">
+      <div className="bg-white border-b z-30 shadow-sm">
         <div className="flex w-full">
           {tabs.map(tab => (
             <Link
