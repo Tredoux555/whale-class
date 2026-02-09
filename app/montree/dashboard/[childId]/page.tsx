@@ -103,6 +103,7 @@ export default function WeekPage() {
   };
 
   const openDemo = async (workName: string) => {
+    const fallback = `${workName} Montessori presentation`;
     try {
       const classroomId = session?.classroom?.id;
       const url = classroomId
@@ -110,10 +111,10 @@ export default function WeekPage() {
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
       const res = await fetch(url);
       const data = await res.json();
-      const searchTerm = data.video_search_term || workName + ' Montessori presentation';
+      const searchTerm = (data.video_search_term && String(data.video_search_term).trim()) || fallback;
       window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`, '_blank');
     } catch {
-      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(workName + ' Montessori presentation')}`, '_blank');
+      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(fallback)}`, '_blank');
     }
   };
 

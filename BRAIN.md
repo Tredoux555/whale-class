@@ -2,14 +2,42 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 8, 2026)
+## Current State (Feb 9, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
-**Deployed**: Railway at teacherpotato.xyz → MIGRATING TO montree.xyz
-**Status**: 🚀 LAUNCH READY — Domain migration to montree.xyz is NEXT. Codebase health ~9.1/10.
+**Deployed**: Railway at montree.xyz
+**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. 5 UX improvements deployed (session 160).
 
 ## Recent Changes
+
+### Session 160 - Feb 9, 2026 (UX IMPROVEMENTS — ✅ EXECUTED & DEPLOYED)
+
+**Handoff:** `docs/HANDOFF_SESSION_160_UX_IMPROVEMENTS.md`
+**Commit:** `41b265d` — 12 files changed, 491 insertions, 14 deletions. Pushed to main.
+
+**5 UX improvements executed via 3-phase parallel agent plan:**
+
+1. ✅ **Splash page copy** — "Observe, record, and share every child's Montessori journey — with expert guidance built in."
+2. ✅ **Email capture on classroom registration** — Optional email field on `/montree/try`. Stored in `owner_email` (school), `email` (teacher/principal). Falls back to synthetic `trial-{code}@montree.app`.
+3. ✅ **Email capture on home registration** — Same pattern for `/home` and `/home/register`. Stored in `home_families.email` (keeps synthetic fallback for UNIQUE NOT NULL constraint).
+4. ✅ **Parent at Home card** — Third role on `/montree/try` with orange→rose gradient. `router.push('/home')` — does NOT use `handleRoleSelect`.
+5. ✅ **Demo button improvement** — `openDemo()` fetches `video_search_term` from guide API, falls back to generic search.
+6. ✅ **Full Details modal** — New `FullDetailsModal.tsx` with presentation steps, direct aims, materials, control of error, why it matters. Wired through QuickGuideModal → FullDetailsModal transition. `QuickGuideData` type extended with 6 fields. Unused `useRouter` removed from QuickGuideModal.
+
+**Execution:** Phase 1 (3 parallel agents: A, B, D) → Phase 2 (Agent C for shared files) → Phase 3 (verification: all 11 files audited line-by-line, 100% pass).
+
+**Files:** 10 modified + 1 new (`FullDetailsModal.tsx`) + 1 handoff doc. Zero migrations. Zero new API routes.
+
+**NEXT SESSION: Browser-test all changes on live site, then tackle backlog.**
+
+### Session 159 - Feb 8, 2026 (SYSTEM AUDIT — 17 BUGS FOUND, 10 FIXED)
+
+See `docs/HANDOFF_SESSION_159_AUDIT.md` for full details.
+
+### Session 158 - Feb 8, 2026 (SEO FOUNDATION)
+
+See `docs/HANDOFF_SESSION_158_SEO.md` for full details.
 
 ### Session 156 - Feb 8, 2026 (GMAIL CLEANUP + SECURITY AUDIT + MIGRATION PREP)
 
@@ -1463,19 +1491,14 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 
 ## Pending / Next Up
 
-### 🚀 Montree Home — BUILT, NEEDS DEPLOYMENT
+### 🎯 Session 161 — BROWSER TEST + BACKLOG
 
-**Status:** Code complete. Needs migrations 120 + 121 run on Supabase, then git push to deploy.
-
-**Migrations required (IN ORDER):**
-1. `migrations/120_home_tables.sql` — Creates 5 home_* tables (families, children, progress, curriculum, sessions)
-2. `migrations/121_home_join_code.sql` — Adds join_code column + UNIQUE constraint to home_families
-
-**Auth flow:** Parent clicks "Start Free" → gets 6-char code → code IS their login. Matches Montree classroom pattern (SHA256 hash, same charset).
-
-**Super-admin:** Families tab at teacherpotato.xyz/montree/super-admin → shows all Home families with join codes, children, progress. Password: `870602`.
-
-**Access:** teacherpotato.xyz/home
+**Status:** Test all 5 UX changes on live site, then pick from backlog.
+1. Test `/montree/try` — email field, Parent at Home card, role selection all work
+2. Test `/home` — email field captures and stores correctly
+3. Test Demo button on child dashboard — `video_search_term` from guide API
+4. Test Quick Guide → Full Details modal transition
+5. Pick from backlog below
 
 ---
 
@@ -1489,7 +1512,8 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - [ ] **FIX: Remove hardcoded password** — `870602` in super-admin page
 - [ ] Run migration `099_super_admin_security.sql` for audit tables
 
-### Completed Items (Sessions 141-155)
+### Completed Items (Sessions 141-160)
+- [x] Session 160 UX improvements — email capture, Parent at Home card, demo button, Full Details modal (5 tasks, 11 files)
 - [x] Montree Home product built (session 155) — 24 files, code-based auth, super-admin Families tab
 - [x] Codebase cleanup: health 5.5 → ~9.1/10 (Sessions 152-154)
 - [x] Focus work persistence fix
@@ -1529,11 +1553,11 @@ Progress uses: `not_started` → `presented` → `practicing` → `mastered`
 - Next.js can use 6GB+ RAM - kill and restart if machine struggles
 
 ## URLs
-- **Production**: teacherpotato.xyz
-- **Teacher Dashboard**: teacherpotato.xyz/montree
-- **Montree Home**: teacherpotato.xyz/home
-- **Super Admin**: teacherpotato.xyz/montree/super-admin (password: `870602`)
-- **Admin**: teacherpotato.xyz/admin
+- **Production**: montree.xyz
+- **Teacher Dashboard**: montree.xyz/montree
+- **Montree Home**: montree.xyz/home
+- **Super Admin**: montree.xyz/montree/super-admin (password: `870602`)
+- **Admin (Whale Class)**: teacherpotato.xyz/admin
 
 ## GitHub
 - **Token**: See 1Password or generate new at github.com/settings/tokens (expires May 2, 2026)

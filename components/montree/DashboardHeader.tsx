@@ -1,0 +1,71 @@
+// components/montree/DashboardHeader.tsx
+// Persistent top header shown on ALL dashboard screens
+// Contains: Montree logo, Inbox, Curriculum, Guru, Print, Logout
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { getSession, clearSession, type MontreeSession } from '@/lib/montree/auth';
+import InboxButton from './InboxButton';
+
+export default function DashboardHeader() {
+  const router = useRouter();
+  const [session, setSession] = useState<MontreeSession | null>(null);
+
+  useEffect(() => {
+    const sess = getSession();
+    if (!sess) return;
+    setSession(sess);
+  }, []);
+
+  // Don't render until we have a session (avoid flash)
+  if (!session?.teacher?.id) return null;
+
+  return (
+    <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Left: Logo + classroom */}
+        <Link href="/montree/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <span className="text-2xl">🌳</span>
+          <span className="font-bold text-lg">{session.classroom?.name || 'Montree'}</span>
+        </Link>
+
+        {/* Right: Action icons */}
+        <div className="flex items-center gap-2">
+          <InboxButton
+            conversationId={session.teacher.id}
+            userName={session.teacher.name || 'Teacher'}
+          />
+          <Link
+            href="/montree/dashboard/curriculum"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title="Curriculum"
+          >
+            📚
+          </Link>
+          <Link
+            href="/montree/dashboard/guru"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title="Montessori Guru"
+          >
+            🧠
+          </Link>
+          <Link
+            href="/montree/dashboard/print"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title="Print"
+          >
+            🖨️
+          </Link>
+          <button
+            onClick={() => { clearSession(); router.push('/montree/login'); }}
+            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}

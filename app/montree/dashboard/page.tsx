@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSession, clearSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 
 interface Child {
@@ -59,46 +59,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" />
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🌳</span>
-            <div>
-              <h1 className="text-xl font-bold">{session.classroom?.name || 'My Classroom'}</h1>
-              <p className="text-emerald-100 text-sm">{children.length} students</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/montree/dashboard/curriculum"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-              title="Curriculum"
-            >
-              📚
-            </Link>
-            <Link
-              href="/montree/dashboard/guru"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-              title="Montessori Guru"
-            >
-              🧠
-            </Link>
-            <Link
-              href="/montree/dashboard/print"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            >
-              🖨️
-            </Link>
-            <button
-              onClick={() => { clearSession(); router.push('/montree/login'); }}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Student count subtitle */}
+      <div className="bg-emerald-50 border-b border-emerald-100 px-4 py-2 text-center text-sm text-emerald-700 font-medium">
+        {children.length} students
+      </div>
 
       {/* Student Grid */}
       <main className="max-w-6xl mx-auto px-4 py-8">

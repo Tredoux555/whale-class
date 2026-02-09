@@ -2,7 +2,6 @@
 // Montree PWA layout with manifest for "Add to Home Screen"
 // Enhanced metadata for SEO
 import type { Metadata, Viewport } from "next";
-import InboxFloat from '@/components/montree/InboxFloat';
 
 export const metadata: Metadata = {
   title: {
@@ -63,7 +62,6 @@ export default function MontreeLayout({
   return (
     <>
       {children}
-      <InboxFloat />
     </>
   );
 }

@@ -225,7 +225,7 @@ export default function TryMontreePage() {
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder={selectedRole === 'principal' ? 'e.g. Sarah Johnson' : 'e.g. Miss Chen'}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
               </div>
@@ -239,7 +239,7 @@ export default function TryMontreePage() {
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
                   placeholder={selectedRole === 'principal' ? 'e.g. Bright Stars Academy' : 'e.g. Sunshine Montessori'}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />
               </div>
@@ -251,7 +251,7 @@ export default function TryMontreePage() {
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                   placeholder="e.g. sarah@school.com"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                 />
                 <p className="text-xs text-slate-500 mt-1">Only used to recover your code if you ever lose it</p>
               </div>

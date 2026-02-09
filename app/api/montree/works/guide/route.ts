@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       name: guideData.name,
       quick_guide: guideData.quick_guide,
-      video_search_term: guideData.video_search_terms || `${workName} Montessori presentation`,
+      video_search_term: (guideData.video_search_terms && String(guideData.video_search_terms).trim()) || `${workName} Montessori presentation`,
       parent_description: guideData.parent_description,
       direct_aims: guideData.direct_aims,
       materials: guideData.materials,

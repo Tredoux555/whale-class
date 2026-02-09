@@ -9,6 +9,7 @@ interface CurriculumWorkListProps {
   setExpandedWork: (id: string | null) => void;
   onEditWork: (work: Work) => void;
   onDeleteWork: (work: Work) => void;
+  onOpenFullDetails?: (workName: string) => void;
   reordering: boolean;
   onDragStart: (e: React.DragEvent, work: Work) => void;
   onDragOver: (e: React.DragEvent, workId: string) => void;
@@ -29,6 +30,7 @@ export default function CurriculumWorkList({
   setExpandedWork,
   onEditWork,
   onDeleteWork,
+  onOpenFullDetails,
   reordering,
   onDragStart,
   onDragOver,
@@ -165,6 +167,16 @@ export default function CurriculumWorkList({
                     >
                       🎬 Watch Presentation Video
                     </a>
+                  )}
+
+                  {/* Full Details Button */}
+                  {onOpenFullDetails && (
+                    <button
+                      onClick={() => onOpenFullDetails(work.name)}
+                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-700 active:scale-[0.98] transition-all shadow-sm"
+                    >
+                      📚 Full Details
+                    </button>
                   )}
 
                   {/* Teacher Notes (if any) */}

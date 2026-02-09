@@ -155,7 +155,7 @@ export default function HomeLandingPage() {
               value={parentName}
               onChange={(e) => setParentName(e.target.value)}
               placeholder="e.g. Sarah"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30 text-center"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30 text-center"
               onKeyDown={(e) => e.key === 'Enter' && handleStartFree()}
             />
           </div>
@@ -167,7 +167,7 @@ export default function HomeLandingPage() {
               value={parentEmail}
               onChange={(e) => setParentEmail(e.target.value)}
               placeholder="e.g. sarah@school.com"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
             />
             <p className="text-xs text-slate-500 mt-1">Only used to recover your code if you ever lose it</p>
           </div>

@@ -235,33 +235,26 @@ function GuruContent() {
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50">
       <Toaster position="top-center" />
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-violet-500 to-indigo-600 text-white px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/montree/dashboard"
-            className="p-2 -ml-2 rounded-lg hover:bg-white/20 active:scale-95 transition-all"
-          >
-            <span className="text-lg">←</span>
-          </Link>
+      {/* Page sub-header — main nav is in DashboardHeader */}
+      <div className="bg-white border-b px-4 py-3">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="font-bold text-lg flex items-center gap-2">
+            <h1 className="font-bold text-lg text-gray-800 flex items-center gap-2">
               <span>🔮</span> Montessori Guru
             </h1>
-            <p className="text-xs text-violet-200">AI-powered insights for your classroom</p>
+            <p className="text-xs text-gray-500">AI-powered insights for your classroom</p>
           </div>
+          {selectedChild && history.length > 0 && (
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-700 active:scale-95 transition-all"
+              title="Past conversations"
+            >
+              <span className="text-lg">📜</span>
+            </button>
+          )}
         </div>
-
-        {selectedChild && history.length > 0 && (
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="p-2 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition-all"
-            title="Past conversations"
-          >
-            <span className="text-lg">📜</span>
-          </button>
-        )}
-      </header>
+      </div>
 
       <main className="max-w-2xl mx-auto p-4 pb-32">
         {/* Child Selector */}

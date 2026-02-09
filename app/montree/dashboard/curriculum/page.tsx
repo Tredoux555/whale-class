@@ -7,7 +7,8 @@ import AddWorkModal from '@/components/montree/AddWorkModal';
 import EditWorkModal from '@/components/montree/curriculum/EditWorkModal';
 import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsSection';
 import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkList';
-import { Work, AREA_ICONS, AREA_COLORS } from '@/components/montree/curriculum/types';
+import { Work, AREA_ICONS, AREA_COLORS, QuickGuideData } from '@/components/montree/curriculum/types';
+import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
 
 export default function CurriculumPage() {
@@ -25,6 +26,12 @@ export default function CurriculumPage() {
 
   // Add work modal state
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Full Details modal state
+  const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
+  const [fullDetailsWork, setFullDetailsWork] = useState('');
+  const [fullDetailsData, setFullDetailsData] = useState<QuickGuideData | null>(null);
+  const [fullDetailsLoading, setFullDetailsLoading] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_session');
@@ -126,6 +133,25 @@ export default function CurriculumPage() {
   };
 
 
+  // Open Full Details modal — fetch guide data from API
+  const openFullDetails = async (workName: string) => {
+    setFullDetailsWork(workName);
+    setFullDetailsLoading(true);
+    setFullDetailsOpen(true);
+    try {
+      const classroomId = session?.classroom?.id;
+      const url = classroomId
+        ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
+        : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setFullDetailsData(data);
+    } catch {
+      setFullDetailsData({ error: true });
+    }
+    setFullDetailsLoading(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
@@ -135,32 +161,27 @@ export default function CurriculumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" richColors />
       
-      <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/montree/dashboard')}
-                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">←</button>
-              <div>
-                <h1 className="text-xl font-bold">Curriculum</h1>
-                <p className="text-emerald-100 text-sm">{curriculum.length} works available</p>
-              </div>
-            </div>
-            {curriculum.length > 0 && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-colors"
-              >
-                <span className="text-lg">➕</span>
-                <span className="hidden sm:inline">Add Work</span>
-              </button>
-            )}
+      {/* Page sub-header — main nav is in DashboardHeader */}
+      <div className="bg-white border-b px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-gray-800">📚 Curriculum</h1>
+            <p className="text-gray-500 text-sm">{curriculum.length} works available</p>
           </div>
+          {curriculum.length > 0 && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
+            >
+              <span className="text-lg">➕</span>
+              <span className="hidden sm:inline">Add Work</span>
+            </button>
+          )}
         </div>
-      </header>
+      </div>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {curriculum.length === 0 ? (
@@ -213,6 +234,7 @@ export default function CurriculumPage() {
                 setExpandedWork={setExpandedWork}
                 onEditWork={setEditingWork}
                 onDeleteWork={deleteWork}
+                onOpenFullDetails={openFullDetails}
                 reordering={reordering}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
@@ -259,20 +281,15 @@ export default function CurriculumPage() {
         </button>
       )}
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-around">
-          <button onClick={() => router.push('/montree/dashboard')} className="flex flex-col items-center text-gray-400">
-            <span className="text-xl">🏠</span><span className="text-xs">Home</span>
-          </button>
-          <button className="flex flex-col items-center text-emerald-600">
-            <span className="text-xl">📚</span><span className="text-xs font-medium">Curriculum</span>
-          </button>
-          <button onClick={() => router.push('/montree/dashboard/progress')} className="flex flex-col items-center text-gray-400">
-            <span className="text-xl">📊</span><span className="text-xs">Progress</span>
-          </button>
-        </div>
-      </nav>
+      {/* Full Details Modal */}
+      <FullDetailsModal
+        isOpen={fullDetailsOpen}
+        onClose={() => setFullDetailsOpen(false)}
+        workName={fullDetailsWork}
+        guideData={fullDetailsData}
+        loading={fullDetailsLoading}
+      />
+
     </div>
   );
 }

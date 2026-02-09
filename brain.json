@@ -1,27 +1,38 @@
 {
   "project": "Montree",
-  "session": 159,
-  "lastUpdated": "2026-02-08T21:30:00+02:00",
+  "session": 160,
+  "lastUpdated": "2026-02-09T11:00:00+02:00",
 
-  "STATUS": "✅ SYSTEM AUDIT COMPLETE — 17 bugs found, 10 fixed (code+SQL), sequence positioning fix deployed",
+  "STATUS": "✅ SESSION 160 UX IMPROVEMENTS — EXECUTED & DEPLOYED",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_159_AUDIT.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_158_SEO.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_160_UX_IMPROVEMENTS.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_159_AUDIT.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
   "PRIORITY_NEXT_SESSION": {
-    "task": "Verify sequence positioning fix works on live, then continue deferred audit items",
+    "task": "Browser-test all 5 UX changes, then tackle backlog",
     "steps": [
-      "1. TEST: Open classroom → child → wheel picker → Add Custom Work → pick position after #17 → verify it lands at #18",
-      "2. TEST: Verify MONTREE-AUDIT-FIX.sql was run (check montree_children table exists, RLS enabled on home tables)",
-      "3. DEFERRED BUG-5: Rate-limit /api/home/auth/try (brute-force risk on 6-char codes)",
-      "4. DEFERRED BUG-8: Harden /api/home/auth/enter (rate-limit code entry)",
-      "5. DEFERRED BUG-12: Race condition in curriculum reorder (concurrent drag-drop)",
-      "6. DEFERRED BUG-13: Standardize error response format across all APIs",
-      "7. DEFERRED BUG-17: Extract shared constants for status strings",
-      "8. Content SEO — Expand landing pages for better Google ranking"
+      "1. Test /montree/try — verify email field, Parent at Home card, and role selection",
+      "2. Test /home — verify email field captures and stores correctly",
+      "3. Test Demo button on child dashboard — verify video_search_term from guide API",
+      "4. Test Quick Guide → Full Details modal transition",
+      "5. Pick from backlog: reseed Language curriculum, remove debug output, etc."
     ],
-    "estimated_time": "5 min to test, then 30-45 min for deferred items"
+    "estimated_time": "15-20 min testing, then open-ended"
+  },
+
+  "SESSION_160_UX_IMPROVEMENTS": {
+    "status": "✅ EXECUTED & DEPLOYED — commit 41b265d, pushed to main",
+    "tasks_completed": [
+      "Task 1: Splash page copy ✅",
+      "Task 2A: Classroom email capture ✅ (try/page.tsx + try/instant/route.ts)",
+      "Task 2B: Home email capture ✅ (home/page.tsx + home/register/page.tsx + home/auth/try/route.ts)",
+      "Task 3: Parent at Home card ✅ (try/page.tsx — router.push('/home'))",
+      "Task 4: Demo button improvement ✅ (FocusWorksSection.tsx + [childId]/page.tsx — uses video_search_term)",
+      "Task 5: Full Details modal ✅ (NEW FullDetailsModal.tsx + QuickGuideData type + QuickGuideModal wiring)"
+    ],
+    "files_changed": "10 modified + 1 new (FullDetailsModal.tsx) + 1 handoff doc = 12 total",
+    "verification": "All 11 files audited line-by-line — 100% pass rate, every change matches handoff spec"
   },
 
   "SESSION_159_AUDIT": {
@@ -180,6 +191,10 @@
       "data_flow": "API → page caches dbSequence → mergeWorksWithCurriculum preserves as dbSequence → picker sends dbSequence to POST API"
     }
   },
+
+  "SESSION_160_COMMITS": [
+    "41b265d — Session 160: UX improvements — email capture, Parent at Home card, demo button, Full Details modal"
+  ],
 
   "SESSION_159_COMMITS": [
     "963035a — Fix: Montree system audit — 7 API bug fixes + SQL migration script",
