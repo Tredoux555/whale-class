@@ -57,11 +57,6 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Compute birth_date from age (today minus age in years)
-    const today = new Date();
-    const birthDate = new Date(today.getFullYear() - childAge, today.getMonth(), today.getDate());
-    const birthDateISO = birthDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-
     // Create the child
     const { data: child, error: childError } = await supabase
       .from('home_children')
@@ -69,8 +64,6 @@ export async function POST(request: NextRequest) {
         family_id,
         name: name.trim(),
         age: childAge,
-        birth_date: birthDateISO,
-        enrollment_date: new Date().toISOString().split('T')[0],
       })
       .select()
       .single();

@@ -3,13 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { ensureCaches, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
-
-// Row shape returned by home_progress queries (Supabase client is untyped)
-interface ProgressSummaryRow {
-  area: string;
-  status: string;
-}
+import { getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
 
 interface AreaSummary {
   area: string;
@@ -31,9 +25,6 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Initialize master curriculum caches from DB
-    await ensureCaches(supabase);
-
     // Fetch all progress for this child
     const { data: progress, error } = await supabase
       .from('home_progress')
@@ -45,7 +36,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to load progress' }, { status: 500 });
     }
 
-    const records = (progress || []) as ProgressSummaryRow[];
+    const records = progress || [];
 
     // Calculate per-area stats
     const areas: AreaSummary[] = [];

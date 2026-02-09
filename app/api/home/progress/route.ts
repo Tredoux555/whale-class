@@ -3,19 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { ensureCaches, getWorkMeta, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
-
-// Row shape returned by home_progress queries (Supabase client is untyped)
-interface ProgressRow {
-  id: string;
-  child_id: string;
-  work_name: string;
-  area: string;
-  status: string;
-  presented_at: string | null;
-  mastered_at: string | null;
-  updated_at: string;
-}
+import { getWorkMeta, getAreaMeta, getAreaKeys } from '@/lib/home/curriculum-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,9 +13,6 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-
-    // Initialize master curriculum caches from DB
-    await ensureCaches(supabase);
 
     // Fetch all progress for this child
     const { data: progress, error } = await supabase
@@ -42,7 +27,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to load progress' }, { status: 500 });
     }
 
-    const records = (progress || []) as ProgressRow[];
+    const records = progress || [];
 
     // Enrich each record with work metadata
     const enriched = records.map((p) => {
