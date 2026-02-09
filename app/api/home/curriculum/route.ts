@@ -78,8 +78,12 @@ export async function GET(request: NextRequest) {
           console.error(seedError);
         }
         records = seeded || [];
-      } catch (seedErr) {
-        const msg = seedErr instanceof Error ? seedErr.message : String(seedErr);
+      } catch (seedErr: unknown) {
+        const msg = seedErr instanceof Error
+          ? seedErr.message
+          : (seedErr && typeof seedErr === 'object' && 'message' in seedErr)
+            ? String((seedErr as { message: string }).message)
+            : String(seedErr);
         seedError = `Auto-seed failed: ${msg}`;
         console.error(seedError);
       }
@@ -119,7 +123,11 @@ export async function GET(request: NextRequest) {
       ...(seedError ? { seedError } : {}),
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error
+      ? err.message
+      : (err && typeof err === 'object' && 'message' in err)
+        ? String((err as { message: string }).message)
+        : String(err);
     console.error('Curriculum GET error:', message);
     return errorResponse('Server error', { message });
   }
@@ -157,7 +165,11 @@ export async function POST(request: NextRequest) {
     const count = await seedHomeCurriculum(supabase, family_id);
     return NextResponse.json({ success: true, count, message: `Seeded ${count} curriculum works` });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error
+      ? err.message
+      : (err && typeof err === 'object' && 'message' in err)
+        ? String((err as { message: string }).message)
+        : String(err);
     console.error('Curriculum POST (seed) error:', message);
     return errorResponse('Failed to seed curriculum', { message });
   }

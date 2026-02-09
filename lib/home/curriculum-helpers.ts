@@ -131,6 +131,9 @@ export function getAreaKeys(): string[] {
 }
 
 // Seed curriculum for a new family from home_master_curriculum table
+// home_curriculum table columns: id, family_id, work_name, area, category, sequence, is_active
+// All rich metadata (description, home_tip, etc.) lives in home_master_curriculum
+// and is enriched at read time via getWorkMeta()
 export async function seedHomeCurriculum(
   supabase: SupabaseClient,
   familyId: string
@@ -142,29 +145,13 @@ export async function seedHomeCurriculum(
     work_name: w.work_name,
     area: w.area_key,
     category: w.area_name,
-    category_key: w.area_key,
-    category_name: w.area_name,
     sequence: w.home_sequence,
-    description: w.description || '',
-    age_range: w.age_range || '3-6',
-    materials: w.materials || [],
-    direct_aims: w.direct_aims || [],
-    indirect_aims: w.indirect_aims || [],
-    control_of_error: w.control_of_error || '',
-    prerequisites: w.prerequisites || [],
-    video_search_terms: Array.isArray(w.levels)
-      ? (w.levels as { videoSearchTerms?: string[] }[]).flatMap((l) => l.videoSearchTerms || [])
-      : [],
-    levels: w.levels || [],
-    is_custom: false,
-    presentation_notes: w.home_tip || '',
-    home_connection: '',
   }));
 
   const { error } = await supabase.from('home_curriculum').insert(rows);
   if (error) {
-    console.error('Failed to seed home curriculum:', error.message);
-    throw error;
+    console.error('Failed to seed home curriculum:', error.message, error.code, error.details);
+    throw new Error(`Seed insert failed: ${error.message} (${error.code})`);
   }
 
   return rows.length;
