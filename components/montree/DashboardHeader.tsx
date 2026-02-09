@@ -23,7 +23,7 @@ export default function DashboardHeader() {
   if (!session?.teacher?.id) return null;
 
   return (
-    <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
+    <header className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left: Logo + classroom */}
         <Link href="/montree/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
