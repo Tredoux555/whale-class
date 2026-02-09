@@ -261,18 +261,13 @@ export default function TeacherSummaryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 px-4 py-3 sticky top-0 z-10">
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href={`/montree/dashboard/${childId}`}
-              className="w-10 h-10 flex items-center justify-center bg-blue-100 hover:bg-blue-200 rounded-xl transition-colors"
-            >
-              <span className="text-lg">←</span>
-            </Link>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📊</span>
             <div>
-              <h1 className="text-lg font-bold text-gray-800">
+              <h1 className="font-bold text-gray-800">
                 {summary.child.name}&apos;s Summary
               </h1>
               <p className="text-xs text-gray-500">{summary.period}</p>
@@ -299,7 +294,7 @@ export default function TeacherSummaryPage() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="p-4 space-y-4 pb-24">
         {/* Overview Stats */}

@@ -3,7 +3,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 interface VideoContent {
   studentId: string;
@@ -64,10 +63,10 @@ export default function VideoPreviewPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Link href="/montree/dashboard" className="text-gray-400 hover:text-white">
-            ← Back
-          </Link>
-          <h1 className="text-lg font-bold text-white">Weekly Videos</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎬</span>
+            <h1 className="text-lg font-bold text-white">Weekly Videos</h1>
+          </div>
           <div className="text-gray-400 text-sm">
             {currentIndex + 1} / {videos.length}
           </div>

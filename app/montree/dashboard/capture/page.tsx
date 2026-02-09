@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { getSession } from '@/lib/montree/auth';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
@@ -76,17 +77,14 @@ function CaptureContent() {
   const [classroomId, setClassroomId] = useState<string>('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('montree_session');
-    if (stored) {
-      try {
-        const session = JSON.parse(stored);
-        if (session.school?.id) {
-          setSchoolId(session.school.id);
-        }
-        if (session.classroom?.id) {
-          setClassroomId(session.classroom.id);
-        }
-      } catch {}
+    const session = getSession();
+    if (session) {
+      if (session.school?.id) {
+        setSchoolId(session.school.id);
+      }
+      if (session.classroom?.id) {
+        setClassroomId(session.classroom.id);
+      }
     }
   }, []);
 
@@ -402,38 +400,30 @@ function CaptureContent() {
   // Child selection step
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/montree/dashboard"
-            className="w-10 h-10 flex items-center justify-center bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors"
-          >
-            <span className="text-lg">←</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📷</span>
-            <div>
-              <h1 className="text-lg font-bold text-gray-800">Take Photo</h1>
-              <p className="text-xs text-gray-500">
-                {isGroupMode ? 'Select children for group photo' : 'Select a child'}
-              </p>
-            </div>
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">📷</span>
+          <div>
+            <h1 className="font-bold text-gray-800">Take Photo</h1>
+            <p className="text-xs text-gray-500">
+              {isGroupMode ? 'Select children for group photo' : 'Select a child'}
+            </p>
           </div>
         </div>
-        
+
         {/* Group mode toggle */}
         <Link
           href={isGroupMode ? '/montree/dashboard/capture' : '/montree/dashboard/capture?group=true'}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isGroupMode 
-              ? 'bg-emerald-100 text-emerald-700' 
+            isGroupMode
+              ? 'bg-emerald-100 text-emerald-700'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           👥 Group
         </Link>
-      </header>
+      </div>
 
       {/* Child selector */}
       <main className="flex-1 overflow-hidden">

@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 
@@ -515,24 +514,19 @@ export default function StudentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Toaster position="top-center" />
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <Link href="/montree/dashboard" className="text-white/80 hover:text-white">
-            ← Back
-          </Link>
-          <div>
-            <h1 className="font-bold">Students</h1>
-            <p className="text-xs text-white/70">{session.classroom?.name}</p>
-          </div>
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">👶</span>
+          <h1 className="font-bold text-slate-800">Students</h1>
         </div>
         <button
           onClick={openAddForm}
-          className="px-3 py-1.5 bg-white/20 rounded-lg text-sm font-medium hover:bg-white/30"
+          className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
         >
           + Add Student
         </button>
-      </header>
+      </div>
 
       {/* Students List */}
       <main className="p-4 max-w-2xl mx-auto">

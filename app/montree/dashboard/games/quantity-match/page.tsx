@@ -6,7 +6,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ============================================
@@ -326,14 +325,10 @@ export default function QuantityMatchGame() {
   // ============================================
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-40">
+      {/* Sub-header */}
+      <div className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/games" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-            <span className="text-xl">←</span>
-            <span className="font-medium">Games</span>
-          </Link>
-          <h1 className="text-xl font-bold text-blue-600">🔢 Quantity Match</h1>
+          <h1 className="font-bold text-blue-600">🔢 Quantity Match</h1>
           {gameState.phase !== 'menu' && (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-600">⭐ {gameState.xp} XP</span>
