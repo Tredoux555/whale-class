@@ -29,11 +29,13 @@ export async function POST(req: NextRequest) {
 
     // Parse optional name from body
     let familyName = 'My Family';
+    let familyEmail = '';
     try {
       const body = await req.json();
       if (body?.name && body.name.trim()) {
         familyName = body.name.trim();
       }
+      if (body?.email && body.email.trim()) { familyEmail = body.email.trim(); }
     } catch {
       // No body or invalid JSON — use default name
     }
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
         .from('home_families')
         .insert({
           name: familyName,
-          email: `home-${code.toLowerCase()}@montree.app`,
+          email: familyEmail || `home-${code.toLowerCase()}@montree.app`,
           password_hash: codeHash,
           join_code: code,
           plan: 'free',

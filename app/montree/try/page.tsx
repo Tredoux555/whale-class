@@ -44,6 +44,7 @@ export default function TryMontreePage() {
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [code, setCode] = useState('');
   const [responseData, setResponseData] = useState<TrialResponse | null>(null);
   const [error, setError] = useState('');
@@ -76,6 +77,7 @@ export default function TryMontreePage() {
           role: selectedRole,
           name: userName.trim(),
           schoolName: schoolName.trim(),
+          email: userEmail.trim(),
         })
       });
 
@@ -193,6 +195,14 @@ export default function TryMontreePage() {
                 <span className="text-lg block">👔 Principal / School Owner</span>
                 <span className="text-sm text-purple-100/70 font-normal mt-1 block">I want to set up Montree for my school</span>
               </button>
+
+              <button
+                onClick={() => router.push('/home')}
+                className="w-full px-6 py-5 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-semibold rounded-2xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
+              >
+                <span className="text-lg block">🏠 Parent at Home</span>
+                <span className="text-sm text-orange-100/70 font-normal mt-1 block">I want to teach my child authentic Montessori at home — and learn alongside them</span>
+              </button>
             </div>
           </div>
         )}
@@ -232,6 +242,18 @@ export default function TryMontreePage() {
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm text-emerald-300/70 mb-2">Email (optional)</label>
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="e.g. sarah@school.com"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
+                />
+                <p className="text-xs text-slate-500 mt-1">Only used to recover your code if you ever lose it</p>
               </div>
 
               {error && (

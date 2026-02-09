@@ -21,7 +21,7 @@ export default function MontreeLanding() {
 
         {/* Subtitle */}
         <p className="text-lg text-emerald-300/80 mb-12 font-light">
-          The future of Montessori Classroom Management
+          Observe, record, and share every child's Montessori journey — with expert guidance built in.
         </p>
 
         {/* CTA Buttons */}
