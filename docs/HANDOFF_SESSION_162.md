@@ -1,4 +1,4 @@
-# Session 162 Handoff — Social Media Setup + Git Push
+# Session 162 Handoff — Facebook Rebrand + Social Media Setup
 
 **Date:** February 10, 2026
 **Session:** 162
@@ -8,49 +8,58 @@
 
 ## What Was Done This Session
 
-### 1. YouTube Banner Regenerated
-- Original banner had content in bottom half — outside mobile safe zone
-- Regenerated `public/montree-yt-banner.png` with all content centered vertically
-- M icon, "Montree", tagline, and URL now sit in YouTube's "Viewable on all devices" zone
-- **User action needed:** Upload via YouTube Studio > Profile > Banner Image > Upload
+### 1. YouTube Banner & Logo Redesigned
+- Created new abstract tree motif design for banner (`public/montree-yt-banner.png`, 2560x1440)
+- Deep navy-to-teal gradient, golden leaf clusters, floating particles, centered M logo
+- Created matching profile logo (`public/montree-logo.png`, 800x800)
+- Banner uploaded to YouTube Studio and Published
+- Committed as `90a7f47`, pushed by user from local terminal
 
-### 2. Social Media Setup Guide Created
-- `docs/SOCIAL_MEDIA_SETUP_GUIDE.md` — complete SEO-optimized copy for:
-  - **Facebook Page** — name, username, category, about, description, CTA
-  - **Instagram** — username, display name, bio (149 chars), category, hashtag strategy
-  - **TikTok** — username, display name, bio (78 chars), content strategy notes
+### 2. Facebook Page Fully Rebranded (from "Jeffy" to "Montree")
+- **Page ID:** 61585843271315
+- **URL:** facebook.com/montreexyz
+- **Changes made:**
+  - Name: Jeffy → **Montree** ✅ (approved instantly)
+  - Username: (none) → **@montreexyz** ✅
+  - Bio: Updated with Montessori classroom management description ✅
+  - Category: Changed to **Education website · Software** ✅
+  - Link: jeffy.co.za → **montree.xyz** ✅
+  - Profile picture: Uploaded `montree-logo.png` ✅
+  - Cover photo: Uploaded `montree-yt-banner.png` ✅
+- **Account structure:** One Facebook account (Tredoux Willemse, tredoux555@gmail.com) manages the Montree Page
+- **Password:** Was reset during session (user handled via incognito window)
+
+### 3. Social Media Setup Guide Created
+- `docs/SOCIAL_MEDIA_SETUP_GUIDE.md` — SEO-optimized copy for Facebook, Instagram, TikTok
 - All platforms use consistent `@montreexyz` handle
-- Cross-platform checklist included
-- **User must create accounts manually** (AI safety restriction on account creation)
-
-### 3. Git Commit (Local)
-- Committed all session 161 files: `6136a8d`
-- 12 files: 3 modified + 9 new (docs, images, command center, projects.json)
-- **Push failed** — Cowork VM doesn't have SSH keys for GitHub
-- **User action needed:** Run `git push origin main` from local terminal
 
 ### 4. Project Files Updated
-- `brain.json` → session 162, updated status, new handoff reference
-- `projects.json` → brain session updated to 162
-- `public/command-center.html` → Montree brain status updated to #162
+- `brain.json` → Facebook Page data, updated session status, next steps for Instagram/TikTok
+- `projects.json` → Facebook social set to "created" with handle/URL/pageId
+- `public/command-center.html` → Montree Facebook set to active
 
 ---
 
-## What Still Needs Doing (Session 163+)
+## What Still Needs Doing (Next Session)
 
-### Immediate Priority
-1. **Upload YouTube banner** — `public/montree-yt-banner.png` via YouTube Studio
-2. **Git push** — `git push origin main` from local terminal with SSH keys
-3. **Create Facebook page** — use copy from `docs/SOCIAL_MEDIA_SETUP_GUIDE.md`
-4. **Create Instagram account** — use copy from setup guide
-5. **Create TikTok account** — use copy from setup guide
-6. **After each account:** Update `projects.json` socials section with handle/URL/status
+### Immediate Priority — Instagram & TikTok
+1. **Create Instagram account** for Montree (@montreexyz)
+   - Use email: tredoux555@gmail.com
+   - Bio copy in `docs/SOCIAL_MEDIA_SETUP_GUIDE.md`
+   - Upload `public/montree-logo.png` as profile pic
+   - May need to edit out "Jeffy" if account is linked to old page
+2. **Create TikTok account** for Montree (@montreexyz)
+   - Use email: tredoux555@gmail.com
+   - Bio copy in `docs/SOCIAL_MEDIA_SETUP_GUIDE.md`
+   - Upload `public/montree-logo.png` as profile pic
+3. **Update projects.json** with Instagram/TikTok handles after creation
+4. **Update command-center.html** with Instagram/TikTok set to active
+5. **Commit and push** all changes
 
 ### After Account Creation
-7. Update `public/command-center.html` — set social accounts to active with handles/URLs
-8. Cross-link all social profiles to each other where possible
-9. Upload profile picture (`public/montree-yt-icon.png`) to all platforms
-10. Upload cover/banner (`public/montree-yt-banner.png`) to Facebook
+6. Cross-link all social profiles to each other
+7. Create first social media post across all platforms
+8. Upload YouTube profile picture (montree-logo.png replaces montree-yt-icon.png)
 
 ### Other Pending
 - Fill in Jeffy project details in `projects.json`
@@ -67,14 +76,22 @@
 | `projects.json` | Master registry — all projects + socials |
 | `public/command-center.html` | Dashboard UI |
 | `docs/SOCIAL_MEDIA_SETUP_GUIDE.md` | SEO-optimized copy for FB/IG/TT |
-| `docs/MONTREE_SEO_STRATEGY.md` | Full SEO strategy document |
-| `public/montree-yt-icon.png` | Profile picture (1024x1024) |
-| `public/montree-yt-banner.png` | Banner/cover image (2560x1440, centered) |
+| `public/montree-logo.png` | Profile picture (800x800, abstract tree motif) |
+| `public/montree-yt-banner.png` | Banner/cover image (2560x1440, abstract tree motif) |
+| `public/montree-yt-icon.png` | Original YouTube icon (1024x1024) |
 
 ---
 
 ## Git Status
 - **Branch:** main
-- **Last commit:** `6136a8d` (Session 161 files — committed but NOT pushed)
+- **Last commit:** `90a7f47` — "Session 162: Redesigned YT banner and logo with abstract tree motif"
 - **Remote:** `git@github.com:Tredoux555/whale-class.git`
-- **Action needed:** `git push origin main`
+- **Status:** Pushed ✅
+- **Pending commit:** brain.json, projects.json, command-center.html, handoff doc updates
+
+---
+
+## Account Info
+- **Facebook login:** tredoux555@gmail.com (Tredoux Willemse personal account)
+- **All social accounts will use:** tredoux555@gmail.com
+- **Consistent handle across all platforms:** @montreexyz

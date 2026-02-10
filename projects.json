@@ -25,13 +25,15 @@
           "channelId": "UCMwrqNTlotD1Q1Bie9iwVIg",
           "status": "created",
           "setupDate": "2026-02-10",
-          "notes": "Profile pic set (green M icon), description added, website link added, banner generated (pending upload)"
+          "notes": "Profile pic set (green M icon), description added, website link added, banner uploaded"
         },
         "facebook": {
-          "handle": null,
-          "url": null,
-          "status": "not_created",
-          "notes": "Pending creation"
+          "handle": "@montreexyz",
+          "url": "https://facebook.com/montreexyz",
+          "pageId": "61585843271315",
+          "status": "created",
+          "setupDate": "2026-02-10",
+          "notes": "Rebranded from Jeffy page. Name, bio, category, link, profile pic (montree-logo.png), cover photo (montree-yt-banner.png) all set."
         },
         "instagram": {
           "handle": null,
@@ -75,7 +77,8 @@
         "lastUpdated": "2026-02-10"
       },
       "assets": {
-        "logo": "public/og-image.png",
+        "logo": "public/montree-logo.png",
+        "ogImage": "public/og-image.png",
         "icon": "public/montree-yt-icon.png",
         "banner": "public/montree-yt-banner.png"
       }
