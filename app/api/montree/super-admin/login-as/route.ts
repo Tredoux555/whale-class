@@ -2,10 +2,26 @@
 // DEV ONLY: Allow super admin to login as any principal
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(req.headers);
+    const userAgent = getUserAgent(req.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/super-admin/login-as', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { schoolId, superAdminPassword } = await req.json();
 
     // Verify super admin password
@@ -16,6 +32,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (superAdminPassword !== expectedPassword) {
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'super_admin',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

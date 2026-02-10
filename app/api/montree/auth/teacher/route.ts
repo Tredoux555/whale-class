@@ -5,10 +5,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { createMontreeToken } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/auth/teacher', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const body = await request.json();
     const { code, email, password } = body;
 
@@ -50,6 +66,13 @@ export async function POST(request: NextRequest) {
           // Verify with bcrypt
           const valid = await verifyPassword(normalizedCode, newData.password_hash);
           if (!valid) {
+            await logAudit(supabase, {
+              adminIdentifier: email || ip,
+              action: 'login_failed',
+              resourceType: 'teacher',
+              ipAddress: ip,
+              userAgent,
+            });
             return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
           }
           teacher = newData;
@@ -59,6 +82,13 @@ export async function POST(request: NextRequest) {
       }
 
       if (!teacher) {
+        await logAudit(supabase, {
+          adminIdentifier: email || ip,
+          action: 'login_failed',
+          resourceType: 'teacher',
+          ipAddress: ip,
+          userAgent,
+        });
         return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
       }
 
@@ -81,16 +111,37 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error || !data) {
+        await logAudit(supabase, {
+          adminIdentifier: email || ip,
+          action: 'login_failed',
+          resourceType: 'teacher',
+          ipAddress: ip,
+          userAgent,
+        });
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
       }
 
       // Verify password
       if (!data.password_hash) {
+        await logAudit(supabase, {
+          adminIdentifier: email || ip,
+          action: 'login_failed',
+          resourceType: 'teacher',
+          ipAddress: ip,
+          userAgent,
+        });
         return NextResponse.json({ error: 'Password not set. Use your login code instead.' }, { status: 401 });
       }
 
       const validPassword = await verifyPassword(password, data.password_hash);
       if (!validPassword) {
+        await logAudit(supabase, {
+          adminIdentifier: email || ip,
+          action: 'login_failed',
+          resourceType: 'teacher',
+          ipAddress: ip,
+          userAgent,
+        });
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
       }
 
@@ -104,6 +155,17 @@ export async function POST(request: NextRequest) {
     }
     else {
       return NextResponse.json({ error: 'Provide code OR email+password' }, { status: 400 });
+    }
+
+    if (!teacher) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'teacher',
+        ipAddress: ip,
+        userAgent,
+      });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Get classroom info

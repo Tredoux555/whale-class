@@ -6,10 +6,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { createMontreeToken } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/principal/login', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const body = await request.json();
     const { email, password, code } = body;
 
@@ -37,6 +53,13 @@ export async function POST(request: NextRequest) {
       }
 
       if (!principal) {
+        await logAudit(supabase, {
+          adminIdentifier: email || ip,
+          action: 'login_failed',
+          resourceType: 'principal',
+          ipAddress: ip,
+          userAgent,
+        });
         return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
       }
 
@@ -104,12 +127,26 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (principalError || !principal) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'principal',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
     // Dual-verify: bcrypt first, SHA-256 fallback
     const validPassword = await verifyPassword(password, principal.password_hash);
     if (!validPassword) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'principal',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 

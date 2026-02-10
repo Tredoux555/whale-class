@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { getSupabase, getJWTSecret } from '@/lib/story-db';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 // NOTE: Hardcoded plaintext passwords removed in Phase 4 security hardening.
 // All users must authenticate via bcrypt hashes in the story_users table.
@@ -29,6 +31,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
 
+  const supabaseStory = getSupabase();
+  const ip = getClientIP(req.headers);
+  const userAgent = getUserAgent(req.headers);
+
+  // Rate limiting
+  const { allowed, retryAfterSeconds } = await checkRateLimit(
+    supabaseStory, ip, '/api/story/auth', 5, 15
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+    );
+  }
+
   let body;
   try {
     body = await req.json();
@@ -41,9 +58,6 @@ export async function POST(req: NextRequest) {
   if (!username || !password) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
   }
-
-  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-  const userAgent = req.headers.get('user-agent') || 'unknown';
 
   // Database bcrypt authentication (only path)
   try {
@@ -75,6 +89,13 @@ export async function POST(req: NextRequest) {
     console.error('[Auth] DB check failed:', e);
   }
 
+  await logAudit(supabaseStory, {
+    adminIdentifier: username || ip,
+    action: 'login_failed',
+    resourceType: 'story_user',
+    ipAddress: ip,
+    userAgent,
+  });
   return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
 }
 
