@@ -65,12 +65,12 @@ Added `VAULT_PASSWORD_HASH` and `ELEVENLABS_API_KEY` + `ELEVENLABS_VOICE_ID`.
 **Must be set in Railway production (new for Phase 4):**
 ```
 VAULT_PASSWORD_HASH=$2b$10$ECecBvSrgN8mfruLKzvdjehcTXZaQonVkUyriGoIKdZPWHvrixssC
-ELEVENLABS_API_KEY=<new-rotated-key>
+# ELEVENLABS_API_KEY — removed (subscription cancelled)
 ```
 
-**ACTION REQUIRED — Rotate these keys (exposed in git history):**
-- ElevenLabs API key: `sk_4758ce62...` was in 4 committed scripts
+**ACTION REQUIRED — Rotate this key (exposed in git history):**
 - Supabase service role key: was in `scripts/upload-to-supabase.js`
+- ~~ElevenLabs API key~~ — subscription cancelled, scripts deleted, no longer needed
 
 ---
 
@@ -112,7 +112,7 @@ Error: [super-admin-security] SUPER_ADMIN_ENCRYPTION_KEY or MESSAGE_ENCRYPTION_K
 | `VAULT_PASSWORD_HASH` | ✅ Set |
 | `MESSAGE_ENCRYPTION_KEY` | ✅ Set (`change-this-to-32-char-key-12345`) |
 | `TEACHER_ADMIN_PASSWORD` | ✅ Set (was missing!) |
-| `ELEVENLABS_API_KEY` | ⚠️ Not rotated yet — old key still works |
+| `ELEVENLABS_API_KEY` | ❌ Removed — subscription cancelled, scripts deleted |
 
 ---
 

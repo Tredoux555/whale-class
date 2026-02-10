@@ -83,7 +83,7 @@ Claude should then execute this sequence:
 - Fix 9: Created `.env.example` with all required env vars documented
 - Fix 10: Updated CLAUDE.md env vars section (added 11 missing vars)
 - Fix 11: Updated `.env.local` with `VAULT_PASSWORD_HASH` and `ELEVENLABS_API_KEY`
-- **ACTION REQUIRED**: Rotate ElevenLabs API key (exposed in git history) + set `VAULT_PASSWORD_HASH` in Railway
+- ElevenLabs scripts deleted (subscription cancelled) — pre-generated audio files in `/public/audio-new/` still in use
 
 **Phase 4 Post-Audit Fixes (3 issues found, all resolved):**
 - Audit fix 1 (CRITICAL): `deleteSchool()` regression — API route now accepts password from header OR query param
@@ -100,7 +100,7 @@ Claude should then execute this sequence:
 - `VAULT_PASSWORD_HASH` ✅
 - `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` ✅
 - `TEACHER_ADMIN_PASSWORD` ✅ (was missing from Railway)
-- **Still TODO**: Rotate ElevenLabs API key (exposed in git history). Rotate MESSAGE_ENCRYPTION_KEY in Phase 9 with re-encryption migration.
+- **Still TODO**: Rotate MESSAGE_ENCRYPTION_KEY in Phase 9 with re-encryption migration.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
@@ -201,7 +201,6 @@ VAULT_PASSWORD_HASH=...       # REQUIRED — bcrypt hash for vault unlock (vault
 # --- External APIs ---
 ANTHROPIC_API_KEY=...         # Claude API (Guru advisor)
 OPENAI_API_KEY=...            # DALL-E image generation
-ELEVENLABS_API_KEY=...        # TTS for phonics audio (scripts only, not runtime)
 NEXT_PUBLIC_YOUTUBE_API_KEY=... # YouTube Data API
 
 # --- Email ---
