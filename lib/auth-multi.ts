@@ -3,11 +3,13 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 
-const SECRET = process.env.AUTH_SECRET || process.env.ADMIN_SECRET;
-if (!SECRET) {
-  throw new Error('[auth-multi] AUTH_SECRET or ADMIN_SECRET must be set in environment variables');
+function getSecretKey(): Uint8Array {
+  const secret = process.env.AUTH_SECRET || process.env.ADMIN_SECRET;
+  if (!secret) {
+    throw new Error('[auth-multi] AUTH_SECRET or ADMIN_SECRET must be set in environment variables');
+  }
+  return new TextEncoder().encode(secret);
 }
-const SECRET_KEY = new TextEncoder().encode(SECRET);
 
 // User roles
 export type UserRole = 'super_admin' | 'school_admin' | 'teacher' | 'parent';
@@ -102,14 +104,14 @@ export async function createUserToken(user: UserSession): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(SECRET_KEY);
+    .sign(getSecretKey());
   return token;
 }
 
 // JWT Token verification
 export async function verifyUserToken(token: string): Promise<UserSession | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
+    const { payload } = await jwtVerify(token, getSecretKey());
     return {
       userId: payload.userId as string,
       email: payload.email as string,
