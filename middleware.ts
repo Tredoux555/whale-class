@@ -43,6 +43,11 @@ export async function middleware(req: NextRequest) {
     // Redirect to the correct domain
     return NextResponse.redirect(new URL(pathname, 'https://montree.xyz'));
   }
+
+  // Home system temporarily disabled — redirect all /home/* to /montree
+  if (pathname === '/home' || pathname.startsWith('/home/')) {
+    return NextResponse.redirect(new URL('/montree', req.url));
+  }
   
   // Block Whale Class routes on montree.xyz (root page, admin, teacher, games, story)
   if (isMontree && pathname === '/') {

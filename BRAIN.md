@@ -7,9 +7,55 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Codebase health ~9.1/10. Session 161 pushed. Session 162 Chinese Name removal applied locally, pending commit+push.
+**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Session 165 rolled back Session 164. Code is at `bfe1774`. Plan written for proper rebuild against real DB schema.
+
+## ⚠️ CRITICAL RULE — HOME SYSTEM
+
+**NEVER code against migration files. ALWAYS code against `docs/HOME_LIVE_SCHEMA.md`.**
+
+The live database was set up via Supabase UI before the migration files were written. The migrations describe a schema that doesn't exist. `HOME_LIVE_SCHEMA.md` was queried from `information_schema.columns` on the live DB and is the **only** source of truth. This mistake has caused 3 failed rebuilds.
 
 ## Recent Changes
+
+### Session 165 - Feb 9, 2026 (SCHEMA AUDIT + ROLLBACK + PLAN)
+
+**Handoff:** `docs/HANDOFF_SESSION_165_SCHEMA_FIX.md`
+**Revert commit:** `d2f6c0c` — reverted all Session 164 commits. Code restored to `bfe1774`.
+
+**Session 164's complete rebuild failed** — 13 of 16 API routes returned 500 errors on the live site. Root cause: code was written against migration files that don't match the real database. This was the 3rd failed attempt.
+
+**What was done:**
+1. ✅ Diagnosed seed failure (19 columns → 7-column table)
+2. ✅ Diagnosed children creation failure (birth_date NOT NULL, code only sent age)
+3. ✅ Audited all 16 routes — found 13 broken, 5 referenced non-existent tables
+4. ✅ Rolled back all Session 164 commits cleanly to `bfe1774`
+5. ✅ Queried real live DB via `information_schema.columns`
+6. ✅ Saved real schema to `docs/HOME_LIVE_SCHEMA.md`
+7. ✅ Wrote 6-phase implementation plan at `.claude/plans/vivid-pondering-cascade.md`
+
+**Key mismatches discovered:**
+
+| Code assumed | Reality |
+|---|---|
+| Table `home_progress` | `home_child_progress` |
+| `status` TEXT ('not_started') | `status` INTEGER (0,1,2,3) |
+| FK `work_name` (text) | FK `curriculum_work_id` (uuid) |
+| `presented_at` (timestamptz) | `presented_date` (date) |
+| Children needs only `age` | `birth_date` NOT NULL |
+| `home_curriculum` 7 columns | 23 columns |
+| Seed from JSON | Seed from `home_curriculum_master` table |
+| Tables: home_observations, home_media, etc. | Don't exist |
+
+**NEXT SESSION:**
+1. Run 3 pre-flight SQL queries (see handoff)
+2. Execute 6-phase plan: fix curriculum-helpers, children, curriculum, progress routes, frontend, cleanup
+3. All code must match `docs/HOME_LIVE_SCHEMA.md` exactly
+
+### Session 164 - Feb 9, 2026 (MONTREE HOME REBUILD — ❌ ROLLED BACK)
+
+**Status:** REVERTED in Session 165. All code rolled back to `bfe1774`.
+
+**What happened:** Complete rebuild of 16 API routes, 15 pages, 14 components, 693-line migration. Failed on live site because migration files don't match the real database. 13 of 16 routes returned 500 errors. 5 routes referenced tables that don't exist (home_observations, home_media, home_weekly_reports, home_guru_interactions, home_settings).
 
 ### Session 162 - Feb 9, 2026 (GIT PUSH + CHINESE NAME REMOVAL — ⏳ PENDING PUSH)
 

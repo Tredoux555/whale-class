@@ -11,9 +11,6 @@ export default function robots(): MetadataRoute.Robots {
           '/montree/login',
           '/montree/login-select',
           '/montree/parent/login',
-          '/home',
-          '/home/login',
-          '/home/register',
         ],
         disallow: [
           '/admin/',
