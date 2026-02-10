@@ -196,13 +196,7 @@ export default function TryMontreePage() {
                 <span className="text-sm text-purple-100/70 font-normal mt-1 block">I want to set up Montree for my school</span>
               </button>
 
-              <button
-                onClick={() => router.push('/home')}
-                className="w-full px-6 py-5 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-semibold rounded-2xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
-              >
-                <span className="text-lg block">🏠 Parent at Home</span>
-                <span className="text-sm text-orange-100/70 font-normal mt-1 block">I want to teach my child authentic Montessori at home — and learn alongside them</span>
-              </button>
+              {/* Parent at Home button hidden — Home system temporarily disabled */}
             </div>
           </div>
         )}
