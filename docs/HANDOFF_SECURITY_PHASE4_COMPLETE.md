@@ -1,6 +1,6 @@
 # Handoff: Security Hardening Phase 4 — COMPLETE (Feb 10, 2026)
 
-## Status: Phase 4 DONE + Audited. Ready for Phase 5.
+## Status: Phase 4 DONE + Audited + Deployed. Ready for Phase 5.
 
 ---
 
@@ -74,6 +74,48 @@ ELEVENLABS_API_KEY=<new-rotated-key>
 
 ---
 
+## Post-Audit Fixes
+
+### Audit Fix 1 (CRITICAL): deleteSchool regression
+`app/api/montree/super-admin/schools/route.ts` — DELETE handler only read password from query param, but `useLeadOperations.ts` was updated to send it via `x-super-admin-password` header. Fixed to accept from either source.
+
+### Audit Fix 2: MESSAGE_ENCRYPTION_KEY length
+`.env.local` had `"ThisIsA32CharacterSecretKey123!"` which is 31 chars after dotenv strips quotes. The old code silently fell back to `change-this-to-32-char-key-12345`. Set env to match that default for backward compat with existing encrypted messages. Rotate in Phase 9.
+
+### Audit Fix 3: .env.example clarity
+Added "no quotes!" note to MESSAGE_ENCRYPTION_KEY line.
+
+---
+
+## Build Fix: Runtime vs Build-Time Env Vars
+
+Railway build crashed with:
+```
+Error: [super-admin-security] SUPER_ADMIN_ENCRYPTION_KEY or MESSAGE_ENCRYPTION_KEY must be set
+```
+
+**Root cause:** `lib/auth-multi.ts` and `lib/montree/super-admin-security.ts` threw errors at module load time. During Next.js build, env vars are NOT available — only at runtime.
+
+**Fix:** Moved env var validation into lazy getter functions:
+- `lib/auth-multi.ts`: `const SECRET = ...` → `function getSecretKey(): Uint8Array`
+- `lib/montree/super-admin-security.ts`: `const ENCRYPTION_KEY = ...` → `function getEncryptionKey(): string`
+- `lib/message-encryption.ts`: Already used `getKey()` — no change needed
+
+**IMPORTANT PATTERN for future phases:** Never validate `process.env.*` at the top level of a module. Always inside a function.
+
+---
+
+## Railway Env Vars Set
+
+| Variable | Status |
+|----------|--------|
+| `VAULT_PASSWORD_HASH` | ✅ Set |
+| `MESSAGE_ENCRYPTION_KEY` | ✅ Set (`change-this-to-32-char-key-12345`) |
+| `TEACHER_ADMIN_PASSWORD` | ✅ Set (was missing!) |
+| `ELEVENLABS_API_KEY` | ⚠️ Not rotated yet — old key still works |
+
+---
+
 ## What Was NOT Changed (Deferred)
 
 - Rate limiting on auth endpoints — Phase 5
@@ -118,8 +160,9 @@ ELEVENLABS_API_KEY=<new-rotated-key>
 | `scripts/*.js` (5 files) | Hardcoded API keys → env vars with dotenv |
 | `hooks/useLeadOperations.ts` | 870602 → password prop |
 | `app/api/story/auth/route.ts` | Plaintext fallback removed |
-| `lib/auth-multi.ts` | Insecure default → throw |
-| `lib/montree/super-admin-security.ts` | Insecure default → throw |
+| `lib/auth-multi.ts` | Insecure default → lazy `getSecretKey()` with throw |
+| `lib/montree/super-admin-security.ts` | Insecure default → lazy `getEncryptionKey()` with throw |
+| `app/api/montree/super-admin/schools/route.ts` | DELETE accepts password from header OR query param |
 | `lib/message-encryption.ts` | Insecure default → throw |
 | `app/api/story/admin/vault/*/route.ts` (4 files) | Fallback defaults removed |
 | `next.config.ts` | Security headers added |
