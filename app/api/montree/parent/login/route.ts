@@ -8,16 +8,31 @@ import { cookies } from 'next/headers';
 import { getSupabase } from '@/lib/supabase-client';
 import { createParentToken } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword } from '@/lib/montree/password';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    const ip = getClientIP(req.headers);
+    const userAgent = getUserAgent(req.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/parent/login', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { email, password } = await req.json();
-    
+
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
     }
-    
-    const supabase = getSupabase();
     
     // 1. Find parent by email
     const { data: parent, error: parentError } = await supabase
@@ -30,16 +45,37 @@ export async function POST(req: NextRequest) {
       .single();
     
     if (parentError || !parent) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'parent',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
-    
+
     if (!parent.is_active) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'parent',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Account is disabled' }, { status: 401 });
     }
 
     // 2. Verify password (supports both bcrypt and legacy SHA-256)
     const validPassword = await verifyPassword(password, parent.password_hash);
     if (!validPassword) {
+      await logAudit(supabase, {
+        adminIdentifier: email || ip,
+        action: 'login_failed',
+        resourceType: 'parent',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 

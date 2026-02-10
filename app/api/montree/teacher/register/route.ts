@@ -3,6 +3,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { hashPassword } from '@/lib/montree/password';
+import { validatePassword } from '@/lib/password-policy';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 function generateSlug(baseName: string): string {
   // Convert to lowercase, remove special characters, replace spaces with hyphens
@@ -20,6 +23,20 @@ function generateSlug(baseName: string): string {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting (3 attempts per IP per 15 min for registration)
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/teacher/register', 3, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { teacherName, schoolName, email, password } = await request.json();
 
     // Validate
@@ -32,8 +49,16 @@ export async function POST(request: NextRequest) {
     if (!email?.trim()) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
-    if (!password || password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    if (!password) {
+      return NextResponse.json({ error: 'Password is required' }, { status: 400 });
+    }
+
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: `Password does not meet requirements: ${validation.errors.join(', ')}` },
+        { status: 400 }
+      );
     }
 
     // Check if email already exists

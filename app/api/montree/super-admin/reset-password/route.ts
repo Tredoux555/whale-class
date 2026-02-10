@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { hashPassword } from '@/lib/montree/password';
+import { validatePassword } from '@/lib/password-policy';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,8 +19,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'School ID and new password required' }, { status: 400 });
     }
 
-    if (newPassword.length < 4) {
-      return NextResponse.json({ error: 'Password must be at least 4 characters' }, { status: 400 });
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: `Password does not meet requirements: ${validation.errors.join(', ')}` },
+        { status: 400 }
+      );
     }
 
     const passwordHash = await hashPassword(newPassword);

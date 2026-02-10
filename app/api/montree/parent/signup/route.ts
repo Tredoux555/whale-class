@@ -7,20 +7,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { sendWelcomeEmail } from '@/lib/montree/email';
 import { hashPassword } from '@/lib/montree/password';
+import { validatePassword } from '@/lib/password-policy';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    const ip = getClientIP(req.headers);
+    const userAgent = getUserAgent(req.headers);
+
+    // Rate limiting (3 attempts per IP per 15 min for registration)
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/parent/signup', 3, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { invite_code, name, email, password } = await req.json();
-    
+
     if (!invite_code || !name || !email || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: `Password does not meet requirements: ${validation.errors.join(', ')}` },
+        { status: 400 }
+      );
     }
-    
-    const supabase = getSupabase();
     
     // 1. Find and validate invite code
     const { data: invite, error: inviteError } = await supabase

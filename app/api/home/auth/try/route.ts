@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 // Same charset as Montree classroom — no confusing chars (I, L, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -22,6 +24,19 @@ function generateCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(req.headers);
+    const userAgent = getUserAgent(req.headers);
+
+    // Rate limiting (3 attempts per IP per 15 min for registration)
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/home/auth/try', 3, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
 
     // Parse optional name from body
     let familyName = 'My Family';

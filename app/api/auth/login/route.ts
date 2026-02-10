@@ -2,6 +2,9 @@
 // Admin login endpoint for Whale Class admin dashboard
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminToken } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { getSupabase } from '@/lib/supabase-client';
 
 // Build admin credentials from environment (skip accounts with missing passwords)
 function getAdminCredentials() {
@@ -17,10 +20,32 @@ function getAdminCredentials() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/auth/login', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { username, password } = await request.json();
 
     // Reject empty passwords outright
     if (!password) {
+      await logAudit(supabase, {
+        adminIdentifier: username || ip,
+        action: 'login_failed',
+        resourceType: 'admin',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -33,6 +58,13 @@ export async function POST(request: NextRequest) {
     );
 
     if (!isValid) {
+      await logAudit(supabase, {
+        adminIdentifier: username || ip,
+        action: 'login_failed',
+        resourceType: 'admin',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }

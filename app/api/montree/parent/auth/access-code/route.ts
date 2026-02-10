@@ -8,10 +8,26 @@ import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
 import { createParentToken } from '@/lib/montree/server-auth';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/parent/auth/access-code', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { code } = await request.json();
 
     if (!code || code.length < 4) {
@@ -43,6 +59,13 @@ export async function POST(request: NextRequest) {
 
     if (inviteError || !invite) {
       console.error('Invite lookup error:', inviteError);
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'parent_access_code',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({
         success: false,
         error: 'Invalid access code. Please check and try again.'
@@ -51,6 +74,13 @@ export async function POST(request: NextRequest) {
 
     // Check if code is expired
     if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'parent_access_code',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({
         success: false,
         error: 'This access code has expired. Please contact your teacher for a new code.'
@@ -59,6 +89,13 @@ export async function POST(request: NextRequest) {
 
     // Check max uses only if max_uses is set (not unlimited/null)
     if (invite.max_uses !== null && invite.use_count >= invite.max_uses) {
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'parent_access_code',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({
         success: false,
         error: 'This access code has reached its use limit. Please contact your teacher for a new code.'
@@ -74,6 +111,13 @@ export async function POST(request: NextRequest) {
 
     if (childError || !child) {
       console.error('Child lookup error:', childError);
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'parent_access_code',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({
         success: false,
         error: 'Could not find child record. Please contact your teacher.'

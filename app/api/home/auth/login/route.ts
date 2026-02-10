@@ -5,9 +5,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
+    const ip = getClientIP(request.headers);
+    const userAgent = getUserAgent(request.headers);
+
+    // Rate limiting
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/home/auth/login', 5, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+
     const { code } = await request.json();
 
     if (!code?.trim()) {
@@ -24,8 +41,6 @@ export async function POST(request: NextRequest) {
     if (!VALID_CODE.test(cleaned)) {
       return NextResponse.json({ error: 'Code contains invalid characters' }, { status: 400 });
     }
-
-    const supabase = getSupabase();
 
     // Try legacy SHA-256 lookup first (old accounts)
     const codeHash = legacySha256(cleaned);
@@ -52,6 +67,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!family) {
+      await logAudit(supabase, {
+        adminIdentifier: ip,
+        action: 'login_failed',
+        resourceType: 'home_family',
+        ipAddress: ip,
+        userAgent,
+      });
       return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
     }
 

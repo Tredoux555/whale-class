@@ -109,16 +109,29 @@ export default function SuperAdminPage() {
   }, [authenticated, trackActivity]);
 
   const handleLogin = async () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setAuthenticated(true);
-      setLastActivity(Date.now());
-      await logAction('login_success');
-      adminData.fetchSchools();
-      adminData.fetchFeedback();
-      adminData.fetchLeads();
-    } else {
-      await logAction('login_failed', { attempted: true });
-      setError('Invalid password');
+    try {
+      // Phase 5: Server-side authentication (replaces client-side NEXT_PUBLIC_ADMIN_PASSWORD check)
+      const res = await fetch('/api/montree/super-admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      if (res.ok) {
+        setAuthenticated(true);
+        setLastActivity(Date.now());
+        await logAction('login_success');
+        adminData.fetchSchools();
+        adminData.fetchFeedback();
+        adminData.fetchLeads();
+      } else if (res.status === 429) {
+        setError('Too many attempts. Please try again later.');
+      } else {
+        await logAction('login_failed', { attempted: true });
+        setError('Invalid password');
+      }
+    } catch {
+      setError('Login failed. Please try again.');
     }
   };
 
