@@ -89,7 +89,18 @@ Claude should then execute this sequence:
 - Audit fix 1 (CRITICAL): `deleteSchool()` regression — API route now accepts password from header OR query param
 - Audit fix 2: `MESSAGE_ENCRYPTION_KEY` was 31 chars (quotes stripped by dotenv) → set to old default `change-this-to-32-char-key-12345` for backward compat with existing encrypted messages
 - Audit fix 3: `.env.example` updated — added "no quotes!" note for MESSAGE_ENCRYPTION_KEY
-- **ACTION REQUIRED**: Set `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` in Railway (must match existing encrypted data). Rotate to strong key in Phase 9 with re-encryption migration.
+
+**Phase 4 Build Fix:**
+- Railway build crashed because `lib/auth-multi.ts` and `lib/montree/super-admin-security.ts` threw at module-load time (env vars aren't available during Next.js build)
+- Fix: moved env var checks into lazy getter functions (`getSecretKey()`, `getEncryptionKey()`) — checks now run at runtime, not import time
+- `lib/message-encryption.ts` was already correct (used `getKey()` from the start)
+- **IMPORTANT PATTERN**: Never validate `process.env.*` at the top level of a module — always inside a function
+
+**Railway env vars set during Phase 4 deployment:**
+- `VAULT_PASSWORD_HASH` ✅
+- `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` ✅
+- `TEACHER_ADMIN_PASSWORD` ✅ (was missing from Railway)
+- **Still TODO**: Rotate ElevenLabs API key (exposed in git history). Rotate MESSAGE_ENCRYPTION_KEY in Phase 9 with re-encryption migration.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
