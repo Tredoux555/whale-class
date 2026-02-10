@@ -162,6 +162,6 @@ export async function DELETE(req: NextRequest) {
   }
   // Phase 7: Clear HttpOnly cookie on logout
   const response = NextResponse.json({ success: true });
-  response.cookies.delete('story-admin-token');
+  response.cookies.delete({ name: 'story-admin-token', path: '/' });
   return response;
 }
