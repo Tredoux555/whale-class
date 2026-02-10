@@ -1,0 +1,249 @@
+═══════════════════════════════════════════════════════════════════════════════
+SECURITY AUDIT PHASE 4 — QUICK FINDINGS SUMMARY (Feb 10, 2026)
+═══════════════════════════════════════════════════════════════════════════════
+
+CRITICAL ISSUES (Fix Immediately)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. 🔴 MONTREE SYSTEM: ZERO AUDIT LOGGING
+   ────────────────────────────────────────
+   ✅ Story: Has login tracking (story_login_logs table)
+   ❌ Montree: Has NOTHING except last_login_at timestamp
+
+   NOT LOGGED in Montree:
+   • Teacher logins, password changes, failed attempts
+   • Teacher data mutations (add/delete children, create works, delete curriculum)
+   • Parent logins, access to child data
+   • Principal/admin actions (school creation, impersonation)
+   • ALL sensitive operations (photo uploads, report publishing, Guru AI access)
+
+   Files with NO logging:
+   /api/montree/auth/teacher/route.ts
+   /api/montree/parent/login/route.ts
+   /api/montree/parent/auth/access-code/route.ts
+   /api/montree/principal/login/route.ts
+   /api/montree/auth/set-password/route.ts
+   /api/montree/super-admin/login-as/route.ts
+   /api/montree/curriculum/delete/route.ts
+   (and 30+ other mutation endpoints)
+
+   Impact: No way to investigate security incidents, data tampering, or breaches
+
+2. 🔴 WEAK SECRETS IN PRODUCTION
+   ────────────────────────────────
+   Current values in .env.local (should NOT match production):
+
+   ADMIN_SECRET = "whale-class-secret-change-in-production"  ← Placeholder!
+   ADMIN_PASSWORD = "870602"  ← Simple 6-digit number
+   SUPER_ADMIN_PASSWORD = "870602"  ← Simple 6-digit number
+   TEACHER_ADMIN_PASSWORD = "Potato"  ← Dictionary word
+   VAULT_PASSWORD = "zoemylove"  ← Dictionary phrase
+   MESSAGE_ENCRYPTION_KEY = "ThisIsA32CharacterSecretKey123!"  ← Obvious placeholder
+
+   Recommendation: Generate random 32+ byte secrets for production
+
+3. 🔴 ENVIRONMENT VARIABLE EXPOSED IN CLIENT CODE
+   ───────────────────────────────────────────────
+   File: /app/montree/super-admin/page.tsx (line 112)
+
+   if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD)
+
+   Problem: NEXT_PUBLIC_* variables appear in browser bundles
+   Impact: Super-admin password visible in JavaScript source/bundle
+
+   Fix: Move password check to server-side endpoint (return JWT instead)
+
+4. 🔴 FAILED LOGIN ATTEMPTS NOT TRACKED
+   ────────────────────────────────────
+   No logging for:
+   • Invalid codes
+   • Invalid email/password combinations
+   • Brute force attempts
+   • Suspicious patterns
+
+   Endpoints vulnerable to brute force:
+   /api/montree/auth/teacher/ (6-digit code = 1M possibilities)
+   /api/montree/parent/auth/access-code/ (no rate limiting)
+   /api/montree/principal/login/ (email+password, no rate limiting)
+
+   Recommendation: Log all failed attempts with IP, user-agent, timestamp
+
+5. 🔴 MISSING ENVIRONMENT VARIABLES IN DOCUMENTATION
+   ──────────────────────────────────────────────────
+
+   Found in code but NOT in CLAUDE.md:
+   • ANTHROPIC_API_KEY (Guru system)
+   • STORY_ADMIN_JWT_SECRET (Story admin auth)
+   • AUTH_SECRET (auth system)
+   • MONTREE_JWT_SECRET (JWT creation)
+   • NEXT_PUBLIC_ADMIN_PASSWORD (super-admin page)
+   • DATABASE_URL (Supabase connection)
+   • Stripe variables (3 price IDs + webhook secret)
+   • OPENAI_API_KEY (image generation)
+   • RESEND_FROM_EMAIL (email config)
+
+   Risk: Railway production may not have these set!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+HIGH PRIORITY ISSUES
+═══════════════════════════════════════════════════════════════════════════════
+
+6. 🟠 PASSWORD CHANGES UNAUDITED
+   ─────────────────────────────
+   File: /api/montree/auth/set-password/route.ts
+
+   No logging of:
+   • Who changed the password
+   • When it was changed
+   • What the old password was
+   • Whether it succeeded or failed
+
+   Recommendation: Log to montree_audit_logs before/after update
+
+7. 🟠 HARDCODED FALLBACK CREDENTIALS
+   ────────────────────────────────
+   Files:
+   /app/api/story/auth/route.ts (lines 6-8)
+   /app/api/story/admin/auth/route.ts (lines 6-8)
+
+   USER_PASSWORDS = {
+     'T': 'redoux',
+     'Z': 'oe'
+   }
+
+   Problem: Backup passwords in production code
+   Impact: If DB fails, these hardcoded passwords work
+
+   Recommendation: Remove or move to env vars only
+
+8. 🟠 SUPER-ADMIN AUDIT ENDPOINT NOT IMPLEMENTED
+   ──────────────────────────────────────────────
+   File: /app/montree/super-admin/page.tsx (line 47)
+
+   Code tries to POST to: /api/montree/super-admin/audit
+
+   Result: ❌ Endpoint doesn't exist (404 error)
+   Result: ❌ No table to store audit logs
+
+   Recommendation: Create table + implement endpoint
+
+═══════════════════════════════════════════════════════════════════════════════
+
+MEDIUM PRIORITY ISSUES
+═══════════════════════════════════════════════════════════════════════════════
+
+9. 🟡 PASSWORD IN DATABASE CONNECTION STRING
+   ──────────────────────────────────────────
+   File: .env.local (line 15)
+
+   DATABASE_URL=postgresql://postgres...8706025176086@...
+
+   Problem: Actual database password in env file
+
+   Recommendation: Rotate that password; use service role for connections
+
+10. 🟡 STRIPE CONFIGURATION MISSING
+    ───────────────────────────────
+    File: .env.stripe.example exists but not loaded in main .env.local
+
+    Vars needed: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, 3 price IDs
+
+    Recommendation: Merge .env.stripe.example → CLAUDE.md documentation
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STORY SYSTEM STATUS (Partial Logging)
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ WHAT'S LOGGED:
+   • User login: story_login_logs (username, login_at, ip, user_agent, token)
+   • Admin login: story_admin_login_logs (same schema)
+   • Message history: story_message_history (content, author, timestamp)
+
+❌ GAPS:
+   • Failed login attempts (no 401s logged)
+   • Admin actions (no delete/modify logging)
+   • Sensitive operations (no audit trail)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+ENVIRONMENT VARIABLE SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTED (in CLAUDE.md):
+  ✅ ADMIN_PASSWORD
+  ✅ ADMIN_SECRET (noted as WEAK)
+  ✅ SUPER_ADMIN_PASSWORD
+  ✅ TEACHER_ADMIN_PASSWORD
+  ✅ STORY_JWT_SECRET
+  ✅ Supabase variables
+  ✅ RESEND_API_KEY
+  ✅ VAULT_PASSWORD (noted as WEAK)
+  ✅ MESSAGE_ENCRYPTION_KEY
+
+NOT DOCUMENTED (missing from CLAUDE.md):
+  ❌ ANTHROPIC_API_KEY (used in Guru)
+  ❌ STORY_ADMIN_JWT_SECRET
+  ❌ AUTH_SECRET
+  ❌ MONTREE_JWT_SECRET
+  ❌ NEXT_PUBLIC_ADMIN_PASSWORD (used in client!)
+  ❌ DATABASE_URL (contains password!)
+  ❌ OPENAI_API_KEY
+  ❌ RESEND_FROM_EMAIL
+  ❌ Stripe variables (4 vars)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 4 ACTION ITEMS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ⚠️ CREATE AUDIT LOGGING
+   • New table: montree_audit_logs
+   • Log all auth endpoints (login, logout, password change, failed attempts)
+   • Log all data mutations (create, update, delete)
+   • Log sensitive access (parent viewing child, admin actions)
+
+2. ⚠️ FIX ENVIRONMENT VARIABLES
+   • Update CLAUDE.md with all 28 vars + production notes
+   • Generate strong random secrets for production
+   • Remove NEXT_PUBLIC_ADMIN_PASSWORD from client code
+
+3. ⚠️ MOVE PASSWORD CHECK TO SERVER
+   • /app/montree/super-admin/page.tsx → remove client-side check
+   • Create /api/montree/super-admin/auth/route.ts endpoint
+   • Return JWT token instead of storing password in browser
+
+4. ⚠️ ADD FAILED LOGIN TRACKING
+   • All auth endpoints: log failed attempts with IP+user-agent
+   • Consider rate limiting (not yet implemented)
+
+5. ⚠️ REMOVE HARDCODED CREDENTIALS
+   • /app/api/story/auth/route.ts → remove USER_PASSWORDS or move to env
+   • /app/api/story/admin/auth/route.ts → remove ADMIN_USERS or move to env
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FILES AFFECTED
+═══════════════════════════════════════════════════════════════════════════════
+
+Review/Update:
+  • CLAUDE.md (environment variables section)
+  • .env.local (regenerate secrets)
+  • /app/api/montree/auth/*.ts (add failed login logging)
+  • /app/api/montree/parent/*.ts (add failed login logging)
+  • /app/api/montree/principal/*.ts (add failed login logging)
+  • /app/api/montree/auth/set-password/route.ts (add audit logging)
+  • /app/montree/super-admin/page.tsx (move password check)
+  • /app/api/story/auth/route.ts (remove hardcoded fallbacks)
+
+Create New:
+  • migrations/XXX_montree_audit_logs.sql
+  • /api/montree/super-admin/audit/route.ts
+  • /api/montree/super-admin/auth/route.ts (server-side password check)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FULL DETAILS: See SECURITY_AUDIT_PHASE4_FINDINGS.md
+
+═══════════════════════════════════════════════════════════════════════════════
