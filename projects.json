@@ -1,0 +1,157 @@
+{
+  "owner": "Tredoux",
+  "lastUpdated": "2026-02-10",
+  "commandCenterUrl": "TBD",
+  
+  "projects": {
+    "montree": {
+      "name": "Montree",
+      "tagline": "Montessori Classroom Management",
+      "domain": "montree.xyz",
+      "status": "live",
+      "color": "#2DD4A8",
+      "description": "Modern classroom management tool built for Montessori educators. Track student progress, manage curriculum, and plan lessons.",
+      "infrastructure": {
+        "hosting": "Railway",
+        "dns": "Cloudflare",
+        "registrar": "GoDaddy",
+        "repo": "whale (private)",
+        "deployment": "Auto-deploy from main branch"
+      },
+      "socials": {
+        "youtube": {
+          "handle": "@montreexyz",
+          "url": "https://youtube.com/@montreexyz",
+          "channelId": "UCMwrqNTlotD1Q1Bie9iwVIg",
+          "status": "created",
+          "setupDate": "2026-02-10",
+          "notes": "Profile pic set (green M icon), description added, website link added, banner generated (pending upload)"
+        },
+        "facebook": {
+          "handle": null,
+          "url": null,
+          "status": "not_created",
+          "notes": "Pending creation"
+        },
+        "instagram": {
+          "handle": null,
+          "url": null,
+          "status": "not_created",
+          "notes": "Pending creation"
+        },
+        "tiktok": {
+          "handle": null,
+          "url": null,
+          "status": "not_created",
+          "notes": "Pending creation"
+        },
+        "twitter": {
+          "handle": null,
+          "url": null,
+          "status": "not_created",
+          "notes": "Optional - consider for educator community"
+        },
+        "linkedin": {
+          "handle": null,
+          "url": null,
+          "status": "not_created",
+          "notes": "Optional - could be good for B2B school partnerships"
+        }
+      },
+      "emails": {
+        "primary": "hello@montree.xyz",
+        "support": null,
+        "noreply": "noreply@montree.xyz"
+      },
+      "seo": {
+        "googleSearchConsole": "verified",
+        "sitemap": "live",
+        "robots": "live",
+        "indexingRequested": "2026-02-08"
+      },
+      "brain": {
+        "file": "brain.json",
+        "currentSession": 160,
+        "lastUpdated": "2026-02-09"
+      },
+      "assets": {
+        "logo": "public/og-image.png",
+        "icon": "public/montree-yt-icon.png",
+        "banner": "public/montree-yt-banner.png"
+      }
+    },
+    
+    "jeffy": {
+      "name": "Jeffy",
+      "tagline": "TBD",
+      "domain": null,
+      "status": "active",
+      "color": "#F59E0B",
+      "description": "Details to be filled in.",
+      "infrastructure": {
+        "hosting": null,
+        "dns": null,
+        "registrar": null,
+        "repo": null,
+        "deployment": null
+      },
+      "socials": {
+        "youtube": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "facebook": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "instagram": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "tiktok": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "twitter": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "linkedin": { "handle": null, "url": null, "status": "not_created", "notes": "" }
+      },
+      "emails": {
+        "primary": null
+      },
+      "brain": {
+        "file": null,
+        "currentSession": null,
+        "lastUpdated": null
+      },
+      "assets": {}
+    },
+    
+    "sentinel": {
+      "name": "Project Sentinel",
+      "tagline": "TBD",
+      "domain": null,
+      "status": "planning",
+      "color": "#8B5CF6",
+      "description": "Upcoming project - details to be defined.",
+      "infrastructure": {
+        "hosting": null,
+        "dns": null,
+        "registrar": null,
+        "repo": null,
+        "deployment": null
+      },
+      "socials": {
+        "youtube": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "facebook": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "instagram": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "tiktok": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "twitter": { "handle": null, "url": null, "status": "not_created", "notes": "" },
+        "linkedin": { "handle": null, "url": null, "status": "not_created", "notes": "" }
+      },
+      "emails": {
+        "primary": null
+      },
+      "brain": {
+        "file": null,
+        "currentSession": null,
+        "lastUpdated": null
+      },
+      "assets": {}
+    }
+  },
+  
+  "globalNotes": [
+    "Each project should have consistent social presence across YouTube, Facebook, Instagram, TikTok",
+    "Use Cloudflare for DNS on all domains",
+    "hello@[domain] as primary contact email pattern",
+    "Brain files track session progress and handoffs"
+  ]
+}
