@@ -38,14 +38,16 @@ Deploy: Railway auto-deploys on push to `main`
 When starting a new chat, say: **"Run the Phase 5 fresh audit command from CLAUDE.md"**
 
 Claude should then execute this sequence:
-1. Read `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` for context on what's already done
+1. Read `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` and `docs/HANDOFF_SESSION_PHASE4_DEPLOY.md` for context
 2. Run a comprehensive security audit of the CURRENT codebase covering:
+   - **CRITICAL: Super-admin login uses `NEXT_PUBLIC_ADMIN_PASSWORD` (client-side!)** — `app/montree/super-admin/page.tsx` line 112 exposes password to browser. Must move to server-side auth API call.
    - Audit all auth endpoints for rate limiting (there is none currently)
    - Check password policy (min length, complexity, common passwords)
    - Check for missing input validation/sanitisation across API routes (no zod/joi)
    - Check for XSS vectors in any server-rendered content (document.write in 5 print components)
    - Check Montree system for audit logging gaps (Story has logging; Montree has none)
    - Verify all Railway production env vars match `.env.example`
+   - **Pattern reminder:** Never validate `process.env.*` at the top level of a module — always inside a function (see Build Fix in Phase 4 handoff)
 3. Produce findings ranked by severity
 4. Build Phase 5 plan using the 3-round plan→audit→refine cycle
 5. Present plan for approval before implementing
@@ -69,7 +71,13 @@ Claude should then execute this sequence:
 
 ---
 
-### Recent Changes (Security Hardening, Feb 10)
+### Recent Changes (Security Hardening + Cleanup, Feb 10)
+
+**ElevenLabs Cleanup (subscription cancelled):**
+- Deleted 4 scripts: `generate-elevenlabs-audio.js`, `regenerate-audio.js`, `regenerate-audio-charlotte.js`, `regenerate-all-audio-charlotte.js`
+- Removed `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` from `.env.local`, `.env.example`, CLAUDE.md, Railway
+- Pre-generated audio files in `/public/audio-new/` remain — still used by sound games
+- Reference docs in `/docs/` and `/public/audio-new/` left as historical context
 
 **Phase 4 — Secret Rotation & Env Hardening (12 fixes across ~20 files):**
 - Fix 1: Removed hardcoded ElevenLabs API key from 4 scripts → `process.env.ELEVENLABS_API_KEY`
