@@ -13,9 +13,9 @@ Deploy: Railway auto-deploys on push to `main`
 
 ## CURRENT STATUS (Feb 11, 2026)
 
-### Security Hardening — Phase 6 COMPLETE, Phase 7 Next
+### Security Hardening — Phase 7 COMPLETE, Phase 8 Next
 
-9-phase security hardening project in progress. Phases 1–6 done.
+9-phase security hardening project in progress. Phases 1–7 done.
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -26,31 +26,32 @@ Deploy: Railway auto-deploys on push to `main`
 | 4 | Secret rotation & env hardening (12 fixes across ~20 files) | ✅ Done + Audited |
 | 5 | Password policy & rate limiting (23 files, 1123 insertions) | ✅ Done |
 | 6 | Input sanitisation & CSP headers (17 files) | ✅ Done |
-| 7 | Session management improvements | 🔜 Next |
-| 8 | Logging & monitoring | Pending |
+| 7 | Session management (timing-safe auth, HttpOnly cookies, CSRF) | ✅ Done |
+| 8 | Logging & monitoring | 🔜 Next |
 | 9 | Production security review (final) | Pending |
 
 **Handoff docs:**
 - `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md`
 - `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md`
+- `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md`
 
-**Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`
+**Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`
 
-### 🔧 FRESH AUDIT COMMAND (Phase 7)
+### 🔧 FRESH AUDIT COMMAND (Phase 8)
 
-When starting a new chat, say: **"Run the Phase 7 fresh audit command from CLAUDE.md"**
+When starting a new chat, say: **"Run the Phase 8 fresh audit command from CLAUDE.md"**
 
 Claude should then execute this sequence:
-1. Read `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md` for context
+1. Read `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` for context
 2. Run a comprehensive security audit of the CURRENT codebase covering:
-   - Session management: token expiration, refresh, logout
-   - Cookie security (HttpOnly, Secure, SameSite)
-   - CSRF protection
-   - Any remaining auth gaps
+   - Logging & monitoring: audit trails, error logging, security event tracking
+   - Missing or inconsistent logging across auth endpoints
+   - Sensitive data exposure in logs
    - **Pattern reminder:** Never validate `process.env.*` at the top level of a module — always inside a function (see Build Fix in Phase 4 handoff)
    - **Pattern reminder:** Rate limiter is DB-backed (survives Railway restarts); always fail open with try/catch
+   - **Pattern reminder:** Fire-and-forget audit logging — security logging should never throw or block auth flow
 3. Produce findings ranked by severity
-4. Build Phase 7 plan using the 3-round plan→audit→refine cycle
+4. Build Phase 8 plan using the 3-round plan→audit→refine cycle
 5. Present plan for approval before implementing
 
 ### Other Open Items
@@ -382,7 +383,10 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` | **CURRENT** — Security Phase 4 complete, all fixes listed, Phase 5 next steps |
+| `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` | **CURRENT** — Security Phase 7 complete, session management improvements |
+| `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md` | Security Phase 6 complete, input sanitisation & CSP |
+| `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` | Security Phase 4 complete, all fixes listed |
+| `.claude/plans/phase7-plan-v3.md` | Phase 7 execution plan (3 rounds of audit refinement) |
 | `.claude/plans/phase4-plan-v3.md` | Phase 4 execution plan (3 rounds of audit refinement) |
 | `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | Security Phase 3 complete, all fixes listed |
 | `.claude/plans/phase3-plan-v3.md` | Phase 3 execution plan (3 rounds of audit refinement) |

@@ -55,8 +55,14 @@ export async function verifySchoolRequest(
     );
   }
 
-  // Migration fallback: Accept x-school-id header temporarily
-  // TODO: Remove this fallback after all clients are updated to send Bearer tokens
+  // SECURITY DEBT (Phase 7): This fallback accepts x-school-id header without JWT verification.
+  // It returns userId: 'legacy' and role: 'teacher' — effectively bypassing auth.
+  // CANNOT remove until these 7 frontend pages migrate to Bearer token auth:
+  //   - app/montree/admin/page.tsx, settings/page.tsx, students/page.tsx, activity/page.tsx, import/page.tsx
+  //   - app/montree/dashboard/students/page.tsx, [childId]/layout.tsx
+  // The token is stored in React state (not localStorage) and lost on page refresh,
+  // which is why these pages fall back to x-school-id.
+  // TODO: Store Montree JWT in localStorage or HttpOnly cookie, then remove this fallback.
   const schoolId = request.headers.get('x-school-id');
   if (schoolId) {
     console.warn(
@@ -100,7 +106,7 @@ export async function getSchoolIdFromRequest(
     }
   }
 
-  // Fallback: x-school-id header
+  // SECURITY DEBT (Phase 7): Same x-school-id fallback — see verifySchoolRequest above.
   const schoolId = request.headers.get('x-school-id');
   if (schoolId) {
     return { schoolId };

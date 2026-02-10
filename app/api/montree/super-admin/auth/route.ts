@@ -3,6 +3,7 @@
 // Replaces client-side password comparison in page.tsx
 
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -47,7 +48,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Not configured' }, { status: 500 });
     }
 
-    if (password !== expectedPassword) {
+    // Phase 7: Timing-safe comparison to prevent timing attacks
+    const passwordMatch = (() => {
+      try {
+        const a = Buffer.from(password.padEnd(64, '\0'));
+        const b = Buffer.from(expectedPassword.padEnd(64, '\0'));
+        return timingSafeEqual(a, b);
+      } catch {
+        return false;
+      }
+    })();
+    if (!passwordMatch) {
       // Log failed attempt (non-blocking)
       try {
         const supabase = getSupabase();

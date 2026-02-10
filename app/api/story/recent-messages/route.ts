@@ -12,10 +12,11 @@ function getJWTSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-async function verifyToken(authHeader: string | null): Promise<string | null> {
-  if (!authHeader) return null;
+// Phase 7: Accept token from Authorization header or HttpOnly cookie
+async function verifyToken(authHeader: string | null, cookieToken?: string | null): Promise<string | null> {
+  const token = authHeader ? authHeader.replace('Bearer ', '') : (cookieToken || null);
+  if (!token) return null;
   try {
-    const token = authHeader.replace('Bearer ', '');
     const { payload } = await jwtVerify(token, getJWTSecret());
     return payload.username as string;
   } catch {
@@ -25,7 +26,10 @@ async function verifyToken(authHeader: string | null): Promise<string | null> {
 
 export async function GET(req: NextRequest) {
   try {
-    const username = await verifyToken(req.headers.get('authorization'));
+    const username = await verifyToken(
+      req.headers.get('authorization'),
+      req.cookies.get('story-admin-token')?.value
+    );
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
