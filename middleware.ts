@@ -81,7 +81,13 @@ export async function middleware(req: NextRequest) {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
     const origin = req.headers.get('origin');
     if (origin) {
-      const requestHost = req.headers.get('host')?.split(':')[0] || '';
+      let requestHost = '';
+      try {
+        // Use URL parser for both sides to handle IPv6 brackets correctly
+        requestHost = new URL(`https://${req.headers.get('host') || ''}`).hostname;
+      } catch {
+        requestHost = req.headers.get('host')?.split(':')[0] || '';
+      }
       try {
         const originHostname = new URL(origin).hostname;
         if (originHostname !== requestHost) {

@@ -81,11 +81,28 @@ Audit found no sensitive data in console.log calls. No action needed.
 - Test Story admin login flow — should set both JSON response and cookie
 - Test Story admin logout — should clear cookie
 
+## Post-Implementation Audit Fixes
+Three issues found and fixed in audit:
+
+1. **IPv6 hostname comparison** — CSRF Origin check used `.split(':')[0]` which breaks on IPv6 brackets `[::1]`. Fixed to use `new URL()` parser for both sides, which normalizes IPv6 correctly.
+2. **Unicode password buffer** — `padEnd(64)` pads to 64 characters not bytes; unicode chars are multi-byte in UTF-8 causing Buffer length mismatch in `timingSafeEqual()`. Fixed to use `Buffer.alloc(256, 0)` + `.write(password, 'utf8')` for consistent byte-length buffers.
+3. **Cookie delete path** — Story admin logout `cookies.delete('story-admin-token')` was missing explicit `path: '/'` to match the set call. Fixed for consistency.
+
+### Audit Findings Dismissed (By Design)
+- Bearer token priority over cookie: Intentional — frontend sends Bearer, cookie is new fallback
+- Incomplete logout across systems: `/api/auth/logout` = main admin, Story admin DELETE = separate
+- Username in GET response: Frontend needs it for display
+- Missing Origin = allowed: Same-origin + non-browser clients, SameSite=lax provides coverage
+- 9 Story admin routes missing cookie: Intentional scope — frontend still uses Bearer tokens
+- `/api/montree/messages` + `/api/montree/curriculum/generate-description` length validation: Already tracked from Phase 6 audit
+
 ## Security Debt Tracked for Phase 8+
 1. **x-school-id → Bearer migration** (7 frontend pages, requires storing JWT in localStorage or cookie)
 2. **Teacher/Principal token → HttpOnly cookie** (requires frontend Bearer→cookie migration)
 3. **Home auth session management** (deferred until Home 500 error fixed)
 4. **Token refresh mechanism** (7-day expiry + rate limiting acceptable for now)
+5. **Story admin cookie fallback expansion** (9 more routes in `/api/story/admin/*` use Bearer-only via `lib/story-db.ts`)
+6. **Missing length validation** on `/api/montree/messages` (messageText, subject) and `/api/montree/curriculum/generate-description` (work_name)
 
 ## Remaining Phases
 - Phase 8: Logging & monitoring

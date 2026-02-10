@@ -49,11 +49,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Phase 7: Timing-safe comparison to prevent timing attacks
+    // Use Buffer.alloc with fixed byte size to handle unicode correctly
     const passwordMatch = (() => {
       try {
-        const a = Buffer.from(password.padEnd(64, '\0'));
-        const b = Buffer.from(expectedPassword.padEnd(64, '\0'));
-        return timingSafeEqual(a, b);
+        const aBuf = Buffer.alloc(256, 0);
+        const bBuf = Buffer.alloc(256, 0);
+        aBuf.write(password, 'utf8');
+        bBuf.write(expectedPassword, 'utf8');
+        return timingSafeEqual(aBuf, bBuf);
       } catch {
         return false;
       }
