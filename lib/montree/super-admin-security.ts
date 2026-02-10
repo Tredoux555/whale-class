@@ -8,11 +8,15 @@ import crypto from 'crypto';
 // CONFIGURATION
 // ============================================
 
-const ENCRYPTION_KEY = process.env.SUPER_ADMIN_ENCRYPTION_KEY || process.env.MESSAGE_ENCRYPTION_KEY;
-if (!ENCRYPTION_KEY) {
-  throw new Error('[super-admin-security] SUPER_ADMIN_ENCRYPTION_KEY or MESSAGE_ENCRYPTION_KEY must be set');
-}
 const ALGORITHM = 'aes-256-gcm';
+
+function getEncryptionKey(): string {
+  const key = process.env.SUPER_ADMIN_ENCRYPTION_KEY || process.env.MESSAGE_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error('[super-admin-security] SUPER_ADMIN_ENCRYPTION_KEY or MESSAGE_ENCRYPTION_KEY must be set');
+  }
+  return key;
+}
 
 // ============================================
 // ENCRYPTION UTILITIES
@@ -20,7 +24,7 @@ const ALGORITHM = 'aes-256-gcm';
 
 export function encrypt(text: string): string {
   const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const key = crypto.scryptSync(getEncryptionKey(), 'salt', 32);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
   let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -37,7 +41,7 @@ export function decrypt(encryptedText: string): string {
 
   const iv = Buffer.from(ivHex, 'hex');
   const authTag = Buffer.from(authTagHex, 'hex');
-  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const key = crypto.scryptSync(getEncryptionKey(), 'salt', 32);
 
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
