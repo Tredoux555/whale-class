@@ -19,6 +19,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom ID and name required' }, { status: 400 });
     }
 
+    // Phase 6: Input length limits
+    if (name && name.length > 200) {
+      return NextResponse.json({ error: 'Name too long' }, { status: 400 });
+    }
+    if (notes && notes.length > 5000) {
+      return NextResponse.json({ error: 'Notes too long' }, { status: 400 });
+    }
+
     // Verify classroom exists
     const { data: classroom, error: classroomError } = await supabase
       .from('montree_classrooms')

@@ -1,4 +1,5 @@
 import { Card } from './types';
+import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 
 // Constants for card dimensions (in cm)
 const A4_WIDTH_CM = 21;
@@ -24,23 +25,23 @@ const createCardHTML = ({ card, type }: CreateCardHTMLParams): string => {
     return `
       <div class="card card-control">
         <div class="image-area">
-          <img src="${card.croppedImage}" alt="${card.label}">
+          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
         </div>
-        <div class="label-area">${card.label}</div>
+        <div class="label-area">${escapeHtml(card.label)}</div>
       </div>
     `;
   } else if (type === 'picture') {
     return `
       <div class="card card-picture">
         <div class="image-area">
-          <img src="${card.croppedImage}" alt="${card.label}">
+          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
         </div>
       </div>
     `;
   } else {
     return `
       <div class="card card-label-only">
-        <div class="label-area" style="flex: 1;">${card.label}</div>
+        <div class="label-area" style="flex: 1;">${escapeHtml(card.label)}</div>
       </div>
     `;
   }
@@ -458,7 +459,7 @@ export const generateLargeCards = ({
           ${pageCards.map(card => `
             <div class="image-box">
               <div class="image-inner">
-                <img src="${card.croppedImage}" alt="${card.label}">
+                <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
               </div>
             </div>
           `).join('')}

@@ -47,6 +47,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Phase 6: Input length limits
+    if (message && message.length > 10000) {
+      return NextResponse.json({ error: 'Message too long' }, { status: 400 });
+    }
+    if (user_name && user_name.length > 200) {
+      return NextResponse.json({ error: 'Name too long' }, { status: 400 });
+    }
+    if (page_url && page_url.length > 2000) {
+      return NextResponse.json({ error: 'URL too long' }, { status: 400 });
+    }
+
     // Insert feedback
     const { data, error } = await supabase
       .from('montree_feedback')
