@@ -54,6 +54,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Phase 6: Input length limits
+    if (name && name.length > 200) {
+      return NextResponse.json({ error: 'Name too long' }, { status: 400 });
+    }
+    if (school_name && school_name.length > 200) {
+      return NextResponse.json({ error: 'School name too long' }, { status: 400 });
+    }
+    if (email && email.length > 254) {
+      return NextResponse.json({ error: 'Email too long' }, { status: 400 });
+    }
+    if (message && message.length > 10000) {
+      return NextResponse.json({ error: 'Message too long' }, { status: 400 });
+    }
+
     // Prepare normalized email for duplicate check
     const normalizedEmail = email?.trim()?.toLowerCase() || null;
 

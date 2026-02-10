@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { escapeHtml } from '@/lib/sanitize';
 
 // ============================================
 // MOVABLE ALPHABET LABEL MAKER
@@ -213,7 +214,7 @@ const LabelMaker = () => {
     <div class="grid">
       ${pageLabels.map(l => `
         <div class="label">
-          <div class="label-inner">${l.text}</div>
+          <div class="label-inner">${escapeHtml(l.text)}</div>
         </div>
       `).join('')}
       ${pageLabels.length < labelsPerPage ? '<div></div>'.repeat(labelsPerPage - pageLabels.length) : ''}

@@ -33,6 +33,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
     }
 
+    // Phase 6: Input length limits
+    if (caption && caption.length > 1000) {
+      return NextResponse.json({ error: 'Caption too long' }, { status: 400 });
+    }
+    if (tags && Array.isArray(tags) && tags.some((t: string) => t.length > 500)) {
+      return NextResponse.json({ error: 'Tag too long' }, { status: 400 });
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
     const ext = file.name.split('.').pop() || (media_type === 'video' ? 'webm' : 'jpg');

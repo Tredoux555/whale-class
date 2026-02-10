@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import JSZip from 'jszip';
 import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 
@@ -403,7 +404,7 @@ const VocabularyFlashcardGenerator = () => {
 `;
 
       for (const card of cardsWithImages) {
-        html += `<div class="page"><div class="card"><div class="image-area"><img src="${card.image}" alt="${card.word}"></div><div class="label-area">${card.word.toLowerCase()}</div></div></div>`;
+        html += `<div class="page"><div class="card"><div class="image-area"><img src="${sanitizeImageUrl(card.image)}" alt="${escapeHtml(card.word)}"></div><div class="label-area">${escapeHtml(card.word.toLowerCase())}</div></div></div>`;
       }
 
       html += `

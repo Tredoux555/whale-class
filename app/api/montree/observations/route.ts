@@ -115,6 +115,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Phase 6: Input length limits
+    if (behavior_description && behavior_description.length > 5000) {
+      return NextResponse.json({ success: false, error: 'Description too long' }, { status: 400 });
+    }
+    if (antecedent && antecedent.length > 2000) {
+      return NextResponse.json({ success: false, error: 'Antecedent too long' }, { status: 400 });
+    }
+    if (consequence && consequence.length > 2000) {
+      return NextResponse.json({ success: false, error: 'Consequence too long' }, { status: 400 });
+    }
+    if (environmental_notes && environmental_notes.length > 2000) {
+      return NextResponse.json({ success: false, error: 'Environmental notes too long' }, { status: 400 });
+    }
+    if (intervention_used && intervention_used.length > 2000) {
+      return NextResponse.json({ success: false, error: 'Intervention description too long' }, { status: 400 });
+    }
+    if (observed_by && observed_by.length > 200) {
+      return NextResponse.json({ success: false, error: 'Observer name too long' }, { status: 400 });
+    }
+
     const supabase = getSupabase();
 
     const { data, error } = await supabase

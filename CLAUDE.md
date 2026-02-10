@@ -11,11 +11,11 @@ Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-## CURRENT STATUS (Feb 10, 2026)
+## CURRENT STATUS (Feb 11, 2026)
 
-### Security Hardening — Phase 4 COMPLETE, Phase 5 Next
+### Security Hardening — Phase 6 COMPLETE, Phase 7 Next
 
-9-phase security hardening project in progress. Phases 1–4 done and audited.
+9-phase security hardening project in progress. Phases 1–6 done.
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -24,32 +24,33 @@ Deploy: Railway auto-deploys on push to `main`
 | 2 | bcrypt password migration (100% audited) | ✅ Done |
 | 3 | Quick security wins (11 fixes across ~25 files) | ✅ Done + Audited |
 | 4 | Secret rotation & env hardening (12 fixes across ~20 files) | ✅ Done + Audited |
-| 5 | Password policy & rate limiting | 🔜 Next |
-| 6 | Input sanitisation & CSP headers | Pending |
-| 7 | Montree audit logging | Pending |
-| 8 | Rate limiting & abuse prevention | Pending |
+| 5 | Password policy & rate limiting (23 files, 1123 insertions) | ✅ Done |
+| 6 | Input sanitisation & CSP headers (17 files) | ✅ Done |
+| 7 | Session management improvements | 🔜 Next |
+| 8 | Logging & monitoring | Pending |
 | 9 | Production security review (final) | Pending |
 
-**Handoff:** `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md`
-**Phase 4 plan:** `.claude/plans/phase4-plan-v3.md`
+**Handoff docs:**
+- `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md`
+- `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md`
 
-### 🔧 FRESH AUDIT COMMAND (Phase 5)
+**Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`
 
-When starting a new chat, say: **"Run the Phase 5 fresh audit command from CLAUDE.md"**
+### 🔧 FRESH AUDIT COMMAND (Phase 7)
+
+When starting a new chat, say: **"Run the Phase 7 fresh audit command from CLAUDE.md"**
 
 Claude should then execute this sequence:
-1. Read `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` and `docs/HANDOFF_SESSION_PHASE4_DEPLOY.md` for context
+1. Read `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md` for context
 2. Run a comprehensive security audit of the CURRENT codebase covering:
-   - **CRITICAL: Super-admin login uses `NEXT_PUBLIC_ADMIN_PASSWORD` (client-side!)** — `app/montree/super-admin/page.tsx` line 112 exposes password to browser. Must move to server-side auth API call.
-   - Audit all auth endpoints for rate limiting (there is none currently)
-   - Check password policy (min length, complexity, common passwords)
-   - Check for missing input validation/sanitisation across API routes (no zod/joi)
-   - Check for XSS vectors in any server-rendered content (document.write in 5 print components)
-   - Check Montree system for audit logging gaps (Story has logging; Montree has none)
-   - Verify all Railway production env vars match `.env.example`
+   - Session management: token expiration, refresh, logout
+   - Cookie security (HttpOnly, Secure, SameSite)
+   - CSRF protection
+   - Any remaining auth gaps
    - **Pattern reminder:** Never validate `process.env.*` at the top level of a module — always inside a function (see Build Fix in Phase 4 handoff)
+   - **Pattern reminder:** Rate limiter is DB-backed (survives Railway restarts); always fail open with try/catch
 3. Produce findings ranked by severity
-4. Build Phase 5 plan using the 3-round plan→audit→refine cycle
+4. Build Phase 7 plan using the 3-round plan→audit→refine cycle
 5. Present plan for approval before implementing
 
 ### Other Open Items

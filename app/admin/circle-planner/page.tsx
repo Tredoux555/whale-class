@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { escapeHtml } from '@/lib/sanitize';
 import { CIRCLE_TIME_CURRICULUM, CircleTimePlan, DayPlan } from '@/lib/circle-time/curriculum-data';
 import LessonDocuments from '@/components/circle-time/LessonDocuments';
 import TeacherNotes from '@/components/circle-time/TeacherNotes';
@@ -32,7 +33,7 @@ export default function CircleTimePage() {
         printWindow.document.write(`
           <html>
             <head>
-              <title>Week ${selectedWeek} - ${plan?.theme}</title>
+              <title>Week ${selectedWeek} - ${escapeHtml(plan?.theme || '')}</title>
               <style>
                 body { font-family: 'Comic Sans MS', cursive; padding: 20px; }
                 h1, h2, h3 { color: #333; }

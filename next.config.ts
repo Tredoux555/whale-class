@@ -64,6 +64,22 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(), camera=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // Phase 6: Content Security Policy
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
+              "font-src 'self'",
+              "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com",
+              "media-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
         ],
       },
     ];

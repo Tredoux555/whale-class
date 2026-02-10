@@ -69,7 +69,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (question.length > 1000) {
+    // Phase 6: Widened from 1000 to 2000 to support detailed questions
+    if (question.length > 2000) {
       return NextResponse.json(
         { success: false, error: 'Question is too long. Please be more concise.' },
         { status: 400 }
