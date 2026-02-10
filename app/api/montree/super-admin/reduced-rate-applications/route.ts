@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const password = searchParams.get('password');
 
     // Verify super admin password
-    if (password !== '870602') {
+    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest) {
     } = body;
 
     // Verify super admin password
-    if (password !== '870602') {
+    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

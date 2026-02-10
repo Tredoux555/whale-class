@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
-const ADMIN_PASSWORD = '870602';
+const ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || '';
 
 function checkAuth(request: NextRequest): boolean {
   const password =

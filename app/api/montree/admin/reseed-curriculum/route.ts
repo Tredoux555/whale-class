@@ -3,29 +3,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {
-  // SECURITY: Require authentication
-  const schoolId = request.headers.get('x-school-id');
-  if (!schoolId) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-  
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+
   const { searchParams } = new URL(request.url);
   const classroomId = searchParams.get('classroom_id');
-  return handleReseed(classroomId, schoolId);
+  return handleReseed(classroomId, auth.schoolId);
 }
 
 export async function POST(request: NextRequest) {
-  // SECURITY: Require authentication
-  const schoolId = request.headers.get('x-school-id');
-  if (!schoolId) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-  
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+
   const { classroomId } = await request.json();
-  return handleReseed(classroomId, schoolId);
+  return handleReseed(classroomId, auth.schoolId);
 }
 
 async function handleReseed(classroomId: string | null, schoolId: string) {

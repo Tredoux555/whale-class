@@ -44,7 +44,7 @@ async function getAdminLoginLogId(supabase: Record<string, unknown>, sessionToke
       .from('story_admin_login_logs')
       .select('id')
       .eq('session_token', sessionToken)
-      .order('login_time', { ascending: false })
+      .order('login_at', { ascending: false })
       .limit(1)
       .single();
     return data?.id || null;

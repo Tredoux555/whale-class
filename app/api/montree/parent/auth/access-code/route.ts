@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { cookies } from 'next/headers';
+import { createParentToken } from '@/lib/montree/server-auth';
+import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,16 +89,13 @@ export async function POST(request: NextRequest) {
       })
       .eq('id', invite.id);
 
-    // Create session data
-    const sessionData = {
-      child_id: child.id,
-      child_name: child.name || child.nickname,
-      classroom_id: child.classroom_id,
-      invite_id: invite.id,
-      created_at: new Date().toISOString(),
-    };
-
-    const sessionToken = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+    // Create signed JWT token (replaces forgeable base64)
+    const sessionToken = await createParentToken({
+      sub: child.id,
+      childName: child.name || child.nickname,
+      classroomId: child.classroom_id,
+      inviteId: invite.id,
+    });
 
     // Set HTTP-only cookie
     const cookieStore = await cookies();
@@ -128,40 +127,23 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('montree_parent_session');
+    // Verify JWT session (with legacy base64 fallback)
+    const session = await verifyParentSession();
 
-    if (!sessionCookie?.value) {
+    if (!session) {
       return NextResponse.json({
         success: false,
         authenticated: false
       });
     }
 
-    // Validate session
-    try {
-      const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
-
-      if (!session.child_id) {
-        return NextResponse.json({
-          success: false,
-          authenticated: false
-        });
-      }
-
-      return NextResponse.json({
-        success: true,
-        authenticated: true,
-        child_id: session.child_id,
-        child_name: session.child_name,
-        classroom_id: session.classroom_id,
-      });
-    } catch {
-      return NextResponse.json({
-        success: false,
-        authenticated: false
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      authenticated: true,
+      child_id: session.childId,
+      child_name: session.childName,
+      classroom_id: session.classroomId,
+    });
 
   } catch (error) {
     console.error('Session check error:', error);

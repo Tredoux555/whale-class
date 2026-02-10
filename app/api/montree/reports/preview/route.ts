@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found
 // Keyed by area_key from the progress data (always correct - no guessing needed)
@@ -112,6 +113,9 @@ function findBestDescription(
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
 
     const { searchParams } = new URL(request.url);

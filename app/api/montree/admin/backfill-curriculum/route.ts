@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Build curriculum records for a classroom
 function buildCurriculumRecords(classroomId: string) {
@@ -35,14 +36,12 @@ function buildCurriculumRecords(classroomId: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
-    
-    // SECURITY: Require authentication
-    const headerSchoolId = request.headers.get('x-school-id');
-    if (!headerSchoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-    
+    const headerSchoolId = auth.schoolId;
+
     const { classroomId, schoolId: bodySchoolId } = await request.json();
     const schoolId = bodySchoolId || headerSchoolId;
     

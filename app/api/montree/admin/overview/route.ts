@@ -2,17 +2,15 @@
 // Principal dashboard overview - school, classrooms, teachers, stats
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    // Get school ID from header (set by client from localStorage)
-    const schoolId = request.headers.get('x-school-id');
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+    const schoolId = auth.schoolId;
     const principalId = request.headers.get('x-principal-id');
-    
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
 
     // Get school details
     const { data: school, error: schoolError } = await supabase

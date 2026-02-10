@@ -2,6 +2,7 @@
 // POST - Generate parent-friendly descriptions for custom Montessori works
 
 import { NextRequest, NextResponse } from 'next/server';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface RequestBody {
   work_name: string;
@@ -112,6 +113,9 @@ function generateFromTemplate(
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body: RequestBody = await request.json();
     const { work_name, area, classroom_id } = body;
 

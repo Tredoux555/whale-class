@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         .from('story_login_logs')
         .select('id')
         .eq('session_token', sessionToken)
-        .order('login_time', { ascending: false })
+        .order('login_at', { ascending: false })
         .limit(1)
         .single();
       

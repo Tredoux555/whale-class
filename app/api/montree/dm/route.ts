@@ -3,17 +3,21 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Helper function to verify super-admin access
 function verifySuperAdminPassword(req: NextRequest): boolean {
   const passwordHeader = req.headers.get('x-super-admin-password');
-  const expectedPassword = process.env.SUPER_ADMIN_PASSWORD || '870602';
+  const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
   return passwordHeader === expectedPassword;
 }
 
 // GET - Fetch messages for a conversation, or global unread summary for admin
 export async function GET(req: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(req);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(req.url);
     const conversationId = searchParams.get('conversation_id');
@@ -113,6 +117,9 @@ export async function GET(req: NextRequest) {
 // POST - Send a message
 export async function POST(req: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(req);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await req.json();
     let { conversation_id, sender_type, sender_name, message } = body;
@@ -179,6 +186,9 @@ export async function POST(req: NextRequest) {
 // PATCH - Mark messages as read or bridge conversations
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(req);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await req.json();
     const { action } = body;

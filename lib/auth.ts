@@ -24,7 +24,7 @@ export async function createAdminToken(): Promise<string> {
     const token = await new SignJWT({ isAdmin: true })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("30d")
+      .setExpirationTime("7d")
       .sign(getSecretKey());
     return token;
   } catch (error) {

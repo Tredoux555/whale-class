@@ -27,7 +27,7 @@ export function ActivityLogTab({ loginLogs }: ActivityLogTabProps) {
               {loginLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-800">{log.username}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatTime(log.login_time)}</td>
+                  <td className="px-4 py-3 text-gray-600">{formatTime(log.login_at)}</td>
                   <td className="px-4 py-3 text-gray-600 text-xs">{log.ip_address || '—'}</td>
                 </tr>
               ))}

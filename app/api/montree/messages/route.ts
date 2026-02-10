@@ -5,10 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET: List messages for a classroom or parent
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
@@ -71,6 +75,9 @@ export async function GET(request: NextRequest) {
 // POST: Send a new message
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await request.json();
     const { childId, senderType, senderId, senderName, subject, messageText } = body;

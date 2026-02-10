@@ -4,9 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { generateReportPDF } from '@/lib/montree/reports/pdf-generator';
 import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');

@@ -2,11 +2,7 @@
 // Session 105: Principal registration - creates school + principal account
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import crypto from 'crypto';
-
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+import { hashPassword } from '@/lib/montree/password';
 
 function generateSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
@@ -75,8 +71,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create school' }, { status: 500 });
     }
 
-    // 2. Create principal account
-    const passwordHash = hashPassword(password);
+    // 2. Create principal account (bcrypt)
+    const passwordHash = await hashPassword(password);
     const { data: principal, error: adminError } = await supabase
       .from('montree_school_admins')
       .insert({

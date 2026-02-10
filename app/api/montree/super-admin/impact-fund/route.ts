@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
-const ADMIN_PASSWORD = '870602';
+const ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || '';
 
 // GET - Fetch impact fund transactions and summary
 export async function GET(request: NextRequest) {

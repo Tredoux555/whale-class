@@ -2,26 +2,23 @@
 // School-wide analytics and reports
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
-    // SECURITY: Use header-based authentication instead of query parameter
-    const headerSchoolId = request.headers.get('x-school-id');
-    if (!headerSchoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-    
+    const supabase = getSupabase();
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+    const schoolId = auth.schoolId;
+
     const { searchParams } = new URL(request.url);
     const querySchoolId = searchParams.get('school_id');
     const range = searchParams.get('range') || 'week';
-    
+
     // SECURITY: Prevent accessing other schools' data via query parameter
-    const schoolId = headerSchoolId;
-    if (querySchoolId && querySchoolId !== headerSchoolId) {
+    if (querySchoolId && querySchoolId !== schoolId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-
-    const supabase = getSupabase();
     
     // Calculate date range
     const now = new Date();

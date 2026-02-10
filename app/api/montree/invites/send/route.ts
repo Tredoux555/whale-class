@@ -2,10 +2,14 @@
 // Send parent invite email with invite code
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { sendParentInviteEmail } from '@/lib/montree/email';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { invite_id, recipient_email } = await request.json();
 

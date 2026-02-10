@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -11,14 +12,12 @@ interface RouteContext {
 // GET - Get single child details
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { childId } = await context.params;
     const supabase = getSupabase();
-
-    // Check for authentication header
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const schoolId = auth.schoolId;
 
     const { data: child, error } = await supabase
       .from('montree_children')
@@ -70,14 +69,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // PUT - Update child
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { childId } = await context.params;
     const supabase = getSupabase();
-
-    // Check for authentication header
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const schoolId = auth.schoolId;
 
     const body = await request.json();
 
@@ -142,14 +139,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 // DELETE - Remove child and all related data
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { childId } = await context.params;
     const supabase = getSupabase();
-
-    // Check for authentication header
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const schoolId = auth.schoolId;
 
     // Verify child exists
     const { data: child, error: findError } = await supabase

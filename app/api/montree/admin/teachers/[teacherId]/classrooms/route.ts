@@ -1,6 +1,7 @@
 // /api/montree/admin/teachers/[teacherId]/classrooms/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Assign classrooms to teacher
 export async function PUT(
@@ -8,6 +9,9 @@ export async function PUT(
   { params }: { params: { teacherId: string } }
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { teacherId } = params;
     const { classroom_ids } = await request.json();
     const supabase = getSupabase();

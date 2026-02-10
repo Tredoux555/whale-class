@@ -1,11 +1,13 @@
 // app/api/montree/parent/login/route.ts
 // Session 116: Parent login
 // Session 125: Fixed to use bcrypt
+// Phase 2: Migrated to shared password utility with dual-verify
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSupabase } from '@/lib/supabase-client';
-import bcrypt from 'bcryptjs';
+import { createParentToken } from '@/lib/montree/server-auth';
+import { verifyPassword, isLegacyHash, hashPassword } from '@/lib/montree/password';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,10 +37,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Account is disabled' }, { status: 401 });
     }
 
-    // 2. Verify password with bcrypt
-    const validPassword = await bcrypt.compare(password, parent.password_hash);
+    // 2. Verify password (supports both bcrypt and legacy SHA-256)
+    const validPassword = await verifyPassword(password, parent.password_hash);
     if (!validPassword) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    // Re-hash legacy SHA-256 to bcrypt on successful login
+    if (isLegacyHash(parent.password_hash)) {
+      const bcryptHash = await hashPassword(password);
+      await supabase.from('montree_parents').update({ password_hash: bcryptHash }).eq('id', parent.id);
     }
     
     // 3. Get parent's children
@@ -66,13 +74,12 @@ export async function POST(req: NextRequest) {
 
     const school = parent.montree_schools as Record<string, unknown>;
 
-    // 5. Set session cookie
-    const sessionData = {
-      parent_id: parent.id,
-      child_id: children[0]?.id,
-      created_at: new Date().toISOString(),
-    };
-    const sessionToken = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+    // 5. Set session cookie with signed JWT (replaces forgeable base64)
+    const sessionToken = await createParentToken({
+      sub: children[0]?.id,
+      parentId: parent.id,
+      childName: children[0]?.name,
+    });
     const cookieStore = await cookies();
     cookieStore.set('montree_parent_session', sessionToken, {
       httpOnly: true,

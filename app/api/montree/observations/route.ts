@@ -3,10 +3,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET: List observations for a child
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -58,6 +62,9 @@ export async function GET(request: NextRequest) {
 // POST: Create new observation
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const {
       child_id,
@@ -250,6 +257,9 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
 // DELETE: Remove observation
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

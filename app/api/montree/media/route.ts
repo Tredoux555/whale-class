@@ -2,10 +2,14 @@
 // Media CRUD operations: list, update, delete
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET - List media with filters
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
 
@@ -176,6 +180,9 @@ export async function GET(request: NextRequest) {
 // PATCH - Update media metadata (caption, child_id, work_id, tags)
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await request.json();
 
@@ -219,6 +226,9 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete media (file and record) - supports single or bulk delete
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
 

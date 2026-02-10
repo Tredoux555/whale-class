@@ -30,7 +30,7 @@ export interface StoryAdminUser {
 export interface LoginLog {
   id: number;
   username: string;
-  login_time: string;
+  login_at: string;
   session_id: string | null;
   ip_address: string | null;
   user_agent: string | null;

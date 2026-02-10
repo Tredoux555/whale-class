@@ -1,13 +1,13 @@
 export interface OnlineUser {
   username: string;
-  lastLogin: string;
+  lastSeen: string;
   secondsAgo: number;
 }
 
 export interface LoginLog {
   id: number;
   username: string;
-  login_time: string;
+  login_at: string;
   ip_address: string | null;
   user_agent: string | null;
 }

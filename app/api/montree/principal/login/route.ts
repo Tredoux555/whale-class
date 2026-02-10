@@ -1,12 +1,11 @@
 // /api/montree/principal/login/route.ts
 // Session 105: Principal login - email + password
+// Phase 1: Issues signed JWT token on success
+// Phase 2: Dual-verify bcrypt + legacy SHA-256, re-hashes on match
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import crypto from 'crypto';
-
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+import { createMontreeToken } from '@/lib/montree/server-auth';
+import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,10 +15,11 @@ export async function POST(request: NextRequest) {
 
     // Code-based login (6-char instant trial code)
     if (code && typeof code === 'string' && code.length === 6) {
-      const codeHash = crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
+      const normalizedCode = code.toUpperCase();
 
-      // Find principal by code hash and role
-      const { data: principal, error: principalError } = await supabase
+      // Legacy SHA-256 lookup (finds old accounts)
+      const codeHash = legacySha256(normalizedCode);
+      let { data: principal } = await supabase
         .from('montree_school_admins')
         .select('*')
         .eq('password_hash', codeHash)
@@ -27,7 +27,16 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true)
         .single();
 
-      if (principalError || !principal) {
+      // If found with SHA-256, silently re-hash to bcrypt
+      if (principal) {
+        const bcryptHash = await hashPassword(normalizedCode);
+        await supabase
+          .from('montree_school_admins')
+          .update({ password_hash: bcryptHash })
+          .eq('id', principal.id);
+      }
+
+      if (!principal) {
         return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
       }
 
@@ -56,8 +65,16 @@ export async function POST(request: NextRequest) {
         .update({ last_login: new Date().toISOString() })
         .eq('id', principal.id);
 
+      // Issue signed JWT token
+      const token = await createMontreeToken({
+        sub: principal.id,
+        schoolId: school.id,
+        role: 'principal',
+      });
+
       return NextResponse.json({
         success: true,
+        token,
         needsSetup,
         school: {
           id: school.id,
@@ -73,24 +90,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Email + password login (existing flow)
+    // Email + password login
     if (!email?.trim() || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
     }
 
-    const passwordHash = hashPassword(password);
-
-    // Find principal by email and password
+    // Fetch by email only (NOT by hash — enables dual-verify)
     const { data: principal, error: principalError } = await supabase
       .from('montree_school_admins')
       .select('*')
       .eq('email', email.trim().toLowerCase())
-      .eq('password_hash', passwordHash)
       .eq('is_active', true)
       .single();
 
     if (principalError || !principal) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    // Dual-verify: bcrypt first, SHA-256 fallback
+    const validPassword = await verifyPassword(password, principal.password_hash);
+    if (!validPassword) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    // If legacy SHA-256 hash matched, silently upgrade to bcrypt
+    if (isLegacyHash(principal.password_hash)) {
+      const bcryptHash = await hashPassword(password);
+      await supabase
+        .from('montree_school_admins')
+        .update({ password_hash: bcryptHash })
+        .eq('id', principal.id);
     }
 
     // Get school
@@ -118,8 +147,16 @@ export async function POST(request: NextRequest) {
       .update({ last_login: new Date().toISOString() })
       .eq('id', principal.id);
 
+    // Issue signed JWT token
+    const token = await createMontreeToken({
+      sub: principal.id,
+      schoolId: school.id,
+      role: 'principal',
+    });
+
     return NextResponse.json({
       success: true,
+      token,
       needsSetup,
       school: {
         id: school.id,

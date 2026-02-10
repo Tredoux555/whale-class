@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Normalize status to standard string format
 function normalizeStatus(status: unknown): string {
@@ -23,6 +24,9 @@ function normalizeStatus(status: unknown): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

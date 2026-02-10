@@ -36,16 +36,18 @@
           "notes": "Rebranded from Jeffy page. Name, bio, category, link, profile pic (montree-logo.png), cover photo (montree-yt-banner.png) all set."
         },
         "instagram": {
-          "handle": null,
-          "url": null,
-          "status": "not_created",
-          "notes": "Pending creation"
+          "handle": "@montreexyz",
+          "url": "https://instagram.com/montreexyz",
+          "status": "created",
+          "setupDate": "2026-02-10",
+          "notes": "Account created with tredoux555@gmail.com. Display name: Montree | Montessori Tools. Bio set, Business account (Education), contact email hello@montree.xyz. Website link (mobile only) and profile pic pending."
         },
         "tiktok": {
-          "handle": null,
-          "url": null,
-          "status": "not_created",
-          "notes": "Pending creation"
+          "handle": "@montreexyz",
+          "url": "https://tiktok.com/@montreexyz",
+          "status": "created",
+          "setupDate": "2026-02-10",
+          "notes": "Account created with tredoux555@gmail.com. Display name: Montree | Montessori Tools. Bio set. Profile pic pending."
         },
         "twitter": {
           "handle": null,

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Default area definitions (English only)
 const DEFAULT_AREAS = [
@@ -17,6 +18,9 @@ const DEFAULT_AREAS = [
 // GET - Fetch curriculum for classroom
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
@@ -70,6 +74,9 @@ export async function GET(request: NextRequest) {
 // POST - Seed curriculum from Montessori Brain OR add single work
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await request.json();
     const { classroom_id, action } = body;

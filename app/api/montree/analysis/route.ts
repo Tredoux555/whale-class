@@ -8,12 +8,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // ============================================
 // GET: Retrieve cached analysis
 // ============================================
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const weekStart = searchParams.get('week_start');
@@ -68,6 +72,9 @@ export async function GET(request: NextRequest) {
 // ============================================
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { child_id, week_start, week_end, force_regenerate } = body;
 

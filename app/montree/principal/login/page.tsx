@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { setToken } from '@/lib/montree/api';
 
 export default function PrincipalLoginPage() {
   const router = useRouter();
@@ -30,6 +31,8 @@ export default function PrincipalLoginPage() {
       if (!res.ok) {
         throw new Error(data.error || 'Login failed');
       }
+
+      setToken(data.token);
 
       // Store session
       localStorage.setItem('montree_principal', JSON.stringify(data.principal));

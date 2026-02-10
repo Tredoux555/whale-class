@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import Anthropic from '@anthropic-ai/sdk';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 function getAnthropic(): Anthropic {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Anthropic API key not configured');
@@ -30,22 +31,25 @@ interface ParsedPlan {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
+    const schoolId = auth.schoolId;
     const classroomId = request.headers.get('x-classroom-id');
-    
-    // SECURITY: Require authentication
-    if (!schoolId || !classroomId) {
-      return NextResponse.json({ error: 'Missing school or classroom ID' }, { status: 401 });
+
+    // SECURITY: Require classroom ID
+    if (!classroomId) {
+      return NextResponse.json({ error: 'Missing classroom ID' }, { status: 401 });
     }
-    
+
     // SECURITY: Verify classroom belongs to school
     const { data: classroom } = await supabase
       .from('montree_classrooms')
       .select('school_id')
       .eq('id', classroomId)
       .single();
-    
+
     if (!classroom || classroom.school_id !== schoolId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }

@@ -1,32 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { cookies } from 'next/headers';
+import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
-// Helper function to extract authenticated session data from cookie
-async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {
-  try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('montree_parent_session');
-
-    if (!sessionCookie?.value) {
-      return null;
-    }
-
-    const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
-    if (!session.child_id) {
-      return null;
-    }
-
-    return {
-      childId: session.child_id,
-      inviteId: session.invite_id,
-    };
-  } catch {
-    return null;
-  }
-}
 
 // Load parent descriptions from curriculum JSON files with area info
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
@@ -157,7 +133,7 @@ export async function GET(
     const supabase = getSupabase();
 
     // SECURITY: Authenticate parent via session cookie
-    const session = await getAuthenticatedSession();
+    const session = await verifyParentSession();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -2,6 +2,7 @@
 // Teacher activity dashboard - aggregates engagement metrics
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface TeacherActivity {
   teacher_id: string;
@@ -38,11 +39,9 @@ interface ActivityFeed {
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+    const schoolId = auth.schoolId;
 
     // Get all teachers for this school
     const { data: teachers, error: teacherError } = await supabase

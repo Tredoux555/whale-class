@@ -2,15 +2,16 @@
 // CRUD for classrooms
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Create new classroom
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { name, icon, color } = await request.json();
 
@@ -39,10 +40,10 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { id, name, icon, color, is_active } = await request.json();
 
@@ -74,10 +75,10 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
