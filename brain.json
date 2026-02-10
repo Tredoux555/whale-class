@@ -1,24 +1,72 @@
 {
   "project": "Montree",
-  "session": 160,
-  "lastUpdated": "2026-02-09T11:00:00+02:00",
+  "session": 161,
+  "lastUpdated": "2026-02-10T03:30:00+02:00",
 
-  "STATUS": "✅ SESSION 160 UX IMPROVEMENTS — EXECUTED & DEPLOYED",
+  "STATUS": "✅ SESSION 161 — YOUTUBE CHANNEL + PROJECT COMMAND CENTER",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_160_UX_IMPROVEMENTS.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_159_AUDIT.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_161.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_160_UX_IMPROVEMENTS.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
   "PRIORITY_NEXT_SESSION": {
-    "task": "Browser-test all 5 UX changes, then tackle backlog",
+    "task": "Upload YT banner, set up Facebook/Instagram/TikTok, then push git changes",
     "steps": [
-      "1. Test /montree/try — verify email field, Parent at Home card, and role selection",
-      "2. Test /home — verify email field captures and stores correctly",
-      "3. Test Demo button on child dashboard — verify video_search_term from guide API",
-      "4. Test Quick Guide → Full Details modal transition",
-      "5. Pick from backlog: reseed Language curriculum, remove debug output, etc."
+      "1. Upload montree-yt-banner.png as YouTube channel banner (whale/public/montree-yt-banner.png)",
+      "2. Create Facebook page for Montree",
+      "3. Create Instagram account for Montree",
+      "4. Create TikTok account for Montree",
+      "5. Update projects.json with new social handles",
+      "6. git push origin main (pending from session 160 UI changes)",
+      "7. Fill in Jeffy project details in projects.json"
     ],
-    "estimated_time": "15-20 min testing, then open-ended"
+    "estimated_time": "1-2 hours for social setup, then open-ended"
+  },
+
+  "SESSION_161_YOUTUBE_AND_COMMAND_CENTER": {
+    "status": "✅ COMPLETED",
+    "tasks_completed": [
+      "Created YouTube channel: Montree (@montreexyz)",
+      "Generated 1024x1024 profile icon (montree-yt-icon.png) — uploaded as channel pic",
+      "Generated 2560x1440 YouTube banner (montree-yt-banner.png) — pending upload by user",
+      "Added channel description, website link (montree.xyz), contact email (hello@montree.xyz)",
+      "Published channel customization (description + link + email)",
+      "Built Project Command Center dashboard (public/command-center.html)",
+      "Created projects.json master registry for multi-project management",
+      "Hid Language Guide + Vocab Flashcards from TeachingToolsSection.tsx",
+      "Hid Print button bar from print/page.tsx"
+    ],
+    "files_created": [
+      "public/montree-yt-icon.png (1024x1024 profile picture)",
+      "public/montree-yt-banner.png (2560x1440 banner)",
+      "public/command-center.html (Project Command Center dashboard)",
+      "projects.json (master project registry)"
+    ],
+    "files_modified": [
+      "components/montree/curriculum/TeachingToolsSection.tsx (hid Language Guide + Vocab Flashcards)",
+      "app/montree/dashboard/print/page.tsx (hid Print button bar)",
+      "brain.json (updated to session 161)"
+    ]
+  },
+
+  "YOUTUBE_CHANNEL": {
+    "name": "Montree",
+    "handle": "@montreexyz",
+    "channelId": "UCMwrqNTlotD1Q1Bie9iwVIg",
+    "url": "https://youtube.com/@montreexyz",
+    "studioUrl": "https://studio.youtube.com/channel/UCMwrqNTlotD1Q1Bie9iwVIg",
+    "profilePic": "✅ Set (montree-yt-icon.png)",
+    "banner": "⏳ Generated but not yet uploaded (montree-yt-banner.png)",
+    "description": "✅ Set",
+    "websiteLink": "✅ montree.xyz",
+    "contactEmail": "✅ hello@montree.xyz"
+  },
+
+  "PROJECT_MANAGEMENT": {
+    "registry": "projects.json",
+    "dashboard": "public/command-center.html",
+    "projects": ["montree", "jeffy", "sentinel"],
+    "notes": "User wants a dedicated domain for project management dashboard"
   },
 
   "SESSION_160_UX_IMPROVEMENTS": {
@@ -71,7 +119,7 @@
 
   "DOMAIN_CONFIG": {
     "montree_xyz": {
-      "dns_provider": "GoDaddy",
+      "dns_provider": "Cloudflare (nameservers migrated from GoDaddy in session 161)",
       "hosting": "Railway (whale-class service)",
       "ssl": "Let's Encrypt (auto via Railway, expires May 9 2026)",
       "a_record": "66.33.22.1",

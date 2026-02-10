@@ -126,8 +126,8 @@ function PrintContent() {
         @media screen { body { background: #e5e7eb; } }
       `}</style>
 
-      {/* Print button bar */}
-      <div className="no-print bg-white border-b px-4 py-3 flex items-center justify-between">
+      {/* Print button bar — hidden temporarily */}
+      {/* <div className="no-print bg-white border-b px-4 py-3 flex items-center justify-between">
         <div>
           <h1 className="font-bold text-gray-800">Print Preview</h1>
           <p className="text-sm text-gray-500">Week {weekNum}, 2026 &bull; {children.length} children</p>
@@ -135,7 +135,7 @@ function PrintContent() {
         <button onClick={handlePrint} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium">
           🖨️ Print
         </button>
-      </div>
+      </div> */}
 
       {/* Print Container — List view only */}
       <div className="max-w-[210mm] mx-auto bg-white shadow-2xl my-4 print:shadow-none print:my-0">
