@@ -52,6 +52,23 @@ const nextConfig: NextConfig = {
   // NOTE: Using 302 (temporary) instead of 301 (permanent) to prevent
   // browser caching issues if domains are reconfigured in future.
   // Middleware also enforces domain isolation as a secondary check.
+  // Security headers — applied to all responses
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(), camera=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       {

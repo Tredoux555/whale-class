@@ -1,10 +1,12 @@
 import crypto from 'crypto';
 
 function getKey(): Buffer {
-  const key = process.env.MESSAGE_ENCRYPTION_KEY || 'change-this-to-32-char-key-12345';
+  const key = process.env.MESSAGE_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error('[message-encryption] MESSAGE_ENCRYPTION_KEY must be set (exactly 32 characters)');
+  }
   if (key.length !== 32) {
-    console.warn(`MESSAGE_ENCRYPTION_KEY should be 32 chars, using default`);
-    return Buffer.from('change-this-to-32-char-key-12345', 'utf8');
+    throw new Error(`[message-encryption] MESSAGE_ENCRYPTION_KEY must be exactly 32 characters (got ${key.length})`);
   }
   return Buffer.from(key, 'utf8');
 }

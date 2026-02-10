@@ -13,9 +13,9 @@ Deploy: Railway auto-deploys on push to `main`
 
 ## CURRENT STATUS (Feb 10, 2026)
 
-### Security Hardening — Phase 3 COMPLETE, Phase 4 Next
+### Security Hardening — Phase 4 COMPLETE, Phase 5 Next
 
-9-phase security hardening project in progress. Phases 1–3 done and audited.
+9-phase security hardening project in progress. Phases 1–4 done and audited.
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -23,33 +23,31 @@ Deploy: Railway auto-deploys on push to `main`
 | 1B | Parent session tokens | ✅ Done |
 | 2 | bcrypt password migration (100% audited) | ✅ Done |
 | 3 | Quick security wins (11 fixes across ~25 files) | ✅ Done + Audited |
-| 4 | Secret rotation & env hardening | 🔜 Next |
-| 5 | Password policy & rate limiting | Pending |
+| 4 | Secret rotation & env hardening (12 fixes across ~20 files) | ✅ Done + Audited |
+| 5 | Password policy & rate limiting | 🔜 Next |
 | 6 | Input sanitisation & CSP headers | Pending |
 | 7 | Montree audit logging | Pending |
 | 8 | Rate limiting & abuse prevention | Pending |
 | 9 | Production security review (final) | Pending |
 
-**Handoff:** `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md`
-**Phase 3 plan:** `.claude/plans/phase3-plan-v3.md`
+**Handoff:** `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md`
+**Phase 4 plan:** `.claude/plans/phase4-plan-v3.md`
 
-### 🔧 FRESH AUDIT COMMAND (Phase 4)
+### 🔧 FRESH AUDIT COMMAND (Phase 5)
 
-When starting a new chat, say: **"Run the Phase 4 fresh audit command from CLAUDE.md"**
+When starting a new chat, say: **"Run the Phase 5 fresh audit command from CLAUDE.md"**
 
 Claude should then execute this sequence:
-1. Read `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` for context on what's already done
+1. Read `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` for context on what's already done
 2. Run a comprehensive security audit of the CURRENT codebase covering:
-   - Grep for remaining hardcoded secrets/passwords (beyond 870602 which is done)
-   - Check all `.env.local` values — flag weak secrets (especially `ADMIN_SECRET`)
    - Audit all auth endpoints for rate limiting (there is none currently)
-   - Check for missing input validation/sanitisation across API routes
-   - Check for XSS vectors in any server-rendered content
-   - Audit Content-Security-Policy headers (likely missing)
-   - Check Montree system (teacher/parent/admin) for audit logging gaps
-   - Verify all Railway production env vars match what code expects
+   - Check password policy (min length, complexity, common passwords)
+   - Check for missing input validation/sanitisation across API routes (no zod/joi)
+   - Check for XSS vectors in any server-rendered content (document.write in 5 print components)
+   - Check Montree system for audit logging gaps (Story has logging; Montree has none)
+   - Verify all Railway production env vars match `.env.example`
 3. Produce findings ranked by severity
-4. Build Phase 4 plan using the 3-round plan→audit→refine cycle (same as Phase 3)
+4. Build Phase 5 plan using the 3-round plan→audit→refine cycle
 5. Present plan for approval before implementing
 
 ### Other Open Items
@@ -72,6 +70,26 @@ Claude should then execute this sequence:
 ---
 
 ### Recent Changes (Security Hardening, Feb 10)
+
+**Phase 4 — Secret Rotation & Env Hardening (12 fixes across ~20 files):**
+- Fix 1: Removed hardcoded ElevenLabs API key from 4 scripts → `process.env.ELEVENLABS_API_KEY`
+- Fix 2: Removed hardcoded Supabase service role key from `scripts/upload-to-supabase.js`
+- Fix 3: Removed hardcoded `870602` from `hooks/useLeadOperations.ts` (3 instances) → uses `password` prop
+- Fix 4: Removed Story auth plaintext fallback (`USER_PASSWORDS`) — bcrypt-only now
+- Fix 5: Removed insecure fallback defaults from `lib/auth-multi.ts`, `lib/montree/super-admin-security.ts`, `lib/message-encryption.ts` — all now throw if env vars missing
+- Fix 6: Removed `'change-this-in-env'` fallback from 3 vault routes (upload, download, save-from-message)
+- Fix 7: Moved vault password hash to `process.env.VAULT_PASSWORD_HASH`
+- Fix 8: Added security headers (X-Frame-Options, X-Content-Type-Options, HSTS, etc.) in `next.config.ts`
+- Fix 9: Created `.env.example` with all required env vars documented
+- Fix 10: Updated CLAUDE.md env vars section (added 11 missing vars)
+- Fix 11: Updated `.env.local` with `VAULT_PASSWORD_HASH` and `ELEVENLABS_API_KEY`
+- **ACTION REQUIRED**: Rotate ElevenLabs API key (exposed in git history) + set `VAULT_PASSWORD_HASH` in Railway
+
+**Phase 4 Post-Audit Fixes (3 issues found, all resolved):**
+- Audit fix 1 (CRITICAL): `deleteSchool()` regression — API route now accepts password from header OR query param
+- Audit fix 2: `MESSAGE_ENCRYPTION_KEY` was 31 chars (quotes stripped by dotenv) → set to old default `change-this-to-32-char-key-12345` for backward compat with existing encrypted messages
+- Audit fix 3: `.env.example` updated — added "no quotes!" note for MESSAGE_ENCRYPTION_KEY
+- **ACTION REQUIRED**: Set `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` in Railway (must match existing encrypted data). Rotate to strong key in Phase 9 with re-encryption migration.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
@@ -145,16 +163,39 @@ Claude should then execute this sequence:
 
 ---
 
-## Environment Variables (Railway)
+## Environment Variables (Railway + .env.local)
+
+See `.env.example` for the full template. All vars below must be set in Railway production.
+
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://dmfncjjtsoxrnvcdnvjq.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=...
-RESEND_API_KEY=...
-ADMIN_PASSWORD=...
-ADMIN_SECRET=...              # REQUIRED — JWT signing for Whale Class admin (lib/auth.ts). WEAK — needs rotation in Phase 4
+# --- Core Auth ---
+ADMIN_SECRET=...              # REQUIRED — JWT signing for Whale Class admin (lib/auth.ts)
+ADMIN_USERNAME=...            # Whale Class admin display name
+ADMIN_PASSWORD=...            # Whale Class admin password
 SUPER_ADMIN_PASSWORD=...      # REQUIRED — Montree super-admin + Whale Class "Tredoux" login
-TEACHER_ADMIN_PASSWORD=...    # REQUIRED (Phase 3) — Whale Class "Teacher" login. Set to old password.
-STORY_JWT_SECRET=...          # REQUIRED — Story system JWT signing (lib/story-db.ts)
+TEACHER_ADMIN_PASSWORD=...    # REQUIRED — Whale Class "Teacher" login
+STORY_JWT_SECRET=...          # REQUIRED — Story JWT signing (lib/story-db.ts)
+
+# --- Supabase ---
+NEXT_PUBLIC_SUPABASE_URL=https://dmfncjjtsoxrnvcdnvjq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+DATABASE_URL=...              # PostgreSQL pooler connection string
+
+# --- Encryption ---
+MESSAGE_ENCRYPTION_KEY=...    # REQUIRED — Exactly 32 chars for AES-256 (lib/message-encryption.ts)
+VAULT_PASSWORD=...            # REQUIRED — Vault file encrypt/decrypt (vault routes)
+VAULT_PASSWORD_HASH=...       # REQUIRED — bcrypt hash for vault unlock (vault/unlock/route.ts)
+
+# --- External APIs ---
+ANTHROPIC_API_KEY=...         # Claude API (Guru advisor)
+OPENAI_API_KEY=...            # DALL-E image generation
+ELEVENLABS_API_KEY=...        # TTS for phonics audio (scripts only, not runtime)
+NEXT_PUBLIC_YOUTUBE_API_KEY=... # YouTube Data API
+
+# --- Email ---
+RESEND_API_KEY=...
+RESEND_FROM_EMAIL=...
 ```
 
 ---
@@ -322,7 +363,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | **CURRENT** — Security Phase 3 complete, all fixes listed, Phase 4 next steps |
+| `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` | **CURRENT** — Security Phase 4 complete, all fixes listed, Phase 5 next steps |
+| `.claude/plans/phase4-plan-v3.md` | Phase 4 execution plan (3 rounds of audit refinement) |
+| `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | Security Phase 3 complete, all fixes listed |
 | `.claude/plans/phase3-plan-v3.md` | Phase 3 execution plan (3 rounds of audit refinement) |
 | `docs/HANDOFF_SESSION_155_HOME_AUTH.md` | Home code-based auth, 500 bug diagnosis |
 | `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | Codebase cleanup plan (5 remaining phases) |

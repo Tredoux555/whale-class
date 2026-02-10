@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, getJWTSecret } from '@/lib/story-db';
 import crypto from 'crypto';
 
-const VAULT_PASSWORD_HASH = '$2b$10$ECecBvSrgN8mfruLKzvdjehcTXZaQonVkUyriGoIKdZPWHvrixssC';
+const VAULT_PASSWORD_HASH = process.env.VAULT_PASSWORD_HASH;
+if (!VAULT_PASSWORD_HASH) {
+  console.error('[Vault] VAULT_PASSWORD_HASH must be set in environment variables');
+}
 
 async function checkRateLimit(supabase: ReturnType<typeof getSupabase>, ipAddress: string) {
   try {

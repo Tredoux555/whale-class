@@ -170,7 +170,7 @@ export function useLeadOperations({
           schoolId,
           subscription_tier: newTier,
           subscription_status: newTier === 'free' ? 'active' : (newTier === 'paid' ? 'active' : 'trialing'),
-          password: '870602'
+          password
         })
       });
 
@@ -186,7 +186,7 @@ export function useLeadOperations({
       console.error('Failed to update school:', err);
       alert('Failed to update school status');
     }
-  }, [setSchools, logAction]);
+  }, [password, setSchools, logAction]);
 
   const deleteSchool = useCallback(async (school: School) => {
     const confirmMsg = `🚨 DELETE "${school.name}"?\n\nThis will permanently delete:\n• ${school.classroom_count || 0} classrooms\n• ${school.teacher_count || 0} teachers\n• ${school.student_count || 0} students\n• All curriculum and progress data\n\nType "DELETE" to confirm:`;
@@ -198,8 +198,9 @@ export function useLeadOperations({
     }
 
     try {
-      const res = await fetch(`/api/montree/super-admin/schools?schoolId=${school.id}&password=870602`, {
+      const res = await fetch(`/api/montree/super-admin/schools?schoolId=${school.id}`, {
         method: 'DELETE',
+        headers: { 'x-super-admin-password': password },
       });
 
       if (!res.ok) {
@@ -213,14 +214,14 @@ export function useLeadOperations({
       console.error('Delete failed:', err);
       alert('Failed to delete school: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
-  }, [setSchools]);
+  }, [password, setSchools]);
 
   const loginAsSchool = useCallback(async (schoolId: string) => {
     try {
       const res = await fetch('/api/montree/super-admin/login-as', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ schoolId, superAdminPassword: '870602' }),
+        body: JSON.stringify({ schoolId, superAdminPassword: password }),
       });
 
       if (!res.ok) throw new Error('Failed to login');
@@ -239,7 +240,7 @@ export function useLeadOperations({
       console.error('Login as failed:', err);
       alert('Failed to login as principal');
     }
-  }, [router]);
+  }, [password, router]);
 
   return {
     updateLeadStatus,
