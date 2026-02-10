@@ -75,9 +75,35 @@ export async function middleware(req: NextRequest) {
   });
   
   // ============================================
+  // PHASE 7: CSRF PROTECTION
+  // Block cross-origin state-changing requests
+  // ============================================
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const origin = req.headers.get('origin');
+    if (origin) {
+      const requestHost = req.headers.get('host')?.split(':')[0] || '';
+      try {
+        const originHostname = new URL(origin).hostname;
+        if (originHostname !== requestHost) {
+          return new NextResponse(
+            JSON.stringify({ error: 'Cross-origin request blocked' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch {
+        return new NextResponse(
+          JSON.stringify({ error: 'Invalid origin' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    // No Origin header = same-origin or non-browser client (curl, Postman) — allowed
+  }
+
+  // ============================================
   // ALWAYS ALLOW THESE ROUTES (no auth, no redirects)
   // ============================================
-  
+
   // CRITICAL: API routes - NEVER redirect, let them handle their own auth
   // This MUST be first to ensure API routes are never intercepted
   if (pathname.startsWith('/api/')) {

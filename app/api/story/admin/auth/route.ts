@@ -92,7 +92,16 @@ export async function POST(req: NextRequest) {
         // Log the login
         await logAdminLogin(supabase, username, token, req);
 
-        return NextResponse.json({ session: token });
+        // Phase 7: Set HttpOnly cookie alongside JSON (dual mode for backward compat)
+        const response = NextResponse.json({ session: token });
+        response.cookies.set('story-admin-token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24, // 24h matches JWT expiry
+          path: '/',
+        });
+        return response;
       }
     }
   } catch (e) {
@@ -111,12 +120,16 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    // Phase 7: Accept token from Authorization header or HttpOnly cookie
     const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
+    let token = authHeader ? authHeader.replace('Bearer ', '') : null;
+    if (!token) {
+      token = req.cookies.get('story-admin-token')?.value || null;
+    }
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = authHeader.replace('Bearer ', '');
     const { jwtVerify } = await import('jose');
     const { payload } = await jwtVerify(token, getJWTSecret());
 
@@ -147,5 +160,8 @@ export async function DELETE(req: NextRequest) {
   } catch (e) {
     console.error('[AdminAuth] Logout tracking failed:', e);
   }
-  return NextResponse.json({ success: true });
+  // Phase 7: Clear HttpOnly cookie on logout
+  const response = NextResponse.json({ success: true });
+  response.cookies.delete('story-admin-token');
+  return response;
 }
