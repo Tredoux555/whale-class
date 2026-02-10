@@ -8,9 +8,15 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-// ElevenLabs API Configuration
-const API_KEY = 'sk_4758ce62e8712bfcf8016cedd9c92077e2be46f5d1108cb4';
-const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel - warm, clear female voice
+// ElevenLabs API Configuration — load from .env.local
+require('dotenv').config({ path: '.env.local' });
+const API_KEY = process.env.ELEVENLABS_API_KEY;
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'; // Rachel - warm, clear female voice
+
+if (!API_KEY) {
+  console.error('❌ Missing ELEVENLABS_API_KEY in .env.local');
+  process.exit(1);
+}
 
 const BASE_URL = 'api.elevenlabs.io';
 const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'audio-new');

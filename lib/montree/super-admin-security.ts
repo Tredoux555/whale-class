@@ -8,7 +8,10 @@ import crypto from 'crypto';
 // CONFIGURATION
 // ============================================
 
-const ENCRYPTION_KEY = process.env.SUPER_ADMIN_ENCRYPTION_KEY || process.env.MESSAGE_ENCRYPTION_KEY || 'default-key-change-me';
+const ENCRYPTION_KEY = process.env.SUPER_ADMIN_ENCRYPTION_KEY || process.env.MESSAGE_ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY) {
+  throw new Error('[super-admin-security] SUPER_ADMIN_ENCRYPTION_KEY or MESSAGE_ENCRYPTION_KEY must be set');
+}
 const ALGORITHM = 'aes-256-gcm';
 
 // ============================================

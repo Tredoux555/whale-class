@@ -3,7 +3,10 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 
-const SECRET = process.env.AUTH_SECRET || process.env.ADMIN_SECRET || "montree-secret-change-in-production";
+const SECRET = process.env.AUTH_SECRET || process.env.ADMIN_SECRET;
+if (!SECRET) {
+  throw new Error('[auth-multi] AUTH_SECRET or ADMIN_SECRET must be set in environment variables');
+}
 const SECRET_KEY = new TextEncoder().encode(SECRET);
 
 // User roles

@@ -9,7 +9,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = 'sk_4758ce62e8712bfcf8016cedd9c92077e2be46f5d1108cb4';
+// Load from .env.local
+require('dotenv').config({ path: '.env.local' });
+const API_KEY = process.env.ELEVENLABS_API_KEY;
+if (!API_KEY) { console.error('❌ Missing ELEVENLABS_API_KEY in .env.local'); process.exit(1); }
 
 // Voice options - Rachel is good but let's try cleaner settings
 // Or try "Sarah" (21m00Tcm4TlvDq8ikWAM is Rachel)

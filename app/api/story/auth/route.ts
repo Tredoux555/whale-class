@@ -2,11 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { getSupabase, getJWTSecret } from '@/lib/story-db';
 
-// HARDCODED USER CREDENTIALS - fallback if DB/bcrypt fails
-const USER_PASSWORDS: Record<string, string> = {
-  'T': 'redoux',
-  'Z': 'oe',
-};
+// NOTE: Hardcoded plaintext passwords removed in Phase 4 security hardening.
+// All users must authenticate via bcrypt hashes in the story_users table.
 
 async function logLogin(username: string, ip: string, userAgent: string, token: string) {
   try {
@@ -48,21 +45,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
   const userAgent = req.headers.get('user-agent') || 'unknown';
 
-  // CHECK 1: Hardcoded fallback (always works)
-  if (USER_PASSWORDS[username] === password) {
-    const token = await new SignJWT({ username })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('24h')
-      .sign(getJWTSecret());
-
-    // Log the login
-    await logLogin(username, ip, userAgent, token);
-
-    return NextResponse.json({ session: token });
-  }
-
-  // CHECK 2: Database with bcrypt (if configured)
+  // Database bcrypt authentication (only path)
   try {
     const supabase = getSupabase();
     const { data: users, error } = await supabase

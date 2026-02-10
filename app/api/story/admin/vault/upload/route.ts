@@ -40,7 +40,10 @@ export async function POST(req: NextRequest) {
     const fileBuffer = Buffer.from(arrayBuffer);
     const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
-    const vaultPassword = process.env.VAULT_PASSWORD || 'change-this-in-env';
+    const vaultPassword = process.env.VAULT_PASSWORD;
+    if (!vaultPassword) {
+      return NextResponse.json({ error: 'Vault not configured' }, { status: 500 });
+    }
     const { encrypted, iv, authTag } = encryptFile(fileBuffer, vaultPassword);
 
     const supabase = getSupabase();

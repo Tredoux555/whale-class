@@ -57,7 +57,10 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    const vaultPassword = process.env.VAULT_PASSWORD || 'change-this-in-env';
+    const vaultPassword = process.env.VAULT_PASSWORD;
+    if (!vaultPassword) {
+      return NextResponse.json({ error: 'Vault not configured' }, { status: 500 });
+    }
     const encryptedBuffer = Buffer.from(await encryptedData.arrayBuffer());
 
     let decryptedBuffer: Buffer;

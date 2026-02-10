@@ -100,10 +100,10 @@ export async function DELETE(request: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const schoolId = searchParams.get('schoolId');
-    const password = searchParams.get('password');
+    const password = request.headers.get('x-super-admin-password') || searchParams.get('password');
 
     // Verify super admin password
-    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
+    if (!password || password !== process.env.SUPER_ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

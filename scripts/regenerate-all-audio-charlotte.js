@@ -17,7 +17,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = 'sk_4758ce62e8712bfcf8016cedd9c92077e2be46f5d1108cb4';
+// Load from .env.local
+require('dotenv').config({ path: '.env.local' });
+const API_KEY = process.env.ELEVENLABS_API_KEY;
+if (!API_KEY) { console.error('❌ Missing ELEVENLABS_API_KEY in .env.local'); process.exit(1); }
 const CHARLOTTE_VOICE_ID = 'XB0fDUnXU5powFXDhCwa';
 
 const VOICE_SETTINGS = {
