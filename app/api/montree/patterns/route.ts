@@ -3,10 +3,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET: List patterns for a child
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const activeOnly = searchParams.get('active_only') !== 'false';
@@ -57,6 +61,9 @@ export async function GET(request: NextRequest) {
 // PATCH: Update pattern (mark inactive, add notes)
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { id, still_active, notes } = body;
 

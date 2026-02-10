@@ -109,7 +109,7 @@ export default function SuperAdminPage() {
   }, [authenticated, trackActivity]);
 
   const handleLogin = async () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === '870602') {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
       setAuthenticated(true);
       setLastActivity(Date.now());
       await logAction('login_success');

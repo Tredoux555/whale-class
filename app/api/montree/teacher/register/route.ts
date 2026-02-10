@@ -2,11 +2,7 @@
 // Session: Personal Classroom - Creates personal classroom school + teacher account
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import bcrypt from 'bcryptjs';
-
-function hashPassword(password: string): string {
-  return bcrypt.hashSync(password, 10);
-}
+import { hashPassword } from '@/lib/montree/password';
 
 function generateSlug(baseName: string): string {
   // Convert to lowercase, remove special characters, replace spaces with hyphens
@@ -83,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Create teacher account
-    const passwordHash = hashPassword(password);
+    const passwordHash = await hashPassword(password);
     const { data: teacher, error: adminError } = await supabase
       .from('montree_school_admins')
       .insert({

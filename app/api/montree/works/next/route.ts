@@ -3,9 +3,13 @@
 // Uses curriculum-data.ts as primary source
 import { NextRequest, NextResponse } from 'next/server';
 import { CURRICULUM, getAllWorks } from '@/lib/montree/curriculum-data';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const workName = searchParams.get('work_name');
     const area = searchParams.get('area');

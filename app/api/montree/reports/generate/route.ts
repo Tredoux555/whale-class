@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // ============================================
 // TYPES
@@ -295,6 +296,9 @@ function generateAIAnalysisReport(analysis: WeeklyAnalysisResult): AIAnalysisRep
 // ============================================
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { child_id, week_start, week_end, report_types } = body;
 

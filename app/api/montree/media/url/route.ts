@@ -3,9 +3,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path');

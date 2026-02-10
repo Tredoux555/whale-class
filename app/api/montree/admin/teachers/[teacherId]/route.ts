@@ -1,6 +1,7 @@
 // /api/montree/admin/teachers/[teacherId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Update teacher (activate/deactivate)
 export async function PATCH(
@@ -8,15 +9,13 @@ export async function PATCH(
   { params }: { params: { teacherId: string } }
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { teacherId } = params;
     const body = await request.json();
     const supabase = getSupabase();
-    
-    // SECURITY: Require authentication
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const schoolId = auth.schoolId;
     
     // SECURITY: Verify teacher belongs to authenticated school
     const { data: teacher } = await supabase

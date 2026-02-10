@@ -1,8 +1,9 @@
 // app/api/montree/guru/stream/route.ts
 // Streaming version of Montessori Guru API
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge } from '@/lib/montree/guru/knowledge-retriever';
@@ -10,6 +11,17 @@ import { buildGuruPrompt } from '@/lib/montree/guru/prompt-builder';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+  } catch (error) {
+    console.error('[Guru Stream] Auth error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Authentication failed' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   // Check AI is enabled
   if (!AI_ENABLED || !anthropic) {

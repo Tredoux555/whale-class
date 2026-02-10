@@ -3,12 +3,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const reportId = params.id;
 
@@ -41,6 +45,9 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const reportId = params.id;
     const body = await request.json();

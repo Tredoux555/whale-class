@@ -2,31 +2,8 @@
 // Get weekly reports for a parent's child
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { cookies } from 'next/headers';
+import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 
-// Helper function to extract authenticated session data from cookie
-async function getAuthenticatedSession(): Promise<{ childId: string; inviteId?: string } | null> {
-  try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('montree_parent_session');
-
-    if (!sessionCookie?.value) {
-      return null;
-    }
-
-    const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
-    if (!session.child_id) {
-      return null;
-    }
-
-    return {
-      childId: session.child_id,
-      inviteId: session.invite_id,
-    };
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -38,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // SECURITY: Authenticate parent via session cookie
-    const session = await getAuthenticatedSession();
+    const session = await verifyParentSession();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

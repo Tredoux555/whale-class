@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -14,6 +15,9 @@ export async function GET(
   context: RouteContext
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { childId } = await context.params;
 
     if (!childId) {
@@ -60,6 +64,9 @@ export async function PUT(
   context: RouteContext
 ) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { childId } = await context.params;
     const body = await request.json();
 

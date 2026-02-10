@@ -3,11 +3,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');

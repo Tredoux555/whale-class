@@ -3,11 +3,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { notifyParentsOfReport, sendReportReadyEmail } from '@/lib/montree/email';
 
 // POST - Notify parents of a report
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { childId, reportId, weekNumber, year } = body;
 

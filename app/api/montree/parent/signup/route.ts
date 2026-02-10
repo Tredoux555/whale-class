@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { sendWelcomeEmail } from '@/lib/montree/email';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '@/lib/montree/password';
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Create parent account with hashed password
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await hashPassword(password);
     
     const { data: newParent, error: parentError } = await supabase
       .from('montree_parents')

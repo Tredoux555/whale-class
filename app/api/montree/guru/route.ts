@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
@@ -39,6 +40,9 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     // Check AI is enabled
     if (!AI_ENABLED || !anthropic) {
       return NextResponse.json(
@@ -196,6 +200,9 @@ export async function POST(request: NextRequest) {
 // ============================================
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const limit = parseInt(searchParams.get('limit') || '10');

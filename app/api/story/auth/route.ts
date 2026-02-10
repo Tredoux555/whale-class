@@ -8,12 +8,13 @@ const USER_PASSWORDS: Record<string, string> = {
   'Z': 'oe',
 };
 
-async function logLogin(username: string, ip: string, userAgent: string) {
+async function logLogin(username: string, ip: string, userAgent: string, token: string) {
   try {
     const supabase = getSupabase();
     const { error } = await supabase.from('story_login_logs').insert({
       username,
-      login_time: new Date().toISOString(),
+      login_at: new Date().toISOString(),
+      session_token: token.substring(0, 50),
       ip_address: ip,
       user_agent: userAgent
     });
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       .sign(getJWTSecret());
 
     // Log the login
-    await logLogin(username, ip, userAgent);
+    await logLogin(username, ip, userAgent, token);
 
     return NextResponse.json({ session: token });
   }
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
           .sign(getJWTSecret());
 
         // Log the login
-        await logLogin(username, ip, userAgent);
+        await logLogin(username, ip, userAgent, token);
 
         return NextResponse.json({ session: token });
       }

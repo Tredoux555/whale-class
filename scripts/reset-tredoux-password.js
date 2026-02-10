@@ -1,6 +1,7 @@
 // Reset password for Tredoux
+// Phase 2: Migrated to bcrypt (was SHA-256)
 const { createClient } = require('@supabase/supabase-js');
-const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '.env.local' });
 
 const supabase = createClient(
@@ -8,8 +9,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-function hashPassword(password) {
-  return crypto.createHash('sha256').update(password).digest('hex');
+async function hashPassword(password) {
+  return bcrypt.hash(password, 10);
 }
 
 async function resetPassword() {
@@ -34,7 +35,7 @@ async function resetPassword() {
   }
 
   // Reset password to admin123
-  const newPasswordHash = hashPassword('admin123');
+  const newPasswordHash = await hashPassword('admin123');
 
   for (const admin of admins) {
     const { error: updateError } = await supabase

@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
 

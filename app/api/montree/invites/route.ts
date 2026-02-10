@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET - List invite codes for a child
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const childId = searchParams.get('childId');
-
-  if (!childId) {
-    return NextResponse.json({ error: 'Child ID required' }, { status: 400 });
-  }
-
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { searchParams } = new URL(request.url);
+    const childId = searchParams.get('childId');
+
+    if (!childId) {
+      return NextResponse.json({ error: 'Child ID required' }, { status: 400 });
+    }
+
     const supabase = getSupabase();
 
     const { data: invites, error } = await supabase
       .from('montree_parent_invites')
       .select(`
-        id, invite_code, parent_email, 
+        id, invite_code, parent_email,
         used_at, expires_at, is_active, created_at,
         used_by
       `)
@@ -29,7 +33,7 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const enrichedInvites = (invites || []).map(inv => ({
       ...inv,
-      status: inv.used_at ? 'used' : 
+      status: inv.used_at ? 'used' :
               !inv.is_active ? 'revoked' :
               new Date(inv.expires_at) < now ? 'expired' : 'active'
     }));
@@ -44,6 +48,9 @@ export async function GET(request: NextRequest) {
 // POST - Generate new invite code (reusable by default, unlimited uses)
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { childId, teacherId, parentEmail } = body;
 
@@ -91,6 +98,9 @@ export async function POST(request: NextRequest) {
 // PUT - Reset code (revoke old, create new for same child)
 export async function PUT(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { childId, teacherId } = body;
 
@@ -144,14 +154,17 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Revoke an invite code
 export async function DELETE(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const inviteId = searchParams.get('inviteId');
-
-  if (!inviteId) {
-    return NextResponse.json({ error: 'Invite ID required' }, { status: 400 });
-  }
-
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { searchParams } = new URL(request.url);
+    const inviteId = searchParams.get('inviteId');
+
+    if (!inviteId) {
+      return NextResponse.json({ error: 'Invite ID required' }, { status: 400 });
+    }
+
     const supabase = getSupabase();
 
     const { error } = await supabase

@@ -3,6 +3,7 @@
 // If student is at Work #15, works #1-14 are considered completed
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
   practical_life: { name: 'Practical Life', icon: '🧹', color: '#22c55e' },
@@ -26,6 +27,9 @@ function normalizeArea(area: string): string {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');

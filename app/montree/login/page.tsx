@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { setToken } from '@/lib/montree/api';
 
 export default function TeacherLoginPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function TeacherLoginPage() {
       const data = await res.json();
 
       if (data.success) {
+        setToken(data.token);
         localStorage.setItem('montree_session', JSON.stringify({
           teacher: data.teacher,
           school: data.school,

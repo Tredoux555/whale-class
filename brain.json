@@ -5,28 +5,26 @@
 
   "STATUS": "🔄 SESSION 162 — SOCIAL MEDIA SETUP + GIT PUSH",
 
-  "HANDOFF": "docs/HANDOFF_SESSION_162.md",
-  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_161.md",
+  "HANDOFF": "docs/HANDOFF_SESSION_162_SOCIAL_SETUP.md",
+  "PREVIOUS_HANDOFF": "docs/HANDOFF_SESSION_162.md",
   "DATA_FLOW_DOC": "docs/PROGRESS_DATA_FLOW.md",
 
   "PRIORITY_NEXT_SESSION": {
-    "task": "Create Instagram + TikTok accounts, then first social post",
+    "task": "First social media post + content strategy",
     "steps": [
-      "1. Create Instagram account for Montree (@montreexyz) — use tredoux555@gmail.com",
-      "2. Create TikTok account for Montree (@montreexyz) — use tredoux555@gmail.com",
-      "3. May need to edit out 'Jeffy' branding if accounts are linked to old page",
-      "4. Upload montree-logo.png as profile pic on both platforms",
-      "5. Use bio copy from docs/SOCIAL_MEDIA_SETUP_GUIDE.md",
-      "6. Update projects.json with new social handles after each creation",
-      "7. Update command-center.html socials data",
-      "8. Create first social post across all platforms"
+      "1. Create first post across YouTube, Facebook, Instagram, TikTok",
+      "2. Plan content calendar / posting strategy",
+      "3. Consider creating X/Twitter and LinkedIn accounts",
+      "4. Instagram: upload montree-logo-hd.png as profile pic (user to do)",
+      "5. Instagram: add montree.xyz website link (mobile only)",
+      "6. TikTok: optionally switch to Business account"
     ],
-    "estimated_time": "1 hour for remaining social setup",
+    "all_accounts_live": true,
     "account_email": "tredoux555@gmail.com"
   },
 
   "SESSION_162_SOCIAL_AND_GIT": {
-    "status": "🔄 IN PROGRESS — Facebook done, Instagram + TikTok next",
+    "status": "✅ COMPLETE — Facebook, Instagram, TikTok all set up",
     "tasks_completed": [
       "Regenerated YouTube banner (montree-yt-banner.png) — content centered in safe zones",
       "Created comprehensive social media setup guide (docs/SOCIAL_MEDIA_SETUP_GUIDE.md)",
@@ -40,25 +38,37 @@
       "Facebook cover photo uploaded (montree-yt-banner.png)",
       "Redesigned YouTube banner with abstract tree motif (commit 90a7f47)",
       "Created matching profile logo (montree-logo.png, 800x800)",
-      "Updated projects.json, command-center.html with Facebook data"
+      "Updated projects.json, command-center.html with Facebook data",
+      "Instagram account created (@montreexyz) — tredoux555@gmail.com",
+      "Display name: Montree | Montessori Tools",
+      "Updated projects.json, command-center.html with Instagram data",
+      "Instagram: switched to Business account (Education category), bio set, contact email hello@montree.xyz",
+      "TikTok account created (@montreexyz) — tredoux555@gmail.com",
+      "TikTok: display name set to Montree | Montessori Tools, bio set",
+      "Updated projects.json, command-center.html with TikTok data",
+      "Synced root command-center.html with public/ version"
     ],
     "tasks_remaining": [
-      "Create Instagram account for Montree (@montreexyz) — use tredoux555@gmail.com",
-      "Create TikTok account for Montree (@montreexyz) — use tredoux555@gmail.com",
-      "May need to edit 'Jeffy' references if accounts are linked",
-      "Upload montree-logo.png as profile pic on Instagram + TikTok",
-      "Update projects.json + command-center.html with Instagram + TikTok handles",
+      "Upload montree-logo.png as profile pic on Instagram + TikTok (user must do manually)",
+      "Instagram: add website link montree.xyz (mobile only)",
+      "TikTok: switch to Business account (optional, profile is live)",
       "Final commit and git push"
     ],
     "files_created": [
       "docs/SOCIAL_MEDIA_SETUP_GUIDE.md (SEO-optimized copy for all 3 platforms)",
-      "public/montree-logo.png (800x800 profile logo with abstract tree motif)"
+      "public/montree-logo.png (800x800 profile logo with abstract tree motif)",
+      "public/montree-logo-hd.png (4096x4096 print-quality logo — business card ready)",
+      "public/montree-yt-banner-hd.png (5120x2880 HD banner — 2x original)",
+      "public/montree-profile-hd.png (2048x2048 clean profile pic)",
+      "public/montree-design-philosophy.md (Bioluminescent Depth design philosophy)",
+      "docs/HANDOFF_SESSION_162_SOCIAL_SETUP.md"
     ],
     "files_modified": [
       "public/montree-yt-banner.png (redesigned — abstract tree motif, centered)",
-      "brain.json (updated to session 162)",
-      "projects.json (Facebook social data added)",
-      "public/command-center.html (Facebook set to active)"
+      "brain.json (updated with Instagram + TikTok accounts, HD assets)",
+      "projects.json (Facebook, Instagram, TikTok social data added)",
+      "public/command-center.html (YouTube + Facebook + Instagram + TikTok active, stats: 4/3)",
+      "command-center.html (synced with public/ version — was stale)"
     ],
     "notes": [
       "Facebook Page ID: 61585843271315",
@@ -108,6 +118,41 @@
     "username": "✅ @montreexyz",
     "managedBy": "Tredoux Willemse personal account (tredoux555@gmail.com)",
     "previousName": "Jeffy (rebranded Feb 10, 2026)"
+  },
+
+  "INSTAGRAM_ACCOUNT": {
+    "handle": "@montreexyz",
+    "url": "https://instagram.com/montreexyz",
+    "displayName": "Montree | Montessori Tools",
+    "email": "tredoux555@gmail.com",
+    "setupDate": "2026-02-10",
+    "profilePic": "⏳ User to upload montree-logo-hd.png",
+    "bio": "✅ Set — Montessori classroom management made simple...",
+    "website": "⏳ Only editable on mobile — user to add montree.xyz",
+    "accountType": "✅ Business (Education category)",
+    "contactEmail": "✅ hello@montree.xyz",
+    "category": "Education"
+  },
+
+  "TIKTOK_ACCOUNT": {
+    "handle": "@montreexyz",
+    "url": "https://tiktok.com/@montreexyz",
+    "displayName": "Montree | Montessori Tools",
+    "email": "tredoux555@gmail.com",
+    "setupDate": "2026-02-10",
+    "profilePic": "✅ Set (montree-logo-hd.png uploaded)",
+    "bio": "✅ Set — The app Montessori teachers didn't know they needed 🌿 montree.xyz",
+    "accountType": "⏳ Business account switch optional",
+    "nicknameNote": "Nickname locked until Feb 17, 2026 (7-day cooldown)"
+  },
+
+  "HD_BRAND_ASSETS": {
+    "logo_hd": "public/montree-logo-hd.png (4096x4096, 1170 DPI at business card)",
+    "banner_hd": "public/montree-yt-banner-hd.png (5120x2880, 2x original)",
+    "profile_hd": "public/montree-profile-hd.png (2048x2048, clean icon)",
+    "design_philosophy": "public/montree-design-philosophy.md (Bioluminescent Depth)",
+    "generator_script": "gen_masterpiece.py (Python/Pillow, reproducible)",
+    "style_notes": "Bokeh orbs, micro-particles, bioluminescent glow, no arc lines, dark teal gradient"
   },
 
   "YOUTUBE_CHANNEL": {

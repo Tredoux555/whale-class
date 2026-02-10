@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { cookies } from 'next/headers';
+import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 
 // Area icon mapping
 const AREA_ICONS: Record<string, string> = {
@@ -121,25 +121,14 @@ export async function GET(request: NextRequest) {
     // Get child ID from authenticated session
     let childId: string | null = null;
 
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('montree_parent_session');
-
-    if (!sessionCookie?.value) {
+    const session = await verifyParentSession();
+    if (!session) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
       }, { status: 401 });
     }
-
-    try {
-      const session = JSON.parse(atob(sessionCookie.value));
-      childId = session.child_id;
-    } catch {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid session'
-      }, { status: 401 });
-    }
+    childId = session.childId;
     
     if (!childId) {
       return NextResponse.json({ 

@@ -2,7 +2,7 @@
 // Zero-friction instant trial - generates account + code in one shot
 
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 
@@ -96,10 +96,6 @@ function generateCode(): string {
   return code;
 }
 
-function hashCode(code: string): string {
-  return crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
-}
-
 function generateSlug(baseName: string): string {
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   return `${baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${randomSuffix}`;
@@ -123,7 +119,7 @@ export async function POST(req: NextRequest) {
     const userSchoolName = (schoolName && schoolName.trim()) || `Trial ${role === 'principal' ? 'School' : 'Classroom'}`;
 
     const code = generateCode();
-    const codeHash = hashCode(code);
+    const codeHash = await hashPassword(code.toUpperCase());
     const trialEndsAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
 
     // ── Step 1: Create trial school ──
@@ -198,6 +194,7 @@ export async function POST(req: NextRequest) {
           school_id: school.id,
           classroom_id: classroom?.id || null,
           password_hash: codeHash,
+          login_code: code.toUpperCase(),
           email: email?.trim() || null,
         })
         .select()

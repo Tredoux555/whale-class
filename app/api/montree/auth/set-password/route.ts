@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '@/lib/montree/password';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Hash password
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await hashPassword(password);
     
     // Update teacher record
     const updateData: Record<string, unknown> = {

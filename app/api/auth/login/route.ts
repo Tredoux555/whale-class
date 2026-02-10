@@ -3,18 +3,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminToken } from '@/lib/auth';
 
-// Valid admin credentials
-const ADMIN_CREDENTIALS = [
-  { username: 'Tredoux', password: '870602' },
-  { username: 'Teacher', password: 'Potato' },
-];
+// Build admin credentials from environment (skip accounts with missing passwords)
+function getAdminCredentials() {
+  const creds: { username: string; password: string }[] = [];
+  if (process.env.SUPER_ADMIN_PASSWORD) {
+    creds.push({ username: 'Tredoux', password: process.env.SUPER_ADMIN_PASSWORD });
+  }
+  if (process.env.TEACHER_ADMIN_PASSWORD) {
+    creds.push({ username: 'Teacher', password: process.env.TEACHER_ADMIN_PASSWORD });
+  }
+  return creds;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    // Check against all valid credentials
-    const isValid = ADMIN_CREDENTIALS.some(
+    // Reject empty passwords outright
+    if (!password) {
+      return NextResponse.json(
+        { error: 'Invalid username or password' },
+        { status: 401 }
+      );
+    }
+
+    // Check against configured credentials (accounts with unset env vars are disabled)
+    const isValid = getAdminCredentials().some(
       cred => cred.username === username && cred.password === password
     );
 
@@ -35,7 +49,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 7, // 7 days (matches token TTL)
       path: '/',
     });
 

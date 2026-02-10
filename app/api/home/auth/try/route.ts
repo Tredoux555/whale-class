@@ -4,7 +4,7 @@
 // Matches the Montree classroom try/instant pattern exactly
 
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
 
@@ -17,10 +17,6 @@ function generateCode(): string {
     code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
   }
   return code;
-}
-
-function hashCode(code: string): string {
-  return crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
 }
 
 export async function POST(req: NextRequest) {
@@ -45,7 +41,7 @@ export async function POST(req: NextRequest) {
     let code = '';
     for (let attempt = 0; attempt < 3; attempt++) {
       code = generateCode();
-      const codeHash = hashCode(code);
+      const codeHash = await hashPassword(code.toUpperCase());
 
       const { data, error: famErr } = await supabase
         .from('home_families')

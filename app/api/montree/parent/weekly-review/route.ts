@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { cookies } from 'next/headers';
+import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 
 // Area icons for display
 const AREA_ICONS: Record<string, string> = {
@@ -104,27 +104,14 @@ export async function GET(request: NextRequest) {
     // Get child ID from session cookie (secure - no test mode bypass)
     let childId: string | null = null;
 
-    // Check parent session cookie
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('montree_parent_session');
-
-    if (!sessionCookie?.value) {
+    const session = await verifyParentSession();
+    if (!session) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
       }, { status: 401 });
     }
-
-    // Decode session to get child ID
-    try {
-      const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
-      childId = session.child_id;
-    } catch {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid session'
-      }, { status: 401 });
-    }
+    childId = session.childId;
     
     if (!childId) {
       return NextResponse.json({ 

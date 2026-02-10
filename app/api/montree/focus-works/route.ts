@@ -7,12 +7,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // ============================================
 // GET: Get focus works for a child
 // ============================================
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
 
@@ -70,6 +74,9 @@ export async function GET(request: NextRequest) {
 // ============================================
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { child_id, classroom_id, area, work_id, work_name, set_by } = body;
 
@@ -136,6 +143,9 @@ export async function POST(request: NextRequest) {
 // ============================================
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
     const area = searchParams.get('area');

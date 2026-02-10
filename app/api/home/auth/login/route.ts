@@ -4,11 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import crypto from 'crypto';
-
-function hashCode(code: string): string {
-  return crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
-}
+import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,22 +26,39 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-    const codeHash = hashCode(cleaned);
 
-    // Look up family by password_hash (SHA256 of code)
-    // No salt — code IS the secret, matches Montree classroom pattern
-    const { data: family, error } = await supabase
+    // Try legacy SHA-256 lookup first (old accounts)
+    const codeHash = legacySha256(cleaned);
+    let { data: family, error } = await supabase
       .from('home_families')
-      .select('id, name, email, plan')
+      .select('id, name, email, plan, password_hash')
       .eq('password_hash', codeHash)
       .single();
 
-    if (error) {
-      console.error('Login lookup error:', error.code, error.message);
+    if (!family) {
+      // Try join_code lookup (new accounts with bcrypt hashes)
+      const { data: newFamily } = await supabase
+        .from('home_families')
+        .select('id, name, email, plan, password_hash')
+        .eq('join_code', cleaned)
+        .single();
+
+      if (newFamily) {
+        const valid = await verifyPassword(cleaned, newFamily.password_hash);
+        if (valid) {
+          family = newFamily;
+        }
+      }
     }
 
-    if (error || !family) {
+    if (!family) {
       return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
+    }
+
+    // Re-hash if legacy
+    if (isLegacyHash(family.password_hash)) {
+      const bcryptHash = await hashPassword(cleaned);
+      await supabase.from('home_families').update({ password_hash: bcryptHash }).eq('id', family.id);
     }
 
     return NextResponse.json({

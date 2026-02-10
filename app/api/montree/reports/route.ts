@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
@@ -54,6 +55,9 @@ async function enrichReportContent(
 // GET - Fetch reports (with enriched descriptions)
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
@@ -98,6 +102,9 @@ export async function GET(request: NextRequest) {
 // POST - Generate a new report
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await request.json();
     const { child_id, week_start, week_end, report_type = 'weekly' } = body;

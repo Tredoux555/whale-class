@@ -6,15 +6,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
-    // SECURITY: Require authentication
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-    
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
+
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
     const updateAll = searchParams.get('all') === 'true';

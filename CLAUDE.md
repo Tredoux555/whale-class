@@ -11,52 +11,82 @@ Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-## CURRENT STATUS (Feb 8, 2026)
+## CURRENT STATUS (Feb 10, 2026)
 
-### NEXT: Domain Migration — teacherpotato.xyz → montree.xyz
+### Security Hardening — Phase 3 COMPLETE, Phase 4 Next
 
-New domain **montree.xyz** purchased on GoDaddy. Full migration plan:
-1. Add montree.xyz + www.montree.xyz as custom domains in Railway (whale-class)
-2. Get Railway CNAME values, configure in GoDaddy DNS
-3. Search codebase for all `teacherpotato` references and update to `montree.xyz`
-4. Update Supabase auth redirect URLs
-5. Update Railway env vars (NEXT_PUBLIC_URL etc.)
-6. Deploy, test all routes, set old domain to redirect
-**Claude will do ALL steps via browser + terminal — no manual user action needed.**
+9-phase security hardening project in progress. Phases 1–3 done and audited.
 
-### URGENT: Home Registration 500 Error
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | API Auth (JWT for all routes) | ✅ Done |
+| 1B | Parent session tokens | ✅ Done |
+| 2 | bcrypt password migration (100% audited) | ✅ Done |
+| 3 | Quick security wins (11 fixes across ~25 files) | ✅ Done + Audited |
+| 4 | Secret rotation & env hardening | 🔜 Next |
+| 5 | Password policy & rate limiting | Pending |
+| 6 | Input sanitisation & CSP headers | Pending |
+| 7 | Montree audit logging | Pending |
+| 8 | Rate limiting & abuse prevention | Pending |
+| 9 | Production security review (final) | Pending |
 
-`/api/home/auth/try` returns 500 on live site. Debug error surfacing added but NOT yet deployed. See `docs/HANDOFF_SESSION_155_HOME_AUTH.md` for diagnosis steps.
+**Handoff:** `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md`
+**Phase 3 plan:** `.claude/plans/phase3-plan-v3.md`
 
-**Uncommitted + unpushed changes exist.** Run:
-```bash
-git add -A && git commit -m "feat: complete code-based auth for Home (login, register, super-admin)" && git push
-```
+### 🔧 FRESH AUDIT COMMAND (Phase 4)
 
-### Active: Montree Home Auth (Session 155)
+When starting a new chat, say: **"Run the Phase 4 fresh audit command from CLAUDE.md"**
 
-Full code-based auth system built for Montree Home. Replaces old email/password flow.
+Claude should then execute this sequence:
+1. Read `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` for context on what's already done
+2. Run a comprehensive security audit of the CURRENT codebase covering:
+   - Grep for remaining hardcoded secrets/passwords (beyond 870602 which is done)
+   - Check all `.env.local` values — flag weak secrets (especially `ADMIN_SECRET`)
+   - Audit all auth endpoints for rate limiting (there is none currently)
+   - Check for missing input validation/sanitisation across API routes
+   - Check for XSS vectors in any server-rendered content
+   - Audit Content-Security-Policy headers (likely missing)
+   - Check Montree system (teacher/parent/admin) for audit logging gaps
+   - Verify all Railway production env vars match what code expects
+3. Produce findings ranked by severity
+4. Build Phase 4 plan using the 3-round plan→audit→refine cycle (same as Phase 3)
+5. Present plan for approval before implementing
 
-**What works:** Registration page UI, login page UI, code generation API, name collection
-**What's broken:** API 500 on insert into `home_families` (likely schema mismatch — check with SQL in handoff)
-**Handoff:** `docs/HANDOFF_SESSION_155_HOME_AUTH.md`
+### Other Open Items
 
-### Backlog: Codebase Cleanup (5 remaining phases)
+**Domain Migration** — teacherpotato.xyz → montree.xyz. Plan in CLAUDE.md history. Not started.
 
-Phase 1 DONE. Phases 2-6 ready to execute. Full plan in `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md`.
+**Home Registration 500 Error** — `/api/home/auth/try` returns 500 on live site. See `docs/HANDOFF_SESSION_155_HOME_AUTH.md`.
 
-| Phase | What | Status | Time |
-|-------|------|--------|------|
-| 1 | Security fixes (secret + dead auth route) | DONE | 10 min |
-| 2 | Consolidate 3 Supabase clients into one | Pending | 30 min |
-| 3 | Delete dead code + dedup 27 game routes | Pending | 10 min |
-| 4 | Split 3 oversized files (918, 1115, 1243 lines) | Pending | 45 min |
-| 5 | Strip 400+ console.log statements | Pending | 15 min |
-| 6 | Fix 23 `: any` type annotations | Pending | 10 min |
+**Codebase Cleanup** (separate from security hardening):
+
+| Phase | What | Status |
+|-------|------|--------|
+| 1 | Security fixes (secret + dead auth route) | DONE |
+| 2 | Consolidate 3 Supabase clients into one | Pending |
+| 3 | Delete dead code + dedup 27 game routes | Pending |
+| 4 | Split 3 oversized files (918, 1115, 1243 lines) | Pending |
+| 5 | Strip 400+ console.log statements | Pending |
+| 6 | Fix 23 `: any` type annotations | Pending |
 
 ---
 
-### Recent Changes (Session 155, Feb 8)
+### Recent Changes (Security Hardening, Feb 10)
+
+**Phase 3 — Quick Security Wins (11 fixes):**
+- Fix 1: `login_time` → `login_at` across 11 files (column rename)
+- Fix 2: Session token stored on Story user login (`story_login_logs.session_token`)
+- Fix 3: Created `app/api/story/heartbeat/route.ts` (was missing, client already called it)
+- Fix 4: Rewrote online-users to dual-query `story_online_sessions` + `story_login_logs`
+- Fix 5: System-controls auth upgraded from `token.length > 10` to JWT verification
+- Fix 6: Hardcoded `870602` moved to `process.env.SUPER_ADMIN_PASSWORD` (13 files)
+- Fix 7: Admin token TTL 30d → 7d + cookie maxAge aligned
+- Fix 8: Vault refs in system-controls fixed (table→`vault_files`, bucket→`vault-secure`, column→`file_url`)
+- Audit fix: Empty password bypass in Whale Class login (rewrote credential loading)
+- Audit fix: Added `TEACHER_ADMIN_PASSWORD` env var
+- Audit fix: `OnlineUser.lastLogin` → `lastSeen` type alignment
+
+### Previous Changes (Session 155, Feb 8)
 
 **Montree Home — Code-Based Auth:**
 - `app/home/page.tsx` — Added name input, sends name to API
@@ -121,8 +151,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://dmfncjjtsoxrnvcdnvjq.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=...
 RESEND_API_KEY=...
 ADMIN_PASSWORD=...
-ADMIN_SECRET=...          # REQUIRED — no fallback (used for JWT signing in lib/auth.ts)
-SUPER_ADMIN_PASSWORD=...  # REQUIRED — for super-admin login
+ADMIN_SECRET=...              # REQUIRED — JWT signing for Whale Class admin (lib/auth.ts). WEAK — needs rotation in Phase 4
+SUPER_ADMIN_PASSWORD=...      # REQUIRED — Montree super-admin + Whale Class "Tredoux" login
+TEACHER_ADMIN_PASSWORD=...    # REQUIRED (Phase 3) — Whale Class "Teacher" login. Set to old password.
+STORY_JWT_SECRET=...          # REQUIRED — Story system JWT signing (lib/story-db.ts)
 ```
 
 ---
@@ -290,7 +322,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SESSION_155_HOME_AUTH.md` | **CURRENT** — Home code-based auth, 500 bug diagnosis, uncommitted changes |
+| `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | **CURRENT** — Security Phase 3 complete, all fixes listed, Phase 4 next steps |
+| `.claude/plans/phase3-plan-v3.md` | Phase 3 execution plan (3 rounds of audit refinement) |
+| `docs/HANDOFF_SESSION_155_HOME_AUTH.md` | Home code-based auth, 500 bug diagnosis |
 | `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | Codebase cleanup plan (5 remaining phases) |
 | `docs/MONTREE_HOME_HANDOFF.md` | Architecture for Montree Home (250-activity version — outdated, use 68-work JSON instead) |
 | `docs/HANDOFF_SESSION_151_LANGUAGE_MAKING_GUIDE.md` | Language guide + API download route |

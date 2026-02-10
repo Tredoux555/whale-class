@@ -2,7 +2,8 @@
 // CRUD for teachers + code regeneration
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import crypto from 'crypto';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { hashPassword } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -13,20 +14,15 @@ function generateLoginCode(): string {
   return code;
 }
 
-function hashCode(code: string): string {
-  return crypto.createHash('sha256').update(code).digest('hex');
-}
-
 // List teachers for school
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { searchParams } = new URL(request.url);
-    const schoolId = searchParams.get('school_id') || request.headers.get('x-school-id');
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
 
-    if (!schoolId) {
-      return NextResponse.json({ error: 'School ID required' }, { status: 400 });
-    }
+    const { searchParams } = new URL(request.url);
+    const schoolId = auth.schoolId;
 
     // Get teachers directly (simpler query, matches overview API)
     const { data: teachers, error } = await supabase
@@ -71,15 +67,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { name, email, classroom_id } = await request.json();
     
     const loginCode = generateLoginCode();
-    const passwordHash = hashCode(loginCode);
+    const passwordHash = await hashPassword(loginCode);
 
     const { data: teacher, error } = await supabase
       .from('montree_teachers')
@@ -89,6 +85,7 @@ export async function POST(request: NextRequest) {
         name,
         email: email || null,
         password_hash: passwordHash,
+        login_code: loginCode.toUpperCase(),
         role: 'teacher',
         is_active: true,
       })
@@ -112,10 +109,10 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { id, name, email, classroom_id, is_active, regenerate_code } = await request.json();
 
@@ -128,7 +125,8 @@ export async function PATCH(request: NextRequest) {
     let newCode: string | null = null;
     if (regenerate_code) {
       newCode = generateLoginCode();
-      updateData.password_hash = hashCode(newCode);
+      updateData.password_hash = await hashPassword(newCode);
+      updateData.login_code = newCode.toUpperCase();
     }
 
     const { data: teacher, error } = await supabase
@@ -156,10 +154,10 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const schoolId = request.headers.get('x-school-id');
-    if (!schoolId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const schoolId = auth.schoolId;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

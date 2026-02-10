@@ -149,10 +149,8 @@ export async function GET(req: NextRequest) {
     // Verify super admin
     const superAdminPassword = req.headers.get('x-super-admin-password');
     const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    const fallbackPassword = '870602';
-
-    const isValid = superAdminPassword === expectedPassword ||
-                    superAdminPassword === fallbackPassword;
+    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    const isValid = superAdminPassword === expectedPassword;
 
     if (!isValid) {
       console.error('Super admin auth failed:', {
@@ -217,10 +215,8 @@ export async function PATCH(req: NextRequest) {
     // Verify super admin
     const superAdminPassword = req.headers.get('x-super-admin-password');
     const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    const fallbackPassword = '870602';
-
-    const isValid = superAdminPassword === expectedPassword ||
-                    superAdminPassword === fallbackPassword;
+    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    const isValid = superAdminPassword === expectedPassword;
 
     if (!isValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -270,10 +266,8 @@ export async function DELETE(req: NextRequest) {
     // Verify super admin
     const superAdminPassword = req.headers.get('x-super-admin-password');
     const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    const fallbackPassword = '870602';
-
-    const isValid = superAdminPassword === expectedPassword ||
-                    superAdminPassword === fallbackPassword;
+    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    const isValid = superAdminPassword === expectedPassword;
 
     if (!isValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

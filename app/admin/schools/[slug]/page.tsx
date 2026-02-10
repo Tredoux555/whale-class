@@ -292,7 +292,7 @@ export default function SchoolPage() {
           <p className="text-slate-600 text-xs uppercase tracking-wider mb-3">Quick Login</p>
           <div className="bg-slate-900 rounded-lg p-3 inline-block">
             <code className="text-sm text-slate-400">
-              Admin: <span className="text-white">Tredoux</span> / <span className="text-white">870602</span>
+              Admin: <span className="text-white">Tredoux</span> / <span className="text-white">••••••</span>
             </code>
           </div>
         </div>

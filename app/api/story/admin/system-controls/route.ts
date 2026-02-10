@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifyAdminToken } from '@/lib/story-db';
 
-// Verify admin session
 async function verifyAdmin(request: NextRequest): Promise<boolean> {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) return false;
-  
-  const session = authHeader.substring(7);
-  return session.length > 10;
+  const admin = await verifyAdminToken(request.headers.get('Authorization'));
+  return admin !== null;
 }
 
 export async function POST(request: NextRequest) {
@@ -75,27 +72,35 @@ export async function POST(request: NextRequest) {
       }
 
       case 'clear_vault': {
-        // Get all vault files first
         const { data: files } = await supabase
-          .from('story_vault')
-          .select('storage_path');
-        
-        // Delete from storage
+          .from('vault_files')
+          .select('id, file_url');
+
         if (files && files.length > 0) {
-          const paths = files.map(f => f.storage_path).filter(Boolean);
+          const paths = files
+            .map((f: { file_url?: string }) => {
+              const match = f.file_url?.match(/vault\/[^?]+/);
+              return match ? match[0] : null;
+            })
+            .filter(Boolean);
           if (paths.length > 0) {
-            await supabase.storage.from('story-vault').remove(paths);
+            await supabase.storage.from('vault-secure').remove(paths);
           }
         }
-        
-        // Delete from database
+
         const { error } = await supabase
-          .from('story_vault')
+          .from('vault_files')
           .delete()
           .not('id', 'is', null);
-        
+
         if (error) throw error;
         result = { success: true, message: 'Vault cleared', affected: files?.length || 0 };
+
+        await supabase
+          .from('vault_audit_log')
+          .delete()
+          .not('id', 'is', null);
+
         break;
       }
 
@@ -149,9 +154,21 @@ export async function POST(request: NextRequest) {
         // Nuclear option - clear everything
         await supabase.from('story_message_history').delete().not('id', 'is', null);
         await supabase.from('story_login_logs').delete().not('id', 'is', null);
-        await supabase.from('story_vault').delete().not('id', 'is', null);
+
+        const { data: vaultFiles } = await supabase.from('vault_files').select('file_url');
+        if (vaultFiles && vaultFiles.length > 0) {
+          const vaultPaths = vaultFiles
+            .map((f: { file_url?: string }) => { const m = f.file_url?.match(/vault\/[^?]+/); return m ? m[0] : null; })
+            .filter(Boolean);
+          if (vaultPaths.length > 0) {
+            await supabase.storage.from('vault-secure').remove(vaultPaths);
+          }
+        }
+        await supabase.from('vault_files').delete().not('id', 'is', null);
+        await supabase.from('vault_audit_log').delete().not('id', 'is', null);
+        await supabase.from('vault_unlock_attempts').delete().not('id', 'is', null);
         await supabase.from('story_users').delete().not('id', 'is', null);
-        
+
         result = { success: true, message: 'Factory reset complete - all data cleared', affected: 0 };
         break;
       }
@@ -183,7 +200,7 @@ export async function GET(request: NextRequest) {
       supabase.from('story_message_history').select('*', { count: 'exact', head: true }),
       supabase.from('story_users').select('*', { count: 'exact', head: true }),
       supabase.from('story_login_logs').select('*', { count: 'exact', head: true }),
-      supabase.from('story_vault').select('*', { count: 'exact', head: true }),
+      supabase.from('vault_files').select('*', { count: 'exact', head: true }).is('deleted_at', null),
     ]);
 
     return NextResponse.json({
