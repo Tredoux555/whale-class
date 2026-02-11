@@ -48,7 +48,7 @@ Deploy: Railway auto-deploys on push to `main`
 4. Run: `npx tsx scripts/rotate-encryption-key.ts` (execute)
 5. Update Railway: `MESSAGE_ENCRYPTION_KEY=<new-key>`, remove `OLD_ENCRYPTION_KEY`
 
-**Frontend update** — Super-admin panel needs to send password with audit GET and schools GET (newly authenticated endpoints). See Phase 9 handoff for details.
+**Frontend update** — ✅ DONE. Super-admin panel now sends password with audit POST and schools GET.
 
 ### Other Open Items
 
@@ -69,7 +69,19 @@ Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-### Recent Changes (Phase 9 — Production Security Review, Feb 11)
+### Recent Changes (Post-Phase 9 Audit & Production Fixes, Feb 11)
+
+**Post-Phase 9 Audit & Fixes:**
+- **CRITICAL CSP FIX**: `script-src 'self'` in `next.config.ts` was blocking ALL inline JavaScript. Next.js requires inline scripts for hydration. Changed to `script-src 'self' 'unsafe-inline'`. Also added Google Fonts to `style-src` and `font-src`. This was breaking the ENTIRE site since Phase 6.
+- **3 audit rounds** caught ~20 additional files with `error.message` leaks (total now ~65 files sanitized)
+- **Super-admin panel frontend**: `hooks/useAdminData.ts` sends password header with schools GET; `page.tsx` sends password in audit POST body
+- **Migration 123 applied**: Renamed `login_time` → `login_at` in `story_login_logs` and `story_admin_login_logs` (Phase 3 code change was never applied to DB). Created `montree_super_admin_audit` table (migration 099 never ran — all audit logging was silently failing). Ensured `montree_rate_limit_logs` exists.
+- **Rate limiting added** to schools PATCH (10/15min) and DELETE (5/15min)
+- **Duplicate `getSupabase()` deduped** in audit GET handler
+
+**Files created:** `docs/HANDOFF_POST_PHASE9_AUDIT.md`, `migrations/123_fix_story_columns_and_audit_table.sql`
+
+### Previous Changes (Phase 9 — Production Security Review, Feb 11)
 
 **Phase 9 — Production Security Review (8 fixes across ~45 files):**
 - Fix 1 (CRITICAL): Created `lib/verify-super-admin.ts` — shared timing-safe `verifySuperAdminPassword()` helper using `timingSafeEqual()` with fixed 256-byte buffers. Replaced 9 plaintext `!==` comparisons across 6 super-admin route files.
@@ -201,6 +213,10 @@ Deploy: Railway auto-deploys on push to `main`
 - `home_progress` — per-child per-work status
 - `home_curriculum` — 68-work curriculum seeded per family on registration
 - `home_sessions` — work session logs (future use)
+- `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
+- `montree_rate_limit_logs` — DB-backed rate limiting (survives container restarts)
+- `story_users`, `story_admin_users` — Story system auth (bcrypt hashes)
+- `story_login_logs`, `story_admin_login_logs` — Story login tracking (column: `login_at`)
 
 ### Whale Class Data
 - Classroom ID: `945c846d-fb33-4370-8a95-a29b7767af54`
@@ -364,7 +380,7 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - 43 Whale API routes with zero auth (admin tool, UI-gated — auth consolidation project)
 - localStorage for JWTs (teacher, teacher sessions, home family) — auth restructure project
 - Parent invite codes stored as plaintext — low priority
-- CSP `style-src 'unsafe-inline'` — complex Next.js integration
+- CSP `script-src 'unsafe-inline'` + `style-src 'unsafe-inline'` — required by Next.js, nonce-based approach would be more secure
 - `ignoreBuildErrors: true` in next.config.ts — pre-existing
 - Audit table naming (`montree_super_admin_audit` logs all events, not just super-admin)
 
@@ -414,7 +430,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | **CURRENT** — Security Phase 9 complete (FINAL), production security review |
+| `docs/HANDOFF_POST_PHASE9_AUDIT.md` | **CURRENT** — Post-Phase 9 audit, CSP fix, frontend fixes, DB migration |
+| `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | Security Phase 9 complete (FINAL), production security review |
 | `docs/HANDOFF_SECURITY_PHASE8_COMPLETE.md` | Security Phase 8 complete, logging & monitoring |
 | `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` | Security Phase 7 complete, session management improvements |
 | `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md` | Security Phase 6 complete, input sanitisation & CSP |
