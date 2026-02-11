@@ -243,11 +243,32 @@ function Checkbox({ checked, onChange }) {
   );
 }
 
+// Map original JSX/HTML filenames to marketing hub routes
+const FILE_ROUTE_MAP = {
+  "montree-platform-warroom.jsx": "/montree/super-admin/marketing/warroom",
+  "montree-objection-handler.jsx": "/montree/super-admin/marketing/objections",
+  "montree-content-factory.jsx": "/montree/super-admin/marketing/content",
+  "montree-creative-studio.jsx": "/montree/super-admin/marketing/studio",
+  "montree-prospect-hq.jsx": "/montree/super-admin/marketing/prospects",
+  "montree-outreach.jsx": "/montree/super-admin/marketing/outreach",
+  "montree-growth-engine.jsx": "/montree/super-admin/marketing/growth",
+  "montree-landing.html": "/montree/super-admin/marketing/landing",
+  "montree-links.html": "/montree/super-admin/marketing/links",
+  "montree-pitch-v2.html": "/montree/super-admin/marketing/pitch",
+  "montree-playbook.html": "/montree/super-admin/marketing/playbook",
+  "montree-mission-control.jsx": "/montree/super-admin/marketing/launch-hq",
+};
+
 function FileTag({ name, tab }) {
+  const route = FILE_ROUTE_MAP[name];
   return (
     <div className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: "rgba(46,204,113,0.04)", border: "1px solid rgba(46,204,113,0.1)" }}>
       <span className="font-bold" style={{ color: "#2ecc71" }}>📂 Open: </span>
-      <span style={{ color: "#e8f5e9" }}>{name}</span>
+      {route ? (
+        <Link href={route} className="underline hover:text-emerald-300 transition-colors" style={{ color: "#e8f5e9" }}>{name}</Link>
+      ) : (
+        <span style={{ color: "#e8f5e9" }}>{name}</span>
+      )}
       {tab && <span style={{ color: "#5a7a6a" }}> → {tab}</span>}
     </div>
   );
@@ -259,11 +280,21 @@ function FileTag({ name, tab }) {
 export default function LaunchHQ() {
   const [tab, setTab] = useState("daily");
   const [checks, setChecks] = useState(() => {
-    try { return JSON.parse("{}"); } catch { return {}; }
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = window.localStorage.getItem("montree-launch-checks");
+        if (saved) return JSON.parse(saved);
+      }
+      return {};
+    } catch { return {}; }
   });
   const [finderSearch, setFinderSearch] = useState("");
 
-  const toggle = (key) => setChecks((p) => ({ ...p, [key]: !p[key] }));
+  const toggle = (key) => setChecks((p) => {
+    const updated = { ...p, [key]: !p[key] };
+    try { window.localStorage.setItem("montree-launch-checks", JSON.stringify(updated)); } catch {}
+    return updated;
+  });
 
   const totalTasks = DAYS.reduce((a, d) => a + d.tasks.length, 0);
   const doneTasks = Object.values(checks).filter(Boolean).length;
@@ -447,7 +478,11 @@ export default function LaunchHQ() {
                       <div className="flex items-start gap-3">
                         <span style={{ fontSize: 18 }}>{f.icon}</span>
                         <div className="flex-1">
-                          <div className="text-sm font-bold" style={{ color: "#e8f5e9" }}>{f.name}</div>
+                          {FILE_ROUTE_MAP[f.name] ? (
+                            <Link href={FILE_ROUTE_MAP[f.name]} className="text-sm font-bold underline hover:text-emerald-300 transition-colors" style={{ color: "#e8f5e9" }}>{f.name}</Link>
+                          ) : (
+                            <div className="text-sm font-bold" style={{ color: "#e8f5e9" }}>{f.name}</div>
+                          )}
                           <div className="text-xs mt-1" style={{ color: "#8aaa9a", lineHeight: 1.6 }}>{f.job}</div>
                           {f.deploy && (
                             <div className="text-xs mt-1.5 inline-block px-2 py-0.5 rounded" style={{
