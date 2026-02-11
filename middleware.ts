@@ -39,14 +39,9 @@ export async function middleware(req: NextRequest) {
   const isMontree = hostname.includes('montree.xyz');
   
   // Block Montree routes on teacherpotato.xyz
-  if (isTeacherPotato && (pathname.startsWith('/montree') || pathname.startsWith('/home'))) {
+  if (isTeacherPotato && pathname.startsWith('/montree')) {
     // Redirect to the correct domain
     return NextResponse.redirect(new URL(pathname, 'https://montree.xyz'));
-  }
-
-  // Home system temporarily disabled — redirect all /home/* to /montree
-  if (pathname === '/home' || pathname.startsWith('/home/')) {
-    return NextResponse.redirect(new URL('/montree', req.url));
   }
   
   // Block Whale Class routes on montree.xyz (root page, admin, teacher, games, story)
@@ -146,7 +141,6 @@ export async function middleware(req: NextRequest) {
     '/debug',      // Debug pages
     '/story',      // Story system (has its own auth)
     '/montree',    // Montree app - has its own auth system (teacher/parent logins)
-    '/home',       // Montree Home - has its own auth system (family logins)
     '/auth/login',
     '/auth/signup',
     '/auth/reset-password',
