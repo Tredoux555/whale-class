@@ -63,6 +63,34 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
+### 📊 Child Progress Portfolio — ✅ COMPLETE (Feb 11, 2026)
+
+Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple bar chart into a full portfolio view.
+
+**What it shows:**
+- Hero stats: 3 big numbers (Mastered / Practicing / Presented)
+- 5 area progress bars — tappable to filter timeline (emerald/amber/indigo/rose/violet)
+- Recent photos strip — horizontal scroll with lightbox viewer
+- Timeline grouped by month — mastery ⭐, practicing 🔄, presented 📋, notes 📝, observations 👁
+
+**Data sources (3 parallel fetches):**
+- `/api/montree/progress/summary?child_id=X` → area bars + overall %
+- `/api/montree/media?child_id=X&limit=20` → photo strip
+- `/api/montree/progress?child_id=X&include_observations=true` → hero stats + timeline
+
+**API enhancement:** Progress route now accepts `include_observations=true` query param → fetches from `montree_behavioral_observations` table.
+
+**Files:** `app/montree/dashboard/[childId]/progress/page.tsx` (rewritten, 413 lines), `app/api/montree/progress/route.ts` (enhanced)
+
+**Handoff:** `docs/HANDOFF_PROGRESS_DASHBOARD.md`
+
+**Also in this session:**
+- Position picker added to AddWorkModal (`84dab04`) — teachers can choose where to insert new works in sequence
+- Camera capture fix (`6d86791`) — Permissions-Policy unblocked + facingMode fix
+- Checkbox persistence fix (`0cefeeb`) — localStorage via useEffect
+
+---
+
 ### 🚀 Marketing Hub — ✅ COMPLETE (Feb 11, 2026)
 
 13 marketing tools added to super-admin panel under `/montree/super-admin/marketing/*`.
@@ -90,7 +118,32 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-### Recent Changes (Marketing Hub + Encryption Rotation, Feb 11)
+### Recent Changes (Progress Dashboard + Feature Fixes, Feb 11)
+
+**Child Progress Portfolio — `ba7b47d` (rewrite of progress/page.tsx + API enhancement):**
+- Rebuilt `/montree/dashboard/[childId]/progress` from basic bars to full portfolio view
+- 4 sections: hero stats (mastered/practicing/presented), 5 tappable area progress bars, recent photos strip with lightbox, timeline grouped by month
+- Timeline shows mastery events, practicing, presentations, teacher notes, and behavioral observations
+- Area bars filter the timeline when tapped
+- Enhanced `/api/montree/progress/route.ts` — added `include_observations=true` query param (fetches `montree_behavioral_observations`)
+- 3 parallel API fetches on mount: summary, media, progress+observations
+- 3 rounds of planning: `.claude/plans/progress-dashboard-v1.md` → `v2.md` → `v3-FINAL.md`
+
+**Position Picker in AddWorkModal — `84dab04`:**
+- `components/montree/AddWorkModal.tsx` — full-screen position picker overlay for choosing where to insert new works
+- Options: Beginning / After #N [work name] / End of list
+- Sends `after_sequence` to curriculum POST API (already supported server-side)
+- `app/montree/dashboard/curriculum/page.tsx` — passes `areaWorks={byArea}` to AddWorkModal
+
+**Bug Fixes:**
+- `6d86791` — Camera capture: unblocked Permissions-Policy in next.config.ts + fixed facingMode for mobile
+- `0cefeeb` — Checkbox persistence: marketing hub checkboxes now use useEffect for localStorage read
+
+**Commits need push:** `git push origin main` from local terminal (2 commits ahead of remote).
+
+---
+
+### Previous Changes (Marketing Hub + Encryption Rotation, Feb 11)
 
 **Marketing Hub — 18 new files, 8,190 insertions:**
 - Created `app/montree/super-admin/marketing/layout.tsx` — client-side auth wrapper (password gate, 15-min timeout, activity tracking). Reuses `/api/montree/super-admin/auth` endpoint.
@@ -358,7 +411,7 @@ RESEND_FROM_EMAIL=...
 | `/montree/login` | Teacher login (6-char code or email+password) |
 | `/montree/dashboard` | Class list |
 | `/montree/dashboard/[childId]` | Child week view (1,115 lines — needs splitting) |
-| `/montree/dashboard/[childId]/progress` | All works |
+| `/montree/dashboard/[childId]/progress` | Progress portfolio (hero stats, area bars, photos, timeline) |
 | `/montree/dashboard/curriculum` | 5 area cards + Teaching Tools section |
 | `/montree/dashboard/card-generator` | 3-Part Cards tool |
 | `/montree/dashboard/vocabulary-flashcards` | Vocab Flashcards tool |
@@ -501,7 +554,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_POST_PHASE9_AUDIT.md` | **CURRENT** — Post-Phase 9 audit, CSP fix, frontend fixes, DB migration |
+| `docs/HANDOFF_PROGRESS_DASHBOARD.md` | **CURRENT** — Progress portfolio, position picker, bug fixes |
+| `docs/HANDOFF_POST_PHASE9_AUDIT.md` | Post-Phase 9 audit, CSP fix, frontend fixes, DB migration |
 | `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | Security Phase 9 complete (FINAL), production security review |
 | `docs/HANDOFF_SECURITY_PHASE8_COMPLETE.md` | Security Phase 8 complete, logging & monitoring |
 | `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` | Security Phase 7 complete, session management improvements |
