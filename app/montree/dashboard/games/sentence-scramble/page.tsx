@@ -290,7 +290,7 @@ export default function SentenceScrambleGame() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-violet-600 via-purple-500 to-fuchsia-500 overflow-hidden">
         <header className="p-4">
-          <Link href="/games" className="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
+          <Link href="/montree/dashboard/games" className="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
             <span className="text-2xl">←</span>
             <span className="font-medium">Back to Games</span>
           </Link>
@@ -398,7 +398,7 @@ export default function SentenceScrambleGame() {
             >
               Play Again! 🔄
             </button>
-            <Link href="/games" className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
+            <Link href="/montree/dashboard/games" className="block w-full p-4 bg-white/20 text-white rounded-2xl font-bold text-xl">
               Back to Games
             </Link>
           </div>
@@ -416,7 +416,7 @@ export default function SentenceScrambleGame() {
     <div className="min-h-screen bg-gradient-to-b from-violet-600 via-purple-500 to-fuchsia-500">
       {/* Header */}
       <header className="p-3 flex items-center justify-between">
-        <Link href="/games" className="text-white/80 hover:text-white text-2xl">←</Link>
+        <Link href="/montree/dashboard/games" className="text-white/80 hover:text-white text-2xl">←</Link>
         
         <div className="flex items-center gap-3">
           {stats.streak >= 3 && (

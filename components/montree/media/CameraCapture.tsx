@@ -73,7 +73,39 @@ export default function CameraCapture({
         audio: withAudio,
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (firstErr) {
+        // If audio was requested and failed, retry without audio
+        // This commonly happens on desktop when microphone permission is denied
+        if (withAudio) {
+          console.warn('Camera+audio failed, retrying video-only:', firstErr);
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: constraints.video,
+              audio: false,
+            });
+          } catch (secondErr) {
+            // If resolution constraints also fail, try basic video
+            console.warn('HD video failed, retrying basic:', secondErr);
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: facing },
+              audio: false,
+            });
+          }
+        } else if (firstErr instanceof Error && firstErr.name === 'OverconstrainedError') {
+          // Resolution too high for this camera, try without resolution constraints
+          console.warn('HD constraints failed, retrying basic:', firstErr);
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing },
+            audio: false,
+          });
+        } else {
+          throw firstErr;
+        }
+      }
+
       streamRef.current = stream;
 
       // Attach to video element
@@ -89,11 +121,13 @@ export default function CameraCapture({
       let errorMessage = 'Failed to access camera';
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError') {
-          errorMessage = 'Camera access denied. Please allow camera permissions.';
+          errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
         } else if (err.name === 'NotFoundError') {
           errorMessage = 'No camera found on this device.';
         } else if (err.name === 'NotReadableError') {
           errorMessage = 'Camera is in use by another application.';
+        } else if (err.name === 'OverconstrainedError') {
+          errorMessage = 'Camera does not support the requested settings. Trying again...';
         }
       }
 

@@ -253,10 +253,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Fetch all media records to get storage paths
-    const { data: mediaRecords, error: fetchError } = await supabase
+    // Scope to auth school_id to prevent cross-school deletion
+    const schoolId = typeof auth === 'object' && 'schoolId' in auth ? auth.schoolId : null;
+    let mediaQuery = supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path')
       .in('id', idsToDelete);
+    if (schoolId) {
+      mediaQuery = mediaQuery.eq('school_id', schoolId);
+    }
+    const { data: mediaRecords, error: fetchError } = await mediaQuery;
 
     if (fetchError) {
       console.error('Media fetch error:', fetchError.message, fetchError.code);

@@ -171,7 +171,7 @@ export default function ColorMatchGame() {
           {/* Header */}
           <div className="flex items-center gap-4 mb-8 pt-4">
             <Link 
-              href="/games"
+              href="/montree/dashboard/games"
               className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-colors"
             >
               ←
@@ -311,7 +311,7 @@ export default function ColorMatchGame() {
               Change Level
             </button>
             <Link
-              href="/games"
+              href="/montree/dashboard/games"
               className="block w-full py-3 text-gray-500 hover:text-gray-700"
             >
               ← Back to Games

@@ -204,16 +204,17 @@ export default function WeekPage() {
   }, [childId]);
 
   // Also re-fetch when returning to this page (handles tab navigation)
+  // Skip refetch if currently saving to prevent overwriting optimistic updates
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && childId) {
+      if (document.visibilityState === 'visible' && childId && !isSaving) {
         fetchAssignments();
       }
     };
 
     // Re-fetch on focus (when switching tabs or returning to page)
     const handleFocus = () => {
-      if (childId) fetchAssignments();
+      if (childId && !isSaving) fetchAssignments();
     };
 
     window.addEventListener('focus', handleFocus);
