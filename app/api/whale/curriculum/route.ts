@@ -102,12 +102,11 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching curriculum progress:', error);
     return NextResponse.json(
       {
         success: false,
-        error: message || 'Failed to fetch curriculum progress',
+        error: 'Failed to fetch curriculum progress',
       },
       { status: 500 }
     );

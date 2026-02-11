@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     console.error('Upload handler error:', error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: 'Internal server error',
       },
       { status: 500 }
     );

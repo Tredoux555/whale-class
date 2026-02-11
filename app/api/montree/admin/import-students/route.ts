@@ -231,7 +231,8 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (childError || !createdChild) {
-        errors.push(`Failed to create ${student.name}: ${childError?.message}`);
+        console.error(`[Import] Failed to create ${student.name}:`, childError);
+        errors.push(`Failed to create ${student.name}`);
         continue;
       }
 
@@ -292,7 +293,8 @@ export async function POST(request: NextRequest) {
           });
 
         if (progressError) {
-          errors.push(`Progress error for ${student.name}/${area}: ${progressError.message}`);
+          console.error(`[Import] Progress error for ${student.name}/${area}:`, progressError);
+          errors.push(`Progress error for ${student.name}/${area}`);
         }
 
         matchResults.push({
@@ -319,8 +321,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Import students error:', error);
-    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

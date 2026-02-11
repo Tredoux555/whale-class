@@ -160,10 +160,9 @@ export async function GET(request: NextRequest) {
       data: reportData
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error generating report:', error);
     return NextResponse.json(
-      { error: message || 'Failed to generate report' },
+      { error: 'Failed to generate report' },
       { status: 500 }
     );
   }

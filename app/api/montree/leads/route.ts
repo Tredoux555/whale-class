@@ -167,10 +167,10 @@ export async function GET(req: NextRequest) {
     const isValid = superAdminPassword === expectedPassword;
 
     if (!isValid) {
+      // Phase 8: Removed undefined fallbackPassword reference, sanitized log
       console.error('Super admin auth failed:', {
-        receivedPassword: superAdminPassword ? superAdminPassword.substring(0, 2) + '***' : 'none',
+        receivedPassword: superAdminPassword ? 'provided' : 'none',
         expectedPassword: expectedPassword ? 'set' : 'not set',
-        fallbackPassword: fallbackPassword ? 'set' : 'not set'
       });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -192,16 +192,9 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      const errWithCode = error as Error & { code?: string; details?: string };
-      console.error('Leads fetch error:', {
-        message: error.message,
-        code: errWithCode.code,
-        details: errWithCode.details
-      });
-      return NextResponse.json({
-        error: 'Failed to fetch leads',
-        details: error.message
-      }, { status: 500 });
+      // Phase 8: Sanitized — omit details/hint from log, never return error.message to client
+      console.error('[Leads.GET]', { message: error.message, code: (error as Record<string, unknown>).code });
+      return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
     }
 
     // Count new leads

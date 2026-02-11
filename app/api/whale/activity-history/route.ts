@@ -75,10 +75,9 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching activity history:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch activity history' },
+      { error: 'Failed to fetch activity history' },
       { status: 500 }
     );
   }

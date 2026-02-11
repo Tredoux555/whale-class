@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const summary = await getProgressSummaryByArea(childId);
     return NextResponse.json({ data: summary });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to fetch progress summary' }, { status: 500 });
+    console.error('[Progress Summary] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch progress summary' }, { status: 500 });
   }
 }

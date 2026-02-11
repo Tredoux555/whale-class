@@ -41,8 +41,8 @@ async function seedCurriculumForClassroom(
       .select();
 
     if (areaError) {
-      console.error(`[Setup] Failed to create areas:`, areaError.message);
-      return { success: false, worksCount: 0, error: areaError.message };
+      console.error(`[Setup] Failed to create areas:`, areaError.message, areaError.code);
+      return { success: false, worksCount: 0, error: 'Failed to create curriculum areas' };
     }
 
     // Build area_key -> UUID map
@@ -239,6 +239,8 @@ export async function POST(request: NextRequest) {
           // If code collision, generate new code
           if (result.error.message?.includes('unique') || result.error.message?.includes('duplicate')) {
             loginCode = generateLoginCode();
+          } else if (attempt === 3) {
+            console.error('[Setup] Teacher creation failed:', result.error.message, result.error.code);
           }
 
           if (attempt < 3) {

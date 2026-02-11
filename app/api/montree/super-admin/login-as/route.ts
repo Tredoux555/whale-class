@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,14 +25,12 @@ export async function POST(req: NextRequest) {
 
     const { schoolId, superAdminPassword } = await req.json();
 
-    // Verify super admin password
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) {
-      console.error('SUPER_ADMIN_PASSWORD environment variable is not set');
+    // Phase 9: Timing-safe password verification
+    const { valid: passwordValid, error: passwordError } = verifySuperAdminPassword(superAdminPassword);
+    if (passwordError === 'Server misconfiguration') {
       return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
     }
-
-    if (superAdminPassword !== expectedPassword) {
+    if (!passwordValid) {
       await logAudit(supabase, {
         adminIdentifier: ip,
         action: 'login_failed',
@@ -62,6 +61,23 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (principalError || !principal) {
+      // Phase 8: Log dev-mode impersonation
+      logAudit(supabase, {
+        adminIdentifier: 'super_admin',
+        action: 'login_as',
+        resourceType: 'principal',
+        resourceDetails: {
+          endpoint: '/api/montree/super-admin/login-as',
+          schoolId: school.id,
+          schoolName: school.name,
+          devMode: true,
+          note: 'No principal found — dev principal session created',
+        },
+        ipAddress: ip,
+        userAgent,
+        isSensitive: true,
+      });
+
       // No principal found, create a dev principal session
       return NextResponse.json({
         principal: {
@@ -86,6 +102,24 @@ export async function POST(req: NextRequest) {
       .from('montree_classrooms')
       .select('id', { count: 'exact', head: true })
       .eq('school_id', schoolId);
+
+    // Phase 8: Log principal impersonation
+    logAudit(supabase, {
+      adminIdentifier: 'super_admin',
+      action: 'login_as',
+      resourceType: 'principal',
+      resourceId: principal.id,
+      resourceDetails: {
+        endpoint: '/api/montree/super-admin/login-as',
+        schoolId: school.id,
+        schoolName: school.name,
+        principalName: principal.name,
+        devMode: false,
+      },
+      ipAddress: ip,
+      userAgent,
+      isSensitive: true,
+    });
 
     return NextResponse.json({
       principal: {

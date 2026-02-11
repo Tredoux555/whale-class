@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return NextResponse.json({ 
-        error: `Upload failed: ${uploadError.message}` 
+      console.error('Upload error:', uploadError.message, uploadError.error);
+      return NextResponse.json({
+        error: 'Upload failed'
       }, { status: 500 });
     }
 
@@ -111,11 +111,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error('DB error:', dbError);
+      console.error('DB error:', dbError.message, dbError.code);
       // Try to clean up uploaded file
       await supabase.storage.from('montree-media').remove([storagePath]);
-      return NextResponse.json({ 
-        error: `Database error: ${dbError.message}` 
+      return NextResponse.json({
+        error: 'Database error'
       }, { status: 500 });
     }
 
@@ -136,8 +136,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Media upload error:', error);
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Server error' 
+    return NextResponse.json({
+      error: 'Server error'
     }, { status: 500 });
   }
 }

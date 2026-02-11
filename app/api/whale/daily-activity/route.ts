@@ -36,10 +36,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: data || null });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch daily activity';
     console.error('Error fetching daily activity:', error);
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to fetch daily activity' },
       { status: 500 }
     );
   }
@@ -282,10 +281,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, data: assignment });
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to generate daily activity';
     console.error('Error generating daily activity:', error);
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to generate daily activity' },
       { status: 500 }
     );
   }
@@ -339,10 +337,9 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update activity';
     console.error('Error updating activity:', error);
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to update activity' },
       { status: 500 }
     );
   }

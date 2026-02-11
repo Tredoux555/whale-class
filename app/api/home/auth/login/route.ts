@@ -81,7 +81,29 @@ export async function POST(request: NextRequest) {
     if (isLegacyHash(family.password_hash)) {
       const bcryptHash = await hashPassword(cleaned);
       await supabase.from('home_families').update({ password_hash: bcryptHash }).eq('id', family.id);
+
+      // Phase 8: Log legacy hash migration
+      logAudit(supabase, {
+        adminIdentifier: `home_family:${family.id}`,
+        action: 'password_hash_upgraded',
+        resourceType: 'home_family',
+        resourceId: family.id,
+        resourceDetails: { from: 'sha256', to: 'bcrypt' },
+        ipAddress: ip,
+        userAgent,
+      });
     }
+
+    // Phase 8: Log successful home family login
+    logAudit(supabase, {
+      adminIdentifier: `home_family:${family.id}`,
+      action: 'login_success',
+      resourceType: 'home_family',
+      resourceId: family.id,
+      resourceDetails: { endpoint: '/api/home/auth/login' },
+      ipAddress: ip,
+      userAgent,
+    });
 
     return NextResponse.json({
       success: true,

@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     const progress = await getChildProgress(childId, area || undefined);
     return NextResponse.json({ data: progress });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to fetch progress' }, { status: 500 });
+    console.error('[Progress GET] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 });
   }
 }
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const progress = await upsertProgress(input);
     return NextResponse.json({ data: progress, message: 'Progress updated successfully' });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to update progress' }, { status: 500 });
+    console.error('[Progress POST] Error:', error);
+    return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 });
   }
 }

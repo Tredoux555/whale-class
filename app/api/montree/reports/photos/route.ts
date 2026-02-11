@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest) {
       if (reportError || !newReport) {
         console.error('Report insert error:', reportError);
         return NextResponse.json(
-          { error: 'Failed to create/get report', details: reportError?.message },
+          { error: 'Failed to create/get report' },
           { status: 500 }
         );
       }

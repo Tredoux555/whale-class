@@ -128,8 +128,8 @@ export async function GET(request: NextRequest) {
     const { data: media, error, count } = await query;
 
     if (error) {
-      console.error('Media list error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Media list error:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     // Get curriculum works to map work_id to work_name and area
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Media list error:', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }
@@ -209,8 +209,8 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Media update error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Media update error:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, media });
@@ -218,7 +218,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('Media update error:', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }
@@ -259,8 +259,8 @@ export async function DELETE(request: NextRequest) {
       .in('id', idsToDelete);
 
     if (fetchError) {
-      console.error('Media fetch error:', fetchError);
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+      console.error('Media fetch error:', fetchError.message, fetchError.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     if (!mediaRecords || mediaRecords.length === 0) {
@@ -291,8 +291,8 @@ export async function DELETE(request: NextRequest) {
       .in('id', idsToDelete);
 
     if (deleteError) {
-      console.error('Media delete error:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+      console.error('Media delete error:', deleteError.message, deleteError.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -303,7 +303,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Media delete error:', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }

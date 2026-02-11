@@ -26,15 +26,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Curriculum delete error:', error.message, error.code);
-      return errorResponse('Failed to delete work', {
-        message: error.message, code: error.code,
-      });
+      return errorResponse('Failed to delete work');
     }
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('Curriculum delete error:', message);
-    return errorResponse('Server error', { message });
+    return errorResponse('Server error');
   }
 }

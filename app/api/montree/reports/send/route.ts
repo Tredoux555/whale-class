@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Report insert error:', insertError);
-      return NextResponse.json({ error: 'Failed to save report', debug: insertError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to save report' }, { status: 500 });
     }
 
     // Get linked parents

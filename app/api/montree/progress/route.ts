@@ -48,9 +48,10 @@ export async function GET(request: NextRequest) {
           total: 0,
         }, { status: 404 });
       }
-      // Actual database error — don't mask it
+      // Actual database error
+      console.error('Database error:', childError.message, childError.code);
       return NextResponse.json({
-        error: `Database error: ${childError.message}`,
+        error: 'Internal server error',
       }, { status: 500 });
     }
 
@@ -70,13 +71,12 @@ export async function GET(request: NextRequest) {
     const { data: progress, error } = await query.order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Progress fetch error:', error);
+      console.error('Progress fetch error:', error.message, error.code);
       return NextResponse.json({
         progress: [],
         stats: { presented: 0, practicing: 0, mastered: 0 },
         byArea: {},
         total: 0,
-        debug: `Query error: ${error.message}`
       });
     }
 

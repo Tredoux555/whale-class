@@ -69,11 +69,9 @@ export async function POST(request: NextRequest) {
         curriculumWorks || []
       );
     } catch (claudeError: unknown) {
-      const message = claudeError instanceof Error ? claudeError.message : String(claudeError);
-      console.error('[Upload] Claude API error:', message);
+      console.error('[Upload] Claude API error:', claudeError);
       return NextResponse.json({
-        error: 'Claude API failed',
-        details: message
+        error: 'Claude API failed'
       }, { status: 500 });
     }
 

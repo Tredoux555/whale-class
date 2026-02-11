@@ -151,6 +151,17 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
+    // Phase 8: Log successful parent access
+    logAudit(supabase, {
+      adminIdentifier: `parent:${invite.id}`,
+      action: 'login_success',
+      resourceType: 'parent',
+      resourceId: invite.id,
+      resourceDetails: { endpoint: '/api/montree/parent/auth/access-code', childId: child?.id },
+      ipAddress: getClientIP(request.headers),
+      userAgent: getUserAgent(request.headers),
+    });
+
     return NextResponse.json({
       success: true,
       redirect: '/montree/parent/dashboard',

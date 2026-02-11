@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -168,6 +169,22 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (!classroom) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
+
+    // Phase 8: Log child deletion BEFORE cascade
+    logAudit(supabase, {
+      adminIdentifier: auth.schoolId || 'unknown',
+      action: 'child_delete',
+      resourceType: 'child',
+      resourceId: childId,
+      resourceDetails: {
+        endpoint: '/api/montree/children/[childId]',
+        childName: child.name,
+        schoolId: auth.schoolId,
+      },
+      ipAddress: getClientIP(request.headers),
+      userAgent: getUserAgent(request.headers),
+      isSensitive: true,
+    });
 
     // Delete related records first (foreign key constraints)
 

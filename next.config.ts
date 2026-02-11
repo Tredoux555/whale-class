@@ -65,14 +65,17 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(), camera=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           // Phase 6: Content Security Policy
+          // NOTE: 'unsafe-inline' required for script-src because Next.js uses inline scripts
+          // for hydration, page data, and client-side routing. Without it, the entire site breaks.
+          // A nonce-based approach would be more secure but requires significant Next.js configuration.
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self'",
-              "style-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
-              "font-src 'self'",
+              "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com",
               "media-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co",
               "frame-ancestors 'none'",

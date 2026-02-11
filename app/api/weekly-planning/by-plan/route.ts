@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
     const { data: assignments, error } = await query.order('area');
 
     if (error) {
-      console.error('Assignments query error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Assignments query error:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     // Get video URLs for matched works

@@ -166,14 +166,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    const details = error instanceof Error ? error.toString() : String(error);
     console.error('❌ Error in video watch API:', error);
     return NextResponse.json<VideoWatchError>(
       {
         success: false,
-        error: message || 'Failed to record video watch',
-        details
+        error: 'Failed to record video watch'
       },
       { status: 500 }
     );
@@ -216,12 +213,11 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('❌ Error fetching video watches:', error);
     return NextResponse.json<VideoWatchError>(
       {
         success: false,
-        error: message || 'Failed to fetch video watches'
+        error: 'Failed to fetch video watches'
       },
       { status: 500 }
     );
@@ -261,12 +257,11 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('❌ Error deleting video watch:', error);
     return NextResponse.json<VideoWatchError>(
       {
         success: false,
-        error: message || 'Failed to delete video watch'
+        error: 'Failed to delete video watch'
       },
       { status: 500 }
     );

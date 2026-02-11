@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (error) {
-      console.error('Error creating session:', error);
+      console.error('Error creating session:', error.message, error.code);
       return NextResponse.json(
-        { error: 'Failed to save session', details: error.message },
+        { error: 'Failed to save session' },
         { status: 500 }
       );
     }
@@ -112,9 +112,9 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
     
     if (error) {
-      console.error('Error fetching sessions:', error);
+      console.error('Error fetching sessions:', error.message, error.code);
       return NextResponse.json(
-        { error: 'Failed to fetch sessions', details: error.message },
+        { error: 'Failed to fetch sessions' },
         { status: 500 }
       );
     }

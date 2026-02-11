@@ -2,15 +2,36 @@
 // Session 106: Super Admin API - NPO Applications Management
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Phase 9: Rate limiting
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/npo-applications', 10, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch (e) {
+      console.error('[NPOApps] Rate limit check failed (non-blocking):', e);
+    }
+
     const { searchParams } = new URL(request.url);
     const password = searchParams.get('password');
 
-    // Verify super admin password
-    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
+    // Phase 9: Timing-safe password verification
+    const { valid } = verifySuperAdminPassword(password);
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -49,8 +70,9 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { applicationId, status, reviewNotes, rejectionReason, password } = body;
 
-    // Verify super admin password
-    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
+    // Phase 9: Timing-safe password verification
+    const { valid: patchValid } = verifySuperAdminPassword(password);
+    if (!patchValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

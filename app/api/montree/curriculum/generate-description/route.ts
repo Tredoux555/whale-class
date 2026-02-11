@@ -127,6 +127,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Phase 9: Input length validation
+    if (work_name.length > 255) {
+      return NextResponse.json(
+        { error: 'Work name must be 255 characters or fewer' },
+        { status: 400 }
+      );
+    }
+    if (area.length > 50) {
+      return NextResponse.json(
+        { error: 'Area must be 50 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     // Normalize the area
     const normalizedArea = normalizeArea(area);
     const templates = descriptionTemplates[normalizedArea];

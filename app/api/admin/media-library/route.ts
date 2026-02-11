@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Fetch error:', error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      console.error('Fetch error:', error.message, error.code);
+      return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, documents: data || [] });
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     console.error('Media library fetch error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }
@@ -89,10 +89,10 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('Upload error:', uploadError.message, uploadError.error);
       return NextResponse.json({
         success: false,
-        error: `Upload failed: ${uploadError.message}`
+        error: 'Upload failed'
       }, { status: 500 });
     }
 
@@ -120,12 +120,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error('DB error:', dbError);
+      console.error('DB error:', dbError.message, dbError.code);
       // Clean up uploaded file
       await supabase.storage.from('lesson-documents').remove([storagePath]);
       return NextResponse.json({
         success: false,
-        error: `Database error: ${dbError.message}`
+        error: 'Database error'
       }, { status: 500 });
     }
 
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     console.error('Media upload error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }
@@ -178,7 +178,8 @@ export async function DELETE(request: NextRequest) {
       .eq('id', id);
 
     if (dbError) {
-      return NextResponse.json({ success: false, error: dbError.message }, { status: 500 });
+      console.error('DB error:', dbError.message, dbError.code);
+      return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
@@ -186,7 +187,7 @@ export async function DELETE(request: NextRequest) {
     console.error('Delete error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }
@@ -215,7 +216,8 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      console.error('Update error:', error.message, error.code);
+      return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, document: data });
@@ -223,7 +225,7 @@ export async function PATCH(request: NextRequest) {
     console.error('Update error:', error);
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Server error'
+      error: 'Server error'
     }, { status: 500 });
   }
 }

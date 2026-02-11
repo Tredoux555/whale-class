@@ -1,8 +1,11 @@
 // /api/montree/super-admin/audit/route.ts
-// Simple audit logging endpoint for super admin actions
+// Phase 9: Added super-admin auth to both GET and POST
+// Previously completely unauthenticated — anyone could read/write audit logs
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 function getClientIP(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -16,7 +19,13 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || 'unknown';
 
   try {
-    const { action, details, timestamp } = await request.json();
+    const { action, details, timestamp, password } = await request.json();
+
+    // Phase 9: Require super-admin auth for audit writes
+    const { valid } = verifySuperAdminPassword(password);
+    if (!valid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Log to database
     const { error } = await supabase
@@ -48,8 +57,33 @@ export async function POST(request: NextRequest) {
 // GET: Retrieve audit logs (for viewing history)
 export async function GET(request: NextRequest) {
   const supabase = getSupabase();
+
+  // Phase 9: Rate limiting on audit reads
+  try {
+    const ip = getClientIP(request);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/super-admin/audit', 10, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+  } catch (e) {
+    console.error('[Audit] Rate limit check failed (non-blocking):', e);
+  }
+
+  // Phase 9: Require super-admin auth for audit reads
+  const password = request.headers.get('x-super-admin-password') ||
+    new URL(request.url).searchParams.get('password');
+  const { valid } = verifySuperAdminPassword(password);
+  if (!valid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
-  const limit = parseInt(searchParams.get('limit') || '50');
+  const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 500);
 
   try {
     const { data: logs, error } = await supabase
@@ -58,7 +92,10 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[Audit] Fetch error:', error);
+      return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 });
+    }
 
     return NextResponse.json({ logs: logs || [] });
   } catch (error) {

@@ -72,10 +72,9 @@ export async function GET(request: NextRequest) {
       completions: completions || [],
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching daily summary:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch daily summary' },
+      { error: 'Failed to fetch daily summary' },
       { status: 500 }
     );
   }

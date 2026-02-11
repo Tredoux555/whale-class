@@ -58,11 +58,11 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error('Error uploading video:', uploadError);
-      
+
       // Provide more specific error messages
-      let errorMessage = uploadError.message || 'Upload failed';
+      let errorMessage = 'Upload failed';
       let statusCode = 500;
-      
+
       // Check error message for common issues
       const errorMsg = uploadError.message?.toLowerCase() || '';
       if (errorMsg.includes('403') || errorMsg.includes('forbidden') || errorMsg.includes('permission')) {
@@ -75,12 +75,11 @@ export async function POST(request: NextRequest) {
         errorMessage = 'File is too large. Maximum size is 100MB.';
         statusCode = 413;
       }
-      
+
       return NextResponse.json(
-        { 
-          success: false, 
-          error: errorMessage,
-          details: uploadError.message
+        {
+          success: false,
+          error: errorMessage
         },
         { status: statusCode }
       );
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Error updating work with video URL:', updateError);
       return NextResponse.json(
-        { success: false, error: updateError.message },
+        { success: false, error: 'Failed to update work with video URL' },
         { status: 500 }
       );
     }
@@ -118,12 +117,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Unexpected error in POST /api/whale/montessori-works/upload-video:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        details: errorMessage
+      {
+        success: false,
+        error: 'Internal server error'
       },
       { status: 500 }
     );

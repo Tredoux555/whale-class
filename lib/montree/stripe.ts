@@ -21,12 +21,26 @@ export function getStripe(): Stripe {
   return stripeInstance;
 }
 
-// Price IDs - set these in Stripe Dashboard
-export const PRICE_IDS = {
-  basic: process.env.STRIPE_PRICE_BASIC || 'price_basic',
-  standard: process.env.STRIPE_PRICE_STANDARD || 'price_standard',
-  premium: process.env.STRIPE_PRICE_PREMIUM || 'price_premium',
-};
+// Phase 9: Lazy-evaluated price IDs — throw on missing rather than silent fallback
+let _priceIds: { basic: string; standard: string; premium: string } | null = null;
+export function getPriceIds() {
+  if (!_priceIds) {
+    const basic = process.env.STRIPE_PRICE_BASIC;
+    const standard = process.env.STRIPE_PRICE_STANDARD;
+    const premium = process.env.STRIPE_PRICE_PREMIUM;
+    if (!basic || !standard || !premium) {
+      throw new Error('[stripe] STRIPE_PRICE_BASIC, STRIPE_PRICE_STANDARD, and STRIPE_PRICE_PREMIUM must all be set');
+    }
+    _priceIds = { basic, standard, premium };
+  }
+  return _priceIds;
+}
+// Backward compat — kept as getter for existing imports
+export const PRICE_IDS = new Proxy({} as { basic: string; standard: string; premium: string }, {
+  get(_target, prop: string) {
+    return getPriceIds()[prop as keyof ReturnType<typeof getPriceIds>];
+  }
+});
 
 export const PLAN_LIMITS = {
   trial: { students: 50, name: 'Trial', price: 0 },

@@ -206,6 +206,17 @@ export async function POST(request: NextRequest) {
       role: 'teacher',
     });
 
+    // Phase 8: Log successful teacher login
+    logAudit(supabase, {
+      adminIdentifier: teacher.email || teacher.name || 'unknown',
+      action: 'login_success',
+      resourceType: 'teacher',
+      resourceId: teacher.id,
+      resourceDetails: { endpoint: '/api/montree/auth/teacher', schoolId: teacher.school_id },
+      ipAddress: ip,
+      userAgent,
+    });
+
     return NextResponse.json({
       success: true,
       token,

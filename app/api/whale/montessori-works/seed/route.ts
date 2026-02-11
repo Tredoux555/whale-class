@@ -89,10 +89,9 @@ export async function POST(request: NextRequest) {
       // Check if error is due to duplicate entries (works already exist)
       if (error.code === '23505') { // PostgreSQL unique constraint violation
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Some works already exist in the database',
-            details: error.message,
             message: 'Works may have already been seeded. Check the database or use UPSERT instead.'
           },
           { status: 409 }
@@ -100,10 +99,9 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { 
-          success: false, 
-          error: error.message,
-          details: error
+        {
+          success: false,
+          error: 'Internal server error'
         },
         { status: 500 }
       );
@@ -125,12 +123,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Unexpected error in POST /api/whale/montessori-works/seed:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        details: errorMessage
+      {
+        success: false,
+        error: 'Internal server error'
       },
       { status: 500 }
     );

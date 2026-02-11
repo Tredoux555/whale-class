@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Failed to fetch children:', error.message, error.code);
-      return errorResponse('Failed to load children', {
-        message: error.message, code: error.code,
-      });
+      return errorResponse('Failed to load children');
     }
 
     return NextResponse.json({ success: true, children: children || [] });
@@ -70,9 +68,7 @@ export async function POST(request: NextRequest) {
 
     if (childError) {
       console.error('Failed to create child:', childError.message, childError.code, childError.details, childError.hint);
-      return errorResponse('Failed to create child', {
-        message: childError.message, code: childError.code, details: childError.details, hint: childError.hint,
-      });
+      return errorResponse('Failed to create child');
     }
 
     // Initialize progress records from family curriculum
@@ -110,6 +106,6 @@ export async function POST(request: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('Children POST error:', message);
-    return errorResponse('Server error', { message });
+    return errorResponse('Server error');
   }
 }

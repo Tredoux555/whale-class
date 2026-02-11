@@ -35,7 +35,7 @@ export async function logAudit(supabase: SupabaseClient, entry: AuditEntry): Pro
       ip_address: entry.ipAddress || null,
       user_agent: entry.userAgent || null,
       is_sensitive: entry.isSensitive || false,
-      requires_review: entry.action === 'login_failed' || entry.action === 'password_change',
+      requires_review: ['login_failed', 'password_change', 'school_delete', 'child_delete', 'login_as', 'account_created'].includes(entry.action),
     });
   } catch (e) {
     // Fire-and-forget: log but never throw
