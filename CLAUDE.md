@@ -1,10 +1,9 @@
 # Whale-Class / Montree - Developer Brain
 
 ## Project Overview
-Next.js 16.1.1 app with three systems:
+Next.js 16.1.1 app with two systems:
 - **Whale Class** (`/admin/*`) - Admin tools (card generators, description review, etc.)
 - **Montree** (`/montree/*`) - Real SaaS multi-tenant Montessori school management
-- **Montree Home** (`/home/*`) - Parent home program with 68 curated works (code-based auth, partially deployed)
 
 Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domain returns 405 on API calls)
 Deploy: Railway auto-deploys on push to `main`
@@ -51,8 +50,6 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 **Domain Migration** — ✅ DONE. `montree.xyz` is live. Old `teacherpotato.xyz` redirects to `www.teacherpotato.xyz` and returns 405 on API calls.
 
-**Home Registration 500 Error** — ✅ RESOLVED. Was not a code bug — the 500 was caused by testing on the old `teacherpotato.xyz` domain. Both registration and login work perfectly on `montree.xyz`.
-
 **Codebase Cleanup** — ✅ ALL PHASES COMPLETE:
 
 | Phase | What | Status |
@@ -66,17 +63,53 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-### Recent Changes (Codebase Cleanup Completion + SSH Setup, Feb 11)
+### Recent Changes (Tech Debt Cleanup — 4 Tasks Complete, Feb 11)
+
+**Tech Debt Project — ALL 4 TASKS COMPLETE:**
+
+| Task | What | Status |
+|------|------|--------|
+| 1 | Dead code removal (Home product + unused routes) | ✅ Done |
+| 2 | Whale API auth (43 routes protected via middleware) | ✅ Done |
+| 3 | API route consolidation (story send 4→1, curriculum CRUD) | ✅ Done |
+| 4 | Auth restructure (localStorage JWT → httpOnly cookies) | ✅ Done |
+
+**Task 1 — Dead Code Removal (35 files, 6,226 lines deleted):**
+- Deleted entire Home product: `app/home/`, `app/api/home/`, `lib/home/`, `components/home/`, `lib/curriculum/data/home-curriculum.json`
+- Deleted `app/api/whale/themes/route.ts` (dead), `app/admin/montree-home/` (orphaned)
+- Removed FamiliesTab from super-admin panel
+- Removed Home references from middleware
+
+**Task 2 — Whale API Auth (middleware-level protection):**
+- Added admin JWT check (`admin-token` cookie) in middleware for all `/api/whale/*` routes
+- Excludes `/api/whale/parent/*` and `/api/whale/teacher/*` (have own auth)
+- Added `/api/whale/:path*` to middleware matcher (was excluded by regex)
+
+**Task 3 — API Route Consolidation:**
+- Story send: 4 routes (send-message, send-audio, send-image, send-video) → 1 unified `/api/story/admin/send`
+- Extracted shared helpers to `lib/story/story-admin-auth.ts`
+- Curriculum: Merged update/delete into main route as PATCH/DELETE methods
+- Deleted 6 route files total
+
+**Task 4 — Auth Restructure (localStorage → httpOnly cookies):**
+- Server: Login routes (teacher, principal, try/instant) now set `montree-auth` httpOnly cookie
+- Server: `verifySchoolRequest()` checks cookie first, then Bearer header. x-school-id fallback REMOVED
+- Server: New `/api/montree/auth/logout` route clears the cookie
+- Server: try/instant now creates JWT token (was missing — `setToken(responseData.token)` was setting `undefined`)
+- Client: `montreeApi()` no longer sends Authorization header (cookie auto-sent by browser)
+- Client: `setToken()` is now a no-op, `clearToken()` calls logout API
+- Client: Login pages no longer call `setToken()`
+- Weekly-planning routes updated to use `getSchoolIdFromRequest()` for cookie auth
+
+**Key files created:** `app/api/montree/auth/logout/route.ts`, `lib/story/story-admin-auth.ts`
+**Key files modified:** `middleware.ts`, `lib/montree/server-auth.ts`, `lib/montree/verify-request.ts`, `lib/montree/api.ts`
+
+### Previous Changes (Codebase Cleanup Completion + SSH Setup, Feb 11)
 
 **Codebase Cleanup Phase 5 (Final):**
 - Stripped 46 remaining `console.log`/debug `console.warn` statements across 35 files
 - Preserved all `console.error` (catch blocks) and security-tagged `console.warn` ([CSRF], [PARENT-AUTH], [SECURITY])
 - Phases 2–4 and 6 were already completed in previous sessions
-
-**Home Registration 500 — Resolved:**
-- Tested `/api/home/auth/try` and `/api/home/auth/login` against live `montree.xyz` — both work perfectly
-- The 500 was from testing on old `teacherpotato.xyz` domain which returns 405 on API calls
-- Domain migration to `montree.xyz` already completed
 
 **SSH & Git Setup:**
 - SSH key "Cowork VM" (ed25519) added to GitHub account for direct pushing from Cowork sessions
@@ -198,19 +231,11 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 **Super-Admin:**
 - `components/montree/super-admin/FamiliesTab.tsx` — Shows join_code instead of email
 
-**SQL Migrations Applied:**
-- Migration 121 (`home_join_code.sql`) — adds join_code column to home_families ✅
-- Migration 120 (`home_tables.sql`) — was already applied previously
-
 **Previous Sessions (152, Feb 7):**
 - `lib/auth.ts`: Removed hardcoded fallback secret
 - Deleted dead auth route
 - Teaching Tools section on curriculum page
 - Language Making Guide download button (43 works, all 5 categories)
-
-**Home Curriculum Curated:**
-- `lib/curriculum/data/home-curriculum.json` — 68 works (Practical Life 19, Sensorial 10, Math 15, Language 12, Cultural 10)
-- Each work has: `home_sequence`, `home_priority`, `home_tip`, `buy_or_make`, `estimated_cost`, `home_age_start`
 
 ---
 
@@ -228,11 +253,6 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 - `montree_report_media` — junction table linking reports to selected photos
 - `montree_media_children` — links group photos to multiple children
 - `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
-- `home_families` — parent accounts (id, email, password_hash, name, plan, join_code, created_at, trial_ends_at)
-- `home_children` — kids per family
-- `home_progress` — per-child per-work status
-- `home_curriculum` — 68-work curriculum seeded per family on registration
-- `home_sessions` — work session logs (future use)
 - `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
 - `montree_rate_limit_logs` — DB-backed rate limiting (survives container restarts)
 - `story_users`, `story_admin_users` — Story system auth (bcrypt hashes)
@@ -304,14 +324,6 @@ RESEND_FROM_EMAIL=...
 | `/montree/parent/photos` | Child's photos |
 | `/montree/parent/milestones` | Progress timeline |
 
-### Montree Home (Parent Home Product)
-| Route | Purpose |
-|-------|---------|
-| `/home` | Landing page + registration (name → Start Free → code) |
-| `/home/register` | Same registration flow (alt URL) |
-| `/home/login` | Login with 6-char code (digit boxes with auto-advance) |
-| `/home/dashboard` | Family dashboard (not yet built) |
-
 ### Admin
 | Route | Purpose |
 |-------|---------|
@@ -323,25 +335,23 @@ RESEND_FROM_EMAIL=...
 
 ---
 
-## Authentication (Current State — Messy but Functional)
+## Authentication
 
-8 separate auth systems that don't talk to each other. Most work in production. NOT being restructured during cleanup (too risky for one session).
+7 auth systems. Teacher/principal tokens now use httpOnly cookies (migrated from localStorage in tech debt Task 4).
 
 | System | How | Used By |
 |--------|-----|---------|
-| Teacher login | 6-char code (SHA256 hash) or email+bcrypt | `/api/montree/auth/teacher` |
+| Teacher login | 6-char code (SHA256 hash) or email+bcrypt → httpOnly cookie (`montree-auth`) | `/api/montree/auth/teacher` |
+| Principal login | Code or email+bcrypt → httpOnly cookie (`montree-auth`) | `/api/montree/principal/login` |
 | Parent access | Invite code → cookie (`montree_parent_session`) | `/api/montree/parent/auth/access-code` |
-| Admin JWT | `jose` library, `ADMIN_SECRET` env var, httpOnly cookie | `lib/auth.ts` |
-| Super admin | Password from env var | `/api/montree/super-admin/login-as` |
-| Teacher sessions | localStorage (NOT httpOnly cookie — known debt) | `lib/montree/auth.ts` |
+| Admin JWT | `jose` library, `ADMIN_SECRET` env var, httpOnly cookie (`admin-token`) | `lib/auth.ts` |
+| Super admin | Password from env var (timing-safe compare) | `/api/montree/super-admin/login-as` |
 | Story auth | Separate system | `lib/story-auth.ts` |
 | Multi-auth | Another separate system | `lib/auth-multi.ts` |
-| **Home family** | **6-char code (SHA256), localStorage** | **`/api/home/auth/try` + `/api/home/auth/login`** |
 
-**Home auth pattern:** Code `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (6 chars, no I/L/O/0/1). SHA256 hash stored as `password_hash`. Code stored as `join_code` for admin visibility. Session in localStorage (`home_session` key). See `lib/home/auth.ts`.
+**Montree auth flow:** Login routes issue JWT → set `montree-auth` httpOnly cookie → `verifySchoolRequest()` reads cookie (or Bearer header as fallback) → extracts userId, schoolId, classroomId, role. Logout via `/api/montree/auth/logout` (clears cookie). Client-side `montreeApi()` relies on cookie auto-sending (no Authorization header needed).
 
-**Deleted:** `/api/montree/auth/route.ts` (dead code, plain text password comparison)
-**Deprecated:** `/api/home/auth/register/route.ts` (returns 410, registration via `/try`)
+**Key auth files:** `lib/montree/server-auth.ts` (JWT create/verify + cookie helpers), `lib/montree/verify-request.ts` (route-level auth check), `lib/montree/api.ts` (client-side wrapper)
 
 ---
 
@@ -365,12 +375,6 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - `mathematics.json`
 - `cultural.json`
 
-### Home Curriculum
-- `lib/curriculum/data/home-curriculum.json` — 68 curated works for parent home program
-- `lib/home/curriculum-helpers.ts` — seedHomeCurriculum() seeds 68 works into home_curriculum table on registration
-- `lib/home/auth.ts` — localStorage session management for home product
-- Registration + login pages built. Dashboard NOT yet built.
-
 ### Teaching Guides
 - `public/guides/Montessori_Language_Making_Guide.docx` — 43 works, all 5 categories
 - `public/guides/Montessori-English-Materials-List.pdf` — 337 pics, 1011 cards, 115 objects
@@ -389,16 +393,13 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - ~~23 `: any` types~~ → fixed (2 trivial remain: settings page + test script)
 
 ### Deferred (Future Sessions)
-- Auth restructure (localStorage → httpOnly cookies + middleware)
-- API route consolidation (106 routes — many could merge)
 - Centralized logging service
 - PWA manifest not linked
 - Email sending not tested
 - DB only has 18/43 language works (needs reseed)
+- Clean up x-school-id headers from ~11 frontend files (harmless, cookie-auth checked first)
 
 ### Known Security Debt (Explicitly Deferred in Phase 9)
-- 43 Whale API routes with zero auth (admin tool, UI-gated — auth consolidation project)
-- localStorage for JWTs (teacher, teacher sessions, home family) — auth restructure project
 - Parent invite codes stored as plaintext — low priority
 - CSP `script-src 'unsafe-inline'` + `style-src 'unsafe-inline'` — required by Next.js, nonce-based approach would be more secure
 - `ignoreBuildErrors: true` in next.config.ts — pre-existing
@@ -462,7 +463,5 @@ Both local and production connect to the SAME Supabase database.
 | `.claude/plans/phase4-plan-v3.md` | Phase 4 execution plan (3 rounds of audit refinement) |
 | `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | Security Phase 3 complete, all fixes listed |
 | `.claude/plans/phase3-plan-v3.md` | Phase 3 execution plan (3 rounds of audit refinement) |
-| `docs/HANDOFF_SESSION_155_HOME_AUTH.md` | Home code-based auth, 500 bug diagnosis |
 | `docs/HANDOFF_SESSION_152_CLEANUP_PLAN.md` | Codebase cleanup plan (5 remaining phases) |
-| `docs/MONTREE_HOME_HANDOFF.md` | Architecture for Montree Home (250-activity version — outdated, use 68-work JSON instead) |
 | `docs/HANDOFF_SESSION_151_LANGUAGE_MAKING_GUIDE.md` | Language guide + API download route |
