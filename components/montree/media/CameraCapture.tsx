@@ -64,9 +64,11 @@ export default function CameraCapture({
       }
 
       // Request camera access
+      // Use 'ideal' for facingMode so it's a preference, not a hard requirement.
+      // Desktop computers only have a front camera — exact 'environment' would fail.
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: facing,
+          facingMode: { ideal: facing },
           width: { ideal: 1920 },
           height: { ideal: 1080 },
         },
