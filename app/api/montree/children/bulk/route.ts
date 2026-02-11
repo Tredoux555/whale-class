@@ -244,8 +244,7 @@ export async function POST(request: NextRequest) {
       areaMap = curriculum.areaMap;
       works = curriculum.works;
     } catch (currErr: unknown) {
-      const message = currErr instanceof Error ? currErr.message : String(currErr);
-      console.warn('Curriculum fetch failed (non-fatal, students will still be created):', message);
+      // Curriculum fetch failed (non-fatal, students will still be created)
     }
 
     // Prepare data structures

@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
         }
       }
     } catch (e) {
-      console.warn('Focus works fetch failed, continuing without focus flags:', e);
+      // Focus works fetch failed, continuing without focus flags
     }
 
     // Calculate stats

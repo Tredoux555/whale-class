@@ -67,13 +67,12 @@ export default function MiddleSoundGame() {
       await new Promise<void>((resolve) => {
         audio.onended = () => resolve();
         audio.onerror = () => {
-          console.warn('Audio error for word:', word);
           resolve();
         };
         audio.play().catch(() => resolve());
       });
     } catch (e) {
-      console.warn('Audio exception:', e);
+      // Audio error
     }
     setIsPlaying(false);
   };

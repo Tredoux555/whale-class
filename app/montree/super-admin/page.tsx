@@ -50,7 +50,7 @@ export default function SuperAdminPage() {
         body: JSON.stringify({ action, details, timestamp: new Date().toISOString(), password }),
       });
     } catch (e) {
-      console.warn('Audit log failed:', e);
+      // Audit log failed
     }
   }, [password]);
 

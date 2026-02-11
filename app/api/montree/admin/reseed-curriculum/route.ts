@@ -102,7 +102,6 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
     const worksToInsert = allWorks.map(work => {
       const areaUuid = areaMap[work.area_key];
       if (!areaUuid) {
-        console.warn(`[Reseed] No area UUID for ${work.area_key}`);
         return null;
       }
 

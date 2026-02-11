@@ -8,8 +8,6 @@ export async function query<T = Record<string, unknown>>(
 ): Promise<{ rows: T[] }> {
   // This is a simplified compatibility layer
   // For complex queries, use Supabase directly
-  console.warn('[lib/story/db] Using compatibility query - consider migrating to Supabase client');
-  
   const supabase = getSupabase();
   
   // Try to extract table name from simple SELECT queries

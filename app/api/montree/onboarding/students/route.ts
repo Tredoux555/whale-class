@@ -105,10 +105,10 @@ export async function POST(request: NextRequest) {
         if (!workId) continue;
 
         const work = workMap.get(workId);
-        if (!work) { console.warn(`Work not found: ${workId}`); continue; }
+        if (!work) { continue; }
 
         const areaUuid = areaKeyToId.get(areaKey);
-        if (!areaUuid) { console.warn(`Area not found for key: ${areaKey}`); continue; }
+        if (!areaUuid) { continue; }
 
         const areaWorks = curriculumWorks?.filter(w => w.area_id === areaUuid) || [];
         areaWorks.sort((a, b) => a.sequence - b.sequence);

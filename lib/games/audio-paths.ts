@@ -122,7 +122,6 @@ export class GameAudio {
         };
 
         audio.onerror = (e) => {
-          console.warn(`Audio failed to play: ${path}`, e);
           this.isPlaying = false;
           this.currentAudio = null;
           // Resolve instead of reject to prevent game interruption
@@ -131,18 +130,16 @@ export class GameAudio {
 
         // Play with user interaction handling
         const playPromise = audio.play();
-        
+
         if (playPromise !== undefined) {
           playPromise.catch((error) => {
             // Auto-play was prevented (common on mobile)
-            console.warn('Audio play prevented:', error);
             this.isPlaying = false;
             this.currentAudio = null;
             resolve();
           });
         }
       } catch (e) {
-        console.warn('Audio error:', e);
         this.isPlaying = false;
         resolve();
       }

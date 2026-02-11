@@ -132,10 +132,6 @@ export default function WeekPage() {
         return r.json();
       })
       .then(data => {
-        if (data.debug) {
-          console.warn('Progress API debug:', data.debug);
-        }
-
         const allProgress: Assignment[] = data.progress || [];
         const areaOrder = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
         const focus: Assignment[] = [];

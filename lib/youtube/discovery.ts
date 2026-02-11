@@ -79,7 +79,7 @@ export async function discoverVideoForWork(
         p_duration_ms: duration,
       });
     } catch (logError) {
-      console.warn('Failed to log search:', logError);
+      // Failed to log search
     }
 
     if (videos.length === 0) {
@@ -118,7 +118,7 @@ export async function discoverVideoForWork(
         p_error_message: error instanceof Error ? error.message : 'Unknown error',
       });
     } catch (logError) {
-      console.warn('Failed to log error:', logError);
+      // Failed to log error
     }
 
     return null;

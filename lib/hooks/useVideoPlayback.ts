@@ -20,7 +20,7 @@ export function useVideoPlayback(
         wakeLockRef.current = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
       }
     } catch (err) {
-      console.warn('Wake lock not supported or failed:', err);
+      // Wake lock not supported or failed
     }
   };
 
@@ -32,7 +32,7 @@ export function useVideoPlayback(
         wakeLockRef.current = null;
       }
     } catch (err) {
-      console.warn('Failed to release wake lock:', err);
+      // Failed to release wake lock
     }
   };
 

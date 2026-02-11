@@ -49,19 +49,16 @@ export default function SoundBlendingGame() {
         
         const audio = new Audio(path);
         audioRef.current = audio;
-        
+
         audio.onended = () => resolve();
-        audio.onerror = (e) => {
-          console.warn('Audio error:', path, e);
+        audio.onerror = () => {
           resolve();
         };
-        
-        audio.play().catch((err) => {
-          console.warn('Audio play failed:', path, err);
+
+        audio.play().catch(() => {
           resolve();
         });
       } catch (e) {
-        console.warn('Audio exception:', e);
         resolve();
       }
     });

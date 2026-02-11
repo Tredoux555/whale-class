@@ -18,7 +18,7 @@ function registerEducationalFont(pdf: jsPDF): void {
       pdf.addFileToVFS('Andika-Regular.ttf', AndikaFont.normal);
       pdf.addFont('Andika-Regular.ttf', 'Andika', 'normal');
     } catch (error) {
-      console.warn('Failed to register Andika font, using Helvetica fallback:', error);
+      // Failed to register Andika font, using Helvetica fallback
     }
   }
 }

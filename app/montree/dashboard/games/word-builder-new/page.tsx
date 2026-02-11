@@ -214,7 +214,7 @@ export default function WordBuilderGame() {
       try {
         await GameAudio.playWord(word, 'blue');
       } catch {
-        console.warn(`Word "${word}" not found`);
+        // Word not found
       }
     }
     setIsPlaying(false);
@@ -225,7 +225,7 @@ export default function WordBuilderGame() {
     try {
       await GameAudio.play(`/audio-new/letters/${letter.toLowerCase()}.mp3`);
     } catch {
-      console.warn(`Letter sound "${letter}" not found`);
+      // Letter sound not found
     }
   };
 

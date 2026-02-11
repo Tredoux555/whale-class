@@ -295,7 +295,7 @@ export default function MatchAttackGame() {
     try {
       await GameAudio.playWord(currentWord.word, 'pink');
     } catch {
-      console.warn(`Word "${currentWord.word}" not found`);
+      // Word audio not found
     }
   };
 

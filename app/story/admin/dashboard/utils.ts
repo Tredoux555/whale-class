@@ -5,7 +5,6 @@ export const formatTime = (dateString: string) => {
     const date = new Date(dateString);
 
     if (isNaN(date.getTime())) {
-      console.warn('Invalid date:', dateString);
       return dateString;
     }
 

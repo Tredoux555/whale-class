@@ -78,7 +78,6 @@ class SoundGameAudio {
       await GameAudio.playWord(cleanWord, 'blue');
     } else {
       // Word not in library - just spell it out letter by letter
-      console.warn(`Word "${cleanWord}" not in audio library, spelling out`);
       await this.spellWord(cleanWord);
     }
   }

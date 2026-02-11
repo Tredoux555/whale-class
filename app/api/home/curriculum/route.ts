@@ -53,10 +53,9 @@ export async function GET(request: NextRequest) {
           .eq('family_id', familyId);
 
         if (existingCount && existingCount > 0) {
-          console.log(`Skipped auto-seed — ${existingCount} rows already exist for family ${familyId}`);
+          // Skipped auto-seed — rows already exist
         } else {
-          const count = await seedHomeCurriculum(supabase, familyId);
-          console.log(`Auto-seeded ${count} curriculum works for family ${familyId}`);
+          await seedHomeCurriculum(supabase, familyId);
         }
 
         // Re-fetch after seeding (or after detecting existing rows)
