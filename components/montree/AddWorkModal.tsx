@@ -1,7 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+
+interface AreaWork {
+  id: string;
+  name: string;
+  sequence?: number;
+  dbSequence?: number;
+}
 
 interface AddWorkModalProps {
   classroomId: string;
@@ -9,6 +16,7 @@ interface AddWorkModalProps {
   onClose: () => void;
   onSuccess: () => void;
   defaultArea?: string;
+  areaWorks?: Record<string, AreaWork[]>;
 }
 
 const AREAS = [
@@ -27,9 +35,13 @@ export default function AddWorkModal({
   onClose,
   onSuccess,
   defaultArea,
+  areaWorks,
 }: AddWorkModalProps) {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
+  const [showPositionPicker, setShowPositionPicker] = useState(false);
+  const positionListRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -43,6 +55,22 @@ export default function AddWorkModal({
     teacher_notes: '',
   });
 
+  // Get works for the currently selected area
+  const currentAreaWorks = areaWorks?.[form.area_key] || [];
+
+  // Reset insert position when area changes
+  useEffect(() => {
+    setInsertAfterIndex(null);
+  }, [form.area_key]);
+
+  // Scroll to selected item when position picker opens
+  useEffect(() => {
+    if (showPositionPicker && positionListRef.current && insertAfterIndex !== null) {
+      const item = positionListRef.current.children[insertAfterIndex + 1] as HTMLElement; // +1 for "Beginning" option
+      if (item) item.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  }, [showPositionPicker, insertAfterIndex]);
+
   const resetForm = () => {
     setForm({
       name: '',
@@ -55,6 +83,8 @@ export default function AddWorkModal({
       materials: '',
       teacher_notes: '',
     });
+    setInsertAfterIndex(null);
+    setShowPositionPicker(false);
   };
 
   const handleClose = () => {
@@ -108,6 +138,17 @@ export default function AddWorkModal({
 
     setSaving(true);
     try {
+      // Determine after_sequence from selected position
+      let afterSequence: number | undefined;
+      if (insertAfterIndex !== null && currentAreaWorks[insertAfterIndex]) {
+        const afterWork = currentAreaWorks[insertAfterIndex];
+        afterSequence = afterWork.dbSequence ?? afterWork.sequence;
+      } else if (insertAfterIndex === -1) {
+        // Insert at very beginning (before all existing works)
+        afterSequence = 0;
+      }
+      // insertAfterIndex === null means end of list (no after_sequence sent)
+
       const res = await fetch('/api/montree/curriculum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,6 +164,7 @@ export default function AddWorkModal({
           materials: form.materials.split('\n').filter(s => s.trim()),
           teacher_notes: form.teacher_notes.trim() || null,
           is_custom: true,
+          ...(typeof afterSequence === 'number' ? { after_sequence: afterSequence } : {}),
         }),
       });
 
@@ -229,6 +271,100 @@ export default function AddWorkModal({
               ))}
             </div>
           </div>
+
+          {/* Position in Sequence */}
+          {currentAreaWorks.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Position in Sequence</label>
+              <button
+                type="button"
+                onClick={() => setShowPositionPicker(true)}
+                className={`w-full px-3 py-2.5 rounded-xl border text-left flex items-center justify-between transition-colors ${
+                  insertAfterIndex !== null
+                    ? `bg-gradient-to-r ${selectedArea.color} text-white border-transparent`
+                    : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span>{insertAfterIndex === -1
+                    ? '⬆️ Beginning of list'
+                    : insertAfterIndex !== null && currentAreaWorks[insertAfterIndex]
+                    ? `After #${currentAreaWorks[insertAfterIndex].sequence} — ${currentAreaWorks[insertAfterIndex].name}`
+                    : '⬇️ End of list (default)'
+                  }</span>
+                </span>
+                <span className={insertAfterIndex !== null ? 'text-white/80' : 'text-gray-400'}>▼</span>
+              </button>
+            </div>
+          )}
+
+          {/* Position Picker Overlay */}
+          {showPositionPicker && (
+            <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex flex-col" onClick={() => setShowPositionPicker(false)}>
+              <div className="flex-1 flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
+                {/* Picker Header */}
+                <div className={`p-4 bg-gradient-to-r ${selectedArea.color} text-white flex items-center justify-between`}>
+                  <div>
+                    <h3 className="font-bold text-lg">Insert Position</h3>
+                    <p className="text-white/80 text-sm">Where should this work go in {selectedArea.name}?</p>
+                  </div>
+                  <button
+                    onClick={() => setShowPositionPicker(false)}
+                    className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-xl transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Scrollable Works List */}
+                <div ref={positionListRef} className="flex-1 overflow-y-auto bg-white">
+                  {/* Beginning option */}
+                  <button
+                    type="button"
+                    onClick={() => { setInsertAfterIndex(-1); setShowPositionPicker(false); }}
+                    className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
+                      insertAfterIndex === -1 ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
+                    }`}
+                  >
+                    <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">⬆</span>
+                    <span className="font-medium text-gray-800">Beginning of list</span>
+                    {insertAfterIndex === -1 && <span className="ml-auto text-emerald-500 font-bold">✓</span>}
+                  </button>
+
+                  {/* Each existing work = insert-after option */}
+                  {currentAreaWorks.map((work, idx) => (
+                    <button
+                      key={work.id}
+                      type="button"
+                      onClick={() => { setInsertAfterIndex(idx); setShowPositionPicker(false); }}
+                      className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
+                        insertAfterIndex === idx ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
+                      }`}
+                    >
+                      <span className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-bold">
+                        {work.sequence || idx + 1}
+                      </span>
+                      <span className="text-gray-700 text-sm truncate flex-1 text-left">{work.name}</span>
+                      {insertAfterIndex === idx && <span className="text-emerald-500 font-bold">✓</span>}
+                    </button>
+                  ))}
+
+                  {/* End of list option */}
+                  <button
+                    type="button"
+                    onClick={() => { setInsertAfterIndex(null); setShowPositionPicker(false); }}
+                    className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
+                      insertAfterIndex === null ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
+                    }`}
+                  >
+                    <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">⬇</span>
+                    <span className="font-medium text-gray-800">End of list</span>
+                    {insertAfterIndex === null && <span className="ml-auto text-emerald-500 font-bold">✓</span>}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* AI Generate Section */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-xl border border-purple-200">
