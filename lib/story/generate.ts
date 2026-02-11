@@ -42,7 +42,6 @@ export async function generateWeeklyStory(): Promise<GeneratedStory> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    console.warn('ANTHROPIC_API_KEY not set, using fallback story');
     return FALLBACK_STORY;
   }
   

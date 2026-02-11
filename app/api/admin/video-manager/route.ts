@@ -186,7 +186,6 @@ export async function DELETE(request: NextRequest) {
           .remove([`videos/${fileName}`]);
       }
     } catch (storageError) {
-      console.warn('Could not delete video file from storage:', storageError);
       // Continue anyway - metadata is deleted
     }
 

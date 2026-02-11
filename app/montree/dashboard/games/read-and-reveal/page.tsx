@@ -248,7 +248,7 @@ export default function ReadAndRevealGame() {
     try {
       await GameAudio.playWord(currentWord.word, currentWord.series);
     } catch {
-      console.warn(`Word "${currentWord.word}" not found`);
+      // Word audio not found
     }
   };
 

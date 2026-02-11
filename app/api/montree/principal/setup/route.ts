@@ -58,7 +58,6 @@ async function seedCurriculumForClassroom(
     const worksToInsert = allWorks.map(work => {
       const areaUuid = areaMap[work.area_key];
       if (!areaUuid) {
-        console.warn(`[Setup] No area UUID for ${work.area_key}`);
         return null;
       }
 
@@ -102,7 +101,6 @@ async function seedCurriculumForClassroom(
         }
 
         if (attempt < 3) {
-          console.warn(`[Setup] Batch ${Math.floor(i/BATCH_SIZE)+1} attempt ${attempt} failed, retrying...`);
           await new Promise(r => setTimeout(r, 500 * attempt));
         } else {
           console.error(`[Setup] Batch insert failed after 3 attempts:`, batchError.message);

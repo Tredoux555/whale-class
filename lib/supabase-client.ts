@@ -24,7 +24,6 @@ const fetchWithRetry: typeof fetch = async (input, init) => {
                         error?.message?.includes('CONNECT_TIMEOUT');
       if (attempt < MAX_RETRIES && isTimeout) {
         const delay = 1000 * (attempt + 1);
-        console.warn(`[Supabase] Connection timeout, retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
         await new Promise(r => setTimeout(r, delay));
         continue;
       }

@@ -70,7 +70,7 @@ export async function requestGlobalWakeLock() {
       return globalWakeLock;
     }
   } catch (err) {
-    console.warn('Wake lock not supported or failed:', err);
+    // Wake lock not supported or failed
   }
   return null;
 }
@@ -82,7 +82,7 @@ export async function releaseGlobalWakeLock() {
       globalWakeLock = null;
     }
   } catch (err) {
-    console.warn('Failed to release wake lock:', err);
+    // Failed to release wake lock
   }
 }
 

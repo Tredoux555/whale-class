@@ -65,9 +65,6 @@ export async function verifySchoolRequest(
   // TODO: Store Montree JWT in localStorage or HttpOnly cookie, then remove this fallback.
   const schoolId = request.headers.get('x-school-id');
   if (schoolId) {
-    console.warn(
-      `[AUTH] Route ${request.nextUrl.pathname} using deprecated x-school-id header. Migrate to Bearer token.`
-    );
     return {
       userId: 'legacy',
       schoolId,

@@ -32,7 +32,6 @@ export function getParentSession(): ParentSession | null {
     const session = JSON.parse(stored) as ParentSession;
     
     if (!session.parent?.id || !session.school?.id) {
-      console.warn('Invalid parent session structure');
       return null;
     }
     

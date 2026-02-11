@@ -40,7 +40,6 @@ export function getSession(): MontreeSession | null {
     
     // Validate required fields
     if (!session.teacher?.id || !session.school?.id) {
-      console.warn('Invalid session structure');
       return null;
     }
     

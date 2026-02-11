@@ -197,9 +197,8 @@ async function ensureChildExistsInChildrenTable(childId: string): Promise<void> 
       return;
     }
     
-    // If there was an error other than "not found", log it but continue
+    // If there was an error other than "not found", continue anyway
     if (checkError && checkError.code !== 'PGRST116') {
-      console.warn(`Warning checking child existence: ${checkError.message}`);
       // Continue anyway - we'll try to create it
     }
     
@@ -297,9 +296,8 @@ export async function updateWorkProgress(
     try {
       await ensureChildExistsInChildrenTable(childId);
     } catch (error) {
-      // Log the error but don't fail the entire operation
+      // Don't fail the entire operation
       // The foreign key might still work if the child was created by another process
-      console.warn(`Warning: Could not ensure child exists in children table: ${error instanceof Error ? error.message : String(error)}`);
     }
   
   // First, try to get existing progress

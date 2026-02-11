@@ -101,7 +101,7 @@ async function playWordAudio(word: string): Promise<void> {
     try {
       await GameAudio.playWord(cleanWord, 'pink');
     } catch {
-      console.warn(`Word "${cleanWord}" not in audio library`);
+      // Word not in audio library
     }
   }
 }

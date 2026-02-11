@@ -392,7 +392,7 @@ async function incrementSynonymUsage(synonymId: string): Promise<void> {
     const supabase = getSupabase();
     await supabase.rpc('increment_synonym_usage', { synonym_id: synonymId });
   } catch (error) {
-    console.warn('Failed to increment synonym usage:', error);
+    // Failed to increment synonym usage
   }
 }
 

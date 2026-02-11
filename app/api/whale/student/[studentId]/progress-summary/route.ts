@@ -198,7 +198,7 @@ export async function GET(
       const curriculumModule = await import('@/lib/montree/curriculum-data');
       curriculum = curriculumModule.curriculum || curriculumModule.default || [];
     } catch {
-      console.warn('Could not load curriculum data, using empty areas');
+      // Could not load curriculum data, using empty areas
     }
 
     // ========================================================================
