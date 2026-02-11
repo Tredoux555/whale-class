@@ -72,10 +72,9 @@ export async function GET(request: NextRequest) {
       data: data || []
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching themes:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch themes' },
+      { error: 'Failed to fetch themes' },
       { status: 500 }
     );
   }
@@ -129,10 +128,9 @@ export async function POST(request: NextRequest) {
       data
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error adding theme:', error);
     return NextResponse.json(
-      { error: message || 'Failed to add theme' },
+      { error: 'Failed to add theme' },
       { status: 500 }
     );
   }
@@ -167,10 +165,9 @@ export async function DELETE(request: NextRequest) {
       message: 'Theme removed'
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error removing theme:', error);
     return NextResponse.json(
-      { error: message || 'Failed to remove theme' },
+      { error: 'Failed to remove theme' },
       { status: 500 }
     );
   }

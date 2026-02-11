@@ -10,8 +10,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!child) return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     return NextResponse.json({ data: child });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to fetch child' }, { status: 500 });
+    console.error('[Child GET] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch child' }, { status: 500 });
   }
 }
 
@@ -30,15 +30,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       notes: body.notes,
     };
 
-    Object.keys(input).forEach(key => 
+    Object.keys(input).forEach(key =>
       input[key as keyof UpdateChildInput] === undefined && delete input[key as keyof UpdateChildInput]
     );
 
     const child = await updateChild(id, input);
     return NextResponse.json({ data: child, message: 'Child updated successfully' });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to update child' }, { status: 500 });
+    console.error('[Child PUT] Error:', error);
+    return NextResponse.json({ error: 'Failed to update child' }, { status: 500 });
   }
 }
 
@@ -48,7 +48,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await deactivateChild(id);
     return NextResponse.json({ message: 'Child deactivated' });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message || 'Failed to delete child' }, { status: 500 });
+    console.error('[Child DELETE] Error:', error);
+    return NextResponse.json({ error: 'Failed to delete child' }, { status: 500 });
   }
 }

@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
       .upload(`vault/${storageName}`, encrypted, { contentType: 'application/octet-stream', upsert: false });
 
     if (uploadError) {
-      return NextResponse.json({ error: 'Upload failed: ' + uploadError.message }, { status: 500 });
+      console.error('[Vault Save] Upload error:', uploadError);
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage.from('vault-secure').getPublicUrl(`vault/${storageName}`);

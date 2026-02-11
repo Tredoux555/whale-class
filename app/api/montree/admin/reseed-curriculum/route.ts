@@ -86,7 +86,7 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
 
     if (areaError) {
       console.error('[Reseed] Failed to create areas:', areaError);
-      return NextResponse.json({ error: `Failed to create areas: ${areaError.message}` }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create curriculum areas' }, { status: 500 });
     }
 
     // Build area_key -> UUID map
@@ -165,6 +165,6 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
 
   } catch (error) {
     console.error('[Reseed] Error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -81,7 +81,8 @@ export async function POST(request: NextRequest) {
         .insert(records);
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('Curriculum insert error:', error.message, error.code);
+        return NextResponse.json({ error: 'Processing error' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
           .insert(records);
 
         if (error) {
-          results.push({ classroom: classroom.name, error: error.message });
+          results.push({ classroom: classroom.name, error: 'Processing error' });
         } else {
           results.push({ classroom: classroom.name, worksAssigned: records.length });
         }
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
         .insert(records);
 
       if (error) {
-        results.push({ classroom: classroom.name, error: error.message });
+        results.push({ classroom: classroom.name, error: 'Processing error' });
       } else {
         results.push({ classroom: classroom.name, worksAssigned: records.length });
       }

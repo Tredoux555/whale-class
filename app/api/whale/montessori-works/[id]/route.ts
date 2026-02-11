@@ -18,7 +18,7 @@ export async function GET(
     if (error) {
       console.error('Error fetching montessori work:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -71,7 +71,7 @@ export async function PUT(
     if (error) {
       console.error('Error updating montessori work:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -125,7 +125,7 @@ export async function DELETE(
     if (error) {
       console.error('Error deleting montessori work:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }

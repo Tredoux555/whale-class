@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
       .eq('child_id', childId);
 
     if (error) {
-      console.error('Error fetching focus works:', error);
+      console.error('Error fetching focus works:', error.message, error.code);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -117,9 +117,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error setting focus work:', error);
+      console.error('Error setting focus work:', error.message, error.code);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -166,9 +166,9 @@ export async function DELETE(request: NextRequest) {
       .eq('area', area);
 
     if (error) {
-      console.error('Error deleting focus work:', error);
+      console.error('Error deleting focus work:', error.message, error.code);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Error fetching curriculum roadmap:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -90,9 +90,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Unexpected error in GET /api/whale/montessori-works:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: errorMessage },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -127,7 +126,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating montessori work:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }

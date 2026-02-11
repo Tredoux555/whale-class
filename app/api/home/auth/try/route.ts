@@ -8,7 +8,7 @@ import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { seedHomeCurriculum } from '@/lib/home/curriculum-helpers';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 // Same charset as Montree classroom — no confusing chars (I, L, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
 
       // If unique violation (23505), retry with new code; else fail
       if (famErr?.code !== '23505') {
-        console.error('Failed to create home family:', famErr?.message, famErr?.code, famErr?.details, famErr?.hint);
+        // Phase 8: Sanitized — omit details/hint from log
+        console.error('[home/auth/try]', { message: famErr?.message, code: famErr?.code });
         const isDev = process.env.NODE_ENV === 'development';
         return NextResponse.json({
           error: 'Failed to create account',
@@ -105,6 +106,17 @@ export async function POST(req: NextRequest) {
         console.error('Curriculum seed warning:', seedErr.message);
       }
     }
+
+    // Phase 8: Log account creation
+    logAudit(supabase, {
+      adminIdentifier: `home_family:${family.id}`,
+      action: 'account_created',
+      resourceType: 'home_family',
+      resourceId: family.id,
+      resourceDetails: { endpoint: '/api/home/auth/try' },
+      ipAddress: ip,
+      userAgent,
+    });
 
     return NextResponse.json({
       success: true,

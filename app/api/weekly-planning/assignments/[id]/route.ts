@@ -33,8 +33,8 @@ export async function PATCH(
       .single();
 
     if (error) {
-      console.error('Assignment update error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Assignment update error:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, assignment: data });

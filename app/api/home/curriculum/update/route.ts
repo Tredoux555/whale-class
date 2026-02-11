@@ -58,15 +58,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Curriculum update error:', error.message, error.code);
-      return errorResponse('Failed to update work', {
-        message: error.message, code: error.code,
-      });
+      return errorResponse('Failed to update work');
     }
 
     return NextResponse.json({ success: true, work: updated });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('Curriculum update error:', message);
-    return errorResponse('Server error', { message });
+    return errorResponse('Server error');
   }
 }

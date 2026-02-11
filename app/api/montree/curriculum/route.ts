@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Insert error:', error.message, error.code, error.details, error.hint);
       console.error('Insert data was:', JSON.stringify(insertData, null, 2));
-      return NextResponse.json({ error: `Failed to add work: ${error.message}` }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to add work' }, { status: 500 });
     }
 
     const work = data?.[0] || null;

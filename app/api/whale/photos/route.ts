@@ -37,10 +37,9 @@ export async function GET(request: NextRequest) {
       data: data || []
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching photos:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch photos' },
+      { error: 'Failed to fetch photos' },
       { status: 500 }
     );
   }
@@ -137,10 +136,9 @@ export async function POST(request: NextRequest) {
       data
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error uploading photo:', error);
     return NextResponse.json(
-      { error: message || 'Failed to upload photo' },
+      { error: 'Failed to upload photo' },
       { status: 500 }
     );
   }
@@ -183,10 +181,9 @@ export async function DELETE(request: NextRequest) {
       message: 'Photo deleted'
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error deleting photo:', error);
     return NextResponse.json(
-      { error: message || 'Failed to delete photo' },
+      { error: 'Failed to delete photo' },
       { status: 500 }
     );
   }

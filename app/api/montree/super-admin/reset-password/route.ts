@@ -4,14 +4,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { hashPassword } from '@/lib/montree/password';
 import { validatePassword } from '@/lib/password-policy';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Phase 9: Rate limiting (stricter — 3 per 15 min for password resets)
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/reset-password', 3, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch (e) {
+      console.error('[ResetPassword] Rate limit check failed (non-blocking):', e);
+    }
+
     const { schoolId, newPassword, adminPassword } = await request.json();
 
-    // Verify super admin password
-    if (adminPassword !== process.env.SUPER_ADMIN_PASSWORD) {
+    // Phase 9: Timing-safe password verification
+    const { valid } = verifySuperAdminPassword(adminPassword);
+    if (!valid) {
       return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
     }
 

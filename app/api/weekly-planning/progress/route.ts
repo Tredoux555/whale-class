@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       .eq('id', assignmentId);
 
     if (error) {
-      console.error('Progress update error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Progress update error:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

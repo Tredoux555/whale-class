@@ -63,10 +63,9 @@ export async function GET(request: NextRequest) {
       count: filteredData.length
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching activities:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch activities' },
+      { error: 'Failed to fetch activities' },
       { status: 500 }
     );
   }

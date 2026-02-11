@@ -23,7 +23,9 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
 
   const fetchSchools = useCallback(async () => {
     try {
-      const res = await fetch('/api/montree/super-admin/schools');
+      const res = await fetch('/api/montree/super-admin/schools', {
+        headers: { 'x-super-admin-password': password }
+      });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setSchools(data.schools || []);
@@ -33,7 +35,7 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
     } finally {
       setLoading(false);
     }
-  }, [logAction]);
+  }, [logAction, password]);
 
   const fetchFeedback = useCallback(async () => {
     setLoadingFeedback(true);

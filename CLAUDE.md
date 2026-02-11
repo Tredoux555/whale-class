@@ -13,9 +13,9 @@ Deploy: Railway auto-deploys on push to `main`
 
 ## CURRENT STATUS (Feb 11, 2026)
 
-### Security Hardening — Phase 7 COMPLETE, Phase 8 Next
+### Security Hardening — ALL 9 PHASES COMPLETE ✅
 
-9-phase security hardening project in progress. Phases 1–7 done.
+9-phase security hardening project COMPLETE. All phases done.
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -27,32 +27,28 @@ Deploy: Railway auto-deploys on push to `main`
 | 5 | Password policy & rate limiting (23 files, 1123 insertions) | ✅ Done |
 | 6 | Input sanitisation & CSP headers (17 files) | ✅ Done |
 | 7 | Session management (timing-safe auth, HttpOnly cookies, CSRF) | ✅ Done |
-| 8 | Logging & monitoring | 🔜 Next |
-| 9 | Production security review (final) | Pending |
+| 8 | Logging & monitoring (6 fixes across ~15 files) | ✅ Done |
+| 9 | Production security review (8 fixes across ~45 files) | ✅ Done |
 
 **Handoff docs:**
 - `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md`
 - `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md`
 - `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md`
+- `docs/HANDOFF_SECURITY_PHASE8_COMPLETE.md`
+- `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md`
 
-**Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`
+**Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`, `.claude/plans/phase8-plan-v2.md`, `.claude/plans/phase9-plan-v1.md`
 
-### 🔧 FRESH AUDIT COMMAND (Phase 8)
+### ⚠️ POST-SECURITY ACTION REQUIRED
 
-When starting a new chat, say: **"Run the Phase 8 fresh audit command from CLAUDE.md"**
+**MESSAGE_ENCRYPTION_KEY rotation** — Must be done manually:
+1. Generate new 32-char key: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`
+2. Set in Railway: `OLD_ENCRYPTION_KEY=change-this-to-32-char-key-12345`, `NEW_ENCRYPTION_KEY=<new-key>`
+3. Run: `npx tsx scripts/rotate-encryption-key.ts --dry-run` (verify)
+4. Run: `npx tsx scripts/rotate-encryption-key.ts` (execute)
+5. Update Railway: `MESSAGE_ENCRYPTION_KEY=<new-key>`, remove `OLD_ENCRYPTION_KEY`
 
-Claude should then execute this sequence:
-1. Read `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` for context
-2. Run a comprehensive security audit of the CURRENT codebase covering:
-   - Logging & monitoring: audit trails, error logging, security event tracking
-   - Missing or inconsistent logging across auth endpoints
-   - Sensitive data exposure in logs
-   - **Pattern reminder:** Never validate `process.env.*` at the top level of a module — always inside a function (see Build Fix in Phase 4 handoff)
-   - **Pattern reminder:** Rate limiter is DB-backed (survives Railway restarts); always fail open with try/catch
-   - **Pattern reminder:** Fire-and-forget audit logging — security logging should never throw or block auth flow
-3. Produce findings ranked by severity
-4. Build Phase 8 plan using the 3-round plan→audit→refine cycle
-5. Present plan for approval before implementing
+**Frontend update** — Super-admin panel needs to send password with audit GET and schools GET (newly authenticated endpoints). See Phase 9 handoff for details.
 
 ### Other Open Items
 
@@ -73,7 +69,35 @@ Claude should then execute this sequence:
 
 ---
 
-### Recent Changes (Security Hardening + Cleanup, Feb 10)
+### Recent Changes (Phase 9 — Production Security Review, Feb 11)
+
+**Phase 9 — Production Security Review (8 fixes across ~45 files):**
+- Fix 1 (CRITICAL): Created `lib/verify-super-admin.ts` — shared timing-safe `verifySuperAdminPassword()` helper using `timingSafeEqual()` with fixed 256-byte buffers. Replaced 9 plaintext `!==` comparisons across 6 super-admin route files.
+- Fix 2 (CRITICAL): Secured `audit/route.ts` — both GET and POST were completely unauthenticated. Added `verifySuperAdminPassword()` + rate limiting + query limit cap (500).
+- Fix 3 (CRITICAL): Secured `schools/route.ts` GET — was returning all school data publicly. Added auth (header or query param).
+- Fix 4 (CRITICAL): Upgraded `lib/message-encryption.ts` from AES-256-CBC to AES-256-GCM. New format: `gcm:<iv>:<authTag>:<encrypted>`. Backward compatible (auto-detects by prefix). Created `scripts/rotate-encryption-key.ts` migration script.
+- Fix 5 (HIGH): Added input length validation — messages (5000/500/200 chars), curriculum generate-description (255/50 chars).
+- Fix 6 (HIGH): Added 8 missing env vars to `.env.example`. Converted Stripe PRICE_IDS from hardcoded fallbacks to lazy-throw pattern via Proxy.
+- Fix 7 (HIGH): Sanitized ~43 API files — removed `error.message`/`error.details`/`error.hint`/`JSON.stringify(error)` from client responses. All now return generic messages.
+- Fix 8 (MEDIUM): Added `checkRateLimit()` to 5 super-admin endpoints (audit, schools, npo-applications, reduced-rate-applications, reset-password).
+
+**Files created:** `lib/verify-super-admin.ts`, `scripts/rotate-encryption-key.ts`, `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md`
+
+### Previous Changes (Phase 8 — Logging & Monitoring, Feb 11)
+
+**Phase 8 — Logging & Monitoring (6 fixes across ~15 files):**
+- Fix 1: Added `login_success` audit logging to 5 auth endpoints (teacher, parent, admin, home, super-admin login-as)
+- Fix 2: Added `logout` audit logging to 2 endpoints (admin, parent — both required rewrite for `NextRequest` param)
+- Fix 3: Added destructive operation logging — `school_delete`, `child_delete`, `account_created` (all log BEFORE cascade)
+- Fix 4a: Created `lib/api-error.ts` — safe error logging utility
+- Fix 4b: Sanitized error responses — removed `error.message`/`error.details` leaks from leads, children, schools routes
+- Fix 4b (bug fix): Removed undefined `fallbackPassword` variable in `leads/route.ts` (would throw ReferenceError at runtime)
+- Fix 4b (bug fix): Removed partial password logging (`superAdminPassword.substring(0, 2)`) in leads route
+- Fix 5: Added CSRF block logging (`console.warn('[CSRF]')`) in middleware
+- Fix 6: Extended audit logger `requires_review` for new action types: `school_delete`, `child_delete`, `login_as`, `account_created`
+- Hash migration logging: Home family login now logs `password_hash_upgraded` when SHA256→bcrypt migration occurs
+
+### Previous Changes (Security Hardening + Cleanup, Feb 10)
 
 **ElevenLabs Cleanup (subscription cancelled):**
 - Deleted 4 scripts: `generate-elevenlabs-audio.js`, `regenerate-audio.js`, `regenerate-audio-charlotte.js`, `regenerate-all-audio-charlotte.js`
@@ -110,7 +134,7 @@ Claude should then execute this sequence:
 - `VAULT_PASSWORD_HASH` ✅
 - `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` ✅
 - `TEACHER_ADMIN_PASSWORD` ✅ (was missing from Railway)
-- **Still TODO**: Rotate MESSAGE_ENCRYPTION_KEY in Phase 9 with re-encryption migration.
+- **DONE in Phase 9**: Encryption upgraded to GCM + rotation script created (`scripts/rotate-encryption-key.ts`). Manual key rotation still needed — see Post-Security Action Required above.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
@@ -330,12 +354,19 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 
 ### Deferred (Future Sessions)
 - Auth restructure (localStorage → httpOnly cookies + middleware)
-- Rate limiting on auth endpoints
 - API route consolidation (106 routes — many could merge)
 - Centralized logging service
 - PWA manifest not linked
 - Email sending not tested
 - DB only has 18/43 language works (needs reseed)
+
+### Known Security Debt (Explicitly Deferred in Phase 9)
+- 43 Whale API routes with zero auth (admin tool, UI-gated — auth consolidation project)
+- localStorage for JWTs (teacher, teacher sessions, home family) — auth restructure project
+- Parent invite codes stored as plaintext — low priority
+- CSP `style-src 'unsafe-inline'` — complex Next.js integration
+- `ignoreBuildErrors: true` in next.config.ts — pre-existing
+- Audit table naming (`montree_super_admin_audit` logs all events, not just super-admin)
 
 ---
 
@@ -383,9 +414,13 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` | **CURRENT** — Security Phase 7 complete, session management improvements |
+| `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | **CURRENT** — Security Phase 9 complete (FINAL), production security review |
+| `docs/HANDOFF_SECURITY_PHASE8_COMPLETE.md` | Security Phase 8 complete, logging & monitoring |
+| `docs/HANDOFF_SECURITY_PHASE7_COMPLETE.md` | Security Phase 7 complete, session management improvements |
 | `docs/HANDOFF_SECURITY_PHASE6_COMPLETE.md` | Security Phase 6 complete, input sanitisation & CSP |
 | `docs/HANDOFF_SECURITY_PHASE4_COMPLETE.md` | Security Phase 4 complete, all fixes listed |
+| `.claude/plans/phase9-plan-v1.md` | Phase 9 execution plan (final production review) |
+| `.claude/plans/phase8-plan-v2.md` | Phase 8 execution plan (2 rounds of audit refinement) |
 | `.claude/plans/phase7-plan-v3.md` | Phase 7 execution plan (3 rounds of audit refinement) |
 | `.claude/plans/phase4-plan-v3.md` | Phase 4 execution plan (3 rounds of audit refinement) |
 | `docs/HANDOFF_SECURITY_PHASE3_COMPLETE.md` | Security Phase 3 complete, all fixes listed |

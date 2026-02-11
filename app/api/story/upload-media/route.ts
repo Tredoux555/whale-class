@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
       .upload(storagePath, buffer, { contentType: file.type, upsert: false });
 
     if (uploadError) {
-      return NextResponse.json({ error: 'Failed to upload file', details: uploadError.message }, { status: 500 });
+      console.error('[Upload Media] Upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage.from('story-uploads').getPublicUrl(storagePath);

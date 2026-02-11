@@ -69,7 +69,8 @@ export async function GET(request: NextRequest) {
     const { data: existingWorks, error: fetchError } = await query;
 
     if (fetchError) {
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+      console.error('[Backfill] Fetch error:', fetchError);
+      return NextResponse.json({ error: 'Failed to fetch existing works' }, { status: 500 });
     }
 
     if (!existingWorks?.length) {
@@ -108,7 +109,8 @@ export async function GET(request: NextRequest) {
         .eq('id', work.id);
 
       if (updateError) {
-        errors.push(`${work.name}: ${updateError.message}`);
+        console.error(`[Backfill] Update error for ${work.name}:`, updateError);
+        errors.push(`${work.name}: update failed`);
       } else {
         updated++;
       }
@@ -125,8 +127,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    console.error('Backfill guides error:', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }

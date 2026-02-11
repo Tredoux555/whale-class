@@ -2,10 +2,38 @@
 // Session 105: Super Admin API - List all schools with stats
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Phase 9: Rate limiting
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/schools', 10, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch (e) {
+      console.error('[Schools] Rate limit check failed (non-blocking):', e);
+    }
+
+    // Phase 9: Require super-admin auth for school listing
+    const { searchParams } = new URL(request.url);
+    const password = request.headers.get('x-super-admin-password') || searchParams.get('password');
+    const { valid } = verifySuperAdminPassword(password);
+    if (!valid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Fetch all schools
     const { data: schools, error: schoolsError } = await supabase
       .from('montree_schools')
@@ -58,11 +86,29 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Phase 9 audit fix: Rate limiting on PATCH
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/schools/patch', 10, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch (e) {
+      console.error('[Schools PATCH] Rate limit check failed (non-blocking):', e);
+    }
+
     const body = await request.json();
     const { schoolId, subscription_tier, subscription_status, password } = body;
 
-    // Verify super admin password
-    if (password !== process.env.SUPER_ADMIN_PASSWORD) {
+    // Phase 9: Timing-safe password verification
+    const { valid: patchPasswordValid } = verifySuperAdminPassword(password);
+    if (!patchPasswordValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -83,7 +129,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error('Failed to update school:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to update school' }, { status: 500 });
     }
 
     return NextResponse.json({ school: data });
@@ -98,18 +144,48 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
+
+    // Phase 9 audit fix: Rate limiting on DELETE (stricter: 5 per 15 min)
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/schools/delete', 5, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch (e) {
+      console.error('[Schools DELETE] Rate limit check failed (non-blocking):', e);
+    }
+
     const { searchParams } = new URL(request.url);
     const schoolId = searchParams.get('schoolId');
     const password = request.headers.get('x-super-admin-password') || searchParams.get('password');
 
-    // Verify super admin password
-    if (!password || password !== process.env.SUPER_ADMIN_PASSWORD) {
+    // Phase 9: Timing-safe password verification
+    const { valid: deletePasswordValid } = verifySuperAdminPassword(password);
+    if (!deletePasswordValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
     }
+
+    // Phase 8: Log school deletion BEFORE cascade (captures intent even if delete fails)
+    logAudit(supabase, {
+      adminIdentifier: 'super_admin',
+      action: 'school_delete',
+      resourceType: 'school',
+      resourceId: schoolId,
+      resourceDetails: { endpoint: '/api/montree/super-admin/schools' },
+      ipAddress: getClientIP(request.headers),
+      userAgent: getUserAgent(request.headers),
+      isSensitive: true,
+    });
 
     // Delete in order to respect foreign keys
     // 1. Delete student aliases
@@ -139,8 +215,8 @@ export async function DELETE(request: NextRequest) {
       .eq('id', schoolId);
 
     if (schoolError) {
-      console.error('Failed to delete school:', schoolError);
-      return NextResponse.json({ error: schoolError.message }, { status: 500 });
+      console.error('Failed to delete school:', { message: schoolError.message, code: (schoolError as Record<string, unknown>).code });
+      return NextResponse.json({ error: 'Failed to delete school' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

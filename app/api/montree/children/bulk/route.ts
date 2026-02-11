@@ -134,9 +134,10 @@ async function getCurriculumWorks(
 
     return { areaMap, works: works || [] };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Failed to fetch curriculum:', message);
     throw new Error(
-      `Failed to fetch curriculum: ${message}`
+      `Failed to fetch curriculum`
     );
   }
 }
@@ -305,7 +306,8 @@ export async function POST(request: NextRequest) {
       .select('id, name');
 
     if (insertError) {
-      throw new Error(`Failed to insert children: ${insertError.message}`);
+      console.error('Insert error:', insertError.message, insertError.code, insertError.details);
+      throw new Error(`Failed to insert children`);
     }
 
     if (!insertedChildren || insertedChildren.length === 0) {
@@ -346,8 +348,8 @@ export async function POST(request: NextRequest) {
         .upsert(progressRecordsToInsert, { onConflict: 'child_id,work_name' });
 
       if (progressError) {
-        console.error('Warning: Failed to insert some progress records', progressError);
-        errors.push(`Progress records warning: ${progressError.message}`);
+        console.error('Warning: Failed to insert some progress records', progressError.message, progressError.code);
+        errors.push(`Progress records warning: Some records could not be saved`);
       }
     }
 
@@ -364,11 +366,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('Bulk import error:', errorMsg);
+    console.error('Bulk import error:', error);
 
-    // Validation errors (from validateRequest) should be 400
-    // Database/server errors should be 500
+    // Validation errors (from validateRequest) are safe to return — they're our own messages
+    // Database/server errors must NOT leak
+    const errorMsg = error instanceof Error ? error.message : '';
     const isValidation = errorMsg.includes('must have') ||
                          errorMsg.includes('must be') ||
                          errorMsg.includes('is required') ||
@@ -379,7 +381,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         created: 0,
-        errors: [errorMsg],
+        errors: isValidation ? [errorMsg] : ['Server error'],
         children: [],
       },
       { status: isValidation ? 400 : 500 }

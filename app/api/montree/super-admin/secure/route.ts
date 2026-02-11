@@ -14,6 +14,7 @@ import {
   sendAlert,
   verifyTOTP,
 } from '@/lib/montree/super-admin-security';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 
 function getClientIP(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -57,8 +58,9 @@ export async function POST(request: NextRequest) {
     // ACTION: LOGIN
     // ========================
     if (action === 'login') {
-      // Verify password
-      if (password !== process.env.ADMIN_PASSWORD) {
+      // Phase 9: Timing-safe password verification
+      const { valid: passwordValid } = verifySuperAdminPassword(password, 'ADMIN_PASSWORD');
+      if (!passwordValid) {
         await logAudit(supabase, {
           adminIdentifier: ip,
           action: 'login_failed',

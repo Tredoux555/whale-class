@@ -90,6 +90,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Phase 9: Input length validation
+    if (typeof messageText === 'string' && messageText.length > 5000) {
+      return NextResponse.json(
+        { error: 'Message text must be 5000 characters or fewer' },
+        { status: 400 }
+      );
+    }
+    if (subject && typeof subject === 'string' && subject.length > 500) {
+      return NextResponse.json(
+        { error: 'Subject must be 500 characters or fewer' },
+        { status: 400 }
+      );
+    }
+    if (typeof senderName === 'string' && senderName.length > 200) {
+      return NextResponse.json(
+        { error: 'Sender name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     if (!['teacher', 'parent'].includes(senderType)) {
       return NextResponse.json(
         { error: 'Invalid sender type' },

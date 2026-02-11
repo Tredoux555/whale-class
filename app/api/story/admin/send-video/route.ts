@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) {
       console.error('[SendVideo] Upload error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload video: ' + uploadError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to upload video' }, { status: 500 });
     }
 
     // Get public URL

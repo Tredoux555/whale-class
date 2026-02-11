@@ -107,7 +107,8 @@ export async function POST(request: NextRequest) {
             .single();
 
           if (classroomError || !createdClassroom) {
-            send('warning', { message: `Failed to create ${classroom.name}: ${classroomError?.message}` });
+            console.error('[Setup] Classroom creation failed:', classroomError?.message, classroomError?.code);
+            send('warning', { message: `Failed to create ${classroom.name}` });
             errors.push(`Failed to create classroom "${classroom.name}"`);
             continue;
           }
@@ -328,7 +329,8 @@ export async function POST(request: NextRequest) {
         });
 
       } catch (error) {
-        send('error', { message: error instanceof Error ? error.message : 'Unknown error' });
+        console.error('[Setup] Fatal error:', error);
+        send('error', { message: 'An error occurred during setup' });
       }
 
       controller.close();

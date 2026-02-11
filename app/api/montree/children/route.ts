@@ -165,14 +165,16 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('[children API] Supabase error:', JSON.stringify(error, null, 2));
-      return NextResponse.json({ error: 'Failed to fetch children', details: error.message }, { status: 500 });
+      // Phase 8: Sanitized — no JSON.stringify of full error, no error.message to client
+      console.error('[children API]', { message: error.message, code: (error as Record<string, unknown>).code });
+      return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
 
     return NextResponse.json({ children: data || [] });
 
   } catch (error) {
-    console.error('[children API] Caught error:', error);
-    return NextResponse.json({ error: 'Internal server error', details: String(error) }, { status: 500 });
+    // Phase 8: Sanitized — don't leak error details to client
+    console.error('[children API]', { message: (error as Error)?.message || String(error) });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

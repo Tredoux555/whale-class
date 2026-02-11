@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, videos });
   } catch (error) {
     console.error('GET videos error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to fetch videos' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch videos'
     }, { status: 500 });
   }
 }
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
-      return NextResponse.json({ 
-        success: false, 
-        error: `Upload failed: ${uploadError.message}` 
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to upload video'
       }, { status: 500 });
     }
 
@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, video });
   } catch (error) {
     console.error('POST video error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to upload video' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to upload video'
     }, { status: 500 });
   }
 }
@@ -135,9 +135,9 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true, video: videos[videoIndex] });
   } catch (error) {
     console.error('PATCH video error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to update video' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to update video'
     }, { status: 500 });
   }
 }
@@ -193,9 +193,9 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE video error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to delete video' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to delete video'
     }, { status: 500 });
   }
 }

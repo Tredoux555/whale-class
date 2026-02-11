@@ -47,12 +47,12 @@ export default function SuperAdminPage() {
       await fetch('/api/montree/super-admin/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, details, timestamp: new Date().toISOString() }),
+        body: JSON.stringify({ action, details, timestamp: new Date().toISOString(), password }),
       });
     } catch (e) {
       console.warn('Audit log failed:', e);
     }
-  }, []);
+  }, [password]);
 
   // Use custom hooks
   const adminData = useAdminData({

@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
       .order('name');
     
     if (error) {
-      console.error('Error fetching children:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Error fetching children:', error.message, error.code);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     // Return with school info for compatibility

@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching analysis:', error);
+      console.error('Error fetching analysis:', error.message, error.code);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Internal server error' },
         { status: 500 }
       );
     }
@@ -254,13 +254,13 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (saveError) {
-      console.error('Error saving analysis:', saveError);
+      console.error('Error saving analysis:', saveError.message, saveError.code);
       // Return the analysis even if save failed
       return NextResponse.json({
         success: true,
         analysis: analysisResult,
         saved: false,
-        save_error: saveError.message,
+        save_error: 'Failed to save analysis',
       });
     }
 

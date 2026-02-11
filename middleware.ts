@@ -91,12 +91,21 @@ export async function middleware(req: NextRequest) {
       try {
         const originHostname = new URL(origin).hostname;
         if (originHostname !== requestHost) {
+          // Phase 8: Log CSRF block attempt
+          console.warn('[CSRF] Blocked cross-origin request:', {
+            method: req.method,
+            path: pathname,
+            originHostname,
+            requestHost,
+          });
           return new NextResponse(
             JSON.stringify({ error: 'Cross-origin request blocked' }),
             { status: 403, headers: { 'Content-Type': 'application/json' } }
           );
         }
       } catch {
+        // Phase 8: Log invalid origin
+        console.warn('[CSRF] Invalid origin header:', { method: req.method, path: pathname, origin });
         return new NextResponse(
           JSON.stringify({ error: 'Invalid origin' }),
           { status: 403, headers: { 'Content-Type': 'application/json' } }

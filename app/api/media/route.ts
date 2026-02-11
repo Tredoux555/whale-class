@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       if (uploadError) {
         console.error('Upload error:', uploadError);
         return NextResponse.json(
-          { success: false, error: `Upload failed: ${uploadError.message}` },
+          { success: false, error: 'Server error' },
           { status: 500 }
         );
       }
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         await supabase.storage.from('child-photos').remove([storagePath]);
       }
       return NextResponse.json(
-        { success: false, error: `Database error: ${dbError.message}` },
+        { success: false, error: 'Server error' },
         { status: 500 }
       );
     }
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Media upload error:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Server error' },
+      { success: false, error: 'Server error' },
       { status: 500 }
     );
   }
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Fetch error:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Server error' },
         { status: 500 }
       );
     }
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching media:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Server error' },
+      { success: false, error: 'Server error' },
       { status: 500 }
     );
   }
@@ -236,7 +236,7 @@ export async function DELETE(request: NextRequest) {
     if (dbError) {
       console.error('Delete error:', dbError);
       return NextResponse.json(
-        { success: false, error: dbError.message },
+        { success: false, error: 'Server error' },
         { status: 500 }
       );
     }
@@ -252,7 +252,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting media:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Server error' },
+      { success: false, error: 'Server error' },
       { status: 500 }
     );
   }
@@ -291,7 +291,7 @@ export async function PATCH(request: NextRequest) {
     if (error) {
       console.error('Update error:', error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: 'Server error' },
         { status: 500 }
       );
     }
@@ -304,7 +304,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('Error updating media:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Server error' },
+      { success: false, error: 'Server error' },
       { status: 500 }
     );
   }

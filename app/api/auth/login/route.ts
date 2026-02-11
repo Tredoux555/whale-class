@@ -85,6 +85,16 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
+    // Phase 8: Log successful admin login
+    logAudit(supabase, {
+      adminIdentifier: username,
+      action: 'login_success',
+      resourceType: 'admin',
+      resourceDetails: { endpoint: '/api/auth/login' },
+      ipAddress: ip,
+      userAgent,
+    });
+
     return response;
   } catch (error) {
     console.error('Login error:', error);

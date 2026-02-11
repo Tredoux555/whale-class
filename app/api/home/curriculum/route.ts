@@ -36,9 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Failed to fetch curriculum:', error.message, error.code, error.details, error.hint);
-      return errorResponse('Failed to load curriculum', {
-        message: error.message, code: error.code, details: error.details, hint: error.hint,
-      });
+      return errorResponse('Failed to load curriculum');
     }
 
     let records = curriculum || [];
@@ -140,9 +138,7 @@ export async function POST(request: NextRequest) {
 
     if (checkErr) {
       console.error('Curriculum check error:', checkErr.message, checkErr.code, checkErr.details);
-      return errorResponse('Failed to check curriculum', {
-        message: checkErr.message, code: checkErr.code, details: checkErr.details,
-      });
+      return errorResponse('Failed to check curriculum');
     }
 
     if (existing && existing.length > 0) {
