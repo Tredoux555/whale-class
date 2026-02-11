@@ -3,6 +3,7 @@
 // Uses jose (same library as lib/auth.ts for admin tokens)
 
 import { SignJWT, jwtVerify } from 'jose';
+import { NextResponse } from 'next/server';
 
 // Lazy secret — evaluated on first use, not at module import time
 // This prevents build failures when env vars aren't available (e.g. Railway build step)
@@ -19,7 +20,10 @@ function getSecretKey(): Uint8Array {
   return _secretKey;
 }
 
-// Token payload shape (teacher/principal — sent as Bearer header)
+// Cookie name for teacher/principal httpOnly auth cookie
+export const MONTREE_AUTH_COOKIE = 'montree-auth';
+
+// Token payload shape (teacher/principal — stored in httpOnly cookie)
 export interface MontreeTokenPayload {
   sub: string;        // teacher ID or principal ID
   schoolId: string;
@@ -134,4 +138,31 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
   } catch {
     return null;
   }
+}
+
+/**
+ * Set the montree-auth httpOnly cookie on a NextResponse.
+ * Call this in login routes after creating the JWT token.
+ */
+export function setMontreeAuthCookie(response: NextResponse, token: string): void {
+  response.cookies.set(MONTREE_AUTH_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60, // 7 days — matches JWT TTL
+  });
+}
+
+/**
+ * Clear the montree-auth httpOnly cookie (logout).
+ */
+export function clearMontreeAuthCookie(response: NextResponse): void {
+  response.cookies.set(MONTREE_AUTH_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
 }

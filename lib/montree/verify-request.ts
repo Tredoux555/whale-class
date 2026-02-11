@@ -12,7 +12,7 @@
 //   }
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyMontreeToken, type MontreeTokenPayload } from './server-auth';
+import { verifyMontreeToken, MONTREE_AUTH_COOKIE } from './server-auth';
 
 export interface VerifiedRequest {
   userId: string;
@@ -24,16 +24,31 @@ export interface VerifiedRequest {
 /**
  * Verify that the request has a valid Montree JWT token.
  *
- * Checks the Authorization header for a Bearer token.
- * Returns a VerifiedRequest on success, or a 401 NextResponse on failure.
+ * Checks (in order):
+ *   1. httpOnly cookie `montree-auth` (primary — set by server on login)
+ *   2. Authorization: Bearer header (backward compat for any remaining clients)
  *
- * During migration: also accepts x-school-id header as fallback
- * (will be removed once all clients send Bearer tokens).
+ * Returns a VerifiedRequest on success, or a 401 NextResponse on failure.
  */
 export async function verifySchoolRequest(
   request: NextRequest
 ): Promise<VerifiedRequest | NextResponse> {
-  // Primary: Check Authorization header for Bearer token
+  // 1. Check httpOnly cookie (primary — automatically sent by browser)
+  const cookieToken = request.cookies.get(MONTREE_AUTH_COOKIE)?.value;
+  if (cookieToken) {
+    const payload = await verifyMontreeToken(cookieToken);
+    if (payload) {
+      return {
+        userId: payload.sub,
+        schoolId: payload.schoolId,
+        classroomId: payload.classroomId,
+        role: payload.role,
+      };
+    }
+    // Cookie exists but token invalid/expired — fall through to check Bearer header
+  }
+
+  // 2. Check Authorization header (backward compat)
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
@@ -55,23 +70,6 @@ export async function verifySchoolRequest(
     );
   }
 
-  // SECURITY DEBT (Phase 7): This fallback accepts x-school-id header without JWT verification.
-  // It returns userId: 'legacy' and role: 'teacher' — effectively bypassing auth.
-  // CANNOT remove until these 7 frontend pages migrate to Bearer token auth:
-  //   - app/montree/admin/page.tsx, settings/page.tsx, students/page.tsx, activity/page.tsx, import/page.tsx
-  //   - app/montree/dashboard/students/page.tsx, [childId]/layout.tsx
-  // The token is stored in React state (not localStorage) and lost on page refresh,
-  // which is why these pages fall back to x-school-id.
-  // TODO: Store Montree JWT in localStorage or HttpOnly cookie, then remove this fallback.
-  const schoolId = request.headers.get('x-school-id');
-  if (schoolId) {
-    return {
-      userId: 'legacy',
-      schoolId,
-      role: 'teacher',
-    };
-  }
-
   // No auth provided
   return NextResponse.json(
     { error: 'Authentication required' },
@@ -80,16 +78,28 @@ export async function verifySchoolRequest(
 }
 
 /**
- * Lightweight check — just extracts the school ID from either Bearer token or
- * query params / body. Use for routes that currently pass school_id/classroom_id
- * via params rather than headers.
+ * Lightweight check — just extracts the school ID from cookie or Bearer token.
+ * Use for routes that currently pass school_id/classroom_id via params.
  *
- * Once token auth is fully adopted, this can enforce token-only access.
+ * Returns null if no valid auth is found.
  */
 export async function getSchoolIdFromRequest(
   request: NextRequest
 ): Promise<{ schoolId: string; userId?: string; role?: string } | null> {
-  // Try Bearer token first
+  // Try cookie first
+  const cookieToken = request.cookies.get(MONTREE_AUTH_COOKIE)?.value;
+  if (cookieToken) {
+    const payload = await verifyMontreeToken(cookieToken);
+    if (payload) {
+      return {
+        schoolId: payload.schoolId,
+        userId: payload.sub,
+        role: payload.role,
+      };
+    }
+  }
+
+  // Try Bearer token
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
@@ -101,12 +111,6 @@ export async function getSchoolIdFromRequest(
         role: payload.role,
       };
     }
-  }
-
-  // SECURITY DEBT (Phase 7): Same x-school-id fallback — see verifySchoolRequest above.
-  const schoolId = request.headers.get('x-school-id');
-  if (schoolId) {
-    return { schoolId };
   }
 
   return null;

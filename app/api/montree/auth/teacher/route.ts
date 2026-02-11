@@ -3,7 +3,7 @@
 // Issues a signed JWT token on success (Phase 1 security upgrade)
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { createMontreeToken } from '@/lib/montree/server-auth';
+import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       userAgent,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token,
       teacher: {
@@ -230,6 +230,8 @@ export async function POST(request: NextRequest) {
       school: school || null,
       onboarded,
     });
+    setMontreeAuthCookie(response, token);
+    return response;
 
   } catch (error) {
     console.error('Teacher auth error:', error);
