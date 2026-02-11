@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree — Business Integration Playbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --green-dark: #1a9c5a;
+    --bg: #0a0f0d;
+    --card: rgba(255,255,255,0.03);
+    --border: rgba(46, 204, 113, 0.08);
+    --text: #c8e0d0;
+    --text-dim: #5a7a6a;
+    --text-bright: #e8f5e9;
+    --red: #e74c3c;
+    --gold: #f39c12;
+    --blue: #3498db;
+    --purple: #9b59b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(46, 204, 113, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(26, 115, 78, 0.03) 0%, transparent 50%),
+      var(--bg);
+    position: relative;
+  }
+
+  .hero-icon { font-size: 56px; margin-bottom: 24px; }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 em { color: var(--green); font-style: italic; }
+
+  .hero .sub {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+
+  .hero .scroll-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: bounce 2s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ===== CONTAINER ===== */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ===== SECTIONS ===== */
+  section {
+    padding: 80px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .section-desc {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 650px;
+    margin-bottom: 40px;
+  }
+
+  /* ===== FUNNEL DIAGRAM ===== */
+  .funnel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 40px 0;
+  }
+
+  .funnel-stage {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .funnel-stage:first-child { border-radius: 16px 16px 0 0; }
+  .funnel-stage:last-child { border-radius: 0 0 16px 16px; }
+  .funnel-stage:not(:last-child) { border-bottom: none; }
+
+  .funnel-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .funnel-stage:nth-child(1) .funnel-num { background: rgba(231,76,60,0.15); color: var(--red); }
+  .funnel-stage:nth-child(2) .funnel-num { background: rgba(243,156,18,0.15); color: var(--gold); }
+  .funnel-stage:nth-child(3) .funnel-num { background: rgba(52,152,219,0.15); color: var(--blue); }
+  .funnel-stage:nth-child(4) .funnel-num { background: rgba(46,204,113,0.15); color: var(--green); }
+  .funnel-stage:nth-child(5) .funnel-num { background: rgba(155,89,182,0.15); color: var(--purple); }
+
+  .funnel-content { flex: 1; }
+
+  .funnel-content h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .funnel-content p {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .funnel-tool {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--green);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .funnel-arrow {
+    text-align: center;
+    color: rgba(255,255,255,0.1);
+    font-size: 18px;
+    padding: 4px 0;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 30px 0;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .card .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 12px;
+    font-weight: 600;
+  }
+
+  .tag-free { background: rgba(46,204,113,0.12); color: var(--green); }
+  .tag-effort { background: rgba(243,156,18,0.12); color: var(--gold); }
+  .tag-critical { background: rgba(231,76,60,0.12); color: var(--red); }
+  .tag-high { background: rgba(52,152,219,0.12); color: var(--blue); }
+
+  /* ===== REPURPOSE TABLE ===== */
+  .repurpose-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    font-size: 13px;
+  }
+
+  .repurpose-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-weight: 600;
+  }
+
+  .repurpose-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .repurpose-table tr:hover td {
+    background: rgba(46,204,113,0.02);
+  }
+
+  .platform-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    margin: 2px 2px;
+  }
+
+  /* ===== TIMELINE ===== */
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+    margin: 30px 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--green), var(--green-dark), rgba(46,204,113,0.1));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(46,204,113,0.3);
+  }
+
+  .timeline-week {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .timeline-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+  }
+
+  .timeline-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .timeline-tasks {
+    list-style: none;
+    margin-top: 10px;
+  }
+
+  .timeline-tasks li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .timeline-tasks li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+  }
+
+  /* ===== PITCH SCRIPT ===== */
+  .script-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .script-block::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    color: rgba(46,204,113,0.15);
+    position: absolute;
+    top: 8px;
+    left: 20px;
+    line-height: 1;
+  }
+
+  .script-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .script-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-bright);
+    line-height: 1.7;
+    font-style: italic;
+    padding-left: 24px;
+  }
+
+  .script-text em { color: var(--green); font-style: italic; }
+
+  .script-note {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 14px;
+    padding-left: 24px;
+    font-style: normal;
+    border-left: 2px solid rgba(46,204,113,0.15);
+    padding: 6px 0 6px 16px;
+    margin-left: 24px;
+  }
+
+  /* ===== PRICING COMPARISON ===== */
+  .pricing-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 30px 0;
+  }
+
+  .pricing-them {
+    background: rgba(231,76,60,0.04);
+    border: 1px solid rgba(231,76,60,0.1);
+    border-radius: 14px;
+    padding: 24px;
+  }
+
+  .pricing-us {
+    background: rgba(46,204,113,0.04);
+    border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+  }
+
+  .pricing-us::after {
+    content: '★ RECOMMENDED';
+    position: absolute;
+    top: -10px;
+    right: 16px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    background: var(--green);
+    color: #0a0f0d;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .pricing-them h3, .pricing-us h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .pricing-them h3 { color: rgba(231,76,60,0.7); }
+  .pricing-us h3 { color: var(--green); }
+
+  .pricing-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .pricing-line .label { color: var(--text-dim); }
+  .pricing-line .val { color: var(--text); font-weight: 500; }
+
+  .pricing-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0 0;
+    margin-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .pricing-total .label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+
+  .pricing-total .val {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .pricing-them .pricing-total .val { color: var(--red); }
+  .pricing-us .pricing-total .val { color: var(--green); }
+
+  /* ===== BOTTOM CTA ===== */
+  .bottom-cta {
+    text-align: center;
+    padding: 100px 24px;
+  }
+
+  .bottom-cta .icon { font-size: 48px; margin-bottom: 20px; }
+
+  .bottom-cta h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .bottom-cta h2 em { color: var(--green); font-style: italic; }
+
+  .bottom-cta p {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 500px;
+    margin: 0 auto 30px;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    border-radius: 12px;
+    padding: 16px 40px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 6px 30px rgba(46,204,113,0.25);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(46,204,113,0.35);
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(46,204,113,0.06);
+    border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .highlight-box h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+
+  .highlight-box p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 700px) {
+    .pricing-compare { grid-template-columns: 1fr; }
+    .funnel-stage { flex-wrap: wrap; }
+    .funnel-tool { margin-top: 8px; }
+    .repurpose-table { font-size: 11px; }
+    .repurpose-table th, .repurpose-table td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">🌳</div>
+  <h1>Montree <em>Business Playbook</em></h1>
+  <div class="sub">How to turn the pitch deck into a full sales machine — from first impression to paying school.</div>
+  <div class="scroll-hint">↓ Scroll to begin</div>
+</div>
+
+<!-- SECTION 1: THE SALES FUNNEL -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 1</div>
+    <div class="section-title">The Sales Funnel</div>
+    <div class="section-desc">Your pitch animation is Scene 1. Here's how it fits into a complete journey from stranger → paying school.</div>
+
+    <div class="funnel">
+      <div class="funnel-stage">
+        <div class="funnel-num">1</div>
+        <div class="funnel-content">
+          <h3>🎣 Hook — "The Ledger Problem"</h3>
+          <p>Short video or GIF from Scene 1 of the pitch deck. Posted to Facebook groups, WeChat, Instagram. The scrolling ledger + ticking clock stops the scroll. Caption: "This is still how most Montessori classrooms track progress. In 2026."</p>
+        </div>
+        <div class="funnel-tool">Social Media</div>
+      </div>
+      <div class="funnel-stage">
+        <div class="funnel-num">2</div>
+        <div class="funnel-content">
+          <h3>🔍 Interest — Landing Page at montree.xyz</h3>
+          <p>They click through. The full 3-scene pitch plays on your landing page. Scene 1 (pain) → Scene 2 (solution) → Scene 3 (offer). They feel the problem, see the answer, and hit the CTA.</p>
+        </div>
+        <div class="funnel-tool">montree.xyz</div>
+      </div>
+      <div class="funnel-stage">
+        <div class="funnel-num">3</div>
+        <div class="funnel-content">
+          <h3>🤝 Try — Free 3-Month Pilot</h3>
+          <p>No credit card. No commitment. Principal signs up, adds classrooms, adds teachers. They're live in 5 minutes. This is your Mailchimp moment — free tier builds the base.</p>
+        </div>
+        <div class="funnel-tool">Free Pilot</div>
+      </div>
+      <div class="funnel-stage">
+        <div class="funnel-num">4</div>
+        <div class="funnel-content">
+          <h3>💡 Value — Teachers Can't Go Back</h3>
+          <p>After 2 weeks of tap-to-track and auto-generated parent reports, the ledger feels like torture. The product sells itself. The Guru feature answers their curriculum questions. They're hooked.</p>
+        </div>
+        <div class="funnel-tool">Product Lock-in</div>
+      </div>
+      <div class="funnel-stage">
+        <div class="funnel-num">5</div>
+        <div class="funnel-content">
+          <h3>💰 Convert — School Subscription</h3>
+          <p>After 3 months, billing starts. By now they've got months of data they can't lose. The conversation isn't "should we pay?" — it's "we can't afford to stop."</p>
+        </div>
+        <div class="funnel-tool">HK Invoice</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>🔑 Key Insight</h4>
+      <p>The pitch animation isn't just a presentation — it's the top of your funnel. Every piece of content you create can reference "the ledger problem." It becomes your brand story. QuickBooks had the "shoebox of receipts." You have the "endless handwritten ledger."</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: CONTENT REPURPOSING -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 2</div>
+    <div class="section-title">One Pitch, Ten Weapons</div>
+    <div class="section-desc">Your 3-scene pitch deck can be sliced into content for every channel. Here's the repurposing matrix.</div>
+
+    <table class="repurpose-table">
+      <thead>
+        <tr>
+          <th>Content Piece</th>
+          <th>Source</th>
+          <th>Platform</th>
+          <th>Format</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>"The Ledger" hook video</strong></td>
+          <td>Scene 1 screen recording (15 sec)</td>
+          <td>
+            <span class="platform-badge">Facebook</span>
+            <span class="platform-badge">Instagram</span>
+            <span class="platform-badge">TikTok</span>
+          </td>
+          <td>Short video / Reel</td>
+        </tr>
+        <tr>
+          <td><strong>"Before vs After" carousel</strong></td>
+          <td>Screenshot Scene 1 → Screenshot Scene 2</td>
+          <td>
+            <span class="platform-badge">Instagram</span>
+            <span class="platform-badge">WeChat</span>
+            <span class="platform-badge">小红书</span>
+          </td>
+          <td>Image carousel / Article</td>
+        </tr>
+        <tr>
+          <td><strong>Full pitch video</strong></td>
+          <td>Screen record all 3 scenes with voiceover</td>
+          <td>
+            <span class="platform-badge">YouTube</span>
+            <span class="platform-badge">Bilibili</span>
+            <span class="platform-badge">LinkedIn</span>
+          </td>
+          <td>60-90 sec video</td>
+        </tr>
+        <tr>
+          <td><strong>"8 hours lost" stat graphic</strong></td>
+          <td>Pain stats from Scene 1</td>
+          <td>
+            <span class="platform-badge">Facebook</span>
+            <span class="platform-badge">Twitter/X</span>
+          </td>
+          <td>Single image</td>
+        </tr>
+        <tr>
+          <td><strong>Landing page hero</strong></td>
+          <td>Embed full pitch as interactive hero</td>
+          <td>
+            <span class="platform-badge">montree.xyz</span>
+          </td>
+          <td>Interactive web</td>
+        </tr>
+        <tr>
+          <td><strong>"Parent Report Preview" demo</strong></td>
+          <td>Scene 2 right panel zoom</td>
+          <td>
+            <span class="platform-badge">WeChat</span>
+            <span class="platform-badge">WhatsApp</span>
+          </td>
+          <td>Screenshot + caption</td>
+        </tr>
+        <tr>
+          <td><strong>Conference/meeting pitch</strong></td>
+          <td>Full 3-scene deck, presented live</td>
+          <td>
+            <span class="platform-badge">In-person</span>
+            <span class="platform-badge">Zoom</span>
+          </td>
+          <td>Live presentation</td>
+        </tr>
+        <tr>
+          <td><strong>"QuickBooks moment" one-liner</strong></td>
+          <td>Scene 3 tagline</td>
+          <td>
+            <span class="platform-badge">Email sig</span>
+            <span class="platform-badge">Bio</span>
+            <span class="platform-badge">DMs</span>
+          </td>
+          <td>Text / tagline</td>
+        </tr>
+        <tr>
+          <td><strong>WeChat article</strong></td>
+          <td>Full narrative with embedded screenshots</td>
+          <td>
+            <span class="platform-badge">WeChat公众号</span>
+          </td>
+          <td>Long-form article</td>
+        </tr>
+        <tr>
+          <td><strong>Principal cold email</strong></td>
+          <td>Pain stats + "free pilot" offer</td>
+          <td>
+            <span class="platform-badge">Email</span>
+          </td>
+          <td>Personalized outreach</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 3: THE PITCH SCRIPT -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 3</div>
+    <div class="section-title">The 60-Second Pitch Script</div>
+    <div class="section-desc">Use this when presenting the deck live, recording a voiceover, or talking to a principal. Timed to the 3 scenes.</div>
+
+    <div class="script-block">
+      <div class="script-label">Scene 1 — The Pain (0:00 – 0:20)</div>
+      <div class="script-text">
+        "You know that massive ledger accountants used before QuickBooks? Rows and columns, hours of tedious work, easy to make mistakes? <em>That's Montessori record-keeping today.</em> Every child, every work, every observation — tracked by hand. 24 children, 213 curriculum works, over five thousand data points a year. Teachers are losing 8 hours a week to paperwork that should take minutes."
+      </div>
+      <div class="script-note">📌 Let the scrolling ledger and ticking clock do the heavy lifting. Pause. Let them feel it.</div>
+    </div>
+
+    <div class="script-block">
+      <div class="script-label">Scene 2 — The Solution (0:20 – 0:45)</div>
+      <div class="script-text">
+        "Montree changes that. One tap to track a child's work. <em>The entire Montessori curriculum — mapped and ready.</em> Progress bars update in real-time. Parent reports generate automatically. No more late nights filling in forms. No more wondering which child needs what next — Montree's Guru tells you. Built by a Montessori teacher, for Montessori teachers."
+      </div>
+      <div class="script-note">📌 Click to Scene 2. Point at the dashboard. Let the progress bars animate. The visual contrast does the selling.</div>
+    </div>
+
+    <div class="script-block">
+      <div class="script-label">Scene 3 — The Offer (0:45 – 1:00)</div>
+      <div class="script-text">
+        "We call this <em>the QuickBooks moment for Montessori.</em> And right now, we're offering a free 3-month pilot to schools who want to be first. No credit card. No risk. Just modern tools for the classroom that deserves them. <em>montree.xyz</em>"
+      </div>
+      <div class="script-note">📌 Click to Scene 3. Let "The QuickBooks moment for Montessori" land. End on the URL. Silence is powerful.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: PRICING POSITIONING -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 4</div>
+    <div class="section-title">Pricing That Wins</div>
+    <div class="section-desc">Position against Transparent Classroom. Your comprehensive offering justifies premium pricing, but the free pilot removes all friction.</div>
+
+    <div class="pricing-compare">
+      <div class="pricing-them">
+        <h3>Transparent Classroom</h3>
+        <div class="pricing-line"><span class="label">Per child / month</span><span class="val">$2.00</span></div>
+        <div class="pricing-line"><span class="label">50 students / year</span><span class="val">$1,200</span></div>
+        <div class="pricing-line"><span class="label">Parent reports</span><span class="val">Basic</span></div>
+        <div class="pricing-line"><span class="label">AI Curriculum Guru</span><span class="val">❌ None</span></div>
+        <div class="pricing-line"><span class="label">Chinese ESL support</span><span class="val">❌ None</span></div>
+        <div class="pricing-line"><span class="label">Free trial</span><span class="val">Limited</span></div>
+        <div class="pricing-total"><span class="label">Real cost</span><span class="val">$1,200+/yr</span></div>
+      </div>
+      <div class="pricing-us">
+        <h3>Montree</h3>
+        <div class="pricing-line"><span class="label">Per school / month</span><span class="val">Flat rate</span></div>
+        <div class="pricing-line"><span class="label">Any size school / year</span><span class="val">From $600</span></div>
+        <div class="pricing-line"><span class="label">Parent reports</span><span class="val">✅ Auto-generated</span></div>
+        <div class="pricing-line"><span class="label">AI Curriculum Guru</span><span class="val">✅ Included</span></div>
+        <div class="pricing-line"><span class="label">Chinese ESL support</span><span class="val">✅ Built-in</span></div>
+        <div class="pricing-line"><span class="label">Free trial</span><span class="val">3 months, full access</span></div>
+        <div class="pricing-total"><span class="label">First 3 months</span><span class="val">$0</span></div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>💡 Pricing Strategy</h4>
+      <p>Start every conversation with the free pilot. The price discussion happens after they're addicted. By month 3, they have data they can't lose, parents who expect reports, and teachers who refuse to go back. The question becomes "what's it worth to NOT lose this?" — and $50-100/month feels like nothing. Scale pricing as features grow. The $1,000/month tier comes later when you have multi-campus, API, and the full Guru suite proven at scale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 4-WEEK LAUNCH PLAN -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 5</div>
+    <div class="section-title">4-Week Launch Sprint</div>
+    <div class="section-desc">Practical actions, week by week. You're teaching full-time, so everything is designed for 30 minutes a day max.</div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-week">Week 1 — Arm the Weapons</div>
+        <div class="timeline-title">Create all content from the pitch deck</div>
+        <div class="timeline-desc">Turn the pitch into every format you need.</div>
+        <ul class="timeline-tasks">
+          <li>Screen-record the 3-scene pitch with voiceover (use the script above)</li>
+          <li>Cut a 15-second "Ledger Problem" clip from Scene 1</li>
+          <li>Screenshot the before/after for carousel posts</li>
+          <li>Embed the pitch animation as the hero section of montree.xyz</li>
+          <li>Write the WeChat article version with screenshots</li>
+          <li>Prepare the principal cold email template</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-week">Week 2 — Seed the Groups</div>
+        <div class="timeline-title">Plant the "Ledger Problem" in Montessori communities</div>
+        <div class="timeline-desc">Don't sell. Start conversations.</div>
+        <ul class="timeline-tasks">
+          <li>Join 5 Montessori Facebook groups (don't post yet, engage first)</li>
+          <li>Post the "Ledger Problem" hook video in groups that allow it</li>
+          <li>Share the Before/After carousel on Instagram + 小红书</li>
+          <li>Post WeChat article on your 公众号</li>
+          <li>DM 5 Montessori teachers you know personally — offer free pilot</li>
+          <li>Share in any Beijing international school WhatsApp/WeChat groups</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-week">Week 3 — Activate Pilots</div>
+        <div class="timeline-title">Get 3–5 schools using Montree for free</div>
+        <div class="timeline-desc">Onboard them personally. Their experience IS your testimonial.</div>
+        <ul class="timeline-tasks">
+          <li>Help each pilot school through signup (be their concierge)</li>
+          <li>Collect first-week feedback — fix bugs immediately</li>
+          <li>Ask pilot teachers: "What would you show a parent to prove this works?"</li>
+          <li>Screenshot real dashboards (with permission) for future content</li>
+          <li>Post a "Day 1" update in Facebook groups: "Started piloting with 3 schools..."</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-week">Week 4 — Build Proof</div>
+        <div class="timeline-title">Turn pilot data into case studies</div>
+        <div class="timeline-desc">Real numbers. Real teachers. Real before/after.</div>
+        <ul class="timeline-tasks">
+          <li>Calculate time saved per teacher per week (target: the "8 hours" claim)</li>
+          <li>Get 1-2 video testimonials from pilot teachers (even 30 seconds)</li>
+          <li>Write a case study: "[School Name] reduced record-keeping from 8hrs to 30min"</li>
+          <li>Update the pitch deck Scene 2 with real data, not mockup data</li>
+          <li>Begin cold-emailing principals with the case study attached</li>
+          <li>Post the full 60-second pitch video to YouTube and LinkedIn</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: CHANNELS -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 6</div>
+    <div class="section-title">Channel Strategy</div>
+    <div class="section-desc">Where to invest your limited time, prioritized by impact and your constraints (teaching full-time, can't use student footage).</div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h3>Facebook Groups</h3>
+        <p>Montessori Teachers (100k+), Montessori at Home, AMS groups. Post the "Ledger Problem" video. Answer questions. Be the helpful teacher who built something. Never spam.</p>
+        <div class="tag tag-critical">Highest Impact</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3>WeChat 公众号</h3>
+        <p>Write articles about Montessori + technology in Chinese. Target: principals and parent communities at international schools in China. The Before/After visual is perfect for WeChat articles.</p>
+        <div class="tag tag-critical">China Market</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3>小红书 (Xiaohongshu)</h3>
+        <p>Chinese parents research education here. Post the dashboard screenshots + "how modern Montessori tracking works." Aesthetic, clean, premium feel. Parents will ask their schools about it.</p>
+        <div class="tag tag-high">Parent Pull</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📧</div>
+        <h3>Direct Principal Outreach</h3>
+        <p>Cold email with the pitch video link + free pilot offer. Target Montessori school directories. Personalize each one: "I noticed [School Name] offers a strong Montessori program..." 5 emails per week.</p>
+        <div class="tag tag-high">Direct Sales</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🎬</div>
+        <h3>YouTube / Bilibili</h3>
+        <p>Full pitch video with voiceover. "Why Montessori record-keeping is stuck in the 1800s." Evergreen content that works while you sleep. One video, uploaded to both.</p>
+        <div class="tag tag-effort">Medium Effort</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>WhatsApp / WeChat DMs</h3>
+        <p>Personal outreach to teachers you know. Share the 15-second clip with: "I built this thing and I need guinea pigs. Free for 3 months, you just give me honest feedback." Authentic and human.</p>
+        <div class="tag tag-free">Free & Fast</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>⚠️ Privacy-First Approach</h4>
+      <p>You can't use student footage, and you shouldn't. All content uses the pitch animation (no real children), mockup dashboards, and anonymized data. When you get pilot schools, ask permission for anonymized case studies only. Your school won't appear in any content. The pitch deck IS the content — that's the whole point.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: THE BIG PICTURE -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 7</div>
+    <div class="section-title">The Bigger Picture</div>
+    <div class="section-desc">How Montree feeds the mission. Every school subscription moves you closer to the real goal.</div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🏫</div>
+        <h3>Phase 1: Prove It</h3>
+        <p>10 schools, free pilots, real testimonials. Prove the product works and teachers love it. Build the case studies. This is your foundation.</p>
+        <div class="tag tag-free">Now → 3 months</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>Phase 2: Revenue</h3>
+        <p>Convert pilots to paid. 50 schools at $50-100/month = $2,500-5,000/month. HK company invoices. 0% App Store cut. Sustainable solo operation.</p>
+        <div class="tag tag-effort">3 → 12 months</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>Phase 3: Scale</h3>
+        <p>500+ schools. Premium tiers. Multi-campus support. API for school management systems. International expansion beyond China. Revenue: $25k-50k/month.</p>
+        <div class="tag tag-high">Year 2+</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🇿🇦</div>
+        <h3>Phase 4: The Real Mission</h3>
+        <p>Montree profits fund free merit-based schools in South Africa. Graduates receive land, housing, production facilities. Self-sufficient communities. The ledger-to-freedom pipeline.</p>
+        <div class="tag tag-critical">The Why</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <div class="icon">🌳</div>
+  <h2>The pitch deck is built.<br>The funnel is mapped.<br>Now <em>execute</em>.</h2>
+  <p>Week 1, Day 1: Screen-record the pitch with voiceover. That one video becomes ten pieces of content. Start there.</p>
+  <a href="https://montree.xyz" class="cta-btn">montree.xyz →</a>
+</div>
+
+</body>
+</html>

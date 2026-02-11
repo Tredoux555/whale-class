@@ -105,22 +105,37 @@ async function main() {
 
   // Fetch all messages with encrypted content
   // Table: story_message_history, column: message_content (1600+ rows)
-  const { data: messages, error } = await supabase
-    .from('story_message_history')
-    .select('id, message_content')
-    .order('created_at', { ascending: true });
+  // Supabase has a default 1000-row limit — paginate to get ALL rows
+  const PAGE_SIZE = 1000;
+  let allMessages: { id: string; message_content: string }[] = [];
+  let offset = 0;
 
-  if (error) {
-    console.error('ERROR: Failed to fetch messages:', error.message);
-    process.exit(1);
+  while (true) {
+    const { data: page, error } = await supabase
+      .from('story_message_history')
+      .select('id, message_content')
+      .order('created_at', { ascending: true })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error('ERROR: Failed to fetch messages:', error.message);
+      process.exit(1);
+    }
+
+    if (!page || page.length === 0) break;
+    allMessages = allMessages.concat(page);
+    if (page.length < PAGE_SIZE) break; // Last page
+    offset += PAGE_SIZE;
   }
 
-  if (!messages || messages.length === 0) {
+  const messages = allMessages;
+
+  if (messages.length === 0) {
     console.log('No messages found. Nothing to migrate.');
     process.exit(0);
   }
 
-  console.log(`Found ${messages.length} messages to check.`);
+  console.log(`Found ${messages.length} messages to check (fetched in ${Math.ceil(messages.length / PAGE_SIZE)} pages).`);
 
   let migrated = 0;
   let skippedPlaintext = 0;
