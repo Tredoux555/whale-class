@@ -8,6 +8,8 @@ Next.js 16.1.1 app with three systems:
 
 Production: `https://teacherpotato.xyz` → **MIGRATING TO `https://montree.xyz`**
 Deploy: Railway auto-deploys on push to `main`
+Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key added Feb 11, 2026)
+Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
@@ -69,7 +71,12 @@ Deploy: Railway auto-deploys on push to `main`
 
 ---
 
-### Recent Changes (Post-Phase 9 Audit & Production Fixes, Feb 11)
+### Recent Changes (Post-Phase 9 Audit & SSH Setup, Feb 11)
+
+**SSH & Git Setup:**
+- SSH key "Cowork VM" (ed25519) added to GitHub account for direct pushing from Cowork sessions
+- Git remote switched from HTTPS to SSH: `git@github.com:Tredoux555/whale-class.git`
+- Future sessions can `git push origin main` directly — no manual terminal needed
 
 **Post-Phase 9 Audit & Fixes:**
 - **CRITICAL CSP FIX**: `script-src 'self'` in `next.config.ts` was blocking ALL inline JavaScript. Next.js requires inline scripts for hydration. Changed to `script-src 'self' 'unsafe-inline'`. Also added Google Fonts to `style-src` and `font-src`. This was breaking the ENTIRE site since Phase 6.

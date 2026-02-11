@@ -71,6 +71,15 @@ Ran exhaustive diagnostic against live database:
 
 ---
 
+### 6. SSH Key Setup (Cowork VM)
+
+- Generated ed25519 SSH key pair in Cowork VM
+- Added public key to GitHub account as "Cowork VM"
+- Switched git remote from HTTPS (`https://github.com/...`) to SSH (`git@github.com:...`)
+- Cowork sessions can now `git push origin main` directly — no need to give user push commands
+
+---
+
 ## Still Pending
 
 1. **MESSAGE_ENCRYPTION_KEY rotation** — Manual action. Steps in CLAUDE.md.
