@@ -4,7 +4,7 @@
 // Phase 2: Dual-verify bcrypt + legacy SHA-256, re-hashes on match
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { createMontreeToken } from '@/lib/montree/server-auth';
+import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         role: 'principal',
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         token,
         needsSetup,
@@ -111,6 +111,8 @@ export async function POST(request: NextRequest) {
           role: principal.role,
         },
       });
+      setMontreeAuthCookie(response, token);
+      return response;
     }
 
     // Email + password login
@@ -191,7 +193,7 @@ export async function POST(request: NextRequest) {
       role: 'principal',
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token,
       needsSetup,
@@ -207,6 +209,8 @@ export async function POST(request: NextRequest) {
         role: principal.role,
       },
     });
+    setMontreeAuthCookie(response, token);
+    return response;
 
   } catch (error) {
     console.error('Login error:', error);

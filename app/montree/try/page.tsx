@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { setToken } from '@/lib/montree/api';
 
 interface TrialResponse {
   success: boolean;
   code: string;
+  token?: string;
   role: 'teacher' | 'principal';
   error?: string;
   teacher?: {
@@ -114,8 +114,7 @@ export default function TryMontreePage() {
     if (!responseData) return;
 
     if (responseData.role === 'teacher' && responseData.teacher) {
-      // Match the exact session shape the teacher dashboard expects
-      setToken(responseData.token);
+      // Auth cookie (montree-auth) was set by the server response
       localStorage.setItem(
         'montree_session',
         JSON.stringify({
@@ -134,8 +133,7 @@ export default function TryMontreePage() {
       );
       router.push('/montree/dashboard');
     } else if (responseData.role === 'principal' && responseData.principal) {
-      // Match the exact session shape the admin dashboard expects
-      setToken(responseData.token);
+      // Auth cookie (montree-auth) was set by the server response
       localStorage.setItem('montree_principal', JSON.stringify(responseData.principal));
       localStorage.setItem('montree_school', JSON.stringify(responseData.school));
       router.push('/montree/principal/setup');

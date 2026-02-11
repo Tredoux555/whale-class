@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
+import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
 
 /**
  * Seed full Montessori curriculum for a new classroom
@@ -233,9 +234,18 @@ export async function POST(req: NextRequest) {
         steps.push('5-lead-fail:' + message);
       }
 
-      return NextResponse.json({
+      // Issue signed JWT token for instant login
+      const token = await createMontreeToken({
+        sub: teacher.id,
+        schoolId: school.id,
+        classroomId: classroom?.id,
+        role: 'teacher',
+      });
+
+      const response = NextResponse.json({
         success: true,
         code,
+        token,
         role: 'teacher',
         teacher: {
           id: teacher.id,
@@ -257,6 +267,8 @@ export async function POST(req: NextRequest) {
         onboarded: false,
         userId: teacher.id,
       });
+      setMontreeAuthCookie(response, token);
+      return response;
 
     } else {
       // Principal
@@ -306,9 +318,17 @@ export async function POST(req: NextRequest) {
         steps.push('5-lead-fail:' + message);
       }
 
-      return NextResponse.json({
+      // Issue signed JWT token for instant login
+      const token = await createMontreeToken({
+        sub: principal.id,
+        schoolId: school.id,
+        role: 'principal',
+      });
+
+      const response = NextResponse.json({
         success: true,
         code,
+        token,
         role: 'principal',
         principal: {
           id: principal.id,
@@ -326,6 +346,8 @@ export async function POST(req: NextRequest) {
         },
         userId: principal.id,
       });
+      setMontreeAuthCookie(response, token);
+      return response;
     }
 
   } catch (err: unknown) {

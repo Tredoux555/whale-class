@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { getSchoolIdFromRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
-    // Authentication: require x-school-id or x-classroom-id header
-    const schoolId = request.headers.get('x-school-id');
+    // Authentication: check cookie/Bearer token first, fall back to headers
+    const auth = await getSchoolIdFromRequest(request);
+    const schoolId = auth?.schoolId || request.headers.get('x-school-id');
     const classroomId = request.headers.get('x-classroom-id');
 
     if (!schoolId && !classroomId) {
       return NextResponse.json(
-        { error: 'Unauthorized: x-school-id or x-classroom-id header required' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
