@@ -89,8 +89,8 @@ export default function EditWorkModal({
     if (!editingWork) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/montree/curriculum/update', {
-        method: 'POST',
+      const res = await fetch('/api/montree/curriculum', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           work_id: editingWork.id,

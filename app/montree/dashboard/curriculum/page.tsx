@@ -113,8 +113,8 @@ export default function CurriculumPage() {
     if (!confirm(`Delete "${work.name}" from curriculum?\n\nThis cannot be undone.`)) return;
 
     try {
-      const res = await fetch('/api/montree/curriculum/delete', {
-        method: 'POST',
+      const res = await fetch('/api/montree/curriculum', {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           work_id: work.id,
