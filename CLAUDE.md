@@ -41,14 +41,9 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 **Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`, `.claude/plans/phase8-plan-v2.md`, `.claude/plans/phase9-plan-v1.md`
 
-### ⚠️ POST-SECURITY ACTION REQUIRED
+### ✅ POST-SECURITY ACTIONS COMPLETE
 
-**MESSAGE_ENCRYPTION_KEY rotation** — Must be done manually:
-1. Generate new 32-char key: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`
-2. Set in Railway: `OLD_ENCRYPTION_KEY=change-this-to-32-char-key-12345`, `NEW_ENCRYPTION_KEY=<new-key>`
-3. Run: `npx tsx scripts/rotate-encryption-key.ts --dry-run` (verify)
-4. Run: `npx tsx scripts/rotate-encryption-key.ts` (execute)
-5. Update Railway: `MESSAGE_ENCRYPTION_KEY=<new-key>`, remove `OLD_ENCRYPTION_KEY`
+**MESSAGE_ENCRYPTION_KEY rotation** — ✅ DONE. Old insecure default (`change-this-to-32-char-key-12345`) replaced with cryptographically random 32-char key on Railway. No data migration needed — `montree_messages` table doesn't exist yet (no encrypted messages stored). Rotation script (`scripts/rotate-encryption-key.ts`) remains available if messages are added later.
 
 **Frontend update** — ✅ DONE. Super-admin panel now sends password with audit POST and schools GET.
 
