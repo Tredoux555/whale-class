@@ -40,9 +40,9 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 **Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`, `.claude/plans/phase8-plan-v2.md`, `.claude/plans/phase9-plan-v1.md`
 
-### ⚠️ POST-SECURITY ACTIONS — KEY ROTATION STILL NEEDED
+### ✅ POST-SECURITY ACTIONS — KEY ROTATION COMPLETE
 
-**MESSAGE_ENCRYPTION_KEY rotation** — ⚠️ NOT YET DONE. Key is still the old insecure default (`change-this-to-32-char-key-12345`). An attempt to rotate was reverted because **1,605 encrypted messages exist in `story_message_history.message_content`** (NOT `montree_messages` which doesn't exist). The rotation script (`scripts/rotate-encryption-key.ts`) has been fixed to target the correct table/column. **To rotate: run the script with `--dry-run` first, then live, then update the key on Railway.** See script header for full steps.
+**MESSAGE_ENCRYPTION_KEY rotation** — ✅ DONE (Feb 11, 2026). Old insecure default key rotated to a new random 32-char key. Script (`scripts/rotate-encryption-key.ts`) processed 1,619 messages: 1,381 re-encrypted (CBC→GCM), 238 plaintext skipped, 0 failures. Pagination bug fixed in script (Supabase 1000-row default limit). Key updated on Railway and in `.env.local`. Verified: 5/5 sample messages decrypt correctly.
 
 **Frontend update** — ✅ DONE. Super-admin panel now sends password with audit POST and schools GET.
 
@@ -60,6 +60,36 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 | 4 | Split 3 oversized files (918, 1115, 1243 lines) | ✅ Done |
 | 5 | Strip console.log statements (219 → 0) | ✅ Done |
 | 6 | Fix `: any` type annotations (23 → 2 trivial) | ✅ Done |
+
+---
+
+### 🚀 Marketing Hub — PLANNED, NOT STARTED (Feb 11, 2026)
+
+Adding 13 marketing tools to super-admin panel under `/montree/super-admin/marketing/*`.
+
+**Status:** Plan audited and ready. Zero files created yet.
+
+**Handoff:** `docs/HANDOFF_MARKETING_HUB.md`
+**Plan:** `.claude/plans/marketing-hub-plan-v1.md`
+
+**To resume, say:**
+> Execute the marketing hub plan. You have permission to: edit the super-admin page, create all new files under app/montree/super-admin/marketing/ and public/, run npm run build, and git commit + push when done. Go fully autonomous — audit after each task, fix any build errors, and list all files at the end.
+
+**What gets built:**
+- `app/montree/super-admin/marketing/layout.tsx` — auth wrapper (password gate, 15-min timeout)
+- `app/montree/super-admin/marketing/page.tsx` — hub with 13 clickable cards in 5 sections
+- 8 JSX sub-pages (launch-hq, objections, warroom, content, studio, prospects, outreach, growth)
+- 4 iframe sub-pages (landing, links, pitch, playbook) serving HTML from `public/`
+- 4 HTML files copied to `public/`
+- 1 edit to super-admin page (add Marketing Hub card)
+
+**Source files:** 8 JSX + 4 HTML in project root (`montree-*.jsx`, `montree-*.html`). See handoff doc for full mapping.
+
+**Key decisions:**
+- Auth via `layout.tsx` client wrapper (one gate for all pages, no per-page duplication)
+- No middleware changes needed (`/montree/*` already in publicPaths)
+- No new API routes (reuses `/api/montree/super-admin/auth`)
+- JSX content kept 100% as-is — zero modifications to marketing copy
 
 ---
 
@@ -199,7 +229,7 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 - `VAULT_PASSWORD_HASH` ✅
 - `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` ✅
 - `TEACHER_ADMIN_PASSWORD` ✅ (was missing from Railway)
-- **Phase 9**: Encryption upgraded to GCM + rotation script created (`scripts/rotate-encryption-key.ts`). **Key rotation NOT yet done** — 1,605 messages in `story_message_history` need re-encryption first. Script has been fixed to target correct table. See Post-Security Actions section above.
+- **Phase 9**: Encryption upgraded to GCM + rotation script created (`scripts/rotate-encryption-key.ts`). **✅ Key rotation DONE** (Feb 11) — 1,381 messages re-encrypted, pagination bug fixed in script, new key deployed to Railway.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
