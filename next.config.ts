@@ -62,7 +62,7 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(), camera=()' },
+          { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(self), camera=(self)' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           // Phase 6: Content Security Policy
           // NOTE: 'unsafe-inline' required for script-src because Next.js uses inline scripts
@@ -77,7 +77,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co https://www.googleapis.com",
-              "media-src 'self' https://dmfncjjtsoxrnvcdnvjq.supabase.co",
+              "media-src 'self' blob: https://dmfncjjtsoxrnvcdnvjq.supabase.co",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
