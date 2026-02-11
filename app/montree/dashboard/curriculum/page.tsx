@@ -268,6 +268,7 @@ export default function CurriculumPage() {
           onClose={() => setShowAddModal(false)}
           onSuccess={fetchCurriculum}
           defaultArea={selectedArea || undefined}
+          areaWorks={byArea}
         />
       )}
 
