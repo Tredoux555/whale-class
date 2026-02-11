@@ -80,12 +80,53 @@ Ran exhaustive diagnostic against live database:
 
 ---
 
-## Still Pending
+### 7. Codebase Cleanup Phase 5 — Console Log Stripping
 
-1. **MESSAGE_ENCRYPTION_KEY rotation** — Manual action. Steps in CLAUDE.md.
-2. **Codebase cleanup phases 2–6** — Separate project, not security.
-3. **Domain migration** — teacherpotato.xyz → montree.xyz.
-4. **Home registration 500 error** — Intentionally deferred.
+- Stripped 46 remaining `console.log` and debug `console.warn` statements across 35 files
+- Preserved all `console.error` (catch blocks) and security-tagged `console.warn` ([CSRF], [PARENT-AUTH], [SECURITY])
+- Codebase cleanup phases 2–4 and 6 were already completed in previous sessions
+- **All 6 cleanup phases now COMPLETE**
+
+### 8. Home Registration 500 — Resolved (Not a Bug)
+
+- Tested `/api/home/auth/try` and `/api/home/auth/login` against live `montree.xyz` — both work perfectly
+- Registration creates family + 6-char code + seeds 68-work curriculum ✅
+- Login with code via SHA256 lookup + bcrypt fallback ✅
+- The 500 was from testing on old `teacherpotato.xyz` domain which returns 405 on all API calls
+- Domain migration to `montree.xyz` was already completed
+
+### 9. MESSAGE_ENCRYPTION_KEY Rotation — Complete
+
+- Old insecure default (`change-this-to-32-char-key-12345`) replaced with cryptographically random 32-char key
+- Updated directly on Railway via Variables panel → Deploy
+- **No data migration needed** — `montree_messages` table doesn't exist yet (no encrypted messages stored)
+- Rotation script (`scripts/rotate-encryption-key.ts`) remains available for future use if messages are added
+
+---
+
+## All Actions Complete
+
+Everything from the original action items list is now done:
+
+| Item | Status |
+|------|--------|
+| Security phases 1–9 | ✅ Done |
+| Post-Phase 9 audit (3 rounds) | ✅ Done |
+| CSP fix (site was broken) | ✅ Done |
+| Super-admin frontend fix | ✅ Done |
+| Story login fix (DB migration) | ✅ Done |
+| Codebase cleanup phases 1–6 | ✅ Done |
+| Domain migration (montree.xyz) | ✅ Done |
+| Home registration 500 | ✅ Not a bug |
+| Encryption key rotation | ✅ Done |
+| SSH for direct pushing | ✅ Done |
+
+### Remaining (Future Projects — Not Blockers)
+
+- Auth restructure (localStorage → httpOnly cookies + middleware)
+- API route consolidation (106 routes — many could merge)
+- Centralized logging service
+- Home dashboard UI (not yet built)
 
 ---
 
