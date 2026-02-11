@@ -10,7 +10,7 @@ import SchoolsTab from '@/components/montree/super-admin/SchoolsTab';
 import LeadsTab from '@/components/montree/super-admin/LeadsTab';
 import FeedbackTab from '@/components/montree/super-admin/FeedbackTab';
 import DmPanel from '@/components/montree/super-admin/DmPanel';
-import FamiliesTab from '@/components/montree/super-admin/FamiliesTab';
+
 
 interface DmMessage {
   id: string;
@@ -20,7 +20,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads' | 'families';
+type TabType = 'schools' | 'feedback' | 'leads';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -342,16 +342,6 @@ export default function SuperAdminPage() {
               </span>
             )}
           </button>
-          <button
-            onClick={() => setActiveTab('families')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'families'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
-          >
-            🏠 Families
-          </button>
         </div>
 
         {/* Tab Content */}
@@ -403,9 +393,7 @@ export default function SuperAdminPage() {
           />
         )}
 
-        {activeTab === 'families' && (
-          <FamiliesTab password={password} />
-        )}
+
       </div>
 
       {/* DM Panel */}
