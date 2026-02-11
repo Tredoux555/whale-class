@@ -327,3 +327,82 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+// PATCH - Update a curriculum work
+export async function PATCH(request: NextRequest) {
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { work_id, ...updates } = body;
+
+    if (!work_id) {
+      return NextResponse.json({ error: 'work_id required' }, { status: 400 });
+    }
+
+    // Build update object - only include provided fields
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+    const allowedFields = [
+      'name', 'name_chinese', 'description', 'parent_description',
+      'why_it_matters', 'age_range', 'direct_aims', 'indirect_aims',
+      'materials', 'prerequisites', 'teacher_notes', 'is_active', 'sequence',
+    ];
+
+    for (const field of allowedFields) {
+      if (updates[field] !== undefined) {
+        updateData[field] = updates[field];
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .update(updateData)
+      .eq('id', work_id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update error:', error);
+      return NextResponse.json({ error: 'Failed to update work' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, work: data });
+  } catch (error) {
+    console.error('Curriculum PATCH error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// DELETE - Remove a curriculum work
+export async function DELETE(request: NextRequest) {
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const supabase = getSupabase();
+    const body = await request.json();
+    const { work_id } = body;
+
+    if (!work_id) {
+      return NextResponse.json({ error: 'work_id required' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .delete()
+      .eq('id', work_id);
+
+    if (error) {
+      console.error('Delete work error:', error);
+      return NextResponse.json({ error: 'Failed to delete work' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Curriculum DELETE error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

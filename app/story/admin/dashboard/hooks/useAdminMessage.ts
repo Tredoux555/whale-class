@@ -76,7 +76,7 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedVideo);
         formData.append('caption', adminMessage.trim());
 
-        const res = await fetch('/api/story/admin/send-video', {
+        const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
           body: formData
@@ -100,7 +100,7 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedAudio);
         formData.append('caption', adminMessage.trim());
 
-        const res = await fetch('/api/story/admin/send-audio', {
+        const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
           body: formData
@@ -124,7 +124,7 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedImage);
         formData.append('caption', adminMessage.trim());
 
-        const res = await fetch('/api/story/admin/send-image', {
+        const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
           body: formData
@@ -144,7 +144,7 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
           setMessageError(data.error || 'Failed to send image');
         }
       } else {
-        const res = await fetch('/api/story/admin/send-message', {
+        const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
