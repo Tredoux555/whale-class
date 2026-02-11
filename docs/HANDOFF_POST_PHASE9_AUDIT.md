@@ -95,18 +95,24 @@ Ran exhaustive diagnostic against live database:
 - The 500 was from testing on old `teacherpotato.xyz` domain which returns 405 on all API calls
 - Domain migration to `montree.xyz` was already completed
 
-### 9. MESSAGE_ENCRYPTION_KEY Rotation — Complete
+### 9. MESSAGE_ENCRYPTION_KEY Rotation — REVERTED, Script Fixed
 
-- Old insecure default (`change-this-to-32-char-key-12345`) replaced with cryptographically random 32-char key
-- Updated directly on Railway via Variables panel → Deploy
-- **No data migration needed** — `montree_messages` table doesn't exist yet (no encrypted messages stored)
-- Rotation script (`scripts/rotate-encryption-key.ts`) remains available for future use if messages are added
+- Attempted rotation to new random key on Railway
+- **BROKE 1,605 Story messages** — all displayed as raw `gcm:...` encrypted text in Story admin dashboard
+- Root cause: checked `montree_messages` table (doesn't exist), missed that actual encrypted data lives in `story_message_history.message_content` (1,605 rows)
+- **Key reverted** back to `change-this-to-32-char-key-12345` on Railway — messages immediately readable again
+- **Rotation script fixed** (`scripts/rotate-encryption-key.ts`):
+  - Changed table from `montree_messages` → `story_message_history`
+  - Changed columns from `message_text`/`subject` → `message_content`
+  - Added `decryptGCM()` function to handle GCM-encrypted messages (not just CBC)
+  - Script now handles both old CBC format and current GCM format
+- **Key rotation still needed** — run the fixed script before changing the key on Railway next time
 
 ---
 
-## All Actions Complete
+## Action Items Status
 
-Everything from the original action items list is now done:
+Almost everything from the original action items list is done — encryption key rotation still needs to be completed:
 
 | Item | Status |
 |------|--------|
@@ -118,7 +124,7 @@ Everything from the original action items list is now done:
 | Codebase cleanup phases 1–6 | ✅ Done |
 | Domain migration (montree.xyz) | ✅ Done |
 | Home registration 500 | ✅ Not a bug |
-| Encryption key rotation | ✅ Done |
+| Encryption key rotation | ⚠️ Reverted — script fixed, needs re-run |
 | SSH for direct pushing | ✅ Done |
 
 ### Remaining (Future Projects — Not Blockers)
@@ -135,3 +141,4 @@ Everything from the original action items list is now done:
 - **CSP `script-src 'self'` breaks Next.js** — Must include `'unsafe-inline'` for hydration. A nonce-based approach is more secure but requires significant configuration.
 - **Always apply DB migrations alongside code changes** — Phase 3 renamed `login_time` → `login_at` in code but never ran the column rename SQL. The fire-and-forget pattern hid the failure for months.
 - **Audit your audits** — The original Phase 9 caught ~43 files with error leaks. Three additional passes found ~20 more. Whale routes were systematically missed in the first pass.
+- **Verify encrypted data location before key rotation** — The rotation script targeted `montree_messages` (never created). The actual encrypted data was in `story_message_history.message_content` (1,605 rows). Changing the key without migrating data made all messages unreadable. Always grep the codebase for actual table usage before assuming no data exists.

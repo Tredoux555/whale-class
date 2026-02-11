@@ -1,6 +1,8 @@
 #!/usr/bin/env npx tsx
 // scripts/rotate-encryption-key.ts
-// Phase 9: Re-encrypt all messages from old key to new key (CBC → GCM upgrade)
+// Re-encrypt all Story messages from old key to new key
+// Table: story_message_history, column: message_content (~1605 rows)
+// Handles both CBC (iv:encrypted) and GCM (gcm:iv:authTag:encrypted) formats
 //
 // Usage:
 //   OLD_ENCRYPTION_KEY=change-this-to-32-char-key-12345 \
@@ -64,7 +66,26 @@ function decryptCBC(encrypted: string): string | null {
   }
 }
 
-// --- New format: GCM (gcm:iv:authTag:encrypted) ---
+// --- Old format: GCM with OLD key (gcm:iv:authTag:encrypted) ---
+function decryptGCM(encrypted: string): string | null {
+  try {
+    const parts = encrypted.split(':');
+    if (parts.length !== 4 || parts[0] !== 'gcm') return null;
+
+    const [, ivHex, authTagHex, encryptedHex] = parts;
+    const iv = Buffer.from(ivHex, 'hex');
+    const authTag = Buffer.from(authTagHex, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', OLD_KEY, iv);
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch {
+    return null;
+  }
+}
+
+// --- New format: GCM with NEW key (gcm:iv:authTag:encrypted) ---
 function encryptGCM(plaintext: string): string {
   const iv = crypto.randomBytes(12); // GCM uses 12-byte IV
   const cipher = crypto.createCipheriv('aes-256-gcm', NEW_KEY, iv);
@@ -83,9 +104,10 @@ async function main() {
   console.log('');
 
   // Fetch all messages with encrypted content
+  // Table: story_message_history, column: message_content (1600+ rows)
   const { data: messages, error } = await supabase
-    .from('montree_messages')
-    .select('id, message_text, subject')
+    .from('story_message_history')
+    .select('id, message_content')
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -106,45 +128,49 @@ async function main() {
   let failed = 0;
 
   for (const msg of messages) {
-    // Check message_text
-    let newMessageText = msg.message_text;
-    let newSubject = msg.subject;
-    let changed = false;
+    const content = msg.message_content;
 
-    // Process message_text
-    if (msg.message_text && msg.message_text.includes(':')) {
-      if (msg.message_text.startsWith('gcm:')) {
+    // Skip null/empty
+    if (!content) {
+      skippedPlaintext++;
+      continue;
+    }
+
+    // Not encrypted (no colon = plaintext)
+    if (!content.includes(':')) {
+      skippedPlaintext++;
+      continue;
+    }
+
+    let decrypted: string | null = null;
+
+    // Try GCM decrypt with OLD key first (messages encrypted after Phase 9 upgrade)
+    if (content.startsWith('gcm:')) {
+      decrypted = decryptGCM(content);
+      if (decrypted === null) {
+        // Already encrypted with NEW key — skip
         skippedAlreadyGCM++;
         continue;
       }
-
-      const decrypted = decryptCBC(msg.message_text);
-      if (decrypted !== null) {
-        newMessageText = encryptGCM(decrypted);
-        changed = true;
-      }
     } else {
-      skippedPlaintext++;
-    }
-
-    // Process subject (if encrypted)
-    if (msg.subject && msg.subject.includes(':') && !msg.subject.startsWith('gcm:')) {
-      const decryptedSubject = decryptCBC(msg.subject);
-      if (decryptedSubject !== null) {
-        newSubject = encryptGCM(decryptedSubject);
-        changed = true;
+      // Try CBC decrypt (messages encrypted before Phase 9)
+      decrypted = decryptCBC(content);
+      if (decrypted === null) {
+        skippedPlaintext++; // Not valid CBC — likely plaintext with colons
+        continue;
       }
     }
 
-    if (!changed) continue;
+    // Re-encrypt with GCM
+    const newContent = encryptGCM(decrypted);
 
     if (DRY_RUN) {
       console.log(`  [DRY RUN] Would re-encrypt message ${msg.id}`);
       migrated++;
     } else {
       const { error: updateError } = await supabase
-        .from('montree_messages')
-        .update({ message_text: newMessageText, subject: newSubject })
+        .from('story_message_history')
+        .update({ message_content: newContent })
         .eq('id', msg.id);
 
       if (updateError) {
