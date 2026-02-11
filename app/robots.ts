@@ -19,8 +19,6 @@ export default function robots(): MetadataRoute.Robots {
           '/montree/parent/dashboard/',
           '/montree/admin/',
           '/montree/super-admin/',
-          '/home/dashboard/',
-          '/home/settings/',
           '/story/',
         ],
       },
