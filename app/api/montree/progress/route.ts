@@ -133,11 +133,31 @@ export async function GET(request: NextRequest) {
       return { ...p, is_focus: isFocus };
     });
 
+    // Optionally include behavioral observations for timeline view
+    const includeObservations = searchParams.get('include_observations') === 'true';
+    let observations: unknown[] = [];
+
+    if (includeObservations) {
+      try {
+        const { data: obs } = await supabase
+          .from('montree_behavioral_observations')
+          .select('id, behavior_description, antecedent, consequence, environmental_notes, observed_at, time_of_day, activity_during')
+          .eq('child_id', childId)
+          .order('observed_at', { ascending: false })
+          .limit(50);
+
+        observations = obs || [];
+      } catch {
+        // Table may not exist or be empty — gracefully continue
+      }
+    }
+
     return NextResponse.json({
       progress: progressWithFocus,
       stats,
       byArea,
-      total: progress?.length || 0
+      total: progress?.length || 0,
+      ...(includeObservations ? { observations } : {}),
     });
 
   } catch (error) {
