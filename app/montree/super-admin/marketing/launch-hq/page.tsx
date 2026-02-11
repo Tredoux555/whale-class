@@ -279,20 +279,20 @@ function FileTag({ name, tab }) {
 // ============================================
 export default function LaunchHQ() {
   const [tab, setTab] = useState("daily");
-  const [checks, setChecks] = useState(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = window.localStorage.getItem("montree-launch-checks");
-        if (saved) return JSON.parse(saved);
-      }
-      return {};
-    } catch { return {}; }
-  });
+  const [checks, setChecks] = useState({});
   const [finderSearch, setFinderSearch] = useState("");
+
+  // Load saved checkbox state from localStorage after mount (not during SSR)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("montree-launch-checks");
+      if (saved) setChecks(JSON.parse(saved));
+    } catch {}
+  }, []);
 
   const toggle = (key) => setChecks((p) => {
     const updated = { ...p, [key]: !p[key] };
-    try { window.localStorage.setItem("montree-launch-checks", JSON.stringify(updated)); } catch {}
+    try { localStorage.setItem("montree-launch-checks", JSON.stringify(updated)); } catch {}
     return updated;
   });
 
