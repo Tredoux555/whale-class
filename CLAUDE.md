@@ -41,9 +41,9 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 **Plan files:** `.claude/plans/phase5-plan-v3.md`, `.claude/plans/phase6-plan-v3.md`, `.claude/plans/phase7-plan-v3.md`, `.claude/plans/phase8-plan-v2.md`, `.claude/plans/phase9-plan-v1.md`
 
-### ✅ POST-SECURITY ACTIONS COMPLETE
+### ⚠️ POST-SECURITY ACTIONS — KEY ROTATION STILL NEEDED
 
-**MESSAGE_ENCRYPTION_KEY rotation** — ✅ DONE. Old insecure default (`change-this-to-32-char-key-12345`) replaced with cryptographically random 32-char key on Railway. No data migration needed — `montree_messages` table doesn't exist yet (no encrypted messages stored). Rotation script (`scripts/rotate-encryption-key.ts`) remains available if messages are added later.
+**MESSAGE_ENCRYPTION_KEY rotation** — ⚠️ NOT YET DONE. Key is still the old insecure default (`change-this-to-32-char-key-12345`). An attempt to rotate was reverted because **1,605 encrypted messages exist in `story_message_history.message_content`** (NOT `montree_messages` which doesn't exist). The rotation script (`scripts/rotate-encryption-key.ts`) has been fixed to target the correct table/column. **To rotate: run the script with `--dry-run` first, then live, then update the key on Railway.** See script header for full steps.
 
 **Frontend update** — ✅ DONE. Super-admin panel now sends password with audit POST and schools GET.
 
@@ -82,6 +82,14 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 - SSH key "Cowork VM" (ed25519) added to GitHub account for direct pushing from Cowork sessions
 - Git remote switched from HTTPS to SSH: `git@github.com:Tredoux555/whale-class.git`
 - Future sessions can `git push origin main` directly — no manual terminal needed
+
+**MESSAGE_ENCRYPTION_KEY Rotation — REVERTED, Script Fixed:**
+- Attempted rotation changed key on Railway to a new random value
+- **BROKE 1,605 Story messages** — they displayed as raw `gcm:...` text in the Story admin dashboard
+- Root cause: rotation script targeted `montree_messages` (doesn't exist) — actual table is `story_message_history.message_content`
+- **Key reverted** to `change-this-to-32-char-key-12345` on Railway — messages readable again
+- **Script fixed** (`scripts/rotate-encryption-key.ts`) — now targets correct table/column, handles both CBC and GCM formats
+- **LESSON**: Always verify which table stores encrypted data before rotating keys. The `montree_messages` table was a placeholder that was never created.
 
 **Post-Phase 9 Audit & Fixes:**
 - **CRITICAL CSP FIX**: `script-src 'self'` in `next.config.ts` was blocking ALL inline JavaScript. Next.js requires inline scripts for hydration. Changed to `script-src 'self' 'unsafe-inline'`. Also added Google Fonts to `style-src` and `font-src`. This was breaking the ENTIRE site since Phase 6.
@@ -158,7 +166,7 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 - `VAULT_PASSWORD_HASH` ✅
 - `MESSAGE_ENCRYPTION_KEY=change-this-to-32-char-key-12345` ✅
 - `TEACHER_ADMIN_PASSWORD` ✅ (was missing from Railway)
-- **DONE in Phase 9**: Encryption upgraded to GCM + rotation script created (`scripts/rotate-encryption-key.ts`). Manual key rotation still needed — see Post-Security Action Required above.
+- **Phase 9**: Encryption upgraded to GCM + rotation script created (`scripts/rotate-encryption-key.ts`). **Key rotation NOT yet done** — 1,605 messages in `story_message_history` need re-encryption first. Script has been fixed to target correct table. See Post-Security Actions section above.
 
 **Phase 3 — Quick Security Wins (11 fixes):**
 - Fix 1: `login_time` → `login_at` across 11 files (column rename)
