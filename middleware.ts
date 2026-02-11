@@ -117,6 +117,21 @@ export async function middleware(req: NextRequest) {
   // CRITICAL: API routes - NEVER redirect, let them handle their own auth
   // This MUST be first to ensure API routes are never intercepted
   if (pathname.startsWith('/api/')) {
+    // Whale admin API routes require admin JWT
+    // Exception: /api/whale/parent/* and /api/whale/teacher/* have their own Supabase auth
+    if (
+      pathname.startsWith('/api/whale/') &&
+      !pathname.startsWith('/api/whale/parent/') &&
+      !pathname.startsWith('/api/whale/teacher/')
+    ) {
+      const whaleAdminToken = req.cookies.get('admin-token')?.value;
+      if (!whaleAdminToken || !(await verifyAdminToken(whaleAdminToken))) {
+        return new NextResponse(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
     return NextResponse.next();
   }
 
@@ -316,17 +331,11 @@ export async function middleware(req: NextRequest) {
 }
 
 // Configure which routes use this middleware
-// CRITICAL FIX #6: Keep the matcher config as backup
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes handle their own auth)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
+    // All non-API routes (pages, etc.)
     '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Whale admin API routes — middleware enforces admin JWT auth
+    '/api/whale/:path*',
   ],
 };
