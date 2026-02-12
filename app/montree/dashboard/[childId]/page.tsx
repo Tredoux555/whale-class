@@ -102,22 +102,6 @@ export default function WeekPage() {
     setQuickGuideLoading(false);
   };
 
-  const openDemo = async (workName: string) => {
-    const fallback = `${workName} Montessori presentation`;
-    try {
-      const classroomId = session?.classroom?.id;
-      const url = classroomId
-        ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
-        : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const searchTerm = (data.video_search_term && String(data.video_search_term).trim()) || fallback;
-      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`, '_blank');
-    } catch {
-      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(fallback)}`, '_blank');
-    }
-  };
-
   // Fetch progress and separate into focus works (1 per area) and extras
   const fetchAssignments = () => {
     // Don't refetch while a save is in progress (prevents race conditions)
@@ -524,7 +508,6 @@ export default function WeekPage() {
         onRemoveExtra={onRemoveExtra}
         onOpenWheelPicker={openWheelPicker}
         onOpenQuickGuide={openQuickGuide}
-        onOpenDemo={openDemo}
         childId={childId}
         getAreaConfig={getAreaConfig}
       />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface AreaWork {
@@ -41,7 +41,8 @@ export default function AddWorkModal({
   const [generating, setGenerating] = useState(false);
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
   const [showPositionPicker, setShowPositionPicker] = useState(false);
-  const positionListRef = useRef<HTMLDivElement>(null);
+  const positionWheelRef = useRef<HTMLDivElement>(null);
+  const [positionCenterIdx, setPositionCenterIdx] = useState(0);
 
   const [form, setForm] = useState({
     name: '',
@@ -63,13 +64,56 @@ export default function AddWorkModal({
     setInsertAfterIndex(null);
   }, [form.area_key]);
 
-  // Scroll to selected item when position picker opens
-  useEffect(() => {
-    if (showPositionPicker && positionListRef.current && insertAfterIndex !== null) {
-      const item = positionListRef.current.children[insertAfterIndex + 1] as HTMLElement; // +1 for "Beginning" option
-      if (item) item.scrollIntoView({ block: 'center', behavior: 'auto' });
+  // Build position options array for wheel picker
+  const positionOptions = [
+    { key: 'beginning', label: 'Beginning of list', icon: '⬆', value: -1 as number | null },
+    ...currentAreaWorks.map((w, idx) => ({
+      key: w.id,
+      label: w.name,
+      icon: `#${w.sequence || idx + 1}`,
+      value: idx as number | null,
+    })),
+    { key: 'end', label: 'End of list', icon: '⬇', value: null as number | null },
+  ];
+
+  // Scroll handler for position wheel — tracks centered item
+  const handlePositionScroll = useCallback(() => {
+    if (positionWheelRef.current) {
+      const itemHeight = 70;
+      const scrollTop = positionWheelRef.current.scrollTop;
+      const newIndex = Math.round(scrollTop / itemHeight);
+      const clamped = Math.max(0, Math.min(newIndex, positionOptions.length - 1));
+      if (clamped !== positionCenterIdx) {
+        setPositionCenterIdx(clamped);
+        if (navigator.vibrate) navigator.vibrate(10);
+      }
     }
-  }, [showPositionPicker, insertAfterIndex]);
+  }, [positionCenterIdx, positionOptions.length]);
+
+  // Scroll position wheel to a specific index
+  const scrollPositionTo = useCallback((index: number, smooth = true) => {
+    if (positionWheelRef.current) {
+      positionWheelRef.current.scrollTo({
+        top: index * 70,
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
+  }, []);
+
+  // Auto-scroll to current selection when position picker opens
+  useEffect(() => {
+    if (showPositionPicker && positionWheelRef.current) {
+      let initialIdx = positionOptions.length - 1; // default: End
+      if (insertAfterIndex === -1) initialIdx = 0;
+      else if (insertAfterIndex !== null) initialIdx = insertAfterIndex + 1;
+
+      setPositionCenterIdx(initialIdx);
+      requestAnimationFrame(() => {
+        scrollPositionTo(initialIdx, false);
+        setTimeout(() => scrollPositionTo(initialIdx, false), 100);
+      });
+    }
+  }, [showPositionPicker]);
 
   const resetForm = () => {
     setForm({
@@ -298,71 +342,82 @@ export default function AddWorkModal({
             </div>
           )}
 
-          {/* Position Picker Overlay */}
+          {/* Position Picker — Wheel Style */}
           {showPositionPicker && (
-            <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex flex-col" onClick={() => setShowPositionPicker(false)}>
-              <div className="flex-1 flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
-                {/* Picker Header */}
-                <div className={`p-4 bg-gradient-to-r ${selectedArea.color} text-white flex items-center justify-between`}>
-                  <div>
-                    <h3 className="font-bold text-lg">Insert Position</h3>
-                    <p className="text-white/80 text-sm">Where should this work go in {selectedArea.name}?</p>
+            <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex flex-col" onClick={() => setShowPositionPicker(false)}>
+              {/* Header */}
+              <div className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-4" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between text-white">
+                  <button onClick={() => setShowPositionPicker(false)} className="p-2 -ml-2">
+                    <span className="text-2xl">✕</span>
+                  </button>
+                  <div className="text-center">
+                    <span className="text-3xl">{selectedArea.icon}</span>
+                    <h2 className="font-bold text-lg">Insert after...</h2>
                   </div>
-                  <button
-                    onClick={() => setShowPositionPicker(false)}
-                    className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-xl transition-colors"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                {/* Scrollable Works List */}
-                <div ref={positionListRef} className="flex-1 overflow-y-auto bg-white">
-                  {/* Beginning option */}
-                  <button
-                    type="button"
-                    onClick={() => { setInsertAfterIndex(-1); setShowPositionPicker(false); }}
-                    className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
-                      insertAfterIndex === -1 ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
-                    }`}
-                  >
-                    <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">⬆</span>
-                    <span className="font-medium text-gray-800">Beginning of list</span>
-                    {insertAfterIndex === -1 && <span className="ml-auto text-emerald-500 font-bold">✓</span>}
-                  </button>
-
-                  {/* Each existing work = insert-after option */}
-                  {currentAreaWorks.map((work, idx) => (
-                    <button
-                      key={work.id}
-                      type="button"
-                      onClick={() => { setInsertAfterIndex(idx); setShowPositionPicker(false); }}
-                      className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
-                        insertAfterIndex === idx ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
-                      }`}
-                    >
-                      <span className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-bold">
-                        {work.sequence || idx + 1}
-                      </span>
-                      <span className="text-gray-700 text-sm truncate flex-1 text-left">{work.name}</span>
-                      {insertAfterIndex === idx && <span className="text-emerald-500 font-bold">✓</span>}
-                    </button>
-                  ))}
-
-                  {/* End of list option */}
-                  <button
-                    type="button"
-                    onClick={() => { setInsertAfterIndex(null); setShowPositionPicker(false); }}
-                    className={`w-full px-4 py-3 flex items-center gap-3 border-b transition-colors ${
-                      insertAfterIndex === null ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'
-                    }`}
-                  >
-                    <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">⬇</span>
-                    <span className="font-medium text-gray-800">End of list</span>
-                    {insertAfterIndex === null && <span className="ml-auto text-emerald-500 font-bold">✓</span>}
-                  </button>
+                  <div className="w-10" />
                 </div>
               </div>
+
+              {/* Wheel Container */}
+              <div className="flex-1 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                {/* Gradient overlays */}
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
+
+                {/* Selection highlight */}
+                <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[70px] bg-white/15 rounded-2xl border-2 border-white/40 z-5 pointer-events-none" />
+
+                {/* Scrollable wheel */}
+                <div
+                  ref={positionWheelRef}
+                  className="h-full overflow-y-auto scrollbar-hide"
+                  onScroll={handlePositionScroll}
+                  style={{ scrollSnapType: 'y mandatory' }}
+                >
+                  {/* Top spacer to center first item */}
+                  <div style={{ height: 'calc(50% - 35px)' }} />
+
+                  {positionOptions.map((option, idx) => {
+                    const distance = Math.abs(idx - positionCenterIdx);
+                    const scale = distance === 0 ? 1 : distance === 1 ? 0.9 : 0.8;
+                    const isCurrentSelection =
+                      (option.value === null && insertAfterIndex === null) ||
+                      (option.value === insertAfterIndex);
+
+                    return (
+                      <div
+                        key={option.key}
+                        className="h-[70px] flex items-center justify-center px-6 snap-center cursor-pointer"
+                        style={{
+                          transform: `scale(${scale})`,
+                          transition: 'transform 0.2s',
+                        }}
+                        onClick={() => {
+                          setInsertAfterIndex(option.value as number | null);
+                          setShowPositionPicker(false);
+                        }}
+                      >
+                        <div className={`flex items-center gap-3 w-full max-w-md transition-opacity duration-200 ${
+                          distance === 0 ? 'opacity-100' : distance === 1 ? 'opacity-70' : 'opacity-40'
+                        }`}>
+                          <span className="text-white/70 font-bold w-10 text-right">{option.icon}</span>
+                          <span className={`flex-1 text-white truncate ${distance === 0 ? 'font-semibold text-lg' : 'font-medium text-base'}`}>
+                            {option.label}
+                          </span>
+                          {isCurrentSelection && <span className="text-emerald-400 text-xl">✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Bottom spacer to center last item */}
+                  <div style={{ height: 'calc(50% - 35px)' }} />
+                </div>
+              </div>
+
+              {/* Bottom safe area */}
+              <div className="pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={e => e.stopPropagation()} />
             </div>
           )}
 

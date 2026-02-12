@@ -99,7 +99,7 @@ export default function WorkWheelPicker({
   // Handle work selection - simple: just select and default to not_started
   const handleSelectWork = () => {
     if (works[selectedIndex]) {
-      onSelectWork(works[selectedIndex], 'not_started');
+      onSelectWork(works[selectedIndex], works[selectedIndex].status || 'not_started');
       onClose();
     }
   };
