@@ -4,7 +4,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { compressImage } from '@/lib/montree/media/compression';
 
 interface ProfilePhotoCaptureProps {
   childId: string;
@@ -93,13 +92,44 @@ export default function ProfilePhotoCapture({
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+
+    // --- Crop to the guide circle region ---
+    // The video uses object-cover in its container, so we need to
+    // calculate which native video pixels fall inside the 256×256 CSS guide circle.
+    const containerW = video.clientWidth;
+    const containerH = video.clientHeight;
+    const videoW = video.videoWidth;
+    const videoH = video.videoHeight;
+
+    // object-cover scale: use the LARGER scale so the video fills the container
+    const scale = Math.max(containerW / videoW, containerH / videoH);
+    const displayedW = videoW * scale;
+    const displayedH = videoH * scale;
+
+    // How much of the video is cropped off each side by object-cover
+    const offsetX = (displayedW - containerW) / 2;
+    const offsetY = (displayedH - containerH) / 2;
+
+    // The guide circle is 256×256 CSS pixels, centered in the container
+    const guideSize = 256;
+    const guideCssLeft = (containerW - guideSize) / 2;
+    const guideCssTop = (containerH - guideSize) / 2;
+
+    // Convert CSS coordinates back to native video pixels
+    const srcX = (guideCssLeft + offsetX) / scale;
+    const srcY = (guideCssTop + offsetY) / scale;
+    const srcSize = guideSize / scale;
+
+    // Output a clean 640×640 square (plenty for profile photos)
+    const outputSize = 640;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, srcX, srcY, srcSize, srcSize, 0, 0, outputSize, outputSize);
+
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -127,16 +157,9 @@ export default function ProfilePhotoCapture({
     setState('uploading');
 
     try {
-      // Compress client-side (target 500KB, max 800px for profile photos)
-      const compressed = await compressImage(photoBlob, {
-        maxWidth: 800,
-        maxHeight: 800,
-        targetSizeKB: 300,
-      });
-
-      // Upload to profile photo API
+      // Image is already 640×640 JPEG from the crop step — no compression needed
       const formData = new FormData();
-      formData.append('photo', compressed.blob, 'profile.jpg');
+      formData.append('photo', photoBlob, 'profile.jpg');
 
       const res = await fetch(`/api/montree/children/${childId}/photo`, {
         method: 'POST',
@@ -205,10 +228,9 @@ export default function ProfilePhotoCapture({
 
         {state === 'preview' && previewUrl && (
           <div className="w-full h-full flex items-center justify-center bg-black">
-            <img src={previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
-            {/* Circular guide overlay on preview too */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 rounded-full border-4 border-white/30" />
+            {/* Show the cropped square with a circular mask so they see exactly what gets saved */}
+            <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white/30">
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             </div>
           </div>
         )}
