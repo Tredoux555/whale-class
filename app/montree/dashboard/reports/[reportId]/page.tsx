@@ -5,6 +5,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { AREA_CONFIG as SHARED_AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 interface ReportWork {
   id: string;
@@ -42,12 +44,8 @@ interface Report {
   generated_at: string;
 }
 
-const AREA_CONFIG: Record<string, { icon: string; color: string; gradient: string }> = {
-  'Practical Life': { icon: '🧹', color: '#EC4899', gradient: 'from-pink-500 to-rose-500' },
-  'Sensorial': { icon: '👁️', color: '#F59E0B', gradient: 'from-amber-500 to-orange-500' },
-  'Mathematics': { icon: '🔢', color: '#3B82F6', gradient: 'from-blue-500 to-indigo-500' },
-  'Language': { icon: '📚', color: '#10B981', gradient: 'from-emerald-500 to-teal-500' },
-  'Cultural': { icon: '🌍', color: '#8B5CF6', gradient: 'from-purple-500 to-violet-500' },
+const getAreaConf = (areaName: string) => {
+  return SHARED_AREA_CONFIG[normalizeArea(areaName)] || { icon: '?', color: '#888', gradient: 'from-gray-500 to-slate-500', name: areaName };
 };
 
 export default function ReportViewPage() {
@@ -165,14 +163,14 @@ export default function ReportViewPage() {
         
         {/* Works by Area */}
         {Object.entries(content.works_by_area).map(([areaName, works]) => {
-          const areaConfig = AREA_CONFIG[areaName] || { icon: '📚', gradient: 'from-gray-500 to-slate-500' };
+          const areaConfig = getAreaConf(areaName);
           
           return (
             <div key={areaName} className="bg-white rounded-2xl shadow-sm overflow-hidden">
               {/* Area Header */}
               <div className={`bg-gradient-to-r ${areaConfig.gradient} text-white px-4 py-3`}>
                 <h2 className="font-bold flex items-center gap-2">
-                  <span className="text-xl">{areaConfig.icon}</span>
+                  <AreaBadge area={areaName} size="md" />
                   {areaName}
                   <span className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-sm">
                     {works.length} work{works.length !== 1 ? 's' : ''}

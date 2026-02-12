@@ -25,6 +25,7 @@ interface Assignment {
   status: string;
   notes?: string;
   is_focus?: boolean;
+  is_extra?: boolean;
 }
 
 interface CurriculumWork {
@@ -156,13 +157,10 @@ export default function WeekPage() {
           usedWorkNames.add(focusWork.work_name.toLowerCase());
         }
 
-        // Second pass: everything else is an extra
+        // Second pass: only explicitly-added extras (from montree_child_extras table)
         for (const p of allProgress) {
-          if (!usedWorkNames.has(p.work_name.toLowerCase())) {
-            // Only show non-completed extras (child is still working on them)
-            if (p.status !== 'completed' && p.status !== 'mastered') {
-              extras.push({ ...p, is_focus: false });
-            }
+          if (p.is_extra && !usedWorkNames.has(p.work_name.toLowerCase())) {
+            extras.push({ ...p, is_focus: false });
           }
         }
 
@@ -363,6 +361,7 @@ export default function WeekPage() {
     extraWorks,
     setExtraWorks,
     wheelPickerArea,
+    wheelPickerWorks,
     session,
     allWorks,
     setWheelPickerOpen,

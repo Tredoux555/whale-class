@@ -8,15 +8,16 @@ import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
+import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 
-// Curriculum areas (standard Montessori - letter icons)
-const CURRICULUM_AREAS = [
-  { id: 'practical_life', name: 'Practical Life', icon: 'P', color: '#22c55e' },
-  { id: 'sensorial', name: 'Sensorial', icon: 'S', color: '#f97316' },
-  { id: 'mathematics', name: 'Math', icon: 'M', color: '#3b82f6' },
-  { id: 'language', name: 'Language', icon: 'L', color: '#ec4899' },
-  { id: 'cultural', name: 'Cultural', icon: 'C', color: '#8b5cf6' },
-];
+// Derive curriculum areas from shared config (canonical colors)
+const CURRICULUM_AREAS = AREA_ORDER.map(id => ({
+  id,
+  name: AREA_CONFIG[id].name,
+  icon: AREA_CONFIG[id].icon,
+  color: AREA_CONFIG[id].color,
+}));
 
 // Age options
 const AGE_OPTIONS = [
@@ -179,7 +180,7 @@ function CurriculumPicker({
         className="w-full p-2 bg-white border border-slate-200 rounded-lg text-left flex items-center gap-2 hover:border-blue-300 transition-colors text-sm"
         style={{ borderLeftColor: color, borderLeftWidth: '3px' }}
       >
-        <span className="w-6 h-6 rounded-full text-xs font-bold text-white flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color }}>{icon}</span>
+        <AreaBadge area={areaId} size="sm" />
         <span className="flex-1 truncate text-slate-600">{displayLabel}</span>
         <span className="text-slate-400 text-xs">{isOpen ? '▲' : '▼'}</span>
       </button>

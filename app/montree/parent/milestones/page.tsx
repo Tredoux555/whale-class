@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 interface Milestone {
   id: string;
@@ -20,20 +22,9 @@ interface TimelineGroup {
   items: Milestone[];
 }
 
-const AREA_COLORS: Record<string, string> = {
-  practical_life: 'bg-green-100 text-green-700',
-  sensorial: 'bg-orange-100 text-orange-700',
-  mathematics: 'bg-blue-100 text-blue-700',
-  language: 'bg-pink-100 text-pink-700',
-  cultural: 'bg-purple-100 text-purple-700'
-};
-
-const AREA_ICONS: Record<string, string> = {
-  practical_life: '🧹',
-  sensorial: '👁️',
-  mathematics: '🔢',
-  language: '📚',
-  cultural: '🌍'
+const getAreaClasses = (area: string) => {
+  const config = AREA_CONFIG[normalizeArea(area)];
+  return config ? `${config.bg} ${config.text}` : 'bg-gray-100 text-gray-700';
 };
 
 function ParentMilestonesContent() {
@@ -164,8 +155,8 @@ function ParentMilestonesContent() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-800 truncate">{milestone.title}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${AREA_COLORS[milestone.area] || 'bg-gray-100 text-gray-700'}`}>
-                            {AREA_ICONS[milestone.area] || '📖'} {milestone.area_label}
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${getAreaClasses(milestone.area)}`}>
+                            <AreaBadge area={milestone.area} size="xs" /> {milestone.area_label}
                           </span>
                           <span className="text-xs text-gray-400">{formatDate(milestone.date)}</span>
                         </div>

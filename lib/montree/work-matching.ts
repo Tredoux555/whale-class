@@ -85,6 +85,7 @@ interface Assignment {
   status: string;
   notes?: string;
   is_focus?: boolean;
+  is_extra?: boolean;
 }
 
 /**

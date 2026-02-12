@@ -114,12 +114,21 @@ export interface AreaProgressBar {
 // Area Configuration
 // ============================================
 
-export const AREA_CONFIG: Record<string, { name: string; icon: string; color: string }> = {
-  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899' },
-  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6' },
-  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6' },
-  language: { name: 'Language', icon: 'L', color: '#22c55e' },
-  cultural: { name: 'Cultural', icon: 'C', color: '#f97316' },
+export const AREA_CONFIG: Record<string, {
+  name: string;
+  icon: string;
+  color: string;
+  gradient: string;
+  bg: string;
+  text: string;
+  border: string;
+  prefix: string;
+}> = {
+  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899', gradient: 'from-pink-500 to-rose-500', bg: 'bg-pink-50', text: 'text-pink-700', border: '#FBCFE8', prefix: 'P' },
+  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6', gradient: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', text: 'text-violet-700', border: '#DDD6FE', prefix: 'S' },
+  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700', border: '#BFDBFE', prefix: 'M' },
+  language: { name: 'Language', icon: 'L', color: '#22c55e', gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700', border: '#A7F3D0', prefix: 'L' },
+  cultural: { name: 'Cultural', icon: 'C', color: '#f97316', gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', text: 'text-orange-700', border: '#FDE68A', prefix: 'C' },
 };
 
 export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;

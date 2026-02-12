@@ -1,6 +1,7 @@
 'use client';
 
 import { AreaConfig } from '@/components/montree/curriculum/types';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 
 export interface Assignment {
   work_name: string;
@@ -8,6 +9,7 @@ export interface Assignment {
   status: string;
   notes?: string;
   is_focus?: boolean;
+  is_extra?: boolean;
 }
 
 export interface FocusWorksSectionProps {
@@ -73,8 +75,7 @@ export default function FocusWorksSection({
                 <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                   {/* Area icon - tap or long-press to swap focus work */}
                   <button
-                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-sm active:scale-90 transition-transform"
-                    style={{ backgroundColor: areaConfig.color }}
+                    className="active:scale-90 transition-transform"
                     onClick={() => onOpenWheelPicker(work.area, work.work_name)}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -90,7 +91,7 @@ export default function FocusWorksSection({
                     }}
                     title="Tap to change work"
                   >
-                    {areaConfig.icon}
+                    <AreaBadge area={work.area} size="lg" />
                   </button>
 
                   {/* Work name - tap to expand */}

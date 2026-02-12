@@ -12,7 +12,7 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 11, 2026)
+## CURRENT STATUS (Feb 12, 2026)
 
 ### Security Hardening — ALL 9 PHASES COMPLETE ✅
 
@@ -60,6 +60,66 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 | 4 | Split 3 oversized files (918, 1115, 1243 lines) | ✅ Done |
 | 5 | Strip console.log statements (219 → 0) | ✅ Done |
 | 6 | Fix `: any` type annotations (23 → 2 trivial) | ✅ Done |
+
+---
+
+### 🔧 Three-Issue Fix — ✅ CODE COMPLETE (Feb 12, 2026)
+
+Three fixes to the child Week view. **Needs migration + push to deploy.**
+
+| Issue | What | Status |
+|-------|------|--------|
+| 1 | Extras Leak — new `montree_child_extras` table, `is_extra` flag | ✅ Done |
+| 2 | Auto-Mastery — batch-master API, fire-and-forget on focus set | ✅ Done |
+| 3 | Area Icon Uniformity — shared `AreaBadge` component across 11 pages | ✅ Done |
+
+**Deploy steps:**
+1. Run `migrations/124_child_extras_table.sql` against Supabase
+2. `git push origin main`
+
+**Files created (3 new):**
+- `migrations/124_child_extras_table.sql` — extras table + index
+- `app/api/montree/progress/batch-master/route.ts` — batch mark works as mastered
+- `components/montree/shared/AreaBadge.tsx` — shared colored-circle area icon
+
+**Files modified (~19):**
+- `lib/montree/types.ts` — extended AREA_CONFIG with decorative fields
+- `app/api/montree/progress/route.ts` — fetches extras, adds `is_extra` flag
+- `app/api/montree/progress/update/route.ts` — `remove_extra`, `is_extra`, focus cleanup
+- `app/montree/dashboard/[childId]/page.tsx` — extras filter + wheelPickerWorks pass-through
+- `hooks/useWorkOperations.ts` — removeExtra, addExtra, addWork, auto-mastery logic
+- `components/montree/child/FocusWorksSection.tsx` — AreaBadge + is_extra interface
+- `components/montree/child/WorkPickerModal.tsx` — is_extra interface
+- `lib/montree/work-matching.ts` — is_extra interface
+- 11 pages refactored for AreaBadge (progress, detail, gallery, summary, weekly-review, reports, print, milestones, AreaProgressGrid, students, curriculum)
+
+**Bug fixed:** students/page.tsx had Practical Life and Language colors swapped.
+
+**Handoff:** `docs/HANDOFF_THREE_ISSUE_FIX.md`
+
+---
+
+### 🎬 Promo Video Production — ✅ COMPLETE (Feb 13, 2026)
+
+Produced optimized social media videos from raw screen recording (`Final Edit Montree Intro.mp4`).
+
+**Outputs (all in `Promo Videos/`):**
+- `Montree_Shorts_9x16.mp4` — 1080×1920, 57.9s, YouTube Shorts / Reels / TikTok
+- `Montree_Social_Square.mp4` — 1080×1080, 57.9s, Instagram feed / Facebook / LinkedIn
+- `Montree_Thumbnail.png` — 1280×720, YouTube thumbnail
+- `YOUTUBE_SEO_UPLOAD_GUIDE.md` — Ready-to-paste title, description, tags, upload settings, social captions
+
+**What was done:**
+- Cropped source to preserve webcam face overlay (top 25px macOS bar removed, Chrome UI kept)
+- Burned in captions from SRT file (Poppins Bold, white on dark teal box)
+- Shorts: branded top bar (logo + hook) + bottom bar (features + CTA) + intro/outro cards
+- Square: branded bottom bar + intro/outro cards
+- All assets use Montree brand colors (dark teal #0D3330, emerald #4ADE80, Poppins font)
+- SEO guide includes YouTube metadata + social media captions for all platforms
+
+**Known issues:** Thumbnail face extraction slightly off (needs coordinate tuning in `build_thumbnail_v2.py`). Browser chrome visible in video (required to keep webcam face).
+
+**Handoff:** `docs/HANDOFF_PROMO_VIDEO_PRODUCTION.md`
 
 ---
 
@@ -356,6 +416,7 @@ Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple
 - `montree_report_media` — junction table linking reports to selected photos
 - `montree_media_children` — links group photos to multiple children
 - `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
+- `montree_child_extras` — explicitly-added extra works per child (UNIQUE child_id+work_name)
 - `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
 - `montree_rate_limit_logs` — DB-backed rate limiting (survives container restarts)
 - `story_users`, `story_admin_users` — Story system auth (bcrypt hashes)
@@ -554,7 +615,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_PROGRESS_DASHBOARD.md` | **CURRENT** — Progress portfolio, position picker, bug fixes |
+| `docs/HANDOFF_THREE_ISSUE_FIX.md` | **CURRENT** — Extras leak fix, auto-mastery, area icon uniformity |
+| `docs/HANDOFF_PROGRESS_DASHBOARD.md` | Progress portfolio, position picker, bug fixes |
 | `docs/HANDOFF_POST_PHASE9_AUDIT.md` | Post-Phase 9 audit, CSP fix, frontend fixes, DB migration |
 | `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | Security Phase 9 complete (FINAL), production security review |
 | `docs/HANDOFF_SECURITY_PHASE8_COMPLETE.md` | Security Phase 8 complete, logging & monitoring |

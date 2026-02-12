@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 interface WorkProgress {
   id: string;
@@ -42,8 +43,7 @@ export default function ProgressDetailPage() {
 
 
   const getAreaConfig = (area: string) => {
-    return AREA_CONFIG[area] || AREA_CONFIG[area.replace('mathematics', 'math')] || 
-      { name: area, icon: '📋', color: '#888' };
+    return AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
   };
 
   const formatDate = (dateStr: string | null) => {
@@ -127,7 +127,7 @@ export default function ProgressDetailPage() {
                 selectedArea === area.key ? 'bg-emerald-500 text-white' : 'bg-white text-gray-600'
               }`}
             >
-              <span>{area.icon}</span>
+              <AreaBadge area={area.key} size="xs" />
               <span>{area.name}</span>
               <span className="text-xs opacity-70">({area.total})</span>
             </button>
@@ -166,7 +166,7 @@ export default function ProgressDetailPage() {
             const area = getAreaConfig(p.area);
             return (
               <div key={p.id} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-3">
-                <span className="text-2xl">{area.icon}</span>
+                <AreaBadge area={p.area} size="sm" />
                 <div className="flex-1">
                   <p className="font-medium text-gray-800">{p.work_name}</p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -198,7 +198,7 @@ export default function ProgressDetailPage() {
               <div key={area.key} className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{area.icon}</span>
+                    <AreaBadge area={area.key} size="sm" />
                     <span className="font-medium text-gray-800">{area.name}</span>
                   </div>
                   <span className="text-sm text-gray-500">{area.mastered}/{area.total}</span>

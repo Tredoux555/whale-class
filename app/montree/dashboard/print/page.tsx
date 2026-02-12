@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
+import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
+import { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 interface Work {
   id: string;
@@ -15,24 +17,6 @@ interface ChildWithWorks {
   id: string;
   name: string;
   works: Work[];
-}
-
-const AREA_ORDER = ['practical_life', 'sensorial', 'math', 'language', 'culture'];
-
-const AREA_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string; border: string; prefix: string }> = {
-  practical_life: { label: 'Practical Life', icon: '🧹', color: '#DB2777', bg: '#FDF2F8', border: '#FBCFE8', prefix: 'P' },
-  sensorial: { label: 'Sensorial', icon: '👁️', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', prefix: 'S' },
-  math: { label: 'Math', icon: '🔢', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', prefix: 'M' },
-  mathematics: { label: 'Math', icon: '🔢', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', prefix: 'M' },
-  language: { label: 'Language', icon: '📖', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0', prefix: 'L' },
-  culture: { label: 'Culture', icon: '🌍', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', prefix: 'C' },
-  cultural: { label: 'Culture', icon: '🌍', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', prefix: 'C' },
-};
-
-function normalizeArea(area: string): string {
-  if (area === 'mathematics') return 'math';
-  if (area === 'cultural') return 'culture';
-  return area;
 }
 
 function PrintContent() {

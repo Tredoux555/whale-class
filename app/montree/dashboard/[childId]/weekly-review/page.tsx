@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 
 // ============================================
 // TYPES
@@ -349,7 +350,10 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
         <div className="space-y-2">
           {report.area_breakdown.map((area, i) => (
             <div key={i} className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">{area.area}</span>
+              <span className="text-sm text-slate-600 flex items-center gap-1.5">
+                <AreaBadge area={area.area} size="xs" />
+                {area.area}
+              </span>
               <div className="flex items-center gap-2">
                 <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div 

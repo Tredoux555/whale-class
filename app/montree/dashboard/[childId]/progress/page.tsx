@@ -7,20 +7,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
 import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
-
-// Area display config
-const AREAS: Record<string, { name: string; emoji: string; gradient: string; bg: string; text: string }> = {
-  practical_life: { name: 'Practical Life', emoji: '🧹', gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  sensorial: { name: 'Sensorial', emoji: '👁', gradient: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700' },
-  mathematics: { name: 'Mathematics', emoji: '🔢', gradient: 'from-indigo-500 to-indigo-600', bg: 'bg-indigo-50', text: 'text-indigo-700' },
-  language: { name: 'Language', emoji: '📚', gradient: 'from-rose-500 to-rose-600', bg: 'bg-rose-50', text: 'text-rose-700' },
-  cultural: { name: 'Cultural', emoji: '🌍', gradient: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
-};
-
-const AREA_COLORS: Record<string, string> = {
-  practical_life: '#10b981', sensorial: '#f59e0b', mathematics: '#6366f1',
-  language: '#f43f5e', cultural: '#8b5cf6',
-};
+import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 
 interface AreaSummary {
   area: string;
@@ -263,7 +251,7 @@ export default function ProgressPage() {
 
         <div className="space-y-4">
           {areas.map((area) => {
-            const config = AREAS[area.area];
+            const config = AREA_CONFIG[area.area];
             if (!config) return null;
             const isActive = selectedArea === area.area;
 
@@ -283,14 +271,14 @@ export default function ProgressPage() {
                 className={`w-full text-left transition-all rounded-xl p-3 -mx-1 ${
                   isActive ? config.bg : 'hover:bg-gray-50'
                 }`}
-                style={isActive ? { boxShadow: `0 0 0 2px ${AREA_COLORS[area.area]}` } : undefined}
+                style={isActive ? { boxShadow: `0 0 0 2px ${AREA_CONFIG[area.area]?.color}` } : undefined}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{config.emoji}</span>
+                    <AreaBadge area={area.area} size="sm" />
                     <span className="font-semibold text-gray-800 text-sm">{config.name}</span>
                   </div>
-                  <span className="text-xs font-bold" style={{ color: AREA_COLORS[area.area] }}>
+                  <span className="text-xs font-bold" style={{ color: AREA_CONFIG[area.area]?.color }}>
                     {area.completed}/{area.totalWorks}
                   </span>
                 </div>
@@ -317,7 +305,7 @@ export default function ProgressPage() {
             onClick={() => setSelectedArea(null)}
             className="w-full text-center text-xs text-gray-400 mt-3 py-1"
           >
-            Tap area again to show all · Showing {AREAS[selectedArea]?.name}
+            Tap area again to show all · Showing {AREA_CONFIG[selectedArea]?.name}
           </button>
         )}
       </div>
@@ -356,7 +344,7 @@ export default function ProgressPage() {
           Timeline
           {selectedArea && (
             <span className="text-sm font-normal text-gray-400 ml-2">
-              ({AREAS[selectedArea]?.name})
+              ({AREA_CONFIG[selectedArea]?.name})
             </span>
           )}
         </h2>
@@ -370,7 +358,7 @@ export default function ProgressPage() {
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">{label}</div>
             <div className="space-y-3">
               {events.map((event) => {
-                const areaConf = event.area ? AREAS[event.area] : null;
+                const areaConf = event.area ? AREA_CONFIG[event.area] : null;
                 return (
                   <div key={event.id} className="flex gap-3 items-start">
                     {/* Icon */}
