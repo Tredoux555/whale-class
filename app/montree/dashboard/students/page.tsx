@@ -360,6 +360,7 @@ export default function StudentsPage() {
 
   const closeForm = () => {
     setShowForm(false);
+    setShowPhotoCapture(false);
     setEditingStudent(null);
     setBulkMode(false);
     setFormData({ name: '', age: 3.5, tenure: 'new', progress: {} });
@@ -759,7 +760,6 @@ export default function StudentsPage() {
         <ProfilePhotoCapture
           childId={editingStudent.id}
           childName={editingStudent.name}
-          currentPhotoUrl={editingStudent.photo_url}
           onPhotoSaved={(url) => {
             // Update local state so avatar swaps immediately
             setStudents(prev => prev.map(s =>
