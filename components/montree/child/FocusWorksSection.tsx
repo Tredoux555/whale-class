@@ -23,7 +23,6 @@ export interface FocusWorksSectionProps {
   onRemoveExtra: (work: Assignment) => void;
   onOpenWheelPicker: (area: string, workName?: string) => void;
   onOpenQuickGuide: (workName: string) => void;
-  onOpenDemo: (workName: string) => void;
   childId: string;
   getAreaConfig: (area: string) => AreaConfig;
 }
@@ -49,7 +48,6 @@ export default function FocusWorksSection({
   onRemoveExtra,
   onOpenWheelPicker,
   onOpenQuickGuide,
-  onOpenDemo,
   childId,
   getAreaConfig,
 }: FocusWorksSectionProps) {
@@ -122,19 +120,13 @@ export default function FocusWorksSection({
                     <div className="flex gap-2">
                       <button
                         onClick={() => onOpenQuickGuide(work.work_name)}
-                        className="flex-[1] py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
+                        className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                       >
-                        📖
-                      </button>
-                      <button
-                        onClick={() => onOpenDemo(work.work_name)}
-                        className="flex-[2] py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-red-600 active:scale-95"
-                      >
-                        ▶️ Demo
+                        📖 Quick Guide
                       </button>
                       <button
                         onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(work.work_name)}&area=${encodeURIComponent(work.area)}`}
-                        className="flex-[2] py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
+                        className="flex-1 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
                       >
                         📸 Capture
                       </button>
