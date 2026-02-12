@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -18,6 +20,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { childId } = await context.params;
     const supabase = getSupabase();
     const schoolId = auth.schoolId;
+
+    // Rate limit: 10 uploads per 15 minutes per IP
+    const ip = getClientIP(request.headers);
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, ip, '/api/montree/children/photo', 10, 15
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
 
     // Verify child exists and belongs to this school
     const { data: child, error: childError } = await supabase
@@ -78,7 +92,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Build public URL
     const photoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${storagePath}`;
 
-    // Add cache-bust param so browser shows new photo immediately after re-take
+    // Cache-bust param forces browser to fetch the new image after a re-take
+    // (Supabase CDN caches by URL — without this, the old face shows until cache expires)
+    // Note: this ?v= param persists in the DB. Strip it if you ever need to compare storage paths.
     const photoUrlWithBust = `${photoUrl}?v=${Date.now()}`;
 
     // Save URL to montree_children.photo_url

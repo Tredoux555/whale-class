@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession } from '@/lib/montree/auth';
 
 type Student = {
   id: string;
@@ -14,10 +14,10 @@ type Student = {
 
 type Template = 'locker' | 'nametag' | 'cubby';
 
-const TEMPLATES: { id: Template; name: string; icon: string; desc: string; cols: number; size: string }[] = [
-  { id: 'locker', name: 'Locker Labels', icon: '🚪', desc: 'Large — 2 per row', cols: 2, size: 'large' },
-  { id: 'nametag', name: 'Name Tags', icon: '📛', desc: 'Medium — 3 per row', cols: 3, size: 'medium' },
-  { id: 'cubby', name: 'Cubby / Bed Tags', icon: '🛏️', desc: 'Small — 4 per row', cols: 4, size: 'small' },
+const TEMPLATES: { id: Template; name: string; icon: string; desc: string; cols: number }[] = [
+  { id: 'locker', name: 'Locker Labels', icon: '🚪', desc: 'Large — 2 per row', cols: 2 },
+  { id: 'nametag', name: 'Name Tags', icon: '📛', desc: 'Medium — 3 per row', cols: 3 },
+  { id: 'cubby', name: 'Cubby / Bed Tags', icon: '🛏️', desc: 'Small — 4 per row', cols: 4 },
 ];
 
 // Soft pastel backgrounds for fallback letter circles
@@ -28,7 +28,6 @@ const COLORS = [
 
 export default function LabelsPage() {
   const router = useRouter();
-  const [session, setSession] = useState<MontreeSession | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [template, setTemplate] = useState<Template>('locker');
@@ -39,7 +38,6 @@ export default function LabelsPage() {
     const init = async () => {
       const sess = await getSession();
       if (!sess?.classroom?.id) { router.push('/montree/login'); return; }
-      setSession(sess);
       setSchoolName(sess.school?.name || '');
 
       try {

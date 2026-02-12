@@ -9,7 +9,6 @@ import { compressImage } from '@/lib/montree/media/compression';
 interface ProfilePhotoCaptureProps {
   childId: string;
   childName: string;
-  currentPhotoUrl?: string;
   onPhotoSaved: (url: string) => void;
   onCancel: () => void;
 }
@@ -19,7 +18,6 @@ type CaptureState = 'camera' | 'preview' | 'uploading' | 'error';
 export default function ProfilePhotoCapture({
   childId,
   childName,
-  currentPhotoUrl,
   onPhotoSaved,
   onCancel,
 }: ProfilePhotoCaptureProps) {
