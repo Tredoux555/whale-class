@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
+import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
 
 // Area display config
 const AREAS: Record<string, { name: string; emoji: string; gradient: string; bg: string; text: string }> = {
@@ -84,6 +85,7 @@ export default function ProgressPage() {
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
+  const [historyArea, setHistoryArea] = useState<string | null>(null);
   const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
 
   // Supabase URL for media
@@ -178,6 +180,17 @@ export default function ProgressPage() {
           });
         }
 
+        // Teacher notes from work_sessions (saved via Week tab)
+        const workNotes: { id: string; work_name: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
+        for (const wn of workNotes) {
+          events.push({
+            id: `wn-${wn.id}`, type: 'note',
+            date: wn.observed_at,
+            title: wn.work_name, subtitle: wn.notes,
+            area: wn.area, icon: '📝',
+          });
+        }
+
         events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         setTimeline(events);
       } catch (err) {
@@ -258,6 +271,15 @@ export default function ProgressPage() {
               <button
                 key={area.area}
                 onClick={() => setSelectedArea(isActive ? null : area.area)}
+                onDoubleClick={() => setHistoryArea(area.area)}
+                onTouchStart={(e) => {
+                  const timer = setTimeout(() => {
+                    setHistoryArea(area.area);
+                  }, 500);
+                  const clear = () => clearTimeout(timer);
+                  e.currentTarget.addEventListener('touchend', clear, { once: true });
+                  e.currentTarget.addEventListener('touchmove', clear, { once: true });
+                }}
                 className={`w-full text-left transition-all rounded-xl p-3 -mx-1 ${
                   isActive ? config.bg : 'hover:bg-gray-50'
                 }`}
@@ -387,6 +409,15 @@ export default function ProgressPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Area History Modal ── */}
+      <AreaHistoryModal
+        isOpen={historyArea !== null}
+        onClose={() => setHistoryArea(null)}
+        area={historyArea || ''}
+        childId={childId}
+        childName={childName}
+      />
 
       {/* ── Photo Viewer Overlay ── */}
       {photoViewerUrl && (

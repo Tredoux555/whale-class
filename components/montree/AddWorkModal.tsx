@@ -20,14 +20,12 @@ interface AddWorkModalProps {
 }
 
 const AREAS = [
-  { key: 'practical_life', name: 'Practical Life', icon: 'P', color: 'from-green-400 to-emerald-500' },
-  { key: 'sensorial', name: 'Sensorial', icon: 'S', color: 'from-orange-400 to-amber-500' },
-  { key: 'mathematics', name: 'Mathematics', icon: 'M', color: 'from-blue-400 to-indigo-500' },
-  { key: 'language', name: 'Language', icon: 'L', color: 'from-pink-400 to-rose-500' },
-  { key: 'cultural', name: 'Cultural', icon: 'C', color: 'from-purple-400 to-violet-500' },
+  { key: 'practical_life', name: 'Practical Life', icon: 'P', color: 'from-green-400 to-emerald-500', solid: '#10b981' },
+  { key: 'sensorial', name: 'Sensorial', icon: 'S', color: 'from-orange-400 to-amber-500', solid: '#f59e0b' },
+  { key: 'mathematics', name: 'Mathematics', icon: 'M', color: 'from-blue-400 to-indigo-500', solid: '#6366f1' },
+  { key: 'language', name: 'Language', icon: 'L', color: 'from-pink-400 to-rose-500', solid: '#f43f5e' },
+  { key: 'cultural', name: 'Cultural', icon: 'C', color: 'from-purple-400 to-violet-500', solid: '#8b5cf6' },
 ];
-
-const AGE_OPTIONS = ['2-3', '3-4', '3-6', '4-5', '5-6', '6+'];
 
 export default function AddWorkModal({
   classroomId,
@@ -70,7 +68,7 @@ export default function AddWorkModal({
     ...currentAreaWorks.map((w, idx) => ({
       key: w.id,
       label: w.name,
-      icon: `#${w.sequence || idx + 1}`,
+      icon: `${idx + 1}`,
       value: idx as number | null,
     })),
     { key: 'end', label: 'End of list', icon: '⬇', value: null as number | null },
@@ -244,7 +242,12 @@ export default function AddWorkModal({
         <div className={`p-4 border-b bg-gradient-to-r ${selectedArea.color} text-white flex-shrink-0 rounded-t-2xl`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{selectedArea.icon}</span>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm"
+                style={{ backgroundColor: 'white', color: selectedArea.solid }}
+              >
+                {selectedArea.icon}
+              </div>
               <div>
                 <h3 className="font-bold text-lg">Add New Work</h3>
                 <p className="text-white/80 text-sm">Create a custom curriculum work</p>
@@ -276,7 +279,15 @@ export default function AddWorkModal({
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                   }`}
                 >
-                  <span className="text-xl">{area.icon}</span>
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-sm"
+                    style={form.area_key === area.key
+                      ? { backgroundColor: 'white', color: area.solid }
+                      : { backgroundColor: area.solid, color: 'white' }
+                    }
+                  >
+                    {area.icon}
+                  </div>
                   <span className="text-[10px] font-medium leading-tight text-center">{area.name}</span>
                 </button>
               ))}
@@ -293,27 +304,6 @@ export default function AddWorkModal({
               placeholder="e.g. Pouring Water, Pink Tower, Sandpaper Letters"
               className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400"
             />
-          </div>
-
-          {/* Age Range */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
-            <div className="flex flex-wrap gap-2">
-              {AGE_OPTIONS.map(age => (
-                <button
-                  key={age}
-                  type="button"
-                  onClick={() => setForm({ ...form, age_range: age })}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    form.age_range === age
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {age}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Position in Sequence */}
@@ -333,7 +323,7 @@ export default function AddWorkModal({
                   <span>{insertAfterIndex === -1
                     ? '⬆️ Beginning of list'
                     : insertAfterIndex !== null && currentAreaWorks[insertAfterIndex]
-                    ? `After #${currentAreaWorks[insertAfterIndex].sequence} — ${currentAreaWorks[insertAfterIndex].name}`
+                    ? `After ${insertAfterIndex + 1}. ${currentAreaWorks[insertAfterIndex].name}`
                     : '⬇️ End of list (default)'
                   }</span>
                 </span>

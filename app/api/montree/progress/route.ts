@@ -136,6 +136,7 @@ export async function GET(request: NextRequest) {
     // Optionally include behavioral observations for timeline view
     const includeObservations = searchParams.get('include_observations') === 'true';
     let observations: unknown[] = [];
+    let workNotes: unknown[] = [];
 
     if (includeObservations) {
       try {
@@ -150,6 +151,22 @@ export async function GET(request: NextRequest) {
       } catch {
         // Table may not exist or be empty — gracefully continue
       }
+
+      // Also fetch teacher notes from montree_work_sessions
+      // These are saved via the Week tab but weren't being returned here
+      try {
+        const { data: sessions } = await supabase
+          .from('montree_work_sessions')
+          .select('id, work_name, area, notes, observed_at, teacher_id')
+          .eq('child_id', childId)
+          .not('notes', 'is', null)
+          .order('observed_at', { ascending: false })
+          .limit(200);
+
+        workNotes = sessions || [];
+      } catch {
+        // Table may not exist — gracefully continue
+      }
     }
 
     return NextResponse.json({
@@ -157,7 +174,7 @@ export async function GET(request: NextRequest) {
       stats,
       byArea,
       total: progress?.length || 0,
-      ...(includeObservations ? { observations } : {}),
+      ...(includeObservations ? { observations, workNotes } : {}),
     });
 
   } catch (error) {
