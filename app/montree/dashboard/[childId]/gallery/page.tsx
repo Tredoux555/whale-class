@@ -11,6 +11,7 @@ import PhotoDetailView from '@/components/montree/media/PhotoDetailView';
 import PhotoEditModal from '@/components/montree/media/PhotoEditModal';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 type FilterTab = 'all' | 'area' | 'work';
@@ -147,7 +148,7 @@ export default function GalleryPage() {
   };
 
   const getAreaConfig = (area: string) => {
-    return AREA_CONFIG[area as keyof typeof AREA_CONFIG] || { name: area, icon: '📋', color: '#888' };
+    return AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
   };
 
   // Handle single photo delete
@@ -311,7 +312,7 @@ export default function GalleryPage() {
                     : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
                 }`}
               >
-                <span>{config.icon}</span>
+                <AreaBadge area={area || ''} size="xs" />
                 <span>{config.name}</span>
                 <span className="text-xs opacity-75">({count})</span>
               </button>
@@ -394,7 +395,7 @@ export default function GalleryPage() {
                   {/* Group header */}
                   <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-l-4 border-emerald-500">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{areaConfig.icon}</span>
+                      <AreaBadge area={area || ''} size="sm" />
                       <div className="flex-1">
                         <p className="font-semibold text-gray-800">{work}</p>
                         <p className="text-xs text-gray-500">{areaConfig.name}</p>

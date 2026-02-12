@@ -98,6 +98,23 @@ export async function GET(request: NextRequest) {
       // Focus works fetch failed, continuing without focus flags
     }
 
+    // Fetch extras (explicitly added sub-items) — optional, graceful fallback
+    const extrasSet = new Set<string>();
+    try {
+      const { data: extras, error: extrasError } = await supabase
+        .from('montree_child_extras')
+        .select('work_name')
+        .eq('child_id', childId);
+
+      if (!extrasError && extras) {
+        for (const ex of extras) {
+          extrasSet.add(ex.work_name?.toLowerCase());
+        }
+      }
+    } catch {
+      // Extras table may not exist yet — continuing without extras flags
+    }
+
     // Calculate stats
     const stats = { presented: 0, practicing: 0, mastered: 0 };
     const byArea: Record<string, any[]> = {};
@@ -122,15 +139,17 @@ export async function GET(request: NextRequest) {
       const focusWorkName = focusMap.get(area);
       const isFocus = focusWorkName === p.work_name?.toLowerCase();
 
-      byArea[area].push({ ...p, statusNormalized: statusKey, is_focus: isFocus });
+      const isExtra = extrasSet.has(p.work_name?.toLowerCase());
+      byArea[area].push({ ...p, statusNormalized: statusKey, is_focus: isFocus, is_extra: isExtra });
     }
 
-    // Add is_focus to progress array
-    const progressWithFocus = (progress || []).map(p => {
+    // Add is_focus and is_extra to progress array
+    const progressWithFlags = (progress || []).map(p => {
       const area = p.area || 'other';
       const focusWorkName = focusMap.get(area);
       const isFocus = focusWorkName === p.work_name?.toLowerCase();
-      return { ...p, is_focus: isFocus };
+      const isExtra = extrasSet.has(p.work_name?.toLowerCase());
+      return { ...p, is_focus: isFocus, is_extra: isExtra };
     });
 
     // Optionally include behavioral observations for timeline view
@@ -170,7 +189,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      progress: progressWithFocus,
+      progress: progressWithFlags,
       stats,
       byArea,
       total: progress?.length || 0,

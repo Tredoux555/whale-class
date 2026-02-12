@@ -36,10 +36,31 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await request.json();
-    const { child_id, work_key, work_name, status, area, notes, is_focus } = body;
+    const { child_id, work_key, work_name, status, area, notes, is_focus, is_extra, remove_extra } = body;
 
     if (!child_id || (!work_key && !work_name)) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
+    }
+
+    // EARLY RETURN: Remove extra — just delete from extras table, don't touch progress
+    if (remove_extra) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!supabaseUrl || !supabaseKey) {
+        return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+      }
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const workNameToRemove = work_name || work_key;
+      try {
+        await supabase
+          .from('montree_child_extras')
+          .delete()
+          .eq('child_id', child_id)
+          .eq('work_name', workNameToRemove);
+      } catch (err) {
+        console.error('[progress/update] Remove extra error:', err);
+      }
+      return NextResponse.json({ success: true });
     }
 
     // Verify child exists and get classroom_id for curriculum sync
@@ -201,6 +222,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If is_extra is true, insert into extras table
+    if (is_extra && area) {
+      try {
+        await supabase
+          .from('montree_child_extras')
+          .upsert({
+            child_id,
+            work_name: workNameToSave,
+            area: area,
+          }, {
+            onConflict: 'child_id,work_name',
+            ignoreDuplicates: true,
+          });
+      } catch (extraErr) {
+        console.error('[progress/update] Extras insert error (non-fatal):', extraErr);
+      }
+    }
+
     // If is_focus is true, also update the focus-works table
     if (is_focus && area) {
       try {
@@ -219,7 +258,17 @@ export async function POST(request: NextRequest) {
 
         if (focusError) {
           console.error('[progress/update] Focus works update failed:', focusError);
-          // Don't fail the whole request, progress was saved successfully
+        }
+
+        // Cleanup: remove from extras if this work was previously an extra
+        try {
+          await supabase
+            .from('montree_child_extras')
+            .delete()
+            .eq('child_id', child_id)
+            .eq('work_name', workNameToSave);
+        } catch (cleanupErr) {
+          console.error('[progress/update] Focus cleanup extras error:', cleanupErr);
         }
       } catch (focusErr) {
         console.error('[progress/update] Focus works error:', focusErr);

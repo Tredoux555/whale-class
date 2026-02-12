@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 
 interface AreaProgress {
   area_id: string;
@@ -30,7 +31,7 @@ export default function AreaProgressGrid({ areaProgress }: Props) {
             style={{ borderColor: area.area_color }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">{area.area_icon}</span>
+              <AreaBadge area={area.area_id} size="md" />
               <span className="font-medium text-gray-900 text-sm truncate">
                 {area.area_name}
               </span>

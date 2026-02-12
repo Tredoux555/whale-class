@@ -8,6 +8,7 @@ interface Assignment {
   status: string;
   notes?: string;
   is_focus?: boolean;
+  is_extra?: boolean;
 }
 
 interface CurriculumWork {
@@ -35,6 +36,7 @@ interface UseWorkOperationsParams {
   extraWorks: Assignment[];
   setExtraWorks: (works: Assignment[] | ((prev: Assignment[]) => Assignment[])) => void;
   wheelPickerArea: string;
+  wheelPickerWorks: MergedWork[];
   session: Session | null;
   allWorks: Assignment[];
   setWheelPickerOpen: (open: boolean) => void;
@@ -48,6 +50,7 @@ export function useWorkOperations({
   extraWorks,
   setExtraWorks,
   wheelPickerArea,
+  wheelPickerWorks,
   session,
   allWorks,
   setWheelPickerOpen,
@@ -96,14 +99,14 @@ export function useWorkOperations({
     }
   }, [childId, setFocusWorks, setExtraWorks]);
 
-  // Remove an extra work (not for focus works)
+  // Remove an extra work (deletes from extras table, keeps progress intact)
   const removeExtra = useCallback(async (work: Assignment) => {
     // OPTIMISTIC - remove from UI immediately
     const removedWork = work;
     setExtraWorks(prev => prev.filter(w => w.work_name !== work.work_name));
     toast.success('Removed');
 
-    // Background API call
+    // Background API call — remove_extra deletes from extras table only
     try {
       const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
@@ -112,7 +115,7 @@ export function useWorkOperations({
           child_id: childId,
           work_name: work.work_name,
           area: work.area,
-          status: 'mastered'  // Mark as mastered (not completed) to hide from extras
+          remove_extra: true,
         }),
       });
       if (!res.ok) throw new Error('Save failed');
@@ -124,6 +127,7 @@ export function useWorkOperations({
   }, [childId, setExtraWorks]);
 
   // Handle work selection from wheel picker - sets as new FOCUS work for area
+  // Also auto-masters all works before the selected one in sequence
   const handleWheelPickerSelect = useCallback(async (work: MergedWork, status: string) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
     const newStatus = status;
@@ -159,6 +163,28 @@ export function useWorkOperations({
         }),
       });
       if (!res.ok) throw new Error('Save failed');
+
+      // AUTO-MASTERY: mark all works before the selected one as mastered
+      // Fire-and-forget — uses wheelPickerWorks (sorted by sequence)
+      const selectedIndex = wheelPickerWorks.findIndex(
+        w => w.name?.toLowerCase() === work.name?.toLowerCase()
+      );
+      if (selectedIndex > 0) {
+        const worksToMaster = wheelPickerWorks
+          .slice(0, selectedIndex)
+          .filter(w => w.status !== 'mastered')
+          .map(w => ({ work_name: w.name, area }));
+
+        if (worksToMaster.length > 0) {
+          fetch('/api/montree/progress/batch-master', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ child_id: childId, works: worksToMaster }),
+          }).catch(() => {
+            // Non-critical — auto-mastery is best-effort
+          });
+        }
+      }
     } catch {
       // Revert on failure
       if (oldFocusWork) {
@@ -170,7 +196,7 @@ export function useWorkOperations({
       }
       toast.error('Failed to update');
     }
-  }, [childId, wheelPickerArea, focusWorks, setFocusWorks, setWheelPickerOpen]);
+  }, [childId, wheelPickerArea, wheelPickerWorks, focusWorks, setFocusWorks, setWheelPickerOpen]);
 
   // Handle adding a work as an EXTRA (not focus) from wheel picker
   const handleWheelPickerAddExtra = useCallback(async (work: MergedWork) => {
@@ -189,6 +215,7 @@ export function useWorkOperations({
       area: area,
       status: 'presented',
       is_focus: false,
+      is_extra: true,
     };
     setExtraWorks(prev => [...prev, newExtra]);
     setWheelPickerOpen(false);
@@ -205,6 +232,7 @@ export function useWorkOperations({
           area: area,
           status: 'presented',
           is_focus: false,
+          is_extra: true,
         }),
       });
       if (!res.ok) throw new Error('Save failed');
@@ -233,7 +261,9 @@ export function useWorkOperations({
           child_id: childId,
           work_name: work.name,
           area: work.area_id || selectedArea,
-          status: 'presented'
+          status: 'presented',
+          is_focus: false,
+          is_extra: true,
         }),
       });
 

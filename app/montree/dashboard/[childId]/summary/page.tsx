@@ -8,6 +8,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 // ============================================
 // TYPES
@@ -205,26 +207,9 @@ export default function TeacherSummaryPage() {
       .join(' ');
   };
 
-  const getAreaEmoji = (area: string) => {
-    const emojis: Record<string, string> = {
-      practical_life: '🧹',
-      sensorial: '👁️',
-      mathematics: '🔢',
-      language: '📚',
-      cultural: '🌍',
-    };
-    return emojis[area] || '📋';
-  };
-
   const getAreaColor = (area: string) => {
-    const colors: Record<string, string> = {
-      practical_life: 'bg-orange-100 text-orange-700',
-      sensorial: 'bg-pink-100 text-pink-700',
-      mathematics: 'bg-blue-100 text-blue-700',
-      language: 'bg-green-100 text-green-700',
-      cultural: 'bg-purple-100 text-purple-700',
-    };
-    return colors[area] || 'bg-gray-100 text-gray-700';
+    const config = AREA_CONFIG[normalizeArea(area)];
+    return config ? `${config.bg} ${config.text}` : 'bg-gray-100 text-gray-700';
   };
 
   // ============================================
@@ -335,8 +320,8 @@ export default function TeacherSummaryPage() {
                   className={`p-3 rounded-xl ${getAreaColor(area.area)}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium">
-                      {getAreaEmoji(area.area)} {formatAreaName(area.area)}
+                    <span className="font-medium flex items-center gap-1.5">
+                      <AreaBadge area={area.area} size="xs" /> {formatAreaName(area.area)}
                     </span>
                     <span className="text-sm font-bold">{area.count} activities</span>
                   </div>
@@ -363,7 +348,7 @@ export default function TeacherSummaryPage() {
                   key={area}
                   className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm"
                 >
-                  {getAreaEmoji(area)} {formatAreaName(area)}
+                  <AreaBadge area={area} size="xs" className="inline-block" /> {formatAreaName(area)}
                 </span>
               ))}
             </div>
@@ -471,7 +456,7 @@ export default function TeacherSummaryPage() {
                   className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm">{getAreaEmoji(p.area)}</span>
+                    <AreaBadge area={p.area} size="xs" />
                     <span className="text-sm font-medium">{p.work_name}</span>
                   </div>
                   <span

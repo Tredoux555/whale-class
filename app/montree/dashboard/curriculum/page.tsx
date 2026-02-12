@@ -8,7 +8,9 @@ import AddWorkModal from '@/components/montree/AddWorkModal';
 import EditWorkModal from '@/components/montree/curriculum/EditWorkModal';
 import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsSection';
 import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkList';
-import { Work, AREA_ICONS, AREA_COLORS, QuickGuideData } from '@/components/montree/curriculum/types';
+import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
+import { AREA_CONFIG } from '@/lib/montree/types';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
 
@@ -212,9 +214,8 @@ export default function CurriculumPage() {
                 <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
                   className={`bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
                     ${selectedArea === area ? 'ring-2 ring-emerald-500' : ''}`}>
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${AREA_COLORS[area] || 'from-gray-400 to-gray-500'} 
-                    flex items-center justify-center text-2xl mb-2`}>
-                    {AREA_ICONS[area] || '📖'}
+                  <div className="mb-2">
+                    <AreaBadge area={area} size="lg" />
                   </div>
                   <p className="font-semibold text-gray-800 capitalize">{area.replace('_', ' ')}</p>
                   <p className="text-sm text-gray-500">{works.length} works</p>
