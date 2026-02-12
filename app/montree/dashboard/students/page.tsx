@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
+import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 
 // Curriculum areas (standard Montessori - letter icons)
 const CURRICULUM_AREAS = [
@@ -278,6 +279,7 @@ export default function StudentsPage() {
     { name: '', age: 3, gender: 'boy', tenure: 'new', progress: {}, notes: '' }
   ]);
   const [saving, setSaving] = useState(false);
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -520,12 +522,20 @@ export default function StudentsPage() {
           <span className="text-xl">👶</span>
           <h1 className="font-bold text-slate-800">Students</h1>
         </div>
-        <button
-          onClick={openAddForm}
-          className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
-        >
-          + Add Student
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push('/montree/dashboard/labels')}
+            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200"
+          >
+            🏷️ Labels
+          </button>
+          <button
+            onClick={openAddForm}
+            className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+          >
+            + Add Student
+          </button>
+        </div>
       </div>
 
       {/* Students List */}
@@ -639,6 +649,29 @@ export default function StudentsPage() {
                 />
               </div>
 
+              {/* Profile Photo (edit mode only) */}
+              {editingStudent && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Photo</label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden flex-shrink-0">
+                      {editingStudent.photo_url ? (
+                        <img src={editingStudent.photo_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        editingStudent.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPhotoCapture(true)}
+                      className="flex-1 px-4 py-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors text-sm"
+                    >
+                      📸 {editingStudent.photo_url ? 'Change Photo' : 'Take Photo'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Age */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
@@ -719,6 +752,25 @@ export default function StudentsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Profile Photo Capture */}
+      {showPhotoCapture && editingStudent && session?.school?.id && (
+        <ProfilePhotoCapture
+          childId={editingStudent.id}
+          childName={editingStudent.name}
+          currentPhotoUrl={editingStudent.photo_url}
+          onPhotoSaved={(url) => {
+            // Update local state so avatar swaps immediately
+            setStudents(prev => prev.map(s =>
+              s.id === editingStudent.id ? { ...s, photo_url: url } : s
+            ));
+            setEditingStudent(prev => prev ? { ...prev, photo_url: url } : prev);
+            setShowPhotoCapture(false);
+            toast.success('Photo saved!');
+          }}
+          onCancel={() => setShowPhotoCapture(false)}
+        />
       )}
 
       {/* Bulk Import Form Modal */}
