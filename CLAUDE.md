@@ -225,39 +225,47 @@ Comprehensive Social Media Manager tool built for managing Montree's social medi
 
 ---
 
-### 🚨 Git Push — ❌ BLOCKED (Feb 14, 2026)
+### 🐛 FeedbackButton Fix — ✅ COMPLETE (Feb 14, 2026)
 
-Commit `549b589` ("Add Social Media Manager with AI Guru and database tables") — 83 files, 12,650 insertions — exists locally but has NOT reached GitHub. Railway is still deployed from `333d884`.
-
-**What was tried (ALL FAILED):**
-
-| Method | Result |
-|--------|--------|
-| SSH push from Cowork VM | Connection reset by GitHub during data transfer (repo too large: 1.8GB, 510MB pack) |
-| SSH push with extended timeouts + keep-alive | Same connection reset |
-| Bare clone to local filesystem (bypass FUSE) | Same connection reset |
-| HTTPS push from Cowork VM | No credential helper available |
-| `git gc` to reduce pack size | FUSE mount "Operation not permitted" on .lock file deletion |
-| GitHub Desktop on user's Mac | `LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to github.com:443` (Astrill VPN) |
-| Terminal git push from user's Mac | Same SSL errors through VPN |
+Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (textarea unresponsive, screenshot capture corrupted DOM). 4 fix attempts, final one working.
 
 **Root causes:**
-1. **From Cowork VM:** Repo is 1.8GB — GitHub closes SSH connection during large data transfer. VM network can't sustain it.
-2. **From user's Mac:** Astrill VPN in China causes LibreSSL SSL_ERROR_SYSCALL on both terminal git and GitHub Desktop.
-3. **10 stale `.lock` files** in `.git/` from failed pushes — can't delete (FUSE permissions on Cowork VM).
+1. `disabled={!selectedType}` on textarea — input disabled until feedback type selected
+2. `html2canvas-pro` DOM corruption on mobile — leaves invisible elements blocking touch events
 
-**Remaining options to try:**
-1. **GitHub Personal Access Token (PAT):** Generate via GitHub web → Settings → Developer Settings → Tokens. Use with HTTPS: `git remote set-url origin https://Tredoux555:<TOKEN>@github.com/Tredoux555/whale-class.git && git push origin main`
-2. **Different network/VPN config:** Try pushing with VPN briefly disconnected, or switch VPN protocol (OpenVPN ↔ WireGuard)
-3. **GitHub API:** Upload changed files via GitHub REST API (bypasses git protocol entirely)
-4. **Reduce repo size:** Remove large video files from git history with `git filter-repo` or BFG, then push smaller repo
+**Fix (attempt 4, commit `972d426`):**
+- Removed `disabled` from textarea — always enabled, placeholder changes dynamically
+- Close-reopen pattern: form closes before screenshot capture, reopens with fresh DOM after
+- `pendingScreenshotRef` replaces `formKey` state — manages screenshot handoff during close/reopen cycle
+- Removed `key={formKey}` force-remount — unnecessary with close/reopen pattern
+
+**Prior fix:** `html2canvas` → `html2canvas-pro` (Tailwind CSS v4 `lab()` color function compatibility)
+
+**Handoff:** `docs/HANDOFF_FEEDBACKBUTTON_FIX_FEB14.md`
+
+---
+
+### 🚀 Git Push — ✅ RESOLVED (Feb 14, 2026)
+
+Git push was blocked for hours (SSH connection resets, VPN SSL errors, FUSE .lock file issues). **Solved using GitHub REST API** — bypasses git protocol entirely by uploading files via REST calls (create blob → create tree → create commit → update ref).
+
+**GitHub PAT:** (stored securely in environment) (fine-grained, repo contents read/write)
+
+**Commits pushed via API:**
+- `deac565` — Initial code push (39 changed files from commit 549b589, Social Media Manager + three-issue fix + marketing hub)
+- `adf1ff0` — .gitignore update (block video files: *.mp4, *.mov, *.avi, *.mkv, *.wmv, *.webm)
+- `f48449a` → `e257fac` → `28491aa` → `972d426` — FeedbackButton fix attempts 1-4
+
+**Current HEAD on GitHub:** `972d426` (FeedbackButton fix 4 — working)
+
+**Video cleanup:** .gitignore now blocks all video files. 6 keeper videos copied to `Promo Videos/KEEP/`. User still needs to delete video files from Mac: `cd ~/Desktop/ACTIVE/whale && rm -rf "Promo Videos/" Montree_Onboarding_Final.mp4 Montree_Promo_Final.mp4`
+
+**Normal git push still broken** — repo is 1.8GB, SSH/HTTPS both fail. GitHub REST API is the working method. Push script: `/sessions/bold-vibrant-cray/push-code.py` (reads files, creates blobs, builds tree, commits).
 
 **GitHub SSH keys:**
 - "My Mac" (Nov 2025) — user's MacBook
 - "Cowork VM" (Feb 11) — ⚠️ stale, can delete
-- "Cowork VM Feb 14" — current session (auth works, push fails due to size)
-
-**Handoff:** `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` (Git Push section)
+- "Cowork VM Feb 14" — current session (auth works, git push fails due to size)
 
 ---
 
@@ -797,7 +805,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` | **CURRENT** — LinkedIn profile, videos, connections, git push failures |
+| `docs/HANDOFF_FEEDBACKBUTTON_FIX_FEB14.md` | **CURRENT** — FeedbackButton mobile fix (4 attempts, close-reopen pattern) |
+| `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` | LinkedIn profile, videos, connections, git push (now resolved via API) |
 | `docs/HANDOFF_SOCIAL_MEDIA_MANAGER.md` | Social Media Manager tool (AI Guru, knowledge base, 6 pages) |
 | `docs/HANDOFF_THREE_ISSUE_FIX.md` | Extras leak fix, auto-mastery, area icon uniformity |
 | `docs/HANDOFF_PROGRESS_DASHBOARD.md` | Progress portfolio, position picker, bug fixes |
