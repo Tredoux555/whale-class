@@ -79,6 +79,7 @@ export default function FeedbackButton({
 }: FeedbackButtonProps) {
   const [sessionData, setSessionData] = useState<DetectedSession | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Detect session on mount
   useEffect(() => {
@@ -131,7 +132,7 @@ export default function FeedbackButton({
 
       // Mobile-friendly html2canvas settings
       const isMobile = window.innerWidth < 768;
-      const canvas = await html2canvas(document.documentElement, {
+      const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: isMobile ? 0.4 : 0.5,   // Lower scale on mobile to avoid memory issues
@@ -155,6 +156,14 @@ export default function FeedbackButton({
       const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
       setScreenshot(dataUrl);
 
+      // After heavy DOM work, re-focus textarea so user can type
+      // Delay needed for mobile browsers to recover from html2canvas DOM manipulation
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 300);
+
     } catch (error) {
       console.error('Screenshot capture failed:', error);
       // Don't use alert() on mobile - it's jarring. Just show inline feedback.
@@ -166,6 +175,12 @@ export default function FeedbackButton({
         buttonRef.current.style.visibility = 'visible';
       }
       setIsCapturing(false);
+
+      // Force re-enable any elements that html2canvas may have made inert
+      // by triggering a re-render cycle
+      requestAnimationFrame(() => {
+        document.body.style.pointerEvents = '';
+      });
     }
   };
 
@@ -343,6 +358,7 @@ export default function FeedbackButton({
 
             {/* Message Input */}
             <textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={
