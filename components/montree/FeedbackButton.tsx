@@ -103,6 +103,8 @@ export default function FeedbackButton({
   const [screenshot, setScreenshot] = useState<string | null>(null); // base64 data URL
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshotError, setScreenshotError] = useState(false);
+  // Key to force-remount the form after screenshot (nuclear cleanup for html2canvas leftovers)
+  const [formKey, setFormKey] = useState(0);
 
   // Reset form when closed
   useEffect(() => {
@@ -118,22 +120,31 @@ export default function FeedbackButton({
   }, [isOpen]);
 
   // Capture screenshot of the page
-  // Strategy: hide the entire feedback widget, capture, then restore.
-  // html2canvas can leave behind cloned DOM nodes that block interaction,
-  // so we do cleanup aggressively after capture.
+  // KNOWN ISSUE: html2canvas-pro leaves behind invisible DOM elements (iframes,
+  // fixed-position containers) that block ALL pointer events on the page.
+  // Neither removeContainer:true nor targeted selector cleanup reliably fixes this.
+  //
+  // SOLUTION: Nuclear cleanup — snapshot all DOM children before capture,
+  // then remove anything new after. Plus force-remount the React form via key change.
   const captureScreenshot = async () => {
     setIsCapturing(true);
 
     try {
-      // Hide the entire feedback widget during capture
+      // STEP 1: Record every element in the DOM before html2canvas touches it
+      const bodyChildrenBefore = new Set(Array.from(document.body.children));
+      const htmlChildrenBefore = new Set(Array.from(document.documentElement.children));
+
+      // Save original inline styles that html2canvas might modify
+      const origBodyStyle = document.body.getAttribute('style') || '';
+      const origHtmlStyle = document.documentElement.getAttribute('style') || '';
+
+      // STEP 2: Hide feedback widget during capture
       if (buttonRef.current) {
         buttonRef.current.style.display = 'none';
       }
-
-      // Wait for repaint
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Mobile-friendly html2canvas settings
+      // STEP 3: Run html2canvas
       const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(document.body, {
         useCORS: true,
@@ -156,37 +167,44 @@ export default function FeedbackButton({
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
 
-      // Restore the feedback widget BEFORE setting state
+      // STEP 4: NUCLEAR CLEANUP — remove ANY new DOM elements html2canvas added
+      Array.from(document.body.children).forEach(el => {
+        if (!bodyChildrenBefore.has(el)) {
+          el.remove();
+        }
+      });
+      Array.from(document.documentElement.children).forEach(el => {
+        if (!htmlChildrenBefore.has(el)) {
+          el.remove();
+        }
+      });
+
+      // STEP 5: Restore original inline styles (html2canvas may have set pointer-events, overflow, etc.)
+      if (origBodyStyle) {
+        document.body.setAttribute('style', origBodyStyle);
+      } else {
+        document.body.removeAttribute('style');
+      }
+      if (origHtmlStyle) {
+        document.documentElement.setAttribute('style', origHtmlStyle);
+      } else {
+        document.documentElement.removeAttribute('style');
+      }
+
+      // STEP 6: Restore feedback widget
       if (buttonRef.current) {
         buttonRef.current.style.display = '';
       }
 
-      // Aggressive cleanup: remove any leftover html2canvas containers
-      document.querySelectorAll('[data-html2canvas-container]').forEach(el => el.remove());
-      document.querySelectorAll('iframe[style*="html2canvas"]').forEach(el => el.remove());
-      // Reset any pointer-events or overflow changes html2canvas may have made
-      document.body.style.pointerEvents = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.pointerEvents = '';
-      document.documentElement.style.overflow = '';
-
+      // STEP 7: Set screenshot and force-remount the form (creates fresh DOM nodes)
       setScreenshot(dataUrl);
-
-      // Re-focus textarea after React re-renders with the screenshot preview
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-          // Also click it to trigger mobile keyboard on iOS
-          textareaRef.current.click();
-        }
-      }, 400);
+      setFormKey(prev => prev + 1);
 
     } catch (error) {
       console.error('Screenshot capture failed:', error);
       setScreenshotError(true);
       setTimeout(() => setScreenshotError(false), 3000);
 
-      // Restore widget on error too
       if (buttonRef.current) {
         buttonRef.current.style.display = '';
       }
@@ -285,9 +303,10 @@ export default function FeedbackButton({
 
   return (
     <div ref={buttonRef} className="fixed bottom-6 right-6 z-50" data-feedback-button>
-      {/* Expanded Form */}
+      {/* Expanded Form — key={formKey} forces React to unmount/remount after screenshot,
+          creating entirely fresh DOM nodes not blocked by html2canvas leftovers */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
+        <div key={formKey} className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <span className="font-semibold text-gray-800">Quick Feedback</span>
