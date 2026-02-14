@@ -14,6 +14,36 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ## CURRENT STATUS (Feb 14, 2026)
 
+### 🏠 Montree Home — NEXT PROJECT (Strategy Approved Feb 14, 2026)
+
+Standalone Montessori homeschool product. Shared codebase with classroom version.
+
+**Product:** Free activity tracking + paid Guru ($5/month per child). Parents self-register with code-based login, manage multiple children, track works across 5 areas using the same UI as teachers.
+
+**Architecture:** `homeschool_parent` role in JWT auth. Separate route tree (`/montree/home/*`), shared components. New `montree_homeschool_parents` table. Reuse `montree_children` + all tracking tables unchanged.
+
+**4 Phases:**
+
+| Phase | What | Status |
+|-------|------|--------|
+| 1 | Foundation — auth + DB migration + signup/login | ⬜ Not started |
+| 2 | Dashboard — reuse child week view + progress, strip school features | ⬜ Not started |
+| 3 | Guru — onboarding flow (age/space/budget→curriculum) + freemium gate + Stripe | ⬜ Not started |
+| 4 | Curriculum browser — browse works by area, age filtering, materials list | ⬜ Not started |
+
+**Pricing:** Free = full tracking. Paid = Guru access ($5/child/month). 3 free Guru prompts for new signups, then hard paywall.
+
+**Plan file:** `.claude/plans/montree-home-v1.md`
+
+**Resolved decisions:**
+- Branding: Same as classroom (same Mercedes, different driver)
+- Signup: Third option on existing try flow ("I'm a parent")
+- Custom works: Yes, same WorkPickerModal UI
+- Observations: Yes, full system, same as classroom
+- **CRITICAL:** This is NOT a rebuild. It's the existing system with a homeschool_parent role bolted on. Import and reuse components — do not duplicate or rewrite them.
+
+---
+
 ### Security Hardening — ALL 9 PHASES COMPLETE ✅
 
 9-phase security hardening project COMPLETE. All phases done.

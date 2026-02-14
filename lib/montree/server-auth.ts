@@ -23,12 +23,12 @@ function getSecretKey(): Uint8Array {
 // Cookie name for teacher/principal httpOnly auth cookie
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
 
-// Token payload shape (teacher/principal — stored in httpOnly cookie)
+// Token payload shape (teacher/principal/homeschool_parent — stored in httpOnly cookie)
 export interface MontreeTokenPayload {
-  sub: string;        // teacher ID or principal ID
+  sub: string;        // teacher ID, principal ID, or homeschool parent ID
   schoolId: string;
   classroomId?: string;
-  role: 'teacher' | 'principal';
+  role: 'teacher' | 'principal' | 'homeschool_parent';
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -41,10 +41,11 @@ export interface ParentTokenPayload {
 }
 
 /**
- * Create a signed JWT for a Montree teacher or principal session.
- * Token is valid for 7 days.
+ * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
+ * Teachers/principals: 7 days. Homeschool parents: 30 days (log in less frequently).
  */
 export async function createMontreeToken(payload: MontreeTokenPayload): Promise<string> {
+  const ttl = payload.role === 'homeschool_parent' ? '30d' : '7d';
   const token = await new SignJWT({
     schoolId: payload.schoolId,
     classroomId: payload.classroomId || null,
@@ -53,7 +54,7 @@ export async function createMontreeToken(payload: MontreeTokenPayload): Promise<
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(ttl)
     .sign(getSecretKey());
 
   return token;
@@ -75,7 +76,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       return null;
     }
 
-    if (role !== 'teacher' && role !== 'principal') {
+    if (role !== 'teacher' && role !== 'principal' && role !== 'homeschool_parent') {
       return null;
     }
 
@@ -83,7 +84,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       sub,
       schoolId,
       classroomId: (payload.classroomId as string) || undefined,
-      role: role as 'teacher' | 'principal',
+      role: role as 'teacher' | 'principal' | 'homeschool_parent',
     };
   } catch {
     // Token is invalid, expired, or tampered with
@@ -143,14 +144,22 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 /**
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
+ * Pass role to set correct maxAge (30 days for homeschool parents, 7 days otherwise).
  */
-export function setMontreeAuthCookie(response: NextResponse, token: string): void {
+export function setMontreeAuthCookie(
+  response: NextResponse,
+  token: string,
+  role?: 'teacher' | 'principal' | 'homeschool_parent'
+): void {
+  const maxAge = role === 'homeschool_parent'
+    ? 30 * 24 * 60 * 60  // 30 days — homeschool parents log in less frequently
+    : 7 * 24 * 60 * 60;  // 7 days — teachers/principals
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 7 * 24 * 60 * 60, // 7 days — matches JWT TTL
+    maxAge,
   });
 }
 

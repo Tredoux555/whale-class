@@ -13,11 +13,14 @@ export default function TeacherLoginPage() {
     setLoading(true);
     setError('');
 
+    const normalizedCode = code.trim().toUpperCase();
+
+    // Try teacher login first, then homeschool parent
     try {
       const res = await fetch('/api/montree/auth/teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: code.trim().toLowerCase() }),
+        body: JSON.stringify({ code: normalizedCode }),
       });
 
       const data = await res.json();
@@ -34,15 +37,40 @@ export default function TeacherLoginPage() {
 
         // Redirect based on state - skip setup, go straight to work!
         if (!data.onboarded) {
-          // No students yet - go to onboarding to add them
           router.push('/montree/onboarding');
         } else {
-          // Ready to go - straight to dashboard
           router.push('/montree/dashboard');
         }
-      } else {
-        setError(data.error || 'Login failed');
+        return;
       }
+
+      // Teacher login failed — try homeschool parent
+      const homeRes = await fetch('/api/montree/auth/homeschool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: normalizedCode }),
+      });
+
+      const homeData = await homeRes.json();
+
+      if (homeData.success) {
+        localStorage.setItem('montree_home_session', JSON.stringify({
+          parent: {
+            id: homeData.homeschoolParent.id,
+            name: homeData.homeschoolParent.name,
+            role: 'homeschool_parent',
+            email: homeData.homeschoolParent.email,
+            guru_plan: homeData.homeschoolParent.guru_plan,
+          },
+          school: homeData.school,
+          loginAt: new Date().toISOString(),
+        }));
+        router.push('/montree/home');
+        return;
+      }
+
+      // Both failed
+      setError('Invalid code');
     } catch (err) {
       setError('Connection error. Please try again.');
     } finally {
@@ -59,7 +87,7 @@ export default function TeacherLoginPage() {
             <span className="text-4xl">🌳</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Montree</h1>
-          <p className="text-emerald-300/70">Teacher Login</p>
+          <p className="text-emerald-300/70">Login</p>
         </div>
 
         {/* Login Card */}
@@ -86,7 +114,7 @@ export default function TeacherLoginPage() {
                 maxLength={6}
               />
               <p className="text-white/40 text-xs text-center mt-2">
-                Your principal gave you this code
+                Enter your 6-character login code
               </p>
             </div>
 

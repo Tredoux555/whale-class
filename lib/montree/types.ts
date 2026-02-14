@@ -134,6 +134,28 @@ export const AREA_CONFIG: Record<string, {
 export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 
 // ============================================
+// Montree Home Types
+// ============================================
+
+export type MontreeRole = 'teacher' | 'principal' | 'homeschool_parent';
+
+export interface HomeschoolParent {
+  id: string;
+  school_id: string;
+  name: string;
+  email?: string;
+  login_code?: string;
+  is_active: boolean;
+  last_login_at?: string;
+  guru_plan: 'free' | 'paid';
+  guru_prompts_used: number;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================
 // Status Colors
 // ============================================
 
