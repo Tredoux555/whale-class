@@ -103,48 +103,54 @@ export default function FeedbackButton({
   const [screenshot, setScreenshot] = useState<string | null>(null); // base64 data URL
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshotError, setScreenshotError] = useState(false);
-  // Key to force-remount the form after screenshot (nuclear cleanup for html2canvas leftovers)
-  const [formKey, setFormKey] = useState(0);
+  // Pending screenshot: stored here while form is closed for DOM reset
+  const pendingScreenshotRef = useRef<string | null>(null);
 
-  // Reset form when closed
+  // When form closes: either reopen with pending screenshot, or reset
   useEffect(() => {
     if (!isOpen) {
-      // Reset after animation
-      const timer = setTimeout(() => {
-        setSelectedType(null);
-        setMessage('');
-        setScreenshot(null);
-      }, 300);
-      return () => clearTimeout(timer);
+      if (pendingScreenshotRef.current) {
+        // Screenshot was just captured — reopen form with fresh DOM
+        const captured = pendingScreenshotRef.current;
+        pendingScreenshotRef.current = null;
+        const timer = setTimeout(() => {
+          setScreenshot(captured);
+          setIsOpen(true);
+        }, 100);
+        return () => clearTimeout(timer);
+      } else {
+        // Normal close — reset after animation
+        const timer = setTimeout(() => {
+          setSelectedType(null);
+          setMessage('');
+          setScreenshot(null);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
     }
   }, [isOpen]);
 
   // Capture screenshot of the page
-  // KNOWN ISSUE: html2canvas-pro leaves behind invisible DOM elements (iframes,
-  // fixed-position containers) that block ALL pointer events on the page.
-  // Neither removeContainer:true nor targeted selector cleanup reliably fixes this.
-  //
-  // SOLUTION: Nuclear cleanup — snapshot all DOM children before capture,
-  // then remove anything new after. Plus force-remount the React form via key change.
+  // STRATEGY: Close the form entirely before capture, run html2canvas on a clean page,
+  // then reopen the form. This avoids ALL html2canvas DOM cleanup issues because
+  // the form is fully unmounted — React creates fresh DOM nodes on reopen.
   const captureScreenshot = async () => {
     setIsCapturing(true);
 
     try {
-      // STEP 1: Record every element in the DOM before html2canvas touches it
-      const bodyChildrenBefore = new Set(Array.from(document.body.children));
-      const htmlChildrenBefore = new Set(Array.from(document.documentElement.children));
+      // STEP 1: Close the form completely (unmounts all form DOM nodes)
+      setIsOpen(false);
 
-      // Save original inline styles that html2canvas might modify
-      const origBodyStyle = document.body.getAttribute('style') || '';
-      const origHtmlStyle = document.documentElement.getAttribute('style') || '';
+      // Wait for React to unmount the form + a small buffer
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // STEP 2: Hide feedback widget during capture
+      // STEP 2: Hide the floating button during capture
       if (buttonRef.current) {
         buttonRef.current.style.display = 'none';
       }
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      // STEP 3: Run html2canvas
+      // STEP 3: Run html2canvas on the clean page (no form DOM to get corrupted)
       const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(document.body, {
         useCORS: true,
@@ -159,55 +165,38 @@ export default function FeedbackButton({
         scrollY: -window.scrollY,
         foreignObjectRendering: false,
         removeContainer: true,
-        ignoreElements: (element: Element) => {
-          if (element.tagName === 'VIDEO') return true;
-          return false;
-        }
+        ignoreElements: (element: Element) => element.tagName === 'VIDEO'
       });
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
 
-      // STEP 4: NUCLEAR CLEANUP — remove ANY new DOM elements html2canvas added
-      Array.from(document.body.children).forEach(el => {
-        if (!bodyChildrenBefore.has(el)) {
-          el.remove();
-        }
-      });
-      Array.from(document.documentElement.children).forEach(el => {
-        if (!htmlChildrenBefore.has(el)) {
-          el.remove();
-        }
-      });
+      // STEP 4: Clean up any html2canvas leftovers (belt and suspenders)
+      document.body.removeAttribute('style');
+      document.documentElement.removeAttribute('style');
 
-      // STEP 5: Restore original inline styles (html2canvas may have set pointer-events, overflow, etc.)
-      if (origBodyStyle) {
-        document.body.setAttribute('style', origBodyStyle);
-      } else {
-        document.body.removeAttribute('style');
-      }
-      if (origHtmlStyle) {
-        document.documentElement.setAttribute('style', origHtmlStyle);
-      } else {
-        document.documentElement.removeAttribute('style');
-      }
-
-      // STEP 6: Restore feedback widget
+      // STEP 5: Restore floating button
       if (buttonRef.current) {
         buttonRef.current.style.display = '';
       }
 
-      // STEP 7: Set screenshot and force-remount the form (creates fresh DOM nodes)
+      // STEP 6: Store screenshot and reopen form
+      // The useEffect on isOpen will detect pendingScreenshotRef and reopen with the image
+      pendingScreenshotRef.current = dataUrl;
+      // isOpen is already false from step 1 — the useEffect already fired.
+      // We need to trigger it again, so set screenshot and open directly:
       setScreenshot(dataUrl);
-      setFormKey(prev => prev + 1);
+      setIsOpen(true);
 
     } catch (error) {
       console.error('Screenshot capture failed:', error);
       setScreenshotError(true);
       setTimeout(() => setScreenshotError(false), 3000);
 
+      // Restore button and reopen form on error
       if (buttonRef.current) {
         buttonRef.current.style.display = '';
       }
+      setIsOpen(true);
     } finally {
       setIsCapturing(false);
     }
@@ -303,10 +292,9 @@ export default function FeedbackButton({
 
   return (
     <div ref={buttonRef} className="fixed bottom-6 right-6 z-50" data-feedback-button>
-      {/* Expanded Form — key={formKey} forces React to unmount/remount after screenshot,
-          creating entirely fresh DOM nodes not blocked by html2canvas leftovers */}
+      {/* Expanded Form */}
       {isOpen && (
-        <div key={formKey} className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
+        <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <span className="font-semibold text-gray-800">Quick Feedback</span>
@@ -396,10 +384,9 @@ export default function FeedbackButton({
                 selectedType === 'idea' ? "What would make it better?" :
                 selectedType === 'help' ? "What do you need help with?" :
                 selectedType === 'praise' ? "What do you love?" :
-                "Select a type above, then tell us..."
+                "Tell us what's on your mind..."
               }
               className="w-full h-20 p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              disabled={!selectedType}
             />
 
             {/* Submit Button */}
