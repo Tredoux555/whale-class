@@ -227,16 +227,18 @@ Comprehensive Social Media Manager tool built for managing Montree's social medi
 
 ### 🐛 FeedbackButton Fix — ✅ COMPLETE (Feb 14, 2026)
 
-Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (textarea unresponsive, screenshot capture corrupted DOM). 4 fix attempts, final one working.
+Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (textarea unresponsive, screenshot capture corrupted DOM). 5 fix attempts, final one working.
 
 **Root causes:**
 1. `disabled={!selectedType}` on textarea — input disabled until feedback type selected
 2. `html2canvas-pro` DOM corruption on mobile — leaves invisible elements blocking touch events
+3. Race condition: useEffect cleanup wiped `selectedType` + `message` during screenshot capture
 
-**Fix (attempt 4, commit `972d426`):**
+**Fix (attempts 4-5, commits `972d426` + `fec10bb`):**
 - Removed `disabled` from textarea — always enabled, placeholder changes dynamically
 - Close-reopen pattern: form closes before screenshot capture, reopens with fresh DOM after
 - `pendingScreenshotRef` replaces `formKey` state — manages screenshot handoff during close/reopen cycle
+- `savedTypeRef` + `savedMessageRef` preserve form state across close/reopen (fixes greyed-out send button)
 - Removed `key={formKey}` force-remount — unnecessary with close/reopen pattern
 
 **Prior fix:** `html2canvas` → `html2canvas-pro` (Tailwind CSS v4 `lab()` color function compatibility)
@@ -249,7 +251,7 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 
 Git push was blocked for hours (SSH connection resets, VPN SSL errors, FUSE .lock file issues). **Solved using GitHub REST API** — bypasses git protocol entirely by uploading files via REST calls (create blob → create tree → create commit → update ref).
 
-**GitHub PAT:** (stored securely in environment) (fine-grained, repo contents read/write)
+**GitHub PAT:** `[REDACTED]` (fine-grained, repo contents read/write)
 
 **Commits pushed via API:**
 - `deac565` — Initial code push (39 changed files from commit 549b589, Social Media Manager + three-issue fix + marketing hub)
