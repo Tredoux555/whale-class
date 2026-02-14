@@ -18,7 +18,7 @@ export interface VerifiedRequest {
   userId: string;
   schoolId: string;
   classroomId?: string;
-  role: 'teacher' | 'principal';
+  role: 'teacher' | 'principal' | 'homeschool_parent';
 }
 
 /**
