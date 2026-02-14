@@ -118,24 +118,27 @@ export default function FeedbackButton({
   }, [isOpen]);
 
   // Capture screenshot of the page
+  // Strategy: hide the entire feedback widget, capture, then restore.
+  // html2canvas can leave behind cloned DOM nodes that block interaction,
+  // so we do cleanup aggressively after capture.
   const captureScreenshot = async () => {
     setIsCapturing(true);
 
     try {
-      // Temporarily hide the feedback button during capture
+      // Hide the entire feedback widget during capture
       if (buttonRef.current) {
-        buttonRef.current.style.visibility = 'hidden';
+        buttonRef.current.style.display = 'none';
       }
 
-      // Small delay to ensure button is hidden
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Wait for repaint
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Mobile-friendly html2canvas settings
       const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
-        scale: isMobile ? 0.4 : 0.5,   // Lower scale on mobile to avoid memory issues
+        scale: isMobile ? 0.4 : 0.5,
         logging: false,
         width: window.innerWidth,
         height: window.innerHeight,
@@ -143,44 +146,52 @@ export default function FeedbackButton({
         windowHeight: window.innerHeight,
         scrollX: -window.scrollX,
         scrollY: -window.scrollY,
-        foreignObjectRendering: false,  // More compatible on iOS
+        foreignObjectRendering: false,
         removeContainer: true,
-        ignoreElements: (element) => {
-          // Ignore feedback button and any video/canvas elements that cause issues
-          if (element.closest('[data-feedback-button]')) return true;
+        ignoreElements: (element: Element) => {
           if (element.tagName === 'VIDEO') return true;
           return false;
         }
       });
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+      // Restore the feedback widget BEFORE setting state
+      if (buttonRef.current) {
+        buttonRef.current.style.display = '';
+      }
+
+      // Aggressive cleanup: remove any leftover html2canvas containers
+      document.querySelectorAll('[data-html2canvas-container]').forEach(el => el.remove());
+      document.querySelectorAll('iframe[style*="html2canvas"]').forEach(el => el.remove());
+      // Reset any pointer-events or overflow changes html2canvas may have made
+      document.body.style.pointerEvents = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.pointerEvents = '';
+      document.documentElement.style.overflow = '';
+
       setScreenshot(dataUrl);
 
-      // After heavy DOM work, re-focus textarea so user can type
-      // Delay needed for mobile browsers to recover from html2canvas DOM manipulation
+      // Re-focus textarea after React re-renders with the screenshot preview
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
+          // Also click it to trigger mobile keyboard on iOS
+          textareaRef.current.click();
         }
-      }, 300);
+      }, 400);
 
     } catch (error) {
       console.error('Screenshot capture failed:', error);
-      // Don't use alert() on mobile - it's jarring. Just show inline feedback.
       setScreenshotError(true);
       setTimeout(() => setScreenshotError(false), 3000);
-    } finally {
-      // Show the feedback button again
-      if (buttonRef.current) {
-        buttonRef.current.style.visibility = 'visible';
-      }
-      setIsCapturing(false);
 
-      // Force re-enable any elements that html2canvas may have made inert
-      // by triggering a re-render cycle
-      requestAnimationFrame(() => {
-        document.body.style.pointerEvents = '';
-      });
+      // Restore widget on error too
+      if (buttonRef.current) {
+        buttonRef.current.style.display = '';
+      }
+    } finally {
+      setIsCapturing(false);
     }
   };
 
