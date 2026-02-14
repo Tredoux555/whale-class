@@ -37,7 +37,18 @@ yarn-error.log*
 next-env.d.ts
 
 # data and videos
-# Temporarily allowing for Vercel sync - will restore after push
-# /data/
-# /public/videos/
+/data/
+/public/videos/
 !.gitkeep
+
+# Large media files - never commit these
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wmv
+*.webm
+*.flv
+Promo Videos/
+Montree_Onboarding_Final.mp4
+Montree_Promo_Final.mp4
