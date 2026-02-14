@@ -105,21 +105,29 @@ export default function FeedbackButton({
   const [screenshotError, setScreenshotError] = useState(false);
   // Pending screenshot: stored here while form is closed for DOM reset
   const pendingScreenshotRef = useRef<string | null>(null);
+  const savedTypeRef = useRef<FeedbackType | null>(null);
+  const savedMessageRef = useRef<string>('');
 
   // When form closes: either reopen with pending screenshot, or reset
   useEffect(() => {
     if (!isOpen) {
       if (pendingScreenshotRef.current) {
-        // Screenshot was just captured — reopen form with fresh DOM
+        // Screenshot was just captured — reopen form with fresh DOM + restore state
         const captured = pendingScreenshotRef.current;
+        const savedType = savedTypeRef.current;
+        const savedMsg = savedMessageRef.current;
         pendingScreenshotRef.current = null;
+        savedTypeRef.current = null;
+        savedMessageRef.current = '';
         const timer = setTimeout(() => {
           setScreenshot(captured);
+          setSelectedType(savedType);
+          setMessage(savedMsg);
           setIsOpen(true);
         }, 100);
         return () => clearTimeout(timer);
-      } else {
-        // Normal close — reset after animation
+      } else if (!savedTypeRef.current) {
+        // Normal close (not mid-capture) — reset after animation
         const timer = setTimeout(() => {
           setSelectedType(null);
           setMessage('');
@@ -138,7 +146,11 @@ export default function FeedbackButton({
     setIsCapturing(true);
 
     try {
-      // STEP 1: Close the form completely (unmounts all form DOM nodes)
+      // STEP 1: Save current form state before closing
+      savedTypeRef.current = selectedType;
+      savedMessageRef.current = message;
+
+      // STEP 2: Close the form completely (unmounts all form DOM nodes)
       setIsOpen(false);
 
       // Wait for React to unmount the form + a small buffer
