@@ -19,7 +19,15 @@ Two root causes identified after desktop Chrome audit confirmed everything worke
 | 1 | `f48449a` | textareaRef, auto-focus, pointer-events cleanup | Still broken |
 | 2 | `e257fac` | display:none, aggressive DOM cleanup | Still broken |
 | 3 | `28491aa` | Nuclear DOM cleanup, snapshot children, formKey remount | Still broken |
-| 4 | `972d426` | **Close form before capture, reopen with fresh DOM, remove disabled** | ✅ Working |
+| 4 | `972d426` | **Close form before capture, reopen with fresh DOM, remove disabled** | Partial — send button greyed out |
+| 5 | `fec10bb` | **Preserve selectedType + message across close/reopen via refs** | ✅ Working |
+
+## What Changed (Fix 5 — Final)
+
+### 5. Preserve form state across close/reopen cycle
+Added `savedTypeRef` and `savedMessageRef` to save `selectedType` and `message` before closing the form for screenshot capture. On reopen, these are restored so the send button isn't greyed out.
+
+**Race condition fixed:** When `setIsOpen(false)` fired, the useEffect's else branch scheduled `setSelectedType(null)` + `setMessage('')` after 300ms. The screenshot capture also waits 300ms, so the cleanup ran *during* capture, wiping the form state. Fix: save state to refs before close, guard the cleanup with `if (!savedTypeRef.current)`, and restore on reopen.
 
 ## What Changed (Fix 4)
 
