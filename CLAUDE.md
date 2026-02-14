@@ -7,12 +7,12 @@ Next.js 16.1.1 app with two systems:
 
 Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domain returns 405 on API calls)
 Deploy: Railway auto-deploys on push to `main`
-Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key added Feb 11, 2026)
+Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 14" added Feb 14, 2026; old "Cowork VM" Feb 11 key is stale)
 Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 12, 2026)
+## CURRENT STATUS (Feb 14, 2026)
 
 ### Security Hardening — ALL 9 PHASES COMPLETE ✅
 
@@ -75,7 +75,7 @@ Three fixes to the child Week view. **Needs migration + push to deploy.**
 
 **Deploy steps:**
 1. Run `migrations/124_child_extras_table.sql` against Supabase
-2. `git push origin main`
+2. `git push origin main` — ⚠️ BLOCKED (see Git Push section below)
 
 **Files created (3 new):**
 - `migrations/124_child_extras_table.sql` — extras table + index
@@ -123,6 +123,188 @@ Produced optimized social media videos from raw screen recording (`Final Edit Mo
 
 ---
 
+### 📱 Social Media Uploads & Group Posting — ✅ MOSTLY COMPLETE (Feb 14, 2026)
+
+**Platform uploads:**
+
+| Platform | Handle | What | Status |
+|----------|--------|------|--------|
+| Instagram | @montreexyz | Onboarding reel + Intro reel | ✅ Live |
+| Facebook | facebook.com/montreexyz | Onboarding reel + Intro reel | ✅ Live |
+| TikTok | @montreexyz | Onboarding video + Intro video | ✅ Live |
+| LinkedIn | tredoux@montree.xyz account | Intro video + Onboarding video | ✅ Posted (Feb 14) |
+
+**Tutorial video branding:** Created branded versions of tutorial screen recording with minimalist Montree overlays.
+- `Promo Videos/Video 3 - Tutorial/Montree_Tutorial_Social_BRANDED.mp4` (70MB, 1080×1080)
+- `Promo Videos/Video 3 - Tutorial/Montree_Tutorial_Youtube_BRANDED.mp4` (86MB, 1920×1080)
+
+**Facebook group reel campaign — 17 groups posted (Feb 14, 2026):**
+Shared intro reel (https://www.facebook.com/reel/1437788707724055) to 17 Montessori Facebook groups with standard caption + montree.xyz CTA + social links. Estimated combined reach: ~815K+ members.
+
+Top groups: Montessori activities (157K), Montessori Works at home and in schools (121K), McDaniels International Montessori Virtual (~88K), Montessori Matters (78K), MONTESSORI TEACHING METHODOLOGY (72K), ...MONTESSORI... (61K), Montessori Teachers International (56K), Montessori at HOME (51K), Montessori Materials For School (43K), + 8 more.
+
+**Groups posted today (Feb 14, late session):** Montessori Research Interest Group, McDaniels International Montessori (Virtual)
+
+**Key workflow notes for group posting:**
+- Do NOT use hashtags in caption (triggers autocomplete dropdown that dismisses dialog)
+- Always verify caption with `cmd+Home` before clicking Post
+- Use `find` tool to locate text inputs (Facebook DOM changes frequently)
+- Groups only appear in Share list if membership is approved
+
+**Bug fix:** `html2canvas` → `html2canvas-pro` in `components/montree/FeedbackButton.tsx` (Tailwind CSS v4 `lab()` color function compatibility)
+
+**Status:** All visible groups in share list posted to (as of Feb 14 late session). 4 pending membership groups not yet accessible (Montessori at Home 3-6, Materials for Sale, AMI Montessori, Cool Things).
+
+**LinkedIn session (Feb 14):**
+- New account created with `tredoux@montree.xyz` (old account locked — China location mismatch)
+- Profile fully set up: headline, about, experience, education, skills, contact info, organizations
+- 25 connection requests sent (1 personalized to Morais Velemo Mabyeka, 24 quick connects)
+- 2 videos posted (Intro + Onboarding) — user uploaded manually, assistant provided captions
+- Video 3 (Tutorial, 70MB) deferred — user will edit down first
+- Company page creation blocked (needs accepted connections first)
+- Premium checkout failed (520 Cloudflare / NETWORK_ERROR — VPN + DevTools interference)
+- Rate limits hit on messaging and group joins (~24hr cooldown)
+
+**Pending:** Join new Montessori groups, monitor pending approvals, LinkedIn company page (needs connections), YouTube uploads, LinkedIn Premium (payment errors).
+
+**Handoff:** `docs/HANDOFF_SOCIAL_MEDIA_GROUP_POSTING.md`, `docs/HANDOFF_SOCIAL_MEDIA_UPLOADS.md`, `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md`
+
+---
+
+### 📱 Social Media Manager — ✅ COMPLETE (Feb 14, 2026)
+
+Comprehensive Social Media Manager tool built for managing Montree's social media presence across Instagram, TikTok, Facebook, LinkedIn, and YouTube.
+
+**Location:** `/montree/super-admin/social-manager`
+
+**System Architecture:**
+
+1. **Knowledge Base (Training Data)** — `lib/social-media-guru/knowledge/`
+   - `instagram-strategy.md` (125 lines) — Algorithm priorities, posting times, content mix, hashtag strategy, Reel best practices
+   - `caption-writing.md` (230 lines) — 3-part formula (Hook/Value/CTA), platform-specific strategies, tone guide, 4 ready-to-use templates
+   - `hashtag-strategy.md` (267 lines) — Mix formula (5 large + 10 medium + 5 small), Montessori-specific hashtags, pre-built sets
+
+2. **Social Media Guru (AI Advisor)** — `app/api/montree/social-guru/route.ts`
+   - Claude Sonnet 4 API with 900+ lines of curated knowledge
+   - Instant advice for captions, hashtags, posting times, platform strategies
+   - System prompt includes Montree product details + brand voice guidelines
+
+3. **Database Tables** — `migrations/125_social_media_tables.sql`
+   - `social_content_library` — Store final videos/images with metadata
+   - `social_accounts` — Encrypted credentials (AES-256-GCM) for each platform
+   - `social_post_log` — Manual tracking of what was posted where
+
+4. **User Interface (6 Pages)**
+   - Main hub: `app/montree/super-admin/social-manager/page.tsx` (5 module cards, platform badges, quick stats)
+   - **Social Media Guru:** `guru/page.tsx` — Chat interface with streaming Claude responses, conversation history
+   - Placeholder pages (future build-out): `vault/page.tsx`, `credentials/page.tsx`, `tracker/page.tsx`, `calendar/page.tsx`
+
+**Migration Status:** ✅ SQL migration run successfully — 3 tables + 5 indexes created
+
+**Deploy Status:** ✅ Code committed (commit 549b589), awaiting `git push origin main` from local terminal
+
+**Files created (13 new):**
+- 3 knowledge base files (instagram-strategy.md, caption-writing.md, hashtag-strategy.md)
+- 2 API files (context-builder.ts, social-guru/route.ts)
+- 1 migration (125_social_media_tables.sql)
+- 6 UI pages (page.tsx, guru/page.tsx, vault/page.tsx, credentials/page.tsx, tracker/page.tsx, calendar/page.tsx)
+- 1 modified (super-admin page.tsx — added Social Manager button)
+
+**Immediate Value:**
+- Social Media Guru is **ready to use today** (fully functional AI advisor)
+- Ask for captions, hashtags, posting times, platform strategies
+- All advice grounded in 900+ lines of curated Montessori + social media knowledge
+
+**Future Phases:**
+1. Content Vault — Upload/manage videos with metadata, track which platforms posted to
+2. Credentials Vault — AES-256-GCM encrypted password storage
+3. Post Tracker — Manual logging with platform/URL/caption/hashtags
+4. Content Calendar — Drag-and-drop monthly calendar for scheduling posts
+
+**Handoff:** `docs/HANDOFF_SOCIAL_MEDIA_MANAGER.md`
+
+---
+
+### 🚨 Git Push — ❌ BLOCKED (Feb 14, 2026)
+
+Commit `549b589` ("Add Social Media Manager with AI Guru and database tables") — 83 files, 12,650 insertions — exists locally but has NOT reached GitHub. Railway is still deployed from `333d884`.
+
+**What was tried (ALL FAILED):**
+
+| Method | Result |
+|--------|--------|
+| SSH push from Cowork VM | Connection reset by GitHub during data transfer (repo too large: 1.8GB, 510MB pack) |
+| SSH push with extended timeouts + keep-alive | Same connection reset |
+| Bare clone to local filesystem (bypass FUSE) | Same connection reset |
+| HTTPS push from Cowork VM | No credential helper available |
+| `git gc` to reduce pack size | FUSE mount "Operation not permitted" on .lock file deletion |
+| GitHub Desktop on user's Mac | `LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to github.com:443` (Astrill VPN) |
+| Terminal git push from user's Mac | Same SSL errors through VPN |
+
+**Root causes:**
+1. **From Cowork VM:** Repo is 1.8GB — GitHub closes SSH connection during large data transfer. VM network can't sustain it.
+2. **From user's Mac:** Astrill VPN in China causes LibreSSL SSL_ERROR_SYSCALL on both terminal git and GitHub Desktop.
+3. **10 stale `.lock` files** in `.git/` from failed pushes — can't delete (FUSE permissions on Cowork VM).
+
+**Remaining options to try:**
+1. **GitHub Personal Access Token (PAT):** Generate via GitHub web → Settings → Developer Settings → Tokens. Use with HTTPS: `git remote set-url origin https://Tredoux555:<TOKEN>@github.com/Tredoux555/whale-class.git && git push origin main`
+2. **Different network/VPN config:** Try pushing with VPN briefly disconnected, or switch VPN protocol (OpenVPN ↔ WireGuard)
+3. **GitHub API:** Upload changed files via GitHub REST API (bypasses git protocol entirely)
+4. **Reduce repo size:** Remove large video files from git history with `git filter-repo` or BFG, then push smaller repo
+
+**GitHub SSH keys:**
+- "My Mac" (Nov 2025) — user's MacBook
+- "Cowork VM" (Feb 11) — ⚠️ stale, can delete
+- "Cowork VM Feb 14" — current session (auth works, push fails due to size)
+
+**Handoff:** `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` (Git Push section)
+
+---
+
+### 📧 Email Setup — ✅ COMPLETE (Feb 14, 2026)
+
+Created new email forwarding address `tredoux@montree.xyz` for LinkedIn account registration.
+
+**Context:** User's LinkedIn account was locked due to location mismatch (set as China, user is South African). The existing `hello@montree.xyz` email was already used for the old account, so a new email address was needed.
+
+**Email Configuration:**
+
+```
+Service:     Cloudflare Email Routing (free)
+Address:     tredoux@montree.xyz
+Action:      Send to an email
+Destination: tredoux555@gmail.com
+Status:      Active (enabled)
+```
+
+**How It Works:**
+1. Email sent to `tredoux@montree.xyz`
+2. Cloudflare Email Routing receives it (via MX records)
+3. Forwards to `tredoux555@gmail.com`
+4. User receives in Gmail inbox
+
+**LinkedIn Setup Steps:**
+1. Go to LinkedIn signup
+2. Use email: `tredoux@montree.xyz`
+3. Set location: South Africa (correct location)
+4. Verify email via Gmail inbox
+5. Complete profile setup
+
+**Cloudflare Access:**
+- Dashboard: https://dash.cloudflare.com/c34a0012899443b32a0de1ffd5dc6af3/montree.xyz/email/routing/routes
+- Account: tredoux555@gmail.com
+- Domain: montree.xyz
+
+**Technical Notes:**
+- MX records already configured (route1/2/3.mx.cloudflare.net)
+- Unlimited custom addresses on free plan
+- 1000 emails/day limit
+- Receive-only forwarding (sending requires SMTP setup)
+
+**Handoff:** `docs/HANDOFF_EMAIL_SETUP.md`
+
+---
+
 ### 📊 Child Progress Portfolio — ✅ COMPLETE (Feb 11, 2026)
 
 Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple bar chart into a full portfolio view.
@@ -155,7 +337,7 @@ Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple
 
 13 marketing tools added to super-admin panel under `/montree/super-admin/marketing/*`.
 
-**Status:** All 18 new files created, committed. Needs `git push origin main` from local terminal.
+**Status:** All 18 new files created, committed. Needs `git push origin main` — ⚠️ BLOCKED (see Git Push section).
 
 **Handoff:** `docs/HANDOFF_MARKETING_HUB.md`
 
@@ -615,7 +797,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_THREE_ISSUE_FIX.md` | **CURRENT** — Extras leak fix, auto-mastery, area icon uniformity |
+| `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` | **CURRENT** — LinkedIn profile, videos, connections, git push failures |
+| `docs/HANDOFF_SOCIAL_MEDIA_MANAGER.md` | Social Media Manager tool (AI Guru, knowledge base, 6 pages) |
+| `docs/HANDOFF_THREE_ISSUE_FIX.md` | Extras leak fix, auto-mastery, area icon uniformity |
 | `docs/HANDOFF_PROGRESS_DASHBOARD.md` | Progress portfolio, position picker, bug fixes |
 | `docs/HANDOFF_POST_PHASE9_AUDIT.md` | Post-Phase 9 audit, CSP fix, frontend fixes, DB migration |
 | `docs/HANDOFF_SECURITY_PHASE9_COMPLETE.md` | Security Phase 9 complete (FINAL), production security review |

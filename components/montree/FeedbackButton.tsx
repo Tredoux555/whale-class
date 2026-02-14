@@ -7,7 +7,7 @@
 // Supports one-tap screenshot capture via html2canvas
 
 import { useState, useEffect, useRef } from 'react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 
 interface FeedbackButtonProps {
   // Optional overrides - if not provided, auto-detects from session

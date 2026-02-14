@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree — The QuickBooks Moment for Montessori</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0a0a0a;
+    color: #f5f0e8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: pointer;
+  }
+
+  /* ===== SCENE 1: OLD LEDGER ===== */
+  .scene-ledger {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: 
+      radial-gradient(ellipse at 30% 20%, rgba(139, 90, 43, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(89, 60, 33, 0.1) 0%, transparent 50%),
+      #1a1408;
+    transition: opacity 1.2s ease, transform 1.2s ease;
+    z-index: 10;
+  }
+
+  .scene-ledger.exit {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  /* Ledger book */
+  .ledger-container {
+    position: relative;
+    width: 700px;
+    max-width: 90vw;
+  }
+
+  .ledger-book {
+    background: linear-gradient(135deg, #d4c5a0 0%, #c9b88a 30%, #bfae7d 60%, #b8a472 100%);
+    border-radius: 4px 12px 12px 4px;
+    padding: 30px 35px;
+    box-shadow: 
+      -4px 0 0 #8b6914,
+      -6px 0 0 #7a5c10,
+      -8px 0 0 #6b500d,
+      0 8px 30px rgba(0,0,0,0.5),
+      inset 0 0 40px rgba(139, 105, 20, 0.15);
+    position: relative;
+    overflow: hidden;
+    animation: bookFloat 4s ease-in-out infinite;
+  }
+
+  @keyframes bookFloat {
+    0%, 100% { transform: translateY(0) rotate(-0.3deg); }
+    50% { transform: translateY(-6px) rotate(0.3deg); }
+  }
+
+  /* Ledger lines */
+  .ledger-line {
+    display: grid;
+    grid-template-columns: 40px 1fr 80px 80px 80px;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(139, 105, 20, 0.25);
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    color: #3a3520;
+    opacity: 0;
+    animation: lineReveal 0.4s ease forwards;
+  }
+
+  .ledger-line.header {
+    font-weight: 700;
+    border-bottom: 2px solid rgba(139, 105, 20, 0.5);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #5a4f30;
+  }
+
+  .ledger-line .num { text-align: center; color: #8a7a50; }
+  .ledger-line .amount { text-align: right; font-variant-numeric: tabular-nums; }
+
+  @keyframes lineReveal {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .ledger-line:nth-child(2) { animation-delay: 0.3s; }
+  .ledger-line:nth-child(3) { animation-delay: 0.6s; }
+  .ledger-line:nth-child(4) { animation-delay: 0.9s; }
+  .ledger-line:nth-child(5) { animation-delay: 1.2s; }
+  .ledger-line:nth-child(6) { animation-delay: 1.5s; }
+  .ledger-line:nth-child(7) { animation-delay: 1.8s; }
+  .ledger-line:nth-child(8) { animation-delay: 2.1s; }
+  .ledger-line:nth-child(9) { animation-delay: 2.4s; }
+  .ledger-line:nth-child(10) { animation-delay: 2.7s; }
+  .ledger-line:nth-child(11) { animation-delay: 3.0s; }
+
+  /* Red ruled lines */
+  .ledger-book::before {
+    content: '';
+    position: absolute;
+    left: 60px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(180, 40, 40, 0.25);
+  }
+
+  /* Coffee stain */
+  .coffee-stain {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    width: 60px;
+    height: 55px;
+    border-radius: 50%;
+    border: 3px solid rgba(101, 67, 33, 0.15);
+    opacity: 0.6;
+  }
+
+  /* Pen */
+  .pen {
+    position: absolute;
+    bottom: -15px;
+    right: 60px;
+    width: 180px;
+    height: 8px;
+    background: linear-gradient(90deg, #1a1a2e, #2d2d4e, #1a1a2e);
+    border-radius: 2px 6px 6px 2px;
+    transform: rotate(-25deg);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  }
+  .pen::before {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 1px;
+    width: 14px;
+    height: 6px;
+    background: linear-gradient(90deg, #c0c0c0, #e0e0e0);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  /* Frustrated text overlay */
+  .frustration-text {
+    margin-top: 40px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 3.5s forwards;
+  }
+
+  .frustration-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    font-style: italic;
+    color: #c9b88a;
+    margin-bottom: 8px;
+  }
+
+  .frustration-text p {
+    font-size: 15px;
+    color: #8a7a50;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Click prompt */
+  .click-prompt {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #6a5f40;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: pulse 2s ease 4.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+
+  /* ===== SCENE 2: MONTREE ===== */
+  .scene-montree {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: 
+      radial-gradient(ellipse at 20% 30%, rgba(34, 139, 94, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(26, 115, 78, 0.06) 0%, transparent 50%),
+      #0d1f17;
+    opacity: 0;
+    transform: scale(1.1);
+    transition: opacity 1.2s ease, transform 1.2s ease;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .scene-montree.enter {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 20;
+    pointer-events: auto;
+  }
+
+  /* Montree UI mockup */
+  .montree-ui {
+    width: 750px;
+    max-width: 92vw;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s;
+  }
+
+  .scene-montree.enter .montree-ui {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .montree-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 4px;
+  }
+
+  .montree-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .montree-logo .tree-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #2ecc71, #1a9c5a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .montree-logo span {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #e8f5e9;
+    letter-spacing: 1px;
+  }
+
+  .montree-badge {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #2ecc71;
+    letter-spacing: 1px;
+  }
+
+  /* Dashboard cards */
+  .montree-dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .dash-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(46, 204, 113, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .scene-montree.enter .dash-card:nth-child(1) { transition-delay: 0.8s; opacity: 1; transform: translateY(0); }
+  .scene-montree.enter .dash-card:nth-child(2) { transition-delay: 1.0s; opacity: 1; transform: translateY(0); }
+  .scene-montree.enter .dash-card:nth-child(3) { transition-delay: 1.2s; opacity: 1; transform: translateY(0); }
+
+  .dash-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a8a7a;
+    margin-bottom: 8px;
+  }
+
+  .dash-card .value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #e8f5e9;
+  }
+
+  .dash-card .sub {
+    font-size: 12px;
+    color: #4a7a5a;
+    margin-top: 4px;
+  }
+
+  .dash-card .value .green { color: #2ecc71; }
+
+  /* Progress rows */
+  .montree-progress {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(46, 204, 113, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease 1.4s, transform 0.6s ease 1.4s;
+  }
+
+  .scene-montree.enter .montree-progress {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .progress-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6a8a7a;
+    margin-bottom: 16px;
+  }
+
+  .child-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 100px 60px;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .child-row:last-child { border-bottom: none; }
+
+  .child-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .child-name {
+    font-size: 14px;
+    color: #c8e0d0;
+  }
+
+  .child-name .area {
+    font-size: 11px;
+    color: #5a7a6a;
+    margin-left: 8px;
+  }
+
+  .progress-bar-wrap {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #1a9c5a, #2ecc71);
+    transition: width 1.5s ease;
+    width: 0;
+  }
+
+  .scene-montree.enter .child-row:nth-child(2) .progress-bar-fill { width: 85%; transition-delay: 1.8s; }
+  .scene-montree.enter .child-row:nth-child(3) .progress-bar-fill { width: 62%; transition-delay: 2.0s; }
+  .scene-montree.enter .child-row:nth-child(4) .progress-bar-fill { width: 91%; transition-delay: 2.2s; }
+  .scene-montree.enter .child-row:nth-child(5) .progress-bar-fill { width: 45%; transition-delay: 2.4s; }
+
+  .child-pct {
+    font-size: 13px;
+    color: #2ecc71;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  /* Tagline */
+  .montree-tagline {
+    text-align: center;
+    margin-top: 40px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease 2.8s, transform 0.8s ease 2.8s;
+  }
+
+  .scene-montree.enter .montree-tagline {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .montree-tagline h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    font-style: italic;
+    color: #c8e8d0;
+    margin-bottom: 8px;
+  }
+
+  .montree-tagline h2 em {
+    color: #2ecc71;
+    font-style: italic;
+  }
+
+  .montree-tagline p {
+    font-size: 14px;
+    color: #4a7a5a;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Click to replay */
+  .replay-prompt {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #3a6a4a;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.6s ease 3.5s;
+  }
+
+  .scene-montree.enter .replay-prompt {
+    opacity: 0.6;
+  }
+
+  /* Transition flash */
+  .flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    z-index: 100;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .flash-overlay.flash {
+    opacity: 0.6;
+    transition: opacity 0.05s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flash"></div>
+
+<!-- SCENE 1: OLD LEDGER -->
+<div class="scene-ledger" id="sceneLedger">
+  <div class="ledger-container">
+    <div class="ledger-book">
+      <div class="ledger-line header">
+        <span class="num">#</span>
+        <span>Child / Work Presented</span>
+        <span class="amount">Date</span>
+        <span class="amount">Status</span>
+        <span class="amount">Notes</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">01</span>
+        <span>Li Wei — Pink Tower</span>
+        <span class="amount">9/14</span>
+        <span class="amount">Intro</span>
+        <span class="amount">✓</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">02</span>
+        <span>Mei Chen — Sandpaper Letters</span>
+        <span class="amount">9/14</span>
+        <span class="amount">Pract.</span>
+        <span class="amount">Rev.</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">03</span>
+        <span>Yuki T. — Bead Stair 1-9</span>
+        <span class="amount">9/15</span>
+        <span class="amount">Mast.</span>
+        <span class="amount">✓✓</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">04</span>
+        <span>Amir K. — Moveable Alphabet</span>
+        <span class="amount">9/15</span>
+        <span class="amount">Intro</span>
+        <span class="amount">—</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">05</span>
+        <span>Sophie L. — Knobbed Cylinders</span>
+        <span class="amount">9/16</span>
+        <span class="amount">Pract.</span>
+        <span class="amount">✓</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">06</span>
+        <span>Kai Wang — Red Rods</span>
+        <span class="amount">9/16</span>
+        <span class="amount">Intro</span>
+        <span class="amount">Rpt.</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">07</span>
+        <span>Emma Z. — Stamp Game</span>
+        <span class="amount">9/17</span>
+        <span class="amount">Pract.</span>
+        <span class="amount">✓</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">08</span>
+        <span>Lucas R. — Binomial Cube</span>
+        <span class="amount">9/17</span>
+        <span class="amount">Intro</span>
+        <span class="amount">—</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">09</span>
+        <span>Hana M. — Metal Insets</span>
+        <span class="amount">9/18</span>
+        <span class="amount">Mast.</span>
+        <span class="amount">✓✓</span>
+      </div>
+      <div class="ledger-line">
+        <span class="num">10</span>
+        <span>Tom B. — Sound Cylinders</span>
+        <span class="amount">9/18</span>
+        <span class="amount">Pract.</span>
+        <span class="amount">Rev.</span>
+      </div>
+      <div class="coffee-stain"></div>
+    </div>
+    <div class="pen"></div>
+  </div>
+
+  <div class="frustration-text">
+    <h2>"Every child. Every work. Every day. By hand."</h2>
+    <p>Sound familiar, Montessori teachers?</p>
+  </div>
+
+  <div class="click-prompt">Click anywhere to continue →</div>
+</div>
+
+<!-- SCENE 2: MONTREE -->
+<div class="scene-montree" id="sceneMontree">
+  <div class="montree-ui">
+    <div class="montree-header">
+      <div class="montree-logo">
+        <div class="tree-icon">🌳</div>
+        <span>Montree</span>
+      </div>
+      <div class="montree-badge">✦ Live Dashboard</div>
+    </div>
+
+    <div class="montree-dashboard">
+      <div class="dash-card">
+        <div class="label">Children</div>
+        <div class="value">24</div>
+        <div class="sub">Whale Class — PreK 4</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">Works Tracked</div>
+        <div class="value">213</div>
+        <div class="sub">Across 6 curriculum areas</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">Time Saved</div>
+        <div class="value"><span class="green">8hrs</span></div>
+        <div class="sub">Per week vs. manual tracking</div>
+      </div>
+    </div>
+
+    <div class="montree-progress">
+      <div class="progress-title">Today's Progress — Tap to update</div>
+      <div class="child-row" style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+        <span></span>
+        <span style="font-size:11px; color:#5a7a6a; text-transform:uppercase; letter-spacing:1px;">Child</span>
+        <span style="font-size:11px; color:#5a7a6a; text-transform:uppercase; letter-spacing:1px;">Progress</span>
+        <span style="font-size:11px; color:#5a7a6a; text-align:right;">Compl.</span>
+      </div>
+      <div class="child-row">
+        <div class="child-avatar">👧</div>
+        <div class="child-name">Li Wei <span class="area">Sensorial</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <div class="child-pct">85%</div>
+      </div>
+      <div class="child-row">
+        <div class="child-avatar">👦</div>
+        <div class="child-name">Mei Chen <span class="area">Language</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <div class="child-pct">62%</div>
+      </div>
+      <div class="child-row">
+        <div class="child-avatar">👧</div>
+        <div class="child-name">Yuki T. <span class="area">Math</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <div class="child-pct">91%</div>
+      </div>
+      <div class="child-row">
+        <div class="child-avatar">👦</div>
+        <div class="child-name">Amir K. <span class="area">Practical Life</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <div class="child-pct">45%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="montree-tagline">
+    <h2>Montree is the <em>QuickBooks moment</em> for Montessori.</h2>
+    <p>montree.xyz</p>
+  </div>
+
+  <div class="replay-prompt">Click to replay</div>
+</div>
+
+<script>
+  let scene = 1;
+
+  document.body.addEventListener('click', () => {
+    const flash = document.getElementById('flash');
+    const ledger = document.getElementById('sceneLedger');
+    const montree = document.getElementById('sceneMontree');
+
+    if (scene === 1) {
+      // Transition: ledger → montree
+      flash.classList.add('flash');
+      setTimeout(() => flash.classList.remove('flash'), 200);
+      
+      ledger.classList.add('exit');
+      montree.classList.add('enter');
+      scene = 2;
+    } else {
+      // Reset
+      flash.classList.add('flash');
+      setTimeout(() => flash.classList.remove('flash'), 200);
+      
+      montree.classList.remove('enter');
+      
+      setTimeout(() => {
+        ledger.classList.remove('exit');
+        scene = 1;
+      }, 300);
+    }
+  });
+</script>
+
+</body>
+</html>

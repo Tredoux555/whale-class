@@ -42,7 +42,7 @@
     "dagre": "^0.8.5",
     "docx": "^9.5.1",
     "framer-motion": "^12.27.5",
-    "html2canvas": "^1.4.1",
+    "html2canvas-pro": "^1.6.7",
     "jose": "^5.10.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
