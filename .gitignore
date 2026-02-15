@@ -52,3 +52,7 @@ next-env.d.ts
 Promo Videos/
 Montree_Onboarding_Final.mp4
 Montree_Promo_Final.mp4
+
+# Personal documents - not part of the app
+Montessori Documents/
+generated-images/
