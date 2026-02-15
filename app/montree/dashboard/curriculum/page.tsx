@@ -12,6 +12,7 @@ import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkLi
 import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
 
@@ -175,6 +176,13 @@ export default function CurriculumPage() {
             <p className="text-gray-500 text-sm">{curriculum.length} works available</p>
           </div>
           <div className="flex items-center gap-2">
+            <WorkSearchBar
+              curriculum={byArea}
+              onSelectWork={(work, areaKey) => {
+                setSelectedArea(areaKey);
+              }}
+              placeholder="Search works..."
+            />
             <Link
               href="/montree/dashboard/curriculum/browse"
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
