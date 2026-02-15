@@ -332,9 +332,25 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 - NOT yet used for Railway deployment — whale-class still active
 
 **GitHub PATs:**
+- `cowork-permanent` — **USE THIS ONE** — no expiration, whale-class, Contents read/write. Saved at `.github-pat` in project root (gitignored). Every Cowork session should read this file and use it for HTTPS push.
 - `cowork-push-feb15` — active, expires Mar 17 2026 (whale-class, Contents read/write)
 - `cowork-push-feb14` — active, expires Feb 14 2027
 - Fine-grained montree PAT — active (montree repo only, Contents read/write)
+
+**⚡ Cowork Push Workflow (NO SSH keys needed):**
+```bash
+# 1. Read PAT from persistent file
+PAT=$(cat /path/to/whale/.github-pat)
+# 2. Clone to /tmp (avoids FUSE locks on mounted workspace)
+cd /tmp && rm -rf whale-push
+git clone --depth=10 https://Tredoux555:${PAT}@github.com/Tredoux555/whale-class.git whale-push
+# 3. Copy changed files from workspace to /tmp clone
+cp /path/to/whale/changed-file.ts /tmp/whale-push/changed-file.ts
+# 4. Commit and push
+cd /tmp/whale-push && git add -A
+git -c user.name="Tredoux" -c user.email="tredoux555@gmail.com" commit -m "message"
+git push origin main
+```
 
 **Mac git config (set during debugging, needs cleanup):**
 ```bash
