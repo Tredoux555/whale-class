@@ -79,6 +79,48 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // --- Freemium gate for homeschool parents ---
+    // Check if this is a homeschool parent and enforce the 3-prompt free trial
+    const teacherId = teacher_id || auth.userId;
+    let isParentRole = false;
+    if (teacherId) {
+      const { data: teacherData } = await supabase
+        .from('montree_teachers')
+        .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end')
+        .eq('id', teacherId)
+        .single();
+
+      const t = teacherData as Record<string, unknown> | null;
+      if (t?.role === 'homeschool_parent') {
+        isParentRole = true;
+        const plan = t.guru_plan as string || 'free';
+        const promptsUsed = t.guru_prompts_used as number || 0;
+        const subStatus = t.guru_subscription_status as string || 'none';
+        const periodEnd = t.guru_current_period_end as string | null;
+
+        // Check if paid subscription is active and current
+        const isPaid = plan !== 'free' && subStatus === 'active' &&
+          (!periodEnd || new Date(periodEnd) > new Date());
+
+        if (!isPaid && promptsUsed >= 3) {
+          return NextResponse.json({
+            success: false,
+            error: 'guru_limit_reached',
+            prompts_used: promptsUsed,
+            prompts_limit: 3,
+            message: 'You\'ve used your 3 free Guru sessions. Upgrade to Guru for unlimited advice.',
+          }, { status: 403 });
+        }
+
+        // Increment counter for free-tier users (paid users get unlimited)
+        if (!isPaid) {
+          await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+            .update({ guru_prompts_used: promptsUsed + 1 })
+            .eq('id', teacherId);
+        }
+      }
+    }
+
     // 1. Build child context
     const childContext = await buildChildContext(supabase, child_id);
 
@@ -92,8 +134,10 @@ export async function POST(request: NextRequest) {
     // 2. Retrieve relevant knowledge
     const knowledge = await retrieveKnowledge(question, 4);
 
-    // 3. Build prompt
-    const { systemPrompt, userPrompt } = buildGuruPrompt(question, childContext, knowledge);
+    // 3. Build prompt (isParentRole set during freemium gate check above)
+    const { systemPrompt, userPrompt } = buildGuruPrompt(question, childContext, knowledge, {
+      isHomeschoolParent: isParentRole,
+    });
 
     // 4. Call Claude API
     // Ensure anthropic is not null (already checked above, but TypeScript needs this)

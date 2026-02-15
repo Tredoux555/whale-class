@@ -1,5 +1,5 @@
 // /montree/dashboard/guru/page.tsx
-// Montessori Guru - AI Assistant for Teachers
+// Montessori Guru - AI Assistant for Teachers & Homeschool Parents
 // Philosophy: Complexity absorbed, simplicity delivered
 'use client';
 
@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 
 interface Child {
   id: string;
@@ -41,10 +41,19 @@ interface PastInteraction {
   outcome?: string;
 }
 
+interface GuruStatus {
+  guru_access: 'unlimited' | 'paid' | 'free_trial';
+  prompts_used?: number;
+  prompts_limit?: number;
+  prompts_remaining?: number | null;
+  is_locked?: boolean;
+}
+
 function GuruContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedChildId = searchParams.get('child');
+  const upgradeResult = searchParams.get('upgrade');
 
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
@@ -57,9 +66,12 @@ function GuruContent() {
   const [history, setHistory] = useState<PastInteraction[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [useStreaming, setUseStreaming] = useState(false); // Disabled until stream route fixed
+  const [guruStatus, setGuruStatus] = useState<GuruStatus | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load session and children
+  // Load session, children, and guru status
   useEffect(() => {
     const sess = getSession();
     if (!sess) {
@@ -68,13 +80,20 @@ function GuruContent() {
     }
     setSession(sess);
 
+    // Show upgrade result toast
+    if (upgradeResult === 'success') {
+      toast.success('Welcome to Guru! You now have unlimited access.');
+    } else if (upgradeResult === 'cancel') {
+      toast('Upgrade cancelled. You still have free prompts available.');
+    }
+
+    // Fetch children
     fetch(`/api/montree/children?classroom_id=${sess.classroom?.id}`)
       .then(r => r.json())
       .then(data => {
         const kids = data.children || [];
         setChildren(kids);
 
-        // If child preselected via URL, use that
         if (preselectedChildId) {
           const preselected = kids.find((c: Child) => c.id === preselectedChildId);
           if (preselected) {
@@ -85,10 +104,27 @@ function GuruContent() {
         setPageLoading(false);
       })
       .catch(() => {
-        toast.error('Failed to load students');
+        toast.error('Failed to load');
         setPageLoading(false);
       });
-  }, [router, preselectedChildId]);
+
+    // Fetch guru status for homeschool parents
+    if (isHomeschoolParent(sess)) {
+      fetch('/api/montree/guru/status')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            setGuruStatus(data);
+            if (data.is_locked) {
+              setShowPaywall(true);
+            }
+          }
+        })
+        .catch(() => {
+          // Non-critical — allow usage
+        });
+    }
+  }, [router, preselectedChildId, upgradeResult]);
 
   // Load history when child changes
   useEffect(() => {
@@ -193,10 +229,25 @@ function GuruContent() {
           }),
         });
 
-        const data: GuruResponse = await res.json();
+        const data = await res.json();
 
         if (data.success) {
           setResponse(data);
+          // Update local guru status after successful prompt
+          if (guruStatus && guruStatus.guru_access === 'free_trial' && guruStatus.prompts_remaining) {
+            setGuruStatus({
+              ...guruStatus,
+              prompts_used: (guruStatus.prompts_used || 0) + 1,
+              prompts_remaining: guruStatus.prompts_remaining - 1,
+              is_locked: guruStatus.prompts_remaining - 1 <= 0,
+            });
+          }
+        } else if (data.error === 'guru_limit_reached') {
+          // Freemium limit hit — show paywall
+          setShowPaywall(true);
+          if (guruStatus) {
+            setGuruStatus({ ...guruStatus, is_locked: true, prompts_remaining: 0 });
+          }
         } else {
           toast.error(data.error || 'Failed to get response');
         }
@@ -223,6 +274,26 @@ function GuruContent() {
     }
   };
 
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/montree/guru/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.success && data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        toast.error('Could not start checkout. Please try again.');
+      }
+    } catch {
+      toast.error('Connection error. Please try again.');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   if (pageLoading) {
     return (
       <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
@@ -235,6 +306,51 @@ function GuruContent() {
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50">
       <Toaster position="top-center" />
 
+      {/* Paywall Modal Overlay */}
+      {showPaywall && guruStatus?.is_locked && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+            <div className="text-5xl mb-4">🔮</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Unlock Montessori Guru</h2>
+            <p className="text-gray-600 mb-4">
+              You&apos;ve used your 3 free sessions. Upgrade to get unlimited Guru advice for all your children.
+            </p>
+            <div className="bg-violet-50 rounded-xl p-4 mb-5">
+              <div className="text-3xl font-bold text-violet-700">$5<span className="text-base font-normal text-violet-500">/month per child</span></div>
+              <div className="text-sm text-violet-600 mt-1">Unlimited questions &bull; Cancel anytime</div>
+            </div>
+            <div className="text-left text-sm text-gray-600 mb-5 space-y-2">
+              <div className="flex items-center gap-2"><span>✅</span> Unlimited Guru conversations</div>
+              <div className="flex items-center gap-2"><span>✅</span> Personalized advice for each child</div>
+              <div className="flex items-center gap-2"><span>✅</span> Based on 7 Montessori reference books</div>
+              <div className="flex items-center gap-2"><span>✅</span> Action plans with timelines</div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={checkoutLoading}
+              className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-600 hover:to-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {checkoutLoading ? 'Opening checkout...' : 'Upgrade Now'}
+            </button>
+            <button
+              onClick={() => setShowPaywall(false)}
+              className="mt-3 text-sm text-gray-400 hover:text-gray-600"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Free trial prompts banner for homeschool parents */}
+      {guruStatus && guruStatus.guru_access === 'free_trial' && !guruStatus.is_locked && (
+        <div className="bg-violet-100 border-b border-violet-200 px-4 py-2 text-center text-sm text-violet-700">
+          <span className="font-medium">{guruStatus.prompts_remaining} free {guruStatus.prompts_remaining === 1 ? 'session' : 'sessions'} remaining</span>
+          <span className="mx-2">&bull;</span>
+          <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-violet-900">Upgrade for unlimited</button>
+        </div>
+      )}
+
       {/* Page sub-header — main nav is in DashboardHeader */}
       <div className="bg-white border-b px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -242,7 +358,9 @@ function GuruContent() {
             <h1 className="font-bold text-lg text-gray-800 flex items-center gap-2">
               <span>🔮</span> Montessori Guru
             </h1>
-            <p className="text-xs text-gray-500">AI-powered insights for your classroom</p>
+            <p className="text-xs text-gray-500">
+              {isHomeschoolParent(session) ? 'AI-powered insights for your homeschool' : 'AI-powered insights for your classroom'}
+            </p>
           </div>
           {selectedChild && history.length > 0 && (
             <button
@@ -324,7 +442,10 @@ function GuruContent() {
               ref={textareaRef}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="e.g., Rachel can't seem to focus lately. She wanders around the classroom and won't settle into work. What should I do?"
+              placeholder={isHomeschoolParent(session)
+                ? "e.g., My child can't seem to focus lately. She wanders around and won't settle into work at home. What should I do?"
+                : "e.g., Rachel can't seem to focus lately. She wanders around the classroom and won't settle into work. What should I do?"
+              }
               className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 placeholder:text-gray-400 resize-none min-h-[100px]"
               rows={3}
             />
@@ -487,12 +608,17 @@ function GuruContent() {
           <div className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="text-sm font-medium text-gray-500 mb-3">Common questions</h3>
             <div className="space-y-2">
-              {[
+              {(isHomeschoolParent(session) ? [
+                `${selectedChild.name.split(' ')[0]} can't focus and wanders away from work. What should I do?`,
+                `How do I set up our home environment for ${selectedChild.name.split(' ')[0]}?`,
+                `How can I help ${selectedChild.name.split(' ')[0]} choose work independently at home?`,
+                `${selectedChild.name.split(' ')[0]} seems frustrated with materials. What am I missing?`,
+              ] : [
                 `${selectedChild.name.split(' ')[0]} can't focus and wanders around. What should I do?`,
                 `${selectedChild.name.split(' ')[0]} is having trouble with social interactions.`,
                 `How can I help ${selectedChild.name.split(' ')[0]} choose work independently?`,
                 `${selectedChild.name.split(' ')[0]} seems frustrated and gets upset easily.`,
-              ].map((q, i) => (
+              ]).map((q, i) => (
                 <button
                   key={i}
                   onClick={() => setQuestion(q)}
