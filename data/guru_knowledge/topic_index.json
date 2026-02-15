@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "generated": "2026-02-01",
-  "total_lines": 96878,
+  "total_lines": 99343,
   "books": [
     "absorbent_mind",
     "secret_of_childhood",
@@ -9,14 +9,16 @@
     "own_handbook",
     "pedagogical_anthropology",
     "spontaneous_activity",
-    "elementary_material"
+    "elementary_material",
+    "discovery_of_child"
   ],
   "topics": {
     "sensitive_periods": {
       "order": {
         "sources": [
           "absorbent_mind",
-          "secret_of_childhood"
+          "secret_of_childhood",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -38,9 +40,23 @@
               9008,
               9077
             ]
+          ],
+          "discovery_of_child": [
+            [
+              1263,
+              1283
+            ],
+            [
+              2079,
+              2099
+            ],
+            [
+              2423,
+              2443
+            ]
           ]
         },
-        "total_matches": 8,
+        "total_matches": 11,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -61,6 +77,16 @@
             "source": "secret_of_childhood",
             "line": 9040,
             "excerpt": "of his eye to colours and dimensions, which guide his\nattention to garner the smallest details of his environ-\nment. Wonderful too is the sensitive period of order of\nTespect of external objects and t"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 1264,
+            "excerpt": "them on a different plane from our own and enables them to do many striking things. The reason for this seems to be that certain periods of life are more suited for certain psychic operations than oth"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 2080,
+            "excerpt": "Our brief description of musical education in this book is not due to a lack of appreciation for the place of music in education, but to the fact that there can be no more than an introduction to it f"
           }
         ]
       },
@@ -71,7 +97,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -157,9 +184,55 @@
               7676,
               7932
             ]
+          ],
+          "discovery_of_child": [
+            [
+              32,
+              53
+            ],
+            [
+              506,
+              526
+            ],
+            [
+              1199,
+              1219
+            ],
+            [
+              1255,
+              1275
+            ],
+            [
+              1357,
+              1414
+            ],
+            [
+              1451,
+              1498
+            ],
+            [
+              1560,
+              1922
+            ],
+            [
+              2011,
+              2031
+            ],
+            [
+              2229,
+              2249
+            ],
+            [
+              2298,
+              2318
+            ],
+            [
+              2430,
+              2450
+            ]
           ]
         },
-        "total_matches": 61,
+        "total_matches": 123,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -235,12 +308,23 @@
             "source": "elementary_material",
             "line": 7855,
             "excerpt": "constitutes true reading. Reading aloud, on the other hand, is a\ncombination of reading and articulate expression, in other words, a\ncombination involving the two great mechanisms of the spoken langua"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 45,
+            "excerpt": "An analysis of the movements of a band that is writing, 204. Direct preparation for writing: An analysis of its various factors, 206. Intelligence freed from mechanisms, 215. Composition of words, 217"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 516,
+            "excerpt": "Besides the various objects which the children are taught to use for their \"practical life,\" there are many others which lend themselves to the gradual development and refinement of a child's intellec"
           }
         ]
       },
       "movement": {
         "sources": [
-          "spontaneous_activity"
+          "spontaneous_activity",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "spontaneous_activity": [
@@ -248,14 +332,82 @@
               6170,
               6270
             ]
+          ],
+          "discovery_of_child": [
+            [
+              18,
+              38
+            ],
+            [
+              256,
+              301
+            ],
+            [
+              373,
+              393
+            ],
+            [
+              585,
+              680
+            ],
+            [
+              737,
+              757
+            ],
+            [
+              819,
+              860
+            ],
+            [
+              881,
+              916
+            ],
+            [
+              1220,
+              1240
+            ],
+            [
+              1437,
+              1686
+            ],
+            [
+              1739,
+              1881
+            ],
+            [
+              2035,
+              2103
+            ],
+            [
+              2180,
+              2229
+            ],
+            [
+              2306,
+              2326
+            ],
+            [
+              2430,
+              2450
+            ]
           ]
         },
-        "total_matches": 1,
+        "total_matches": 91,
         "key_passages": [
           {
             "source": "spontaneous_activity",
             "line": 6225,
             "excerpt": "There is a perfect parallel between the formation of the will and the\ncoordination of movement of its physiological structure, the striated\nmuscles. It is evident that exercise is necessary to establi"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 29,
+            "excerpt": "126. Color materials, 128. Sensorial knowledge of geometry: Plane insets and geometrical shapes, 129. Exer- cises for distinguishing sounds, 134. Silence, 137."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 266,
+            "excerpt": "And the following words, \"I will Jay sinews upon you, and will cause flesh to grow over you, and will cover you with skin,\" recall the basic formula in which Seguin summarized his method. It is \"to le"
           }
         ]
       },
@@ -263,7 +415,8 @@
         "sources": [
           "spontaneous_activity",
           "elementary_material",
-          "montessori_method"
+          "montessori_method",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "montessori_method": [
@@ -287,9 +440,59 @@
               13655,
               13718
             ]
+          ],
+          "discovery_of_child": [
+            [
+              14,
+              39
+            ],
+            [
+              256,
+              276
+            ],
+            [
+              506,
+              526
+            ],
+            [
+              701,
+              750
+            ],
+            [
+              786,
+              875
+            ],
+            [
+              921,
+              974
+            ],
+            [
+              1050,
+              1082
+            ],
+            [
+              1240,
+              1260
+            ],
+            [
+              1539,
+              1586
+            ],
+            [
+              1758,
+              1888
+            ],
+            [
+              2228,
+              2248
+            ],
+            [
+              2298,
+              2318
+            ]
           ]
         },
-        "total_matches": 4,
+        "total_matches": 41,
         "key_passages": [
           {
             "source": "montessori_method",
@@ -310,6 +513,16 @@
             "source": "elementary_material",
             "line": 13687,
             "excerpt": "\"turning\" himself around to begin over again.\n\nWhen the children have reached such a stage of sensory development, they\nhave no difficulty in recognizing the tonic accents. For this purpose,\nwe have p"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 29,
+            "excerpt": "126. Color materials, 128. Sensorial knowledge of geometry: Plane insets and geometrical shapes, 129. Exer- cises for distinguishing sounds, 134. Silence, 137."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 266,
+            "excerpt": "And the following words, \"I will Jay sinews upon you, and will cause flesh to grow over you, and will cover you with skin,\" recall the basic formula in which Seguin summarized his method. It is \"to le"
           }
         ]
       },
@@ -318,7 +531,8 @@
           "spontaneous_activity",
           "own_handbook",
           "secret_of_childhood",
-          "montessori_method"
+          "montessori_method",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "secret_of_childhood": [
@@ -360,9 +574,23 @@
               10882,
               10959
             ]
+          ],
+          "discovery_of_child": [
+            [
+              737,
+              757
+            ],
+            [
+              896,
+              916
+            ],
+            [
+              1914,
+              1960
+            ]
           ]
         },
-        "total_matches": 8,
+        "total_matches": 12,
         "key_passages": [
           {
             "source": "secret_of_childhood",
@@ -403,6 +631,16 @@
             "source": "spontaneous_activity",
             "line": 10919,
             "excerpt": "What shall it profit man to discover by means of science the law of\nphysical self-preservation in its most minute details, if he has no\ncare for that which corresponds in man to the \"instinct\" of his "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 747,
+            "excerpt": "This is the same as saying that it is not enough that a thing should be interesting in itself but that it must lend itself to the motor activity of the child if it is to be interesting to him. There m"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 906,
+            "excerpt": "cises of the eye. Sometimes this consists in the handling of small objects to be removed, such as the cylinders from the solid insets, sometimes in carrying and setting in place large blocks of wood. "
           }
         ]
       }
@@ -414,7 +652,8 @@
           "own_handbook",
           "secret_of_childhood",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -502,9 +741,63 @@
               11852,
               11923
             ]
+          ],
+          "discovery_of_child": [
+            [
+              281,
+              301
+            ],
+            [
+              456,
+              476
+            ],
+            [
+              516,
+              571
+            ],
+            [
+              685,
+              727
+            ],
+            [
+              898,
+              918
+            ],
+            [
+              1092,
+              1125
+            ],
+            [
+              1214,
+              1234
+            ],
+            [
+              1297,
+              1334
+            ],
+            [
+              1602,
+              1622
+            ],
+            [
+              1836,
+              1856
+            ],
+            [
+              2049,
+              2069
+            ],
+            [
+              2134,
+              2201
+            ],
+            [
+              2293,
+              2335
+            ]
           ]
         },
-        "total_matches": 61,
+        "total_matches": 88,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -570,6 +863,16 @@
             "source": "elementary_material",
             "line": 8818,
             "excerpt": "accomplish. We found the drawing hour best adapted for this work. It was\nour experience that it is easier to gain a hearing when the children are\nbusy with something which does not require great conce"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 291,
+            "excerpt": "Small children have not yet acquired a definite coordination of their muscular movements. Their walk is unsteady; they cannot carry out ordinary acts of daily life such as putting on their stockings, "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 466,
+            "excerpt": "and sleepy. There are others who stand up to shout, strike, and overturn various objects. And finally there are those who aim at completing some determined action, such as setting a chair on its side "
           }
         ]
       },
@@ -578,7 +881,8 @@
           "absorbent_mind",
           "spontaneous_activity",
           "elementary_material",
-          "montessori_method"
+          "montessori_method",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -608,9 +912,63 @@
               14814,
               14877
             ]
+          ],
+          "discovery_of_child": [
+            [
+              99,
+              119
+            ],
+            [
+              212,
+              232
+            ],
+            [
+              295,
+              315
+            ],
+            [
+              490,
+              510
+            ],
+            [
+              1008,
+              1028
+            ],
+            [
+              1092,
+              1130
+            ],
+            [
+              1235,
+              1255
+            ],
+            [
+              1309,
+              1329
+            ],
+            [
+              1712,
+              1754
+            ],
+            [
+              2046,
+              2066
+            ],
+            [
+              2170,
+              2190
+            ],
+            [
+              2245,
+              2268
+            ],
+            [
+              2291,
+              2311
+            ]
           ]
         },
-        "total_matches": 5,
+        "total_matches": 21,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -636,12 +994,23 @@
             "source": "elementary_material",
             "line": 14844,
             "excerpt": "about him that might tend to divert him from his work.\n\n      Whether after a compulsory distraction he takes up\n      again the task that has been interrupted."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 109,
+            "excerpt": "ments of protozoa under his microscope. It seems to him that these tiny creatures reveal a shadowy consciousness or in\u2022 stinct in the way they avoid each other or select their food. He then disturbs t"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 222,
+            "excerpt": "I was more than an elementary teacher. I stayed with the children and taught them myself from eight in the morning to seven in the evening without interruption. These two years provided me with my fir"
           }
         ]
       },
       "fostering": {
         "sources": [
-          "spontaneous_activity"
+          "spontaneous_activity",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "spontaneous_activity": [
@@ -649,14 +1018,46 @@
               3714,
               3784
             ]
+          ],
+          "discovery_of_child": [
+            [
+              281,
+              301
+            ],
+            [
+              456,
+              476
+            ],
+            [
+              696,
+              716
+            ],
+            [
+              1089,
+              1109
+            ],
+            [
+              2049,
+              2090
+            ]
           ]
         },
-        "total_matches": 1,
+        "total_matches": 7,
         "key_passages": [
           {
             "source": "spontaneous_activity",
             "line": 3754,
             "excerpt": "choice of his culminating exercise.\n\nConsequently, two successive phases of uninterrupted work are left;\none may be called the _phase of preparation_, the other the _phase of\nserious work_. The phase "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 291,
+            "excerpt": "Small children have not yet acquired a definite coordination of their muscular movements. Their walk is unsteady; they cannot carry out ordinary acts of daily life such as putting on their stockings, "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 466,
+            "excerpt": "and sleepy. There are others who stand up to shout, strike, and overturn various objects. And finally there are those who aim at completing some determined action, such as setting a chair on its side "
           }
         ]
       }
@@ -668,7 +1069,8 @@
           "spontaneous_activity",
           "secret_of_childhood",
           "montessori_method",
-          "absorbent_mind"
+          "absorbent_mind",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -760,9 +1162,23 @@
               5638,
               5703
             ]
+          ],
+          "discovery_of_child": [
+            [
+              258,
+              278
+            ],
+            [
+              327,
+              347
+            ],
+            [
+              2306,
+              2326
+            ]
           ]
         },
-        "total_matches": 24,
+        "total_matches": 27,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -823,6 +1239,16 @@
             "source": "spontaneous_activity",
             "line": 5673,
             "excerpt": "When a living being is in process of evolution, it is essential to\nprovide for the special requirements of the moment, in order to ensure\nits normal development. The foetus must be nourished with bloo"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 268,
+            "excerpt": "This second element in a child's education bas been the contribution of scientific education. This is why we can say today, as the fruit of our own experience, that a teacher is \"the catalyst\" between"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 337,
+            "excerpt": "After the disastrous earthquake which destroyed Messina in Sicily, some sixty children found in the ruins were brought together in a Children's House that was founded for them on the Via Giusti under "
           }
         ]
       },
@@ -831,7 +1257,8 @@
           "absorbent_mind",
           "own_handbook",
           "secret_of_childhood",
-          "montessori_method"
+          "montessori_method",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -861,9 +1288,27 @@
               2785,
               2848
             ]
+          ],
+          "discovery_of_child": [
+            [
+              319,
+              339
+            ],
+            [
+              1615,
+              1635
+            ],
+            [
+              1734,
+              1754
+            ],
+            [
+              2394,
+              2414
+            ]
           ]
         },
-        "total_matches": 5,
+        "total_matches": 9,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -889,6 +1334,16 @@
             "source": "own_handbook",
             "line": 2815,
             "excerpt": "The results obtained are surprising, for the children have shown a\nlove of work which no one suspected to be in them, and a calm and an\norderliness in their movements which, surpassing the limits of\nc"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 329,
+            "excerpt": "It was here that those surprising events took place which roused the curiosity and stirred up the admiration of the world such as \"the unexpected manifestation of writing and of spontaneous reading,\" "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 1625,
+            "excerpt": "A child who wrote a word for the first time was filled with a great joy. I immediately compared him with a hen that I?.as laid an egg. Indeed no one could escape the noisy demonstration of a child. He"
           }
         ]
       },
@@ -898,7 +1353,8 @@
           "spontaneous_activity",
           "secret_of_childhood",
           "montessori_method",
-          "absorbent_mind"
+          "absorbent_mind",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -1186,9 +1642,27 @@
               10846,
               10972
             ]
+          ],
+          "discovery_of_child": [
+            [
+              152,
+              172
+            ],
+            [
+              1057,
+              1077
+            ],
+            [
+              1284,
+              1304
+            ],
+            [
+              1380,
+              1419
+            ]
           ]
         },
-        "total_matches": 190,
+        "total_matches": 196,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -1264,6 +1738,16 @@
             "source": "spontaneous_activity",
             "line": 3640,
             "excerpt": "her, and making them rest, etc., their restlessness persists, and the\nsubsequent work is not undertaken. The children do not become calm:\nthey remain in an abnormal state. In other words, if they are\n"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 162,
+            "excerpt": "All forms of slavery have a tendency to disappear. The history of human progress represents a series of conquests and liberations, and any failures in this regard are looked upon as regressions."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 1067,
+            "excerpt": "One day I heard a surgeon deliver a popular lecture to women on how to recognize the early symptoms of rickets in their children. He wanted to persuaoe them to take their rickety childern to a doctor "
           }
         ]
       }
@@ -1274,7 +1758,8 @@
           "absorbent_mind",
           "pedagogical_anthropology",
           "secret_of_childhood",
-          "montessori_method"
+          "montessori_method",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -1312,9 +1797,15 @@
               4189,
               4265
             ]
+          ],
+          "discovery_of_child": [
+            [
+              2265,
+              2285
+            ]
           ]
         },
-        "total_matches": 9,
+        "total_matches": 10,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -1355,6 +1846,11 @@
             "source": "pedagogical_anthropology",
             "line": 4230,
             "excerpt": "is ideally normal, no one who is not abnormal in _some one thing_, it\nfollows that this \"some one thing\" must be corrected by the humbling\npractice of self-discipline. At the same time it is rare for "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 2275,
+            "excerpt": "These are the bare outlines of a program for securing discipline in a child. The means may be described as indirect sin.ce the rationally organized work and freedom of a child takes the place of a cri"
           }
         ]
       },
@@ -1366,7 +1862,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -1866,9 +2363,39 @@
               15956,
               16021
             ]
+          ],
+          "discovery_of_child": [
+            [
+              1,
+              18
+            ],
+            [
+              118,
+              163
+            ],
+            [
+              408,
+              433
+            ],
+            [
+              458,
+              516
+            ],
+            [
+              1089,
+              1109
+            ],
+            [
+              2070,
+              2090
+            ],
+            [
+              2265,
+              2285
+            ]
           ]
         },
-        "total_matches": 412,
+        "total_matches": 428,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -1974,6 +2501,16 @@
             "source": "elementary_material",
             "line": 5214,
             "excerpt": "[Illustration: The children are permitted to work at their various\noccupations in complete freedom. (_The Lenox School, Montessori\nElementary Class, New York._)]"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 8,
+            "excerpt": "Physical growth, 42. The environ- ment, 46. Practical observations, 47. Discipline and liberty, 49. The diffi- culty of discipline in schools. 50. Independence, 55. The more useless help is, the more "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 128,
+            "excerpt": "No one would dare to maintain that such a principle already exists in teaching and in the school. It is true that some teachers, led by Rousseau, have laid down fantastic principles with respect to a "
           }
         ]
       },
@@ -1985,7 +2522,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -2581,9 +3119,47 @@
               16208,
               17482
             ]
+          ],
+          "discovery_of_child": [
+            [
+              604,
+              624
+            ],
+            [
+              664,
+              684
+            ],
+            [
+              777,
+              800
+            ],
+            [
+              1014,
+              1034
+            ],
+            [
+              1257,
+              1277
+            ],
+            [
+              1608,
+              1628
+            ],
+            [
+              2114,
+              2134
+            ],
+            [
+              2169,
+              2207
+            ],
+            [
+              2239,
+              2280
+            ]
           ]
         },
-        "total_matches": 2115,
+        "total_matches": 2132,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -2689,6 +3265,16 @@
             "source": "elementary_material",
             "line": 14868,
             "excerpt": "OBEDIENCE.\n\n      NOTE:"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 607,
+            "excerpt": "In the ordinary schools the term \"gymnastics\" is given to a kind of group activity which aims at disciplining the muscles of a whole class in unison. There is also a more formal type of gymnastics whi"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 674,
+            "excerpt": "He has also acquired in a natural way many practical skills. His body is attuned to musical rhythms, and he is ready for gymnastic exercises. Music is no longer a simple stimulus to his efforts, but i"
           }
         ]
       }
@@ -2702,7 +3288,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -3106,9 +3693,67 @@
               16599,
               16673
             ]
+          ],
+          "discovery_of_child": [
+            [
+              58,
+              122
+            ],
+            [
+              185,
+              237
+            ],
+            [
+              356,
+              568
+            ],
+            [
+              1077,
+              1112
+            ],
+            [
+              1169,
+              1190
+            ],
+            [
+              1234,
+              1264
+            ],
+            [
+              1592,
+              1614
+            ],
+            [
+              1640,
+              1660
+            ],
+            [
+              1685,
+              1705
+            ],
+            [
+              1836,
+              1856
+            ],
+            [
+              1948,
+              1968
+            ],
+            [
+              2089,
+              2170
+            ],
+            [
+              2275,
+              2295
+            ],
+            [
+              2411,
+              2442
+            ]
           ]
         },
-        "total_matches": 194,
+        "total_matches": 239,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -3214,6 +3859,16 @@
             "source": "elementary_material",
             "line": 11871,
             "excerpt": "The decorated motif is selected or else invented by the child himself.\nHe is allowed the same freedom of choice in his backgrounds as he enjoys\nfor his inks or water-colors. The observation of nature "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 68,
+            "excerpt": "Some years ago there arose in Italy the so-called \"schools of scientific education.\" The object of these schools, which were sponsored by experienced physicians, was to train teachers in the new metho"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 221,
+            "excerpt": "I thus spent two years with the help of my colleagues in preparing the teachers of Rome in a special method of observing and educating feeble-minded children. But this was not all. What was even more "
           }
         ]
       },
@@ -3225,7 +3880,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -3709,9 +4365,43 @@
               15542,
               15608
             ]
+          ],
+          "discovery_of_child": [
+            [
+              420,
+              466
+            ],
+            [
+              678,
+              698
+            ],
+            [
+              774,
+              800
+            ],
+            [
+              1093,
+              1185
+            ],
+            [
+              1228,
+              1248
+            ],
+            [
+              1631,
+              1651
+            ],
+            [
+              2045,
+              2065
+            ],
+            [
+              2207,
+              2227
+            ]
           ]
         },
-        "total_matches": 290,
+        "total_matches": 307,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -3817,6 +4507,16 @@
             "source": "elementary_material",
             "line": 12895,
             "excerpt": "a military march was played; she would frown and walk heavily.\n\nOn the other hand, the intervention of the teacher to give some apposite\nlesson, tending to perfect certain movements, is something whic"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 430,
+            "excerpt": "In order to carry out my plans, I usually bad to make use of teachers accustomed to the old methods of instruction in common schools. This convinced me of the radical difference between the new and th"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 688,
+            "excerpt": "A child's inner toil has a kind of modest sensibility, and it finds expression only when an adult has not intervened with his advice, exhortations, orders, and questions. We should leave a child free "
           }
         ]
       },
@@ -3828,7 +4528,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -4056,9 +4757,47 @@
               16070,
               16140
             ]
+          ],
+          "discovery_of_child": [
+            [
+              87,
+              135
+            ],
+            [
+              233,
+              278
+            ],
+            [
+              310,
+              347
+            ],
+            [
+              412,
+              432
+            ],
+            [
+              516,
+              536
+            ],
+            [
+              767,
+              787
+            ],
+            [
+              1071,
+              1106
+            ],
+            [
+              1628,
+              1648
+            ],
+            [
+              2413,
+              2433
+            ]
           ]
         },
-        "total_matches": 68,
+        "total_matches": 85,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -4164,6 +4903,16 @@
             "source": "elementary_material",
             "line": 15497,
             "excerpt": "It prepares: for exercise; for the activities of\n      domestic service (washing, dressing, preparing food,\n      setting and clearing the table, etc.); for manual\n      labor (trades); for language ("
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 97,
+            "excerpt": "We must create in the soul of the teacher a general Interest in the manifestation of natural phenomena until be comes to the point where be loves nature and experiences the anxiety of one who bas prep"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 243,
+            "excerpt": "I read of his patient efforts, I realized that his primary means of instruction were spiritual. Indeed, at the end of his French work, he gives a resume of what he had done and sorrowfully comes to th"
           }
         ]
       }
@@ -4177,7 +4926,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -4361,9 +5111,47 @@
               16795,
               16881
             ]
+          ],
+          "discovery_of_child": [
+            [
+              144,
+              164
+            ],
+            [
+              281,
+              301
+            ],
+            [
+              505,
+              526
+            ],
+            [
+              609,
+              746
+            ],
+            [
+              1059,
+              1080
+            ],
+            [
+              1188,
+              1232
+            ],
+            [
+              2116,
+              2136
+            ],
+            [
+              2178,
+              2240
+            ],
+            [
+              2334,
+              2372
+            ]
           ]
         },
-        "total_matches": 76,
+        "total_matches": 101,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -4464,6 +5252,16 @@
             "source": "elementary_material",
             "line": 15883,
             "excerpt": "{ Edibles           }\n\n      Odors of foods (practical life): fresh milk, sour\n      milk, fresh meat, stale meat, rancid butter, fresh\n      butter, etc."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 154,
+            "excerpt": "We know only too well this sorry spectacle. In a classroom a bustling teacher is busy pouring knowledge into the heads of his charges. To succeed in his task he must keep his pupils immobile and atten"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 291,
+            "excerpt": "Small children have not yet acquired a definite coordination of their muscular movements. Their walk is unsteady; they cannot carry out ordinary acts of daily life such as putting on their stockings, "
           }
         ]
       },
@@ -4474,7 +5272,8 @@
           "own_handbook",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -4688,9 +5487,39 @@
               13208,
               13270
             ]
+          ],
+          "discovery_of_child": [
+            [
+              14,
+              34
+            ],
+            [
+              710,
+              750
+            ],
+            [
+              786,
+              806
+            ],
+            [
+              838,
+              916
+            ],
+            [
+              1097,
+              1240
+            ],
+            [
+              1305,
+              1326
+            ],
+            [
+              1502,
+              1522
+            ]
           ]
         },
-        "total_matches": 180,
+        "total_matches": 210,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -4781,6 +5610,16 @@
             "source": "elementary_material",
             "line": 12197,
             "excerpt": "consists of a series of bells representing the whole tones and\nsemi-tones of one octave. The material follows the general\ncharacteristics of that used in the sensorial method, that is, the\nobjects dif"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 29,
+            "excerpt": "126. Color materials, 128. Sensorial knowledge of geometry: Plane insets and geometrical shapes, 129. Exer- cises for distinguishing sounds, 134. Silence, 137."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 736,
+            "excerpt": "The control of error. Every effort should be made to see that the materials offered to a child contain in themselves a control of error. An example of this may be seen in the solid insets. These consi"
           }
         ]
       },
@@ -4790,7 +5629,8 @@
           "own_handbook",
           "montessori_method",
           "pedagogical_anthropology",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "montessori_method": [
@@ -4902,9 +5742,51 @@
               16783,
               16881
             ]
+          ],
+          "discovery_of_child": [
+            [
+              46,
+              66
+            ],
+            [
+              506,
+              526
+            ],
+            [
+              749,
+              781
+            ],
+            [
+              907,
+              927
+            ],
+            [
+              1200,
+              1222
+            ],
+            [
+              1904,
+              2059
+            ],
+            [
+              2126,
+              2178
+            ],
+            [
+              2243,
+              2263
+            ],
+            [
+              2295,
+              2318
+            ],
+            [
+              2350,
+              2376
+            ]
           ]
         },
-        "total_matches": 76,
+        "total_matches": 115,
         "key_passages": [
           {
             "source": "montessori_method",
@@ -4975,6 +5857,16 @@
             "source": "elementary_material",
             "line": 9288,
             "excerpt": "units place and the 1 would be in the tens position.\n\n[Illustration: The bead material used for addition and subtraction. Each\nof the nine numbers is of different colored beads.]"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 56,
+            "excerpt": "If at the time of the publication of the Third Italian Edi\u00b7 tion of this work I felt obliged to justify the reprinting of something that had been written at the beginning of my work, I now feel an all"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 516,
+            "excerpt": "Besides the various objects which the children are taught to use for their \"practical life,\" there are many others which lend themselves to the gradual development and refinement of a child's intellec"
           }
         ]
       },
@@ -4986,7 +5878,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -5358,9 +6251,43 @@
               17185,
               17440
             ]
+          ],
+          "discovery_of_child": [
+            [
+              506,
+              526
+            ],
+            [
+              1199,
+              1219
+            ],
+            [
+              1375,
+              1395
+            ],
+            [
+              1458,
+              1489
+            ],
+            [
+              1512,
+              1536
+            ],
+            [
+              1613,
+              1662
+            ],
+            [
+              1808,
+              1856
+            ],
+            [
+              2028,
+              2048
+            ]
           ]
         },
-        "total_matches": 686,
+        "total_matches": 700,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -5466,6 +6393,16 @@
             "source": "elementary_material",
             "line": 376,
             "excerpt": "I. THE SCALE                                                    319\n\n  II. THE READING AND WRITING OF MUSIC                            326\n    Treble and Bass Clefs                                    "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 516,
+            "excerpt": "Besides the various objects which the children are taught to use for their \"practical life,\" there are many others which lend themselves to the gradual development and refinement of a child's intellec"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 1209,
+            "excerpt": "The moveable alphabet provides an exercise in the analysis of words into their component letter-sounds, the step before being actually able to read. Alcuin Montessori School Oak !'ark, Illinois"
           }
         ]
       }
@@ -5474,7 +6411,8 @@
       "absorbent_mind": {
         "sources": [
           "absorbent_mind",
-          "secret_of_childhood"
+          "secret_of_childhood",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -5492,9 +6430,51 @@
               1994,
               2063
             ]
+          ],
+          "discovery_of_child": [
+            [
+              46,
+              66
+            ],
+            [
+              262,
+              282
+            ],
+            [
+              516,
+              571
+            ],
+            [
+              707,
+              727
+            ],
+            [
+              1092,
+              1112
+            ],
+            [
+              1258,
+              1318
+            ],
+            [
+              1602,
+              1622
+            ],
+            [
+              1836,
+              1856
+            ],
+            [
+              1889,
+              1921
+            ],
+            [
+              2302,
+              2335
+            ]
           ]
         },
-        "total_matches": 418,
+        "total_matches": 437,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -5515,6 +6495,16 @@
             "source": "secret_of_childhood",
             "line": 2029,
             "excerpt": "what it needs for its making and could not procure for\nitself In short, the adult must continue to provide a\nsuitable environment for the psychic embryo, just as\nnature, in the guide of the mother, pr"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 56,
+            "excerpt": "If at the time of the publication of the Third Italian Edi\u00b7 tion of this work I felt obliged to justify the reprinting of something that had been written at the beginning of my work, I now feel an all"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 272,
+            "excerpt": "My own experience with Seguin's method inspired me with confidence in it. After giving up my direct work with retarded children, I devoted myself to the study of his books and those of Itard. I felt t"
           }
         ]
       },
@@ -5706,7 +6696,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -5926,9 +6917,75 @@
               14976,
               15037
             ]
+          ],
+          "discovery_of_child": [
+            [
+              1,
+              18
+            ],
+            [
+              70,
+              90
+            ],
+            [
+              342,
+              367
+            ],
+            [
+              457,
+              502
+            ],
+            [
+              606,
+              648
+            ],
+            [
+              978,
+              998
+            ],
+            [
+              1212,
+              1232
+            ],
+            [
+              1292,
+              1312
+            ],
+            [
+              1333,
+              1381
+            ],
+            [
+              1437,
+              1457
+            ],
+            [
+              1491,
+              1535
+            ],
+            [
+              1755,
+              1775
+            ],
+            [
+              1845,
+              1865
+            ],
+            [
+              2044,
+              2064
+            ],
+            [
+              2112,
+              2132
+            ],
+            [
+              2281,
+              2301
+            ]
           ]
         },
-        "total_matches": 120,
+        "total_matches": 152,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -6024,6 +7081,16 @@
             "source": "elementary_material",
             "line": 6177,
             "excerpt": "(Compound Sentences)\n\nThe clauses are independent of each other. Each contains a complete\nmeaning, and each therefore could stand alone. It is a question of\nsimple sentences _coordinated_ with each ot"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 8,
+            "excerpt": "Physical growth, 42. The environ- ment, 46. Practical observations, 47. Discipline and liberty, 49. The diffi- culty of discipline in schools. 50. Independence, 55. The more useless help is, the more "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 80,
+            "excerpt": "eration of these two in thought and practice, a cooperation that would bring scientists directly into the noble field of teaching and which would raise the teachers from the lower cultural level which"
           }
         ]
       },
@@ -6035,7 +7102,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -6627,9 +7695,55 @@
               16208,
               17482
             ]
+          ],
+          "discovery_of_child": [
+            [
+              105,
+              276
+            ],
+            [
+              358,
+              511
+            ],
+            [
+              532,
+              815
+            ],
+            [
+              836,
+              1064
+            ],
+            [
+              1085,
+              1324
+            ],
+            [
+              1361,
+              1465
+            ],
+            [
+              1491,
+              1722
+            ],
+            [
+              1758,
+              1801
+            ],
+            [
+              1854,
+              1980
+            ],
+            [
+              2048,
+              2334
+            ],
+            [
+              2364,
+              2444
+            ]
           ]
         },
-        "total_matches": 2014,
+        "total_matches": 2216,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -6735,6 +7849,16 @@
             "source": "elementary_material",
             "line": 117,
             "excerpt": "faithful rendition of her work. But it is only in these respects that\nthe chapters devoted to these subjects are to be considered a\ntranslation. It will be observed that Dr. Montessori's text is not o"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 115,
+            "excerpt": "To gain some idea of this second kind of spiritual preparation, we must try to enter into the minds of Christ's first chosen followers as they heard him speak of a kingdom of God which was far greater"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 368,
+            "excerpt": "serve themselves. (I can say parenthetically that little children take delight in being measured. As soon as a teacher looks at a child and says, \"height,\" be will immediately kick off his shoes with "
           }
         ]
       },
@@ -6746,7 +7870,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -7210,9 +8335,27 @@
               16958,
               17073
             ]
+          ],
+          "discovery_of_child": [
+            [
+              484,
+              504
+            ],
+            [
+              1483,
+              1503
+            ],
+            [
+              1709,
+              1729
+            ],
+            [
+              1895,
+              1915
+            ]
           ]
         },
-        "total_matches": 438,
+        "total_matches": 442,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -7318,6 +8461,16 @@
             "source": "elementary_material",
             "line": 745,
             "excerpt": "provide for the study of two or more parts of speech. However, our\nexperiments have enabled us to make the exercises very specific in\ncharacter; so that the teacher has at her disposal not only a thor"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 494,
+            "excerpt": "We have only to apply these principles to see a caJm come upon a child which characterizes and, as it were, illuminates all his actions. There is thus truly born a new child, a child that is morally s"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 1493,
+            "excerpt": "itesimal differences that exist between different bands are unfathomable in their origins, but it is certain that they were \"sensibly'' fixed in each of us when our own particular mechanism was establ"
           }
         ]
       },
@@ -7329,7 +8482,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -7889,9 +9043,59 @@
               17055,
               17134
             ]
+          ],
+          "discovery_of_child": [
+            [
+              143,
+              163
+            ],
+            [
+              516,
+              552
+            ],
+            [
+              685,
+              705
+            ],
+            [
+              764,
+              784
+            ],
+            [
+              1184,
+              1204
+            ],
+            [
+              1233,
+              1253
+            ],
+            [
+              1326,
+              1346
+            ],
+            [
+              1609,
+              1635
+            ],
+            [
+              1684,
+              1704
+            ],
+            [
+              2063,
+              2083
+            ],
+            [
+              2207,
+              2281
+            ],
+            [
+              2364,
+              2443
+            ]
           ]
         },
-        "total_matches": 357,
+        "total_matches": 377,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -7997,6 +9201,16 @@
             "source": "elementary_material",
             "line": 8156,
             "excerpt": "knees before him_ there will not be a simple act of kneeling, but\nsomething more dramatic. The child will assume the kneeling posture with\nsome indication of emotion. The children take no end of inter"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 153,
+            "excerpt": "child whose body is condemned to grow in such an artificial and vicious fashion that his bones become deformed. When we speak of rescuing workingmen, we understand that under the more apparent evils, "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 526,
+            "excerpt": "the first he sought to bring him within the bounds of ordinary social life. In the second be attempted to educate the mind of the idiot. The boy, who had lived in terrible abandonment, bad found bis h"
           }
         ]
       }
@@ -8009,7 +9223,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -8203,9 +9418,71 @@
               16465,
               16596
             ]
+          ],
+          "discovery_of_child": [
+            [
+              11,
+              31
+            ],
+            [
+              258,
+              332
+            ],
+            [
+              356,
+              404
+            ],
+            [
+              497,
+              630
+            ],
+            [
+              687,
+              759
+            ],
+            [
+              848,
+              868
+            ],
+            [
+              1027,
+              1047
+            ],
+            [
+              1073,
+              1110
+            ],
+            [
+              1228,
+              1253
+            ],
+            [
+              1624,
+              1644
+            ],
+            [
+              1883,
+              1903
+            ],
+            [
+              2063,
+              2159
+            ],
+            [
+              2188,
+              2208
+            ],
+            [
+              2304,
+              2335
+            ],
+            [
+              2415,
+              2435
+            ]
           ]
         },
-        "total_matches": 95,
+        "total_matches": 139,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -8291,6 +9568,16 @@
             "source": "elementary_material",
             "line": 571,
             "excerpt": "the same thing, the continuation of an identical process.\n\nLet us return then to the \"Children's House\" and consider the child of\nfive and one-half years. To-day in those \"Children's Houses\" which hav"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 21,
+            "excerpt": "The isolation of a single quality in the material, 101. Fundamental quali- ties common to everything in the educational environment surrounding a child, 102."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 268,
+            "excerpt": "This second element in a child's education bas been the contribution of scientific education. This is why we can say today, as the fruit of our own experience, that a teacher is \"the catalyst\" between"
           }
         ]
       },
@@ -8302,7 +9589,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -8874,9 +10162,83 @@
               16465,
               16551
             ]
+          ],
+          "discovery_of_child": [
+            [
+              1,
+              17
+            ],
+            [
+              44,
+              64
+            ],
+            [
+              97,
+              117
+            ],
+            [
+              143,
+              223
+            ],
+            [
+              297,
+              419
+            ],
+            [
+              491,
+              664
+            ],
+            [
+              707,
+              727
+            ],
+            [
+              778,
+              815
+            ],
+            [
+              838,
+              862
+            ],
+            [
+              889,
+              936
+            ],
+            [
+              1016,
+              1057
+            ],
+            [
+              1157,
+              1191
+            ],
+            [
+              1235,
+              1270
+            ],
+            [
+              1460,
+              1480
+            ],
+            [
+              1607,
+              1768
+            ],
+            [
+              1870,
+              1922
+            ],
+            [
+              2103,
+              2182
+            ],
+            [
+              2232,
+              2444
+            ]
           ]
         },
-        "total_matches": 1037,
+        "total_matches": 1142,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -8982,6 +10344,16 @@
             "source": "elementary_material",
             "line": 5122,
             "excerpt": "The exercises both of working out the conjugation of the verb and of\nwriting out new verbs may be performed at home."
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 8,
+            "excerpt": "Physical growth, 42. The environ- ment, 46. Practical observations, 47. Discipline and liberty, 49. The diffi- culty of discipline in schools. 50. Independence, 55. The more useless help is, the more "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 45,
+            "excerpt": "An analysis of the movements of a band that is writing, 204. Direct preparation for writing: An analysis of its various factors, 206. Intelligence freed from mechanisms, 215. Composition of words, 217"
           }
         ]
       },
@@ -8993,7 +10365,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -9613,9 +10986,71 @@
               16839,
               16950
             ]
+          ],
+          "discovery_of_child": [
+            [
+              1,
+              22
+            ],
+            [
+              389,
+              409
+            ],
+            [
+              458,
+              494
+            ],
+            [
+              516,
+              631
+            ],
+            [
+              668,
+              688
+            ],
+            [
+              826,
+              868
+            ],
+            [
+              1228,
+              1275
+            ],
+            [
+              1361,
+              1381
+            ],
+            [
+              1417,
+              1437
+            ],
+            [
+              1622,
+              1642
+            ],
+            [
+              1707,
+              1736
+            ],
+            [
+              1910,
+              1930
+            ],
+            [
+              2049,
+              2069
+            ],
+            [
+              2149,
+              2243
+            ],
+            [
+              2289,
+              2309
+            ]
           ]
         },
-        "total_matches": 1309,
+        "total_matches": 1362,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -9721,6 +11156,16 @@
             "source": "elementary_material",
             "line": 482,
             "excerpt": "Making decorative designs with the aid of geometric insets        312\n\n  Water-color paintings from nature                                 313\n\n  The monocord                                          "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 8,
+            "excerpt": "Physical growth, 42. The environ- ment, 46. Practical observations, 47. Discipline and liberty, 49. The diffi- culty of discipline in schools. 50. Independence, 55. The more useless help is, the more "
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 399,
+            "excerpt": "provided, and others of different sizes and shapes. These were covered with small tablecloths and decorated with vases containing flowers or plants. Part of the equipment consisted of a very low washs"
           }
         ]
       }
@@ -9733,7 +11178,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -9831,9 +11277,91 @@
               16381,
               16530
             ]
+          ],
+          "discovery_of_child": [
+            [
+              381,
+              468
+            ],
+            [
+              524,
+              544
+            ],
+            [
+              624,
+              699
+            ],
+            [
+              789,
+              815
+            ],
+            [
+              1016,
+              1036
+            ],
+            [
+              1110,
+              1138
+            ],
+            [
+              1160,
+              1180
+            ],
+            [
+              1294,
+              1316
+            ],
+            [
+              1337,
+              1392
+            ],
+            [
+              1514,
+              1558
+            ],
+            [
+              1603,
+              1644
+            ],
+            [
+              1683,
+              1703
+            ],
+            [
+              1726,
+              1763
+            ],
+            [
+              1855,
+              1875
+            ],
+            [
+              1919,
+              1939
+            ],
+            [
+              2001,
+              2021
+            ],
+            [
+              2056,
+              2147
+            ],
+            [
+              2184,
+              2204
+            ],
+            [
+              2288,
+              2324
+            ],
+            [
+              2354,
+              2374
+            ]
           ]
         },
-        "total_matches": 25,
+        "total_matches": 65,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -9914,6 +11442,16 @@
             "source": "elementary_material",
             "line": 16437,
             "excerpt": "chair? It is hard, it is brown, it is wooden. What\n      about your school-mates, the children? Are they good,\n      are they pretty, are they polite, are they obedient,\n      or are they naughty, imp"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 391,
+            "excerpt": "family is perfectly normal. I therefore encouraged the teachers to obtain through talks with the children's mothers information of a social character, such as, the education of the parents, their habi"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 534,
+            "excerpt": "Itard's treatment of the little savage furnishes us with a combination of valuable educational principles that can be generalized and applied to the whole of child education. We may note in particular"
           }
         ]
       },
@@ -9925,7 +11463,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -10433,9 +11972,59 @@
               17221,
               17286
             ]
+          ],
+          "discovery_of_child": [
+            [
+              70,
+              119
+            ],
+            [
+              148,
+              170
+            ],
+            [
+              226,
+              246
+            ],
+            [
+              290,
+              354
+            ],
+            [
+              507,
+              545
+            ],
+            [
+              585,
+              605
+            ],
+            [
+              645,
+              691
+            ],
+            [
+              1073,
+              1121
+            ],
+            [
+              1456,
+              1514
+            ],
+            [
+              1685,
+              1733
+            ],
+            [
+              2253,
+              2273
+            ],
+            [
+              2413,
+              2442
+            ]
           ]
         },
-        "total_matches": 601,
+        "total_matches": 629,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -10541,6 +12130,16 @@
             "source": "elementary_material",
             "line": 16910,
             "excerpt": "By the expression \"moral education\" we mean an\n      education which tends to make a social being of an\n      individual who is by nature extra- or anti-social. It\n      presents two aspects which may"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 80,
+            "excerpt": "eration of these two in thought and practice, a cooperation that would bring scientists directly into the noble field of teaching and which would raise the teachers from the lower cultural level which"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 158,
+            "excerpt": "But in school there is only one prize for all those \"of good will\" who enter the race, a fact which generates pride, envy, and rivalries instead of that thrill coming from effort, humility, and love w"
           }
         ]
       },
@@ -10552,7 +12151,8 @@
           "secret_of_childhood",
           "montessori_method",
           "absorbent_mind",
-          "elementary_material"
+          "elementary_material",
+          "discovery_of_child"
         ],
         "line_ranges": {
           "absorbent_mind": [
@@ -10672,9 +12272,43 @@
               15258,
               15319
             ]
+          ],
+          "discovery_of_child": [
+            [
+              465,
+              485
+            ],
+            [
+              577,
+              597
+            ],
+            [
+              832,
+              865
+            ],
+            [
+              948,
+              968
+            ],
+            [
+              1011,
+              1034
+            ],
+            [
+              1256,
+              1276
+            ],
+            [
+              2012,
+              2032
+            ],
+            [
+              2413,
+              2433
+            ]
           ]
         },
-        "total_matches": 37,
+        "total_matches": 47,
         "key_passages": [
           {
             "source": "absorbent_mind",
@@ -10755,6 +12389,16 @@
             "source": "elementary_material",
             "line": 12856,
             "excerpt": "The children were invited into the large hall and left to themselves\nwhile the lady was playing on the piano our third melody, a march. The\nolder children caught the movement at once. After they had b"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 475,
+            "excerpt": "Nevertheless, be is still dependent since he cannot walk or wash and clothe himself, nor can he ask for what he wants in intelligible language. He is the slave of everybody. But by the time he is thre"
+          },
+          {
+            "source": "discovery_of_child",
+            "line": 587,
+            "excerpt": "1 As the result of further experiments by Dr. Mario Montessori the scientific education of children in nature studies has been further elaborated. It is impossible here to take into account the mass o"
           }
         ]
       }

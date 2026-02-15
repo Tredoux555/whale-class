@@ -1,8 +1,8 @@
 {
   "name": "Montessori Guru Knowledge Base",
-  "version": "2.0",
-  "last_updated": "2026-02-01",
-  "total_lines": 96877,
+  "version": "3.0",
+  "last_updated": "2026-02-15",
+  "total_lines": 99342,
   "sources": [
     {
       "id": "absorbent_mind",
@@ -87,32 +87,38 @@
       "status": "complete",
       "priority": 7,
       "notes": "Advanced Method Vol 2. Detailed material descriptions for 6-12."
-    }
-  ],
-  "topics_index": {
-    "sensitive_periods": ["secret_of_childhood", "absorbent_mind"],
-    "discipline": ["secret_of_childhood", "montessori_method"],
-    "concentration": ["absorbent_mind", "spontaneous_activity"],
-    "normalization": ["absorbent_mind", "secret_of_childhood"],
-    "deviations": ["secret_of_childhood"],
-    "materials": ["own_handbook", "montessori_method", "elementary_material"],
-    "observation": ["montessori_method", "spontaneous_activity"],
-    "teacher_role": ["own_handbook", "montessori_method", "secret_of_childhood"],
-    "prepared_environment": ["montessori_method", "own_handbook"],
-    "freedom_limits": ["montessori_method", "secret_of_childhood"],
-    "language_development": ["absorbent_mind"],
-    "movement": ["absorbent_mind", "own_handbook"],
-    "will_development": ["spontaneous_activity", "absorbent_mind"]
-  },
-  "books_not_yet_acquired": [
+    },
     {
       "id": "discovery_of_child",
       "title": "The Discovery of the Child",
+      "author": "Maria Montessori",
       "year": 1948,
-      "status": "not_acquired",
-      "source": "Archive.org",
-      "notes": "Revised Montessori Method - would be valuable addition"
-    },
+      "file": "sources/the_discovery_of_the_child.txt",
+      "lines": 2465,
+      "topics": ["prepared_environment", "materials", "sensorial", "language", "movement", "observation", "teacher_role", "independence", "discipline"],
+      "status": "complete",
+      "priority": 3,
+      "notes": "Revised edition of The Montessori Method (1948). Rich in practical material descriptions, prepared environment, teacher observation technique. Extracted from docx (Feb 15, 2026)."
+    }
+  ],
+  "topics_index": {
+    "sensitive_periods": ["secret_of_childhood", "absorbent_mind", "discovery_of_child"],
+    "discipline": ["secret_of_childhood", "montessori_method", "discovery_of_child"],
+    "concentration": ["absorbent_mind", "spontaneous_activity", "discovery_of_child"],
+    "normalization": ["absorbent_mind", "secret_of_childhood", "discovery_of_child"],
+    "deviations": ["secret_of_childhood", "discovery_of_child"],
+    "materials": ["own_handbook", "montessori_method", "elementary_material", "discovery_of_child"],
+    "observation": ["montessori_method", "spontaneous_activity", "discovery_of_child"],
+    "teacher_role": ["own_handbook", "montessori_method", "secret_of_childhood", "discovery_of_child"],
+    "prepared_environment": ["montessori_method", "own_handbook", "discovery_of_child"],
+    "freedom_limits": ["montessori_method", "secret_of_childhood", "discovery_of_child"],
+    "language_development": ["absorbent_mind", "discovery_of_child"],
+    "movement": ["absorbent_mind", "own_handbook", "discovery_of_child"],
+    "will_development": ["spontaneous_activity", "absorbent_mind", "discovery_of_child"],
+    "independence": ["discovery_of_child", "absorbent_mind"],
+    "social_development": ["discovery_of_child", "montessori_method"]
+  },
+  "books_not_yet_acquired": [
     {
       "id": "child_in_family",
       "title": "The Child in the Family",

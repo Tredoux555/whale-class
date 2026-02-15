@@ -43,28 +43,10 @@ RUN rm -rf .next
 
 # Next.js needs NEXT_PUBLIC_* vars at build time to inline them into client bundles.
 # Railway passes service env vars during Docker build — declare them as ARGs
-# so they are available during npm run build.
+# so they're available during `npm run build`.
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_YOUTUBE_API_KEY
-
-# Server-side env vars also needed at build time because Next.js/Turbopack
-# evaluates server modules during page data collection.
-ARG SUPABASE_SERVICE_ROLE_KEY
-ARG ADMIN_SECRET
-ARG STORY_JWT_SECRET
-ARG MESSAGE_ENCRYPTION_KEY
-ARG SUPER_ADMIN_PASSWORD
-ARG TEACHER_ADMIN_PASSWORD
-ARG ANTHROPIC_API_KEY
-ARG DATABASE_URL
-ARG VAULT_PASSWORD
-ARG VAULT_PASSWORD_HASH
-ARG RESEND_API_KEY
-ARG RESEND_FROM_EMAIL
-ARG OPENAI_API_KEY
-ARG STRIPE_PRICE_GURU_MONTHLY
-ARG STRIPE_WEBHOOK_SECRET_GURU
 
 # Build Next.js app (creates .next/standalone with output: 'standalone')
 RUN npm run build

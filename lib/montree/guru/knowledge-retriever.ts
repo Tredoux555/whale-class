@@ -37,6 +37,7 @@ const BOOK_FILES: Record<string, string> = {
   pedagogical_anthropology: 'pedagogical_anthropology.txt',
   spontaneous_activity: 'spontaneous_activity_in_education.txt',
   elementary_material: 'the_montessori_elementary_material.txt',
+  discovery_of_child: 'the_discovery_of_the_child.txt',
 };
 
 const BOOK_NAMES: Record<string, string> = {
@@ -47,6 +48,7 @@ const BOOK_NAMES: Record<string, string> = {
   pedagogical_anthropology: 'Pedagogical Anthropology',
   spontaneous_activity: 'Spontaneous Activity in Education',
   elementary_material: 'The Montessori Elementary Material',
+  discovery_of_child: 'The Discovery of the Child',
 };
 
 // Keywords that map to topic categories
@@ -72,6 +74,14 @@ const KEYWORD_MAPPINGS: Record<string, string[]> = {
   'will|willpower|choice|decide': ['child_psychology.will', 'discipline.obedience'],
   'character|personality': ['child_psychology.character'],
   'age|development|stage|plane': ['development_stages.planes', 'development_stages.absorbent_mind'],
+  'read|write|writing|letter|alphabet|phonics|spell': ['sensitive_periods.language', 'materials.language_materials'],
+  'math|count|number|arithmetic|addition': ['materials.math'],
+  'sensorial|pink tower|cylinder|colour|texture|smell': ['materials.sensorial', 'sensitive_periods.sensory'],
+  'practical life|pouring|buttoning|washing|polishing|dressing': ['materials.practical_life'],
+  'grace|courtesy|polite|manners|greeting': ['social_development.grace_courtesy'],
+  'mixed age|older|younger|age group': ['social_development.mixed_ages'],
+  'prepared environment|classroom setup|shelves|child.sized': ['environment.prepared'],
+  'nature|garden|plant|outdoor|cosmic': ['environment.nature'],
 };
 
 let topicIndex: TopicIndex | null = null;
