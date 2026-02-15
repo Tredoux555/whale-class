@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 
 interface Child {
@@ -59,9 +59,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" />
 
-      {/* Student count subtitle */}
+      {/* Student/child count subtitle */}
       <div className="bg-emerald-50 border-b border-emerald-100 px-4 py-2 text-center text-sm text-emerald-700 font-medium">
-        {children.length} students
+        {children.length} {isHomeschoolParent(session) ? 'children' : 'students'}
       </div>
 
       {/* Student Grid */}
@@ -72,7 +72,9 @@ export default function DashboardPage() {
             className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow"
           >
             <span className="text-6xl mb-4 block">👶</span>
-            <p className="text-gray-600 font-medium text-lg">Tap to add your first student</p>
+            <p className="text-gray-600 font-medium text-lg">
+              {isHomeschoolParent(session) ? 'Tap to add your first child' : 'Tap to add your first student'}
+            </p>
           </Link>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">

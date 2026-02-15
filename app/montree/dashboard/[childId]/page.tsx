@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { getSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
@@ -474,24 +474,28 @@ export default function WeekPage() {
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
 
-      {/* Invite Parent Modal */}
-      <InviteParentModal
-        childId={childId}
-        childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-        teacherId={session?.teacher?.id}
-        isOpen={inviteModalOpen}
-        onClose={() => setInviteModalOpen(false)}
-      />
+      {/* Invite Parent Modal — hidden for homeschool parents (they ARE the parent) */}
+      {!isHomeschoolParent(session) && (
+        <>
+          <InviteParentModal
+            childId={childId}
+            childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+            teacherId={session?.teacher?.id}
+            isOpen={inviteModalOpen}
+            onClose={() => setInviteModalOpen(false)}
+          />
 
-      {/* Invite Button - subtle, right-aligned */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setInviteModalOpen(true)}
-          className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
-        >
-          👨‍👩‍👧 Invite Parent
-        </button>
-      </div>
+          {/* Invite Button - subtle, right-aligned */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => setInviteModalOpen(true)}
+              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+            >
+              👨‍👩‍👧 Invite Parent
+            </button>
+          </div>
+        </>
+      )}
 
       {/* FOCUS WORKS - One per area, with extras grouped underneath */}
       <FocusWorksSection

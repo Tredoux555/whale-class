@@ -225,6 +225,7 @@ export async function POST(request: NextRequest) {
       teacher: {
         id: teacher.id,
         name: teacher.name,
+        role: teacherRole,
         email: teacher.email,
         password_set_at: teacher.password_set_at || null,
       },
