@@ -24,13 +24,14 @@ export async function GET(request: NextRequest) {
 
     const t = teacher as Record<string, unknown>;
     const role = t.role as string || 'teacher';
-    const plan = t.guru_plan as string || 'free';
-    const promptsUsed = t.guru_prompts_used as number || 0;
-    const subStatus = t.guru_subscription_status as string || 'none';
-    const periodEnd = t.guru_current_period_end as string | null;
 
-    // Teachers get unlimited Guru — no paywall
-    if (role !== 'homeschool_parent') {
+    // FEATURE FLAG: Set GURU_FREEMIUM_ENABLED=true on Railway to activate paywall.
+    // When false (default), everyone gets unlimited Guru access.
+    const freemiumEnabled = process.env.GURU_FREEMIUM_ENABLED === 'true';
+
+    // Teachers always get unlimited Guru — no paywall
+    // Homeschool parents also get unlimited when freemium is disabled
+    if (role !== 'homeschool_parent' || !freemiumEnabled) {
       return NextResponse.json({
         success: true,
         guru_access: 'unlimited',
@@ -38,7 +39,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Homeschool parents: check subscription
+    // Homeschool parents with freemium enabled: check subscription
+    const plan = t.guru_plan as string || 'free';
+    const promptsUsed = t.guru_prompts_used as number || 0;
+    const subStatus = t.guru_subscription_status as string || 'none';
+    const periodEnd = t.guru_current_period_end as string | null;
+
     const isPaid = plan !== 'free' && subStatus === 'active' &&
       (!periodEnd || new Date(periodEnd) > new Date());
 

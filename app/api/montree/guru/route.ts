@@ -80,7 +80,9 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // --- Freemium gate for homeschool parents ---
-    // Check if this is a homeschool parent and enforce the 3-prompt free trial
+    // FEATURE FLAG: Set GURU_FREEMIUM_ENABLED=true on Railway to activate paywall.
+    // When false (default), all homeschool parents get unlimited Guru for free.
+    const freemiumEnabled = process.env.GURU_FREEMIUM_ENABLED === 'true';
     const teacherId = teacher_id || auth.userId;
     let isParentRole = false;
     let shouldIncrementPrompt = false;
@@ -94,30 +96,32 @@ export async function POST(request: NextRequest) {
       const t = teacherData as Record<string, unknown> | null;
       if (t?.role === 'homeschool_parent') {
         isParentRole = true;
-        const plan = t.guru_plan as string || 'free';
-        const promptsUsed = t.guru_prompts_used as number || 0;
-        const subStatus = t.guru_subscription_status as string || 'none';
-        const periodEnd = t.guru_current_period_end as string | null;
 
-        // Check if paid subscription is active and current
-        const isPaid = plan !== 'free' && subStatus === 'active' &&
-          (!periodEnd || new Date(periodEnd) > new Date());
+        if (freemiumEnabled) {
+          const plan = t.guru_plan as string || 'free';
+          const promptsUsed = t.guru_prompts_used as number || 0;
+          const subStatus = t.guru_subscription_status as string || 'none';
+          const periodEnd = t.guru_current_period_end as string | null;
 
-        if (!isPaid && promptsUsed >= 3) {
-          return NextResponse.json({
-            success: false,
-            error: 'guru_limit_reached',
-            prompts_used: promptsUsed,
-            prompts_limit: 3,
-            message: 'You\'ve used your 3 free Guru sessions. Upgrade to Guru for unlimited advice.',
-          }, { status: 403 });
+          const isPaid = plan !== 'free' && subStatus === 'active' &&
+            (!periodEnd || new Date(periodEnd) > new Date());
+
+          if (!isPaid && promptsUsed >= 3) {
+            return NextResponse.json({
+              success: false,
+              error: 'guru_limit_reached',
+              prompts_used: promptsUsed,
+              prompts_limit: 3,
+              message: 'You\'ve used your 3 free Guru sessions. Upgrade to Guru for unlimited advice.',
+            }, { status: 403 });
+          }
+
+          // Flag to increment counter AFTER successful AI response
+          if (!isPaid) {
+            shouldIncrementPrompt = true;
+          }
         }
-
-        // Flag to increment counter AFTER successful AI response
-        // (not before — if AI fails, user shouldn't lose a free prompt)
-        if (!isPaid) {
-          shouldIncrementPrompt = true;
-        }
+        // When freemiumEnabled=false, skip gate entirely — unlimited access
       }
     }
 
