@@ -7,7 +7,7 @@ Next.js 16.1.1 app with two systems:
 
 Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domain returns 405 on API calls)
 Deploy: Railway auto-deploys on push to `main`
-Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 14" added Feb 14, 2026; old "Cowork VM" Feb 11 key is stale)
+Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 15" added Feb 15, 2026; old "Cowork VM" Feb 11 key is stale)
 Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
@@ -316,45 +316,37 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 
 ---
 
-### 🚀 Git Push — ✅ RESOLVED + REPO CLEANUP (Feb 15, 2026)
+### 🚀 Git Push — ✅ RESOLVED + REPO CLEANED (Feb 15, 2026)
 
-**Normal git push STILL broken** — macOS LibreSSL `SSL_ERROR_SYSCALL` drops connections during large transfers. Repo was 1.8GB due to video files in history.
+**Normal git push from Cowork VM still fails** — repo .git is 600MB, SSH connections drop during large pack transfer. **Proven working method:** GitHub REST API push (create blob → create tree → create commit → update ref).
 
-**Repo cleanup done (Feb 15):** BFG Repo Cleaner stripped all blobs >5MB from history. `Promo Videos/`, `Montessori Documents/`, `public/videos/` removed from tree and history. Mirror force-pushed to GitHub.
+**Latest push (Feb 15, late session):** Commit `8aa587ba` — removed 67 Montessori Documents files from remote, updated .gitignore. All Montree Home code (phases 1-4) was already on remote from Mac Desktop push.
+
+**Current HEAD on GitHub:** `8aa587ba` ("deploy: Montree Home (all 4 phases) + cleanup")
+
+**GitHub PATs:**
+- `cowork-push-feb15` — active, expires Mar 17 2026 (whale-class, Contents read/write)
+- `cowork-push-feb14` — active, expires Feb 14 2027
+
+**Push script pattern** (for future Cowork sessions):
+```python
+# 1. Create/find PAT via Chrome (github.com/settings/tokens?type=beta)
+# 2. Save to /sessions/*/. github-pat
+# 3. Run push-api.py or push-v2.py (diff local vs remote, upload blobs, create tree+commit, update ref)
+# 4. Handles SSL retries, batching for large changesets
+```
 
 **Mac local state:**
-- `~/Desktop/ACTIVE/whale/` — Working repo (cloned from BFG-cleaned mirror)
-- `~/Desktop/ACTIVE/whale-clean/` — Fresh git init, no history, 60MB. Can be deleted.
-- `~/Desktop/ACTIVE/whale-old/` — Old 1.8GB repo. Can be deleted.
-- `~/Desktop/ACTIVE/whale-class-mirror.git/` — BFG-cleaned bare mirror. Can be deleted.
-- `~/Desktop/whale-backup-feb15/` — Backup of Montree Home files. Can be deleted after verifying deploy.
-
-**LibreSSL permanent fix (partially applied):**
-1. ✅ `brew install git` — Homebrew git v2.53.0 (uses OpenSSL) now at `/opt/homebrew/bin/git`
-2. ⚠️ `sudo networksetup -setv6off Wi-Fi` — Password failed, needs retry. IPv6 is a known trigger for LibreSSL SSL_ERROR_SYSCALL.
-3. After IPv6 is disabled, test with `git push origin main` — should work.
-
-**Proven working method:** GitHub REST API push from Cowork VM (create blob → create tree → create commit → update ref). Script at `/sessions/*/push-api.py`. Each file is a separate tiny HTTP request with retries.
-
-Git push was originally blocked for hours (SSH connection resets, VPN SSL errors, FUSE .lock file issues). **Solved using GitHub REST API** — bypasses git protocol entirely by uploading files via REST calls (create blob → create tree → create commit → update ref).
-
-**GitHub PAT:** `[REDACTED]` (fine-grained, repo contents read/write)
-
-**Commits pushed via API:**
-- `deac565` — Initial code push (39 changed files from commit 549b589, Social Media Manager + three-issue fix + marketing hub)
-- `adf1ff0` — .gitignore update (block video files: *.mp4, *.mov, *.avi, *.mkv, *.wmv, *.webm)
-- `f48449a` → `e257fac` → `28491aa` → `972d426` — FeedbackButton fix attempts 1-4
-
-**Current HEAD on GitHub:** `972d426` (FeedbackButton fix 4 — working)
-
-**Video cleanup:** .gitignore now blocks all video files. 6 keeper videos copied to `Promo Videos/KEEP/`. User still needs to delete video files from Mac: `cd ~/Desktop/ACTIVE/whale && rm -rf "Promo Videos/" Montree_Onboarding_Final.mp4 Montree_Promo_Final.mp4`
-
-**Normal git push still broken** — repo is 1.8GB, SSH/HTTPS both fail. GitHub REST API is the working method. Push script: `/sessions/bold-vibrant-cray/push-code.py` (reads files, creates blobs, builds tree, commits).
+- `~/Desktop/ACTIVE/whale/` — Working repo
+- Can delete: `whale-clean/`, `whale-old/`, `whale-class-mirror.git/`, `~/Desktop/whale-backup-feb15/`
 
 **GitHub SSH keys:**
 - "My Mac" (Nov 2025) — user's MacBook
 - "Cowork VM" (Feb 11) — ⚠️ stale, can delete
-- "Cowork VM Feb 14" — current session (auth works, git push fails due to size)
+- "Cowork VM Feb 14" — previous session
+- "Cowork VM Feb 15" — current session (auth works, git push still fails due to size)
+
+**Handoff:** `docs/HANDOFF_GIT_PUSH_FIX_FEB15.md`
 
 ---
 
@@ -835,12 +827,19 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - ~~469 console.log statements~~ → stripped (0 remaining, security console.warn preserved)
 - ~~23 `: any` types~~ → fixed (2 trivial remain: settings page + test script)
 
+### Immediate Next Steps
+- **Guru knowledge update** — 3 new books to add to the Guru's knowledge base (user will provide)
+- **Search bar** — Add search functionality (scope TBD)
+- **Run migrations** — `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` not yet run against Supabase
+
 ### Deferred (Future Sessions)
 - Centralized logging service
 - PWA manifest not linked
 - Email sending not tested
 - DB only has 18/43 language works (needs reseed)
 - Clean up x-school-id headers from ~11 frontend files (harmless, cookie-auth checked first)
+- Clean up stale GitHub SSH keys ("Cowork VM" Feb 11)
+- Delete old Mac repos: `whale-clean/`, `whale-old/`, `whale-class-mirror.git/`, `~/Desktop/whale-backup-feb15/`
 
 ### Known Security Debt (Explicitly Deferred in Phase 9)
 - Parent invite codes stored as plaintext — low priority
