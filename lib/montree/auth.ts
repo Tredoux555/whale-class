@@ -85,3 +85,9 @@ export function getSchoolId(): string | null {
   const session = getSession();
   return session?.school?.id || null;
 }
+
+// Check if the current user is a homeschool parent
+export function isHomeschoolParent(session?: MontreeSession | null): boolean {
+  const s = session ?? getSession();
+  return s?.teacher?.role === 'homeschool_parent';
+}

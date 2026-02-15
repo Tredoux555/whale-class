@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
@@ -522,20 +522,22 @@ export default function StudentsPage() {
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">👶</span>
-          <h1 className="font-bold text-slate-800">Students</h1>
+          <h1 className="font-bold text-slate-800">{isHomeschoolParent(session) ? 'Children' : 'Students'}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.push('/montree/dashboard/labels')}
-            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200"
-          >
-            🏷️ Labels
-          </button>
+          {!isHomeschoolParent(session) && (
+            <button
+              onClick={() => router.push('/montree/dashboard/labels')}
+              className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200"
+            >
+              🏷️ Labels
+            </button>
+          )}
           <button
             onClick={openAddForm}
             className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
           >
-            + Add Student
+            + Add {isHomeschoolParent(session) ? 'Child' : 'Student'}
           </button>
         </div>
       </div>
@@ -545,12 +547,14 @@ export default function StudentsPage() {
         {students.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">👶</span>
-            <p className="text-slate-500 mb-4">No students in this classroom yet</p>
+            <p className="text-slate-500 mb-4">
+              {isHomeschoolParent(session) ? 'No children added yet' : 'No students in this classroom yet'}
+            </p>
             <button
               onClick={openAddForm}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium"
             >
-              Add Your First Student
+              Add Your First {isHomeschoolParent(session) ? 'Child' : 'Student'}
             </button>
           </div>
         ) : (
@@ -630,7 +634,9 @@ export default function StudentsPage() {
           <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="font-bold text-lg text-slate-800">
-                {editingStudent ? 'Edit Student' : 'Add New Student'}
+                {editingStudent
+                  ? `Edit ${isHomeschoolParent(session) ? 'Child' : 'Student'}`
+                  : `Add New ${isHomeschoolParent(session) ? 'Child' : 'Student'}`}
               </h2>
               <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-xl">
                 ✕
@@ -862,7 +868,7 @@ export default function StudentsPage() {
 
                     {/* Row 2: Tenure */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Time at School</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{isHomeschoolParent(session) ? 'Time in Program' : 'Time at School'}</label>
                       <select
                         value={student.tenure}
                         onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}

@@ -13,6 +13,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [session, setSession] = useState<any>(null);
+  const isParent = session?.teacher?.role === 'homeschool_parent';
   const [loading, setLoading] = useState(false);
   const [seedingCurriculum, setSeedingCurriculum] = useState(false);
   const [error, setError] = useState('');
@@ -348,7 +349,7 @@ export default function OnboardingPage() {
               tracking progress that celebrates each small victory.
             </p>
             <p className="text-slate-500 leading-relaxed text-sm">
-              Your dashboard awaits. Add students whenever you&apos;re ready.
+              Your dashboard awaits. Add {isParent ? 'your children' : 'students'} whenever you&apos;re ready.
             </p>
           </div>
 
@@ -365,7 +366,7 @@ export default function OnboardingPage() {
             }}
             className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
           >
-            Enter My Classroom →
+            {isParent ? 'Enter My Home →' : 'Enter My Classroom →'}
           </button>
 
           {session?.teacher?.name && (
@@ -385,7 +386,7 @@ export default function OnboardingPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">Add Your Students</h1>
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">{isParent ? 'Add Your Children' : 'Add Your Students'}</h1>
             <p className="text-blue-600 font-medium">
               {session?.classroom?.name || 'Your Classroom'}
             </p>
@@ -401,7 +402,9 @@ export default function OnboardingPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <span>👶</span>
-              {editingStudentIndex !== null ? 'Edit Student' : 'New Student'}
+              {editingStudentIndex !== null
+                ? `Edit ${isParent ? 'Child' : 'Student'}`
+                : `New ${isParent ? 'Child' : 'Student'}`}
             </h2>
 
             {/* Name Input */}
@@ -410,7 +413,7 @@ export default function OnboardingPage() {
                 type="text"
                 value={currentStudent.name}
                 onChange={(e) => setCurrentStudent({ ...currentStudent, name: e.target.value })}
-                placeholder="Student's name"
+                placeholder={isParent ? "Child's name" : "Student's name"}
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none text-lg transition-colors"
                 autoFocus
               />
@@ -468,7 +471,9 @@ export default function OnboardingPage() {
               disabled={!currentStudent.name.trim()}
               className="w-full mt-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {editingStudentIndex !== null ? '✓ Update Student' : '+ Add Student'}
+              {editingStudentIndex !== null
+                ? `✓ Update ${isParent ? 'Child' : 'Student'}`
+                : `+ Add ${isParent ? 'Child' : 'Student'}`}
             </button>
 
             {editingStudentIndex !== null && (
@@ -489,7 +494,7 @@ export default function OnboardingPage() {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span>👥</span>
-                Students Added ({students.length})
+                {isParent ? 'Children' : 'Students'} Added ({students.length})
               </h2>
 
               <div className="space-y-2">
@@ -539,8 +544,10 @@ export default function OnboardingPage() {
             className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : students.length === 0
-              ? 'Add at least 1 student to continue'
-              : `Save ${students.length} Student${students.length !== 1 ? 's' : ''} & Continue →`}
+              ? `Add at least 1 ${isParent ? 'child' : 'student'} to continue`
+              : `Save ${students.length} ${isParent
+                  ? (students.length !== 1 ? 'Children' : 'Child')
+                  : (students.length !== 1 ? 'Students' : 'Student')} & Continue →`}
           </button>
 
           <p className="text-center text-slate-400 text-xs mt-4">
@@ -584,11 +591,11 @@ export default function OnboardingPage() {
             </p>
             <p className="flex items-start gap-3">
               <span className="text-emerald-500 mt-0.5">→</span>
-              <span>Effortless tracking that frees you to teach</span>
+              <span>{isParent ? 'Effortless tracking that frees you to focus on your child' : 'Effortless tracking that frees you to teach'}</span>
             </p>
             <p className="flex items-start gap-3">
               <span className="text-emerald-500 mt-0.5">→</span>
-              <span>Stories to share with the families who trust you</span>
+              <span>{isParent ? 'A beautiful record of your homeschool journey' : 'Stories to share with the families who trust you'}</span>
             </p>
           </div>
         </div>
