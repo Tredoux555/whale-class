@@ -57,3 +57,6 @@ Montree_Promo_Final.mp4
 # Personal documents - not part of the app
 Montessori Documents/
 generated-images/
+
+# GitHub PAT for Cowork push (never commit this)
+.github-pat
