@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Work, AREA_COLORS, AREA_ICONS } from './types';
 
 interface CurriculumWorkListProps {
@@ -10,6 +11,7 @@ interface CurriculumWorkListProps {
   onEditWork: (work: Work) => void;
   onDeleteWork: (work: Work) => void;
   onOpenFullDetails?: (workName: string) => void;
+  highlightedWorkId?: string | null;
   reordering: boolean;
   onDragStart: (e: React.DragEvent, work: Work) => void;
   onDragOver: (e: React.DragEvent, workId: string) => void;
@@ -31,6 +33,7 @@ export default function CurriculumWorkList({
   onEditWork,
   onDeleteWork,
   onOpenFullDetails,
+  highlightedWorkId,
   reordering,
   onDragStart,
   onDragOver,
@@ -43,6 +46,19 @@ export default function CurriculumWorkList({
   startAutoScroll,
   stopAutoScroll,
 }: CurriculumWorkListProps) {
+  // Scroll to highlighted work when it changes (from search)
+  useEffect(() => {
+    if (!highlightedWorkId) return;
+    // Small delay to allow section to render/expand first
+    const timer = setTimeout(() => {
+      const el = document.querySelector(`[data-work-id="${highlightedWorkId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [highlightedWorkId]);
+
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -82,9 +98,11 @@ export default function CurriculumWorkList({
           const isExpanded = expandedWork === work.id;
           const isDragging = draggedWork?.id === work.id;
           const isDragOver = dragOverId === work.id;
+          const isHighlighted = highlightedWorkId === work.id;
           return (
             <div
               key={work.id}
+              data-work-id={work.id}
               draggable
               onDragStart={(e) => onDragStart(e, work)}
               onDragOver={(e) => onDragOver(e, work.id)}
@@ -93,7 +111,8 @@ export default function CurriculumWorkList({
               onDragEnd={onDragEnd}
               className={`bg-gray-50 rounded-xl overflow-hidden transition-all
                 ${isDragging ? 'opacity-50 scale-95' : ''}
-                ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                ${isDragOver ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                ${isHighlighted ? 'ring-2 ring-emerald-500 ring-offset-2 bg-emerald-50 animate-pulse' : ''}`}
             >
               {/* Work Header */}
               <div className="flex items-center gap-2 p-3">

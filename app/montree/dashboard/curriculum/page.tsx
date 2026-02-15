@@ -32,6 +32,9 @@ export default function CurriculumPage() {
   // Add work modal state
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Highlighted work from search
+  const [highlightedWorkId, setHighlightedWorkId] = useState<string | null>(null);
+
   // Full Details modal state
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
   const [fullDetailsWork, setFullDetailsWork] = useState('');
@@ -180,6 +183,13 @@ export default function CurriculumPage() {
               curriculum={byArea}
               onSelectWork={(work, areaKey) => {
                 setSelectedArea(areaKey);
+                // Expand and highlight the specific work, then scroll to it
+                if (work.id) {
+                  setExpandedWork(work.id);
+                  setHighlightedWorkId(work.id);
+                  // Clear highlight after animation
+                  setTimeout(() => setHighlightedWorkId(null), 2000);
+                }
               }}
               placeholder="Search works..."
             />
@@ -254,6 +264,7 @@ export default function CurriculumPage() {
                 onEditWork={setEditingWork}
                 onDeleteWork={deleteWork}
                 onOpenFullDetails={openFullDetails}
+                highlightedWorkId={highlightedWorkId}
                 reordering={reordering}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
