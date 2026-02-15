@@ -14,7 +14,7 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ## CURRENT STATUS (Feb 15, 2026)
 
-### 🏠 Montree Home — Phase 1 COMPLETE (Feb 15, 2026)
+### 🏠 Montree Home — ALL 4 PHASES DEPLOYED (Feb 15, 2026)
 
 Standalone Montessori homeschool product. Shared codebase with classroom version.
 
@@ -60,7 +60,9 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 - `STRIPE_PRICE_GURU_MONTHLY` — Stripe Price ID for the Guru monthly subscription
 - `STRIPE_WEBHOOK_SECRET_GURU` — Stripe webhook signing secret for the Guru endpoint
 
-**Migrations needed:** Run `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` against Supabase before testing.
+**Migrations needed:** Run `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` against Supabase before testing. ⚠️ NOT YET RUN.
+
+**Deploy commit:** `d04eb483` (Feb 15, 2026 — pushed via GitHub REST API, all 30 files in single commit)
 
 **Phase 4 commit:** `62ad6772` (curriculum browser — 2 files: 1 new, 1 modified), `cd9eb8c7` (audit fix)
 
@@ -314,9 +316,27 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 
 ---
 
-### 🚀 Git Push — ✅ RESOLVED (Feb 14, 2026)
+### 🚀 Git Push — ✅ RESOLVED + REPO CLEANUP (Feb 15, 2026)
 
-Git push was blocked for hours (SSH connection resets, VPN SSL errors, FUSE .lock file issues). **Solved using GitHub REST API** — bypasses git protocol entirely by uploading files via REST calls (create blob → create tree → create commit → update ref).
+**Normal git push STILL broken** — macOS LibreSSL `SSL_ERROR_SYSCALL` drops connections during large transfers. Repo was 1.8GB due to video files in history.
+
+**Repo cleanup done (Feb 15):** BFG Repo Cleaner stripped all blobs >5MB from history. `Promo Videos/`, `Montessori Documents/`, `public/videos/` removed from tree and history. Mirror force-pushed to GitHub.
+
+**Mac local state:**
+- `~/Desktop/ACTIVE/whale/` — Working repo (cloned from BFG-cleaned mirror)
+- `~/Desktop/ACTIVE/whale-clean/` — Fresh git init, no history, 60MB. Can be deleted.
+- `~/Desktop/ACTIVE/whale-old/` — Old 1.8GB repo. Can be deleted.
+- `~/Desktop/ACTIVE/whale-class-mirror.git/` — BFG-cleaned bare mirror. Can be deleted.
+- `~/Desktop/whale-backup-feb15/` — Backup of Montree Home files. Can be deleted after verifying deploy.
+
+**LibreSSL permanent fix (partially applied):**
+1. ✅ `brew install git` — Homebrew git v2.53.0 (uses OpenSSL) now at `/opt/homebrew/bin/git`
+2. ⚠️ `sudo networksetup -setv6off Wi-Fi` — Password failed, needs retry. IPv6 is a known trigger for LibreSSL SSL_ERROR_SYSCALL.
+3. After IPv6 is disabled, test with `git push origin main` — should work.
+
+**Proven working method:** GitHub REST API push from Cowork VM (create blob → create tree → create commit → update ref). Script at `/sessions/*/push-api.py`. Each file is a separate tiny HTTP request with retries.
+
+Git push was originally blocked for hours (SSH connection resets, VPN SSL errors, FUSE .lock file issues). **Solved using GitHub REST API** — bypasses git protocol entirely by uploading files via REST calls (create blob → create tree → create commit → update ref).
 
 **GitHub PAT:** `[REDACTED]` (fine-grained, repo contents read/write)
 
@@ -874,7 +894,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_MONTREE_HOME_PHASE4.md` | **CURRENT** — Montree Home Phase 4: Curriculum browser (all 4 phases complete) |
+| `docs/HANDOFF_DEPLOY_MONTREE_HOME_FEB15.md` | **CURRENT** — Montree Home deploy: repo cleanup, REST API push, LibreSSL fix |
+| `docs/HANDOFF_MONTREE_HOME_PHASE4.md` | Montree Home Phase 4: Curriculum browser (all 4 phases complete) |
 | `docs/HANDOFF_FEEDBACKBUTTON_FIX_FEB14.md` | FeedbackButton mobile fix (4 attempts, close-reopen pattern) |
 | `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` | LinkedIn profile, videos, connections, git push (now resolved via API) |
 | `docs/HANDOFF_SOCIAL_MEDIA_MANAGER.md` | Social Media Manager tool (AI Guru, knowledge base, 6 pages) |
