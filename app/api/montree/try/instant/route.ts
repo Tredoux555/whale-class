@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
   try {
     steps.push('1-init');
     const supabase = getSupabase();
-    const { role, name, schoolName, email, childName, childAge } = await req.json();
+    const { role, name, schoolName, email } = await req.json();
 
     if (!role || !['teacher', 'principal', 'homeschool_parent'].includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
@@ -117,9 +117,7 @@ export async function POST(req: NextRequest) {
 
     // Use provided names or fall back to defaults
     const userName = (name && name.trim()) || (role === 'principal' ? 'Principal' : role === 'homeschool_parent' ? 'Parent' : 'Teacher');
-    const userSchoolName = role === 'homeschool_parent'
-      ? `${userName}'s Home`
-      : (schoolName && schoolName.trim()) || `Trial ${role === 'principal' ? 'School' : 'Classroom'}`;
+    const userSchoolName = (schoolName && schoolName.trim()) || `Trial ${role === 'principal' ? 'School' : role === 'homeschool_parent' ? 'Homeschool' : 'Classroom'}`;
 
     const code = generateCode();
     const codeHash = await hashPassword(code.toUpperCase());
@@ -162,65 +160,62 @@ export async function POST(req: NextRequest) {
     }
     steps.push('2-school-ok:' + school.id);
 
-    // ── Step 2: Create classroom (skip for homeschool — no classrooms) ──
+    // ── Step 2: Create classroom (all roles including homeschool — identical flow) ──
     let classroom: Record<string, unknown> | null = null;
-    if (role !== 'homeschool_parent') {
-      steps.push('3-classroom');
-      const { data: classroomData, error: classroomErr } = await supabase
-        .from('montree_classrooms')
-        .insert({ name: 'My Classroom', school_id: school.id })
-        .select()
-        .single();
+    steps.push('3-classroom');
+    const classroomName = role === 'homeschool_parent' ? 'My Home' : 'My Classroom';
+    const { data: classroomData, error: classroomErr } = await supabase
+      .from('montree_classrooms')
+      .insert({ name: classroomName, school_id: school.id })
+      .select()
+      .single();
 
-      classroom = classroomData;
+    classroom = classroomData;
 
-      if (classroomErr) {
-        console.error('CLASSROOM FAIL:', JSON.stringify(classroomErr));
-        steps.push('3-classroom-fail:' + classroomErr.message);
-      } else {
-        steps.push('3-classroom-ok');
-      }
-
-      // ── Step 2b: Seed curriculum for classroom (non-blocking) ──
-      if (classroom?.id) {
-        steps.push('3b-curriculum');
-        const seedResult = await seedCurriculumForClassroom(supabase, classroom.id as string);
-        if (seedResult.success) {
-          steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
-        } else {
-          steps.push('3b-curriculum-fail');
-        }
-      }
+    if (classroomErr) {
+      console.error('CLASSROOM FAIL:', JSON.stringify(classroomErr));
+      steps.push('3-classroom-fail:' + classroomErr.message);
     } else {
-      steps.push('3-classroom-skip:homeschool');
+      steps.push('3-classroom-ok');
+    }
+
+    // ── Step 2b: Seed curriculum for classroom (non-blocking) ──
+    if (classroom?.id) {
+      steps.push('3b-curriculum');
+      const seedResult = await seedCurriculumForClassroom(supabase, classroom.id as string);
+      if (seedResult.success) {
+        steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
+      } else {
+        steps.push('3b-curriculum-fail');
+      }
     }
 
     // ── Step 3: Create user account ──
     if (role === 'homeschool_parent') {
-      // ── Homeschool parent flow ──
+      // ── Homeschool parent flow — identical to teacher, same table, same response ──
       steps.push('4-homeschool-parent');
-      const { data: parent, error: parentErr } = await supabase
-        .from('montree_homeschool_parents')
+      const { data: teacher, error: teacherErr } = await supabase
+        .from('montree_teachers')
         .insert({
           name: userName,
           school_id: school.id,
+          classroom_id: (classroom?.id as string) || null,
           password_hash: codeHash,
           login_code: code.toUpperCase(),
           email: email?.trim() || null,
-          guru_plan: 'free',
-          guru_prompts_used: 0,
+          role: 'homeschool_parent',
         })
         .select()
         .single();
 
-      if (parentErr || !parent) {
-        const errDetail = parentErr ? {
-          message: parentErr.message,
-          code: parentErr.code,
-          details: parentErr.details,
-          hint: parentErr.hint,
+      if (teacherErr || !teacher) {
+        const errDetail = teacherErr ? {
+          message: teacherErr.message,
+          code: teacherErr.code,
+          details: teacherErr.details,
+          hint: teacherErr.hint,
         } : 'no data returned';
-        console.error('HOMESCHOOL PARENT FAIL:', JSON.stringify(errDetail, null, 2));
+        console.error('HOMESCHOOL TEACHER FAIL:', JSON.stringify(errDetail, null, 2));
         await supabase.from('montree_schools').delete().eq('id', school.id);
         return NextResponse.json({
           error: 'Account creation failed',
@@ -228,27 +223,7 @@ export async function POST(req: NextRequest) {
           steps,
         }, { status: 500 });
       }
-      steps.push('4-homeschool-parent-ok:' + parent.id);
-
-      // ── Create first child ──
-      const firstChildName = (childName && childName.trim()) || 'My Child';
-      steps.push('4b-child');
-      const { data: child, error: childErr } = await supabase
-        .from('montree_children')
-        .insert({
-          name: firstChildName,
-          school_id: school.id,
-          age: childAge || null,
-        })
-        .select()
-        .single();
-
-      if (childErr) {
-        console.error('CHILD CREATION FAIL:', JSON.stringify(childErr));
-        steps.push('4b-child-fail:' + childErr.message);
-      } else {
-        steps.push('4b-child-ok:' + child.id);
-      }
+      steps.push('4-homeschool-parent-ok:' + teacher.id);
 
       // Lead record (non-blocking)
       try {
@@ -258,7 +233,7 @@ export async function POST(req: NextRequest) {
           status: 'new',
           name: userName,
           school_name: userSchoolName,
-          notes: `Homeschool trial - Code: ${code}\nParent: ${userName}\nChild: ${firstChildName}${childAge ? ` (age ${childAge})` : ''}\nParent ID: ${parent.id}\nSchool: ${userSchoolName} (${school.id})`,
+          notes: `Homeschool trial - Code: ${code}\nParent: ${userName}\nSchool: ${userSchoolName} (${school.id})`,
         });
         steps.push('5-lead-ok');
       } catch (e: unknown) {
@@ -266,31 +241,39 @@ export async function POST(req: NextRequest) {
         steps.push('5-lead-fail:' + message);
       }
 
-      // Issue signed JWT token
+      // Issue signed JWT token — homeschool_parent role, 30-day TTL
       const token = await createMontreeToken({
-        sub: parent.id,
-        schoolId: school.id,
+        sub: teacher.id as string,
+        schoolId: (school?.id || teacher.school_id) as string,
+        classroomId: (classroom?.id || teacher.classroom_id) as string,
         role: 'homeschool_parent',
       });
 
+      // Same response shape as teacher — dashboard handles the rest
       const response = NextResponse.json({
         success: true,
         code,
         token,
         role: 'homeschool_parent',
-        homeschoolParent: {
-          id: parent.id,
-          name: parent.name,
-          email: parent.email || null,
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email || null,
+          password_set_at: teacher.password_set_at || null,
         },
-        childName: firstChildName,
+        classroom: classroom ? {
+          id: classroom.id,
+          name: classroom.name,
+          icon: classroom.icon || null,
+          color: classroom.color || null,
+        } : null,
         school: {
           id: school.id,
           name: school.name,
           slug: school.slug,
         },
-        onboarded: true, // homeschool parents go straight to dashboard
-        userId: parent.id,
+        onboarded: false, // needs to add children first, same as teacher
+        userId: teacher.id as string,
       });
       setMontreeAuthCookie(response, token, 'homeschool_parent');
       return response;

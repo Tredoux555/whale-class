@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         .from('montree_teachers')
         .select(`
           id, name, email, classroom_id, school_id, is_active,
-          password_hash, password_set_at
+          password_hash, password_set_at, role
         `)
         .eq('password_hash', codeHash)
         .eq('is_active', true)
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
           .from('montree_teachers')
           .select(`
             id, name, email, classroom_id, school_id, is_active,
-            password_hash, password_set_at, login_code
+            password_hash, password_set_at, login_code, role
           `)
           .eq('login_code', normalizedCode)
           .eq('is_active', true)
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         .from('montree_teachers')
         .select(`
           id, name, email, classroom_id, school_id, is_active,
-          password_hash, password_set_at
+          password_hash, password_set_at, role
         `)
         .eq('email', email.toLowerCase())
         .eq('is_active', true)
@@ -199,11 +199,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Issue signed JWT token for authenticated API calls
+    // Use role from DB — 'teacher' or 'homeschool_parent' (stored in montree_teachers.role)
+    const teacherRole = (teacher.role === 'homeschool_parent' ? 'homeschool_parent' : 'teacher') as 'teacher' | 'homeschool_parent';
     const token = await createMontreeToken({
       sub: teacher.id as string,
       schoolId: (school?.id || teacher.school_id) as string,
       classroomId: (classroom?.id || teacher.classroom_id) as string,
-      role: 'teacher',
+      role: teacherRole,
     });
 
     // Phase 8: Log successful teacher login
@@ -230,7 +232,7 @@ export async function POST(request: NextRequest) {
       school: school || null,
       onboarded,
     });
-    setMontreeAuthCookie(response, token);
+    setMontreeAuthCookie(response, token, teacherRole);
     return response;
 
   } catch (error) {
