@@ -27,6 +27,7 @@ export default function TeacherLoginPage() {
 
       if (data.success) {
         // Auth cookie (montree-auth) is set by the server response
+        // Works for both teachers and homeschool parents (both in montree_teachers table)
         localStorage.setItem('montree_session', JSON.stringify({
           teacher: data.teacher,
           school: data.school,
@@ -44,32 +45,6 @@ export default function TeacherLoginPage() {
         return;
       }
 
-      // Teacher login failed — try homeschool parent
-      const homeRes = await fetch('/api/montree/auth/homeschool', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: normalizedCode }),
-      });
-
-      const homeData = await homeRes.json();
-
-      if (homeData.success) {
-        localStorage.setItem('montree_home_session', JSON.stringify({
-          parent: {
-            id: homeData.homeschoolParent.id,
-            name: homeData.homeschoolParent.name,
-            role: 'homeschool_parent',
-            email: homeData.homeschoolParent.email,
-            guru_plan: homeData.homeschoolParent.guru_plan,
-          },
-          school: homeData.school,
-          loginAt: new Date().toISOString(),
-        }));
-        router.push('/montree/home');
-        return;
-      }
-
-      // Both failed
       setError('Invalid code');
     } catch (err) {
       setError('Connection error. Please try again.');
