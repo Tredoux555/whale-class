@@ -17,6 +17,7 @@ import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
+import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 
 interface Assignment {
@@ -476,26 +477,56 @@ export default function WeekPage() {
 
       {/* Invite Parent Modal — hidden for homeschool parents (they ARE the parent) */}
       {!isHomeschoolParent(session) && (
-        <>
-          <InviteParentModal
-            childId={childId}
-            childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-            teacherId={session?.teacher?.id}
-            isOpen={inviteModalOpen}
-            onClose={() => setInviteModalOpen(false)}
-          />
-
-          {/* Invite Button - subtle, right-aligned */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => setInviteModalOpen(true)}
-              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
-            >
-              👨‍👩‍👧 Invite Parent
-            </button>
-          </div>
-        </>
+        <InviteParentModal
+          childId={childId}
+          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          teacherId={session?.teacher?.id}
+          isOpen={inviteModalOpen}
+          onClose={() => setInviteModalOpen(false)}
+        />
       )}
+
+      {/* Search + Actions Row */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1" />
+        <WorkSearchBar
+          curriculum={curriculum}
+          onSelectWork={(work, areaKey) => {
+            setSelectedArea(areaKey);
+            setPickerOpen(true);
+          }}
+          onFocus={async () => {
+            // Pre-load curriculum if not yet cached (normally loads on picker open)
+            if (Object.keys(curriculum).length === 0) {
+              try {
+                const res = await fetch(`/api/montree/works/search`);
+                const data = await res.json();
+                const byArea: Record<string, CurriculumWork[]> = {};
+                for (const w of data.works || []) {
+                  const areaKey = w.area?.area_key || 'unknown';
+                  if (!byArea[areaKey]) byArea[areaKey] = [];
+                  byArea[areaKey].push({
+                    id: w.id,
+                    name: w.name,
+                    name_chinese: w.chinese_name,
+                    area_id: areaKey,
+                  });
+                }
+                setCurriculum(byArea);
+              } catch {}
+            }
+          }}
+          placeholder="Find a work..."
+        />
+        {!isHomeschoolParent(session) && (
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
+          >
+            👨‍👩‍👧 Invite Parent
+          </button>
+        )}
+      </div>
 
       {/* FOCUS WORKS - One per area, with extras grouped underneath */}
       <FocusWorksSection
