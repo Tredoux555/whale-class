@@ -29,16 +29,20 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 | Phase | What | Status |
 |-------|------|--------|
 | 1 | Foundation — auth + DB migration + signup/login | ✅ Done (Feb 15) |
-| 2 | Dashboard — role-based UI trimming, hide school features for parents | ⬜ Next |
-| 3 | Guru — onboarding flow (age/space/budget→curriculum) + freemium gate + Stripe | ⬜ Not started |
+| 2 | Dashboard — role-based UI trimming, hide school features for parents | ✅ Done (Feb 15) |
+| 3 | Guru — onboarding flow (age/space/budget→curriculum) + freemium gate + Stripe | ⬜ Next |
 | 4 | Curriculum browser — browse works by area, age filtering, materials list | ⬜ Not started |
 
 **Pricing:** Free = full tracking. Paid = Guru access ($5/child/month). 3 free Guru prompts for new signups, then hard paywall.
 
 **Plan file:** `.claude/plans/montree-home-v1.md`
-**Handoff:** `docs/HANDOFF_MONTREE_HOME_PHASE1.md`
+**Handoff Phase 1:** `docs/HANDOFF_MONTREE_HOME_PHASE1.md`
+**Handoff Phase 2:** `docs/HANDOFF_MONTREE_HOME_PHASE2.md`
 
 **Phase 1 commits:** `9378007e` (initial), `cb5bfd24` (corrected — identical teacher flow)
+**Phase 2 commit:** `fc1521ef` (dashboard trimming — 6 files, isHomeschoolParent helper, hide Invite Parent + Labels, child vs student labels, role in auth response)
+
+**Phase 2 changes:** `isHomeschoolParent()` helper in `lib/montree/auth.ts`. Dashboard shows "children" vs "students". Child week view hides Invite Parent button+modal. Students page hides Labels button, swaps Student→Child. Onboarding uses "Enter My Home", "Add Your Children". CRITICAL: teacher auth route now returns `role` in teacher response object (was missing — would break session role detection on login).
 
 **Migration needed:** `migrations/126_homeschool_tables.sql` — adds `school_id` column to `montree_children` + backfill. Run against Supabase before testing.
 
