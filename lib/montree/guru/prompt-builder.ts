@@ -84,13 +84,36 @@ export interface GuruPromptParts {
   userPrompt: string;
 }
 
+// Additional context injected when the questioner is a homeschool parent
+const HOMESCHOOL_ADDENDUM = `
+
+IMPORTANT CONTEXT — HOMESCHOOL PARENT:
+The person asking this question is a homeschool parent, NOT a classroom teacher.
+Adjust your advice accordingly:
+- Address them as a parent, not a colleague. They are the primary guide for their child.
+- "Classroom" = their home environment. Use "your home", "your learning space" instead.
+- They likely have 1-3 children, not 20+ students.
+- They don't have a co-teacher or assistant. They are doing this alone.
+- Practical tips should work in a home setting (kitchen table, living room, backyard).
+- Materials may be simpler — suggest affordable DIY alternatives alongside official materials.
+- Social interaction advice should reference playdates, co-ops, community groups, siblings.
+- The "PARENT TALKING POINT" section should be reframed as a personal affirmation or a note to share with a partner/family member.
+- Be encouraging — homeschool parents often doubt whether they're doing enough. Validate their effort.`;
+
 export function buildGuruPrompt(
   question: string,
   childContext: ChildContext,
-  knowledge: KnowledgeResult
+  knowledge: KnowledgeResult,
+  options?: { isHomeschoolParent?: boolean }
 ): GuruPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
+
+  const systemPrompt = options?.isHomeschoolParent
+    ? SYSTEM_PROMPT + HOMESCHOOL_ADDENDUM
+    : SYSTEM_PROMPT;
+
+  const questionLabel = options?.isHomeschoolParent ? "PARENT'S QUESTION" : "TEACHER'S QUESTION";
 
   const userPrompt = `${FEW_SHOT_EXAMPLES}
 
@@ -103,13 +126,13 @@ ${formattedContext}
 
 ${formattedKnowledge}
 
-TEACHER'S QUESTION:
+${questionLabel}:
 ${question}
 
 Provide your response in the format shown in the examples above (INSIGHT, ROOT CAUSE, ACTION PLAN, TIMELINE, PARENT TALKING POINT).`;
 
   return {
-    systemPrompt: SYSTEM_PROMPT,
+    systemPrompt,
     userPrompt,
   };
 }
