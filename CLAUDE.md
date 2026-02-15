@@ -14,33 +14,44 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ## CURRENT STATUS (Feb 14, 2026)
 
-### 🏠 Montree Home — NEXT PROJECT (Strategy Approved Feb 14, 2026)
+### 🏠 Montree Home — Phase 1 COMPLETE (Feb 15, 2026)
 
 Standalone Montessori homeschool product. Shared codebase with classroom version.
 
 **Product:** Free activity tracking + paid Guru ($5/month per child). Parents self-register with code-based login, manage multiple children, track works across 5 areas using the same UI as teachers.
 
-**Architecture:** `homeschool_parent` role in JWT auth. Separate route tree (`/montree/home/*`), shared components. New `montree_homeschool_parents` table. Reuse `montree_children` + all tracking tables unchanged.
+**Architecture:** Homeschool parents stored in `montree_teachers` table with `role='homeschool_parent'`. They get a school (`plan_type: 'homeschool'`), a classroom ("My Home"), seeded curriculum, and go through IDENTICAL onboarding as teachers. 30-day JWT/cookie TTL (vs 7 for teachers). Teacher auth reads role from DB and issues correct token.
+
+**NO separate table.** No `montree_homeschool_parents`. No separate auth route. No separate dashboard. Same system, different role.
 
 **4 Phases:**
 
 | Phase | What | Status |
 |-------|------|--------|
-| 1 | Foundation — auth + DB migration + signup/login | ⬜ Not started |
-| 2 | Dashboard — reuse child week view + progress, strip school features | ⬜ Not started |
+| 1 | Foundation — auth + DB migration + signup/login | ✅ Done (Feb 15) |
+| 2 | Dashboard — role-based UI trimming, hide school features for parents | ⬜ Next |
 | 3 | Guru — onboarding flow (age/space/budget→curriculum) + freemium gate + Stripe | ⬜ Not started |
 | 4 | Curriculum browser — browse works by area, age filtering, materials list | ⬜ Not started |
 
 **Pricing:** Free = full tracking. Paid = Guru access ($5/child/month). 3 free Guru prompts for new signups, then hard paywall.
 
 **Plan file:** `.claude/plans/montree-home-v1.md`
+**Handoff:** `docs/HANDOFF_MONTREE_HOME_PHASE1.md`
+
+**Phase 1 commits:** `9378007e` (initial), `cb5bfd24` (corrected — identical teacher flow)
+
+**Migration needed:** `migrations/126_homeschool_tables.sql` — adds `school_id` column to `montree_children` + backfill. Run against Supabase before testing.
+
+**Dead file to delete:** `app/api/montree/auth/homeschool/route.ts` — created in initial push, no longer called. FUSE-locked, delete when possible.
 
 **Resolved decisions:**
 - Branding: Same as classroom (same Mercedes, different driver)
 - Signup: Third option on existing try flow ("I'm a parent")
 - Custom works: Yes, same WorkPickerModal UI
 - Observations: Yes, full system, same as classroom
-- **CRITICAL:** This is NOT a rebuild. It's the existing system with a homeschool_parent role bolted on. Import and reuse components — do not duplicate or rewrite them.
+- Onboarding: IDENTICAL to teacher — school + classroom + add children from dashboard
+- Login: Same page, same auth endpoint — teacher auth handles both roles
+- **CRITICAL:** This is NOT a rebuild. Homeschool parents are teachers with `role='homeschool_parent'`. Same table, same classroom, same everything. Do NOT create separate systems, tables, or routes.
 
 ---
 
