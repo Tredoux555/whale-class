@@ -303,7 +303,7 @@ export default function StudentsPage() {
       const data = await res.json();
       setStudents(data.children || []);
     } catch (err) {
-      toast.error('Failed to load students');
+      toast.error(isHomeschoolParent(session) ? 'Failed to load children' : 'Failed to load students');
     } finally {
       setLoading(false);
     }
@@ -412,7 +412,8 @@ export default function StudentsPage() {
       closeForm();
       loadStudents(session.classroom?.id);
     } catch (err) {
-      toast.error(editingStudent ? 'Failed to update student' : 'Failed to add student');
+      const label = isHomeschoolParent(session) ? 'child' : 'student';
+      toast.error(editingStudent ? `Failed to update ${label}` : `Failed to add ${label}`);
     } finally {
       setSaving(false);
     }
@@ -423,7 +424,8 @@ export default function StudentsPage() {
     if (validStudents.length === 0 || !session?.classroom?.id) return;
 
     setSaving(true);
-    const toastId = toast.loading(`Saving ${validStudents.length} student${validStudents.length !== 1 ? 's' : ''}...`);
+    const lbl = isHomeschoolParent(session) ? (validStudents.length !== 1 ? 'children' : 'child') : (validStudents.length !== 1 ? 'students' : 'student');
+    const toastId = toast.loading(`Saving ${validStudents.length} ${lbl}...`);
 
     try {
       const payload = validStudents.map(student => ({
@@ -452,12 +454,13 @@ export default function StudentsPage() {
       }
 
       toast.dismiss(toastId);
-      toast.success(`${validStudents.length} student${validStudents.length !== 1 ? 's' : ''} added to your classroom!`);
+      const addedLbl = isHomeschoolParent(session) ? (validStudents.length !== 1 ? 'children' : 'child') : (validStudents.length !== 1 ? 'students' : 'student');
+      toast.success(`${validStudents.length} ${addedLbl} added!`);
       closeForm();
       loadStudents(session.classroom?.id);
     } catch (err) {
       toast.dismiss(toastId);
-      toast.error(err instanceof Error ? err.message : 'Failed to save students');
+      toast.error(err instanceof Error ? err.message : (isHomeschoolParent(session) ? 'Failed to save children' : 'Failed to save students'));
     } finally {
       setSaving(false);
     }
@@ -471,11 +474,11 @@ export default function StudentsPage() {
         headers: { 'x-school-id': session.school?.id || '' },
       });
       if (!res.ok) throw new Error('Failed to delete');
-      toast.success('Student removed');
+      toast.success(isHomeschoolParent(session) ? 'Child removed' : 'Student removed');
       setDeleteConfirm(null);
       loadStudents(session.classroom?.id);
     } catch (err) {
-      toast.error('Failed to remove student');
+      toast.error(isHomeschoolParent(session) ? 'Failed to remove child' : 'Failed to remove student');
     }
   };
 
@@ -624,7 +627,7 @@ export default function StudentsPage() {
         )}
 
         <p className="text-center text-slate-400 text-xs mt-6">
-          {students.length} student{students.length !== 1 ? 's' : ''} in {session.classroom?.name}
+          {students.length} {isHomeschoolParent(session) ? (students.length !== 1 ? 'children' : 'child') : (students.length !== 1 ? 'students' : 'student')} in {session.classroom?.name}
         </p>
       </main>
 
@@ -651,7 +654,7 @@ export default function StudentsPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Student's name"
+                  placeholder={isHomeschoolParent(session) ? "Child's name" : "Student's name"}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 outline-none"
                   autoFocus
                 />
@@ -755,7 +758,9 @@ export default function StudentsPage() {
                 disabled={!formData.name.trim() || saving}
                 className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium disabled:opacity-50"
               >
-                {saving ? 'Saving...' : editingStudent ? 'Update Student' : 'Add Student'}
+                {saving ? 'Saving...' : editingStudent
+                  ? `Update ${isHomeschoolParent(session) ? 'Child' : 'Student'}`
+                  : `Add ${isHomeschoolParent(session) ? 'Child' : 'Student'}`}
               </button>
             </div>
           </div>
@@ -787,7 +792,7 @@ export default function StudentsPage() {
             <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl">
               {/* Header */}
               <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-                <h2 className="font-bold text-xl text-slate-800">Add Students</h2>
+                <h2 className="font-bold text-xl text-slate-800">{isHomeschoolParent(session) ? 'Add Children' : 'Add Students'}</h2>
                 <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-2xl">
                   ✕
                 </button>
@@ -797,7 +802,7 @@ export default function StudentsPage() {
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 p-6 flex gap-4">
                 <div className="text-3xl flex-shrink-0">🌱</div>
                 <div>
-                  <h3 className="font-bold text-slate-900 mb-1">Building Student Profiles</h3>
+                  <h3 className="font-bold text-slate-900 mb-1">{isHomeschoolParent(session) ? 'Building Child Profiles' : 'Building Student Profiles'}</h3>
                   <p className="text-sm text-slate-700 leading-relaxed">
                     Welcome! You're creating developmental profiles that will grow with each child over time. The more context you provide — their strengths, challenges, learning style, and personality — the better our Montessori Guru can support you with personalized guidance, activity recommendations, and insights. Think of this as the beginning of a living portrait of each child.
                   </p>
@@ -811,7 +816,7 @@ export default function StudentsPage() {
                     {/* Student Number Header */}
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-bold text-lg text-slate-800">
-                        Student {index + 1}
+                        {isHomeschoolParent(session) ? 'Child' : 'Student'} {index + 1}
                       </h4>
                       {index > 0 && (
                         <button
@@ -832,7 +837,7 @@ export default function StudentsPage() {
                           type="text"
                           value={student.name}
                           onChange={(e) => updateBulkStudent(index, 'name', e.target.value)}
-                          placeholder="Student's name"
+                          placeholder={isHomeschoolParent(session) ? "Child's name" : "Student's name"}
                           className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm"
                         />
                       </div>
@@ -935,7 +940,7 @@ export default function StudentsPage() {
                     onClick={addAnotherStudent}
                     className="w-full py-2.5 px-4 bg-teal-50 border-2 border-dashed border-teal-200 text-teal-700 rounded-lg font-medium hover:bg-teal-100 transition-colors text-sm"
                   >
-                    + Add Another Student
+                    + Add Another {isHomeschoolParent(session) ? 'Child' : 'Student'}
                   </button>
                 </div>
               )}
