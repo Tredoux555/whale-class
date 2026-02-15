@@ -314,7 +314,7 @@ export default function TryMontreePage() {
             </div>
 
             <h2 className="text-2xl font-semibold text-white mb-3">
-              Setting up your trial...
+              Setting up your classroom...
             </h2>
 
             <p className="text-slate-400">
