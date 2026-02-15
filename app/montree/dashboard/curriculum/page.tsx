@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
-import { getSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
+import Link from 'next/link';
 import AddWorkModal from '@/components/montree/AddWorkModal';
 import EditWorkModal from '@/components/montree/curriculum/EditWorkModal';
 import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsSection';
@@ -173,15 +174,24 @@ export default function CurriculumPage() {
             <h1 className="text-lg font-bold text-gray-800">📚 Curriculum</h1>
             <p className="text-gray-500 text-sm">{curriculum.length} works available</p>
           </div>
-          {curriculum.length > 0 && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
+          <div className="flex items-center gap-2">
+            <Link
+              href="/montree/dashboard/curriculum/browse"
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
             >
-              <span className="text-lg">➕</span>
-              <span className="hidden sm:inline">Add Work</span>
-            </button>
-          )}
+              <span>🔍</span>
+              <span className="hidden sm:inline">Browse Guide</span>
+            </Link>
+            {curriculum.length > 0 && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
+              >
+                <span className="text-lg">➕</span>
+                <span className="hidden sm:inline">Add Work</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
