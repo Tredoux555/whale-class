@@ -30,7 +30,7 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 |-------|------|--------|
 | 1 | Foundation — auth + DB migration + signup/login | ✅ Done (Feb 15) |
 | 2 | Dashboard — role-based UI trimming, hide school features for parents | ✅ Done (Feb 15) |
-| 3 | Guru — onboarding flow (age/space/budget→curriculum) + freemium gate + Stripe | ⬜ Next |
+| 3 | Guru — freemium gate + paywall + Stripe billing + homeschool prompt | ✅ Done (Feb 15) |
 | 4 | Curriculum browser — browse works by area, age filtering, materials list | ⬜ Not started |
 
 **Pricing:** Free = full tracking. Paid = Guru access ($5/child/month). 3 free Guru prompts for new signups, then hard paywall.
@@ -44,7 +44,22 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 
 **Phase 2 changes:** `isHomeschoolParent()` helper in `lib/montree/auth.ts`. Dashboard shows "children" vs "students". Child week view hides Invite Parent button+modal. Students page hides Labels button, swaps Student→Child. Onboarding uses "Enter My Home", "Add Your Children". CRITICAL: teacher auth route now returns `role` in teacher response object (was missing — would break session role detection on login).
 
-**Migration needed:** `migrations/126_homeschool_tables.sql` — adds `school_id` column to `montree_children` + backfill. Run against Supabase before testing.
+**Phase 3 commit:** `c5e18ef2` (Guru freemium — 7 files: 3 modified, 4 new)
+
+**Phase 3 changes:**
+- `app/api/montree/guru/route.ts` — Freemium gate: checks `guru_prompts_used` before AI call, returns `guru_limit_reached` error when 3 free prompts used. Increments counter for free-tier homeschool parents. Also passes `isHomeschoolParent` flag to prompt builder.
+- `app/api/montree/guru/status/route.ts` — NEW: Returns guru access level (`unlimited`/`paid`/`free_trial`), prompts used/remaining, `is_locked` flag. Teachers get unlimited. Homeschool parents get trial or paid based on Stripe subscription.
+- `app/api/montree/guru/checkout/route.ts` — NEW: Creates Stripe Checkout session for Guru subscription. Gets/creates Stripe customer on `montree_teachers`, counts children for quantity billing ($5/month × N children).
+- `app/api/montree/guru/webhook/route.ts` — NEW: Stripe webhook handler for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`. Updates `guru_plan`/`guru_subscription_status`/`guru_current_period_end` on teacher record.
+- `app/montree/dashboard/guru/page.tsx` — Paywall modal overlay (upgrade CTA with features list), free trial prompts counter banner, checkout flow, role-aware quick questions and placeholder text, handles `?upgrade=success|cancel` URL params.
+- `lib/montree/guru/prompt-builder.ts` — `HOMESCHOOL_ADDENDUM` injected into system prompt for homeschool parents: addresses as parent, replaces classroom language, suggests DIY materials, home environment tips, encourages.
+- `migrations/127_guru_freemium.sql` — Adds `guru_plan`, `guru_prompts_used`, `guru_stripe_customer_id`, `guru_stripe_subscription_id`, `guru_subscription_status`, `guru_current_period_end` columns to `montree_teachers`. Indexes on Stripe IDs.
+
+**Phase 3 env vars needed:**
+- `STRIPE_PRICE_GURU_MONTHLY` — Stripe Price ID for the Guru monthly subscription
+- `STRIPE_WEBHOOK_SECRET_GURU` — Stripe webhook signing secret for the Guru endpoint
+
+**Migrations needed:** Run `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` against Supabase before testing.
 
 **Dead file to delete:** `app/api/montree/auth/homeschool/route.ts` — created in initial push, no longer called. FUSE-locked, delete when possible.
 
