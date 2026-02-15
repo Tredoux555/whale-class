@@ -281,7 +281,7 @@ export default function OnboardingPage() {
     }
 
     if (finalStudents.length === 0) {
-      setError('Please add at least one student to continue');
+      setError(isParent ? 'Please add at least one child to continue' : 'Please add at least one student to continue');
       return;
     }
 
@@ -551,7 +551,7 @@ export default function OnboardingPage() {
           </button>
 
           <p className="text-center text-slate-400 text-xs mt-4">
-            You must add your students before using Montree
+            You must add {isParent ? 'your children' : 'your students'} before using Montree
           </p>
         </div>
       </div>

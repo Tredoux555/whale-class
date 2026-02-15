@@ -42,7 +42,7 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch(() => {
-        toast.error('Failed to load students');
+        toast.error('Failed to load');
         setLoading(false);
       });
   }, [session?.classroom?.id]);

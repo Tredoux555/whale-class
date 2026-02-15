@@ -19,6 +19,14 @@
 -- montree_child_extras, montree_behavioral_observations, montree_guru_interactions)
 -- work unchanged — they only reference child_id.
 
+-- ============================================
+-- 0. Add role column to montree_teachers
+-- ============================================
+-- Homeschool parents are stored in montree_teachers with role='homeschool_parent'.
+-- Existing teachers default to 'teacher'. The auth route now selects this column,
+-- so it MUST exist before any login attempt.
+ALTER TABLE montree_teachers ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'teacher';
+
 -- Add school_id for direct tenant-level queries
 ALTER TABLE montree_children ADD COLUMN IF NOT EXISTS school_id UUID REFERENCES montree_schools(id) ON DELETE CASCADE;
 
