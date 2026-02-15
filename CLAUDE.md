@@ -12,7 +12,7 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 14, 2026)
+## CURRENT STATUS (Feb 15, 2026)
 
 ### 🏠 Montree Home — Phase 1 COMPLETE (Feb 15, 2026)
 
@@ -38,6 +38,7 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 **Plan file:** `.claude/plans/montree-home-v1.md`
 **Handoff Phase 1:** `docs/HANDOFF_MONTREE_HOME_PHASE1.md`
 **Handoff Phase 2:** `docs/HANDOFF_MONTREE_HOME_PHASE2.md`
+**Handoff Phase 4:** `docs/HANDOFF_MONTREE_HOME_PHASE4.md`
 
 **Phase 1 commits:** `9378007e` (initial), `cb5bfd24` (corrected — identical teacher flow)
 **Phase 2 commit:** `fc1521ef` (dashboard trimming — 6 files, isHomeschoolParent helper, hide Invite Parent + Labels, child vs student labels, role in auth response)
@@ -60,6 +61,8 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 - `STRIPE_WEBHOOK_SECRET_GURU` — Stripe webhook signing secret for the Guru endpoint
 
 **Migrations needed:** Run `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` against Supabase before testing.
+
+**Phase 4 commit:** `62ad6772` (curriculum browser — 2 files: 1 new, 1 modified), `cd9eb8c7` (audit fix)
 
 **Phase 4 changes:**
 - `app/montree/dashboard/curriculum/browse/page.tsx` — NEW: Read-only curriculum browser. Imports all 5 static JSON files directly (no API). 5 area tabs with AREA_CONFIG colors, search by name/description/materials, age range filter (Year 1/Year 2/Year 3), collapsible categories, expandable work cards with full details (materials, aims, prerequisites, levels with YouTube demo links). Role-aware labels for homeschool parents ("Materials You'll Need", "What Your Child Learns", "Hidden Benefits", "How They Self-Correct"). Prerequisite names resolved via cross-area lookup map.
@@ -871,7 +874,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_FEEDBACKBUTTON_FIX_FEB14.md` | **CURRENT** — FeedbackButton mobile fix (4 attempts, close-reopen pattern) |
+| `docs/HANDOFF_MONTREE_HOME_PHASE4.md` | **CURRENT** — Montree Home Phase 4: Curriculum browser (all 4 phases complete) |
+| `docs/HANDOFF_FEEDBACKBUTTON_FIX_FEB14.md` | FeedbackButton mobile fix (4 attempts, close-reopen pattern) |
 | `docs/HANDOFF_LINKEDIN_SESSION_FEB14.md` | LinkedIn profile, videos, connections, git push (now resolved via API) |
 | `docs/HANDOFF_SOCIAL_MEDIA_MANAGER.md` | Social Media Manager tool (AI Guru, knowledge base, 6 pages) |
 | `docs/HANDOFF_THREE_ISSUE_FIX.md` | Extras leak fix, auto-mastery, area icon uniformity |
