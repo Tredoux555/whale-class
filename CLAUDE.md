@@ -31,7 +31,7 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 | 1 | Foundation — auth + DB migration + signup/login | ✅ Done (Feb 15) |
 | 2 | Dashboard — role-based UI trimming, hide school features for parents | ✅ Done (Feb 15) |
 | 3 | Guru — freemium gate + paywall + Stripe billing + homeschool prompt | ✅ Done (Feb 15) |
-| 4 | Curriculum browser — browse works by area, age filtering, materials list | ⬜ Not started |
+| 4 | Curriculum browser — browse works by area, age filtering, materials list | ✅ Done (Feb 15) |
 
 **Pricing:** Free = full tracking. Paid = Guru access ($5/child/month). 3 free Guru prompts for new signups, then hard paywall.
 
@@ -60,6 +60,10 @@ Standalone Montessori homeschool product. Shared codebase with classroom version
 - `STRIPE_WEBHOOK_SECRET_GURU` — Stripe webhook signing secret for the Guru endpoint
 
 **Migrations needed:** Run `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` against Supabase before testing.
+
+**Phase 4 changes:**
+- `app/montree/dashboard/curriculum/browse/page.tsx` — NEW: Read-only curriculum browser. Imports all 5 static JSON files directly (no API). 5 area tabs with AREA_CONFIG colors, search by name/description/materials, age range filter (Year 1/Year 2/Year 3), collapsible categories, expandable work cards with full details (materials, aims, prerequisites, levels with YouTube demo links). Role-aware labels for homeschool parents ("Materials You'll Need", "What Your Child Learns", "Hidden Benefits", "How They Self-Correct"). Prerequisite names resolved via cross-area lookup map.
+- `app/montree/dashboard/curriculum/page.tsx` — Added "Browse Guide" button in header linking to `/montree/dashboard/curriculum/browse`.
 
 **Dead file to delete:** `app/api/montree/auth/homeschool/route.ts` — created in initial push, no longer called. FUSE-locked, delete when possible.
 
