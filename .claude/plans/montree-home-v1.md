@@ -1,8 +1,18 @@
-# Montree Home — Build Plan v1
+# Montree Home — Build Plan v1 (CORRECTED Feb 15, 2026)
 
-**Date:** Feb 14, 2026
-**Status:** APPROVED STRATEGY — awaiting implementation start
+**Date:** Feb 14, 2026 (corrected Feb 15)
+**Status:** Phase 1 COMPLETE, Phase 2 next
 **Goal:** Add a homeschool parent product to Montree — free activity tracking, paid Guru ($5/month per child)
+
+---
+
+## CRITICAL DESIGN PRINCIPLE
+
+**This is the existing Montree system with a `homeschool_parent` role in `montree_teachers`. We do NOT rebuild anything.**
+
+Homeschool parents are stored in the SAME `montree_teachers` table with `role='homeschool_parent'`. They get a classroom ("My Home"), seeded curriculum, and go through identical onboarding. Same dashboard, same components, same everything.
+
+Previous attempts failed because they created separate tables/routes/systems. Never again.
 
 ---
 
@@ -24,342 +34,149 @@ A standalone Montessori homeschool management system for families educating chil
 
 ---
 
-## Architecture Decision: Shared Codebase
+## Architecture: Shared Table, Role Flag
 
-**Decision:** Extend existing codebase with `homeschool_parent` role. NOT a separate copy.
-
-**Rationale:**
-- Child tracking (`montree_child_progress`, `montree_child_focus_works`, `montree_child_extras`) only needs `child_id` — no school/classroom coupling
-- Guru system has zero school dependency — fully reusable
-- Dashboard components are loosely coupled — just hide school-specific features per role
-- The old Home product was a separate copy and ended up as dead code (deleted in cleanup). Don't repeat that mistake.
+**Decision:** Homeschool parents go in `montree_teachers` with `role='homeschool_parent'`. NOT a separate table.
 
 **How it works:**
-- Homeschool signup creates a `montree_schools` record with `plan_type: 'homeschool'` (reuse tenant model)
-- No `montree_classrooms` row created (implicit "home")
-- New `montree_homeschool_parents` table (mirrors `montree_teachers` structure)
-- Children stored in existing `montree_children` table (linked to the homeschool "school")
-- All tracking tables (`montree_child_progress`, etc.) work unchanged
-- JWT token carries `role: 'homeschool_parent'` — UI conditionally hides school features
+1. Signup creates `montree_schools` record with `plan_type: 'homeschool'`
+2. Creates `montree_classrooms` record named "My Home"
+3. Seeds curriculum (same as teacher)
+4. Creates `montree_teachers` record with `role: 'homeschool_parent'`
+5. Issues JWT with `role: 'homeschool_parent'` (30-day TTL vs 7 for teachers)
+6. Parent lands on standard dashboard → adds children through normal onboarding
+7. All tracking tables work unchanged — they only need `child_id`
+
+**Why this works:**
+- `montree_teachers` already has a `role` column (TEXT, defaults to 'teacher')
+- Teacher auth reads role from DB → issues correct JWT
+- Dashboard components don't check teacher role — they just render child data
+- Child tracking tables only need `child_id` — no coupling to teacher type
 
 ---
 
-## Phase 1 — Foundation (Auth + Database + Signup)
+## Phase 1 — Foundation ✅ COMPLETE (Feb 15, 2026)
 
-### 1A. Database Migration (`migrations/126_homeschool_tables.sql`)
+**Commits:** `9378007e` (initial), `cb5bfd24` (corrected to identical teacher flow)
 
-**New table: `montree_homeschool_parents`**
-```sql
-CREATE TABLE montree_homeschool_parents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES montree_schools(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  email TEXT,
-  login_code TEXT UNIQUE,
-  password_hash TEXT,
-  password_set_at TIMESTAMPTZ,
-  is_active BOOLEAN DEFAULT true,
-  last_login_at TIMESTAMPTZ,
-  guru_plan TEXT DEFAULT 'free',  -- 'free' | 'paid'
-  stripe_customer_id TEXT,
-  stripe_subscription_id TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+### What was built:
 
-CREATE INDEX idx_homeschool_parents_school ON montree_homeschool_parents(school_id);
-CREATE INDEX idx_homeschool_parents_login_code ON montree_homeschool_parents(login_code);
-CREATE INDEX idx_homeschool_parents_email ON montree_homeschool_parents(email);
-```
+| File | Change |
+|------|--------|
+| `migrations/126_homeschool_tables.sql` | Adds `school_id` to `montree_children` + backfill. No new tables. |
+| `lib/montree/server-auth.ts` | `'homeschool_parent'` role, 30-day TTL, optional role on `setMontreeAuthCookie()` |
+| `lib/montree/verify-request.ts` | Accept `'homeschool_parent'` role |
+| `lib/montree/types.ts` | `MontreeRole` type union |
+| `app/montree/try/page.tsx` | 3rd button "Parent at Home", same form (name + homeschool name + email) |
+| `app/api/montree/try/instant/route.ts` | Homeschool branch: classroom "My Home", seed curriculum, `montree_teachers` with role |
+| `app/api/montree/auth/teacher/route.ts` | Reads `role` from DB, correct JWT/cookie TTL |
+| `app/montree/login/page.tsx` | Simplified — single auth call handles both |
 
-**No new children table needed** — reuse `montree_children` (already has `school_id` FK). Homeschool children belong to the homeschool "school" record.
+**Migration required:** Run `migrations/126_homeschool_tables.sql` against Supabase.
 
-### 1B. Auth System Changes
-
-**Files to modify:**
-- `lib/montree/server-auth.ts` — Add `'homeschool_parent'` to `MontreeTokenPayload.role` union type. Add `createHomeschoolToken()` function (same pattern as `createMontreeToken()`, 30-day expiry instead of 7).
-- `lib/montree/verify-request.ts` — Accept `'homeschool_parent'` in role validation. `verifySchoolRequest()` returns same shape.
-- `lib/montree/types.ts` — Add `HomeschoolParent` interface, add `'homeschool'` to plan types.
-
-### 1C. Signup Flow
-
-**Modify:** `app/montree/try/page.tsx`
-- Add 3rd role button: "👨‍👩‍👧 Parent at Home" alongside "Teacher" and "Principal"
-- When selected, step 2 asks: parent name + email (optional) + first child's name + child's age
-- Submits to same `/api/montree/try/instant` endpoint with `role: 'homeschool_parent'`
-
-**Modify:** `app/api/montree/try/instant/route.ts`
-- Add `homeschool_parent` branch:
-  1. Create `montree_schools` record with `plan_type: 'homeschool'`, `name: "{Parent}'s Home"`
-  2. **Skip** classroom creation
-  3. Create `montree_homeschool_parents` record with login code + bcrypt hash
-  4. Create first child in `montree_children` (linked to homeschool school)
-  5. Seed lite curriculum for child's age range (subset of full curriculum — age-appropriate works only)
-  6. Issue JWT with `role: 'homeschool_parent'`, set httpOnly cookie
-  7. Create lead record for tracking
-
-### 1D. Login Flow
-
-**Create:** `app/api/montree/auth/homeschool/route.ts`
-- Accept login code → lookup in `montree_homeschool_parents` → verify bcrypt → issue JWT → set cookie
-- Same pattern as teacher login but queries different table
-
-**Modify:** `app/montree/login/page.tsx`
-- Add "Homeschool Parent" tab/toggle alongside existing teacher login
-- Or: detect from code lookup (try teachers table first, then homeschool_parents)
+**Dead file:** `app/api/montree/auth/homeschool/route.ts` — unused, delete when FUSE allows.
 
 ---
 
-## Phase 2 — Dashboard (Reuse + Trim)
+## Phase 2 — Dashboard (Role-Based Trimming) ⬜ NEXT
 
-### 2A. Homeschool Dashboard Shell
+Since homeschool parents use the SAME dashboard, Phase 2 is about hiding school-specific features.
 
-**Create:** `app/montree/home/page.tsx` (or reuse `/montree/dashboard` with role-based rendering)
+### 2A. Role-Based UI Hiding
 
-**Decision needed:** Separate route (`/montree/home/*`) vs shared route (`/montree/dashboard/*` with role checks).
-
-**Recommendation:** Separate route `/montree/home/*` for clean separation. Share components via imports, not page-level code.
-
-**Homeschool parent lands on:** List of their children (same grid layout as teacher's class list).
-- Each child card shows: name, age, mastered/practicing/presented counts, last activity date
-- Tap child → goes to child detail view (Phase 2B)
-- "Add Child" button in corner
-
-### 2B. Child Detail View (Week View)
-
-**Reuse:** `app/montree/dashboard/[childId]/page.tsx` — the 1,115-line week view.
-
-**Create:** `app/montree/home/[childId]/page.tsx` — imports same components but:
-- **Keep:** FocusWorksSection, WorkWheelPicker, QuickGuideModal, WorkPickerModal, AreaBadge, progress tracking, observations, notes
-- **Remove/hide:** Classroom selector, teacher-specific nav, "Share with parents" button, report generation triggers
-- **Add:** "Add Child" / "Switch Child" navigation in header
-
-### 2C. Child Progress View
-
-**Reuse:** `app/montree/dashboard/[childId]/progress/page.tsx` — the portfolio view.
-- Hero stats, area bars, photo strip, timeline — all work unchanged
-- Just render at `/montree/home/[childId]/progress`
-
-### 2D. Features to Strip (NOT shown for homeschool)
-
+In dashboard pages, check session role and conditionally hide:
 - Parent invite system (they ARE the parent)
 - Parent reports / weekly summaries (they see progress directly)
-- Classroom management (no classrooms)
+- Classroom management UI (they have one "classroom" = their home)
 - Teacher management (no other teachers)
-- School admin panel
+- School admin panel link
 - Student transfer between classrooms
 
-### 2E. Add/Remove Children
+Keep everything else unchanged.
 
-**Create:** `app/api/montree/home/children/route.ts`
-- GET: List parent's children (query `montree_children` by school_id)
-- POST: Add new child (name, age, optional birthday)
-- DELETE: Remove child (soft delete via `is_active` flag)
+### 2B. Session Handling
+
+The `montree_session` localStorage already stores the teacher object. Need to ensure the dashboard reads it correctly for homeschool parents (it should — same shape).
+
+### 2C. Verify Child Operations
+
+Verify these work for homeschool parents (they should — they use classroom_id):
+- Add child to classroom
+- Remove child
+- View child week view
+- Track progress, add focus works, extras, observations
+
+### 2D. Possible: Custom welcome/empty state
+
+When a homeschool parent first lands with no children, show a friendly "Welcome! Add your first child to get started" instead of teacher-oriented messaging.
 
 ---
 
-## Phase 3 — Guru (Onboarding + Freemium Gate)
+## Phase 3 — Guru (Onboarding + Freemium Gate) ⬜
 
 ### 3A. Guru Onboarding Flow
 
-**Create:** `app/montree/home/[childId]/guru-setup/page.tsx`
-
 Multi-step guided setup (runs once per child, can be re-run):
-1. **Child info** — confirm name, age (pre-filled from signup)
-2. **Space** — "Describe your learning space" (living room corner / dedicated room / outdoor area / mixed)
-3. **Materials budget** — "Monthly budget for materials" ($0-20 / $20-50 / $50-100 / $100+)
-4. **Existing materials** — checklist of common Montessori materials they already have (practical life tools, sensorial materials, math manipulatives, language materials, cultural materials)
-5. **Goals** — "What matters most?" (independence / academic readiness / concentration / social skills / all-round development)
-6. **Submit** → Guru generates personalized curriculum plan
-
-**API:** POST to `/api/montree/guru/home-setup` → calls Claude with all context → returns structured curriculum plan:
-- Recommended works per area (filtered by age + space + budget + existing materials)
-- Materials shopping list (what to buy/make)
-- Weekly schedule suggestion (how many works per day, which areas to rotate)
-- First 2 weeks: specific works to present (step-by-step getting started)
-
-**Store:** Save plan in new `montree_homeschool_curriculum_plans` table (child_id, plan_json, created_at).
+1. **Child info** — confirm name, age
+2. **Space** — "Describe your learning space" (living room corner / dedicated room / outdoor / mixed)
+3. **Materials budget** — Monthly budget ($0-20 / $20-50 / $50-100 / $100+)
+4. **Existing materials** — Checklist of common Montessori materials
+5. **Goals** — What matters most? (independence / academic readiness / concentration / social skills / all-round)
+6. **Submit** → Claude generates personalized curriculum plan
 
 ### 3B. Ongoing Guru Chat
 
-**Reuse:** Existing Guru system entirely.
-- `lib/montree/guru/context-builder.ts` — works unchanged (queries by child_id)
-- `lib/montree/guru/knowledge-retrieval.ts` — works unchanged
-- `app/api/montree/guru/stream/route.ts` — works unchanged
-
-**Modify system prompt** for homeschool context:
-- Add to `prompt-builder.ts`: if role is `homeschool_parent`, adjust persona to address a parent (not teacher)
+Reuse existing Guru system entirely. Modify system prompt for homeschool context:
+- Address parent (not teacher)
 - Replace "classroom" language with "home learning environment"
-- Add home-specific advice patterns (limited materials, mixed-age siblings, parent as guide)
-
-**Create:** `app/montree/home/[childId]/guru/page.tsx` — same chat UI, rendered at homeschool route.
+- Add home-specific advice patterns
 
 ### 3C. Freemium Gate
 
-**3 free prompts, then hard gate:**
-- New signups get 3 free Guru interactions to experience the value
-- After 3 prompts: paywall overlay with "Unlock Guru — $5/month per child"
-- Track usage in `montree_guru_interactions` (count per parent)
+- Add `guru_prompts_used` tracking (column on `montree_teachers` or separate counter)
+- After 3 free prompts → paywall overlay
+- "Unlock Guru — $5/month per child"
 
-**Check logic:**
-```typescript
-// In Guru page/API
-const parent = await getHomeschoolParent(userId);
-const usageCount = await getGuruUsageCount(parent.id);
-if (parent.guru_plan !== 'paid' && usageCount >= 3) {
-  // Show upgrade prompt with pricing
-  return;
-}
-// Proceed with Guru call
-```
+### 3D. Stripe Integration
 
-**Upgrade flow:**
-- "Unlock Guru — $5/month per child" button
-- Stripe Checkout session → redirect to Stripe → webhook confirms → update `guru_plan` to 'paid'
-- Per-child billing: each child is a separate Stripe subscription item (or use metered billing)
-
-### 3D. Stripe Integration for Homeschool
-
-**Modify:** `lib/montree/stripe.ts`
-- Add plan: `homeschool_guru: { name: 'Guru Access', price: 500 }` ($5/month)
+- Stripe Checkout session → redirect → webhook → update plan status
+- Per-child billing: $5/month per child
 - New env var: `STRIPE_PRICE_HOMESCHOOL_GURU`
 
-**Create:** `app/api/montree/home/billing/checkout/route.ts`
-- Creates Stripe Checkout session for Guru subscription
-- Metadata includes `parent_id` + `child_id`
-
-**Modify:** `app/api/montree/billing/webhook/route.ts`
-- Handle homeschool Guru subscription events
-- On `checkout.session.completed`: update `montree_homeschool_parents.guru_plan = 'paid'`
-- On `customer.subscription.deleted`: revert to `'free'`
-
 ---
 
-## Phase 4 — Curriculum Browser
+## Phase 4 — Curriculum Browser ⬜
 
 ### 4A. Browse Works by Area
-
-**Create:** `app/montree/home/curriculum/page.tsx`
 - 5 area cards (same design as teacher curriculum page)
 - Tap area → see works filtered by child's age range
-- Each work shows: name, description, materials needed, age range, prerequisites
-
-**Reuse:** Curriculum JSON files in `lib/curriculum/data/` (language.json, practical_life.json, sensorial.json, mathematics.json, cultural.json)
 
 ### 4B. Age-Filtered Recommendations
-
-- Based on child's age, highlight "recommended" works (green badge)
-- Grey out works above age range (still visible, just marked as "coming later")
-- Show prerequisite chains: "Learn X before Y"
+- Highlight age-appropriate works, grey out advanced ones
+- Show prerequisite chains
 
 ### 4C. Materials List
-
-- Per-work materials list (already in curriculum JSON: `materials` field)
-- Aggregate "Shopping List" view: all materials needed for recommended works, deduplicated
-- Filter by area, sort by priority (most-used materials first)
+- Aggregate shopping list for recommended works, deduplicated
+- Filter by area, sort by priority
 
 ### 4D. Add Works to Child
-
-- "Add to my child's plan" button on each work
-- Uses existing `montree_child_work_progress` table (status: 'presented')
-- Same mechanism as teacher adding works via WorkPickerModal
+- "Add to my child's plan" → existing `montree_child_work_progress` mechanism
+- Same as teacher adding works via WorkPickerModal
 
 ---
 
-## Implementation Order
+## Key Decisions (All Resolved)
 
-| Step | What | Depends On | Est. Hours |
-|------|------|-----------|-----------|
-| 1A | Database migration | Nothing | 1 |
-| 1B | Auth changes | 1A | 1-2 |
-| 1C | Signup flow | 1A, 1B | 2-3 |
-| 1D | Login flow | 1A, 1B | 1-2 |
-| 2A | Dashboard shell | 1C | 2 |
-| 2B | Child detail (week view) | 2A | 2-3 |
-| 2C | Progress view | 2A | 1 |
-| 2D | Feature stripping | 2B | 1 |
-| 2E | Add/remove children | 1A | 1 |
-| 3A | Guru onboarding | 2B | 3-4 |
-| 3B | Ongoing Guru chat | 2B | 1-2 |
-| 3C | Freemium gate | 3B | 1-2 |
-| 3D | Stripe billing | 3C | 2-3 |
-| 4A | Curriculum browser | 2A | 2 |
-| 4B | Age filtering | 4A | 1 |
-| 4C | Materials list | 4A | 1-2 |
-| 4D | Add works to child | 4A, 2B | 1 |
-
-**Total estimate:** ~25-35 hours across 4 phases
-
----
-
-## Files Summary
-
-### New Files (~15-20)
-- `migrations/126_homeschool_tables.sql`
-- `app/api/montree/auth/homeschool/route.ts`
-- `app/api/montree/home/children/route.ts`
-- `app/api/montree/home/billing/checkout/route.ts`
-- `app/api/montree/guru/home-setup/route.ts`
-- `app/montree/home/page.tsx` (dashboard shell)
-- `app/montree/home/[childId]/page.tsx` (child detail)
-- `app/montree/home/[childId]/progress/page.tsx`
-- `app/montree/home/[childId]/guru/page.tsx`
-- `app/montree/home/[childId]/guru-setup/page.tsx`
-- `app/montree/home/curriculum/page.tsx`
-
-### Modified Files (~8-10)
-- `lib/montree/server-auth.ts` (add role)
-- `lib/montree/verify-request.ts` (accept role)
-- `lib/montree/types.ts` (add types)
-- `lib/montree/stripe.ts` (add plan)
-- `lib/montree/guru/prompt-builder.ts` (homeschool persona)
-- `app/montree/try/page.tsx` (add 3rd role)
-- `app/api/montree/try/instant/route.ts` (homeschool branch)
-- `app/api/montree/billing/webhook/route.ts` (handle homeschool subs)
-- `app/montree/login/page.tsx` (homeschool login option)
-- `middleware.ts` (add `/montree/home/*` to routes)
-
-### Reused Unchanged (~20+)
-- All tracking APIs (`/api/montree/progress/*`)
-- All Guru infrastructure (`lib/montree/guru/*`)
-- All shared components (FocusWorksSection, WorkWheelPicker, AreaBadge, etc.)
-- Curriculum JSON data files
-- Stripe webhook handler (extended, not replaced)
-
----
-
-## Key Risks & Mitigations
-
-1. **Risk:** Homeschool parents hitting Guru API hard (cost)
-   **Mitigation:** Hard paywall — no free Guru calls. $5/child/month covers API costs with margin.
-
-2. **Risk:** Shared codebase complexity (role checks everywhere)
-   **Mitigation:** Separate route tree (`/montree/home/*`). Shared at component level, not page level. Role checks only at page boundaries, not deep in components.
-
-3. **Risk:** Curriculum too school-oriented for home use
-   **Mitigation:** Guru onboarding filters by space/budget/materials. Curriculum browser shows age-appropriate subset. Phase 4 can add home-specific work variants later.
-
-4. **Risk:** Parent confuses Montree Home with parent portal
-   **Mitigation:** Completely separate entry point (`/montree/home`), different branding/messaging, separate signup flow.
-
----
-
-## Open Questions — ALL RESOLVED ✅
-
-1. **Branding:** ✅ Same as classroom. Same Mercedes, different driver.
-2. **Landing page:** ✅ Add to existing montree.xyz signup flow. "I'm a teacher / I'm a principal / I'm a parent" — third option.
-3. **Trial period:** ✅ 3 free Guru prompts for new signups, then hard paywall.
-4. **Curriculum customization:** ✅ Yes — parents can create custom works. Same UI as teachers (WorkPickerModal). No changes needed.
-5. **Observations/notes:** ✅ Yes — full behavioral observation system available. Same as classroom. No changes.
-
-## CRITICAL DESIGN PRINCIPLE
-
-**This is the existing Montree system with a homeschool parent role bolted on. We do NOT rebuild anything.**
-
-The classroom product is excellent. Homeschool parents get the same excellent product. The only new code is:
-- Auth layer (new role + new table + signup/login)
-- Route shell (`/montree/home/*` pages that import existing components)
-- Guru gate (3 free prompts + Stripe paywall)
-- Guru onboarding (the one genuinely new feature — space/budget/materials questionnaire)
-
-Everything else — tracking, progress, curriculum, observations, notes, focus works, extras, work picker, area badges — is **imported and reused unchanged**.
+| Decision | Answer |
+|----------|--------|
+| Architecture | `montree_teachers` table, `role='homeschool_parent'` |
+| Branding | Same as classroom (same Mercedes, different driver) |
+| Signup | Third option on try flow ("I'm a parent") |
+| Onboarding | IDENTICAL to teacher — school + classroom + add children |
+| Custom works | Yes, same WorkPickerModal UI |
+| Observations | Yes, full system, same as classroom |
+| Free tier | Full tracking (everything except Guru) |
+| Paid tier | $5/child/month for Guru access |
+| Free trial | 3 free Guru prompts, then hard paywall |
+| Multi-child | Standard class list UI |
+| Login | Same page, same auth endpoint |
