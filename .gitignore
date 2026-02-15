@@ -36,8 +36,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# data and videos
+# data and videos (but keep guru knowledge base)
 /data/
+!/data/guru_knowledge/
 /public/videos/
 !.gitkeep
 
