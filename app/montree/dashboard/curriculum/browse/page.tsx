@@ -364,7 +364,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
-            {ageLabel.split(' ')[0]} {ageLabel.split(' ')[1]}
+            {ageLabel.includes('(') ? ageLabel.split(' (')[0] : ageLabel}
           </span>
           <svg
             className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
