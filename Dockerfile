@@ -41,6 +41,13 @@ COPY . .
 # Remove any cached build artifacts
 RUN rm -rf .next
 
+# Next.js needs NEXT_PUBLIC_* vars at build time to inline them into client bundles.
+# Railway passes service env vars during Docker build -- declare them as ARGs
+# so they are available during npm run build.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_YOUTUBE_API_KEY
+
 # Build Next.js app (creates .next/standalone with output: 'standalone')
 RUN npm run build
 
