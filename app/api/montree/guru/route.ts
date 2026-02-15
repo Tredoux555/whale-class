@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
     // Check if this is a homeschool parent and enforce the 3-prompt free trial
     const teacherId = teacher_id || auth.userId;
     let isParentRole = false;
+    let shouldIncrementPrompt = false;
     if (teacherId) {
       const { data: teacherData } = await supabase
         .from('montree_teachers')
@@ -112,11 +113,10 @@ export async function POST(request: NextRequest) {
           }, { status: 403 });
         }
 
-        // Increment counter for free-tier users (paid users get unlimited)
+        // Flag to increment counter AFTER successful AI response
+        // (not before — if AI fails, user shouldn't lose a free prompt)
         if (!isPaid) {
-          await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
-            .update({ guru_prompts_used: promptsUsed + 1 })
-            .eq('id', teacherId);
+          shouldIncrementPrompt = true;
         }
       }
     }
@@ -202,7 +202,22 @@ export async function POST(request: NextRequest) {
       // Don't fail the request, just log it
     }
 
-    // 7. Return response
+    // 7. Increment free-trial counter AFTER successful AI response
+    // (Not before — if AI call fails, user shouldn't lose a free prompt)
+    if (shouldIncrementPrompt && teacherId) {
+      // Re-read current count to avoid race conditions, then increment
+      const { data: fresh } = await supabase
+        .from('montree_teachers')
+        .select('guru_prompts_used')
+        .eq('id', teacherId)
+        .single();
+      const currentCount = (fresh as Record<string, unknown> | null)?.guru_prompts_used as number || 0;
+      await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+        .update({ guru_prompts_used: currentCount + 1 })
+        .eq('id', teacherId);
+    }
+
+    // 8. Return response
     return NextResponse.json({
       success: true,
       insight: parsed.insight,

@@ -35,6 +35,14 @@ export async function POST(request: NextRequest) {
 
     const t = teacher as Record<string, unknown>;
 
+    // Only homeschool parents need to pay — teachers get Guru for free
+    if (t.role !== 'homeschool_parent') {
+      return NextResponse.json({
+        success: false,
+        error: 'You already have unlimited Guru access as a teacher.',
+      }, { status: 400 });
+    }
+
     // Get or create Stripe customer
     let customerId = t.guru_stripe_customer_id as string | null;
     if (!customerId) {
