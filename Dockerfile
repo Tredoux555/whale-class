@@ -33,7 +33,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260216-CURRICULUM-V2
+ARG CACHEBUST=20260216-CURRICULUM-V3
 
 # Copy application files
 COPY . .

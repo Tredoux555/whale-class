@@ -4671,7 +4671,7 @@
       "name_chinese": "蒙特梭利定义阶段",
       "slug": "definition-stages",
       "area": "language",
-      "category": "Reading",
+      "category": "Word Study",
       "sequence": 14,
       "age_range": "primary_year3",
       "quick_guide": "• Three-stage progression: naming → describing → defining\n• Stage 1 (Naming): 'This is a triangle'\n• Stage 2 (Describing): 'It has three sides, three angles, it is red'\n• Stage 3 (Defining): 'A triangle is a closed figure with three straight sides'\n• Child creates definition booklets for each subject studied\n• Develops precise scientific language and logical thinking\n• Standard AMI language exercise connecting to all curriculum areas",
@@ -5331,6 +5331,190 @@
       "video_search_term": "montessori secret messages reading motivation",
       "parent_description": "Your child reads secret folded messages that lead them on adventures around the classroom! 'Look under the blue mat' — and there's a surprise waiting! This turns reading into a treasure hunt, creating genuine excitement and purpose for decoding words.",
       "why_it_matters": "Motivation is everything in reading. When your child WANTS to read because there's a secret message waiting, they practice more willingly and joyfully than with any workbook. This intrinsic motivation is what creates lifelong readers."
+    },
+    {
+      "work_id": "la_syllable_work",
+      "name": "Syllable Work",
+      "category": "Oral Language Development",
+      "quick_guide": "• Gather familiar objects or picture cards with 1, 2, and 3+ syllable names\n• Begin with clapping: say the word slowly while clapping each syllable\n• Use sorting mats labelled 1, 2, 3+ for objects\n• Progress from clapping to tapping, stomping, or using rhythm sticks\n• Once confident, introduce syllable blending and deletion games",
+      "presentation_steps": [
+        "Invite the child: \"Let's listen to the parts inside words.\"",
+        "Choose a familiar word (e.g., \"cat\"). Say it while clapping once. \"Cat — one clap, one part.\"",
+        "Choose a two-syllable word (e.g., \"apple\"). Clap twice: \"ap-ple — two claps, two parts.\"",
+        "Choose a three-syllable word (e.g., \"banana\"). Clap three times: \"ba-na-na — three parts.\"",
+        "Invite the child to try with their own name.",
+        "Introduce sorting mats: place objects under 1, 2, or 3+ columns.",
+        "Let the child sort independently, clapping each word to check.",
+        "For blending: say \"rab...bit\" slowly. Ask \"What word is that?\"",
+        "For deletion: \"Say butterfly. Now say it without butter.\" (fly)"
+      ],
+      "parent_description": "This activity trains your child's ear to hear the natural rhythm inside words. When children clap out syllables, they're breaking words into manageable chunks — a crucial skill for both reading and spelling later on. You can practise anywhere: clap the syllables in food names at the grocery store, or tap out the beats in family members' names at dinner.",
+      "why_it_matters": "Syllable awareness is one of the earliest phonological skills to develop and forms the bridge between oral language and reading. Children who can segment words into syllables find it much easier to decode longer words when they begin reading, and to spell them when writing. This work also builds the rhythmic awareness that supports poetry and music appreciation."
+    },
+    {
+      "work_id": "la_phonogram_box",
+      "name": "Phonogram Box",
+      "category": "Reading",
+      "quick_guide": "• Use a compartmentalised box with phonogram labels (ai, ee, oa, sh, etc.)\n• Place small objects or pictures in the correct compartment by sound\n• Start with 3-4 phonograms the child already knows from the Green Series\n• Gradually add new phonograms as mastery develops\n• Follow with phonogram reading cards and dictation",
+      "presentation_steps": [
+        "Place the phonogram box on the mat. Show 3-4 phonogram labels.",
+        "Review each phonogram sound: \"This says /ai/ as in rain.\"",
+        "Present a small object (e.g., a toy train). \"Train — I hear /ai/. It goes here.\"",
+        "Place the object in the \"ai\" compartment.",
+        "Offer the child another object. Let them identify the phonogram and sort.",
+        "Continue with 8-10 objects across the selected phonograms.",
+        "When confident, add phonogram reading cards: child reads words and sorts.",
+        "For dictation: say a word, child identifies the phonogram and writes it."
+      ],
+      "parent_description": "The Phonogram Box gives your child hands-on practice with the tricky letter combinations in English — like \"sh,\" \"ai,\" or \"oo.\" By sorting real objects by their sounds, your child builds a strong connection between what they hear and what they see on the page. This makes reading and spelling multi-syllable words much more manageable.",
+      "why_it_matters": "English has over 70 phonograms (letter combinations that make a single sound), and mastering them is essential for fluent reading. The Phonogram Box provides systematic, self-correcting practice that turns abstract sound patterns into concrete, sortable categories. Children who work extensively with phonograms transition from decoding to fluent reading more quickly."
+    },
+    {
+      "work_id": "la_digraph_practice",
+      "name": "Digraph Practice",
+      "category": "Reading",
+      "quick_guide": "• Introduce one digraph at a time (sh, ch, th, wh, ck, ng)\n• Use objects and pictures: \"ship starts with sh\"\n• Create digraph booklets — child reads and illustrates words\n• Progress from initial position to final position (fish, much, math)\n• Use digraph-rich sentences for fluency practice",
+      "presentation_steps": [
+        "Present two letters side by side: \"s\" and \"h.\" \"When these two letters sit together, they make one sound: /sh/.\"",
+        "Show objects: ship, shell, shoe. \"Hear /sh/ at the start?\"",
+        "Lay out picture cards. Child sorts: \"Does this word have /sh/?\"",
+        "Introduce the digraph in final position: fish, dish, push.",
+        "Child reads a word list of sh-words.",
+        "Repeat the process for ch, th, wh, ck, ng on subsequent days.",
+        "When multiple digraphs are known, do mixed sorting activities.",
+        "Child reads digraph-rich sentences for fluency practice."
+      ],
+      "parent_description": "Digraphs are pairs of letters that team up to make one sound — like \"sh\" in \"shoe\" or \"ch\" in \"chair.\" Your child learns that sometimes two letters work together instead of each making its own sound. This is a key step between simple phonetic reading and being able to tackle more complex words confidently.",
+      "why_it_matters": "Digraphs represent one of the first \"exceptions\" children encounter after learning basic phonics. Understanding that two letters can represent a single sound is a conceptual leap that opens the door to reading hundreds of common English words. Systematic digraph practice prevents the confusion that arises when children try to sound out each letter individually."
+    },
+    {
+      "work_id": "la_story_sequencing_cards",
+      "name": "Story Sequencing Cards",
+      "category": "Reading",
+      "quick_guide": "• Prepare sets of 3-6 picture cards that tell a simple story\n• Mix the cards and invite the child to put them in order\n• Begin with 3-card sets (beginning, middle, end)\n• Progress to longer sequences and then text-strip sequencing\n• Control card allows self-correction",
+      "presentation_steps": [
+        "Place a mixed set of 3 picture cards on the mat.",
+        "\"These pictures tell a story, but they're all mixed up. Can you put them in order?\"",
+        "Let the child arrange them. Ask: \"Can you tell me the story?\"",
+        "Show the control card. Child self-corrects if needed.",
+        "Progress to 4-card, then 5-6 card sequences.",
+        "Introduce text strips: child reads sentences and orders them.",
+        "For advanced work: child writes their own story, cuts it into strips, and gives to a friend to sequence."
+      ],
+      "parent_description": "Story sequencing cards help your child understand that stories have a beginning, middle, and end — and that events happen in a logical order. This builds reading comprehension skills because your child must understand what's happening in each picture and figure out the cause-and-effect chain. It's also wonderful preparation for their own writing.",
+      "why_it_matters": "Sequencing is a fundamental cognitive skill that underpins reading comprehension, mathematical reasoning, and scientific thinking. Children who can sequence events accurately demonstrate stronger recall, better prediction skills, and more coherent narrative writing. This work bridges the gap between reading individual sentences and understanding connected text."
+    },
+    {
+      "work_id": "la_function_of_words",
+      "name": "Function of Words",
+      "category": "Grammar",
+      "quick_guide": "• This is the essential first grammar lesson — before studying individual parts of speech in depth\n• Use a simple sentence: \"The big dog runs fast\"\n• Show how removing different words changes or breaks the sentence\n• Introduce grammar symbols: large red circle (verb), black triangle (noun), etc.\n• Children discover that each word has a job to do",
+      "presentation_steps": [
+        "Write a sentence on a strip: \"The big dog runs fast.\"",
+        "Read it together. \"Every word in this sentence has a job.\"",
+        "Cover \"dog.\" Read: \"The big __ runs fast.\" \"Something is missing — we need a naming word!\"",
+        "Cover \"runs.\" Read: \"The big dog __ fast.\" \"Now we don't know what happens!\"",
+        "Cover \"big.\" Read: \"The dog runs fast.\" \"It still works, but we lost the description.\"",
+        "Introduce the grammar symbols: \"Naming words get a black triangle. Action words get a red circle.\"",
+        "Place symbols above each word in the sentence.",
+        "Give the child a new sentence strip to label with symbols independently.",
+        "Over time, introduce all the grammar symbols through this discovery approach."
+      ],
+      "parent_description": "Before your child studies nouns, verbs, and adjectives individually, this lesson shows them the big picture: every word in a sentence has a job. By removing words and seeing what breaks, your child discovers for themselves why we need different types of words. The colourful grammar symbols (triangles, circles) make this abstract concept visual and concrete.",
+      "why_it_matters": "Function of Words is the foundational grammar lesson in Montessori — it provides the conceptual framework that makes all subsequent grammar study meaningful. Rather than memorising definitions, children discover through experimentation that language has structure. This inquiry-based approach leads to deeper understanding and genuine interest in grammar, rather than the resistance many children develop toward rote grammar instruction."
+    },
+    {
+      "work_id": "la_sentence_building",
+      "name": "Sentence Building",
+      "category": "Grammar",
+      "quick_guide": "• Use colour-coded word cards matching grammar symbol colours\n• Begin with two-card sentences: noun + verb (\"Dogs run\")\n• Expand by adding articles, adjectives, adverbs, prepositions\n• Include punctuation cards (period, question mark, exclamation mark)\n• Progress to transforming sentence types (statement → question → command)",
+      "presentation_steps": [
+        "Lay out a noun card and a verb card: \"Dogs\" + \"run.\" Read together.",
+        "Add an article: \"The\" + \"dogs\" + \"run.\" \"Does that sound more complete?\"",
+        "Add an adjective: \"The\" + \"big\" + \"dogs\" + \"run.\" \"Now we can picture them!\"",
+        "Add an adverb: \"The\" + \"big\" + \"dogs\" + \"run\" + \"quickly.\"",
+        "Add a prepositional phrase: + \"in\" + \"the\" + \"park.\"",
+        "Show punctuation card: place a period at the end.",
+        "Read the complete sentence together.",
+        "Now transform: \"Do the big dogs run quickly in the park?\" — change to question mark.",
+        "Child builds their own sentences from a selection of word cards."
+      ],
+      "parent_description": "Sentence Building takes the grammar symbols your child already knows and puts them to work. Starting with just two words and growing into full sentences, your child physically constructs language — choosing each word, placing it in order, and seeing how the sentence expands. It's like building with blocks, but with words.",
+      "why_it_matters": "This work bridges the gap between grammar knowledge and written expression. Children who physically construct sentences develop an intuitive feel for word order, sentence rhythm, and the interplay between parts of speech. It directly prepares them for independent writing by making sentence structure tangible before they must produce it entirely from memory."
+    },
+    {
+      "work_id": "la_sentence_diagramming",
+      "name": "Sentence Diagramming",
+      "category": "Grammar",
+      "quick_guide": "• Use large working mat with sentence strips and moveable arrows/lines\n• Begin with simple subject-predicate division\n• Show the subject (who/what) on the left, predicate (what happened) on the right\n• Gradually add direct objects, then modifiers\n• Grammar symbols reinforce the visual analysis",
+      "presentation_steps": [
+        "Write a simple sentence: \"Birds fly.\" Place on the mat.",
+        "Draw a vertical line between subject and predicate. \"Who? Birds. What do they do? Fly.\"",
+        "Try: \"The little birds fly south.\" Draw the dividing line.",
+        "Show how \"little\" connects to \"birds\" with a slanted line below.",
+        "Show how \"south\" connects to \"fly\" with a slanted line below.",
+        "Introduce direct objects: \"The cat chased the mouse.\" Draw horizontal line for \"mouse.\"",
+        "Let the child diagram a sentence independently.",
+        "For compound sentences: show how a conjunction bridges two diagrams."
+      ],
+      "parent_description": "Sentence diagramming is like making a map of a sentence. Your child draws lines and branches to show which words belong together and how they relate. It makes the invisible structure of language visible — and children often find it surprisingly satisfying, like solving a puzzle. This visual approach helps them write more clearly because they can \"see\" how sentences are built.",
+      "why_it_matters": "Diagramming develops analytical thinking and metalinguistic awareness — the ability to think about language itself. Children who can diagram sentences demonstrate stronger reading comprehension (because they can parse complex sentences) and more varied writing (because they understand how to construct different sentence types intentionally). It is a classic Montessori grammar material that bridges concrete manipulation and abstract thinking."
+    },
+    {
+      "work_id": "la_verb_tense",
+      "name": "Verb Tense Work",
+      "category": "Grammar",
+      "quick_guide": "• Introduce with a timeline visual: past (behind us), present (now), future (ahead)\n• Use colour-coded cards: red = present, blue = past, green = future\n• Begin with regular verbs: walk → walked → will walk\n• Sort sentences by tense\n• Progress to conjugation charts for common verbs",
+      "presentation_steps": [
+        "Show a simple timeline on the mat: PAST — NOW — FUTURE.",
+        "Place a verb card: \"walk.\" \"This is happening now — present tense.\"",
+        "Change to \"walked.\" \"This already happened — past tense.\" Place under PAST.",
+        "Change to \"will walk.\" \"This hasn't happened yet — future.\" Place under FUTURE.",
+        "Give the child verb cards to sort: run/ran/will run, jump/jumped/will jump.",
+        "Introduce sentence strips: \"I play.\" \"I played.\" \"I will play.\" Child sorts by tense.",
+        "Show a conjugation chart: I walk, you walk, he walks. Note the changes.",
+        "Child fills in blank conjugation charts for new verbs.",
+        "Introduce irregular verbs: go/went/will go, eat/ate/will eat."
+      ],
+      "parent_description": "Verb tenses tell us when things happen — past, present, or future. Your child learns to hear and see the difference between \"I walk\" (now), \"I walked\" (before), and \"I will walk\" (later). Using colour-coded cards and a timeline makes this abstract concept concrete. This is directly useful in everyday conversation and is essential for reading comprehension.",
+      "why_it_matters": "Understanding verb tense is fundamental to both reading comprehension and written expression. Children who grasp tense can follow narratives across time, understand cause-and-effect in stories, and write with temporal clarity. The Montessori approach — using physical cards, colour coding, and conjugation charts — makes an abstract grammatical concept tangible and self-correcting, following the pattern established by Montessori's original verb conjugation materials described in The Montessori Elementary Material."
+    },
+    {
+      "work_id": "la_root_words",
+      "name": "Root Words and Word Origins",
+      "category": "Word Study",
+      "quick_guide": "• Begin with familiar word families: play → player, playful, replay, playground\n• Show the root word and how prefixes/suffixes grow from it\n• Use word family tree posters where the root is the trunk\n• Introduce common Latin and Greek roots: aqua (water), terra (earth), port (carry)\n• Children discover that knowing one root unlocks many words",
+      "presentation_steps": [
+        "Write \"play\" on a card. \"This is our root word — the basic word everything grows from.\"",
+        "Add prefix/suffix cards: \"re-\" + \"play\" = replay. \"play\" + \"-er\" = player.",
+        "Build a word tree: root at the trunk, derived words on branches.",
+        "Introduce a Latin root: \"aqua means water.\" Show: aquarium, aquatic, aqueduct.",
+        "Child draws word trees for new roots.",
+        "Introduce Greek roots: \"tele means far.\" Show: telephone, telescope, television.",
+        "Give the child an unfamiliar word with a known root. Can they guess the meaning?",
+        "Children create a personal \"Root Word Dictionary\" in their journals."
+      ],
+      "parent_description": "Root words are like secret codes that unlock the meaning of thousands of words. When your child learns that \"aqua\" means water, suddenly aquarium, aquatic, and aqueduct all make sense. This work transforms vocabulary building from memorisation into detective work — your child can figure out new words by recognising familiar roots inside them.",
+      "why_it_matters": "Knowledge of root words is one of the strongest predictors of vocabulary size and reading comprehension. Research shows that a relatively small number of Latin and Greek roots generate thousands of English words. Children who learn to identify roots develop morphological awareness — the ability to see the internal structure of words — which accelerates both vocabulary acquisition and spelling ability throughout their education."
+    },
+    {
+      "work_id": "la_poetry_analysis",
+      "name": "Poetry Analysis",
+      "category": "Word Study",
+      "quick_guide": "• Begin with short, rhythmic poems children can feel and hear\n• Mark rhyming words with coloured pencils (same colour = same rhyme)\n• Clap or march the rhythm — feel the beat pattern\n• Discuss imagery: \"What picture does the poet paint in your mind?\"\n• Compare two poems on the same subject",
+      "presentation_steps": [
+        "Read a short poem aloud with expression. Read it again.",
+        "Give the child a printed copy and coloured pencils.",
+        "\"Can you find words that sound the same at the end?\" Mark rhyming pairs with matching colours.",
+        "Read aloud again while clapping the rhythm. \"Do you feel a pattern?\"",
+        "Ask: \"What is the poet talking about? What pictures do you see in your mind?\"",
+        "Underline any words the child finds especially interesting or beautiful.",
+        "On another day, read a different poem on the same subject.",
+        "\"How are these two poems the same? How are they different?\"",
+        "Child may illustrate a poem or write their own inspired by the model."
+      ],
+      "parent_description": "Poetry analysis teaches your child to listen deeply to language — to hear the music in words, notice patterns, and visualise what a poet describes. Starting with the simple joy of finding rhymes and clapping rhythms, your child develops an ear for language that enriches both their reading and their own writing. It's about appreciating that language can be beautiful, not just functional.",
+      "why_it_matters": "Poetry analysis develops literary appreciation and close reading skills that transfer to all forms of text. Children learn to attend to word choice, sound patterns, and figurative language — skills that deepen reading comprehension across all subjects. The Montessori Elementary Material describes children discovering rhythm and rhyme as a natural progression from their phonological awareness work, connecting oral language skills to literary understanding."
     }
   ]
 }

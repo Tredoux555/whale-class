@@ -426,6 +426,68 @@
               ]
             }
           ]
+        },
+        {
+          "id": "la_syllable_work",
+          "name": "Syllable Work",
+          "description": "Clapping, counting, and breaking words into syllables for phonological awareness",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "la_sound_games"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Word cards",
+            "Clapping sticks",
+            "Syllable sorting mats",
+            "Objects of varying syllable length"
+          ],
+          "directAims": [
+            "Syllable segmentation",
+            "Syllable counting",
+            "Syllable blending"
+          ],
+          "indirectAims": [
+            "Phonological awareness",
+            "Reading preparation",
+            "Spelling readiness"
+          ],
+          "controlOfError": "Incorrect number of syllables identified",
+          "chineseName": "蒙特梭利音节练习",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Clapping Syllables",
+              "description": "Clap out syllables in familiar words",
+              "videoSearchTerms": [
+                "montessori syllable clapping"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Sorting by Syllable Count",
+              "description": "Sort objects by 1, 2, 3+ syllables",
+              "videoSearchTerms": [
+                "montessori syllable sorting"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Syllable Blending",
+              "description": "Hear separated syllables and blend into word",
+              "videoSearchTerms": [
+                "montessori syllable blending"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Syllable Deletion",
+              "description": "Remove a syllable — what word is left?",
+              "videoSearchTerms": [
+                "phonological awareness syllable deletion"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -1768,52 +1830,226 @@
           ]
         },
         {
-          "id": "la_definition_stages",
-          "name": "Definition Stages",
-          "description": "Progressive exercise from naming to describing to formal defining",
-          "ageRange": "primary_year3",
+          "id": "la_secret_messages",
+          "name": "Secret Messages",
+          "description": "Hidden messages the child reads to discover actions, treasures, or surprises",
+          "ageRange": "primary_year2",
           "prerequisites": [
-            "la_reading_classification"
+            "la_pink_series"
           ],
-          "sequence": 14,
+          "sequence": 15,
           "materials": [
-            "Definition booklets",
-            "Classified pictures",
-            "Writing materials"
+            "Folded message cards",
+            "Small treasures or instructions"
           ],
           "directAims": [
-            "Defining skills",
-            "Precise language"
+            "Reading motivation",
+            "Comprehension"
           ],
           "indirectAims": [
-            "Logical thinking",
-            "Scientific classification"
+            "Joy of reading",
+            "Independence"
           ],
-          "controlOfError": "Definition doesn't accurately describe the object",
-          "chineseName": "蒙特梭利定义阶段",
+          "controlOfError": "Child cannot complete the instruction — re-read for understanding",
+          "chineseName": "蒙特梭利秘密信息",
           "levels": [
             {
               "level": 1,
-              "name": "Naming",
-              "description": "This is a... (identify)",
+              "name": "Simple Messages",
+              "description": "'Look under the mat'",
               "videoSearchTerms": [
-                "montessori definition stages naming"
+                "montessori secret messages reading"
               ]
             },
             {
               "level": 2,
-              "name": "Describing",
-              "description": "It has... it is... (describe features)",
+              "name": "Multi-Step Messages",
+              "description": "'Go to the shelf, find the red box, bring it here'",
               "videoSearchTerms": [
-                "montessori definition describing"
+                "montessori secret messages multi step"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_phonogram_box",
+          "name": "Phonogram Box",
+          "description": "Systematic isolation and practice of phonogram sounds using object and picture sorting",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "la_phonogram_intro"
+          ],
+          "sequence": 16,
+          "materials": [
+            "Phonogram box with compartments",
+            "Small objects for each phonogram",
+            "Phonogram cards",
+            "Picture cards"
+          ],
+          "directAims": [
+            "Phonogram recognition",
+            "Sound-symbol correspondence",
+            "Phonogram reading fluency"
+          ],
+          "indirectAims": [
+            "Spelling",
+            "Advanced reading"
+          ],
+          "controlOfError": "Object does not match the phonogram sound",
+          "chineseName": "蒙特梭利语音盒",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Single Phonogram Sorting",
+              "description": "Sort objects by one phonogram at a time",
+              "videoSearchTerms": [
+                "montessori phonogram box"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Multiple Phonogram Sorting",
+              "description": "Sort across 3-4 phonograms simultaneously",
+              "videoSearchTerms": [
+                "montessori phonogram sorting"
               ]
             },
             {
               "level": 3,
-              "name": "Defining",
-              "description": "A ___ is a ___ that... (formal definition)",
+              "name": "Phonogram Reading Cards",
+              "description": "Read words featuring target phonograms",
               "videoSearchTerms": [
-                "montessori definition stages formal"
+                "montessori phonogram reading cards"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Phonogram Dictation",
+              "description": "Write words with phonograms from dictation",
+              "videoSearchTerms": [
+                "montessori phonogram dictation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_digraph_practice",
+          "name": "Digraph Practice",
+          "description": "Focused practice on consonant digraphs (sh, ch, th, wh, ck, ng) as distinct reading units",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "la_blue_series"
+          ],
+          "sequence": 17,
+          "materials": [
+            "Digraph cards",
+            "Picture cards for each digraph",
+            "Digraph booklets",
+            "Small objects"
+          ],
+          "directAims": [
+            "Digraph recognition",
+            "Digraph-sound association",
+            "Reading words with digraphs"
+          ],
+          "indirectAims": [
+            "Fluent reading",
+            "Spelling with digraphs"
+          ],
+          "controlOfError": "Word does not contain the target digraph",
+          "chineseName": "蒙特梭利双字母组合练习",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Introduce sh and ch",
+              "description": "Learn the sounds sh and ch with objects",
+              "videoSearchTerms": [
+                "montessori digraph sh ch"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Introduce th and wh",
+              "description": "Learn the sounds th and wh",
+              "videoSearchTerms": [
+                "montessori digraph th wh"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Introduce ck and ng",
+              "description": "Learn the sounds ck and ng",
+              "videoSearchTerms": [
+                "montessori digraph ck ng"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Digraph Reading Lists",
+              "description": "Read word lists with mixed digraphs",
+              "videoSearchTerms": [
+                "montessori digraph reading"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "Digraph Sentences",
+              "description": "Read sentences rich in digraphs",
+              "videoSearchTerms": [
+                "montessori digraph sentences reading"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_story_sequencing_cards",
+          "name": "Story Sequencing Cards",
+          "description": "Ordering picture and text cards to retell a story in the correct sequence",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "la_reading_analysis"
+          ],
+          "sequence": 18,
+          "materials": [
+            "Sequencing card sets (3-6 cards per story)",
+            "Story text strips",
+            "Control cards"
+          ],
+          "directAims": [
+            "Reading comprehension",
+            "Logical sequencing",
+            "Story structure understanding"
+          ],
+          "indirectAims": [
+            "Critical thinking",
+            "Narrative skills",
+            "Written composition"
+          ],
+          "controlOfError": "Control card shows correct sequence",
+          "chineseName": "蒙特梭利故事排序卡",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Three-Card Sequences",
+              "description": "Order 3 picture cards into beginning-middle-end",
+              "videoSearchTerms": [
+                "montessori story sequencing cards"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Four to Six Card Sequences",
+              "description": "Order longer picture sequences",
+              "videoSearchTerms": [
+                "montessori sequencing cards reading"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Text Strip Sequencing",
+              "description": "Order sentence strips to rebuild a story",
+              "videoSearchTerms": [
+                "montessori sentence sequencing reading"
               ]
             }
           ]
@@ -2698,6 +2934,259 @@
               ]
             }
           ]
+        },
+        {
+          "id": "la_function_of_words",
+          "name": "Function of Words",
+          "description": "Introductory lesson showing that words have different jobs in a sentence using grammar symbols",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "la_noun_intro"
+          ],
+          "sequence": 19,
+          "materials": [
+            "Grammar symbol cards (large triangle, small triangle, circle, etc.)",
+            "Prepared sentence strips",
+            "Grammar symbol stamps"
+          ],
+          "directAims": [
+            "Understanding that words serve different functions",
+            "Introduction to grammar symbols",
+            "Sentence awareness"
+          ],
+          "indirectAims": [
+            "Abstract thinking",
+            "Preparation for detailed grammar study"
+          ],
+          "controlOfError": "Symbols placed incorrectly above words",
+          "chineseName": "蒙特梭利词语功能",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Noun and Verb Discovery",
+              "description": "Show that sentences need naming words and action words",
+              "videoSearchTerms": [
+                "montessori function of words"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Adding Descriptors",
+              "description": "Show how adjectives change the noun",
+              "videoSearchTerms": [
+                "montessori grammar symbols introduction"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Expanding Sentences",
+              "description": "Add articles, prepositions to build longer sentences",
+              "videoSearchTerms": [
+                "montessori grammar symbols sentence building"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_sentence_building",
+          "name": "Sentence Building",
+          "description": "Structured progression from single words to complete sentences using word cards",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "la_function_of_words"
+          ],
+          "sequence": 20,
+          "materials": [
+            "Word cards (colour-coded by part of speech)",
+            "Sentence strips",
+            "Punctuation cards"
+          ],
+          "directAims": [
+            "Sentence construction",
+            "Word order awareness",
+            "Punctuation in context"
+          ],
+          "indirectAims": [
+            "Written composition",
+            "Grammar internalisation"
+          ],
+          "controlOfError": "Sentence does not make sense when read aloud",
+          "chineseName": "蒙特梭利造句练习",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Two-Word Sentences",
+              "description": "Build subject + verb sentences",
+              "videoSearchTerms": [
+                "montessori sentence building"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Adding Adjectives",
+              "description": "Expand with describing words",
+              "videoSearchTerms": [
+                "montessori sentence building adjectives"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Adding Prepositions",
+              "description": "Include location and direction",
+              "videoSearchTerms": [
+                "montessori sentence building prepositions"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Complete Sentences",
+              "description": "Build full sentences with capitals and periods",
+              "videoSearchTerms": [
+                "montessori sentence building complete"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "Sentence Transformation",
+              "description": "Change statements to questions and commands",
+              "videoSearchTerms": [
+                "montessori sentence types"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_sentence_diagramming",
+          "name": "Sentence Diagramming",
+          "description": "Visual representation of sentence structure showing relationships between parts of speech",
+          "ageRange": "primary_year3",
+          "prerequisites": [
+            "la_sentence_analysis",
+            "la_sentence_building"
+          ],
+          "sequence": 21,
+          "materials": [
+            "Sentence strips",
+            "Diagramming arrows/lines",
+            "Grammar symbols",
+            "Large working mat"
+          ],
+          "directAims": [
+            "Visual analysis of sentence structure",
+            "Understanding grammatical relationships",
+            "Subject-predicate identification"
+          ],
+          "indirectAims": [
+            "Advanced composition",
+            "Logical thinking",
+            "Abstract grammar understanding"
+          ],
+          "controlOfError": "Diagram does not match sentence structure",
+          "chineseName": "蒙特梭利句子图解",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Subject and Predicate",
+              "description": "Divide sentence into who/what and what happened",
+              "videoSearchTerms": [
+                "montessori sentence diagramming subject predicate"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Direct Object",
+              "description": "Identify what receives the action",
+              "videoSearchTerms": [
+                "montessori sentence diagramming object"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Modifiers",
+              "description": "Show how adjectives and adverbs connect",
+              "videoSearchTerms": [
+                "montessori sentence diagramming modifiers"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Compound Sentences",
+              "description": "Diagram sentences joined by conjunctions",
+              "videoSearchTerms": [
+                "montessori compound sentence diagram"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_verb_tense",
+          "name": "Verb Tense Work",
+          "description": "Exploring past, present, and future verb tenses through conjugation cards and sentence transformation",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "la_verb_intro"
+          ],
+          "sequence": 22,
+          "materials": [
+            "Verb tense cards (colour-coded: red for present, blue for past, green for future)",
+            "Conjugation charts",
+            "Sentence transformation strips",
+            "Verb tense timeline"
+          ],
+          "directAims": [
+            "Tense recognition",
+            "Verb conjugation",
+            "Temporal language use"
+          ],
+          "indirectAims": [
+            "Written expression",
+            "Reading comprehension",
+            "Historical narrative understanding"
+          ],
+          "controlOfError": "Verb form does not match the tense indicated",
+          "chineseName": "蒙特梭利动词时态",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Present Tense",
+              "description": "Identify and use present tense verbs",
+              "videoSearchTerms": [
+                "montessori verb tense present"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Past Tense",
+              "description": "Change present to past tense",
+              "videoSearchTerms": [
+                "montessori verb tense past"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Future Tense",
+              "description": "Express future actions",
+              "videoSearchTerms": [
+                "montessori verb tense future"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Tense Sorting",
+              "description": "Sort sentences by tense",
+              "videoSearchTerms": [
+                "montessori verb tense sorting"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "Conjugation Charts",
+              "description": "Complete conjugation charts for common verbs",
+              "videoSearchTerms": [
+                "montessori verb conjugation chart"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -2968,51 +3457,179 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Total Reading",
-      "sequence": 6,
-      "works": [
+        },
         {
-          "id": "la_secret_messages",
-          "name": "Secret Messages",
-          "description": "Hidden messages the child reads to discover actions, treasures, or surprises",
-          "ageRange": "primary_year2",
+          "id": "la_definition_stages",
+          "name": "Definition Stages",
+          "description": "Progressive exercise from naming to describing to formal defining",
+          "ageRange": "primary_year3",
           "prerequisites": [
-            "la_pink_series"
+            "la_reading_classification"
           ],
-          "sequence": 1,
+          "sequence": 7,
           "materials": [
-            "Folded message cards",
-            "Small treasures or instructions"
+            "Definition booklets",
+            "Classified pictures",
+            "Writing materials"
           ],
           "directAims": [
-            "Reading motivation",
-            "Comprehension"
+            "Defining skills",
+            "Precise language"
           ],
           "indirectAims": [
-            "Joy of reading",
-            "Independence"
+            "Logical thinking",
+            "Scientific classification"
           ],
-          "controlOfError": "Child cannot complete the instruction — re-read for understanding",
-          "chineseName": "蒙特梭利秘密信息",
+          "controlOfError": "Definition doesn't accurately describe the object",
+          "chineseName": "蒙特梭利定义阶段",
           "levels": [
             {
               "level": 1,
-              "name": "Simple Messages",
-              "description": "'Look under the mat'",
+              "name": "Naming",
+              "description": "This is a... (identify)",
               "videoSearchTerms": [
-                "montessori secret messages reading"
+                "montessori definition stages naming"
               ]
             },
             {
               "level": 2,
-              "name": "Multi-Step Messages",
-              "description": "'Go to the shelf, find the red box, bring it here'",
+              "name": "Describing",
+              "description": "It has... it is... (describe features)",
               "videoSearchTerms": [
-                "montessori secret messages multi step"
+                "montessori definition describing"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Defining",
+              "description": "A ___ is a ___ that... (formal definition)",
+              "videoSearchTerms": [
+                "montessori definition stages formal"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_root_words",
+          "name": "Root Words and Word Origins",
+          "description": "Exploring root words, word families, and how words are built from common roots",
+          "ageRange": "primary_year3",
+          "prerequisites": [
+            "la_word_families",
+            "la_prefixes_suffixes"
+          ],
+          "sequence": 8,
+          "materials": [
+            "Root word cards",
+            "Word family trees (poster/mat)",
+            "Etymology cards",
+            "Word building strips"
+          ],
+          "directAims": [
+            "Root word identification",
+            "Understanding word derivation",
+            "Vocabulary expansion through roots"
+          ],
+          "indirectAims": [
+            "Spelling",
+            "Reading comprehension",
+            "Foreign language readiness"
+          ],
+          "controlOfError": "Derived word does not share the root",
+          "chineseName": "蒙特梭利词根学习",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Common Roots",
+              "description": "Identify root in word families (e.g., play → player, playful, replay)",
+              "videoSearchTerms": [
+                "montessori root words"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Latin and Greek Roots",
+              "description": "Explore common Latin/Greek roots (aqua, terra, port)",
+              "videoSearchTerms": [
+                "montessori word origins latin greek"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Word Building from Roots",
+              "description": "Build new words from root + prefix + suffix",
+              "videoSearchTerms": [
+                "montessori word building roots"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Word Origin Stories",
+              "description": "Discover where interesting words come from",
+              "videoSearchTerms": [
+                "montessori etymology word origins"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "la_poetry_analysis",
+          "name": "Poetry Analysis",
+          "description": "Analysing poems for rhyme, rhythm, imagery, and meaning",
+          "ageRange": "primary_year3",
+          "prerequisites": [
+            "la_reading_analysis"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Poetry cards",
+            "Coloured pencils for marking rhyme and rhythm",
+            "Poetry anthology",
+            "Analysis worksheets"
+          ],
+          "directAims": [
+            "Rhyme scheme identification",
+            "Rhythm and metre awareness",
+            "Figurative language recognition"
+          ],
+          "indirectAims": [
+            "Literary appreciation",
+            "Creative writing",
+            "Cultural knowledge"
+          ],
+          "controlOfError": "Analysis does not match the poem structure",
+          "chineseName": "蒙特梭利诗歌分析",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Rhyme Identification",
+              "description": "Mark rhyming words with coloured pencils",
+              "videoSearchTerms": [
+                "montessori poetry rhyme analysis"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Rhythm and Beat",
+              "description": "Clap or march the rhythm of a poem",
+              "videoSearchTerms": [
+                "montessori poetry rhythm"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Imagery and Meaning",
+              "description": "Discuss what the poet is describing",
+              "videoSearchTerms": [
+                "montessori poetry comprehension"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Comparing Poems",
+              "description": "Compare two poems on the same theme",
+              "videoSearchTerms": [
+                "montessori poetry comparison"
               ]
             }
           ]
