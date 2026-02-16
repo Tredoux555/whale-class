@@ -20,6 +20,12 @@ export interface LocationData {
 export function getClientIP(request: Request): string | null {
   const headers = new Headers(request.headers);
 
+  // Check CF-Connecting-IP first (most trustworthy if behind Cloudflare)
+  const cfIP = headers.get('cf-connecting-ip');
+  if (cfIP) {
+    return cfIP.trim();
+  }
+
   // Check x-forwarded-for (most common for proxied requests)
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
@@ -27,19 +33,45 @@ export function getClientIP(request: Request): string | null {
     return forwarded.split(',')[0].trim();
   }
 
-  // Check x-real-ip
+  // Check x-real-ip (nginx proxy)
   const realIP = headers.get('x-real-ip');
   if (realIP) {
     return realIP.trim();
   }
 
-  // Check CF-Connecting-IP (Cloudflare)
-  const cfIP = headers.get('cf-connecting-ip');
-  if (cfIP) {
-    return cfIP.trim();
+  return null;
+}
+
+/**
+ * Check if an IP address is private (RFC 1918, localhost, or IPv6 private)
+ * Returns true for IPs that should not be geolocated
+ */
+function isPrivateIP(ip: string): boolean {
+  // IPv4 localhost
+  if (ip === '127.0.0.1') return true;
+
+  // IPv6 localhost
+  if (ip === '::1') return true;
+
+  // 10.0.0.0/8
+  if (ip.startsWith('10.')) return true;
+
+  // 192.168.0.0/16
+  if (ip.startsWith('192.168.')) return true;
+
+  // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
+  if (ip.startsWith('172.')) {
+    const secondOctet = parseInt(ip.split('.')[1] || '0', 10);
+    if (secondOctet >= 16 && secondOctet <= 31) return true;
   }
 
-  return null;
+  // IPv6 Unique Local Addresses (fc00::/7)
+  if (ip.startsWith('fc') || ip.startsWith('fd')) return true;
+
+  // IPv6 Link-local (fe80::/10)
+  if (ip.startsWith('fe80:')) return true;
+
+  return false;
 }
 
 /**
@@ -61,21 +93,16 @@ export async function getLocationFromIP(ip: string | null): Promise<LocationData
     return defaultLocation;
   }
 
-  // Skip local/private IPs
-  if (
-    ip === '127.0.0.1' ||
-    ip === '::1' ||
-    ip.startsWith('192.168.') ||
-    ip.startsWith('10.') ||
-    ip.startsWith('172.')
-  ) {
+  // Skip local/private IPs (RFC 1918 + localhost)
+  if (isPrivateIP(ip)) {
     return defaultLocation;
   }
 
   try {
     // Use ip-api.com free tier (no API key needed)
     // Rate limit: 45 requests/minute
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,city,regionName,timezone`, {
+    // HTTPS is supported on free tier
+    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,city,regionName,timezone`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
