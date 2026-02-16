@@ -110,13 +110,22 @@ export default function TeacherLoginPage() {
           </form>
         </div>
 
-        {/* Principal link */}
-        <div className="text-center mt-6">
+        {/* Help links */}
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-white/40 text-xs">
+            Teachers, principals & home parents all log in here with their 6-character code
+          </p>
           <a
             href="/montree/principal/login"
-            className="text-white/50 hover:text-white/70 text-sm"
+            className="text-white/50 hover:text-white/70 text-sm block"
           >
             Principal? Login here →
+          </a>
+          <a
+            href="/montree/try"
+            className="text-emerald-400/50 hover:text-emerald-400/70 text-sm block"
+          >
+            Don&apos;t have a code? Get started →
           </a>
         </div>
       </div>
