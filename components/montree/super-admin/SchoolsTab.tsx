@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { School } from './types';
+import { getCountryFlag, formatLocation } from '@/lib/ip-geolocation';
 
 interface SchoolsTabProps {
   schools: School[];
@@ -85,6 +86,7 @@ export default function SchoolsTab({
               <tr>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">School</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Owner</th>
+                <th className="text-left p-4 text-slate-400 font-medium text-sm">Location</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Status</th>
                 <th className="text-left p-4 text-slate-400 font-medium text-sm">Stats</th>
                 <th className="text-right p-4 text-slate-400 font-medium text-sm">Actions</th>
@@ -108,6 +110,28 @@ export default function SchoolsTab({
                   <td className="p-4">
                     <p className="text-white">{school.owner_name || '-'}</p>
                     <p className="text-slate-400 text-sm">{school.owner_email}</p>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">
+                        {getCountryFlag(school.signup_country_code || null)}
+                      </span>
+                      <div>
+                        <p className="text-white text-sm">
+                          {formatLocation({
+                            country: school.signup_country || null,
+                            countryCode: school.signup_country_code || null,
+                            city: school.signup_city || null,
+                            region: school.signup_region || null,
+                            timezone: school.signup_timezone || null,
+                            ip: null,
+                          })}
+                        </p>
+                        {school.signup_timezone && (
+                          <p className="text-slate-500 text-xs">{school.signup_timezone}</p>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="p-4">
                     {editingSchool === school.id ? (

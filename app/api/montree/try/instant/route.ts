@@ -6,6 +6,7 @@ import { hashPassword } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
+import { getLocationFromRequest } from '@/lib/ip-geolocation';
 
 /**
  * Seed full Montessori curriculum for a new classroom
@@ -159,6 +160,32 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
     steps.push('2-school-ok:' + school.id);
+
+    // ── Step 1b: Capture signup location (non-blocking analytics) ──
+    try {
+      steps.push('2b-location');
+      const location = await getLocationFromRequest(req);
+      if (location.country) {
+        await supabase
+          .from('montree_schools')
+          .update({
+            signup_country: location.country,
+            signup_country_code: location.countryCode,
+            signup_city: location.city,
+            signup_region: location.region,
+            signup_ip: location.ip,
+            signup_timezone: location.timezone,
+          })
+          .eq('id', school.id);
+        steps.push(`2b-location-ok:${location.city || 'unknown'},${location.country}`);
+      } else {
+        steps.push('2b-location-skip');
+      }
+    } catch (locErr) {
+      // Non-critical: don't fail signup if geolocation fails
+      const message = locErr instanceof Error ? locErr.message : String(locErr);
+      steps.push('2b-location-fail:' + message);
+    }
 
     // ── Step 2: Create classroom (all roles including homeschool — identical flow) ──
     let classroom: Record<string, unknown> | null = null;
