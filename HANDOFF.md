@@ -1,157 +1,123 @@
-# WHALE HANDOFF - February 7, 2026
-## Session 155: Montree Home — Clone & Build
+# WHALE HANDOFF - February 16, 2026
+## Session 166: Curriculum Expansion (268 → 319 Works)
 
 > **Brain:** `BRAIN.md` (read this first at session start)
-> **Previous handoffs:** `docs/HANDOFF_SESSION_153_CLEANUP_COMPLETE.md`
+> **Previous handoffs:** `docs/HANDOFF_SESSION_165_SCHEMA_FIX.md`
 
 ---
 
 ## Quick Summary
 
-Codebase is clean and ready to clone. Health score ~9.1/10 after 3 cleanup sessions (152-154). All 21 commits pushed to GitHub. This session starts the **Montree Home** project — a parent-facing home program cloned from the classroom system.
+Expanded the Montessori curriculum from 268 to 319 works across all 5 areas. Added full guide data for every new work. Fixed 54 malformed quick_guide fields. Fixed Docker cache bust so Railway rebuilds with the new data. **User must click "Re-import Master" after Railway deploys.**
 
 ---
 
-## Codebase Health (Ready for Cloning)
+## What Was Done (3 Commits)
 
-| Category | Score | Notes |
-|---|---|---|
-| Dead Code | 9/10 | 44 orphaned files removed |
-| File Size | 8/10 | All pages under 950 lines; large files are data only |
-| Console Statements | 10/10 | Zero console.log in app code |
-| Type Safety | 8/10 | 27 remaining `:any` are legitimate casts |
-| Import Hygiene | 10/10 | Zero stale imports |
-| Supabase Consolidation | 10/10 | 100% using `@/lib/supabase-client` |
-| API Health | 9/10 | 185/185 routes with try-catch |
+### Commit 1: `808b0532` — Add 45 missing works
+- Created `scripts/add-remaining-works.py` to batch-add works to both stem and guide JSON files
+- Added works across Language (14), Math (3), Cultural (24), Sensorial (4)
+- Each work includes: stem entry + comprehensive guide (quick_guide, presentation_steps, parent_description, why_it_matters)
+- Fixed sequence collisions by bumping new works above existing maximums per category
 
----
+### Commit 2: `39617b7a` — Add 6 PL works + fix 54 malformed quick_guides
+- Added 6 missing Practical Life works: Opening/Closing Containers, Nuts/Bolts Board, Stirring, Hammering, Mixing/Stirring Food, Ironing
+- Fixed 54 quick_guide fields stored as JSON arrays instead of strings (PL: 32, Math: 13, Cultural: 9)
 
-## Montree Home: What It Is
-
-A parent-facing version of Montree for home use. Parents track their children's Montessori progress at home without needing a school or classroom. Simpler than the teacher version — no classroom abstractions, no principal flow, no teacher codes.
-
-**Assessment (Session 153): 47-66 hours estimated.**
+### Commit 3: `3f7d03db` — Force Railway rebuild
+- Updated `ARG CACHEBUST=20260216-CURRICULUM-V2` in Dockerfile
+- Removed hardcoded "268 works" from re-import confirm dialog
+- Updated force rebuild comment
 
 ---
 
-## What Copies As-Is (Low Effort)
+## Files Changed
 
-| Asset | Count | Notes |
-|-------|-------|-------|
-| Game routes | 27 | `/app/montree/dashboard/games/*` — letter-tracer, word-building, etc. |
-| Reusable components | 35 | WorkWheelPicker, progress bars, curriculum displays |
-| Home curriculum | 68 works | Already at `lib/curriculum/data/home-curriculum.json` |
-| Comprehensive guides | 309 works | `lib/curriculum/comprehensive-guides/*.json` |
-| Guru knowledge base | 96,877 lines | `data/guru_knowledge/sources/*.txt` |
-
----
-
-## What Needs Building (The Work)
-
-### 1. Auth System (New)
-- Email/password registration (no school codes, no teacher codes)
-- Password reset flow
-- Parent profile (name, email, children)
-- Consider: Supabase Auth or custom auth like current system?
-
-### 2. Database Tables (5 New)
-```
-home_families        — parent accounts (email, password_hash, name, plan)
-home_children        — children per family (name, age, enrolled_at)
-home_progress        — progress tracking per child per work
-home_curriculum      — 68-work curriculum assigned to family
-home_sessions        — work session logs (like montree_work_sessions)
-```
-
-### 3. Routes (New)
-```
-/home                — Landing/marketing page
-/home/register       — Email/password signup
-/home/login          — Email/password login
-/home/dashboard      — Parent dashboard (children grid)
-/home/dashboard/[childId]  — Child detail (week view, progress)
-/home/dashboard/curriculum — Browse 68-work curriculum
-/home/dashboard/games/*    — Games (can share with classroom version)
-/home/settings       — Family settings, subscription
-```
-
-### 4. Components to Modify (15)
-These exist but reference classroom/teacher concepts that need replacing:
-- Dashboard header (remove teacher/school references)
-- Student grid (rename to children grid)
-- Progress displays (remove classroom context)
-- Curriculum page (use home curriculum, not classroom curriculum)
-- Work detail views (remove classroom-specific UI)
-
-### 5. API Routes (New)
-```
-/api/home/auth/register    — Create family account
-/api/home/auth/login       — Email/password login
-/api/home/children         — CRUD children
-/api/home/progress         — Progress tracking
-/api/home/curriculum       — Home curriculum management
-/api/home/guru             — Guru adapted for home context
-```
+| File | Change |
+|------|--------|
+| `scripts/add-remaining-works.py` | **NEW** — Batch data generation script |
+| `lib/montree/stem/practical-life.json` | 83 → 89 works |
+| `lib/montree/stem/sensorial.json` | 35 → 39 works |
+| `lib/montree/stem/language.json` | 43 → 57 works |
+| `lib/montree/stem/math.json` | 57 → 60 works |
+| `lib/montree/stem/cultural.json` | 50 → 74 works |
+| `lib/curriculum/comprehensive-guides/practical-life-guides.json` | 108 → 114 guides + 32 quick_guide fixes |
+| `lib/curriculum/comprehensive-guides/sensorial-guides.json` | 35 → 39 guides |
+| `lib/curriculum/comprehensive-guides/language-guides.json` | 43 → 57 guides |
+| `lib/curriculum/comprehensive-guides/math-guides.json` | 55 → 68 guides + 13 quick_guide fixes |
+| `lib/curriculum/comprehensive-guides/cultural-guides.json` | 73 → 82 guides + 9 quick_guide fixes |
+| `Dockerfile` | CACHEBUST updated to `20260216-CURRICULUM-V2` |
+| `app/montree/dashboard/curriculum/page.tsx` | Removed hardcoded "268 works" from confirm |
 
 ---
 
-## Key Architecture Decisions
+## Critical Architecture: How Curriculum Data Flows
 
-### Shared vs Duplicated
-- **Share:** Game components, curriculum data, Guru knowledge, comprehensive guides
-- **Duplicate (then modify):** Dashboard pages, progress tracking, auth flow
-- **New:** Registration, family management, home-specific onboarding
-
-### Supabase Client
-Single client at `lib/supabase-client.ts`. All new routes should import from here:
-- `getSupabase()` — server-side with service role key
-- `createSupabaseClient()` — browser-side with anon key
-
-### File Organization
-Suggested structure:
 ```
-app/home/                    — All home routes
-app/api/home/                — All home API routes
-lib/home/                    — Home-specific utilities
-components/home/             — Home-specific components
-components/shared/           — Components used by both classroom + home
+JSON files (stem + guides)
+    ↓ static ES import (bundled at build time)
+curriculum-loader.ts
+    ↓ merges by WORK NAME (case-insensitive)
+loadAllCurriculumWorks()
+    ↓ called by POST /api/montree/curriculum { action: 'seed_from_brain' }
+Supabase: montree_classroom_curriculum_works
+    ↓ queried by dashboard pages
+UI
 ```
+
+**Key insight:** Because JSON is bundled at build time, changing the JSON files requires a fresh Docker build. The `CACHEBUST` arg in the Dockerfile must be updated whenever curriculum data changes.
+
+---
+## Immediate Action Required
+
+After Railway finishes rebuilding (check Railway dashboard — should take 3-5 min after push):
+
+1. Go to `montree.xyz/montree/dashboard/curriculum`
+2. Click **"Re-import Master"** button
+3. Confirm the dialog
+4. Verify counts: **PL 89, Sensorial 39, Math 60, Language 57, Cultural 74 = 319 total**
+
+If the counts still show 268, the Docker rebuild didn't pick up the new data. In that case:
+- Check Railway build logs for the CACHEBUST value
+- Try manually triggering a rebuild in Railway dashboard
+- As a last resort, pass `CACHEBUST` as a Railway build variable (not just a Dockerfile default)
 
 ---
 
-## Existing Home Curriculum
+## Verification Data
 
-The 68-work home curriculum is already defined at `lib/curriculum/data/home-curriculum.json`. It covers 5 areas appropriate for home:
-- Practical Life (home-adapted: cooking, cleaning, self-care)
-- Sensorial (simplified materials parents can make)
-- Mathematics (hands-on activities with household items)
-- Language (reading, phonics, writing)
-- Cultural (nature, geography, science at home)
+**Final verified totals:**
+- 319 stem works: PL 89 + Sensorial 39 + Math 60 + Language 57 + Cultural 74
+- 360 guide entries: PL 114 + Sensorial 39 + Math 68 + Language 57 + Cultural 82
+- 316/316 unique stem names matched to guides (100%)
+- Zero sequence errors
+- Zero malformed quick_guide fields
+
+**New categories created:**
+- Math → Measurement (category_seq: 10) — Length Measurement, Weight Measurement
+- Cultural → Physical Science (category_seq: 8) — Air, Water, Sound, Light/Shadow, Gravity, Heat experiments
+
+---
+
+## What's Next (Priority Order)
+
+1. **Verify Railway deployment** — Re-import the 319 works into Supabase
+2. **Home system rebuild** — Session 165 wrote a 6-phase plan at `.claude/plans/vivid-pondering-cascade.md`. Code against `docs/HOME_LIVE_SCHEMA.md` (NOT migration files!)
+3. **Language curriculum reseed** — DB may still have only 18 of 57 language works if re-import hasn't been done
 
 ---
 
 ## Git Status
 
-All clean. 21 commits from sessions 152-154 are pushed. Start fresh.
-
-```bash
-git status  # Should be clean
+All clean. 3 commits pushed to main:
+```
+3f7d03db Force rebuild with updated curriculum data, fix hardcoded work count
+39617b7a Add 6 missing Practical Life works and fix 54 malformed quick_guides
+808b0532 Add 45 missing Montessori works across all curriculum areas
 ```
 
 ---
 
-## Quick Start for This Session
-
-1. Read `BRAIN.md` for full context
-2. Decide on route structure (`/home/*` recommended)
-3. Create DB migration for home tables
-4. Clone dashboard pages with classroom references stripped
-5. Build email/password auth
-6. Wire up home curriculum
-7. Build and verify
-
----
-
-*Updated: February 7, 2026*
-*Session: 155 (Montree Home Clone)*
-*Previous: Session 154 (Cleanup Final — Health 9.1/10)*
+*Updated: February 16, 2026*
+*Session: 166 (Curriculum Expansion)*
+*Previous: Session 165 (Schema Audit + Rollback + Plan)*

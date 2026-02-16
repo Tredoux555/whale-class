@@ -2,12 +2,12 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 9, 2026)
+## Current State (Feb 16, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Domain migrated to montree.xyz. Session 165 rolled back Session 164. Code is at `bfe1774`. Plan written for proper rebuild against real DB schema.
+**Status**: 🚀 LIVE — Curriculum expanded from 268 → 319 works. Docker CACHEBUST updated to force Railway rebuild. **After Railway deploys, click "Re-import Master" on the curriculum page to seed the 319 works into Supabase.**
 
 ## ⚠️ CRITICAL RULE — HOME SYSTEM
 
@@ -15,7 +15,60 @@
 
 The live database was set up via Supabase UI before the migration files were written. The migrations describe a schema that doesn't exist. `HOME_LIVE_SCHEMA.md` was queried from `information_schema.columns` on the live DB and is the **only** source of truth. This mistake has caused 3 failed rebuilds.
 
+## ⚠️ CRITICAL RULE — CURRICULUM DATA & DOCKER
+
+When modifying curriculum JSON files (`lib/montree/stem/*.json` or `lib/curriculum/comprehensive-guides/*.json`), you **MUST** also update the `CACHEBUST` ARG in the `Dockerfile`. The curriculum-loader uses static ES module imports which get bundled at **build time** by `npm run build`. If Docker caches the build layer, the new JSON data won't be included. Update the CACHEBUST value to any new unique string to force a fresh build.
+
 ## Recent Changes
+
+### Session 166 - Feb 16, 2026 (CURRICULUM EXPANSION — 268 → 319 WORKS ✅)
+
+**Handoff:** `HANDOFF.md`
+**Commits:** `808b0532`, `39617b7a`, `3f7d03db` — all pushed to main.
+
+**Expanded the Montessori curriculum from 268 to 319 works** by adding 51 missing works identified through an audit against 8 Montessori reference books (Guru knowledge sources). Every new work includes full guide data: quick_guide, presentation_steps, parent_description, why_it_matters.
+
+**Works added by area:**
+
+| Area | Before | After | Added |
+|------|--------|-------|-------|
+| Practical Life | 83 | 89 | 6 (Opening/Closing Containers, Nuts/Bolts, Stirring, Hammering, Mixing Food, Ironing) |
+| Sensorial | 35 | 39 | 4 (Geometric Form Cards, Botany Cabinet, Pink Tower/Brown Stair Combo, Distance Exercises) |
+| Language | 43 | 57 | 14 (Writing Preparation ×3, Reading ×3, Grammar ×7, Total Reading ×1) |
+| Math | 57 | 60 | 3 (Decanomial Layout, Length Measurement, Weight Measurement) |
+| Cultural | 50 | 74 | 24 (Geography ×3, Botany ×4, Zoology ×3, Physical Science ×6, History ×2, Art ×3, Music ×4) |
+| **Total** | **268** | **319** | **51** |
+
+**New categories created:**
+- Math → Measurement (category seq 10)
+- Cultural → Physical Science (category seq 8)
+
+**Data quality fixes (same commits):**
+- Fixed 54 malformed `quick_guide` fields across PL (32), Math (13), Cultural (9) — were JSON arrays, converted to bullet-point strings
+- Fixed sequence collisions in 5 categories (bumped new works above existing max)
+- Fixed guide category reference ("History" → "History and Time")
+- Removed hardcoded "268 works" from re-import confirm dialog
+
+**Architecture refresher (Two-file curriculum system):**
+- Stems: `lib/montree/stem/{practical-life,sensorial,language,math,cultural}.json` — work structure (id, name, category, sequence, age_range)
+- Guides: `lib/curriculum/comprehensive-guides/{area}-guides.json` — rich content (quick_guide, presentation_steps, parent_description, why_it_matters)
+- Loader: `lib/montree/curriculum-loader.ts` merges both by **work name** (case-insensitive) via `buildGuideMap()`
+- Global sequence formula: `(area_seq × 10000) + (category_seq × 100) + work_seq`
+- All JSON imports are static ES modules — bundled at build time in Next.js standalone mode
+
+**Docker fix:** Updated `ARG CACHEBUST=20260216-CURRICULUM-V2` in Dockerfile to bust Docker layer cache. Without this, Railway served stale 268-work data even after JSON files were updated.
+
+**Verification results (final):**
+- 319 stem works, 360 guide entries
+- 316/316 unique stem names matched to guides (100%)
+- Zero sequence errors, zero malformed quick_guides
+- Script used: `scripts/add-remaining-works.py`
+
+**NEXT SESSION:**
+1. Verify Railway rebuilt with new data (should show 319 works)
+2. Click "Re-import Master" on curriculum page to seed Supabase
+3. Verify all 5 areas show correct counts: PL 89, Sensorial 39, Math 60, Language 57, Cultural 74
+4. Continue with Home system rebuild (Session 165 plan at `.claude/plans/vivid-pondering-cascade.md`)
 
 ### Session 165 - Feb 9, 2026 (SCHEMA AUDIT + ROLLBACK + PLAN)
 
