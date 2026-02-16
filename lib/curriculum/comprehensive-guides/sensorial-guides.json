@@ -7,13 +7,13 @@
     {
       "work_id": "se_cylinder_block_1",
       "name": "Cylinder Block 1",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5706\u67f1\u4f53\u63d2\u5ea71",
+      "name_chinese": "蒙特梭利圆柱体插座1",
       "slug": "cylinder-block-1",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n\u2022 Block 1: Height variation with constant diameter develops thickness discrimination\n\u2022 Block 2: Diameter variation with constant height prepares for width understanding\n\u2022 Block 3: Inverse relationship between diameter and height challenges discrimination\n\u2022 Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
+      "quick_guide": "• Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n• Block 1: Height variation with constant diameter develops thickness discrimination\n• Block 2: Diameter variation with constant height prepares for width understanding\n• Block 3: Inverse relationship between diameter and height challenges discrimination\n• Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -94,18 +94,18 @@
         "Cylinder Block 1 with 10 cylinders"
       ],
       "parent_description": "Your child is learning to distinguish between cylinders that vary in thickness while keeping height the same. By removing and replacing each cylinder in its correct hole, they're developing a keen eye for subtle differences in size. This foundational exercise teaches them to notice fine details they'll need for reading, writing, and math.",
-      "why_it_matters": "Refining visual discrimination builds the perceptual skills needed for distinguishing letters and numbers. The self-correcting material also teaches persistence and problem-solving\u2014when a cylinder doesn't fit, your child learns to look more carefully and try again."
+      "why_it_matters": "Refining visual discrimination builds the perceptual skills needed for distinguishing letters and numbers. The self-correcting material also teaches persistence and problem-solving—when a cylinder doesn't fit, your child learns to look more carefully and try again."
     },
     {
       "work_id": "se_cylinder_block_2",
       "name": "Cylinder Block 2",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5706\u67f1\u4f53\u63d2\u5ea72",
+      "name_chinese": "蒙特梭利圆柱体插座2",
       "slug": "cylinder-block-2",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n\u2022 Block 1: Height variation with constant diameter develops thickness discrimination\n\u2022 Block 2: Diameter variation with constant height prepares for width understanding\n\u2022 Block 3: Inverse relationship between diameter and height challenges discrimination\n\u2022 Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
+      "quick_guide": "• Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n• Block 1: Height variation with constant diameter develops thickness discrimination\n• Block 2: Diameter variation with constant height prepares for width understanding\n• Block 3: Inverse relationship between diameter and height challenges discrimination\n• Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -187,18 +187,18 @@
         "Cylinder Block 2 with 10 cylinders"
       ],
       "parent_description": "Now your child is working with cylinders that vary in both thickness and height, making the task more challenging than Block 1. They're learning to notice two changing dimensions at once while maintaining the same concentration and care. This builds their ability to perceive complex relationships between size and proportion.",
-      "why_it_matters": "This material develops more advanced visual discrimination and prepares them for understanding relationships between different variables\u2014skills essential for higher math, geometry, and scientific thinking."
+      "why_it_matters": "This material develops more advanced visual discrimination and prepares them for understanding relationships between different variables—skills essential for higher math, geometry, and scientific thinking."
     },
     {
       "work_id": "se_cylinder_block_3",
       "name": "Cylinder Block 3",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5706\u67f1\u4f53\u63d2\u5ea73",
+      "name_chinese": "蒙特梭利圆柱体插座3",
       "slug": "cylinder-block-3",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n\u2022 Block 1: Height variation with constant diameter develops thickness discrimination\n\u2022 Block 2: Diameter variation with constant height prepares for width understanding\n\u2022 Block 3: Inverse relationship between diameter and height challenges discrimination\n\u2022 Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
+      "quick_guide": "• Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n• Block 1: Height variation with constant diameter develops thickness discrimination\n• Block 2: Diameter variation with constant height prepares for width understanding\n• Block 3: Inverse relationship between diameter and height challenges discrimination\n• Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -278,19 +278,19 @@
       "materials_needed": [
         "Cylinder Block 3 with 10 cylinders"
       ],
-      "parent_description": "Your child is working with cylinders where diameter decreases while height increases\u2014dimensions moving in opposite directions. This is one of the most challenging cylinder blocks because the visual relationships are more complex. It stretches their analytical thinking as they learn to track multiple changing attributes.",
+      "parent_description": "Your child is working with cylinders where diameter decreases while height increases—dimensions moving in opposite directions. This is one of the most challenging cylinder blocks because the visual relationships are more complex. It stretches their analytical thinking as they learn to track multiple changing attributes.",
       "why_it_matters": "This block develops sophisticated spatial reasoning and the ability to think about relationships in multiple ways at once. These higher-order thinking skills form the foundation for algebra and abstract mathematical reasoning."
     },
     {
       "work_id": "se_cylinder_block_4",
       "name": "Cylinder Block 4",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5706\u67f1\u4f53\u63d2\u5ea74",
+      "name_chinese": "蒙特梭利圆柱体插座4",
       "slug": "cylinder-block-4",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n\u2022 Block 1: Height variation with constant diameter develops thickness discrimination\n\u2022 Block 2: Diameter variation with constant height prepares for width understanding\n\u2022 Block 3: Inverse relationship between diameter and height challenges discrimination\n\u2022 Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
+      "quick_guide": "• Four progressive blocks isolate different sensory dimensions (height, diameter, both variables)\n• Block 1: Height variation with constant diameter develops thickness discrimination\n• Block 2: Diameter variation with constant height prepares for width understanding\n• Block 3: Inverse relationship between diameter and height challenges discrimination\n• Block 4: Both dimensions decrease, introducing complexity and refined comparison skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -371,18 +371,18 @@
         "Cylinder Block 4 with 10 cylinders"
       ],
       "parent_description": "Your child is now focusing on height alone, as all cylinders have the same diameter. They're learning to grade from tallest to shortest with precision. This final progression simplifies back to one variable, helping them consolidate all they've learned and master the concept of linear measurement.",
-      "why_it_matters": "Mastering this block completes the journey through dimension perception and reinforces the concept of seriation\u2014arranging objects in order\u2014which is crucial for understanding sequences, patterns, and mathematical ordering."
+      "why_it_matters": "Mastering this block completes the journey through dimension perception and reinforces the concept of seriation—arranging objects in order—which is crucial for understanding sequences, patterns, and mathematical ordering."
     },
     {
       "work_id": "se_cylinder_blocks_combined",
       "name": "Cylinder Blocks Combined",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5706\u67f1\u4f53\u63d2\u5ea7\u7ec4\u5408",
+      "name_chinese": "蒙特梭利圆柱体插座组合",
       "slug": "cylinder-blocks-combined",
       "area": "sensorial",
       "category": "Sensorial - Visual Sense",
       "sequence": 5,
       "age_range": "4-6",
-      "quick_guide": "\u2022 Introduce after child masters individual blocks\n\u2022 Mix cylinders from 2, 3, or all 4 blocks together\n\u2022 Place blocks in geometric arrangements (right angles, triangle, or rectangle)\n\u2022 Return all 40 cylinders to correct blocks\n\u2022 Increase complexity progressively",
+      "quick_guide": "• Introduce after child masters individual blocks\n• Mix cylinders from 2, 3, or all 4 blocks together\n• Place blocks in geometric arrangements (right angles, triangle, or rectangle)\n• Return all 40 cylinders to correct blocks\n• Increase complexity progressively",
       "presentation_steps": [
         {
           "step": 1,
@@ -474,18 +474,18 @@
         "Arrange"
       ],
       "parent_description": "When a child has mastered individual Cylinder Blocks, they're ready for a bigger challenge: mixing cylinders from multiple blocks together. This teaches them to notice finer details and think more carefully about sizes and shapes. It's like a puzzle where they have to figure out which block each cylinder belongs to based on its unique size. This helps develop problem-solving skills and the ability to focus deeply on complex tasks.",
-      "why_it_matters": "Combining Cylinder Blocks represents a natural progression in visual discrimination development. It prepares children for more abstract geometric thinking and mathematical concepts. The challenge of distinguishing fine differences builds neural pathways for detailed observation and logical analysis. This work also demonstrates the Montessori principle of progressive complexity\u2014building skills in manageable steps toward increasingly sophisticated understanding."
+      "why_it_matters": "Combining Cylinder Blocks represents a natural progression in visual discrimination development. It prepares children for more abstract geometric thinking and mathematical concepts. The challenge of distinguishing fine differences builds neural pathways for detailed observation and logical analysis. This work also demonstrates the Montessori principle of progressive complexity—building skills in manageable steps toward increasingly sophisticated understanding."
     },
     {
       "work_id": "se_pink_tower",
       "name": "Pink Tower",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7c89\u7ea2\u5854",
+      "name_chinese": "蒙特梭利粉红塔",
       "slug": "pink-tower",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Ten pink cubes in algebraic series (1cm\u00b3 to 10cm\u00b3) isolate size as only variable\n\u2022 Develops visual discrimination of three-dimensional size relationships\n\u2022 Iconic Montessori material combining sensorial discrimination with mathematical preparation\n\u2022 Self-correcting through weight and visual alignment feedback\n\u2022 Foundational for understanding volume, measurement, and spatial relationships",
+      "quick_guide": "• Ten pink cubes in algebraic series (1cm³ to 10cm³) isolate size as only variable\n• Develops visual discrimination of three-dimensional size relationships\n• Iconic Montessori material combining sensorial discrimination with mathematical preparation\n• Self-correcting through weight and visual alignment feedback\n• Foundational for understanding volume, measurement, and spatial relationships",
       "presentation_steps": [
         {
           "step": 1,
@@ -566,19 +566,19 @@
       "materials_needed": [
         "10 Pink Cubes"
       ],
-      "parent_description": "Your child is building a tower with ten beautiful pink cubes, each slightly smaller than the last. This seemingly simple activity is actually training their eyes to notice tiny differences in size\u2014a skill that will later help them distinguish between letters like 'b' and 'd' or understand that three is bigger than two.",
+      "parent_description": "Your child is building a tower with ten beautiful pink cubes, each slightly smaller than the last. This seemingly simple activity is actually training their eyes to notice tiny differences in size—a skill that will later help them distinguish between letters like 'b' and 'd' or understand that three is bigger than two.",
       "why_it_matters": "The Pink Tower develops visual discrimination, concentration, and fine motor control. It also introduces mathematical concepts of dimension, sequence, and grading, while building the fundamental spatial awareness they'll need for geometry and measurement throughout their education."
     },
     {
       "work_id": "se_brown_stair",
       "name": "Brown Stair (Broad Stair)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u68d5\u8272\u68af",
+      "name_chinese": "蒙特梭利棕色梯",
       "slug": "brown-stair",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 7,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Ten brown rectangular prisms with constant length but increasing thickness (1cm to 10cm)\n\u2022 Develops visual and tactile discrimination of width and thickness dimensions\n\u2022 Prepares for understanding of volume, measurement, and spatial relationships\n\u2022 Iconic material for developing comparative language (thick/thin, wide/narrow)\n\u2022 Self-correcting through visual alignment and balance feedback",
+      "quick_guide": "• Ten brown rectangular prisms with constant length but increasing thickness (1cm to 10cm)\n• Develops visual and tactile discrimination of width and thickness dimensions\n• Prepares for understanding of volume, measurement, and spatial relationships\n• Iconic material for developing comparative language (thick/thin, wide/narrow)\n• Self-correcting through visual alignment and balance feedback",
       "presentation_steps": [
         {
           "step": 1,
@@ -658,13 +658,13 @@
     {
       "work_id": "se_red_rods",
       "name": "Red Rods (Long Rods)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7ea2\u68d2",
+      "name_chinese": "蒙特梭利红棒",
       "slug": "red-rods",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 8,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Ten red wooden rods graduated from 10cm to 100cm in length\n\u2022 Isolates length as the only variable (constant width and color)\n\u2022 Prepares for number rods and mathematical concepts\n\u2022 Develops visual discrimination of length and spatial awareness\n\u2022 Left-aligned stair pattern creates dramatic visual impression",
+      "quick_guide": "• Ten red wooden rods graduated from 10cm to 100cm in length\n• Isolates length as the only variable (constant width and color)\n• Prepares for number rods and mathematical concepts\n• Develops visual discrimination of length and spatial awareness\n• Left-aligned stair pattern creates dramatic visual impression",
       "presentation_steps": [
         {
           "step": 1,
@@ -745,13 +745,13 @@
     {
       "work_id": "se_knobless_cylinders",
       "name": "Knobless Cylinders",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u65e0\u67c4\u5706\u67f1\u4f53",
+      "name_chinese": "蒙特梭利无柄圆柱体",
       "slug": "knobless-cylinders",
       "area": "sensorial",
       "category": "Visual Sense - Dimension",
       "sequence": 9,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Four boxes of colored wooden cylinders matching Cylinder Block dimensions\n\u2022 Red: Height varies (like Block 1), Yellow: Diameter varies (like Block 2)\n\u2022 Green: Both increase (like Block 3), Blue: Both decrease (like Block 4)\n\u2022 Allows comparison between sets and advanced construction\n\u2022 Extension of Cylinder Block work with new challenges",
+      "quick_guide": "• Four boxes of colored wooden cylinders matching Cylinder Block dimensions\n• Red: Height varies (like Block 1), Yellow: Diameter varies (like Block 2)\n• Green: Both increase (like Block 3), Blue: Both decrease (like Block 4)\n• Allows comparison between sets and advanced construction\n• Extension of Cylinder Block work with new challenges",
       "presentation_steps": [
         {
           "step": 1,
@@ -826,18 +826,18 @@
         "4 boxes: Yellow, Red, Green, Blue (40 cylinders total)"
       ],
       "parent_description": "Your child is working with colored cylinders (red, blue, yellow, and green sets) without handles, making them more challenging to manipulate than knobbed cylinders. They must use a refined pincer grip to remove and replace each cylinder, which requires both strength and precision. These cylinders can also be mixed together for more complex matching and organizing activities.",
-      "why_it_matters": "The Knobless Cylinders develop refined fine motor skills, as children must use greater dexterity to handle them. They also strengthen visual discrimination and introduce the concept of comparing and grading across multiple attributes\u2014skills that prepare children for more advanced sensorial work and academic learning."
+      "why_it_matters": "The Knobless Cylinders develop refined fine motor skills, as children must use greater dexterity to handle them. They also strengthen visual discrimination and introduce the concept of comparing and grading across multiple attributes—skills that prepare children for more advanced sensorial work and academic learning."
     },
     {
       "work_id": "se_color_box_1",
       "name": "Color Box 1 (Primary Colors)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u989c\u8272\u76d21",
+      "name_chinese": "蒙特梭利颜色盒1",
       "slug": "color-box-1",
       "area": "sensorial",
       "category": "Visual Sense - Color",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Box 1: Six primary and secondary colors for matching identical colors\n\u2022 Box 2: Twelve colors including more subtle variations for matching and pairing\n\u2022 Box 3: Nine colors with seven gradations each for grading light to dark progressions\n\u2022 Three-period lesson format applies to all boxes for vocabulary introduction\n\u2022 Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
+      "quick_guide": "• Box 1: Six primary and secondary colors for matching identical colors\n• Box 2: Twelve colors including more subtle variations for matching and pairing\n• Box 3: Nine colors with seven gradations each for grading light to dark progressions\n• Three-period lesson format applies to all boxes for vocabulary introduction\n• Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
       "presentation_steps": [
         {
           "step": 1,
@@ -910,19 +910,19 @@
       "materials_needed": [
         "Color Box 1 with 6 tablets"
       ],
-      "parent_description": "Your child is exploring the three primary colors\u2014red, blue, and yellow\u2014through a pairing activity where they match identical color tablets. This simple introduction to color helps them learn color names and notice how colors are different from one another. It's their first step into understanding the visual world through organized categories.",
-      "why_it_matters": "Color Box 1 develops visual discrimination of the most sharply contrasting colors and builds vocabulary. It also teaches the concept of matching and categorization\u2014foundational skills for organizing information and understanding how things can be grouped and compared."
+      "parent_description": "Your child is exploring the three primary colors—red, blue, and yellow—through a pairing activity where they match identical color tablets. This simple introduction to color helps them learn color names and notice how colors are different from one another. It's their first step into understanding the visual world through organized categories.",
+      "why_it_matters": "Color Box 1 develops visual discrimination of the most sharply contrasting colors and builds vocabulary. It also teaches the concept of matching and categorization—foundational skills for organizing information and understanding how things can be grouped and compared."
     },
     {
       "work_id": "se_color_box_2",
       "name": "Color Box 2 (Secondary Colors)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u989c\u8272\u76d22",
+      "name_chinese": "蒙特梭利颜色盒2",
       "slug": "color-box-2",
       "area": "sensorial",
       "category": "Visual Sense - Color",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Box 1: Six primary and secondary colors for matching identical colors\n\u2022 Box 2: Twelve colors including more subtle variations for matching and pairing\n\u2022 Box 3: Nine colors with seven gradations each for grading light to dark progressions\n\u2022 Three-period lesson format applies to all boxes for vocabulary introduction\n\u2022 Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
+      "quick_guide": "• Box 1: Six primary and secondary colors for matching identical colors\n• Box 2: Twelve colors including more subtle variations for matching and pairing\n• Box 3: Nine colors with seven gradations each for grading light to dark progressions\n• Three-period lesson format applies to all boxes for vocabulary introduction\n• Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
       "presentation_steps": [
         {
           "step": 1,
@@ -997,18 +997,18 @@
         "Color Box 2 with 22 tablets"
       ],
       "parent_description": "Your child is now exploring a wider range of colors, including the secondary colors (orange, green, and purple) along with neutrals like white, black, gray, and brown. Through pairing activities, they're learning to match and name a full spectrum of colors, deepening their visual discrimination and color vocabulary.",
-      "why_it_matters": "Color Box 2 expands your child's color knowledge and discrimination skills while introducing secondary colors formed by mixing primaries\u2014an indirect introduction to the science of color mixing. This work also strengthens their ability to organize information into larger, more complex categories."
+      "why_it_matters": "Color Box 2 expands your child's color knowledge and discrimination skills while introducing secondary colors formed by mixing primaries—an indirect introduction to the science of color mixing. This work also strengthens their ability to organize information into larger, more complex categories."
     },
     {
       "work_id": "se_color_box_3",
       "name": "Color Box 3 (Color Gradations)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u989c\u8272\u76d23",
+      "name_chinese": "蒙特梭利颜色盒3",
       "slug": "color-box-3",
       "area": "sensorial",
       "category": "Visual Sense - Color",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Box 1: Six primary and secondary colors for matching identical colors\n\u2022 Box 2: Twelve colors including more subtle variations for matching and pairing\n\u2022 Box 3: Nine colors with seven gradations each for grading light to dark progressions\n\u2022 Three-period lesson format applies to all boxes for vocabulary introduction\n\u2022 Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
+      "quick_guide": "• Box 1: Six primary and secondary colors for matching identical colors\n• Box 2: Twelve colors including more subtle variations for matching and pairing\n• Box 3: Nine colors with seven gradations each for grading light to dark progressions\n• Three-period lesson format applies to all boxes for vocabulary introduction\n• Color Box 3 introduces comparative and superlative language (dark, darker, darkest)",
       "presentation_steps": [
         {
           "step": 1,
@@ -1058,7 +1058,7 @@
         "Order"
       ],
       "materials": [
-        "Color Box 3 with 63 tablets (9 colors \u00d7 7 shades)"
+        "Color Box 3 with 63 tablets (9 colors × 7 shades)"
       ],
       "control_of_error": "Gradation appears out of order",
       "prerequisites": [
@@ -1082,7 +1082,7 @@
       "video_search_term": "montessori color box 3 grading one color",
       "data_status": "complete",
       "materials_needed": [
-        "Color Box 3 with 63 tablets (9 colors \u00d7 7 shades)"
+        "Color Box 3 with 63 tablets (9 colors × 7 shades)"
       ],
       "parent_description": "Your child is working with nine colors, each presented in seven different shades from light to dark. Rather than matching pairs, they're now grading each color from lightest to darkest. This more complex work requires careful observation and teaches them to notice subtle differences within a single color family.",
       "why_it_matters": "Color Box 3 develops the most refined visual discrimination of color, introducing concepts of shade and gradation. It builds concentration and patience, as the task requires careful attention to minute differences. This material also introduces mathematical thinking about ranking, ordering, and relationships."
@@ -1090,13 +1090,13 @@
     {
       "work_id": "se_geometric_cabinet",
       "name": "Geometric Cabinet",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51e0\u4f55\u56fe\u5f62\u67dc",
+      "name_chinese": "蒙特梭利几何图形柜",
       "slug": "geometric-cabinet",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Cabinet with six drawers containing geometric shapes with knobs\n\u2022 Shapes in frames for tracing and identification\n\u2022 Drawers organized by type: circles, rectangles, triangles, polygons, etc.\n\u2022 Develops visual discrimination of form and geometry vocabulary\n\u2022 Prepares for geometry studies and metal inset work",
+      "quick_guide": "• Cabinet with six drawers containing geometric shapes with knobs\n• Shapes in frames for tracing and identification\n• Drawers organized by type: circles, rectangles, triangles, polygons, etc.\n• Develops visual discrimination of form and geometry vocabulary\n• Prepares for geometry studies and metal inset work",
       "presentation_steps": [
         {
           "step": 1,
@@ -1181,13 +1181,13 @@
     {
       "work_id": "se_geometric_solids",
       "name": "Geometric Solids",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51e0\u4f55\u7acb\u4f53\u7ec4",
+      "name_chinese": "蒙特梭利几何立体组",
       "slug": "geometric-solids",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Set of three-dimensional geometric forms in natural wood\n\u2022 Sphere, cube, cylinder, cone, pyramid, prism, ovoid, ellipsoid\n\u2022 Develops stereognostic sense and geometry vocabulary\n\u2022 Child explores through touch, learning form names\n\u2022 Connects to environment and manufactured objects",
+      "quick_guide": "• Set of three-dimensional geometric forms in natural wood\n• Sphere, cube, cylinder, cone, pyramid, prism, ovoid, ellipsoid\n• Develops stereognostic sense and geometry vocabulary\n• Child explores through touch, learning form names\n• Connects to environment and manufactured objects",
       "presentation_steps": [
         {
           "step": 1,
@@ -1271,13 +1271,13 @@
     {
       "work_id": "se_constructive_triangles_rect",
       "name": "Constructive Triangles - Rectangular Box",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6784\u6210\u4e09\u89d2\u5f62-\u957f\u65b9\u5f62\u76d2",
+      "name_chinese": "蒙特梭利构成三角形-长方形盒",
       "slug": "constructive-triangles-rect",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Sets of triangles that combine to form other geometric shapes\n\u2022 Rectangular box: forms rectangles and squares from triangles\n\u2022 Triangular boxes: form larger triangles and hexagons\n\u2022 Demonstrates that all shapes can be constructed from triangles\n\u2022 Foundation for geometry and spatial reasoning",
+      "quick_guide": "• Sets of triangles that combine to form other geometric shapes\n• Rectangular box: forms rectangles and squares from triangles\n• Triangular boxes: form larger triangles and hexagons\n• Demonstrates that all shapes can be constructed from triangles\n• Foundation for geometry and spatial reasoning",
       "presentation_steps": [
         {
           "step": 1,
@@ -1352,18 +1352,18 @@
         "Rectangular Box of Constructive Triangles"
       ],
       "parent_description": "Your child is working with a set of triangles in a rectangular box that can be combined and rearranged to form different rectangles and other shapes. Through hands-on exploration, they're discovering how smaller shapes fit together to create larger ones. This is mathematical thinking in action, as they learn about parts and wholes.",
-      "why_it_matters": "This material develops spatial reasoning and introduces concepts of composition and decomposition\u2014understanding that shapes can be broken apart and reassembled. These are foundational concepts for geometry, fractions, and later algebra."
+      "why_it_matters": "This material develops spatial reasoning and introduces concepts of composition and decomposition—understanding that shapes can be broken apart and reassembled. These are foundational concepts for geometry, fractions, and later algebra."
     },
     {
       "work_id": "se_constructive_triangles_tri",
       "name": "Constructive Triangles - Triangular Box",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6784\u6210\u4e09\u89d2\u5f62-\u4e09\u89d2\u5f62\u76d2",
+      "name_chinese": "蒙特梭利构成三角形-三角形盒",
       "slug": "constructive-triangles-tri",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Sets of triangles that combine to form other geometric shapes\n\u2022 Rectangular box: forms rectangles and squares from triangles\n\u2022 Triangular boxes: form larger triangles and hexagons\n\u2022 Demonstrates that all shapes can be constructed from triangles\n\u2022 Foundation for geometry and spatial reasoning",
+      "quick_guide": "• Sets of triangles that combine to form other geometric shapes\n• Rectangular box: forms rectangles and squares from triangles\n• Triangular boxes: form larger triangles and hexagons\n• Demonstrates that all shapes can be constructed from triangles\n• Foundation for geometry and spatial reasoning",
       "presentation_steps": [
         {
           "step": 1,
@@ -1438,18 +1438,18 @@
         "Triangular Box of Constructive Triangles"
       ],
       "parent_description": "Your child is working with triangles that fit together to form a large equilateral triangle. This set teaches them how different types of triangles (equilateral, isosceles, and right triangles) can be combined to create the same larger shape in multiple ways. It's a beautiful exploration of geometric relationships and mathematical flexibility.",
-      "why_it_matters": "This material develops understanding of triangle relationships, geometric composition, and the concept of equivalence\u2014that different combinations can create the same result. These concepts are foundational for later learning in geometry, fractions, and algebra."
+      "why_it_matters": "This material develops understanding of triangle relationships, geometric composition, and the concept of equivalence—that different combinations can create the same result. These concepts are foundational for later learning in geometry, fractions, and algebra."
     },
     {
       "work_id": "se_constructive_triangles_large_hex",
       "name": "Constructive Triangles - Large Hexagonal Box",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6784\u6210\u4e09\u89d2\u5f62-\u5927\u516d\u8fb9\u5f62\u76d2",
+      "name_chinese": "蒙特梭利构成三角形-大六边形盒",
       "slug": "constructive-triangles-large-hex",
       "area": "sensorial",
       "category": "Sensorial - Visual Sense",
       "sequence": 5,
       "age_range": "4-6",
-      "quick_guide": "\u2022 Introduce triangles individually by type and name\n\u2022 Show how two triangles combine to form new shapes\n\u2022 Use black lines as guides for matching edges\n\u2022 Guide exploration rather than direct instruction\n\u2022 Allow free construction and experimentation",
+      "quick_guide": "• Introduce triangles individually by type and name\n• Show how two triangles combine to form new shapes\n• Use black lines as guides for matching edges\n• Guide exploration rather than direct instruction\n• Allow free construction and experimentation",
       "presentation_steps": [
         {
           "step": 1,
@@ -1552,19 +1552,19 @@
         "Vertices",
         "Edge"
       ],
-      "parent_description": "The Large Hexagonal Box of Constructive Triangles shows children something magical: two simple shapes can combine to make something completely different! By fitting triangles together, children discover that all sorts of shapes (squares, rectangles, hexagons) are actually made of triangles. This hands-on exploration prepares them for geometry while developing spatial thinking. The black lines on the triangles guide them\u2014when lines match up perfectly, they know the pieces fit together correctly.",
+      "parent_description": "The Large Hexagonal Box of Constructive Triangles shows children something magical: two simple shapes can combine to make something completely different! By fitting triangles together, children discover that all sorts of shapes (squares, rectangles, hexagons) are actually made of triangles. This hands-on exploration prepares them for geometry while developing spatial thinking. The black lines on the triangles guide them—when lines match up perfectly, they know the pieces fit together correctly.",
       "why_it_matters": "Constructive Triangles bridge sensorial learning and formal geometry. They make abstract geometric concepts concrete and discoverable. Children learn that geometric shapes have relationships and rules, but through exploration rather than instruction. This material also develops the mental rotation skills needed for later mathematics, engineering, and spatial reasoning. The Large Hexagonal Box specifically introduces more complex polygon relationships, deepening geometric understanding."
     },
     {
       "work_id": "se_constructive_triangles_small_hex",
       "name": "Constructive Triangles - Small Hexagonal Box",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6784\u6210\u4e09\u89d2\u5f62-\u5c0f\u516d\u8fb9\u5f62\u76d2",
+      "name_chinese": "蒙特梭利构成三角形-小六边形盒",
       "slug": "constructive-triangles-small-hex",
       "area": "sensorial",
       "category": "Sensorial - Visual Sense",
       "sequence": 6,
       "age_range": "4-6",
-      "quick_guide": "\u2022 Introduce after child is comfortable with basic triangle boxes\n\u2022 Explore smaller triangles and finer distinctions\n\u2022 Create hexagons and more complex polygons\n\u2022 Use black line guides for alignment\n\u2022 Encourage pattern-making and creative exploration",
+      "quick_guide": "• Introduce after child is comfortable with basic triangle boxes\n• Explore smaller triangles and finer distinctions\n• Create hexagons and more complex polygons\n• Use black line guides for alignment\n• Encourage pattern-making and creative exploration",
       "presentation_steps": [
         {
           "step": 1,
@@ -1588,7 +1588,7 @@
           "step": 4,
           "title": "Demonstrating Hexagon Construction",
           "description": "Show how six equilateral triangles can combine to form a large hexagon. Arrange the triangles slowly, pointing out how the black lines guide alignment. Demonstrate: 'When we place six triangles together like this, we create a perfect hexagon.'",
-          "tip": "This discovery\u2014that six triangles make a hexagon\u2014is profound; allow time for the child to absorb this relationship."
+          "tip": "This discovery—that six triangles make a hexagon—is profound; allow time for the child to absorb this relationship."
         },
         {
           "step": 5,
@@ -1667,18 +1667,18 @@
         "Combine"
       ],
       "parent_description": "The Small Hexagonal Box teaches something amazing: six small triangles fit together perfectly to make a hexagon. This helps children understand fractions and how parts relate to wholes. Working with smaller pieces also requires more careful attention and fine motor control. The different colored triangles make it fun to create colorful patterns while learning about shapes and their relationships. This is beautiful sensorial learning that naturally leads to mathematical thinking.",
-      "why_it_matters": "The Small Hexagonal Box represents a progression in geometric complexity. It introduces the concept of fractions concretely\u2014children see and feel that six triangles equal one hexagon. It also develops visual discrimination at a finer level and strengthens the fine motor precision needed for writing and detailed work. The relationship between this box and the Large Hexagonal Box naturally develops comparative thinking and mathematical reasoning."
+      "why_it_matters": "The Small Hexagonal Box represents a progression in geometric complexity. It introduces the concept of fractions concretely—children see and feel that six triangles equal one hexagon. It also develops visual discrimination at a finer level and strengthens the fine motor precision needed for writing and detailed work. The relationship between this box and the Large Hexagonal Box naturally develops comparative thinking and mathematical reasoning."
     },
     {
       "work_id": "se_constructive_triangles_blue",
       "name": "Constructive Triangles - Blue Triangles",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u84dd\u8272\u6784\u6210\u4e09\u89d2\u5f62",
+      "name_chinese": "蒙特梭利蓝色构成三角形",
       "slug": "constructive-triangles-blue",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 7,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Sets of triangles that combine to form other geometric shapes\n\u2022 Rectangular box: forms rectangles and squares from triangles\n\u2022 Triangular boxes: form larger triangles and hexagons\n\u2022 Demonstrates that all shapes can be constructed from triangles\n\u2022 Foundation for geometry and spatial reasoning",
+      "quick_guide": "• Sets of triangles that combine to form other geometric shapes\n• Rectangular box: forms rectangles and squares from triangles\n• Triangular boxes: form larger triangles and hexagons\n• Demonstrates that all shapes can be constructed from triangles\n• Foundation for geometry and spatial reasoning",
       "presentation_steps": [
         {
           "step": 1,
@@ -1758,13 +1758,13 @@
     {
       "work_id": "se_binomial_cube",
       "name": "Binomial Cube",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e8c\u9879\u5f0f\u7acb\u65b9\u4f53",
+      "name_chinese": "蒙特梭利二项式立方体",
       "slug": "binomial-cube",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 8,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Eight wooden pieces (2 cubes and 6 rectangular prisms) in red, blue, and black\n\u2022 Concrete representation of the algebraic formula (a + b)\u00b3\n\u2022 For ages 3-6: Emphasizes visual discrimination of shape and color, not algebraic concepts\n\u2022 Self-correcting puzzle: pieces fit together only in correct order\n\u2022 Indirect preparation for later algebraic understanding",
+      "quick_guide": "• Eight wooden pieces (2 cubes and 6 rectangular prisms) in red, blue, and black\n• Concrete representation of the algebraic formula (a + b)³\n• For ages 3-6: Emphasizes visual discrimination of shape and color, not algebraic concepts\n• Self-correcting puzzle: pieces fit together only in correct order\n• Indirect preparation for later algebraic understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -1838,19 +1838,19 @@
       "materials_needed": [
         "Binomial Cube in box"
       ],
-      "parent_description": "Your child is assembling a wooden cube made of eight colored blocks and rectangular prisms. The cube is beautiful but also mathematically elegant\u2014it's a concrete representation of the algebraic formula (a+b)\u00b3. By fitting the pieces together like a puzzle, your child is experiencing the pattern of mathematical expansion in their hands and eyes, though they may not yet know the algebra behind it.",
+      "parent_description": "Your child is assembling a wooden cube made of eight colored blocks and rectangular prisms. The cube is beautiful but also mathematically elegant—it's a concrete representation of the algebraic formula (a+b)³. By fitting the pieces together like a puzzle, your child is experiencing the pattern of mathematical expansion in their hands and eyes, though they may not yet know the algebra behind it.",
       "why_it_matters": "The Binomial Cube is an indirect introduction to algebra and the concept of mathematical patterns. It develops spatial reasoning, problem-solving, and visual perception. The self-correcting nature of the material (the pieces only fit together one way when assembled correctly) teaches your child to verify their work and think logically about spatial relationships."
     },
     {
       "work_id": "se_trinomial_cube",
       "name": "Trinomial Cube",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e09\u9879\u5f0f\u7acb\u65b9\u4f53",
+      "name_chinese": "蒙特梭利三项式立方体",
       "slug": "trinomial-cube",
       "area": "sensorial",
       "category": "Visual Sense - Form",
       "sequence": 9,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Twenty-seven wooden pieces representing (a + b + c)\u00b3\n\u2022 More complex than Binomial Cube with additional color (yellow)\n\u2022 Self-correcting puzzle with algebraic formula painted on box lid\n\u2022 For ages 3-6: emphasis on visual and tactile discrimination\n\u2022 Indirect preparation for advanced algebraic concepts",
+      "quick_guide": "• Twenty-seven wooden pieces representing (a + b + c)³\n• More complex than Binomial Cube with additional color (yellow)\n• Self-correcting puzzle with algebraic formula painted on box lid\n• For ages 3-6: emphasis on visual and tactile discrimination\n• Indirect preparation for advanced algebraic concepts",
       "presentation_steps": [
         {
           "step": 1,
@@ -1924,19 +1924,19 @@
       "materials_needed": [
         "Trinomial Cube in box"
       ],
-      "parent_description": "Your child is working with a more complex version of the Binomial Cube, assembling a cube from 27 pieces in various colors and sizes. This material represents the algebraic formula (a+b+c)\u00b3. Just like the Binomial Cube, it's a hands-on way to experience complex mathematical patterns through puzzle-solving and spatial arrangement.",
-      "why_it_matters": "The Trinomial Cube develops even more sophisticated spatial reasoning and introduces children to how patterns can become more complex. It builds concentration, fine motor skills, and the ability to hold multiple elements in mind simultaneously\u2014all essential for advanced mathematical thinking and problem-solving."
+      "parent_description": "Your child is working with a more complex version of the Binomial Cube, assembling a cube from 27 pieces in various colors and sizes. This material represents the algebraic formula (a+b+c)³. Just like the Binomial Cube, it's a hands-on way to experience complex mathematical patterns through puzzle-solving and spatial arrangement.",
+      "why_it_matters": "The Trinomial Cube develops even more sophisticated spatial reasoning and introduces children to how patterns can become more complex. It builds concentration, fine motor skills, and the ability to hold multiple elements in mind simultaneously—all essential for advanced mathematical thinking and problem-solving."
     },
     {
       "work_id": "se_superimposed_geometric_figures",
       "name": "Superimposed Geometric Figures",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u53e0\u52a0\u51e0\u4f55\u56fe\u5f62",
+      "name_chinese": "蒙特梭利叠加几何图形",
       "slug": "superimposed-geometric-figures",
       "area": "sensorial",
       "category": "Sensorial - Visual Sense",
       "sequence": 10,
       "age_range": "3-6",
-      "quick_guide": "\u2022 Present circles, squares, and triangles in graduated sizes (1-10 cm)\n\u2022 Build gradations from largest to smallest\n\u2022 Create concentric patterns with centered figures\n\u2022 Explore color relationships (red circles, blue squares, yellow triangles)\n\u2022 Encourage multi-box pattern combinations",
+      "quick_guide": "• Present circles, squares, and triangles in graduated sizes (1-10 cm)\n• Build gradations from largest to smallest\n• Create concentric patterns with centered figures\n• Explore color relationships (red circles, blue squares, yellow triangles)\n• Encourage multi-box pattern combinations",
       "presentation_steps": [
         {
           "step": 1,
@@ -1965,7 +1965,7 @@
         {
           "step": 5,
           "title": "Creating Concentric Patterns",
-          "description": "Show how shapes can be arranged concentrically\u2014one inside another, with bases aligned and centered. Start with the smallest at the center and add progressively larger shapes around it. Say: 'Each shape fits perfectly inside the next one, like a nest.'",
+          "description": "Show how shapes can be arranged concentrically—one inside another, with bases aligned and centered. Start with the smallest at the center and add progressively larger shapes around it. Say: 'Each shape fits perfectly inside the next one, like a nest.'",
           "tip": "Concentric work is visually striking and helps develop understanding of scale and proportion."
         },
         {
@@ -2041,19 +2041,19 @@
         "Pattern",
         "Proportion"
       ],
-      "parent_description": "Superimposed Geometric Figures help children see how sizes are related. By arranging shapes from smallest to largest, children develop an understanding of gradation\u2014how things change smoothly from one size to another. When they stack shapes so they nest inside each other, it shows how the same shape can be many different sizes while staying the same shape. This builds visual thinking and prepares for later learning about scale, proportion, and even fractions.",
+      "parent_description": "Superimposed Geometric Figures help children see how sizes are related. By arranging shapes from smallest to largest, children develop an understanding of gradation—how things change smoothly from one size to another. When they stack shapes so they nest inside each other, it shows how the same shape can be many different sizes while staying the same shape. This builds visual thinking and prepares for later learning about scale, proportion, and even fractions.",
       "why_it_matters": "This material develops the visual discrimination skills foundational to mathematical and scientific thinking. Understanding gradation and scale is essential for understanding mathematics, reading graphs, and interpreting visual information. The work also bridges sensorial learning and mathematics, introducing concepts like proportion and relationships between measurements. It cultivates aesthetic appreciation and the ability to perceive subtle differences, both valuable in art, design, and careful observation."
     },
     {
       "work_id": "se_touch_boards",
       "name": "Touch Boards",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u89e6\u89c9\u677f",
+      "name_chinese": "蒙特梭利触觉板",
       "slug": "touch-boards",
       "area": "sensorial",
       "category": "Tactile Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Boards with alternating strips of rough sandpaper and smooth wood\n\u2022 Develops tactile discrimination through contrast\n\u2022 Foundation for Touch Tablets and refined tactile sense\n\u2022 Prepares for sandpaper letters through tactile awareness\n\u2022 Uses light touch technique with fingertips",
+      "quick_guide": "• Boards with alternating strips of rough sandpaper and smooth wood\n• Develops tactile discrimination through contrast\n• Foundation for Touch Tablets and refined tactile sense\n• Prepares for sandpaper letters through tactile awareness\n• Uses light touch technique with fingertips",
       "presentation_steps": [
         {
           "step": 1,
@@ -2126,18 +2126,18 @@
         "Touch Boards (3 boards)"
       ],
       "parent_description": "Your child is exploring different textures by feeling boards with smooth, rough, bumpy, and other textured surfaces. They're learning to discriminate between textures through touch, building vocabulary like 'smooth,' 'rough,' 'bumpy,' and 'soft.' This direct sensory exploration helps them understand and describe the tactile world around them.",
-      "why_it_matters": "Touch Boards refine the tactile sense and help children develop the ability to discriminate and name different textures. This sensory work builds concentration, vocabulary, and an awareness of how we learn through our sense of touch\u2014essential for developing all the sensory awareness that supports learning."
+      "why_it_matters": "Touch Boards refine the tactile sense and help children develop the ability to discriminate and name different textures. This sensory work builds concentration, vocabulary, and an awareness of how we learn through our sense of touch—essential for developing all the sensory awareness that supports learning."
     },
     {
       "work_id": "se_touch_tablets",
       "name": "Touch Tablets (Rough and Smooth)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u89e6\u89c9\u7247",
+      "name_chinese": "蒙特梭利触觉片",
       "slug": "touch-tablets",
       "area": "sensorial",
       "category": "Tactile Sense",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Paired tablets with different textures for matching and grading\n\u2022 More subtle than Touch Boards - requires finer discrimination\n\u2022 Includes fabrics of different textures for comparison\n\u2022 Develops refined tactile sense and concentration\n\u2022 Progression: matching pairs, then grading rough to smooth",
+      "quick_guide": "• Paired tablets with different textures for matching and grading\n• More subtle than Touch Boards - requires finer discrimination\n• Includes fabrics of different textures for comparison\n• Develops refined tactile sense and concentration\n• Progression: matching pairs, then grading rough to smooth",
       "presentation_steps": [
         {
           "step": 1,
@@ -2211,19 +2211,19 @@
       "materials_needed": [
         "Touch Tablets Box (5 pairs - 10 tablets)"
       ],
-      "parent_description": "Your child is working with pairs of tablets with different textures\u2014some smooth, some rough. They feel each tablet and match the pairs with the same texture, a pairing activity that refines their ability to distinguish between textured surfaces. This material helps them learn the vocabulary of texture and develop sensitive fingertips.",
+      "parent_description": "Your child is working with pairs of tablets with different textures—some smooth, some rough. They feel each tablet and match the pairs with the same texture, a pairing activity that refines their ability to distinguish between textured surfaces. This material helps them learn the vocabulary of texture and develop sensitive fingertips.",
       "why_it_matters": "Touch Tablets develop the tactile sense through matching and discrimination. They build fine motor control in the fingertips, refine sensory perception, and introduce the concept of categorization through the sense of touch. This work also builds the vocabulary and awareness needed for later learning in science and other subjects."
     },
     {
       "work_id": "se_fabric_matching",
       "name": "Fabric Matching",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5e03\u6599\u914d\u5bf9\u76d2",
+      "name_chinese": "蒙特梭利布料配对盒",
       "slug": "fabric-matching",
       "area": "sensorial",
       "category": "Sensorial - Tactile Sense",
       "sequence": 3,
       "age_range": "3-6",
-      "quick_guide": "\u2022 Start with contrasting textures (silk, burlap, wool, cotton)\n\u2022 Present six pairs of fabrics (12 total pieces)\n\u2022 Guide child to feel and compare through touch\n\u2022 Build from easiest to most challenging pairs\n\u2022 Use blindfold to isolate tactile sense",
+      "quick_guide": "• Start with contrasting textures (silk, burlap, wool, cotton)\n• Present six pairs of fabrics (12 total pieces)\n• Guide child to feel and compare through touch\n• Build from easiest to most challenging pairs\n• Use blindfold to isolate tactile sense",
       "presentation_steps": [
         {
           "step": 1,
@@ -2340,19 +2340,19 @@
         "Match",
         "Pair"
       ],
-      "parent_description": "Fabric Matching teaches children to really notice how things feel. By touching different fabrics and finding ones that feel the same, children develop their sense of touch. When they wear a blindfold, it helps them pay even more attention to how things feel because they can't rely on looking. This activity isolates the tactile sense and helps children become more aware of the textures all around them\u2014in their clothes, toys, and home.",
+      "parent_description": "Fabric Matching teaches children to really notice how things feel. By touching different fabrics and finding ones that feel the same, children develop their sense of touch. When they wear a blindfold, it helps them pay even more attention to how things feel because they can't rely on looking. This activity isolates the tactile sense and helps children become more aware of the textures all around them—in their clothes, toys, and home.",
       "why_it_matters": "The tactile sense is often underdeveloped in modern childhoods despite being fundamental to learning. Fabric Matching isolates and refines this sense, building neural pathways for tactile discrimination. This work also develops concentration and shows children that their hands can 'see' without eyes. It lays groundwork for stereognostic activities and builds confidence in non-visual sensory perception. The refinement of touch supports later writing development and fine motor skill."
     },
     {
       "work_id": "se_sorting_grains",
       "name": "Sorting Grains",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8c37\u7269\u5206\u7c7b",
+      "name_chinese": "蒙特梭利谷物分类",
       "slug": "sorting-grains",
       "area": "sensorial",
       "category": "Sensorial - Stereognostic Sense",
       "sequence": 4,
       "age_range": "3-6",
-      "quick_guide": "\u2022 Present three progressive trays with increasing difficulty\n\u2022 Tray 1: Large familiar objects (buttons, shells, nuts) - 2-3 types\n\u2022 Tray 2: Medium grains (beans, corn, seeds)\n\u2022 Tray 3: Small fine grains (rice, lentils, millet)\n\u2022 Use saucers to sort and organize grains\n\u2022 Develop stereognostic sense through touch and feeling",
+      "quick_guide": "• Present three progressive trays with increasing difficulty\n• Tray 1: Large familiar objects (buttons, shells, nuts) - 2-3 types\n• Tray 2: Medium grains (beans, corn, seeds)\n• Tray 3: Small fine grains (rice, lentils, millet)\n• Use saucers to sort and organize grains\n• Develop stereognostic sense through touch and feeling",
       "presentation_steps": [
         {
           "step": 1,
@@ -2369,7 +2369,7 @@
         {
           "step": 3,
           "title": "Mixing and Feeling Without Looking",
-          "description": "Mix the two object types together in the center saucer. Say: 'Now I'm going to mix them up. Let's feel them and sort them into their own saucers.' Show how to close eyes or use a blindfold, then feel one object at a time: 'I'm picking up one object. How does it feel? It feels smooth and hard\u2014it's a button.'",
+          "description": "Mix the two object types together in the center saucer. Say: 'Now I'm going to mix them up. Let's feel them and sort them into their own saucers.' Show how to close eyes or use a blindfold, then feel one object at a time: 'I'm picking up one object. How does it feel? It feels smooth and hard—it's a button.'",
           "tip": "Eyes closed or blindfolded work intensifies tactile focus; start without blindfold if child prefers."
         },
         {
@@ -2474,19 +2474,19 @@
         "Grain",
         "Stereognostic"
       ],
-      "parent_description": "Sorting Grains helps children learn to identify things just by touching them, without looking. This is a special kind of sense called the stereognostic sense\u2014it's the ability to recognize objects through touch alone. By sorting different objects and grains with their eyes closed, children develop this important sense. It teaches them to pay close attention to how things feel in their hands and builds confidence in their ability to 'see' with their fingers. This activity is like a sensory game that helps children understand their world more deeply.",
+      "parent_description": "Sorting Grains helps children learn to identify things just by touching them, without looking. This is a special kind of sense called the stereognostic sense—it's the ability to recognize objects through touch alone. By sorting different objects and grains with their eyes closed, children develop this important sense. It teaches them to pay close attention to how things feel in their hands and builds confidence in their ability to 'see' with their fingers. This activity is like a sensory game that helps children understand their world more deeply.",
       "why_it_matters": "The stereognostic sense is foundational to sensory development and learning. It integrates touch, proprioception, and memory to recognize objects without vision. This sense is crucial for tasks like getting dressed, eating, writing, and navigating the world. Sorting Grains isolates and strengthens this sense through progressive challenges. The three-tray progression respects the child's developmental readiness and builds competence systematically. This work also demonstrates that Montessori materials can be simple and natural while providing profound learning."
     },
     {
       "work_id": "se_baric_tablets",
       "name": "Baric Tablets",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91cd\u91cf\u677f",
+      "name_chinese": "蒙特梭利重量板",
       "slug": "baric-tablets",
       "area": "sensorial",
       "category": "Baric Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Three sets of wooden tablets of different weights: light, medium, heavy\n\u2022 Same size tablets isolate weight as only variable\n\u2022 Develops baric (weight) sense through comparison\n\u2022 Held flat on fingertips to feel weight differences\n\u2022 Prepares for understanding of mass and density",
+      "quick_guide": "• Three sets of wooden tablets of different weights: light, medium, heavy\n• Same size tablets isolate weight as only variable\n• Develops baric (weight) sense through comparison\n• Held flat on fingertips to feel weight differences\n• Prepares for understanding of mass and density",
       "presentation_steps": [
         {
           "step": 1,
@@ -2558,19 +2558,19 @@
       "materials_needed": [
         "Baric Tablets (3 sets of different wood/weight)"
       ],
-      "parent_description": "Your child is lifting and feeling tablets made from different materials of varying weights. They're learning to perceive weight differences through their hands and fingers\u2014some tablets are heavier, some lighter. Through matching and grading activities, they're discovering the concept of weight and building awareness of how objects can differ in how heavy they feel.",
+      "parent_description": "Your child is lifting and feeling tablets made from different materials of varying weights. They're learning to perceive weight differences through their hands and fingers—some tablets are heavier, some lighter. Through matching and grading activities, they're discovering the concept of weight and building awareness of how objects can differ in how heavy they feel.",
       "why_it_matters": "Baric Tablets develop the sense of weight (baric sense), which is the only Montessori sensorial material that isolates this specific sense. They build fine motor control, concentration, and an understanding of weight as a measurable property. This work also introduces measurement concepts and prepares children for later learning about mass, density, and physics."
     },
     {
       "work_id": "se_thermic_tablets",
       "name": "Thermic Tablets",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6e29\u89c9\u677f",
+      "name_chinese": "蒙特梭利温觉板",
       "slug": "thermic-tablets",
       "area": "sensorial",
       "category": "Thermic Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Materials for developing temperature discrimination\n\u2022 Bottles: metal bottles filled with water at different temperatures\n\u2022 Tablets: pairs of tablets in different materials (wood, metal, stone, felt)\n\u2022 Develops thermic sense - perception of temperature\n\u2022 Materials conduct heat differently, feeling warm or cool",
+      "quick_guide": "• Materials for developing temperature discrimination\n• Bottles: metal bottles filled with water at different temperatures\n• Tablets: pairs of tablets in different materials (wood, metal, stone, felt)\n• Develops thermic sense - perception of temperature\n• Materials conduct heat differently, feeling warm or cool",
       "presentation_steps": [
         {
           "step": 1,
@@ -2641,19 +2641,19 @@
       "materials_needed": [
         "Thermic Tablets (6 pairs of different materials)"
       ],
-      "parent_description": "Your child is feeling tablets made from different materials like wood, metal, and glass that conduct heat differently. When touched to their cheek or fingers, the tiles feel different temperatures. Through this exploration, they're learning to perceive and discriminate between temperatures\u2014feeling which materials are cooler and which retain warmth longer.",
+      "parent_description": "Your child is feeling tablets made from different materials like wood, metal, and glass that conduct heat differently. When touched to their cheek or fingers, the tiles feel different temperatures. Through this exploration, they're learning to perceive and discriminate between temperatures—feeling which materials are cooler and which retain warmth longer.",
       "why_it_matters": "Thermic Tablets develop the sense of temperature perception and build awareness of how different materials conduct heat. This material introduces scientific concepts about heat transfer and material properties in a direct, hands-on way, while also refining sensory discrimination and building vocabulary."
     },
     {
       "work_id": "se_thermic_bottles",
       "name": "Thermic Bottles",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6e29\u5ea6\u74f6",
+      "name_chinese": "蒙特梭利温度瓶",
       "slug": "thermic-bottles",
       "area": "sensorial",
       "category": "Thermic Sense",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Materials for developing temperature discrimination\n\u2022 Bottles: metal bottles filled with water at different temperatures\n\u2022 Tablets: pairs of tablets in different materials (wood, metal, stone, felt)\n\u2022 Develops thermic sense - perception of temperature\n\u2022 Materials conduct heat differently, feeling warm or cool",
+      "quick_guide": "• Materials for developing temperature discrimination\n• Bottles: metal bottles filled with water at different temperatures\n• Tablets: pairs of tablets in different materials (wood, metal, stone, felt)\n• Develops thermic sense - perception of temperature\n• Materials conduct heat differently, feeling warm or cool",
       "presentation_steps": [
         {
           "step": 1,
@@ -2725,19 +2725,19 @@
       "materials_needed": [
         "Thermic Bottles (4 pairs at different temperatures)"
       ],
-      "parent_description": "Your child is holding glass or metal bottles filled with water at different temperatures\u2014some warm, some cool, some room temperature. By holding and matching pairs of bottles with the same temperature, they're learning to discriminate between subtle temperature differences. This material makes the abstract concept of temperature very concrete and tangible.",
+      "parent_description": "Your child is holding glass or metal bottles filled with water at different temperatures—some warm, some cool, some room temperature. By holding and matching pairs of bottles with the same temperature, they're learning to discriminate between subtle temperature differences. This material makes the abstract concept of temperature very concrete and tangible.",
       "why_it_matters": "Thermic Bottles refine the sense of temperature and introduce children to the concept of degrees of warmth and coolness. They develop fine motor control in the fingertips, concentration, and sensory awareness. This work also provides indirect preparation for understanding temperature scales and thermodynamics in later learning."
     },
     {
       "work_id": "se_sound_boxes",
       "name": "Sound Boxes (Sound Cylinders)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u542c\u89c9\u7b52",
+      "name_chinese": "蒙特梭利听觉筒",
       "slug": "sound-boxes",
       "area": "sensorial",
       "category": "Auditory Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Pairs of wooden cylinders filled with different materials creating distinct sounds\n\u2022 Develops auditory discrimination from loud to quiet and fine listening skills\n\u2022 Supports concentration, memory, and auditory processing development\n\u2022 Introduced around age 3.5-4 years in a quiet environment\n\u2022 Control of error: matching pairs produce identical sounds when shaken correctly",
+      "quick_guide": "• Pairs of wooden cylinders filled with different materials creating distinct sounds\n• Develops auditory discrimination from loud to quiet and fine listening skills\n• Supports concentration, memory, and auditory processing development\n• Introduced around age 3.5-4 years in a quiet environment\n• Control of error: matching pairs produce identical sounds when shaken correctly",
       "presentation_steps": [
         {
           "step": 1,
@@ -2809,19 +2809,19 @@
       "materials_needed": [
         "Sound Boxes (2 matching sets of 6 cylinders)"
       ],
-      "parent_description": "Your child is shaking pairs of wooden cylinders that make matching sounds\u2014some ring like bells, some sound like drums, some rattle. Their task is to listen carefully and match the cylinders with identical sounds. This auditory exploration develops their ability to discriminate between different pitches and tones.",
+      "parent_description": "Your child is shaking pairs of wooden cylinders that make matching sounds—some ring like bells, some sound like drums, some rattle. Their task is to listen carefully and match the cylinders with identical sounds. This auditory exploration develops their ability to discriminate between different pitches and tones.",
       "why_it_matters": "Sound Boxes develop auditory discrimination and listening skills, which are foundational for language development, music appreciation, and communication. The concentration required to carefully match sounds also builds focus and attention. This material introduces the scientific concept of sound and vibration in an engaging, playful way."
     },
     {
       "work_id": "se_bells",
       "name": "Montessori Bells",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u97f3\u4e50\u94c3",
+      "name_chinese": "蒙特梭利音乐铃",
       "slug": "bells",
       "area": "sensorial",
       "category": "Auditory Sense",
       "sequence": 2,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Set of bells producing musical scale tones for auditory discrimination\n\u2022 Two sets: brown for grading, white for matching\n\u2022 Develops ability to distinguish pitch differences\n\u2022 Prepares for music education and ear training\n\u2022 Struck with wooden mallet for clear tone",
+      "quick_guide": "• Set of bells producing musical scale tones for auditory discrimination\n• Two sets: brown for grading, white for matching\n• Develops ability to distinguish pitch differences\n• Prepares for music education and ear training\n• Struck with wooden mallet for clear tone",
       "presentation_steps": [
         {
           "step": 1,
@@ -2906,13 +2906,13 @@
     {
       "work_id": "se_smelling_bottles",
       "name": "Smelling Bottles",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u55c5\u89c9\u74f6",
+      "name_chinese": "蒙特梭利嗅觉瓶",
       "slug": "smelling-bottles",
       "area": "sensorial",
       "category": "Olfactory Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Paired bottles containing different scents for olfactory matching\n\u2022 Child matches identical scents without seeing contents\n\u2022 Develops sense of smell and olfactory discrimination\n\u2022 Uses natural scents: vanilla, mint, lavender, lemon, etc.\n\u2022 Prepares for science, cooking, and environmental awareness",
+      "quick_guide": "• Paired bottles containing different scents for olfactory matching\n• Child matches identical scents without seeing contents\n• Develops sense of smell and olfactory discrimination\n• Uses natural scents: vanilla, mint, lavender, lemon, etc.\n• Prepares for science, cooking, and environmental awareness",
       "presentation_steps": [
         {
           "step": 1,
@@ -2987,19 +2987,19 @@
         "Smelling Bottles (2 matching sets of 6 bottles)",
         "Various scent materials"
       ],
-      "parent_description": "Your child is smelling pairs of small bottles containing different scents\u2014some sweet, some spicy, some fresh. Their task is to match the bottles with identical scents by opening them and inhaling carefully. This olfactory exploration helps them learn to recognize and name different smells in the world around them.",
+      "parent_description": "Your child is smelling pairs of small bottles containing different scents—some sweet, some spicy, some fresh. Their task is to match the bottles with identical scents by opening them and inhaling carefully. This olfactory exploration helps them learn to recognize and name different smells in the world around them.",
       "why_it_matters": "Smelling Bottles refine the sense of smell and build olfactory discrimination. They develop vocabulary for describing scents and deepen sensory awareness. This material also supports the development of memory (as smells are powerfully connected to memory) and encourages careful, deliberate sensory exploration."
     },
     {
       "work_id": "se_tasting_bottles",
       "name": "Tasting Bottles/Cups",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5473\u89c9\u74f6",
+      "name_chinese": "蒙特梭利味觉瓶",
       "slug": "tasting-bottles",
       "area": "sensorial",
       "category": "Gustatory Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Dropper bottles containing different taste solutions\n\u2022 Four basic tastes: sweet, salty, sour, bitter\n\u2022 Develops gustatory sense and taste discrimination\n\u2022 One drop on tongue is sufficient for identification\n\u2022 Connects to cooking, nutrition, and science",
+      "quick_guide": "• Dropper bottles containing different taste solutions\n• Four basic tastes: sweet, salty, sour, bitter\n• Develops gustatory sense and taste discrimination\n• One drop on tongue is sufficient for identification\n• Connects to cooking, nutrition, and science",
       "presentation_steps": [
         {
           "step": 1,
@@ -3075,19 +3075,19 @@
         "Dropper",
         "Solutions: sweet, sour, salty, bitter"
       ],
-      "parent_description": "Your child is exploring different tastes\u2014sweet, salty, sour, bitter\u2014through small cups or bottles with different flavored solutions. By tasting carefully and matching similar flavors, they're learning to distinguish between taste sensations. This gustation activity helps them understand the diversity of flavors in food and nature.",
+      "parent_description": "Your child is exploring different tastes—sweet, salty, sour, bitter—through small cups or bottles with different flavored solutions. By tasting carefully and matching similar flavors, they're learning to distinguish between taste sensations. This gustation activity helps them understand the diversity of flavors in food and nature.",
       "why_it_matters": "Tasting Bottles/Cups refine the sense of taste and build awareness of the four basic tastes: sweet, salty, sour, and bitter. They develop sensory vocabulary and discrimination skills. This material also encourages careful tasting and teaches appreciation for flavor, supporting healthy eating habits and culinary awareness."
     },
     {
       "work_id": "se_mystery_bag",
       "name": "Mystery Bag",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u795e\u79d8\u888b",
+      "name_chinese": "蒙特梭利神秘袋",
       "slug": "mystery-bag",
       "area": "sensorial",
       "category": "Stereognostic Sense",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Non-transparent cloth bag with hand opening for tactile exploration without vision\n\u2022 Contains 8-10 familiar objects (eraser, dice, cork, spoon, marble, pencil, etc.)\n\u2022 Develops stereognostic sense: ability to identify objects through touch alone\n\u2022 Presented around age 3-5 years, supporting fine motor and cognitive development\n\u2022 Progression: matching pairs, identifying by description, complex discrimination",
+      "quick_guide": "• Non-transparent cloth bag with hand opening for tactile exploration without vision\n• Contains 8-10 familiar objects (eraser, dice, cork, spoon, marble, pencil, etc.)\n• Develops stereognostic sense: ability to identify objects through touch alone\n• Presented around age 3-5 years, supporting fine motor and cognitive development\n• Progression: matching pairs, identifying by description, complex discrimination",
       "presentation_steps": [
         {
           "step": 1,
@@ -3163,24 +3163,24 @@
         "Mystery Bag (cloth bag)",
         "Various familiar objects"
       ],
-      "parent_description": "Your child is placing their hand into a special bag and feeling objects hidden from sight. Without looking, they must identify what the object is based solely on touch\u2014is it rough or smooth? Hard or soft? Large or small? This stereognostic exploration develops their ability to identify objects through touch alone, just like finding keys in a pocket.",
-      "why_it_matters": "The Mystery Bag develops the stereognostic sense\u2014the ability to identify objects through touch without visual input. It refines tactile discrimination, concentration, and spatial awareness. This material also builds practical life skills (like finding objects in pockets or bags) and develops the refined sensory perception that supports all learning."
+      "parent_description": "Your child is placing their hand into a special bag and feeling objects hidden from sight. Without looking, they must identify what the object is based solely on touch—is it rough or smooth? Hard or soft? Large or small? This stereognostic exploration develops their ability to identify objects through touch alone, just like finding keys in a pocket.",
+      "why_it_matters": "The Mystery Bag develops the stereognostic sense—the ability to identify objects through touch without visual input. It refines tactile discrimination, concentration, and spatial awareness. This material also builds practical life skills (like finding objects in pockets or bags) and develops the refined sensory perception that supports all learning."
     },
     {
       "work_id": "se_sorting_objects",
       "name": "Sorting Objects Stereognostically",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u76f2\u6478\u5206\u7c7b",
+      "name_chinese": "蒙特梭利盲摸分类",
       "slug": "sorting-objects",
       "area": "sensorial",
       "category": "Sensorial - Stereognostic Sense",
       "sequence": 2,
       "age_range": "3-6",
-      "quick_guide": "\u2022 Present a mystery bag filled with varied objects\n\u2022 Child feels objects inside bag without looking\n\u2022 Identify and name each object through touch alone\n\u2022 Sort objects by material or type\n\u2022 Build confidence in tactile recognition",
+      "quick_guide": "• Present a mystery bag filled with varied objects\n• Child feels objects inside bag without looking\n• Identify and name each object through touch alone\n• Sort objects by material or type\n• Build confidence in tactile recognition",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Invitation and Mystique",
-          "description": "Invite the child with intrigue: 'I have a special bag filled with mystery objects. I'd like to play a guessing game with you. You get to feel inside the bag and guess what things are\u2014without looking!' Show the child the bag, creating anticipation and interest.",
+          "description": "Invite the child with intrigue: 'I have a special bag filled with mystery objects. I'd like to play a guessing game with you. You get to feel inside the bag and guess what things are—without looking!' Show the child the bag, creating anticipation and interest.",
           "tip": "The element of mystery and play makes this stereognostic work engaging and fun."
         },
         {
@@ -3192,13 +3192,13 @@
         {
           "step": 3,
           "title": "Preparing for Blindfolded Work",
-          "description": "Place all objects into the mystery bag. Say: 'Now that you've felt all these objects, let's see if you can recognize them just by feeling them\u2014without looking.' Offer a blindfold or suggest closing eyes: 'We'll cover your eyes so you can really focus on how things feel.'",
+          "description": "Place all objects into the mystery bag. Say: 'Now that you've felt all these objects, let's see if you can recognize them just by feeling them—without looking.' Offer a blindfold or suggest closing eyes: 'We'll cover your eyes so you can really focus on how things feel.'",
           "tip": "Framing it as a focusing technique rather than a restriction makes children more comfortable."
         },
         {
           "step": 4,
           "title": "First Identification",
-          "description": "Guide the child's hand into the bag: 'Pick one object. Feel it carefully. Feel the whole thing\u2014the shape, the texture, the weight. Can you tell me what it is?' Give them time to explore before answering.",
+          "description": "Guide the child's hand into the bag: 'Pick one object. Feel it carefully. Feel the whole thing—the shape, the texture, the weight. Can you tell me what it is?' Give them time to explore before answering.",
           "tip": "Allow extended exploration time; rushing prevents full sensory analysis and enjoyment."
         },
         {
@@ -3297,8 +3297,304 @@
         "Weight",
         "Shape"
       ],
-      "parent_description": "When children feel objects in a bag without looking, they're developing their stereognostic sense\u2014the ability to recognize things by touch alone. This is a fun game that builds real sensory skill. As children carefully feel each object, they're learning to use their hands to 'see' and identify things. This kind of sensory development is important for all kinds of learning and helps children feel more confident in their ability to understand the world around them.",
-      "why_it_matters": "The stereognostic sense is a sophisticated sensory ability that integrates touch, proprioception, and sensory memory. It underlies practical life skills (getting dressed, eating, writing) and academic learning (reading tactile materials, performing manipulative tasks). Sorting Objects Stereognostically develops this sense through playful exploration. The variety of objects and the need to distinguish between similar items build fine tactile discrimination. This work also demonstrates the Montessori principle that learning is most effective when joyful and intrinsically motivating\u2014children love mystery bag activities, making them ideal for sensory development."
+      "parent_description": "When children feel objects in a bag without looking, they're developing their stereognostic sense—the ability to recognize things by touch alone. This is a fun game that builds real sensory skill. As children carefully feel each object, they're learning to use their hands to 'see' and identify things. This kind of sensory development is important for all kinds of learning and helps children feel more confident in their ability to understand the world around them.",
+      "why_it_matters": "The stereognostic sense is a sophisticated sensory ability that integrates touch, proprioception, and sensory memory. It underlies practical life skills (getting dressed, eating, writing) and academic learning (reading tactile materials, performing manipulative tasks). Sorting Objects Stereognostically develops this sense through playful exploration. The variety of objects and the need to distinguish between similar items build fine tactile discrimination. This work also demonstrates the Montessori principle that learning is most effective when joyful and intrinsically motivating—children love mystery bag activities, making them ideal for sensory development."
+    },
+    {
+      "work_id": "se_geometric_form_cards",
+      "name": "Geometric Form Cards",
+      "name_chinese": "蒙特梭利几何形状卡片",
+      "slug": "geometric-form-cards",
+      "area": "sensorial",
+      "category": "Visual Sense - Form",
+      "sequence": 11,
+      "age_range": "primary_year1",
+      "quick_guide": "• Three progressive card series accompany the Geometric Cabinet\n• Series 1: Solid blue shapes — child matches to insets for concrete recognition\n• Series 2: Thick blue outlines — moves child toward abstraction\n• Series 3: Thin black outlines only — fully abstract representation\n• Key: child traces inset edges before matching to strengthen form recognition\n• Described by Montessori as essential bridge from concrete to abstract understanding of shape",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Lay Out Series 1",
+          "description": "Select 3-4 contrasting geometric insets from the cabinet. Lay out corresponding Series 1 cards (filled blue shapes) in a row.",
+          "tip": "Start with very different shapes — circle, triangle, square."
+        },
+        {
+          "step": 2,
+          "title": "Demonstrate Matching",
+          "description": "Pick up one inset, trace its edges with two fingers slowly, then place it on the matching filled card.",
+          "tip": "Trace with the writing fingers (index and middle) to reinforce pencil grip."
+        },
+        {
+          "step": 3,
+          "title": "Child Matches",
+          "description": "Invite the child to trace and match remaining insets to their cards.",
+          "tip": "Encourage slow, deliberate tracing before placing."
+        },
+        {
+          "step": 4,
+          "title": "Introduce Series 2",
+          "description": "When the child masters Series 1, repeat with thick outline cards. The inset sits inside the outline.",
+          "tip": "This is harder — the child sees outline, not filled shape."
+        },
+        {
+          "step": 5,
+          "title": "Introduce Series 3",
+          "description": "When ready, offer thin black line cards. The child matches insets to abstract outlines.",
+          "tip": "This final series is the bridge to recognizing shapes drawn on paper."
+        }
+      ],
+      "direct_aims": [
+        "Visual discrimination of form",
+        "Abstraction from 3D to 2D"
+      ],
+      "indirect_aims": [
+        "Preparation for geometry",
+        "Classification skills"
+      ],
+      "materials_needed": [
+        "Three sets of white cards with geometric forms",
+        "Geometric Cabinet"
+      ],
+      "control_of_error": "Cards don't match inset shapes",
+      "prerequisites": [
+        "se_geometric_cabinet"
+      ],
+      "points_of_interest": [
+        "The progression from solid to outline",
+        "Tracing the edges",
+        "Discovering the shape is the same even as a line drawing"
+      ],
+      "variations": [
+        "Use only shapes from one drawer",
+        "Lay out all three series for same shapes side by side",
+        "Mix cards from multiple drawers"
+      ],
+      "common_challenges": [
+        "Child may rush without tracing — gently redirect",
+        "Series 3 can be frustrating — ensure Series 2 is mastered first"
+      ],
+      "video_search_term": "montessori geometric form cards presentation",
+      "parent_description": "Your child is learning to recognize geometric shapes at increasingly abstract levels. They start by matching solid shapes, then outlines, then thin lines — building the visual skills they'll need to recognize letters, numbers, and shapes on paper. This is a beautiful bridge from hands-on learning to abstract thinking.",
+      "why_it_matters": "This exercise develops the ability to see a 2D representation and connect it to a real 3D form. This exact skill is what your child needs when they start reading — recognizing that a squiggle on paper represents a sound or word they already know."
+    },
+    {
+      "work_id": "se_botany_cabinet",
+      "name": "Botany Cabinet",
+      "name_chinese": "蒙特梭利植物学柜",
+      "slug": "botany-cabinet",
+      "area": "sensorial",
+      "category": "Visual Sense - Form",
+      "sequence": 12,
+      "age_range": "primary_year1",
+      "quick_guide": "• Wooden cabinet with 4 trays containing leaf-shaped insets\n• Same principle as Geometric Cabinet but with natural forms\n• Child traces leaf shapes, learning to discriminate subtle curves and edges\n• Three-card series available (filled, outlined, line) just like geometric forms\n• Bridge between sensorial work and botany cultural studies\n• Real leaf matching is the ultimate extension — take leaves from the garden and match to cabinet",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Introduction",
+          "description": "Show one tray from the botany cabinet. Remove 3 contrasting leaf insets.",
+          "tip": "Choose very different leaf shapes to start — perhaps oval, heart-shaped, and linear."
+        },
+        {
+          "step": 2,
+          "title": "Tracing",
+          "description": "Demonstrate tracing the edge of one leaf inset with your index and middle fingers. Trace the frame opening too.",
+          "tip": "Go slowly around the entire edge, feeling every curve."
+        },
+        {
+          "step": 3,
+          "title": "Matching and Replacing",
+          "description": "Mix the insets and invite the child to trace and replace each in its correct frame.",
+          "tip": "The control of error is built in — each leaf fits only one opening."
+        },
+        {
+          "step": 4,
+          "title": "Naming",
+          "description": "Once familiar, use three-period lesson: 'This is an ovate leaf. Show me the ovate leaf. What is this leaf?'",
+          "tip": "Introduce vocabulary only after extensive sensorial work."
+        },
+        {
+          "step": 5,
+          "title": "Real Leaf Extension",
+          "description": "Collect real leaves on a nature walk. Back in class, child matches real leaves to cabinet shapes.",
+          "tip": "Press leaves first so they lie flat. This connects indoor to outdoor learning."
+        }
+      ],
+      "direct_aims": [
+        "Visual discrimination of leaf forms",
+        "Vocabulary of leaf shapes"
+      ],
+      "indirect_aims": [
+        "Preparation for botany study",
+        "Classification skills"
+      ],
+      "materials_needed": [
+        "Botany Cabinet with 4 trays of leaf insets",
+        "Three series of leaf cards"
+      ],
+      "control_of_error": "Leaf insets only fit in matching frame",
+      "prerequisites": [
+        "se_geometric_cabinet"
+      ],
+      "points_of_interest": [
+        "The variety of leaf shapes in nature",
+        "Tracing the curves",
+        "Matching real leaves to wooden forms"
+      ],
+      "variations": [
+        "Work with one tray at a time",
+        "Match card series 1-3 like geometric cards",
+        "Sort real leaves by shape"
+      ],
+      "common_challenges": [
+        "Children sometimes force insets into wrong frames — encourage gentle trying",
+        "Leaf vocabulary can be challenging — introduce slowly"
+      ],
+      "video_search_term": "montessori botany cabinet presentation",
+      "parent_description": "Your child is exploring the beautiful variety of leaf shapes found in nature. Using a special cabinet with leaf-shaped puzzle pieces, they trace edges, match shapes, and learn to notice subtle differences between leaves. Later they'll match real leaves from the garden to these wooden forms — building a deep connection between classroom learning and the natural world.",
+      "why_it_matters": "This work develops your child's ability to observe fine details in nature and classify what they see. These observation skills are the foundation of scientific thinking. When your child notices that different trees have different leaf shapes, they're doing real botany."
+    },
+    {
+      "work_id": "se_pink_tower_brown_stair",
+      "name": "Pink Tower and Brown Stair Combination",
+      "name_chinese": "蒙特梭利粉红塔与棕色梯组合",
+      "slug": "pink-tower-brown-stair-combination",
+      "area": "sensorial",
+      "category": "Visual Sense - Dimension",
+      "sequence": 10,
+      "age_range": "primary_year1",
+      "quick_guide": "• Extension that combines two classic dimension materials\n• The Pink Tower cubes fit perfectly against Brown Stair prisms (they share the same base dimensions)\n• Children discover mathematical relationships: each cube face matches a prism face\n• Many pattern possibilities: side-by-side staircase, maze, city, spiral\n• Only present after child has mastered both materials individually\n• Described in Montessori's Handbook as children's natural extension",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Preparation",
+          "description": "Both Pink Tower and Brown Stair should be on separate mats. Invite the child who has mastered both.",
+          "tip": "The child should already build both materials independently and accurately."
+        },
+        {
+          "step": 2,
+          "title": "Matching Faces",
+          "description": "Place the largest cube beside the largest prism. Show how the faces align perfectly.",
+          "tip": "Let the child discover this relationship — it's a powerful 'aha' moment."
+        },
+        {
+          "step": 3,
+          "title": "Building a Pattern",
+          "description": "Demonstrate one combined pattern (e.g., alternating cube-prism staircase), then step back.",
+          "tip": "Show just enough to spark the idea, then let the child explore."
+        },
+        {
+          "step": 4,
+          "title": "Free Exploration",
+          "description": "The child creates their own patterns and constructions combining both materials.",
+          "tip": "There is no single 'correct' way — creativity is the point."
+        }
+      ],
+      "direct_aims": [
+        "Visual discrimination across two dimensions",
+        "Creative problem-solving"
+      ],
+      "indirect_aims": [
+        "Mathematical relationships",
+        "Spatial reasoning"
+      ],
+      "materials_needed": [
+        "Pink Tower",
+        "Brown Stair"
+      ],
+      "control_of_error": "Visual harmony of pattern",
+      "prerequisites": [
+        "se_pink_tower",
+        "se_brown_stair"
+      ],
+      "points_of_interest": [
+        "Discovering faces match",
+        "The many possible patterns",
+        "Building something beautiful"
+      ],
+      "variations": [
+        "Horizontal patterns",
+        "Vertical structures",
+        "Marble runs using the stair as ramps and tower as supports"
+      ],
+      "common_challenges": [
+        "Child may want to play rather than build with intention — redirect gently",
+        "Heavy pieces can topple — work on a large mat on the floor"
+      ],
+      "video_search_term": "montessori pink tower brown stair combination extensions",
+      "parent_description": "Your child is combining two materials they've already mastered — the Pink Tower and the Brown Stair — to discover mathematical relationships. The cube faces and prism faces match perfectly because they share the same dimensions. This is a creative, open-ended extension where your child explores how different shapes relate to each other.",
+      "why_it_matters": "This extension develops spatial reasoning and creative thinking. When your child discovers that a Pink Tower cube fits perfectly against a Brown Stair prism, they're experiencing mathematical relationships firsthand — the same kind of proportional thinking that underlies algebra and geometry."
+    },
+    {
+      "work_id": "se_dimension_distance",
+      "name": "Distance Exercises",
+      "name_chinese": "蒙特梭利远距离练习",
+      "slug": "distance-exercises",
+      "area": "sensorial",
+      "category": "Visual Sense - Dimension",
+      "sequence": 11,
+      "age_range": "primary_year2",
+      "quick_guide": "• Child carries pieces one at a time across the room to build the material at a distance\n• Develops visual memory — child must hold the size in mind while walking\n• Works with Pink Tower, Brown Stair, Red Rods, or Knobless Cylinders\n• Described in Dr. Montessori's Own Handbook as children's spontaneous invention\n• Memory variation: observe the completed material, then rebuild from memory without looking\n• Only for children who build the material accurately at close range",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Set Up",
+          "description": "Place the material (e.g., Pink Tower) on one mat. Place an empty mat across the room.",
+          "tip": "The distance should be significant — at least 3-4 meters."
+        },
+        {
+          "step": 2,
+          "title": "Demonstrate",
+          "description": "Walk to the material, select the largest piece, carry it carefully to the distant mat, place it.",
+          "tip": "Model slow, deliberate walking — this is part of the exercise."
+        },
+        {
+          "step": 3,
+          "title": "Child Continues",
+          "description": "The child carries remaining pieces one at a time, building the material on the distant mat.",
+          "tip": "The child must decide which piece to get next — this requires holding sizes in visual memory."
+        },
+        {
+          "step": 4,
+          "title": "Verification",
+          "description": "When complete, child checks their construction against the original (which no longer exists on the near mat).",
+          "tip": "The control of error is whether the final construction looks right."
+        }
+      ],
+      "direct_aims": [
+        "Visual memory",
+        "Discrimination at distance"
+      ],
+      "indirect_aims": [
+        "Concentration",
+        "Self-confidence",
+        "Gross motor coordination"
+      ],
+      "materials_needed": [
+        "Pink Tower or Brown Stair or Red Rods",
+        "Two mats"
+      ],
+      "control_of_error": "Pieces don't form correct sequence when brought together",
+      "prerequisites": [
+        "se_pink_tower",
+        "se_brown_stair",
+        "se_red_rods"
+      ],
+      "points_of_interest": [
+        "The challenge of remembering sizes",
+        "Walking carefully with a piece",
+        "The satisfaction of getting it right at a distance"
+      ],
+      "variations": [
+        "Different materials",
+        "Increasing distance",
+        "Memory variation: observe then rebuild without looking"
+      ],
+      "common_challenges": [
+        "Child may rush — encourage slow walking",
+        "Getting the middle pieces in order is hardest"
+      ],
+      "video_search_term": "montessori distance exercise sensorial",
+      "parent_description": "Your child carries pieces of a material they know well across the room, one at a time, to rebuild it at a distance. This brilliant exercise develops visual memory — they must hold in their mind what size piece they need next while walking across the room. It combines physical control with mental discipline.",
+      "why_it_matters": "Visual memory is crucial for reading, writing, and mathematics. When your child can hold a mental image of a cube's size while walking across a room, they're building the same memory skills they'll need to remember letter shapes, number values, and spelling patterns."
     }
   ]
 }

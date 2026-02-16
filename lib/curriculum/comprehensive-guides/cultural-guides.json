@@ -7,13 +7,13 @@
     {
       "work_id": "cu_globe_land_water",
       "name": "Globe - Land and Water",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7802\u7eb8\u5730\u7403\u4eea",
+      "name_chinese": "蒙特梭利砂纸地球仪",
       "slug": "globe-land-water",
       "area": "cultural",
       "category": "Geography",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 First globe presentation showing Earth as blue (water) and sandpaper (land)\n\u2022 Tactile experience of Earth's surface: rough land, smooth water\n\u2022 Introduces concept that we live on a sphere with more water than land\n\u2022 Sandpaper texture isolates land concept from color\n\u2022 Prepares for Continents Globe and detailed geography",
+      "quick_guide": "• First globe presentation showing Earth as blue (water) and sandpaper (land)\n• Tactile experience of Earth's surface: rough land, smooth water\n• Introduces concept that we live on a sphere with more water than land\n• Sandpaper texture isolates land concept from color\n• Prepares for Continents Globe and detailed geography",
       "presentation_steps": [
         {
           "step": 1,
@@ -89,13 +89,13 @@
     {
       "work_id": "cu_globe_continents",
       "name": "Globe - Continents",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5f69\u8272\u5730\u7403\u4eea",
+      "name_chinese": "蒙特梭利彩色地球仪",
       "slug": "globe-continents",
       "area": "cultural",
       "category": "Geography",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Second globe with continents color-coded (same colors as puzzle maps)\n\u2022 Each continent has distinct color: Africa-green, Europe-red, Asia-yellow, etc.\n\u2022 Builds on land/water globe with specific continent identification\n\u2022 Connects to puzzle maps, flags, and cultural studies\n\u2022 Three-period lesson for continent names",
+      "quick_guide": "• Second globe with continents color-coded (same colors as puzzle maps)\n• Each continent has distinct color: Africa-green, Europe-red, Asia-yellow, etc.\n• Builds on land/water globe with specific continent identification\n• Connects to puzzle maps, flags, and cultural studies\n• Three-period lesson for continent names",
       "presentation_steps": [
         {
           "step": 1,
@@ -173,13 +173,13 @@
     {
       "work_id": "cu_puzzle_map_world",
       "name": "Puzzle Map - World",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e16\u754c\u5730\u56fe\u62fc\u56fe",
+      "name_chinese": "蒙特梭利世界地图拼图",
       "slug": "puzzle-map-world",
       "area": "cultural",
       "category": "Geography",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Wooden puzzle maps with removable continent/country pieces and control maps\n\u2022 World map shows all continents; individual maps show countries\n\u2022 Color-coded to match Continents Globe for consistent learning\n\u2022 Develops geographic knowledge, fine motor skills, and visual discrimination\n\u2022 Control maps underneath show correct placement",
+      "quick_guide": "• Wooden puzzle maps with removable continent/country pieces and control maps\n• World map shows all continents; individual maps show countries\n• Color-coded to match Continents Globe for consistent learning\n• Develops geographic knowledge, fine motor skills, and visual discrimination\n• Control maps underneath show correct placement",
       "presentation_steps": [
         {
           "step": 1,
@@ -251,19 +251,19 @@
       "materials_needed": [
         "World Puzzle Map"
       ],
-      "parent_description": "Your child is piecing together a wooden puzzle of the entire world, with each country or continent as a removable piece. As they carefully fit each piece into place, they're developing fine motor skills while absorbing knowledge of world geography. The hands-on nature of this work makes geography tangible\u2014children can hold, feel, and spatially understand how countries relate to one another.",
+      "parent_description": "Your child is piecing together a wooden puzzle of the entire world, with each country or continent as a removable piece. As they carefully fit each piece into place, they're developing fine motor skills while absorbing knowledge of world geography. The hands-on nature of this work makes geography tangible—children can hold, feel, and spatially understand how countries relate to one another.",
       "why_it_matters": "Puzzle maps transform geography from abstract concepts into concrete understanding. Children develop problem-solving skills, spatial reasoning, and a deeper awareness of how our world is organized politically and geographically."
     },
     {
       "work_id": "cu_puzzle_maps_continents",
       "name": "Puzzle Maps - Individual Continents",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5927\u6d32\u5730\u56fe\u62fc\u56fe",
+      "name_chinese": "蒙特梭利大洲地图拼图",
       "slug": "puzzle-maps-continents",
       "area": "cultural",
       "category": "Geography",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Wooden puzzle maps with removable continent/country pieces and control maps\n\u2022 World map shows all continents; individual maps show countries\n\u2022 Color-coded to match Continents Globe for consistent learning\n\u2022 Develops geographic knowledge, fine motor skills, and visual discrimination\n\u2022 Control maps underneath show correct placement",
+      "quick_guide": "• Wooden puzzle maps with removable continent/country pieces and control maps\n• World map shows all continents; individual maps show countries\n• Color-coded to match Continents Globe for consistent learning\n• Develops geographic knowledge, fine motor skills, and visual discrimination\n• Control maps underneath show correct placement",
       "presentation_steps": [
         {
           "step": 1,
@@ -336,18 +336,18 @@
         "6 Continent Puzzle Maps"
       ],
       "parent_description": "After exploring the world map, your child now zooms in to explore individual continents through their own puzzles. Each continent's puzzle shows countries or regions, allowing children to understand the diversity within each land mass. This layered approach deepens their geographic knowledge and helps them see how regions fit together like pieces of a larger story.",
-      "why_it_matters": "This work develops sophisticated spatial reasoning and helps children understand that geography is hierarchical\u2014that countries belong to continents, which belong to the world. It nurtures a sense of how human cultures are organized across space."
+      "why_it_matters": "This work develops sophisticated spatial reasoning and helps children understand that geography is hierarchical—that countries belong to continents, which belong to the world. It nurtures a sense of how human cultures are organized across space."
     },
     {
       "work_id": "cu_flags",
       "name": "Flags of the World",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e16\u754c\u56fd\u65d7",
+      "name_chinese": "蒙特梭利世界国旗",
       "slug": "flags",
       "area": "cultural",
       "category": "Geography",
       "sequence": 5,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Flags of countries organized by continent\n\u2022 Develops global awareness and cultural recognition\n\u2022 Color and symbol recognition for country identification\n\u2022 Connects to puzzle map work and cultural studies\n\u2022 Prepares for deeper country and culture exploration",
+      "quick_guide": "• Flags of countries organized by continent\n• Develops global awareness and cultural recognition\n• Color and symbol recognition for country identification\n• Connects to puzzle map work and cultural studies\n• Prepares for deeper country and culture exploration",
       "presentation_steps": [
         {
           "step": 1,
@@ -427,13 +427,13 @@
     {
       "work_id": "cu_land_water_forms",
       "name": "Land and Water Forms",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9646\u5730\u6c34\u4f53\u6a21\u578b",
+      "name_chinese": "蒙特梭利陆地水体模型",
       "slug": "land-water-forms",
       "area": "cultural",
       "category": "Geography",
       "sequence": 6,
       "age_range": "3-6 years (sensorial experience); 6-9 years (map applications)",
-      "quick_guide": "\u2022 Study eight major land and water forms\n\u2022 Create each form using water-filled trays\n\u2022 Name: island, lake, peninsula, gulf, isthmus, strait, cape, bay\n\u2022 Use 3-part nomenclature cards\n\u2022 Discuss formation and characteristics",
+      "quick_guide": "• Study eight major land and water forms\n• Create each form using water-filled trays\n• Name: island, lake, peninsula, gulf, isthmus, strait, cape, bay\n• Use 3-part nomenclature cards\n• Discuss formation and characteristics",
       "presentation_steps": [
         {
           "step": 1,
@@ -544,13 +544,13 @@
     {
       "work_id": "cu_solar_system",
       "name": "Solar System",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u592a\u9633\u7cfb",
+      "name_chinese": "蒙特梭利太阳系",
       "slug": "solar-system",
       "area": "cultural",
       "category": "History/Time",
       "sequence": 7,
       "age_range": "4-6 years (introduction); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Introduce planets and sun using 3-part cards and globe\n\u2022 Begin with concrete materials before moving to abstract\n\u2022 Use nomenclature cards for planet names\n\u2022 Present the cosmic order from sun outward\n\u2022 Integrate with reading materials about space",
+      "quick_guide": "• Introduce planets and sun using 3-part cards and globe\n• Begin with concrete materials before moving to abstract\n• Use nomenclature cards for planet names\n• Present the cosmic order from sun outward\n• Integrate with reading materials about space",
       "presentation_steps": [
         {
           "step": 1,
@@ -658,13 +658,13 @@
     {
       "work_id": "cu_calendar",
       "name": "Calendar Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u65e5\u5386",
+      "name_chinese": "蒙特梭利日历",
       "slug": "calendar",
       "area": "cultural",
       "category": "History/Time",
       "sequence": 1,
       "age_range": "3-6 years",
-      "quick_guide": "\u2022 Use calendar board for daily practice\n\u2022 Present days of week, months, and seasons\n\u2022 Count days passed and days remaining\n\u2022 Track weather patterns\n\u2022 Connect to child's life events and celebrations",
+      "quick_guide": "• Use calendar board for daily practice\n• Present days of week, months, and seasons\n• Count days passed and days remaining\n• Track weather patterns\n• Connect to child's life events and celebrations",
       "presentation_steps": [
         {
           "step": 1,
@@ -766,19 +766,19 @@
         "Fall",
         "Winter"
       ],
-      "parent_description": "Calendar Work is foundational time awareness in the Montessori primary classroom. Through daily calendar practice, children learn the structure of our time system\u2014days, weeks, months, and seasons. This work helps children develop temporal consciousness and understand how time organizes their world.",
+      "parent_description": "Calendar Work is foundational time awareness in the Montessori primary classroom. Through daily calendar practice, children learn the structure of our time system—days, weeks, months, and seasons. This work helps children develop temporal consciousness and understand how time organizes their world.",
       "why_it_matters": "Time awareness is essential for all learning. Understanding calendar structure provides scaffolding for clock reading, understanding history, and planning. This work connects abstract temporal concepts to children's lived experiences, making time tangible and meaningful."
     },
     {
       "work_id": "cu_birthday_celebration",
       "name": "Birthday Celebration",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u751f\u65e5\u5e86\u795d",
+      "name_chinese": "蒙特梭利生日庆祝",
       "slug": "birthday-celebration",
       "area": "cultural",
       "category": "History/Time",
       "sequence": 2,
       "age_range": "3-6 years (participation); 6-9 years (expanded understanding)",
-      "quick_guide": "\u2022 Circle of the sun ceremony for each birthday child\n\u2022 Child walks around sun (candle) once per year of life\n\u2022 Parents/teachers share stories about each year\n\u2022 Songs and celebration of life\n\u2022 Visual representation of Earth's orbit around sun",
+      "quick_guide": "• Circle of the sun ceremony for each birthday child\n• Child walks around sun (candle) once per year of life\n• Parents/teachers share stories about each year\n• Songs and celebration of life\n• Visual representation of Earth's orbit around sun",
       "presentation_steps": [
         {
           "step": 1,
@@ -888,13 +888,13 @@
     {
       "work_id": "cu_personal_timeline",
       "name": "Personal Timeline",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e2a\u4eba\u65f6\u95f4\u7ebf",
+      "name_chinese": "蒙特梭利个人时间线",
       "slug": "personal-timeline",
       "area": "cultural",
       "category": "History and Time",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Timeline of child's own life from birth to present\n\u2022 First introduction to timeline concept using personal history\n\u2022 Photos and drawings mark important events\n\u2022 Develops sense of personal history and sequence\n\u2022 Prepares for historical timeline work",
+      "quick_guide": "• Timeline of child's own life from birth to present\n• First introduction to timeline concept using personal history\n• Photos and drawings mark important events\n• Develops sense of personal history and sequence\n• Prepares for historical timeline work",
       "presentation_steps": [
         {
           "step": 1,
@@ -968,19 +968,19 @@
         "Timeline materials",
         "Photos"
       ],
-      "parent_description": "Your child is creating a timeline of their own life, arranging photos, drawings, or written markers of important moments from birth to now. This work helps children understand the passage of time in a deeply personal way\u2014they can see how much they've grown and changed. It's often a child's first introduction to the concept that time moves forward and that their life has a story worth recording.",
+      "parent_description": "Your child is creating a timeline of their own life, arranging photos, drawings, or written markers of important moments from birth to now. This work helps children understand the passage of time in a deeply personal way—they can see how much they've grown and changed. It's often a child's first introduction to the concept that time moves forward and that their life has a story worth recording.",
       "why_it_matters": "Personal timelines help children develop an understanding of time and sequence while building self-awareness and confidence. This work is the stepping stone toward understanding larger historical timelines and developing a sense of their place in history."
     },
     {
       "work_id": "cu_clock",
       "name": "Clock Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u65f6\u949f",
+      "name_chinese": "蒙特梭利时钟",
       "slug": "clock",
       "area": "cultural",
       "category": "History/Time",
       "sequence": 4,
       "age_range": "5-6 years (introduction); 6-9 years (mastery and extension)",
-      "quick_guide": "\u2022 Present clock hands and their functions\n\u2022 Teach hour and minute hand movements\n\u2022 Practice on-the-hour times first\n\u2022 Progress to 15-minute intervals\n\u2022 Extend to 5-minute and 1-minute increments",
+      "quick_guide": "• Present clock hands and their functions\n• Teach hour and minute hand movements\n• Practice on-the-hour times first\n• Progress to 15-minute intervals\n• Extend to 5-minute and 1-minute increments",
       "presentation_steps": [
         {
           "step": 1,
@@ -1090,13 +1090,13 @@
     {
       "work_id": "cu_timeline_life",
       "name": "Timeline of Life",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u751f\u547d\u65f6\u95f4\u7ebf",
+      "name_chinese": "蒙特梭利生命时间线",
       "slug": "timeline-life",
       "area": "cultural",
       "category": "History and Time",
       "sequence": 5,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Long visual timeline showing development of life on Earth\n\u2022 Begins with single-celled organisms, ends with modern humans\n\u2022 Color-coded eras with illustrations of representative life forms\n\u2022 Develops sense of deep time and evolution of life\n\u2022 Impressionistic presentation for cosmic education",
+      "quick_guide": "• Long visual timeline showing development of life on Earth\n• Begins with single-celled organisms, ends with modern humans\n• Color-coded eras with illustrations of representative life forms\n• Develops sense of deep time and evolution of life\n• Impressionistic presentation for cosmic education",
       "presentation_steps": [
         {
           "step": 1,
@@ -1168,19 +1168,19 @@
       "materials_needed": [
         "Timeline of Life"
       ],
-      "parent_description": "Your child is exploring an enormous timeline showing the history of life on Earth\u2014from the earliest microorganisms billions of years ago to human beings today. Using color-coded strips representing different geological eras, children marvel at the vastness of time and the incredible journey of life. This panoramic view of Earth's history often fills children with awe and wonder about our planet's story.",
+      "parent_description": "Your child is exploring an enormous timeline showing the history of life on Earth—from the earliest microorganisms billions of years ago to human beings today. Using color-coded strips representing different geological eras, children marvel at the vastness of time and the incredible journey of life. This panoramic view of Earth's history often fills children with awe and wonder about our planet's story.",
       "why_it_matters": "The Timeline of Life builds scientific understanding while cultivating deep wonder about our planet. Children begin to grasp concepts of evolution, the interconnectedness of all living things, and their own small but important place in Earth's long and beautiful history."
     },
     {
       "work_id": "cu_fundamental_needs",
       "name": "Fundamental Needs of Humans",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4eba\u7c7b\u57fa\u672c\u9700\u6c42",
+      "name_chinese": "蒙特梭利人类基本需求",
       "slug": "fundamental-needs",
       "area": "cultural",
       "category": "History and Time",
       "sequence": 6,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Study of universal human needs: food, shelter, clothing, transportation, defense, culture, religion\n\u2022 Explores how different cultures meet same needs in different ways\n\u2022 Includes picture cards, sorting activities, and cultural comparisons\n\u2022 Develops understanding of human universals and cultural diversity\n\u2022 Foundation for peace education and cultural appreciation",
+      "quick_guide": "• Study of universal human needs: food, shelter, clothing, transportation, defense, culture, religion\n• Explores how different cultures meet same needs in different ways\n• Includes picture cards, sorting activities, and cultural comparisons\n• Develops understanding of human universals and cultural diversity\n• Foundation for peace education and cultural appreciation",
       "presentation_steps": [
         {
           "step": 1,
@@ -1256,13 +1256,13 @@
     {
       "work_id": "cu_living_nonliving",
       "name": "Living vs Non-Living",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u751f\u7269\u975e\u751f\u7269",
+      "name_chinese": "蒙特梭利生物非生物",
       "slug": "living-nonliving",
       "area": "cultural",
       "category": "Biology - Botany",
       "sequence": 1,
       "age_range": "3-6 years",
-      "quick_guide": "\u2022 Collect and examine real objects from nature\n\u2022 Define characteristics of living things\n\u2022 Sort objects into living/non-living categories\n\u2022 Discuss what living things need to survive\n\u2022 Observe ongoing changes in living things",
+      "quick_guide": "• Collect and examine real objects from nature\n• Define characteristics of living things\n• Sort objects into living/non-living categories\n• Discuss what living things need to survive\n• Observe ongoing changes in living things",
       "presentation_steps": [
         {
           "step": 1,
@@ -1368,13 +1368,13 @@
     {
       "work_id": "cu_plant_animal",
       "name": "Plant vs Animal",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u690d\u7269\u52a8\u7269",
+      "name_chinese": "蒙特梭利植物动物",
       "slug": "plant-animal",
       "area": "cultural",
       "category": "Biology - Botany",
       "sequence": 2,
       "age_range": "4-6 years",
-      "quick_guide": "\u2022 Present five key differences between plants and animals\n\u2022 Use 3-part cards to sort plants and animals\n\u2022 Discuss how each type of living thing survives\n\u2022 Observe specific examples and their characteristics\n\u2022 Create classification chart showing distinctions",
+      "quick_guide": "• Present five key differences between plants and animals\n• Use 3-part cards to sort plants and animals\n• Discuss how each type of living thing survives\n• Observe specific examples and their characteristics\n• Create classification chart showing distinctions",
       "presentation_steps": [
         {
           "step": 1,
@@ -1476,13 +1476,13 @@
     {
       "work_id": "cu_parts_plant",
       "name": "Parts of a Plant",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u690d\u7269\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利植物部位",
       "slug": "parts-plant",
       "area": "cultural",
       "category": "Botany",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Puzzle map and nomenclature cards showing plant parts (root, stem, leaf, flower, fruit, seed)\n\u2022 Introduces botanical vocabulary through hands-on puzzle work\n\u2022 Control chart and labels support independent learning\n\u2022 Connects to real plant observation and gardening\n\u2022 Foundation for detailed study of each part",
+      "quick_guide": "• Puzzle map and nomenclature cards showing plant parts (root, stem, leaf, flower, fruit, seed)\n• Introduces botanical vocabulary through hands-on puzzle work\n• Control chart and labels support independent learning\n• Connects to real plant observation and gardening\n• Foundation for detailed study of each part",
       "presentation_steps": [
         {
           "step": 1,
@@ -1556,19 +1556,19 @@
         "Plant puzzle",
         "Nomenclature cards"
       ],
-      "parent_description": "Your child is discovering the different parts that make up a plant\u2014roots, stem, leaves, and flower\u2014using beautiful wooden puzzles where each part separates out. By touching and naming these parts, children develop botanical vocabulary and understanding. They begin to see plants not as simple pretty things, but as complex living organisms with different structures that work together.",
+      "parent_description": "Your child is discovering the different parts that make up a plant—roots, stem, leaves, and flower—using beautiful wooden puzzles where each part separates out. By touching and naming these parts, children develop botanical vocabulary and understanding. They begin to see plants not as simple pretty things, but as complex living organisms with different structures that work together.",
       "why_it_matters": "This foundational botany work builds scientific observation skills and nurtures curiosity about the natural world. Children develop an appreciation for plants' complexity and begin to understand how living things are organized and interconnected."
     },
     {
       "work_id": "cu_parts_flower",
       "name": "Parts of a Flower",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u82b1\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利花的部位",
       "slug": "parts-flower",
       "area": "cultural",
       "category": "Botany",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Puzzle map and nomenclature for flower anatomy\n\u2022 Parts: petals, sepals, stamen, pistil, stem, ovary\n\u2022 Connects to plant life cycle and reproduction\n\u2022 Develops scientific vocabulary and observation\n\u2022 Prepares for detailed botany studies",
+      "quick_guide": "• Puzzle map and nomenclature for flower anatomy\n• Parts: petals, sepals, stamen, pistil, stem, ovary\n• Connects to plant life cycle and reproduction\n• Develops scientific vocabulary and observation\n• Prepares for detailed botany studies",
       "presentation_steps": [
         {
           "step": 1,
@@ -1640,19 +1640,19 @@
       "materials_needed": [
         "Flower puzzle"
       ],
-      "parent_description": "Going deeper into botany, your child is exploring the specific parts of a flower\u2014petals, pistil, stamen, and more\u2014often using a puzzle or examining a real flower up close with a magnifying glass. This hands-on exploration reveals the delicate intricacy of flowers and helps children understand that each part has a purpose in the flower's life cycle.",
+      "parent_description": "Going deeper into botany, your child is exploring the specific parts of a flower—petals, pistil, stamen, and more—often using a puzzle or examining a real flower up close with a magnifying glass. This hands-on exploration reveals the delicate intricacy of flowers and helps children understand that each part has a purpose in the flower's life cycle.",
       "why_it_matters": "This work develops detailed observational skills and botanical knowledge while fostering respect for the complexity of nature. Children begin to understand reproduction and pollination concepts, building a foundation for later biology learning."
     },
     {
       "work_id": "cu_parts_leaf",
       "name": "Parts of a Leaf",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u53f6\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利叶的部位",
       "slug": "parts-leaf",
       "area": "cultural",
       "category": "Botany",
       "sequence": 5,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Puzzle map and nomenclature for leaf anatomy\n\u2022 Parts: blade, veins, stem (petiole), margin, apex, base\n\u2022 Connects to botany cabinet and plant studies\n\u2022 Develops observation skills and vocabulary\n\u2022 Prepares for leaf classification",
+      "quick_guide": "• Puzzle map and nomenclature for leaf anatomy\n• Parts: blade, veins, stem (petiole), margin, apex, base\n• Connects to botany cabinet and plant studies\n• Develops observation skills and vocabulary\n• Prepares for leaf classification",
       "presentation_steps": [
         {
           "step": 1,
@@ -1726,19 +1726,19 @@
         "Leaf puzzle",
         "Botany cabinet"
       ],
-      "parent_description": "Your child is examining the intricate structure of leaves\u2014the petiole, veins, midrib, and lamina\u2014using puzzles and sometimes magnifying glasses to observe real leaves. They discover that leaves are beautifully designed structures with specific parts that work together to help the plant survive. This micro-level exploration reveals the hidden complexity in something children see every day.",
+      "parent_description": "Your child is examining the intricate structure of leaves—the petiole, veins, midrib, and lamina—using puzzles and sometimes magnifying glasses to observe real leaves. They discover that leaves are beautifully designed structures with specific parts that work together to help the plant survive. This micro-level exploration reveals the hidden complexity in something children see every day.",
       "why_it_matters": "This work develops careful observation and scientific thinking. Children learn to see the world with curiosity and wonder, discovering that even tiny things have sophisticated design and purpose. It builds the foundation for understanding photosynthesis and plant biology."
     },
     {
       "work_id": "cu_parts_root",
       "name": "Parts of a Root",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6839\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利根的部位",
       "slug": "parts-root",
       "area": "cultural",
       "category": "Biology - Botany",
       "sequence": 6,
       "age_range": "4-6 years (observation); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Grow beans or seeds in water to observe root growth\n\u2022 Identify primary root (taproot) and secondary roots\n\u2022 Examine root hairs under magnifying glass\n\u2022 Use 3-part nomenclature cards\n\u2022 Discuss root functions and absorbing nutrients",
+      "quick_guide": "• Grow beans or seeds in water to observe root growth\n• Identify primary root (taproot) and secondary roots\n• Examine root hairs under magnifying glass\n• Use 3-part nomenclature cards\n• Discuss root functions and absorbing nutrients",
       "presentation_steps": [
         {
           "step": 1,
@@ -1844,13 +1844,13 @@
     {
       "work_id": "cu_parts_seed",
       "name": "Parts of a Seed",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u79cd\u5b50\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利种子部位",
       "slug": "parts-seed",
       "area": "cultural",
       "category": "Biology - Botany",
       "sequence": 7,
       "age_range": "4-6 years",
-      "quick_guide": "\u2022 Soak seeds to soften seed coat\n\u2022 Carefully dissect seeds to observe internal parts\n\u2022 Identify seed coat, stored food, embryo, and first leaf\n\u2022 Use 3-part cards for nomenclature\n\u2022 Compare different types of seeds",
+      "quick_guide": "• Soak seeds to soften seed coat\n• Carefully dissect seeds to observe internal parts\n• Identify seed coat, stored food, embryo, and first leaf\n• Use 3-part cards for nomenclature\n• Compare different types of seeds",
       "presentation_steps": [
         {
           "step": 1,
@@ -1956,13 +1956,13 @@
     {
       "work_id": "cu_plant_life_cycle",
       "name": "Plant Life Cycle",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u690d\u7269\u751f\u547d\u5468\u671f",
+      "name_chinese": "蒙特梭利植物生命周期",
       "slug": "plant-life-cycle",
       "area": "cultural",
       "category": "Botany",
       "sequence": 8,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Sequential cards or objects showing complete life cycle stages\n\u2022 Butterfly: egg \u2192 caterpillar \u2192 chrysalis \u2192 butterfly\n\u2022 Frog: egg \u2192 tadpole \u2192 froglet \u2192 adult frog\n\u2022 Plant: seed \u2192 sprout \u2192 seedling \u2192 mature plant \u2192 flower \u2192 fruit \u2192 seed\n\u2022 Introduces concepts of metamorphosis and life stages",
+      "quick_guide": "• Sequential cards or objects showing complete life cycle stages\n• Butterfly: egg → caterpillar → chrysalis → butterfly\n• Frog: egg → tadpole → froglet → adult frog\n• Plant: seed → sprout → seedling → mature plant → flower → fruit → seed\n• Introduces concepts of metamorphosis and life stages",
       "presentation_steps": [
         {
           "step": 1,
@@ -2036,19 +2036,19 @@
         "Life cycle cards",
         "Planting materials"
       ],
-      "parent_description": "Your child is exploring how plants grow from seeds, through sprouting and growth, to flowering and producing new seeds\u2014often by actually planting seeds and observing them grow! Through this hands-on experience, children witness the miracle of life unfolding. They develop patience and learn about the patience and care required to nurture living things.",
-      "why_it_matters": "The Plant Life Cycle work builds scientific understanding of growth and reproduction while cultivating responsibility and connection to nature. Children develop patience and learn that life unfolds in stages\u2014a concept that applies far beyond plants."
+      "parent_description": "Your child is exploring how plants grow from seeds, through sprouting and growth, to flowering and producing new seeds—often by actually planting seeds and observing them grow! Through this hands-on experience, children witness the miracle of life unfolding. They develop patience and learn about the patience and care required to nurture living things.",
+      "why_it_matters": "The Plant Life Cycle work builds scientific understanding of growth and reproduction while cultivating responsibility and connection to nature. Children develop patience and learn that life unfolds in stages—a concept that applies far beyond plants."
     },
     {
       "work_id": "cu_botany_experiments",
       "name": "Botany Experiments",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u690d\u7269\u5b9e\u9a8c",
+      "name_chinese": "蒙特梭利植物实验",
       "slug": "botany-experiments",
       "area": "cultural",
       "category": "Biology - Botany",
       "sequence": 9,
       "age_range": "4-9 years",
-      "quick_guide": "\u2022 Plant seeds and observe germination process\n\u2022 Test conditions affecting plant growth\n\u2022 Conduct simple plant experiments (light, water, soil)\n\u2022 Record observations over time\n\u2022 Draw conclusions about plant needs",
+      "quick_guide": "• Plant seeds and observe germination process\n• Test conditions affecting plant growth\n• Conduct simple plant experiments (light, water, soil)\n• Record observations over time\n• Draw conclusions about plant needs",
       "presentation_steps": [
         {
           "step": 1,
@@ -2159,13 +2159,13 @@
     {
       "work_id": "cu_vertebrate_invertebrate",
       "name": "Vertebrate vs Invertebrate",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u810a\u690e\u65e0\u810a\u690e",
+      "name_chinese": "蒙特梭利脊椎无脊椎",
       "slug": "vertebrate-invertebrate",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 1,
       "age_range": "5-6 years (introduction); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Introduce the concept of backbone\n\u2022 Present examples of vertebrates with backbones\n\u2022 Show examples of invertebrates without backbones\n\u2022 Use 3-part cards for classification\n\u2022 Create Venn diagram showing characteristics",
+      "quick_guide": "• Introduce the concept of backbone\n• Present examples of vertebrates with backbones\n• Show examples of invertebrates without backbones\n• Use 3-part cards for classification\n• Create Venn diagram showing characteristics",
       "presentation_steps": [
         {
           "step": 1,
@@ -2270,13 +2270,13 @@
     {
       "work_id": "cu_five_classes",
       "name": "Five Classes of Vertebrates",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e94\u7c7b\u810a\u690e\u52a8\u7269",
+      "name_chinese": "蒙特梭利五类脊椎动物",
       "slug": "five-classes",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 2,
       "age_range": "5-6 years (introduction); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Introduce five classes: mammals, birds, reptiles, amphibians, fish\n\u2022 Present characteristics of each class\n\u2022 Use 3-part cards for each vertebrate type\n\u2022 Classify animals into correct groups\n\u2022 Study representative animals from each class",
+      "quick_guide": "• Introduce five classes: mammals, birds, reptiles, amphibians, fish\n• Present characteristics of each class\n• Use 3-part cards for each vertebrate type\n• Classify animals into correct groups\n• Study representative animals from each class",
       "presentation_steps": [
         {
           "step": 1,
@@ -2329,7 +2329,7 @@
       ],
       "points_of_interest": [
         "Fish are aquatic with gills and fins",
-        "Amphibians have two lives\u2014water and land",
+        "Amphibians have two lives—water and land",
         "Reptiles have dry skin and lay eggs",
         "Birds have feathers and hollow bones",
         "Mammals have fur and nurse their young"
@@ -2381,19 +2381,19 @@
         "Egg-laying",
         "Live birth"
       ],
-      "parent_description": "Five Classes of Vertebrates teaches children an essential classification system for organizing animal diversity. By learning that vertebrates are divided into fish, amphibians, reptiles, birds, and mammals\u2014each with distinct characteristics\u2014children can understand and discuss animals more precisely.",
+      "parent_description": "Five Classes of Vertebrates teaches children an essential classification system for organizing animal diversity. By learning that vertebrates are divided into fish, amphibians, reptiles, birds, and mammals—each with distinct characteristics—children can understand and discuss animals more precisely.",
       "why_it_matters": "This classification system is fundamental to zoological thinking. Understanding the five classes provides scaffolding for deeper animal studies and helps children organize vast diversity. The work develops scientific classification and observation skills used throughout biology."
     },
     {
       "work_id": "cu_parts_fish",
       "name": "Parts of a Fish",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9c7c\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利鱼的部位",
       "slug": "parts-fish",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 3,
       "age_range": "4-6 years (external parts); 6-9 years (internal organs)",
-      "quick_guide": "\u2022 Study fish anatomy using real or detailed pictures\n\u2022 Identify external parts: fins, gills, scales, eyes\n\u2022 Discuss function of each part\n\u2022 Use 3-part cards for nomenclature\n\u2022 Discuss how fish parts help them survive in water",
+      "quick_guide": "• Study fish anatomy using real or detailed pictures\n• Identify external parts: fins, gills, scales, eyes\n• Discuss function of each part\n• Use 3-part cards for nomenclature\n• Discuss how fish parts help them survive in water",
       "presentation_steps": [
         {
           "step": 1,
@@ -2502,13 +2502,13 @@
     {
       "work_id": "cu_parts_frog",
       "name": "Parts of a Frog",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9752\u86d9\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利青蛙部位",
       "slug": "parts-frog",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 4,
       "age_range": "4-6 years (external parts); 6-9 years (internal anatomy and life cycle)",
-      "quick_guide": "\u2022 Study frog anatomy using real frogs or detailed pictures\n\u2022 Identify external parts: head, eyes, mouth, legs, webbed feet, tympanum\n\u2022 Use 3-part cards for nomenclature\n\u2022 Discuss adaptations for water and land life\n\u2022 Learn about metamorphosis connection",
+      "quick_guide": "• Study frog anatomy using real frogs or detailed pictures\n• Identify external parts: head, eyes, mouth, legs, webbed feet, tympanum\n• Use 3-part cards for nomenclature\n• Discuss adaptations for water and land life\n• Learn about metamorphosis connection",
       "presentation_steps": [
         {
           "step": 1,
@@ -2618,13 +2618,13 @@
     {
       "work_id": "cu_parts_turtle",
       "name": "Parts of a Turtle",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e4c\u9f9f\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利乌龟部位",
       "slug": "parts-turtle",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 5,
       "age_range": "4-6 years (external parts); 6-9 years (detailed anatomy)",
-      "quick_guide": "\u2022 Study turtle anatomy including shell structure\n\u2022 Identify external parts: head, carapace, plastron, legs, claws, tail\n\u2022 Use 3-part cards for nomenclature\n\u2022 Discuss shell protection and function\n\u2022 Compare aquatic and land turtle adaptations",
+      "quick_guide": "• Study turtle anatomy including shell structure\n• Identify external parts: head, carapace, plastron, legs, claws, tail\n• Use 3-part cards for nomenclature\n• Discuss shell protection and function\n• Compare aquatic and land turtle adaptations",
       "presentation_steps": [
         {
           "step": 1,
@@ -2734,13 +2734,13 @@
     {
       "work_id": "cu_parts_bird",
       "name": "Parts of a Bird",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9e1f\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利鸟的部位",
       "slug": "parts-bird",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 6,
       "age_range": "4-6 years (external parts); 6-9 years (flight mechanics)",
-      "quick_guide": "\u2022 Study bird anatomy using real birds or detailed pictures\n\u2022 Identify external parts: head, wings, tail, feet, beak\n\u2022 Discuss feather types and flight\n\u2022 Use 3-part cards for nomenclature\n\u2022 Connect parts to bird adaptations for flight",
+      "quick_guide": "• Study bird anatomy using real birds or detailed pictures\n• Identify external parts: head, wings, tail, feet, beak\n• Discuss feather types and flight\n• Use 3-part cards for nomenclature\n• Connect parts to bird adaptations for flight",
       "presentation_steps": [
         {
           "step": 1,
@@ -2793,7 +2793,7 @@
       ],
       "points_of_interest": [
         "Birds have feathers, not fur or scales",
-        "Wings enable flight\u2014a unique bird adaptation",
+        "Wings enable flight—a unique bird adaptation",
         "Hollow bones make birds light for flying",
         "Different beaks adapted for different foods",
         "Birds have excellent vision for navigating air"
@@ -2850,13 +2850,13 @@
     {
       "work_id": "cu_parts_horse",
       "name": "Parts of a Horse",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9a6c\u7684\u90e8\u4f4d",
+      "name_chinese": "蒙特梭利马的部位",
       "slug": "parts-horse",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 7,
       "age_range": "4-6 years (external parts); 6-9 years (movement and bone structure)",
-      "quick_guide": "\u2022 Study horse anatomy including distinctive features\n\u2022 Identify parts: head, neck, mane, body, tail, legs, hooves\n\u2022 Use 3-part cards for nomenclature\n\u2022 Discuss horse adaptations for running\n\u2022 Compare to other mammals",
+      "quick_guide": "• Study horse anatomy including distinctive features\n• Identify parts: head, neck, mane, body, tail, legs, hooves\n• Use 3-part cards for nomenclature\n• Discuss horse adaptations for running\n• Compare to other mammals",
       "presentation_steps": [
         {
           "step": 1,
@@ -2911,7 +2911,7 @@
         "Horses are mammals with fur and nurse their young",
         "Single hooves are adapted for running on hard ground",
         "Powerful legs and muscles enable speed",
-        "Horses are herbivores\u2014adapted to eating grass",
+        "Horses are herbivores—adapted to eating grass",
         "Long neck allows reaching grass and water"
       ],
       "variations": [
@@ -2967,13 +2967,13 @@
     {
       "work_id": "cu_animal_habitats",
       "name": "Animal Habitats",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a8\u7269\u6816\u606f\u5730",
+      "name_chinese": "蒙特梭利动物栖息地",
       "slug": "animal-habitats",
       "area": "cultural",
       "category": "Zoology",
       "sequence": 8,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Study of where animals live and habitat requirements\n\u2022 Habitats: forest, ocean, desert, grassland, tundra, rainforest\n\u2022 Develops understanding of animal-environment connection\n\u2022 Classification by home environment\n\u2022 Connects to geography and ecology",
+      "quick_guide": "• Study of where animals live and habitat requirements\n• Habitats: forest, ocean, desert, grassland, tundra, rainforest\n• Develops understanding of animal-environment connection\n• Classification by home environment\n• Connects to geography and ecology",
       "presentation_steps": [
         {
           "step": 1,
@@ -3045,19 +3045,19 @@
       "materials_needed": [
         "Habitat cards"
       ],
-      "parent_description": "Your child is learning where different animals live\u2014exploring that penguins live in icy polar regions, that certain animals thrive in forests, while others live in deserts or oceans. Through sorting, matching, and exploring activities, children develop an understanding of how animals are suited to their environments and how geography shapes life. They begin to see the interconnectedness of animals and their habitats.",
+      "parent_description": "Your child is learning where different animals live—exploring that penguins live in icy polar regions, that certain animals thrive in forests, while others live in deserts or oceans. Through sorting, matching, and exploring activities, children develop an understanding of how animals are suited to their environments and how geography shapes life. They begin to see the interconnectedness of animals and their habitats.",
       "why_it_matters": "This zoology work builds environmental awareness and respect for biodiversity. Children develop understanding that animals depend on specific habitats and that protecting ecosystems is important for all living creatures."
     },
     {
       "work_id": "cu_animals_continents",
       "name": "Animals of the Continents",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5404\u5927\u6d32\u52a8\u7269",
+      "name_chinese": "蒙特梭利各大洲动物",
       "slug": "animals-continents",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 9,
       "age_range": "4-6 years (introduction); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Introduce animals living on each of seven continents\n\u2022 Present using continent cards or puzzle maps\n\u2022 Classify animals by where they live\n\u2022 Use 3-part cards for animal names\n\u2022 Discuss adaptations to different climates",
+      "quick_guide": "• Introduce animals living on each of seven continents\n• Present using continent cards or puzzle maps\n• Classify animals by where they live\n• Use 3-part cards for animal names\n• Discuss adaptations to different climates",
       "presentation_steps": [
         {
           "step": 1,
@@ -3173,13 +3173,13 @@
     {
       "work_id": "cu_life_cycles",
       "name": "Animal Life Cycles",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a8\u7269\u751f\u547d\u5468\u671f",
+      "name_chinese": "蒙特梭利动物生命周期",
       "slug": "life-cycles",
       "area": "cultural",
       "category": "Biology - Zoology",
       "sequence": 10,
       "age_range": "4-6 years (simple cycles); 6-9 years (detailed study)",
-      "quick_guide": "\u2022 Study life cycles of different animal types\n\u2022 Compare mammal, bird, fish, amphibian, insect cycles\n\u2022 Use 3-part cards showing cycle stages\n\u2022 Observe real examples (tadpole to frog, caterpillar to butterfly)\n\u2022 Create cycle diagrams",
+      "quick_guide": "• Study life cycles of different animal types\n• Compare mammal, bird, fish, amphibian, insect cycles\n• Use 3-part cards showing cycle stages\n• Observe real examples (tadpole to frog, caterpillar to butterfly)\n• Create cycle diagrams",
       "presentation_steps": [
         {
           "step": 1,
@@ -3202,7 +3202,7 @@
         {
           "step": 4,
           "title": "Study Metamorphosis Cycles",
-          "description": "Focus on dramatic transformations: tadpole\u2192frog, caterpillar\u2192butterfly. Use pictures and 3-part cards showing each stage. Observe if possible.",
+          "description": "Focus on dramatic transformations: tadpole→frog, caterpillar→butterfly. Use pictures and 3-part cards showing each stage. Observe if possible.",
           "tip": "Metamorphosis is particularly fascinating to children"
         },
         {
@@ -3289,13 +3289,13 @@
     {
       "work_id": "cu_sink_float",
       "name": "Sink and Float",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6c89\u6d6e",
+      "name_chinese": "蒙特梭利沉浮",
       "slug": "sink-float",
       "area": "cultural",
       "category": "Physical Science",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Physical science experiment: what sinks and what floats\n\u2022 Develops hypothesis testing and observation skills\n\u2022 Introduces concepts of density and buoyancy\n\u2022 Connects to water properties and states of matter\n\u2022 Scientific method introduction",
+      "quick_guide": "• Physical science experiment: what sinks and what floats\n• Develops hypothesis testing and observation skills\n• Introduces concepts of density and buoyancy\n• Connects to water properties and states of matter\n• Scientific method introduction",
       "presentation_steps": [
         {
           "step": 1,
@@ -3368,18 +3368,18 @@
         "Various objects"
       ],
       "parent_description": "Your child is experimenting with objects in water, making predictions about which will sink and which will float, then testing their hypotheses. This classic science exploration teaches children about density and buoyancy through hands-on discovery. The simple act of dropping things in water becomes a scientific investigation that builds critical thinking skills.",
-      "why_it_matters": "Sink and Float introduces the scientific method\u2014observing, predicting, testing, and learning from results. This work builds confidence in children's ability to explore and understand the physical world through their own observations and reasoning."
+      "why_it_matters": "Sink and Float introduces the scientific method—observing, predicting, testing, and learning from results. This work builds confidence in children's ability to explore and understand the physical world through their own observations and reasoning."
     },
     {
       "work_id": "cu_magnetic",
       "name": "Magnetic/Non-Magnetic",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u78c1\u529b",
+      "name_chinese": "蒙特梭利磁力",
       "slug": "magnetic",
       "area": "cultural",
       "category": "Physical Science",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Exploring magnetic attraction and repulsion\n\u2022 Sorting magnetic and non-magnetic materials\n\u2022 Develops classification and hypothesis testing skills\n\u2022 Introduction to invisible forces\n\u2022 Connects to physical science concepts",
+      "quick_guide": "• Exploring magnetic attraction and repulsion\n• Sorting magnetic and non-magnetic materials\n• Develops classification and hypothesis testing skills\n• Introduction to invisible forces\n• Connects to physical science concepts",
       "presentation_steps": [
         {
           "step": 1,
@@ -3457,13 +3457,13 @@
     {
       "work_id": "cu_states_matter",
       "name": "States of Matter",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7269\u8d28\u4e09\u6001",
+      "name_chinese": "蒙特梭利物质三态",
       "slug": "states-matter",
       "area": "cultural",
       "category": "Physical Science",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Solid, liquid, gas exploration and identification\n\u2022 State changes through heating and cooling\n\u2022 Develops observation and classification skills\n\u2022 Connects to water cycle and everyday experiences\n\u2022 Foundation for chemistry concepts",
+      "quick_guide": "• Solid, liquid, gas exploration and identification\n• State changes through heating and cooling\n• Develops observation and classification skills\n• Connects to water cycle and everyday experiences\n• Foundation for chemistry concepts",
       "presentation_steps": [
         {
           "step": 1,
@@ -3533,19 +3533,19 @@
       "materials_needed": [
         "Ice, water"
       ],
-      "parent_description": "Your child is discovering that matter can exist in three states\u2014solid, liquid, and gas\u2014and learning the properties of each. Through hands-on exploration, they observe that solids have a definite shape, liquids take the shape of their container, and gases spread throughout their space. They might observe water boiling into steam or freeze colored water into ice, watching matter transform.",
+      "parent_description": "Your child is discovering that matter can exist in three states—solid, liquid, and gas—and learning the properties of each. Through hands-on exploration, they observe that solids have a definite shape, liquids take the shape of their container, and gases spread throughout their space. They might observe water boiling into steam or freeze colored water into ice, watching matter transform.",
       "why_it_matters": "States of Matter builds foundational chemistry understanding while revealing how everyday substances transform. Children develop scientific vocabulary and learn to observe the world with curiosity, discovering that matter is constantly changing in ways we can understand and predict."
     },
     {
       "work_id": "cu_color_mixing",
       "name": "Color Mixing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u989c\u8272\u6df7\u5408",
+      "name_chinese": "蒙特梭利颜色混合",
       "slug": "color-mixing",
       "area": "cultural",
       "category": "Physical Science",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Exploring primary and secondary color relationships\n\u2022 Hands-on mixing with paint or colored water\n\u2022 Develops prediction and observation skills\n\u2022 Connects art and science\n\u2022 Foundation for color theory",
+      "quick_guide": "• Exploring primary and secondary color relationships\n• Hands-on mixing with paint or colored water\n• Develops prediction and observation skills\n• Connects art and science\n• Foundation for color theory",
       "presentation_steps": [
         {
           "step": 1,
@@ -3615,19 +3615,19 @@
       "materials_needed": [
         "Primary colors"
       ],
-      "parent_description": "Your child is exploring how colors combine and create new colors\u2014mixing red and yellow to make orange, or blue and yellow to make green. Whether using water droppers, paints, or colored ice, children experiment with cause and effect while developing artistic sensibility. This work opens creative possibilities while teaching color theory in a playful, hands-on way.",
+      "parent_description": "Your child is exploring how colors combine and create new colors—mixing red and yellow to make orange, or blue and yellow to make green. Whether using water droppers, paints, or colored ice, children experiment with cause and effect while developing artistic sensibility. This work opens creative possibilities while teaching color theory in a playful, hands-on way.",
       "why_it_matters": "Color Mixing builds both artistic confidence and scientific understanding. Children develop observation skills, learn about cause and effect, and gain the joy of creative discovery. It nurtures an appreciation for color and encourages artistic expression."
     },
     {
       "work_id": "cu_simple_machines",
       "name": "Simple Machines",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7b80\u5355\u673a\u68b0",
+      "name_chinese": "蒙特梭利简单机械",
       "slug": "simple-machines",
       "area": "cultural",
       "category": "Science",
       "sequence": 5,
       "age_range": "6-9 years",
-      "quick_guide": "\u2022 Study six simple machines: lever, wheel and axle, pulley, ramp, wedge, screw\n\u2022 Use hands-on activities to demonstrate each machine\n\u2022 Identify simple machines in classroom and home\n\u2022 Create or manipulate examples of each type\n\u2022 Discuss mechanical advantage",
+      "quick_guide": "• Study six simple machines: lever, wheel and axle, pulley, ramp, wedge, screw\n• Use hands-on activities to demonstrate each machine\n• Identify simple machines in classroom and home\n• Create or manipulate examples of each type\n• Discuss mechanical advantage",
       "presentation_steps": [
         {
           "step": 1,
@@ -3739,13 +3739,13 @@
     {
       "work_id": "cu_nature_study",
       "name": "Nature Study",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u81ea\u7136\u89c2\u5bdf",
+      "name_chinese": "蒙特梭利自然观察",
       "slug": "nature-study",
       "area": "cultural",
       "category": "Science",
       "sequence": 6,
       "age_range": "3-9 years",
-      "quick_guide": "\u2022 Establish regular outdoor nature observation\n\u2022 Use magnifying glasses and observation journals\n\u2022 Study seasonal changes and patterns\n\u2022 Collect specimens for classroom study\n\u2022 Foster wonder and respect for natural world",
+      "quick_guide": "• Establish regular outdoor nature observation\n• Use magnifying glasses and observation journals\n• Study seasonal changes and patterns\n• Collect specimens for classroom study\n• Foster wonder and respect for natural world",
       "presentation_steps": [
         {
           "step": 1,
@@ -3849,13 +3849,13 @@
         "Sustainable",
         "Biodiversity"
       ],
-      "parent_description": "Nature Study is central to Montessori education\u2014children develop observational skills and love of nature through regular outdoor exploration. By keeping observation journals, using tools like magnifying glasses, and visiting the same places through seasons, children notice patterns and develop scientific thinking.",
+      "parent_description": "Nature Study is central to Montessori education—children develop observational skills and love of nature through regular outdoor exploration. By keeping observation journals, using tools like magnifying glasses, and visiting the same places through seasons, children notice patterns and develop scientific thinking.",
       "why_it_matters": "Nature study is foundational to Montessori's cosmic education. Direct observation of nature develops sensory refinement and scientific thinking. This work fosters environmental consciousness and responsibility that shapes children's values and future choices."
     },
     {
       "work_id": "cu_weather",
       "name": "Weather Study",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5929\u6c14",
+      "name_chinese": "蒙特梭利天气",
       "slug": "weather",
       "area": "cultural",
       "category": "Cultural Studies - Geography & Science",
@@ -3986,7 +3986,7 @@
     {
       "work_id": "cu_drawing",
       "name": "Drawing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7ed8\u753b",
+      "name_chinese": "蒙特梭利绘画",
       "slug": "drawing",
       "area": "cultural",
       "category": "Cultural Studies - Fine Arts",
@@ -4112,7 +4112,7 @@
     {
       "work_id": "cu_painting",
       "name": "Painting",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7ed8\u753b",
+      "name_chinese": "蒙特梭利绘画",
       "slug": "painting",
       "area": "cultural",
       "category": "Cultural Studies - Fine Arts",
@@ -4154,7 +4154,7 @@
         {
           "title": "Independent Painting Work",
           "description": "Child works independently with painting materials. Provide quality paper (not thin), adequate space, and protective covering. Allow extended time (30-45 minutes) for children to explore and develop their work. Observe without interrupting; only help with practical issues (spilled water) or answer direct questions.",
-          "tip": "Process is more important than product. Children might paint over their work or create many small paintings\u2014both are valuable."
+          "tip": "Process is more important than product. Children might paint over their work or create many small paintings—both are valuable."
         },
         {
           "title": "Reflection and Appreciation",
@@ -4248,7 +4248,7 @@
     {
       "work_id": "cu_collage",
       "name": "Collage",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u62fc\u8d34",
+      "name_chinese": "蒙特梭利拼贴",
       "slug": "collage",
       "area": "cultural",
       "category": "Cultural Studies - Fine Arts",
@@ -4284,7 +4284,7 @@
         },
         {
           "title": "Collage Creation Process",
-          "description": "Child selects and arranges materials on a base paper (often heavier stock to support glued pieces). They experiment with placement, overlap, and composition before gluing. Once satisfied, they glue pieces in place, pressing to secure. Work can be completely abstract or representational\u2014both are equally valuable. Allow extended time for this creative process.",
+          "description": "Child selects and arranges materials on a base paper (often heavier stock to support glued pieces). They experiment with placement, overlap, and composition before gluing. Once satisfied, they glue pieces in place, pressing to secure. Work can be completely abstract or representational—both are equally valuable. Allow extended time for this creative process.",
           "tip": "Some children benefit from trying dry arrangements first (without glue) to plan their design."
         },
         {
@@ -4377,13 +4377,13 @@
       "vocabulary": [
         "Collage, composition, color, texture, layering, overlap, balance, arrangement, scissors, glue, adhesive, pattern, abstract, representational, foreground, background, contrast, harmony, tone, hue"
       ],
-      "parent_description": "Collage invites children to explore the visual world through cutting, selecting, and combining materials. They develop practical skills with scissors and glues while making creative decisions about color, texture, and composition. Children learn by doing\u2014discovering how materials work together, what appeals to their eye, and how to plan and execute their own artistic vision. The beauty of collage is that there's no 'wrong' way to arrange materials.",
+      "parent_description": "Collage invites children to explore the visual world through cutting, selecting, and combining materials. They develop practical skills with scissors and glues while making creative decisions about color, texture, and composition. Children learn by doing—discovering how materials work together, what appeals to their eye, and how to plan and execute their own artistic vision. The beauty of collage is that there's no 'wrong' way to arrange materials.",
       "why_it_matters": "Collage develops fine motor skills, visual discrimination, and creative decision-making. It builds understanding of composition, color relationships, and texture. Collage activities are accessible to children of all abilities and encourage diverse artistic expression. They provide tactile, visual, and creative engagement that builds confidence in artistic pursuits."
     },
     {
       "work_id": "cu_clay",
       "name": "Clay and Playdough",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7c98\u571f",
+      "name_chinese": "蒙特梭利粘土",
       "slug": "clay",
       "area": "cultural",
       "category": "Cultural Studies - Fine Arts & Sensorial",
@@ -4404,12 +4404,12 @@
         },
         {
           "title": "Sensory Exploration: Hands and Fingers",
-          "description": "Invite the child to explore how their hands affect the material: squeeze it, pat it, press it, roll it between palms. Push fingers into it, flatten it with whole hand, make patterns with fingertips. This sensory exploration is valuable in itself\u2014not focused on making a finished product.",
+          "description": "Invite the child to explore how their hands affect the material: squeeze it, pat it, press it, roll it between palms. Push fingers into it, flatten it with whole hand, make patterns with fingertips. This sensory exploration is valuable in itself—not focused on making a finished product.",
           "tip": "Extended time with material (20-30 minutes) allows deep sensory engagement and reduces frustration."
         },
         {
           "title": "Simple Technique: Pinch Bowls",
-          "description": "Show how to make a small ball of clay, then use thumb to create a bowl shape by pinching and rotating. Demonstrate slowly, showing how to maintain thickness as you pinch. This teaches simple hand coordination and creates a usable form. Emphasize that pinch bowls don't need to be perfect\u2014they're about the process.",
+          "description": "Show how to make a small ball of clay, then use thumb to create a bowl shape by pinching and rotating. Demonstrate slowly, showing how to maintain thickness as you pinch. This teaches simple hand coordination and creates a usable form. Emphasize that pinch bowls don't need to be perfect—they're about the process.",
           "tip": "Pinch bowls teach hand control without requiring complex motor planning."
         },
         {
@@ -4513,13 +4513,13 @@
       "vocabulary": [
         "Clay, playdough, manipulate, squeeze, press, roll, flatten, pinch, coil, form, sculpt, shape, texture, impression, attach, score, slip, flexible, rigid, three-dimensional, sculpture, pottery"
       ],
-      "parent_description": "Clay and playdough work engages children's senses through hands-on manipulation. It's both relaxing and challenging\u2014children feel the resistance and responsiveness of the material as they squeeze, roll, and shape it. This work builds hand strength and coordination while providing a sensory outlet for stress and emotion. The focus is on the pleasure of working with material, not on creating a 'masterpiece.'",
+      "parent_description": "Clay and playdough work engages children's senses through hands-on manipulation. It's both relaxing and challenging—children feel the resistance and responsiveness of the material as they squeeze, roll, and shape it. This work builds hand strength and coordination while providing a sensory outlet for stress and emotion. The focus is on the pleasure of working with material, not on creating a 'masterpiece.'",
       "why_it_matters": "Clay and playdough work develops fine and gross motor strength and coordination through repetitive, satisfying manipulation. It provides sensory engagement that aids emotional regulation and stress relief. This tactile work builds understanding of three-dimensional form and teaches how to plan and execute simple sculptures. It's foundational to more advanced art and craft skills."
     },
     {
       "work_id": "cu_printmaking",
       "name": "Printmaking",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7248\u753b",
+      "name_chinese": "蒙特梭利版画",
       "slug": "printmaking",
       "area": "cultural",
       "category": "Cultural Studies - Fine Arts",
@@ -4650,19 +4650,19 @@
       "vocabulary": [
         "Print, printing, stamp, ink, paint, press, pressure, impression, pattern, repeated, symmetry, texture, transfer, block printing, foam, carve, relief printing, multicolor, overlay, composition, design"
       ],
-      "parent_description": "Printmaking is like a magic trick for children. They discover that pressing an object into paint creates an image\u2014and they can repeat it again and again, creating patterns and designs. This work teaches both fine motor control and artistic composition. Children explore color relationships, pattern development, and the satisfaction of creating multiple copies of their designs. It connects to real-world printing found in textiles, wallpaper, and books.",
+      "parent_description": "Printmaking is like a magic trick for children. They discover that pressing an object into paint creates an image—and they can repeat it again and again, creating patterns and designs. This work teaches both fine motor control and artistic composition. Children explore color relationships, pattern development, and the satisfaction of creating multiple copies of their designs. It connects to real-world printing found in textiles, wallpaper, and books.",
       "why_it_matters": "Printmaking develops understanding of how marks and images are created and transferred. It builds fine motor control and teaches planning and precision. Printmaking introduces children to an art form used across cultures and history. It provides a different approach to image-making than drawing or painting, expanding artistic vocabulary and confidence."
     },
     {
       "work_id": "cu_art_appreciation",
       "name": "Art Appreciation",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u827a\u672f\u6b23\u8d4f",
+      "name_chinese": "蒙特梭利艺术欣赏",
       "slug": "art-appreciation",
       "area": "cultural",
       "category": "Art",
       "sequence": 6,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Exposure to famous artworks and artists\n\u2022 Developing observation and discussion skills\n\u2022 Various media and styles explored\n\u2022 Cultural and historical connections\n\u2022 Foundation for visual literacy",
+      "quick_guide": "• Exposure to famous artworks and artists\n• Developing observation and discussion skills\n• Various media and styles explored\n• Cultural and historical connections\n• Foundation for visual literacy",
       "presentation_steps": [
         {
           "step": 1,
@@ -4734,19 +4734,19 @@
         "Art prints",
         "Artist cards"
       ],
-      "parent_description": "Your child is experiencing beautiful works of art from around the world\u2014perhaps viewing famous paintings, sculptures, or art from different cultures. Rather than learning to create art a certain way, children are encouraged to look, observe, and respond to what they see. This develops aesthetic sensibility and helps children understand that art is a universal language of human expression.",
+      "parent_description": "Your child is experiencing beautiful works of art from around the world—perhaps viewing famous paintings, sculptures, or art from different cultures. Rather than learning to create art a certain way, children are encouraged to look, observe, and respond to what they see. This develops aesthetic sensibility and helps children understand that art is a universal language of human expression.",
       "why_it_matters": "Art Appreciation develops cultural awareness and aesthetic sensitivity. Children learn that there are many ways to express beauty and meaning through art, fostering respect for diverse creative expressions and nurturing their own artistic sensitivity."
     },
     {
       "work_id": "cu_singing",
       "name": "Singing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6b4c\u5531",
+      "name_chinese": "蒙特梭利歌唱",
       "slug": "singing",
       "area": "cultural",
       "category": "Music",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Developing singing voice and musical expression\n\u2022 Variety of songs: cultural, seasonal, movement\n\u2022 Develops pitch matching and memory\n\u2022 Connects to language and cultural studies\n\u2022 Foundation for lifelong music enjoyment",
+      "quick_guide": "• Developing singing voice and musical expression\n• Variety of songs: cultural, seasonal, movement\n• Develops pitch matching and memory\n• Connects to language and cultural studies\n• Foundation for lifelong music enjoyment",
       "presentation_steps": [
         {
           "step": 1,
@@ -4816,13 +4816,13 @@
       "materials_needed": [
         "Song cards"
       ],
-      "parent_description": "Your child is singing\u2014folk songs from around the world, simple melodies that express joy and emotion. Whether it's a lullaby from Japan, a work song, or a celebration tune, singing is a joyful exploration of music and culture. Children develop listening skills, learn new vocabulary, and experience music as a natural form of human expression that transcends language.",
+      "parent_description": "Your child is singing—folk songs from around the world, simple melodies that express joy and emotion. Whether it's a lullaby from Japan, a work song, or a celebration tune, singing is a joyful exploration of music and culture. Children develop listening skills, learn new vocabulary, and experience music as a natural form of human expression that transcends language.",
       "why_it_matters": "Singing builds joy, confidence, and cultural connection. Children learn that every culture has music, and that singing together creates community. This work develops the understanding that music is a fundamental human experience that expresses emotion, culture, and connection."
     },
     {
       "work_id": "cu_rhythm",
       "name": "Rhythm Instruments",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8282\u594f",
+      "name_chinese": "蒙特梭利节奏",
       "slug": "rhythm",
       "area": "cultural",
       "category": "Cultural Studies - Music",
@@ -4953,7 +4953,7 @@
     {
       "work_id": "cu_movement",
       "name": "Movement to Music",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5f8b\u52a8",
+      "name_chinese": "蒙特梭利律动",
       "slug": "movement",
       "area": "cultural",
       "category": "Cultural Studies - Music & Physical Development",
@@ -4979,7 +4979,7 @@
         },
         {
           "title": "Responding to Tempo and Dynamics",
-          "description": "Play music that changes speed or loudness. Guide children to notice and respond: 'The music is getting faster\u2014walk faster.' 'The music is soft now\u2014move gently.' This develops listening skills and teaches how music controls movement. Vary between fast/slow, loud/soft, calm/energetic.",
+          "description": "Play music that changes speed or loudness. Guide children to notice and respond: 'The music is getting faster—walk faster.' 'The music is soft now—move gently.' This develops listening skills and teaches how music controls movement. Vary between fast/slow, loud/soft, calm/energetic.",
           "tip": "Use hand signals (conductor style) to help children transition between tempos."
         },
         {
@@ -5004,7 +5004,7 @@
         },
         {
           "title": "Free Expressive Movement Sessions",
-          "description": "Regularly offer time for children to move freely to music of their choice. No instruction, no 'correct' way to move\u2014just music and individual expression. This builds confidence, provides emotional outlet, and celebrates diverse ways of responding to music.",
+          "description": "Regularly offer time for children to move freely to music of their choice. No instruction, no 'correct' way to move—just music and individual expression. This builds confidence, provides emotional outlet, and celebrates diverse ways of responding to music.",
           "tip": "Children often surprise us with creative, beautiful movement when free from instructions or judgment."
         }
       ],
@@ -5084,13 +5084,13 @@
       "vocabulary": [
         "Movement, dance, rhythm, beat, tempo, fast, slow, loud, soft, gentle, energetic, marching, skipping, swaying, spinning, stretching, balance, coordination, responding, conducting, music, melody, tune, culture, folk dance"
       ],
-      "parent_description": "Movement to music combines listening, physical development, and joy. Children hear music from around the world and respond with their whole bodies\u2014skipping, swaying, spinning, dancing according to what the music inspires. It's not about learning specific choreography, but about the freedom to express themselves through movement while building coordination, balance, and listening skills. It's pure fun combined with physical and musical development.",
+      "parent_description": "Movement to music combines listening, physical development, and joy. Children hear music from around the world and respond with their whole bodies—skipping, swaying, spinning, dancing according to what the music inspires. It's not about learning specific choreography, but about the freedom to express themselves through movement while building coordination, balance, and listening skills. It's pure fun combined with physical and musical development.",
       "why_it_matters": "Movement to music develops gross motor skills, balance, and coordination essential for physical development. It builds auditory perception and listening skills, teaching children to hear and respond to musical elements. Music and movement combination provides emotional expression and stress relief. It introduces children to diverse cultural musical traditions and builds appreciation for worldwide music diversity."
     },
     {
       "work_id": "cu_bells",
       "name": "Montessori Bells",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u97f3\u4e50\u94c3",
+      "name_chinese": "蒙特梭利音乐铃",
       "slug": "bells",
       "area": "cultural",
       "category": "Sensorial - Auditory & Music",
@@ -5111,7 +5111,7 @@
         },
         {
           "title": "Listening Exercise: Contrast",
-          "description": "Ring the lowest bell (do or C), then the highest bell (do or C one octave higher). Ask the child to listen to the difference. Ring them again and have the child point to which is higher and which is lower. This establishes understanding of pitch contrast\u2014the foundation for all bell work.",
+          "description": "Ring the lowest bell (do or C), then the highest bell (do or C one octave higher). Ask the child to listen to the difference. Ring them again and have the child point to which is higher and which is lower. This establishes understanding of pitch contrast—the foundation for all bell work.",
           "tip": "Repeat this contrast work multiple times; it's foundational for all subsequent bell activities."
         },
         {
@@ -5222,19 +5222,19 @@
       "vocabulary": [
         "Bell, pitch, tone, high, low, scale, diatonic, chromatic, do (C), re (D), mi (E), fa (F), sol (G), la (A), ti (B), octave, melody, note, staff, notation, strike, ring, resonance, listening, auditory discrimination, musical scale"
       ],
-      "parent_description": "The Montessori bells are one of the most beautiful and sophisticated materials in the classroom. Children develop listening skills refined enough to hear the smallest differences in pitch, learning to match, grade, and eventually play melodies with exquisite sensitivity. This material connects sensory auditory experience directly to music reading and notation. Through bells, children understand that music has structure and order\u2014the musical scale\u2014and gain confidence and joy in musical expression.",
-      "why_it_matters": "The Montessori bells develop auditory discrimination essential for music learning and language development. They introduce the concept of the musical scale and pitch relationships\u2014foundational to all music education. Bells connect sensory experience directly to symbolic notation, bridging concrete and abstract understanding. This material provides a bridge from pure sensory exploration to formal music literacy, building both listening skills and musical confidence."
+      "parent_description": "The Montessori bells are one of the most beautiful and sophisticated materials in the classroom. Children develop listening skills refined enough to hear the smallest differences in pitch, learning to match, grade, and eventually play melodies with exquisite sensitivity. This material connects sensory auditory experience directly to music reading and notation. Through bells, children understand that music has structure and order—the musical scale—and gain confidence and joy in musical expression.",
+      "why_it_matters": "The Montessori bells develop auditory discrimination essential for music learning and language development. They introduce the concept of the musical scale and pitch relationships—foundational to all music education. Bells connect sensory experience directly to symbolic notation, bridging concrete and abstract understanding. This material provides a bridge from pure sensory exploration to formal music literacy, building both listening skills and musical confidence."
     },
     {
       "work_id": "cu_music_appreciation",
       "name": "Music Appreciation",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u97f3\u4e50\u6b23\u8d4f",
+      "name_chinese": "蒙特梭利音乐欣赏",
       "slug": "music-appreciation",
       "area": "cultural",
       "category": "Music",
       "sequence": 5,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Exposure to various musical styles and composers\n\u2022 Developing listening skills and musical vocabulary\n\u2022 Classical, world, folk, and contemporary music\n\u2022 Cultural and historical connections\n\u2022 Foundation for lifelong music appreciation",
+      "quick_guide": "• Exposure to various musical styles and composers\n• Developing listening skills and musical vocabulary\n• Classical, world, folk, and contemporary music\n• Cultural and historical connections\n• Foundation for lifelong music appreciation",
       "presentation_steps": [
         {
           "step": 1,
@@ -5306,13 +5306,13 @@
         "Music recordings",
         "Composer cards"
       ],
-      "parent_description": "Your child is listening to and learning about music from around the world\u2014classical masterpieces, folk traditions, rhythmic patterns from different cultures. Through listening, moving, and discussing music, children develop appreciation for the diversity of musical expression. They discover that music tells stories and carries the traditions of people everywhere.",
+      "parent_description": "Your child is listening to and learning about music from around the world—classical masterpieces, folk traditions, rhythmic patterns from different cultures. Through listening, moving, and discussing music, children develop appreciation for the diversity of musical expression. They discover that music tells stories and carries the traditions of people everywhere.",
       "why_it_matters": "Music Appreciation builds cultural awareness and emotional development. Children learn that music is a universal human language that connects us to each other and to our shared humanity. This work nurtures sensitivity, imagination, and a lifelong love of music."
     },
     {
       "name": "Weather and Seasons",
       "category": "Science",
-      "quick_guide": "\u2022 Track daily weather using chart system\n\u2022 Observe cloud types and weather patterns\n\u2022 Understand how seasons change throughout year\n\u2022 Record temperatures and precipitation\n\u2022 Connect weather to animal and plant changes",
+      "quick_guide": "• Track daily weather using chart system\n• Observe cloud types and weather patterns\n• Understand how seasons change throughout year\n• Record temperatures and precipitation\n• Connect weather to animal and plant changes",
       "presentation_steps": [
         {
           "step": 1,
@@ -5330,7 +5330,7 @@
           "step": 3,
           "title": "Track Seasonal Changes",
           "description": "Throughout year, observe and record: temperature changes, precipitation, plant growth/dormancy, animal activity, daylight hours.",
-          "tip": "Connect to calendar work\u2014months group into seasons"
+          "tip": "Connect to calendar work—months group into seasons"
         },
         {
           "step": 4,
@@ -5417,7 +5417,7 @@
     {
       "name": "Water Cycle",
       "category": "Science",
-      "quick_guide": "\u2022 Study evaporation, condensation, and precipitation\n\u2022 Observe water cycle in nature\n\u2022 Use diagrams and arrows showing water movement\n\u2022 Create simple water cycle experiments\n\u2022 Understand role of sun in water cycle",
+      "quick_guide": "• Study evaporation, condensation, and precipitation\n• Observe water cycle in nature\n• Use diagrams and arrows showing water movement\n• Create simple water cycle experiments\n• Understand role of sun in water cycle",
       "presentation_steps": [
         {
           "step": 1,
@@ -5434,13 +5434,13 @@
         {
           "step": 3,
           "title": "Explain Condensation",
-          "description": "Water vapor cools in upper atmosphere and forms water droplets. These droplets make clouds. Discuss how breath fogs a mirror\u2014that's condensation.",
+          "description": "Water vapor cools in upper atmosphere and forms water droplets. These droplets make clouds. Discuss how breath fogs a mirror—that's condensation.",
           "tip": "Use foggy bathroom mirror as relatable example"
         },
         {
           "step": 4,
           "title": "Explain Precipitation",
-          "description": "Water droplets in clouds combine and become heavy, falling as rain or snow. When precipitation reaches ground, it flows to rivers, lakes, oceans\u2014completing cycle.",
+          "description": "Water droplets in clouds combine and become heavy, falling as rain or snow. When precipitation reaches ground, it flows to rivers, lakes, oceans—completing cycle.",
           "tip": "Connect to weather tracking and seasonal rain/snow"
         },
         {
@@ -5454,7 +5454,7 @@
         "Water is constantly cycling on Earth",
         "Sun's energy drives the water cycle",
         "The same water has been cycling for billions of years",
-        "Water cycle is continuous\u2014never stops",
+        "Water cycle is continuous—never stops",
         "All life depends on water cycle"
       ],
       "control_of_error": "Correct sequence of water cycle stages; accurate labeling on diagrams; understanding of cause and effect",
@@ -5518,7 +5518,7 @@
     {
       "name": "Insects and Their Parts",
       "category": "Biology - Zoology",
-      "quick_guide": "\u2022 Study insect body structure: head, thorax, abdomen\n\u2022 Identify six legs, antennae, wings\n\u2022 Use 3-part cards for insect nomenclature\n\u2022 Observe real insects with magnifying glass\n\u2022 Compare different insect types",
+      "quick_guide": "• Study insect body structure: head, thorax, abdomen\n• Identify six legs, antennae, wings\n• Use 3-part cards for insect nomenclature\n• Observe real insects with magnifying glass\n• Compare different insect types",
       "presentation_steps": [
         {
           "step": 1,
@@ -5621,7 +5621,7 @@
     {
       "name": "Rocks and Minerals",
       "category": "Science",
-      "quick_guide": "\u2022 Study three types of rocks: igneous, sedimentary, metamorphic\n\u2022 Examine mineral properties (hardness, color, crystal structure)\n\u2022 Use Mohs hardness scale for testing\n\u2022 Create rock and mineral collection\n\u2022 Understand rock formation processes",
+      "quick_guide": "• Study three types of rocks: igneous, sedimentary, metamorphic\n• Examine mineral properties (hardness, color, crystal structure)\n• Use Mohs hardness scale for testing\n• Create rock and mineral collection\n• Understand rock formation processes",
       "presentation_steps": [
         {
           "step": 1,
@@ -5724,7 +5724,7 @@
     {
       "name": "Trees and Leaves",
       "category": "Biology - Botany",
-      "quick_guide": "\u2022 Identify common tree species by leaves\n\u2022 Study leaf shapes, venation, and margins\n\u2022 Use classification system for leaf types\n\u2022 Create leaf collection and identification book\n\u2022 Observe seasonal changes in trees",
+      "quick_guide": "• Identify common tree species by leaves\n• Study leaf shapes, venation, and margins\n• Use classification system for leaf types\n• Create leaf collection and identification book\n• Observe seasonal changes in trees",
       "presentation_steps": [
         {
           "step": 1,
@@ -5828,7 +5828,7 @@
     {
       "name": "Flowers and Pollination",
       "category": "Biology - Botany",
-      "quick_guide": "\u2022 Dissect flowers to study reproductive parts\n\u2022 Identify stamen (male) and pistil (female)\n\u2022 Understand pollination by insects and wind\n\u2022 Observe bees visiting flowers\n\u2022 Create flower diagram with labeled parts",
+      "quick_guide": "• Dissect flowers to study reproductive parts\n• Identify stamen (male) and pistil (female)\n• Understand pollination by insects and wind\n• Observe bees visiting flowers\n• Create flower diagram with labeled parts",
       "presentation_steps": [
         {
           "step": 1,
@@ -5934,7 +5934,7 @@
     {
       "name": "Senses of Animals",
       "category": "Biology - Zoology",
-      "quick_guide": "\u2022 Study how different animals sense their environment\n\u2022 Explore sensory adaptations: vision, hearing, smell, taste, touch\n\u2022 Compare animal senses to human senses\n\u2022 Discuss how senses help animals survive\n\u2022 Research extreme sensory adaptations",
+      "quick_guide": "• Study how different animals sense their environment\n• Explore sensory adaptations: vision, hearing, smell, taste, touch\n• Compare animal senses to human senses\n• Discuss how senses help animals survive\n• Research extreme sensory adaptations",
       "presentation_steps": [
         {
           "step": 1,
@@ -6037,7 +6037,7 @@
     {
       "name": "Cosmic Education and the Great Lessons",
       "category": "History/Time",
-      "quick_guide": "\u2022 Introduce concept of cosmic order and interconnection\n\u2022 Present the Five Great Lessons framework\n\u2022 Use stories to inspire wonder about universe\n\u2022 Connect all knowledge to cosmic perspective\n\u2022 Develop child's sense of purpose in cosmos",
+      "quick_guide": "• Introduce concept of cosmic order and interconnection\n• Present the Five Great Lessons framework\n• Use stories to inspire wonder about universe\n• Connect all knowledge to cosmic perspective\n• Develop child's sense of purpose in cosmos",
       "presentation_steps": [
         {
           "step": 1,
@@ -6133,8 +6133,1886 @@
         "Dealing with children's existential questions",
         "Maintaining wonder while teaching facts"
       ],
-      "parent_description": "Cosmic Education and the Great Lessons introduce children to the Montessori framework that connects all knowledge. Through five powerful stories\u2014the coming of the universe, life, humanity, writing, and numbers\u2014children develop a cosmic perspective that inspires wonder and responsibility.",
+      "parent_description": "Cosmic Education and the Great Lessons introduce children to the Montessori framework that connects all knowledge. Through five powerful stories—the coming of the universe, life, humanity, writing, and numbers—children develop a cosmic perspective that inspires wonder and responsibility.",
       "why_it_matters": "Cosmic education is transformative. By understanding that everything is connected and that they are part of a vast cosmos, children develop a profound sense of purpose and responsibility. This philosophical framework elevates all other learning and creates meaning beyond individual subjects."
+    },
+    {
+      "work_id": "cu_land_water_trays",
+      "name": "Land and Water Form Trays",
+      "name_chinese": "蒙特梭利陆水形式托盘",
+      "slug": "land-water-form-trays",
+      "area": "cultural",
+      "category": "Geography",
+      "sequence": 7,
+      "age_range": "primary_year1",
+      "quick_guide": "• Two sets of trays showing opposite forms: island/lake, peninsula/gulf, isthmus/strait\n• Child pours real water into trays — land forms become tangible\n• Each pair shows how the same shape can be land surrounded by water OR water surrounded by land\n• Connects to the globe and world map puzzles\n• Three-period lesson for vocabulary\n• Children often want to find real examples on the globe",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Present",
+          "description": "Show island tray: pour water around the land. 'This is an island — land surrounded by water'",
+          "tip": "Use real water — the sensorial experience is key"
+        },
+        {
+          "step": 2,
+          "title": "Opposite",
+          "description": "Show lake tray: 'This is a lake — water surrounded by land'",
+          "tip": "They are OPPOSITES of each other"
+        },
+        {
+          "step": 3,
+          "title": "Three Period",
+          "description": "Period 1: 'This is an island.' Period 2: 'Show me the island.' Period 3: 'What is this?'",
+          "tip": "Cover 2-3 pairs per lesson"
+        },
+        {
+          "step": 4,
+          "title": "Globe Connection",
+          "description": "Find real islands and lakes on the globe",
+          "tip": "Children love discovering real examples"
+        },
+        {
+          "step": 5,
+          "title": "All Pairs",
+          "description": "Over several days, present all pairs",
+          "tip": "Don't rush — each pair deserves attention"
+        }
+      ],
+      "direct_aims": [
+        "Geographic vocabulary",
+        "Understanding landforms"
+      ],
+      "indirect_aims": [
+        "Sensorial learning",
+        "Vocabulary enrichment"
+      ],
+      "materials_needed": [
+        "Land and water form trays (2 sets of 3 pairs)",
+        "Water jug",
+        "Sponge",
+        "Globe"
+      ],
+      "control_of_error": "Water poured incorrectly or form misidentified",
+      "prerequisites": [
+        "cu_globe_land_water"
+      ],
+      "points_of_interest": [
+        "Pouring real water",
+        "Discovering opposites",
+        "Finding forms on the globe"
+      ],
+      "variations": [
+        "Model forms with clay and water",
+        "Draw the forms",
+        "Create a land/water form book"
+      ],
+      "common_challenges": [
+        "Have sponge ready for spills",
+        "Don't present all forms at once — 2-3 pairs per lesson"
+      ],
+      "video_search_term": "montessori land water form trays",
+      "parent_description": "Your child pours real water into specially shaped trays to discover geographic forms — an island is land surrounded by water, but turn the concept inside out and you get a lake: water surrounded by land! They touch, pour, and see these formations before finding real ones on the globe.",
+      "why_it_matters": "Geography starts with the hands in Montessori. When your child physically pours water around an island, the concept becomes part of their body memory. These concrete experiences with landforms create a foundation for understanding maps, atlases, and eventually world geography."
+    },
+    {
+      "work_id": "cu_continent_folders",
+      "name": "Continent Study Folders",
+      "name_chinese": "蒙特梭利大陆研究文件夹",
+      "slug": "continent-study-folders",
+      "area": "cultural",
+      "category": "Geography",
+      "sequence": 8,
+      "age_range": "primary_year2",
+      "quick_guide": "• One folder per continent, filled with pictures and information\n• Animals, flags, landmarks, food, clothing, music of each continent\n• Children contribute their own research to the folders\n• Connects to map puzzles — each continent becomes deeply familiar\n• Flag-making is a beloved extension\n• Cultural appreciation without stereotyping — focus on diversity within each continent",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Introduction",
+          "description": "Present one continent folder. Show the map, the flag collection, the animal pictures",
+          "tip": "Start with the child's own continent"
+        },
+        {
+          "step": 2,
+          "title": "Animals",
+          "description": "Sort animal cards into the correct continent folder",
+          "tip": "Which animals live where?"
+        },
+        {
+          "step": 3,
+          "title": "Flags",
+          "description": "Match flag cards to countries within the continent",
+          "tip": "Children love flags"
+        },
+        {
+          "step": 4,
+          "title": "Cultural Elements",
+          "description": "Food, clothing, music, festivals of the continent",
+          "tip": "Emphasise diversity within each continent"
+        },
+        {
+          "step": 5,
+          "title": "Research",
+          "description": "Child adds their own drawings and facts to the folder",
+          "tip": "The folders grow over time"
+        }
+      ],
+      "direct_aims": [
+        "Continent knowledge",
+        "Cultural awareness"
+      ],
+      "indirect_aims": [
+        "Research skills",
+        "Respect for diversity"
+      ],
+      "materials_needed": [
+        "7 continent folders",
+        "Animal cards",
+        "Flag cards",
+        "Picture cards",
+        "Globe"
+      ],
+      "control_of_error": "Information placed in wrong folder",
+      "prerequisites": [
+        "cu_world_map_puzzle"
+      ],
+      "points_of_interest": [
+        "Discovering new animals",
+        "Flag patterns",
+        "Foods from different cultures"
+      ],
+      "variations": [
+        "Make flags from each continent",
+        "Cook food from a continent",
+        "Learn a greeting in different languages"
+      ],
+      "common_challenges": [
+        "Avoid stereotypes — show modern life alongside traditional",
+        "Let children contribute their own research"
+      ],
+      "video_search_term": "montessori continent study folders",
+      "parent_description": "Your child explores the world through continent folders filled with pictures of animals, flags, landmarks, food, and music from each part of the globe. They sort animal cards into the right continents, discover fascinating flags, and even add their own drawings and research.",
+      "why_it_matters": "Understanding the world's cultures builds empathy, curiosity, and respect. When your child learns that people everywhere share the same basic needs but express them in beautifully different ways, they develop the global awareness that our interconnected world requires."
+    },
+    {
+      "work_id": "cu_physical_features",
+      "name": "Physical Features and Landforms",
+      "name_chinese": "蒙特梭利地形地貌",
+      "slug": "physical-features-landforms",
+      "area": "cultural",
+      "category": "Geography",
+      "sequence": 9,
+      "age_range": "primary_year2",
+      "quick_guide": "• Nomenclature cards for major landforms: mountain, valley, river, desert, plain, plateau\n• Three-period lesson for each set of vocabulary\n• Match photographs of real landforms to nomenclature cards\n• Find these features on the globe and continent maps\n• Extension: create landforms from clay or sand\n• Connects to land and water form trays from earlier work",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Nomenclature",
+          "description": "Three-period lesson: mountain, valley, river, desert, plain, plateau",
+          "tip": "Use picture cards alongside definition cards"
+        },
+        {
+          "step": 2,
+          "title": "Photographs",
+          "description": "Match real photographs to landform names",
+          "tip": "Real images make concepts concrete"
+        },
+        {
+          "step": 3,
+          "title": "Globe",
+          "description": "Find examples on the globe: Himalayas, Sahara, Amazon",
+          "tip": "Geography becomes real"
+        },
+        {
+          "step": 4,
+          "title": "Create",
+          "description": "Build landforms from clay or sand",
+          "tip": "Hands-on reinforcement"
+        },
+        {
+          "step": 5,
+          "title": "Research",
+          "description": "Child researches one landform in depth",
+          "tip": "Develops research skills"
+        }
+      ],
+      "direct_aims": [
+        "Landform identification",
+        "Geographic vocabulary"
+      ],
+      "indirect_aims": [
+        "Reading",
+        "Classification skills"
+      ],
+      "materials_needed": [
+        "Landform nomenclature cards",
+        "Photograph cards",
+        "Globe",
+        "Clay or sand"
+      ],
+      "control_of_error": "Landform misidentified — compare cards",
+      "prerequisites": [
+        "cu_land_water_trays"
+      ],
+      "points_of_interest": [
+        "Real photographs",
+        "Finding places on the globe",
+        "Making clay landforms"
+      ],
+      "variations": [
+        "Create a landform book",
+        "Compare landforms across continents",
+        "Draw cross-sections"
+      ],
+      "common_challenges": [
+        "Start with the most distinct landforms (mountain vs plain)",
+        "Real photos are more engaging than illustrations"
+      ],
+      "video_search_term": "montessori physical features landforms nomenclature",
+      "parent_description": "Your child learns the names and features of mountains, valleys, rivers, deserts, plains, and plateaus through beautiful picture cards — then finds real examples on the globe! They might even build a mountain from clay to feel how it rises from the plain.",
+      "why_it_matters": "Understanding landforms connects your child to the physical world. When they can name a valley, a plateau, or a delta, they see the world with more informed eyes — and these geographic terms appear throughout literature, history, and science."
+    },
+    {
+      "work_id": "cu_leaf_collection",
+      "name": "Leaf Collection and Pressing",
+      "name_chinese": "蒙特梭利树叶收集与压制",
+      "slug": "leaf-collection-pressing",
+      "area": "cultural",
+      "category": "Botany",
+      "sequence": 5,
+      "age_range": "primary_year1",
+      "quick_guide": "• Nature walks to collect real leaves from the environment\n• Press leaves between heavy books or in a leaf press\n• Classify pressed leaves by shape, matching to botany cabinet cards\n• Create a leaf book with labels\n• Connects the abstract botany cabinet to the real natural world\n• Develops careful observation and respect for nature",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Collection Walk",
+          "description": "Go on a nature walk, collect fallen leaves of different shapes",
+          "tip": "Only collect fallen leaves — respect living plants"
+        },
+        {
+          "step": 2,
+          "title": "Observation",
+          "description": "Use magnifying glass to examine veins, edges, shapes",
+          "tip": "What do you notice?"
+        },
+        {
+          "step": 3,
+          "title": "Pressing",
+          "description": "Place leaves between paper in a press or heavy book",
+          "tip": "Wait several days for complete drying"
+        },
+        {
+          "step": 4,
+          "title": "Classification",
+          "description": "Match pressed leaves to botany cabinet shapes",
+          "tip": "The abstract becomes concrete"
+        },
+        {
+          "step": 5,
+          "title": "Book",
+          "description": "Mount leaves on pages with labels and observations",
+          "tip": "A personal botanical reference"
+        }
+      ],
+      "direct_aims": [
+        "Leaf identification",
+        "Classification"
+      ],
+      "indirect_aims": [
+        "Observation skills",
+        "Care of environment"
+      ],
+      "materials_needed": [
+        "Leaf press or heavy books",
+        "Collection paper",
+        "Magnifying glass",
+        "Labels",
+        "Glue"
+      ],
+      "control_of_error": "Leaf classified incorrectly — compare carefully to cabinet shapes",
+      "prerequisites": [
+        "cu_botany_cabinet"
+      ],
+      "points_of_interest": [
+        "Magnifying glass discoveries",
+        "Matching to cabinet shapes",
+        "Creating the book"
+      ],
+      "variations": [
+        "Seasonal collection — compare autumn and spring leaves",
+        "Leaf rubbings",
+        "Press flowers too"
+      ],
+      "common_challenges": [
+        "Only collect fallen leaves",
+        "Pressing takes several days — plan ahead",
+        "Leaves should be dry when collected"
+      ],
+      "video_search_term": "montessori leaf collection pressing classification",
+      "parent_description": "Your child goes on nature walks to collect fallen leaves, examines them with a magnifying glass to discover tiny details, then presses them between heavy books. Once dry, they classify each leaf by shape — matching real leaves to the shapes they learned in the botany cabinet!",
+      "why_it_matters": "Botany comes alive when children work with real specimens. The leaf collection bridges the gap between classroom materials and the natural world, teaching your child to observe carefully, classify systematically, and develop a genuine connection with the plants around them."
+    },
+    {
+      "work_id": "cu_tree_study",
+      "name": "Tree Study",
+      "name_chinese": "蒙特梭利树木研究",
+      "slug": "tree-study",
+      "area": "cultural",
+      "category": "Botany",
+      "sequence": 6,
+      "age_range": "primary_year2",
+      "quick_guide": "• Parts of a tree: roots, trunk, branches, crown, bark, leaves\n• Nomenclature cards with three-period lesson\n• Deciduous vs evergreen classification\n• Bark rubbings from different trees — each tree has unique bark\n• Adopt a tree: observe changes through the seasons\n• Extension into tree identification with field guides",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Parts",
+          "description": "Nomenclature cards: roots, trunk, branches, crown, bark, leaves, fruit/seeds",
+          "tip": "Three-period lesson for vocabulary"
+        },
+        {
+          "step": 2,
+          "title": "Outdoor Observation",
+          "description": "Visit trees outside, identify the parts in real life",
+          "tip": "Touch the bark, look up at the crown"
+        },
+        {
+          "step": 3,
+          "title": "Deciduous vs Evergreen",
+          "description": "Sort tree pictures into two groups",
+          "tip": "Why do some lose their leaves?"
+        },
+        {
+          "step": 4,
+          "title": "Bark Rubbings",
+          "description": "Place paper against bark, rub with crayon — each tree is unique",
+          "tip": "Collect rubbings from different trees"
+        },
+        {
+          "step": 5,
+          "title": "Adopt a Tree",
+          "description": "Choose one tree, observe it monthly through the year",
+          "tip": "Draw it each season"
+        }
+      ],
+      "direct_aims": [
+        "Parts of a tree",
+        "Tree classification"
+      ],
+      "indirect_aims": [
+        "Observation",
+        "Seasonal awareness"
+      ],
+      "materials_needed": [
+        "Tree nomenclature cards",
+        "Crayons for bark rubbings",
+        "Paper",
+        "Field guide"
+      ],
+      "control_of_error": "Parts labelled incorrectly — compare to real tree",
+      "prerequisites": [
+        "cu_parts_of_plant"
+      ],
+      "points_of_interest": [
+        "Bark rubbings (every tree is different!)",
+        "Seasonal changes",
+        "Finding seeds and fruits"
+      ],
+      "variations": [
+        "Create a tree identification guide",
+        "Measure tree trunk circumference",
+        "Count rings on a cut log"
+      ],
+      "common_challenges": [
+        "Take the study outdoors as much as possible",
+        "Bark rubbings work best with thick crayons on thin paper"
+      ],
+      "video_search_term": "montessori tree study parts bark rubbings",
+      "parent_description": "Your child learns the parts of a tree — from roots underground to the crown high above — then goes outside to find them on real trees! They make bark rubbings by pressing paper against tree trunks and rubbing with crayons, discovering that every tree has its own unique bark pattern.",
+      "why_it_matters": "Trees are the most visible part of the plant kingdom and children are naturally drawn to them. Studying trees develops observation skills, seasonal awareness, and environmental respect. When your child adopts a tree and watches it change through the year, they learn about cycles and patience."
+    },
+    {
+      "work_id": "cu_seed_germination",
+      "name": "Seed Germination Experiment",
+      "name_chinese": "蒙特梭利种子发芽实验",
+      "slug": "seed-germination",
+      "area": "cultural",
+      "category": "Botany",
+      "sequence": 7,
+      "age_range": "primary_year1",
+      "quick_guide": "• Plant seeds in cotton wool inside clear containers so roots are visible\n• Bean seeds work best — large and fast-growing\n• Daily observation and drawing of growth stages\n• Keep a growth journal with measurements\n• Connects to parts of a plant — children see roots, stem, leaves emerge\n• Teaches patience, care, and scientific observation",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Setup",
+          "description": "Place seeds in wet cotton wool in clear container by the window",
+          "tip": "Bean seeds sprout in 3-5 days"
+        },
+        {
+          "step": 2,
+          "title": "Predict",
+          "description": "What do you think will happen? Draw your prediction",
+          "tip": "Scientists always predict first"
+        },
+        {
+          "step": 3,
+          "title": "Daily Observation",
+          "description": "Each day, observe and draw what has changed",
+          "tip": "Measure root and shoot length"
+        },
+        {
+          "step": 4,
+          "title": "Journal",
+          "description": "Keep a growth journal with dated drawings and measurements",
+          "tip": "Date every entry"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "What did the seed need to grow? Compare to prediction",
+          "tip": "Water, warmth, light"
+        }
+      ],
+      "direct_aims": [
+        "Understanding germination",
+        "Scientific observation"
+      ],
+      "indirect_aims": [
+        "Patience",
+        "Care of living things"
+      ],
+      "materials_needed": [
+        "Bean seeds",
+        "Clear containers",
+        "Cotton wool",
+        "Water spray",
+        "Journal"
+      ],
+      "control_of_error": "Seed doesn't germinate — discuss reasons (too dry, too cold, old seed)",
+      "prerequisites": [
+        "cu_parts_of_plant"
+      ],
+      "points_of_interest": [
+        "First root appearing",
+        "Speed of growth",
+        "Comparing different seeds"
+      ],
+      "variations": [
+        "Try different seeds side by side",
+        "Experiment: one in dark, one in light",
+        "Plant sprouted seeds in soil"
+      ],
+      "common_challenges": [
+        "Keep cotton wool moist but not waterlogged",
+        "Place in warm spot near natural light",
+        "Bean seeds are most reliable"
+      ],
+      "video_search_term": "montessori seed germination experiment children",
+      "parent_description": "Your child plants seeds in cotton wool inside clear containers so they can watch roots grow down and shoots grow up — it's like having a window into the soil! They keep a growth journal, drawing and measuring every day, learning to observe like a scientist.",
+      "why_it_matters": "Growing seeds teaches your child about life cycles, patience, and scientific method. They predict what will happen, observe carefully, and record their findings — the same skills used by professional scientists. Plus, there's pure magic in watching a tiny seed transform into a living plant."
+    },
+    {
+      "work_id": "cu_food_chain",
+      "name": "Food Chain",
+      "name_chinese": "蒙特梭利食物链",
+      "slug": "food-chain",
+      "area": "cultural",
+      "category": "Botany",
+      "sequence": 8,
+      "age_range": "primary_year2",
+      "quick_guide": "• Cards showing producers (plants), consumers (animals), and decomposers\n• Arrow cards to show energy flow: sun → grass → rabbit → fox\n• Start with simple chains of 3-4 links\n• Progress to food webs showing interconnections\n• Discussion: what happens if one link is removed?\n• Connects botany and zoology — everything is connected",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Simple Chain",
+          "description": "Lay out: sun → grass → rabbit → fox. Arrow cards between each",
+          "tip": "Energy flows from the sun through the chain"
+        },
+        {
+          "step": 2,
+          "title": "Vocabulary",
+          "description": "Producer makes food, consumer eats, decomposer breaks down",
+          "tip": "Three-period lesson for terms"
+        },
+        {
+          "step": 3,
+          "title": "More Chains",
+          "description": "Build 3-4 different food chains from the same environment",
+          "tip": "Some animals appear in multiple chains"
+        },
+        {
+          "step": 4,
+          "title": "Food Web",
+          "description": "Connect overlapping chains into a web",
+          "tip": "The web shows how everything connects"
+        },
+        {
+          "step": 5,
+          "title": "What If?",
+          "description": "Remove one card — what happens to the rest of the web?",
+          "tip": "This leads to understanding ecosystems"
+        }
+      ],
+      "direct_aims": [
+        "Energy flow",
+        "Producer/consumer/decomposer"
+      ],
+      "indirect_aims": [
+        "Ecological thinking",
+        "Systems understanding"
+      ],
+      "materials_needed": [
+        "Food chain cards",
+        "Arrow cards",
+        "Animal and plant figures"
+      ],
+      "control_of_error": "Chain order incorrect — trace energy from sun",
+      "prerequisites": [
+        "cu_animal_classification"
+      ],
+      "points_of_interest": [
+        "Building chains",
+        "The web of connections",
+        "What-if discussions"
+      ],
+      "variations": [
+        "Create food chains from different biomes",
+        "Make a classroom food web mural",
+        "Research a local food chain"
+      ],
+      "common_challenges": [
+        "Start with very simple 3-link chains",
+        "Always begin with the sun",
+        "Emphasise that energy flows one way"
+      ],
+      "video_search_term": "montessori food chain web ecology",
+      "parent_description": "Your child builds food chains using picture cards and arrows — sun gives energy to grass, rabbit eats grass, fox eats rabbit. Then they connect multiple chains into a food web and discover that everything in nature is connected! What happens if we remove one animal?",
+      "why_it_matters": "Understanding food chains develops ecological thinking and systems awareness. Your child learns that every living thing depends on others, that energy flows through ecosystems, and that removing one species affects everything else. This is the foundation of environmental responsibility."
+    },
+    {
+      "work_id": "cu_parts_of_insect",
+      "name": "Parts of an Insect",
+      "name_chinese": "蒙特梭利昆虫部位",
+      "slug": "parts-of-insect",
+      "area": "cultural",
+      "category": "Zoology",
+      "sequence": 5,
+      "age_range": "primary_year1",
+      "quick_guide": "• Insect puzzle showing: head, thorax, abdomen, 6 legs, antennae, wings\n• Nomenclature cards with three-period lesson\n• Real specimens or photographs for observation\n• Key classification rule: all insects have 3 body parts and 6 legs\n• Magnifying glass observation of real insects\n• Connects to invertebrate classification",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Puzzle",
+          "description": "Child assembles insect puzzle, naming parts as they go",
+          "tip": "Start with the three main body sections"
+        },
+        {
+          "step": 2,
+          "title": "Nomenclature",
+          "description": "Three-period lesson: head, thorax, abdomen, legs, antennae, wings",
+          "tip": "6 legs is the KEY feature of insects"
+        },
+        {
+          "step": 3,
+          "title": "Real Observation",
+          "description": "Use magnifying glass to observe a real insect or high-quality photos",
+          "tip": "Can you find the 3 body parts?"
+        },
+        {
+          "step": 4,
+          "title": "Classification Rule",
+          "description": "All insects: 3 body parts, 6 legs. Is a spider an insect?",
+          "tip": "Spiders have 8 legs — NOT insects"
+        },
+        {
+          "step": 5,
+          "title": "Drawing",
+          "description": "Child draws an insect and labels the parts",
+          "tip": "Reinforces vocabulary"
+        }
+      ],
+      "direct_aims": [
+        "Insect anatomy",
+        "Classification features"
+      ],
+      "indirect_aims": [
+        "Observation skills",
+        "Scientific vocabulary"
+      ],
+      "materials_needed": [
+        "Insect puzzle",
+        "Nomenclature cards",
+        "Magnifying glass",
+        "Photos or specimens"
+      ],
+      "control_of_error": "Parts labelled incorrectly — return to puzzle",
+      "prerequisites": [
+        "cu_animal_classification"
+      ],
+      "points_of_interest": [
+        "Magnifying glass observation",
+        "The 6-legs rule",
+        "Discovering 'not insects' (spiders, centipedes)"
+      ],
+      "variations": [
+        "Insect hunt outdoors",
+        "Create an insect classification chart",
+        "Compare insect to spider"
+      ],
+      "common_challenges": [
+        "Children often think spiders are insects — use this as a teaching moment",
+        "Live observation is powerful but brief"
+      ],
+      "video_search_term": "montessori parts of insect puzzle nomenclature",
+      "parent_description": "Your child assembles an insect puzzle, learning that every insect has a head, thorax, and abdomen — plus exactly 6 legs! Then they use a magnifying glass to find these parts on real insects. Is a spider an insect? No! It has 8 legs!",
+      "why_it_matters": "Learning about insects develops scientific classification skills. When your child can identify the three body parts and six legs that define an insect, they're learning to observe carefully, categorise systematically, and think like a biologist."
+    },
+    {
+      "work_id": "cu_invertebrate_classification",
+      "name": "Invertebrate Classification",
+      "name_chinese": "蒙特梭利无脊椎动物分类",
+      "slug": "invertebrate-classification",
+      "area": "cultural",
+      "category": "Zoology",
+      "sequence": 6,
+      "age_range": "primary_year2",
+      "quick_guide": "• First sort: vertebrate (backbone) vs invertebrate (no backbone)\n• Invertebrate groups: insects, arachnids, molluscs, crustaceans, worms\n• Picture cards for sorting into groups\n• Key features of each group (legs, shells, segments)\n• 97% of all animal species are invertebrates!\n• Connects to parts of an insect and broader animal classification",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Backbone?",
+          "description": "Feel your own spine. Sort animal pictures: has backbone? No backbone?",
+          "tip": "The backbone distinction is very clear"
+        },
+        {
+          "step": 2,
+          "title": "Invertebrate Groups",
+          "description": "Introduce 5 groups with picture cards",
+          "tip": "One group per lesson initially"
+        },
+        {
+          "step": 3,
+          "title": "Features",
+          "description": "What makes each group special? Insects: 6 legs. Arachnids: 8 legs.",
+          "tip": "Clear distinguishing features"
+        },
+        {
+          "step": 4,
+          "title": "Sorting",
+          "description": "Give mixed animal cards — sort into correct group",
+          "tip": "This becomes a favourite work"
+        },
+        {
+          "step": 5,
+          "title": "Amazing Fact",
+          "description": "97% of animals are invertebrates! Most life has no backbone",
+          "tip": "Children love this fact"
+        }
+      ],
+      "direct_aims": [
+        "Invertebrate classification",
+        "Scientific vocabulary"
+      ],
+      "indirect_aims": [
+        "Observation",
+        "Logical thinking"
+      ],
+      "materials_needed": [
+        "Classification cards",
+        "Sorting mat",
+        "Magnifying glass for specimens"
+      ],
+      "control_of_error": "Animal placed in wrong group — check distinguishing features",
+      "prerequisites": [
+        "cu_animal_classification"
+      ],
+      "points_of_interest": [
+        "The 97% fact",
+        "Discovering so many groups",
+        "Sorting challenge"
+      ],
+      "variations": [
+        "Create an invertebrate book",
+        "Outdoor invertebrate hunt",
+        "Compare invertebrate sizes"
+      ],
+      "common_challenges": [
+        "Don't overwhelm with all groups at once",
+        "Use real specimens when possible",
+        "Let children discover classification rules"
+      ],
+      "video_search_term": "montessori invertebrate classification children",
+      "parent_description": "Your child discovers the vast world of animals without backbones — insects with 6 legs, spiders with 8, snails in shells, and wiggly worms! They sort animal pictures into groups and learn the amazing fact that 97% of all animals are invertebrates.",
+      "why_it_matters": "Classification is one of the most important scientific skills. When your child sorts animals into groups based on their features, they're developing the same logical thinking used in biology, chemistry, and mathematics — finding patterns and making order from complexity."
+    },
+    {
+      "work_id": "cu_external_parts_human",
+      "name": "External Parts of a Human",
+      "name_chinese": "蒙特梭利人体外部部位",
+      "slug": "external-parts-human",
+      "area": "cultural",
+      "category": "Zoology",
+      "sequence": 7,
+      "age_range": "primary_year1",
+      "quick_guide": "• Human body puzzle showing major external parts\n• Nomenclature cards with three-period lesson\n• Start with major divisions: head, torso, arms, legs\n• Progress to specific: shoulder, elbow, wrist, knee, ankle, hip\n• Use a mirror — 'Show me YOUR elbow'\n• Connects to five senses: eyes see, ears hear, nose smells, tongue tastes, skin feels",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Puzzle",
+          "description": "Assemble human body puzzle, naming major parts",
+          "tip": "Head, torso, arms, legs"
+        },
+        {
+          "step": 2,
+          "title": "Detailed Parts",
+          "description": "Three-period lesson for specific parts: shoulder, elbow, wrist, knee, ankle",
+          "tip": "Touch YOUR elbow as you say it"
+        },
+        {
+          "step": 3,
+          "title": "Mirror Work",
+          "description": "Look in mirror, point to and name parts",
+          "tip": "Self-awareness through naming"
+        },
+        {
+          "step": 4,
+          "title": "Senses",
+          "description": "Connect parts to senses: 'What do your eyes do?'",
+          "tip": "Five senses lesson"
+        },
+        {
+          "step": 5,
+          "title": "Partner Work",
+          "description": "'Touch your partner's elbow' — respectful body awareness",
+          "tip": "Practice consent language"
+        }
+      ],
+      "direct_aims": [
+        "Body part vocabulary",
+        "Self-awareness"
+      ],
+      "indirect_aims": [
+        "Language enrichment",
+        "Respect for body"
+      ],
+      "materials_needed": [
+        "Human body puzzle",
+        "Nomenclature cards",
+        "Mirror"
+      ],
+      "control_of_error": "Parts labelled incorrectly — touch the real part",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Using the mirror",
+        "Partner activities",
+        "Connecting to senses"
+      ],
+      "variations": [
+        "Trace body outline and label",
+        "Movement games ('touch your elbow to your knee')",
+        "Five senses exploration"
+      ],
+      "common_challenges": [
+        "Use appropriate, respectful language always",
+        "Let children set boundaries during partner work",
+        "This is a sensitive topic — follow the child's lead"
+      ],
+      "video_search_term": "montessori external parts human body nomenclature",
+      "parent_description": "Your child learns the names of body parts through a puzzle, nomenclature cards, and mirror work — 'Show me YOUR elbow! Where is YOUR wrist?' They connect body parts to the five senses and develop self-awareness and vocabulary for talking about their body.",
+      "why_it_matters": "Knowing the correct names for body parts builds confidence, self-awareness, and safety. Children who can name their body parts accurately communicate better with doctors, parents, and teachers. The Montessori approach is respectful, scientific, and matter-of-fact."
+    },
+    {
+      "work_id": "cu_air_experiments",
+      "name": "Air Experiments",
+      "name_chinese": "蒙特梭利空气实验",
+      "slug": "air-experiments",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 1,
+      "age_range": "primary_year1",
+      "quick_guide": "• Air is invisible but REAL — experiments prove it exists\n• Blow up a balloon: what's inside? Air!\n• Trap air in a paper bag, pop it — hear the air\n• Pinwheel spins because air moves\n• Feather floats on air\n• Simple suction cup demonstrates air pressure\n• Each experiment reveals a different property of air",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Air Exists",
+          "description": "Blow up balloon. 'What filled it up?' Wave hand — 'Can you feel the air?'",
+          "tip": "Air is real even though we can't see it"
+        },
+        {
+          "step": 2,
+          "title": "Air Takes Space",
+          "description": "Push empty cup upside-down into water — paper inside stays dry!",
+          "tip": "Air in the cup keeps water out"
+        },
+        {
+          "step": 3,
+          "title": "Air Moves",
+          "description": "Blow a pinwheel, wave a fan, watch a feather float",
+          "tip": "Moving air is called wind"
+        },
+        {
+          "step": 4,
+          "title": "Air Pressure",
+          "description": "Wet suction cup sticks to table — air pushes on it",
+          "tip": "Air pushes on everything around us"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "Where is air? Is it in this room? Outside? In our lungs?",
+          "tip": "Air is everywhere"
+        }
+      ],
+      "direct_aims": [
+        "Air exists and has properties",
+        "Air pressure concept"
+      ],
+      "indirect_aims": [
+        "Scientific observation",
+        "Asking questions"
+      ],
+      "materials_needed": [
+        "Balloons",
+        "Paper bags",
+        "Pinwheel",
+        "Feathers",
+        "Suction cup",
+        "Cup and water"
+      ],
+      "control_of_error": "Experiment doesn't work — discuss why and retry",
+      "prerequisites": [],
+      "points_of_interest": [
+        "The invisible becoming visible",
+        "Suction cup sticking",
+        "Paper staying dry underwater"
+      ],
+      "variations": [
+        "Make a wind sock",
+        "Blow bubbles — see the air!",
+        "Fan experiments"
+      ],
+      "common_challenges": [
+        "These experiments are messy — prepare the space",
+        "Let children predict before each experiment",
+        "Safety: supervise balloon use with young children"
+      ],
+      "video_search_term": "montessori air experiments properties children",
+      "parent_description": "Your child discovers that air is real even though it's invisible! They blow up balloons, pop paper bags to hear trapped air, and watch pinwheels spin in the breeze. The most amazing experiment: pushing an upside-down cup into water and finding the paper inside stays dry — because air keeps the water out!",
+      "why_it_matters": "Science begins with wonder, and air is wonderfully mysterious — invisible yet powerful. These experiments teach your child to question what they can't see, make predictions, and test ideas. They're developing the scientific method while having a blast with balloons and pinwheels."
+    },
+    {
+      "work_id": "cu_water_experiments",
+      "name": "Water Experiments",
+      "name_chinese": "蒙特梭利水实验",
+      "slug": "water-experiments",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 2,
+      "age_range": "primary_year1",
+      "quick_guide": "• Sink or float: predict, then test objects in water\n• States of matter: ice → water → steam (with adult supervision)\n• Absorption: sponge, cloth, paper — what soaks up water?\n• Surface tension: fill a cup to the very brim\n• Water flows downhill — pour on a tilted surface\n• Children naturally love water — harness this for science",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Sink or Float",
+          "description": "Collect objects. Predict: will it sink or float? Then test",
+          "tip": "Make a chart of predictions vs results"
+        },
+        {
+          "step": 2,
+          "title": "States",
+          "description": "Observe ice melting. Discuss: solid → liquid. Boil water (adult): liquid → gas",
+          "tip": "Three states of the same thing"
+        },
+        {
+          "step": 3,
+          "title": "Absorption",
+          "description": "Test materials: sponge, cloth, plastic, wood. Which absorb?",
+          "tip": "Sort into absorbs / doesn't absorb"
+        },
+        {
+          "step": 4,
+          "title": "Surface Tension",
+          "description": "Fill cup to very top — water curves above the rim!",
+          "tip": "Drop coins in one by one — how many before overflow?"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "Where do we find water? Why do we need it?",
+          "tip": "Connect to all living things needing water"
+        }
+      ],
+      "direct_aims": [
+        "Water properties",
+        "States of matter"
+      ],
+      "indirect_aims": [
+        "Scientific prediction",
+        "Recording results"
+      ],
+      "materials_needed": [
+        "Container of water",
+        "Various objects",
+        "Ice cubes",
+        "Sponge",
+        "Absorbent materials"
+      ],
+      "control_of_error": "Prediction incorrect — great! Discuss why",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Surprising sink/float results",
+        "Surface tension dome",
+        "Ice melting"
+      ],
+      "variations": [
+        "Color mixing in water",
+        "Water transfer exercises",
+        "Evaporation experiment over days"
+      ],
+      "common_challenges": [
+        "Prepare for spills",
+        "Sink/float is genuinely surprising — let predictions be wrong",
+        "States of matter demo needs adult for steam"
+      ],
+      "video_search_term": "montessori water experiments sink float states",
+      "parent_description": "Your child predicts whether objects will sink or float, then tests them — and is often surprised! They watch ice melt into water, test which materials soak up water, and carefully fill a cup past the brim to see water's surface tension. Science has never been so wet and wonderful!",
+      "why_it_matters": "Water experiments develop prediction, observation, and recording skills — the core of scientific thinking. When your child discovers that a heavy coin sinks but a large piece of wood floats, they learn that science often surprises us, and that testing is more reliable than guessing."
+    },
+    {
+      "work_id": "cu_sound_experiments",
+      "name": "Sound Experiments",
+      "name_chinese": "蒙特梭利声音实验",
+      "slug": "sound-experiments",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 3,
+      "age_range": "primary_year1",
+      "quick_guide": "• Sound is vibration — see it, feel it, hear it\n• Tuning fork in water: vibrations make ripples\n• Rice on a drum: bang the drum, rice bounces\n• Rubber bands of different tension make different pitches\n• Water glasses filled to different levels — play a tune\n• Connects to Montessori bells and musical education",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Vibration",
+          "description": "Strike tuning fork, touch water surface — see the vibrations",
+          "tip": "Sound IS vibration"
+        },
+        {
+          "step": 2,
+          "title": "See Sound",
+          "description": "Put rice on a drum, bang it — rice bounces from vibrations",
+          "tip": "Vibrations move through the drum"
+        },
+        {
+          "step": 3,
+          "title": "Pitch",
+          "description": "Stretch rubber bands to different tensions, pluck each",
+          "tip": "Tighter = higher pitch"
+        },
+        {
+          "step": 4,
+          "title": "Water Glasses",
+          "description": "Fill glasses to different levels, tap with spoon — a scale!",
+          "tip": "More water = lower pitch"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "How does sound travel from the drum to your ears?",
+          "tip": "Through vibrations in the air"
+        }
+      ],
+      "direct_aims": [
+        "Sound is vibration",
+        "Pitch and volume"
+      ],
+      "indirect_aims": [
+        "Listening skills",
+        "Scientific thinking"
+      ],
+      "materials_needed": [
+        "Tuning fork",
+        "Drum",
+        "Rice",
+        "Rubber bands",
+        "Water glasses",
+        "Spoon"
+      ],
+      "control_of_error": "Sound not produced — check setup and try again",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Rice bouncing on drum",
+        "Tuning fork ripples",
+        "Playing water glass scale"
+      ],
+      "variations": [
+        "Make a string telephone",
+        "Explore echo",
+        "Compare materials for sound conduction"
+      ],
+      "common_challenges": [
+        "Some experiments are loud — prepare the class",
+        "Water glass experiment needs careful setup",
+        "Let children explore freely after demonstration"
+      ],
+      "video_search_term": "montessori sound experiments vibration children",
+      "parent_description": "Your child discovers that sound is vibration by striking a tuning fork and touching it to water — ripples appear! They put rice on a drum and watch it dance when they bang the drum. Then they fill glasses with different amounts of water and play a tune by tapping them with a spoon.",
+      "why_it_matters": "Understanding sound as vibration connects physics to music. When your child sees rice bounce on a vibrating drum, abstract physics becomes visible and real. These experiments build the foundation for understanding waves, energy, and eventually more advanced physics concepts."
+    },
+    {
+      "work_id": "cu_light_shadow",
+      "name": "Light and Shadow",
+      "name_chinese": "蒙特梭利光与影",
+      "slug": "light-and-shadow",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 4,
+      "age_range": "primary_year1",
+      "quick_guide": "• Light travels in straight lines — shine a torch to prove it\n• Shadows form when objects block light\n• Change shadow size by moving object closer/further from light\n• Sort materials: transparent (light passes through), translucent (some light), opaque (no light)\n• Shadow puppets as creative extension\n• Connection to day/night and Earth's rotation",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Light Sources",
+          "description": "Collect and discuss: sun, torch, lamp, candle. Natural vs artificial",
+          "tip": "What gives us light?"
+        },
+        {
+          "step": 2,
+          "title": "Shadows",
+          "description": "Shine torch on object, see shadow on wall. Move the object",
+          "tip": "Closer to light = bigger shadow"
+        },
+        {
+          "step": 3,
+          "title": "Shape Shadows",
+          "description": "Use hands to make shadow shapes",
+          "tip": "Shadow puppets are magical"
+        },
+        {
+          "step": 4,
+          "title": "Transparent Test",
+          "description": "Hold objects in torch beam: glass, paper, cardboard, plastic",
+          "tip": "Sort into transparent, translucent, opaque"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "Why is nighttime dark? The Earth blocks the sun's light",
+          "tip": "Connects to astronomy"
+        }
+      ],
+      "direct_aims": [
+        "Light travels straight",
+        "Shadow formation"
+      ],
+      "indirect_aims": [
+        "Prediction",
+        "Spatial reasoning"
+      ],
+      "materials_needed": [
+        "Torch/flashlight",
+        "Various objects",
+        "White screen or wall",
+        "Transparent and opaque materials"
+      ],
+      "control_of_error": "Shadow doesn't appear — adjust position and angle",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Shadow puppets",
+        "Changing shadow sizes",
+        "Surprising transparent/opaque results"
+      ],
+      "variations": [
+        "Sundial project",
+        "Shadow tracing at different times of day",
+        "Color shadow mixing with colored filters"
+      ],
+      "common_challenges": [
+        "Darken the room for best shadow effects",
+        "Let children play with shadows freely",
+        "Connect to outdoor shadow observations"
+      ],
+      "video_search_term": "montessori light shadow experiments transparent opaque",
+      "parent_description": "Your child shines a torch to discover that light travels in straight lines and creates shadows when something blocks it. They make shadows bigger and smaller, create shadow puppets, and sort materials into transparent (light goes through) and opaque (light blocked). Why is night dark? The Earth blocks the sun!",
+      "why_it_matters": "Light and shadow experiments develop spatial reasoning and scientific thinking. When your child discovers they can change a shadow's size by moving an object, they're learning about the relationship between light, distance, and projection — concepts that extend into art, architecture, and physics."
+    },
+    {
+      "work_id": "cu_gravity_experiments",
+      "name": "Gravity Experiments",
+      "name_chinese": "蒙特梭利重力实验",
+      "slug": "gravity-experiments",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 5,
+      "age_range": "primary_year2",
+      "quick_guide": "• Everything falls down — gravity pulls toward Earth\n• Drop two different objects from the same height — they land together!\n• Air resistance: feather vs ball (with and without air)\n• Ramp experiments: steeper = faster\n• Galileo's famous experiment (story)\n• Connects to weight measurement in math",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Drop Test",
+          "description": "Drop a ball and a book from the same height at the same time",
+          "tip": "They land together! Heavy and light fall the same"
+        },
+        {
+          "step": 2,
+          "title": "Air Resistance",
+          "description": "Drop a feather and a ball. Feather is slower. Crumple the feather into a ball",
+          "tip": "Now they fall the same! Air resistance was slowing the feather"
+        },
+        {
+          "step": 3,
+          "title": "Ramps",
+          "description": "Roll a ball down ramps of different steepness",
+          "tip": "Steeper = faster. Why?"
+        },
+        {
+          "step": 4,
+          "title": "Galileo Story",
+          "description": "Tell the story of Galileo at the Tower of Pisa",
+          "tip": "Scientists test ideas, they don't just guess"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "What would happen without gravity? Why don't we float away?",
+          "tip": "Gravity keeps us on Earth"
+        }
+      ],
+      "direct_aims": [
+        "Gravity pulls everything down",
+        "Air resistance"
+      ],
+      "indirect_aims": [
+        "Scientific method",
+        "Prediction"
+      ],
+      "materials_needed": [
+        "Various objects of different weights",
+        "Ramp",
+        "Feathers",
+        "Ball",
+        "Timer"
+      ],
+      "control_of_error": "Objects don't fall as expected — discuss air resistance",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Heavy and light falling together",
+        "Crumpled feather test",
+        "Galileo story"
+      ],
+      "variations": [
+        "Drop objects into sand to measure impact",
+        "Compare Earth gravity to Moon gravity facts",
+        "Build marble runs"
+      ],
+      "common_challenges": [
+        "The drop test genuinely surprises most children",
+        "Use soft objects for safety",
+        "Air resistance discussion needs to be age-appropriate"
+      ],
+      "video_search_term": "montessori gravity experiment children drop test",
+      "parent_description": "Your child drops a heavy ball and a light ball from the same height — and they land at the same time! How can that be? Then they test a feather (slow because of air) and crumple it into a ball (now it falls fast!). They hear the story of Galileo doing this exact experiment centuries ago.",
+      "why_it_matters": "Gravity experiments teach children that science is about testing, not guessing. The counter-intuitive result — heavy and light objects fall at the same rate — challenges assumptions and builds genuine scientific thinking. Your child is replicating one of history's most famous experiments."
+    },
+    {
+      "work_id": "cu_heat_experiments",
+      "name": "Heat Experiments",
+      "name_chinese": "蒙特梭利热量实验",
+      "slug": "heat-experiments",
+      "area": "cultural",
+      "category": "Physical Science",
+      "sequence": 6,
+      "age_range": "primary_year2",
+      "quick_guide": "• Thermic tablets from Sensorial already introduced warm/cold distinction\n• Heat transfers: put a metal spoon and wooden spoon in warm water\n• Conductors (metal) vs insulators (wood, plastic, wool)\n• Thermometer reading: numbers for temperature\n• Ice melting races: which material melts ice fastest?\n• Safety awareness around hot objects",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Thermic Recall",
+          "description": "Revisit thermic tablets — sort by temperature feel",
+          "tip": "Connect to sensorial experience"
+        },
+        {
+          "step": 2,
+          "title": "Conduction",
+          "description": "Metal spoon and wooden spoon in warm water. Feel both handles after 2 minutes",
+          "tip": "Metal conducts heat, wood doesn't"
+        },
+        {
+          "step": 3,
+          "title": "Conductors/Insulators",
+          "description": "Sort materials: which carry heat? Metal yes, wood no, plastic no, wool no",
+          "tip": "Most insulators keep us warm by NOT conducting"
+        },
+        {
+          "step": 4,
+          "title": "Thermometer",
+          "description": "Introduce thermometer. Read the number. Measure water, room, outdoors",
+          "tip": "Numbers for temperature"
+        },
+        {
+          "step": 5,
+          "title": "Ice Melt Race",
+          "description": "Wrap ice cubes in different materials. Which melts first?",
+          "tip": "The conductor lets heat in — ice melts faster"
+        }
+      ],
+      "direct_aims": [
+        "Heat transfer",
+        "Conductors and insulators"
+      ],
+      "indirect_aims": [
+        "Scientific vocabulary",
+        "Measurement"
+      ],
+      "materials_needed": [
+        "Thermic tablets",
+        "Metal and wood spoons",
+        "Warm water",
+        "Thermometer",
+        "Ice cubes",
+        "Various materials"
+      ],
+      "control_of_error": "Temperature reading incorrect — re-read thermometer",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Feeling the metal spoon warm up",
+        "Ice melt race",
+        "Reading the thermometer"
+      ],
+      "variations": [
+        "Cook something — where does heat go?",
+        "Insulation challenge: keep ice frozen longest",
+        "Body temperature measurement"
+      ],
+      "common_challenges": [
+        "Supervise warm water carefully",
+        "Metal spoon can get hot — monitor temperature",
+        "Thermometer reading takes practice"
+      ],
+      "video_search_term": "montessori heat experiments conduction insulation children",
+      "parent_description": "Your child discovers heat transfer by putting a metal spoon and a wooden spoon in warm water — only the metal one gets hot! They sort materials into conductors and insulators, learn to read a thermometer, and race to see which wrapping melts ice cubes fastest.",
+      "why_it_matters": "Understanding heat is both scientific and practical. When your child learns that metal conducts heat but wool insulates, they understand why pots have wooden handles and why we wear jumpers in winter. These everyday connections make physics meaningful and memorable."
+    },
+    {
+      "work_id": "cu_timeline_civilisations",
+      "name": "Timeline of Civilisations",
+      "name_chinese": "蒙特梭利文明时间线",
+      "slug": "timeline-civilisations",
+      "area": "cultural",
+      "category": "History and Time",
+      "sequence": 4,
+      "age_range": "primary_year3",
+      "quick_guide": "• A long, visual timeline showing the rise of major civilisations\n• Mesopotamia, Egypt, Indus Valley, China, Greece, Rome, and more\n• Picture cards placed along the timeline\n• Each civilisation's contributions: writing, mathematics, architecture\n• The timeline is LONG — showing the vast sweep of human history\n• Children begin to place their own time in context",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Unroll",
+          "description": "Unroll the full timeline. 'This is the story of human civilisations'",
+          "tip": "The length itself makes an impression"
+        },
+        {
+          "step": 2,
+          "title": "First Civilisations",
+          "description": "Place cards for Mesopotamia and Egypt",
+          "tip": "These are the oldest — near rivers"
+        },
+        {
+          "step": 3,
+          "title": "Spread",
+          "description": "Add Indus Valley, China, Greece, Rome over subsequent lessons",
+          "tip": "One or two per lesson"
+        },
+        {
+          "step": 4,
+          "title": "Contributions",
+          "description": "What did each give us? Writing, math, democracy, roads",
+          "tip": "Every civilisation contributed something"
+        },
+        {
+          "step": 5,
+          "title": "Discussion",
+          "description": "Where are we on the timeline? How recent is our time?",
+          "tip": "A powerful perspective shift"
+        }
+      ],
+      "direct_aims": [
+        "Chronological thinking",
+        "Major civilisations"
+      ],
+      "indirect_aims": [
+        "Sense of time",
+        "Cultural appreciation"
+      ],
+      "materials_needed": [
+        "Timeline of civilisations chart",
+        "Civilisation cards",
+        "Picture cards"
+      ],
+      "control_of_error": "Cards placed in wrong time period — check dates",
+      "prerequisites": [
+        "cu_personal_timeline"
+      ],
+      "points_of_interest": [
+        "The vast length of the timeline",
+        "Discovering inventions",
+        "How recent our time is"
+      ],
+      "variations": [
+        "Research one civilisation in depth",
+        "Create a contributions chart",
+        "Visit a museum"
+      ],
+      "common_challenges": [
+        "Don't try to cover all civilisations at once",
+        "Stories bring each civilisation to life",
+        "Focus on contributions, not conflicts"
+      ],
+      "video_search_term": "montessori timeline civilisations history children",
+      "parent_description": "Your child unrolls a long, beautiful timeline showing the great civilisations of human history — from ancient Mesopotamia to the modern world. They place picture cards along the timeline, discovering what each civilisation gave us: writing, mathematics, architecture, democracy.",
+      "why_it_matters": "Understanding where we come from gives children a sense of belonging to the human story. The timeline of civilisations shows your child that every culture has contributed something precious, building respect for diversity and inspiring them to wonder: what will WE contribute?"
+    },
+    {
+      "work_id": "cu_artist_study",
+      "name": "Artist Study",
+      "name_chinese": "蒙特梭利艺术家研究",
+      "slug": "artist-study",
+      "area": "cultural",
+      "category": "Art",
+      "sequence": 7,
+      "age_range": "primary_year2",
+      "quick_guide": "• Deep dive into one artist at a time\n• Display 3-4 prints by the same artist\n• Observe: colours, shapes, subject, mood, technique\n• Learn about the artist's life and historical context\n• Create artwork inspired by (not copying) the artist's style\n• Rotate artists monthly: Monet, Van Gogh, Hokusai, Frida Kahlo, etc.",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Display",
+          "description": "Show 3-4 prints by one artist. Observe silently first",
+          "tip": "Let the art speak before words"
+        },
+        {
+          "step": 2,
+          "title": "Discuss",
+          "description": "'What do you notice? What colours? How does it make you feel?'",
+          "tip": "No right or wrong answers"
+        },
+        {
+          "step": 3,
+          "title": "Biography",
+          "description": "Brief, engaging story of the artist's life",
+          "tip": "Focus on what drove them to create"
+        },
+        {
+          "step": 4,
+          "title": "Technique",
+          "description": "What makes this artist special? Monet: light and color. Hokusai: waves and nature",
+          "tip": "Simple art vocabulary"
+        },
+        {
+          "step": 5,
+          "title": "Create",
+          "description": "Make your own artwork INSPIRED by the artist's style",
+          "tip": "Inspired by, not copying"
+        }
+      ],
+      "direct_aims": [
+        "Art vocabulary",
+        "Understanding art styles"
+      ],
+      "indirect_aims": [
+        "Cultural literacy",
+        "Creative expression"
+      ],
+      "materials_needed": [
+        "Art prints (3-4 per artist)",
+        "Biography cards",
+        "Art materials matching the artist's medium"
+      ],
+      "control_of_error": "None — art appreciation is subjective",
+      "prerequisites": [
+        "cu_art_appreciation"
+      ],
+      "points_of_interest": [
+        "Discovering a favourite artist",
+        "Creating their own art",
+        "Artist life stories"
+      ],
+      "variations": [
+        "Visit a gallery",
+        "Compare two artists",
+        "Create a class art gallery"
+      ],
+      "common_challenges": [
+        "Rotate artists regularly — depth over breadth",
+        "Children's responses to art should never be corrected",
+        "Provide quality reproductions"
+      ],
+      "video_search_term": "montessori artist study children art appreciation",
+      "parent_description": "Your child spends time with prints by one artist — looking closely, noticing colours and shapes, discussing how the art makes them feel. They learn about the artist's life and what drove them to create, then make their own artwork inspired by that artist's style.",
+      "why_it_matters": "Art appreciation builds observation skills, emotional intelligence, and cultural literacy. When your child studies an artist in depth, they learn to look carefully, express what they see and feel, and understand that art is a form of human communication across time and cultures."
+    },
+    {
+      "work_id": "cu_weaving",
+      "name": "Weaving and Textile Art",
+      "name_chinese": "蒙特梭利编织与纺织艺术",
+      "slug": "weaving-textile-art",
+      "area": "cultural",
+      "category": "Art",
+      "sequence": 8,
+      "age_range": "primary_year1",
+      "quick_guide": "• Start with paper weaving: over-under pattern with paper strips\n• Progress to simple loom with yarn\n• The over-under pattern is deeply mathematical\n• Children create beautiful, functional items\n• Connects to practical life (hand control) and math (patterns)\n• Cultural context: weaving traditions from around the world",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Paper Weaving",
+          "description": "Cut slits in paper, weave strips over-under",
+          "tip": "Use contrasting colours so the pattern shows clearly"
+        },
+        {
+          "step": 2,
+          "title": "Pattern",
+          "description": "Over-under-over-under. What happens if you start differently?",
+          "tip": "Two different starting points create different patterns"
+        },
+        {
+          "step": 3,
+          "title": "Loom Introduction",
+          "description": "Set up a simple loom with warp threads",
+          "tip": "Show how the warp stays still, weft moves"
+        },
+        {
+          "step": 4,
+          "title": "Weaving",
+          "description": "Child weaves yarn through warp threads",
+          "tip": "Steady rhythm: over, under, over, under"
+        },
+        {
+          "step": 5,
+          "title": "Finish",
+          "description": "Remove from loom, tie off ends. A real woven creation!",
+          "tip": "This becomes a treasured item"
+        }
+      ],
+      "direct_aims": [
+        "Weaving technique",
+        "Pattern creation"
+      ],
+      "indirect_aims": [
+        "Fine motor",
+        "Concentration",
+        "Mathematical patterning"
+      ],
+      "materials_needed": [
+        "Construction paper",
+        "Simple loom",
+        "Yarn in various colours",
+        "Large plastic needle"
+      ],
+      "control_of_error": "Weave not tight enough or pattern breaks — unweave and redo",
+      "prerequisites": [],
+      "points_of_interest": [
+        "The pattern emerging",
+        "Creating something real",
+        "Colour combinations"
+      ],
+      "variations": [
+        "Weave a placemat",
+        "Finger knitting",
+        "Friendship bracelets"
+      ],
+      "common_challenges": [
+        "Paper weaving must come before loom work",
+        "Use thick yarn for beginners",
+        "Patience is needed — start small"
+      ],
+      "video_search_term": "montessori weaving children loom textile",
+      "parent_description": "Your child learns the ancient art of weaving — starting with colourful paper strips woven over-and-under, then progressing to a real loom with yarn. They discover that this simple pattern creates something beautiful and functional, connecting them to weaving traditions from around the world.",
+      "why_it_matters": "Weaving is where art meets mathematics. The over-under pattern develops fine motor control, concentration, and mathematical thinking about patterns and sequences. Children who weave develop patience and the satisfaction of creating something beautiful with their own hands."
+    },
+    {
+      "work_id": "cu_colour_theory",
+      "name": "Colour Theory",
+      "name_chinese": "蒙特梭利色彩理论",
+      "slug": "colour-theory",
+      "area": "cultural",
+      "category": "Art",
+      "sequence": 9,
+      "age_range": "primary_year1",
+      "quick_guide": "• Primary colours: red, blue, yellow — cannot be mixed from other colours\n• Secondary colours: mix two primaries → orange, green, purple\n• The colour wheel shows relationships between colours\n• Complementary colours: opposite on the wheel (red-green, blue-orange)\n• Warm vs cool colours\n• Connects to Colour Box 3 from Sensorial area",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Primary Colours",
+          "description": "Present red, blue, yellow paint. 'These three colours are special — you cannot make them by mixing'",
+          "tip": "These are the ONLY colours you can't mix"
+        },
+        {
+          "step": 2,
+          "title": "Mixing",
+          "description": "Red + yellow = ? Let child mix and discover orange",
+          "tip": "The surprise of mixing is powerful"
+        },
+        {
+          "step": 3,
+          "title": "All Secondary",
+          "description": "Red+blue=purple, blue+yellow=green. Now we have 6 colours",
+          "tip": "Child mixes all three pairs"
+        },
+        {
+          "step": 4,
+          "title": "Colour Wheel",
+          "description": "Arrange the 6 colours in a wheel: primary, secondary alternating",
+          "tip": "The wheel shows colour relationships"
+        },
+        {
+          "step": 5,
+          "title": "Exploration",
+          "description": "Tints (add white), shades (add black). Warm vs cool colours",
+          "tip": "Infinite colours from just 3 primaries"
+        }
+      ],
+      "direct_aims": [
+        "Primary and secondary colours",
+        "Colour mixing"
+      ],
+      "indirect_aims": [
+        "Sensorial refinement",
+        "Scientific observation"
+      ],
+      "materials_needed": [
+        "Primary colour paints",
+        "Mixing palette",
+        "White paper",
+        "Colour wheel template"
+      ],
+      "control_of_error": "Mixed colour doesn't match expected — add more of one primary",
+      "prerequisites": [],
+      "points_of_interest": [
+        "The surprise of mixing",
+        "Creating new colours",
+        "The colour wheel pattern"
+      ],
+      "variations": [
+        "Mix to match a specific colour",
+        "Warm/cool colour paintings",
+        "Colour scavenger hunt"
+      ],
+      "common_challenges": [
+        "Use high-quality paints — cheap paints don't mix true colours",
+        "Let mixing be discovery, not instruction",
+        "Connect to Colour Box 3 grading work"
+      ],
+      "video_search_term": "montessori colour theory mixing primary secondary",
+      "parent_description": "Your child discovers the magic of colour mixing — just three colours (red, blue, yellow) can make every colour in the rainbow! They mix pairs to create orange, green, and purple, arrange them all in a colour wheel, and explore how adding white or black creates even more shades.",
+      "why_it_matters": "Colour theory develops scientific thinking through art. Mixing colours is a real experiment — your child predicts, tests, and observes results. Understanding how colours relate builds a foundation for visual arts, design, and even science (light and optics)."
+    },
+    {
+      "work_id": "cu_staff_notation",
+      "name": "Staff Notation Introduction",
+      "name_chinese": "蒙特梭利五线谱入门",
+      "slug": "staff-notation",
+      "area": "cultural",
+      "category": "Music",
+      "sequence": 6,
+      "age_range": "primary_year2",
+      "quick_guide": "• The staff: 5 lines and 4 spaces\n• Each line and space represents a note\n• Lines: E G B D F ('Every Good Boy Does Fine')\n• Spaces: F A C E (spells 'face')\n• Use a staff board with moveable note tokens\n• Connects bells to written music — play what you read",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "The Staff",
+          "description": "Draw 5 lines. 'This is a staff — music's home'",
+          "tip": "Five lines, four spaces"
+        },
+        {
+          "step": 2,
+          "title": "Notes on Lines",
+          "description": "Place note tokens on lines: E, G, B, D, F from bottom",
+          "tip": "Every Good Boy Does Fine — a memory helper"
+        },
+        {
+          "step": 3,
+          "title": "Notes in Spaces",
+          "description": "Place tokens in spaces: F, A, C, E from bottom",
+          "tip": "FACE — it spells a word!"
+        },
+        {
+          "step": 4,
+          "title": "Reading",
+          "description": "Point to notes on staff, child names them",
+          "tip": "Start slow, build speed"
+        },
+        {
+          "step": 5,
+          "title": "Playing",
+          "description": "Read notes from staff, play them on bells",
+          "tip": "Reading music becomes making music"
+        }
+      ],
+      "direct_aims": [
+        "Reading musical notation",
+        "Note names"
+      ],
+      "indirect_aims": [
+        "Symbol recognition",
+        "Mathematical patterns"
+      ],
+      "materials_needed": [
+        "Staff board",
+        "Moveable note tokens",
+        "Music notation cards",
+        "Bells"
+      ],
+      "control_of_error": "Note placed on wrong line or space — count lines carefully",
+      "prerequisites": [
+        "cu_bells"
+      ],
+      "points_of_interest": [
+        "Reading real music notation",
+        "Playing from the staff",
+        "Memory tricks"
+      ],
+      "variations": [
+        "Write simple melodies on staff",
+        "Compose and play",
+        "Read real simple sheet music"
+      ],
+      "common_challenges": [
+        "Start with just the lines OR just the spaces, not both",
+        "Mnemonics help but understanding is the goal",
+        "Connect immediately to playing bells"
+      ],
+      "video_search_term": "montessori staff notation introduction children music",
+      "parent_description": "Your child learns to read music by placing note tokens on a staff board — five lines and four spaces, each one a different note. They learn fun memory tricks ('Every Good Boy Does Fine' for the lines, 'FACE' for the spaces) and then play what they read on the Montessori bells!",
+      "why_it_matters": "Reading music is reading a language — it develops the same decoding skills as reading words. When your child translates symbols on a page into sounds they can play, they're building connections between visual, auditory, and motor systems that strengthen overall learning."
+    },
+    {
+      "work_id": "cu_rhythm_exercises",
+      "name": "Rhythm Exercises",
+      "name_chinese": "蒙特梭利节奏练习",
+      "slug": "rhythm-exercises",
+      "area": "cultural",
+      "category": "Music",
+      "sequence": 7,
+      "age_range": "primary_year1",
+      "quick_guide": "• Structured rhythm reading using visual rhythm cards\n• Ta = crotchet (1 beat), ti-ti = quavers (half beat each)\n• Clap, tap, or use instruments to play rhythm patterns\n• Keeping a steady beat is the foundation\n• Progress from simple to complex patterns including rests\n• Connects mathematical division of time to music",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Steady Beat",
+          "description": "Clap together: steady, even beats. 'This is the heartbeat of music'",
+          "tip": "Use a drum or claves for clear sound"
+        },
+        {
+          "step": 2,
+          "title": "Ta and Ti-Ti",
+          "description": "Introduce rhythm cards: ta (walk) = 1 beat, ti-ti (run) = 2 in 1 beat",
+          "tip": "Walk and run are helpful analogies"
+        },
+        {
+          "step": 3,
+          "title": "Read Patterns",
+          "description": "Lay out rhythm cards, clap the pattern",
+          "tip": "Start with 4-beat patterns"
+        },
+        {
+          "step": 4,
+          "title": "Create",
+          "description": "Child arranges cards to create their own rhythm",
+          "tip": "Then clap their creation"
+        },
+        {
+          "step": 5,
+          "title": "Complex",
+          "description": "Add rest (silence), dotted notes, syncopation",
+          "tip": "Only when basic patterns are solid"
+        }
+      ],
+      "direct_aims": [
+        "Rhythm reading",
+        "Steady beat"
+      ],
+      "indirect_aims": [
+        "Mathematical division",
+        "Coordination"
+      ],
+      "materials_needed": [
+        "Rhythm cards (ta, ti-ti, rest)",
+        "Claves or rhythm sticks",
+        "Drum"
+      ],
+      "control_of_error": "Rhythm doesn't match card — slow down and retry",
+      "prerequisites": [
+        "cu_rhythm"
+      ],
+      "points_of_interest": [
+        "Creating their own rhythms",
+        "The challenge of rests (staying silent!)",
+        "Group rhythm games"
+      ],
+      "variations": [
+        "Rhythm dictation — teacher claps, child writes",
+        "Body percussion patterns",
+        "Rhythm conversation (call and response)"
+      ],
+      "common_challenges": [
+        "Walking pace for ta, running for ti-ti — use movement first",
+        "Rests are hard — silence requires control",
+        "Keep it playful"
+      ],
+      "video_search_term": "montessori rhythm exercises reading patterns children",
+      "parent_description": "Your child reads rhythm patterns from cards — 'ta' for a walking beat, 'ti-ti' for a running beat — then claps them out! They create their own rhythm patterns by arranging cards, and discover that even silence (rests) is part of music. It's mathematics made musical!",
+      "why_it_matters": "Rhythm is the mathematics of music. When your child reads rhythm patterns and keeps a steady beat, they're dividing time into equal parts — the same skill used in fractions, measurement, and scientific observation. Music and math share deep structural connections."
+    },
+    {
+      "work_id": "cu_cultural_music",
+      "name": "Cultural Music Study",
+      "name_chinese": "蒙特梭利世界音乐研究",
+      "slug": "cultural-music-study",
+      "area": "cultural",
+      "category": "Music",
+      "sequence": 8,
+      "age_range": "primary_year2",
+      "quick_guide": "• Listen to music from all continents\n• Discover instruments unique to each culture: djembe, sitar, didgeridoo, pan flute\n• Discuss: how does this music make you feel? How is it different from what we usually hear?\n• Connect to continent study folders — music is a fundamental human need\n• Avoid stereotyping — show contemporary and traditional music\n• Every culture expresses itself through music",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Listen",
+          "description": "Play a piece of music from another culture. Listen with eyes closed",
+          "tip": "Let the music create its own impression"
+        },
+        {
+          "step": 2,
+          "title": "Discuss",
+          "description": "'How did that make you feel? What instruments did you hear?'",
+          "tip": "No right or wrong responses"
+        },
+        {
+          "step": 3,
+          "title": "Instruments",
+          "description": "Show pictures or real instruments from that culture",
+          "tip": "Each culture developed unique instruments"
+        },
+        {
+          "step": 4,
+          "title": "Geography",
+          "description": "Find the culture on the globe. Add music to continent folder",
+          "tip": "Music connects to geography"
+        },
+        {
+          "step": 5,
+          "title": "Compare",
+          "description": "Listen to music from 2-3 cultures. What's similar? What's different?",
+          "tip": "All music has rhythm, melody, and feeling"
+        }
+      ],
+      "direct_aims": [
+        "Musical diversity",
+        "Cultural awareness"
+      ],
+      "indirect_aims": [
+        "Listening skills",
+        "Empathy"
+      ],
+      "materials_needed": [
+        "World music recordings",
+        "Instrument pictures or replicas",
+        "Globe"
+      ],
+      "control_of_error": "Instrument matched to wrong culture — research together",
+      "prerequisites": [
+        "cu_music_appreciation"
+      ],
+      "points_of_interest": [
+        "New and unusual sounds",
+        "Discovering instruments",
+        "Finding the beat"
+      ],
+      "variations": [
+        "Learn a song from another culture",
+        "Try playing a world instrument",
+        "Dance to world music"
+      ],
+      "common_challenges": [
+        "Show both traditional AND contemporary music from each culture",
+        "Avoid stereotypes",
+        "Let children respond naturally"
+      ],
+      "video_search_term": "montessori world music cultural study children",
+      "parent_description": "Your child listens to music from around the world — African drums, Indian sitar, Australian didgeridoo, South American pan flutes — and discovers that every culture expresses itself through music. They find each culture on the globe and discuss what makes each musical tradition unique and beautiful.",
+      "why_it_matters": "Music is a universal language, and exposure to diverse musical traditions builds cultural appreciation and empathy. When your child hears a djembe or a sitar, they're connecting to human expression across continents, developing open-mindedness and respect for different cultures."
+    },
+    {
+      "work_id": "cu_composing",
+      "name": "Composing Simple Music",
+      "name_chinese": "蒙特梭利简单作曲",
+      "slug": "composing-simple-music",
+      "area": "cultural",
+      "category": "Music",
+      "sequence": 9,
+      "age_range": "primary_year3",
+      "quick_guide": "• Start with just two notes — even two notes can make a melody\n• Pentatonic scale (5 notes) always sounds pleasant — no wrong combinations\n• Use bells to compose, then record on staff paper\n• The creative act of making original music\n• Children can play their compositions for others\n• Connects reading notation (staff) to writing notation",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Two Notes",
+          "description": "Using just C and D on the bells, make different patterns",
+          "tip": "Even two notes have many combinations"
+        },
+        {
+          "step": 2,
+          "title": "Pentatonic",
+          "description": "Add E, G, A — the pentatonic scale. Any combination sounds good",
+          "tip": "This scale is used worldwide — it always sounds pleasant"
+        },
+        {
+          "step": 3,
+          "title": "Compose",
+          "description": "Create a melody on the bells. Play it several times to remember",
+          "tip": "Repetition solidifies the melody"
+        },
+        {
+          "step": 4,
+          "title": "Record",
+          "description": "Write the melody on staff paper",
+          "tip": "Connects playing to notation"
+        },
+        {
+          "step": 5,
+          "title": "Perform",
+          "description": "Play the composition for classmates",
+          "tip": "The joy of sharing original music"
+        }
+      ],
+      "direct_aims": [
+        "Creative musical expression",
+        "Understanding melody"
+      ],
+      "indirect_aims": [
+        "Composition skills",
+        "Self-expression"
+      ],
+      "materials_needed": [
+        "Montessori bells",
+        "Staff paper",
+        "Pencil"
+      ],
+      "control_of_error": "Melody doesn't sound as intended — revise and try again",
+      "prerequisites": [
+        "cu_bells",
+        "cu_staff_notation"
+      ],
+      "points_of_interest": [
+        "Creating something original",
+        "Playing for others",
+        "Writing it down"
+      ],
+      "variations": [
+        "Add lyrics to melody",
+        "Compose for two players",
+        "Create a class songbook"
+      ],
+      "common_challenges": [
+        "Pentatonic scale is key — it removes the fear of wrong notes",
+        "Let children compose freely",
+        "Every composition is valid"
+      ],
+      "video_search_term": "montessori composing melody bells pentatonic children",
+      "parent_description": "Your child becomes a composer! Starting with just two notes on the Montessori bells, they create original melodies, then expand to five notes (the pentatonic scale — where everything sounds beautiful). They write their melodies on staff paper and play them for classmates. Original music, created by your child!",
+      "why_it_matters": "Composing music is one of the highest forms of creative expression. When your child creates a melody, they're making artistic decisions, understanding structure, and expressing emotions through sound. The pentatonic scale ensures success — every combination sounds pleasant, so there are no wrong notes."
     }
   ]
 }
