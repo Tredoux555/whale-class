@@ -12,13 +12,470 @@
       "description": "Physical and political geography",
       "sequence": 1,
       "works": [
-        {"id": "cu_globe_land_water", "name": "Globe - Land and Water", "description": "Sandpaper globe", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Sandpaper Globe"], "directAims": ["Land/water distinction"], "indirectAims": ["Earth awareness"], "controlOfError": "Texture difference", "chineseName": "蒙特梭利砂纸地球仪", "levels": [{"level": 1, "name": "Introduction", "description": "Feel land and water", "videoSearchTerms": ["montessori sandpaper globe"]}]},
-        {"id": "cu_globe_continents", "name": "Globe - Continents", "description": "Colored continent globe", "ageRange": "primary_year1", "prerequisites": ["cu_globe_land_water"], "sequence": 2, "materials": ["Colored Globe"], "directAims": ["Continent names"], "indirectAims": ["World awareness"], "controlOfError": "Colors", "chineseName": "蒙特梭利彩色地球仪", "levels": [{"level": 1, "name": "Continent Names", "description": "Learn 7 continents", "videoSearchTerms": ["montessori colored globe"]}]},
-        {"id": "cu_puzzle_map_world", "name": "Puzzle Map - World", "description": "World map with continent pieces", "ageRange": "primary_year1", "prerequisites": ["cu_globe_continents"], "sequence": 3, "materials": ["World Puzzle Map"], "directAims": ["Continent shapes"], "indirectAims": ["Map reading"], "controlOfError": "Pieces don't fit", "chineseName": "蒙特梭利世界地图拼图", "levels": [{"level": 1, "name": "Building Map", "description": "Place all continents", "videoSearchTerms": ["montessori world puzzle map"]}, {"level": 2, "name": "Naming", "description": "Name continents", "videoSearchTerms": ["montessori world map naming"]}, {"level": 3, "name": "Tracing", "description": "Trace for booklet", "videoSearchTerms": ["montessori continent tracing"]}]},
-        {"id": "cu_puzzle_maps_continents", "name": "Puzzle Maps - Individual Continents", "description": "Maps for each continent with countries", "ageRange": "primary_year1", "prerequisites": ["cu_puzzle_map_world"], "sequence": 4, "materials": ["6 Continent Puzzle Maps"], "directAims": ["Country recognition"], "indirectAims": ["Cultural awareness"], "controlOfError": "Pieces don't fit", "chineseName": "蒙特梭利大洲地图拼图", "levels": [{"level": 1, "name": "North America", "description": "Countries of North America", "videoSearchTerms": ["montessori North America map"]}, {"level": 2, "name": "South America", "description": "Countries of South America", "videoSearchTerms": ["montessori South America map"]}, {"level": 3, "name": "Europe", "description": "Countries of Europe", "videoSearchTerms": ["montessori Europe map"]}, {"level": 4, "name": "Africa", "description": "Countries of Africa", "videoSearchTerms": ["montessori Africa map"]}, {"level": 5, "name": "Asia", "description": "Countries of Asia", "videoSearchTerms": ["montessori Asia map"]}, {"level": 6, "name": "Australia/Oceania", "description": "Regions of Oceania", "videoSearchTerms": ["montessori Australia map"]}]},
-        {"id": "cu_flags", "name": "Flags of the World", "description": "Country flags", "ageRange": "primary_year1", "prerequisites": ["cu_puzzle_maps_continents"], "sequence": 5, "materials": ["Flag stands", "Miniature flags"], "directAims": ["Flag recognition"], "indirectAims": ["Cultural awareness"], "controlOfError": "Flag mismatch", "chineseName": "蒙特梭利世界国旗", "levels": [{"level": 1, "name": "Matching to Map", "description": "Place flags on countries", "videoSearchTerms": ["montessori flags map"]}, {"level": 2, "name": "Flag Identification", "description": "Name countries from flags", "videoSearchTerms": ["montessori flag identification"]}]},
-        {"id": "cu_land_water_forms", "name": "Land and Water Forms", "description": "3D models of landforms", "ageRange": "primary_year1", "prerequisites": ["cu_globe_land_water"], "sequence": 6, "materials": ["Land/Water Form trays"], "directAims": ["Landform vocabulary"], "indirectAims": ["Geography concepts"], "controlOfError": "Water placement", "chineseName": "蒙特梭利陆地水体模型", "levels": [{"level": 1, "name": "Island/Lake", "description": "First pair", "videoSearchTerms": ["montessori island lake"]}, {"level": 2, "name": "Peninsula/Gulf", "description": "Second pair", "videoSearchTerms": ["montessori peninsula gulf"]}, {"level": 3, "name": "Isthmus/Strait", "description": "Third pair", "videoSearchTerms": ["montessori isthmus strait"]}, {"level": 4, "name": "Cape/Bay", "description": "Fourth pair", "videoSearchTerms": ["montessori cape bay"]}, {"level": 5, "name": "All Forms", "description": "All pairs together", "videoSearchTerms": ["montessori land water forms"]}]},
-        {"id": "cu_solar_system", "name": "Solar System", "description": "Planets and sun", "ageRange": "primary_year2", "prerequisites": ["cu_globe_land_water"], "sequence": 7, "materials": ["Solar system model"], "directAims": ["Planet names", "Earth in space"], "indirectAims": ["Wonder"], "controlOfError": "Order incorrect", "chineseName": "蒙特梭利太阳系", "levels": [{"level": 1, "name": "Planets", "description": "Learn planet names and order", "videoSearchTerms": ["montessori solar system"]}]}
+        {
+          "id": "cu_globe_land_water",
+          "name": "Globe - Land and Water",
+          "description": "Sandpaper globe",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Sandpaper Globe"
+          ],
+          "directAims": [
+            "Land/water distinction"
+          ],
+          "indirectAims": [
+            "Earth awareness"
+          ],
+          "controlOfError": "Texture difference",
+          "chineseName": "蒙特梭利砂纸地球仪",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Introduction",
+              "description": "Feel land and water",
+              "videoSearchTerms": [
+                "montessori sandpaper globe"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_globe_continents",
+          "name": "Globe - Continents",
+          "description": "Colored continent globe",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_globe_land_water"
+          ],
+          "sequence": 2,
+          "materials": [
+            "Colored Globe"
+          ],
+          "directAims": [
+            "Continent names"
+          ],
+          "indirectAims": [
+            "World awareness"
+          ],
+          "controlOfError": "Colors",
+          "chineseName": "蒙特梭利彩色地球仪",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Continent Names",
+              "description": "Learn 7 continents",
+              "videoSearchTerms": [
+                "montessori colored globe"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_puzzle_map_world",
+          "name": "Puzzle Map - World",
+          "description": "World map with continent pieces",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_globe_continents"
+          ],
+          "sequence": 3,
+          "materials": [
+            "World Puzzle Map"
+          ],
+          "directAims": [
+            "Continent shapes"
+          ],
+          "indirectAims": [
+            "Map reading"
+          ],
+          "controlOfError": "Pieces don't fit",
+          "chineseName": "蒙特梭利世界地图拼图",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Building Map",
+              "description": "Place all continents",
+              "videoSearchTerms": [
+                "montessori world puzzle map"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Naming",
+              "description": "Name continents",
+              "videoSearchTerms": [
+                "montessori world map naming"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Tracing",
+              "description": "Trace for booklet",
+              "videoSearchTerms": [
+                "montessori continent tracing"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_puzzle_maps_continents",
+          "name": "Puzzle Maps - Individual Continents",
+          "description": "Maps for each continent with countries",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_puzzle_map_world"
+          ],
+          "sequence": 4,
+          "materials": [
+            "6 Continent Puzzle Maps"
+          ],
+          "directAims": [
+            "Country recognition"
+          ],
+          "indirectAims": [
+            "Cultural awareness"
+          ],
+          "controlOfError": "Pieces don't fit",
+          "chineseName": "蒙特梭利大洲地图拼图",
+          "levels": [
+            {
+              "level": 1,
+              "name": "North America",
+              "description": "Countries of North America",
+              "videoSearchTerms": [
+                "montessori North America map"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "South America",
+              "description": "Countries of South America",
+              "videoSearchTerms": [
+                "montessori South America map"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Europe",
+              "description": "Countries of Europe",
+              "videoSearchTerms": [
+                "montessori Europe map"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Africa",
+              "description": "Countries of Africa",
+              "videoSearchTerms": [
+                "montessori Africa map"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "Asia",
+              "description": "Countries of Asia",
+              "videoSearchTerms": [
+                "montessori Asia map"
+              ]
+            },
+            {
+              "level": 6,
+              "name": "Australia/Oceania",
+              "description": "Regions of Oceania",
+              "videoSearchTerms": [
+                "montessori Australia map"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_flags",
+          "name": "Flags of the World",
+          "description": "Country flags",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_puzzle_maps_continents"
+          ],
+          "sequence": 5,
+          "materials": [
+            "Flag stands",
+            "Miniature flags"
+          ],
+          "directAims": [
+            "Flag recognition"
+          ],
+          "indirectAims": [
+            "Cultural awareness"
+          ],
+          "controlOfError": "Flag mismatch",
+          "chineseName": "蒙特梭利世界国旗",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Matching to Map",
+              "description": "Place flags on countries",
+              "videoSearchTerms": [
+                "montessori flags map"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Flag Identification",
+              "description": "Name countries from flags",
+              "videoSearchTerms": [
+                "montessori flag identification"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_land_water_forms",
+          "name": "Land and Water Forms",
+          "description": "3D models of landforms",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_globe_land_water"
+          ],
+          "sequence": 6,
+          "materials": [
+            "Land/Water Form trays"
+          ],
+          "directAims": [
+            "Landform vocabulary"
+          ],
+          "indirectAims": [
+            "Geography concepts"
+          ],
+          "controlOfError": "Water placement",
+          "chineseName": "蒙特梭利陆地水体模型",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Island/Lake",
+              "description": "First pair",
+              "videoSearchTerms": [
+                "montessori island lake"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Peninsula/Gulf",
+              "description": "Second pair",
+              "videoSearchTerms": [
+                "montessori peninsula gulf"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Isthmus/Strait",
+              "description": "Third pair",
+              "videoSearchTerms": [
+                "montessori isthmus strait"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Cape/Bay",
+              "description": "Fourth pair",
+              "videoSearchTerms": [
+                "montessori cape bay"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "All Forms",
+              "description": "All pairs together",
+              "videoSearchTerms": [
+                "montessori land water forms"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_solar_system",
+          "name": "Solar System",
+          "description": "Planets and sun",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_globe_land_water"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Solar system model"
+          ],
+          "directAims": [
+            "Planet names",
+            "Earth in space"
+          ],
+          "indirectAims": [
+            "Wonder"
+          ],
+          "controlOfError": "Order incorrect",
+          "chineseName": "蒙特梭利太阳系",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Planets",
+              "description": "Learn planet names and order",
+              "videoSearchTerms": [
+                "montessori solar system"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_land_water_trays",
+          "name": "Land and Water Form Trays",
+          "description": "Tactile geography forms filled with water",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 10,
+          "materials": [
+            "Land and water form trays (2 sets)",
+            "Water jug",
+            "Sponge"
+          ],
+          "directAims": [
+            "Understanding land/water formations",
+            "Geographic vocabulary"
+          ],
+          "indirectAims": [
+            "Sensorial geography",
+            "Vocabulary enrichment"
+          ],
+          "controlOfError": "Water overflows or wrong form identified",
+          "chineseName": "蒙特梭利陆水形式托盘",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Basic Forms",
+              "description": "Island/lake, peninsula/gulf, isthmus/strait",
+              "videoSearchTerms": [
+                "montessori land water forms"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Advanced Forms",
+              "description": "Cape/bay, archipelago/chain of lakes",
+              "videoSearchTerms": [
+                "montessori land water forms advanced"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Real Examples",
+              "description": "Match forms to real-world locations on globe",
+              "videoSearchTerms": [
+                "montessori land water real examples"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_continent_folders",
+          "name": "Continent Study Folders",
+          "description": "In-depth study of each continent",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_world_map_puzzle"
+          ],
+          "sequence": 11,
+          "materials": [
+            "Continent folders with pictures",
+            "Flag pins",
+            "Animal figures"
+          ],
+          "directAims": [
+            "Knowledge of continents",
+            "Cultural awareness"
+          ],
+          "indirectAims": [
+            "Research skills",
+            "Reading practice"
+          ],
+          "controlOfError": "Information placed in wrong continent folder",
+          "chineseName": "蒙特梭利大陆研究文件夹",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Animals",
+              "description": "Animals of each continent",
+              "videoSearchTerms": [
+                "montessori continent animals"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Flags and Countries",
+              "description": "Flags and major countries",
+              "videoSearchTerms": [
+                "montessori continent flags"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Culture",
+              "description": "Food, dress, music of each continent",
+              "videoSearchTerms": [
+                "montessori continent culture study"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_physical_features",
+          "name": "Physical Features and Landforms",
+          "description": "Study of mountains, rivers, deserts etc.",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_land_water_trays"
+          ],
+          "sequence": 12,
+          "materials": [
+            "Landform models or cards",
+            "Nomenclature cards",
+            "Globe"
+          ],
+          "directAims": [
+            "Identifying major landforms",
+            "Geographic vocabulary"
+          ],
+          "indirectAims": [
+            "Reading",
+            "Classification"
+          ],
+          "controlOfError": "Cards don't match landform",
+          "chineseName": "蒙特梭利地形地貌",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Nomenclature",
+              "description": "Mountain, valley, river, desert, plain, plateau",
+              "videoSearchTerms": [
+                "montessori landform nomenclature"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Matching",
+              "description": "Match photos to landform names",
+              "videoSearchTerms": [
+                "montessori landform matching"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "World Examples",
+              "description": "Find these features on the globe",
+              "videoSearchTerms": [
+                "montessori physical features globe"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -27,12 +484,299 @@
       "description": "Time concepts and historical awareness",
       "sequence": 2,
       "works": [
-        {"id": "cu_calendar", "name": "Calendar Work", "description": "Days, weeks, months", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Calendar", "Day/month cards"], "directAims": ["Time sequence"], "indirectAims": ["Routine"], "controlOfError": "Date incorrect", "chineseName": "蒙特梭利日历", "levels": [{"level": 1, "name": "Days of Week", "description": "Learn day names", "videoSearchTerms": ["montessori days week"]}, {"level": 2, "name": "Months", "description": "Learn month names", "videoSearchTerms": ["montessori months year"]}, {"level": 3, "name": "Seasons", "description": "Four seasons", "videoSearchTerms": ["montessori seasons"]}]},
-        {"id": "cu_birthday_celebration", "name": "Birthday Celebration", "description": "Walking around the sun", "ageRange": "primary_year1", "prerequisites": ["cu_calendar"], "sequence": 2, "materials": ["Sun candle", "Months circle", "Globe"], "directAims": ["Understanding a year"], "indirectAims": ["Personal history"], "controlOfError": "Months order", "chineseName": "蒙特梭利生日庆祝", "levels": [{"level": 1, "name": "Birthday Walk", "description": "Walk for each year of life", "videoSearchTerms": ["montessori birthday celebration"]}]},
-        {"id": "cu_personal_timeline", "name": "Personal Timeline", "description": "Events in child's life", "ageRange": "primary_year1", "prerequisites": ["cu_birthday_celebration"], "sequence": 3, "materials": ["Timeline materials", "Photos"], "directAims": ["Personal history"], "indirectAims": ["Time concepts"], "controlOfError": "Events out of order", "chineseName": "蒙特梭利个人时间线", "levels": [{"level": 1, "name": "My Timeline", "description": "Create personal timeline", "videoSearchTerms": ["montessori personal timeline"]}]},
-        {"id": "cu_clock", "name": "Clock Work", "description": "Telling time", "ageRange": "primary_year2", "prerequisites": ["cu_calendar"], "sequence": 4, "materials": ["Learning clock"], "directAims": ["Reading clock"], "indirectAims": ["Time management"], "controlOfError": "Time incorrect", "chineseName": "蒙特梭利时钟", "levels": [{"level": 1, "name": "Hours", "description": "O'clock times", "videoSearchTerms": ["montessori clock hours"]}, {"level": 2, "name": "Half Hours", "description": "Half past", "videoSearchTerms": ["montessori clock half hour"]}, {"level": 3, "name": "Quarter Hours", "description": "Quarter past/to", "videoSearchTerms": ["montessori clock quarter"]}, {"level": 4, "name": "Five Minutes", "description": "By fives", "videoSearchTerms": ["montessori clock five minutes"]}, {"level": 5, "name": "All Minutes", "description": "Exact time", "videoSearchTerms": ["montessori clock minutes"]}]},
-        {"id": "cu_timeline_life", "name": "Timeline of Life", "description": "History of life on Earth", "ageRange": "primary_year2", "prerequisites": ["cu_personal_timeline"], "sequence": 5, "materials": ["Timeline of Life"], "directAims": ["Evolution awareness"], "indirectAims": ["Historical thinking"], "controlOfError": "Sequence", "chineseName": "蒙特梭利生命时间线", "levels": [{"level": 1, "name": "Major Eras", "description": "Eras and life forms", "videoSearchTerms": ["montessori timeline life"]}]},
-        {"id": "cu_fundamental_needs", "name": "Fundamental Needs of Humans", "description": "Universal human needs", "ageRange": "primary_year2", "prerequisites": [], "sequence": 6, "materials": ["Needs charts"], "directAims": ["Understanding needs"], "indirectAims": ["Empathy"], "controlOfError": "Classification", "chineseName": "蒙特梭利人类基本需求", "levels": [{"level": 1, "name": "Material Needs", "description": "Food, shelter, etc.", "videoSearchTerms": ["montessori fundamental needs"]}, {"level": 2, "name": "Spiritual Needs", "description": "Love, art, etc.", "videoSearchTerms": ["montessori spiritual needs"]}]}
+        {
+          "id": "cu_calendar",
+          "name": "Calendar Work",
+          "description": "Days, weeks, months",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Calendar",
+            "Day/month cards"
+          ],
+          "directAims": [
+            "Time sequence"
+          ],
+          "indirectAims": [
+            "Routine"
+          ],
+          "controlOfError": "Date incorrect",
+          "chineseName": "蒙特梭利日历",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Days of Week",
+              "description": "Learn day names",
+              "videoSearchTerms": [
+                "montessori days week"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Months",
+              "description": "Learn month names",
+              "videoSearchTerms": [
+                "montessori months year"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Seasons",
+              "description": "Four seasons",
+              "videoSearchTerms": [
+                "montessori seasons"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_birthday_celebration",
+          "name": "Birthday Celebration",
+          "description": "Walking around the sun",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_calendar"
+          ],
+          "sequence": 2,
+          "materials": [
+            "Sun candle",
+            "Months circle",
+            "Globe"
+          ],
+          "directAims": [
+            "Understanding a year"
+          ],
+          "indirectAims": [
+            "Personal history"
+          ],
+          "controlOfError": "Months order",
+          "chineseName": "蒙特梭利生日庆祝",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Birthday Walk",
+              "description": "Walk for each year of life",
+              "videoSearchTerms": [
+                "montessori birthday celebration"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_personal_timeline",
+          "name": "Personal Timeline",
+          "description": "Events in child's life",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_birthday_celebration"
+          ],
+          "sequence": 3,
+          "materials": [
+            "Timeline materials",
+            "Photos"
+          ],
+          "directAims": [
+            "Personal history"
+          ],
+          "indirectAims": [
+            "Time concepts"
+          ],
+          "controlOfError": "Events out of order",
+          "chineseName": "蒙特梭利个人时间线",
+          "levels": [
+            {
+              "level": 1,
+              "name": "My Timeline",
+              "description": "Create personal timeline",
+              "videoSearchTerms": [
+                "montessori personal timeline"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_clock",
+          "name": "Clock Work",
+          "description": "Telling time",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_calendar"
+          ],
+          "sequence": 4,
+          "materials": [
+            "Learning clock"
+          ],
+          "directAims": [
+            "Reading clock"
+          ],
+          "indirectAims": [
+            "Time management"
+          ],
+          "controlOfError": "Time incorrect",
+          "chineseName": "蒙特梭利时钟",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Hours",
+              "description": "O'clock times",
+              "videoSearchTerms": [
+                "montessori clock hours"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Half Hours",
+              "description": "Half past",
+              "videoSearchTerms": [
+                "montessori clock half hour"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Quarter Hours",
+              "description": "Quarter past/to",
+              "videoSearchTerms": [
+                "montessori clock quarter"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Five Minutes",
+              "description": "By fives",
+              "videoSearchTerms": [
+                "montessori clock five minutes"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "All Minutes",
+              "description": "Exact time",
+              "videoSearchTerms": [
+                "montessori clock minutes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_timeline_life",
+          "name": "Timeline of Life",
+          "description": "History of life on Earth",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_personal_timeline"
+          ],
+          "sequence": 5,
+          "materials": [
+            "Timeline of Life"
+          ],
+          "directAims": [
+            "Evolution awareness"
+          ],
+          "indirectAims": [
+            "Historical thinking"
+          ],
+          "controlOfError": "Sequence",
+          "chineseName": "蒙特梭利生命时间线",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Major Eras",
+              "description": "Eras and life forms",
+              "videoSearchTerms": [
+                "montessori timeline life"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_fundamental_needs",
+          "name": "Fundamental Needs of Humans",
+          "description": "Universal human needs",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 6,
+          "materials": [
+            "Needs charts"
+          ],
+          "directAims": [
+            "Understanding needs"
+          ],
+          "indirectAims": [
+            "Empathy"
+          ],
+          "controlOfError": "Classification",
+          "chineseName": "蒙特梭利人类基本需求",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Material Needs",
+              "description": "Food, shelter, etc.",
+              "videoSearchTerms": [
+                "montessori fundamental needs"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Spiritual Needs",
+              "description": "Love, art, etc.",
+              "videoSearchTerms": [
+                "montessori spiritual needs"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_timeline_civilisations",
+          "name": "Timeline of Civilisations",
+          "description": "Visual timeline showing major civilisations",
+          "ageRange": "primary_year3",
+          "prerequisites": [
+            "cu_personal_timeline"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Timeline of civilisations chart",
+            "Civilisation cards",
+            "Picture cards"
+          ],
+          "directAims": [
+            "Chronological thinking",
+            "Major civilisations"
+          ],
+          "indirectAims": [
+            "Sense of time",
+            "Cultural appreciation"
+          ],
+          "controlOfError": "Cards placed in wrong time period",
+          "chineseName": "蒙特梭利文明时间线",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Introduction",
+              "description": "Unroll the long timeline",
+              "videoSearchTerms": [
+                "montessori timeline civilisations"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Major Civilisations",
+              "description": "Place cards for Egypt, Mesopotamia, China, Greece, Rome",
+              "videoSearchTerms": [
+                "montessori ancient civilisations timeline"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Contributions",
+              "description": "What each civilisation gave the world",
+              "videoSearchTerms": [
+                "montessori civilisation contributions"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -41,15 +785,523 @@
       "description": "Study of plants",
       "sequence": 3,
       "works": [
-        {"id": "cu_living_nonliving", "name": "Living vs Non-Living", "description": "Classification", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Sorting cards"], "directAims": ["Classification"], "indirectAims": ["Scientific thinking"], "controlOfError": "Incorrect sorting", "chineseName": "蒙特梭利生物非生物", "levels": [{"level": 1, "name": "Sorting", "description": "Sort living/non-living", "videoSearchTerms": ["montessori living non-living"]}]},
-        {"id": "cu_plant_animal", "name": "Plant vs Animal", "description": "Classification", "ageRange": "primary_year1", "prerequisites": ["cu_living_nonliving"], "sequence": 2, "materials": ["Sorting cards"], "directAims": ["Classification"], "indirectAims": ["Scientific thinking"], "controlOfError": "Incorrect sorting", "chineseName": "蒙特梭利植物动物", "levels": [{"level": 1, "name": "Sorting", "description": "Sort plants/animals", "videoSearchTerms": ["montessori plant animal sorting"]}]},
-        {"id": "cu_parts_plant", "name": "Parts of a Plant", "description": "Plant anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_plant_animal"], "sequence": 3, "materials": ["Plant puzzle", "Nomenclature cards"], "directAims": ["Plant vocabulary"], "indirectAims": ["Biology"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利植物部位", "levels": [{"level": 1, "name": "Plant Puzzle", "description": "Root, stem, leaf, flower", "videoSearchTerms": ["montessori parts plant puzzle"]}, {"level": 2, "name": "Real Plants", "description": "Find parts on real plants", "videoSearchTerms": ["montessori plant observation"]}]},
-        {"id": "cu_parts_flower", "name": "Parts of a Flower", "description": "Flower anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_parts_plant"], "sequence": 4, "materials": ["Flower puzzle"], "directAims": ["Flower vocabulary"], "indirectAims": ["Reproduction"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利花的部位", "levels": [{"level": 1, "name": "Flower Puzzle", "description": "Petal, sepal, stamen, pistil", "videoSearchTerms": ["montessori parts flower puzzle"]}]},
-        {"id": "cu_parts_leaf", "name": "Parts of a Leaf", "description": "Leaf anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_parts_plant"], "sequence": 5, "materials": ["Leaf puzzle", "Botany cabinet"], "directAims": ["Leaf vocabulary"], "indirectAims": ["Classification"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利叶的部位", "levels": [{"level": 1, "name": "Leaf Puzzle", "description": "Blade, petiole, veins", "videoSearchTerms": ["montessori parts leaf puzzle"]}, {"level": 2, "name": "Leaf Shapes", "description": "Types of leaves", "videoSearchTerms": ["montessori leaf shapes"]}]},
-        {"id": "cu_parts_root", "name": "Parts of a Root", "description": "Root anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_parts_plant"], "sequence": 6, "materials": ["Root puzzle"], "directAims": ["Root vocabulary"], "indirectAims": ["Plant nutrition"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利根的部位", "levels": [{"level": 1, "name": "Root Puzzle", "description": "Taproot, fibrous", "videoSearchTerms": ["montessori parts root puzzle"]}]},
-        {"id": "cu_parts_seed", "name": "Parts of a Seed", "description": "Seed anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_parts_plant"], "sequence": 7, "materials": ["Seed puzzle", "Real seeds"], "directAims": ["Seed vocabulary"], "indirectAims": ["Life cycle"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利种子部位", "levels": [{"level": 1, "name": "Seed Puzzle", "description": "Coat, embryo, cotyledon", "videoSearchTerms": ["montessori parts seed puzzle"]}]},
-        {"id": "cu_plant_life_cycle", "name": "Plant Life Cycle", "description": "Seed to plant to seed", "ageRange": "primary_year1", "prerequisites": ["cu_parts_seed"], "sequence": 8, "materials": ["Life cycle cards", "Planting materials"], "directAims": ["Life cycle stages"], "indirectAims": ["Time concepts"], "controlOfError": "Stages order", "chineseName": "蒙特梭利植物生命周期", "levels": [{"level": 1, "name": "Life Cycle Cards", "description": "Sequence stages", "videoSearchTerms": ["montessori plant life cycle"]}, {"level": 2, "name": "Growing Plants", "description": "Observe growth", "videoSearchTerms": ["montessori growing plants"]}]},
-        {"id": "cu_botany_experiments", "name": "Botany Experiments", "description": "Plant science experiments", "ageRange": "primary_year2", "prerequisites": ["cu_parts_plant"], "sequence": 9, "materials": ["Experiment materials"], "directAims": ["Scientific method"], "indirectAims": ["Plant needs"], "controlOfError": "Results", "chineseName": "蒙特梭利植物实验", "levels": [{"level": 1, "name": "Water Experiment", "description": "Plants need water", "videoSearchTerms": ["montessori plant water experiment"]}, {"level": 2, "name": "Light Experiment", "description": "Plants need light", "videoSearchTerms": ["montessori plant light experiment"]}]}
+        {
+          "id": "cu_living_nonliving",
+          "name": "Living vs Non-Living",
+          "description": "Classification",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Sorting cards"
+          ],
+          "directAims": [
+            "Classification"
+          ],
+          "indirectAims": [
+            "Scientific thinking"
+          ],
+          "controlOfError": "Incorrect sorting",
+          "chineseName": "蒙特梭利生物非生物",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Sorting",
+              "description": "Sort living/non-living",
+              "videoSearchTerms": [
+                "montessori living non-living"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_plant_animal",
+          "name": "Plant vs Animal",
+          "description": "Classification",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_living_nonliving"
+          ],
+          "sequence": 2,
+          "materials": [
+            "Sorting cards"
+          ],
+          "directAims": [
+            "Classification"
+          ],
+          "indirectAims": [
+            "Scientific thinking"
+          ],
+          "controlOfError": "Incorrect sorting",
+          "chineseName": "蒙特梭利植物动物",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Sorting",
+              "description": "Sort plants/animals",
+              "videoSearchTerms": [
+                "montessori plant animal sorting"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_plant",
+          "name": "Parts of a Plant",
+          "description": "Plant anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_plant_animal"
+          ],
+          "sequence": 3,
+          "materials": [
+            "Plant puzzle",
+            "Nomenclature cards"
+          ],
+          "directAims": [
+            "Plant vocabulary"
+          ],
+          "indirectAims": [
+            "Biology"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利植物部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Plant Puzzle",
+              "description": "Root, stem, leaf, flower",
+              "videoSearchTerms": [
+                "montessori parts plant puzzle"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Real Plants",
+              "description": "Find parts on real plants",
+              "videoSearchTerms": [
+                "montessori plant observation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_flower",
+          "name": "Parts of a Flower",
+          "description": "Flower anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_parts_plant"
+          ],
+          "sequence": 4,
+          "materials": [
+            "Flower puzzle"
+          ],
+          "directAims": [
+            "Flower vocabulary"
+          ],
+          "indirectAims": [
+            "Reproduction"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利花的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Flower Puzzle",
+              "description": "Petal, sepal, stamen, pistil",
+              "videoSearchTerms": [
+                "montessori parts flower puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_leaf",
+          "name": "Parts of a Leaf",
+          "description": "Leaf anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_parts_plant"
+          ],
+          "sequence": 5,
+          "materials": [
+            "Leaf puzzle",
+            "Botany cabinet"
+          ],
+          "directAims": [
+            "Leaf vocabulary"
+          ],
+          "indirectAims": [
+            "Classification"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利叶的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Leaf Puzzle",
+              "description": "Blade, petiole, veins",
+              "videoSearchTerms": [
+                "montessori parts leaf puzzle"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Leaf Shapes",
+              "description": "Types of leaves",
+              "videoSearchTerms": [
+                "montessori leaf shapes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_root",
+          "name": "Parts of a Root",
+          "description": "Root anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_parts_plant"
+          ],
+          "sequence": 6,
+          "materials": [
+            "Root puzzle"
+          ],
+          "directAims": [
+            "Root vocabulary"
+          ],
+          "indirectAims": [
+            "Plant nutrition"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利根的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Root Puzzle",
+              "description": "Taproot, fibrous",
+              "videoSearchTerms": [
+                "montessori parts root puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_seed",
+          "name": "Parts of a Seed",
+          "description": "Seed anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_parts_plant"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Seed puzzle",
+            "Real seeds"
+          ],
+          "directAims": [
+            "Seed vocabulary"
+          ],
+          "indirectAims": [
+            "Life cycle"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利种子部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Seed Puzzle",
+              "description": "Coat, embryo, cotyledon",
+              "videoSearchTerms": [
+                "montessori parts seed puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_plant_life_cycle",
+          "name": "Plant Life Cycle",
+          "description": "Seed to plant to seed",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_parts_seed"
+          ],
+          "sequence": 8,
+          "materials": [
+            "Life cycle cards",
+            "Planting materials"
+          ],
+          "directAims": [
+            "Life cycle stages"
+          ],
+          "indirectAims": [
+            "Time concepts"
+          ],
+          "controlOfError": "Stages order",
+          "chineseName": "蒙特梭利植物生命周期",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Life Cycle Cards",
+              "description": "Sequence stages",
+              "videoSearchTerms": [
+                "montessori plant life cycle"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Growing Plants",
+              "description": "Observe growth",
+              "videoSearchTerms": [
+                "montessori growing plants"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_botany_experiments",
+          "name": "Botany Experiments",
+          "description": "Plant science experiments",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_parts_plant"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Experiment materials"
+          ],
+          "directAims": [
+            "Scientific method"
+          ],
+          "indirectAims": [
+            "Plant needs"
+          ],
+          "controlOfError": "Results",
+          "chineseName": "蒙特梭利植物实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Water Experiment",
+              "description": "Plants need water",
+              "videoSearchTerms": [
+                "montessori plant water experiment"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Light Experiment",
+              "description": "Plants need light",
+              "videoSearchTerms": [
+                "montessori plant light experiment"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_leaf_collection",
+          "name": "Leaf Collection and Pressing",
+          "description": "Collecting and classifying real leaves",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_botany_cabinet"
+          ],
+          "sequence": 10,
+          "materials": [
+            "Leaf press",
+            "Collection paper",
+            "Magnifying glass",
+            "Labels"
+          ],
+          "directAims": [
+            "Leaf identification",
+            "Classification skills"
+          ],
+          "indirectAims": [
+            "Observation",
+            "Care of environment"
+          ],
+          "controlOfError": "Leaf classified incorrectly",
+          "chineseName": "蒙特梭利树叶收集与压制",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Collection",
+              "description": "Gather leaves from garden and nature walks",
+              "videoSearchTerms": [
+                "montessori leaf collection"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Pressing",
+              "description": "Press and dry leaves properly",
+              "videoSearchTerms": [
+                "montessori leaf pressing"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Classification",
+              "description": "Sort by shape, match to botany cabinet cards",
+              "videoSearchTerms": [
+                "montessori leaf classification real"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_tree_study",
+          "name": "Tree Study",
+          "description": "Parts and types of trees",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_parts_of_plant"
+          ],
+          "sequence": 11,
+          "materials": [
+            "Tree nomenclature cards",
+            "Bark rubbings materials",
+            "Tree identification guide"
+          ],
+          "directAims": [
+            "Parts of a tree",
+            "Tree identification"
+          ],
+          "indirectAims": [
+            "Observation",
+            "Environmental awareness"
+          ],
+          "controlOfError": "Parts labelled incorrectly",
+          "chineseName": "蒙特梭利树木研究",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Parts",
+              "description": "Roots, trunk, branches, crown, bark, leaves",
+              "videoSearchTerms": [
+                "montessori parts of tree"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Types",
+              "description": "Deciduous vs evergreen",
+              "videoSearchTerms": [
+                "montessori tree types"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Bark Rubbings",
+              "description": "Create bark rubbings from different trees",
+              "videoSearchTerms": [
+                "montessori bark rubbings"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_seed_germination",
+          "name": "Seed Germination Experiment",
+          "description": "Growing seeds to observe life cycle",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 12,
+          "materials": [
+            "Seeds (bean, sunflower)",
+            "Clear containers",
+            "Cotton wool",
+            "Water"
+          ],
+          "directAims": [
+            "Understanding germination",
+            "Observing growth stages"
+          ],
+          "indirectAims": [
+            "Scientific observation",
+            "Patience and care"
+          ],
+          "controlOfError": "Seed doesn't germinate — discuss why",
+          "chineseName": "蒙特梭利种子发芽实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Setup",
+              "description": "Plant seeds in cotton wool in clear container",
+              "videoSearchTerms": [
+                "montessori seed germination"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Observation",
+              "description": "Daily observation and drawing of growth",
+              "videoSearchTerms": [
+                "montessori seed growth observation"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Recording",
+              "description": "Keep a growth journal with measurements",
+              "videoSearchTerms": [
+                "montessori plant growth journal"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_food_chain",
+          "name": "Food Chain",
+          "description": "Understanding food webs and energy flow",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_animal_classification"
+          ],
+          "sequence": 13,
+          "materials": [
+            "Food chain cards",
+            "Arrow cards",
+            "Animal and plant figures"
+          ],
+          "directAims": [
+            "Understanding energy flow",
+            "Producer/consumer/decomposer"
+          ],
+          "indirectAims": [
+            "Ecological thinking",
+            "Interconnection"
+          ],
+          "controlOfError": "Chain order incorrect",
+          "chineseName": "蒙特梭利食物链",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Simple Chains",
+              "description": "Sun → grass → rabbit → fox",
+              "videoSearchTerms": [
+                "montessori food chain"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Food Webs",
+              "description": "Multiple interconnected chains",
+              "videoSearchTerms": [
+                "montessori food web"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Roles",
+              "description": "Producer, consumer, decomposer classification",
+              "videoSearchTerms": [
+                "montessori food chain roles"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -58,16 +1310,526 @@
       "description": "Study of animals",
       "sequence": 4,
       "works": [
-        {"id": "cu_vertebrate_invertebrate", "name": "Vertebrate vs Invertebrate", "description": "Backbone classification", "ageRange": "primary_year1", "prerequisites": ["cu_plant_animal"], "sequence": 1, "materials": ["Sorting cards"], "directAims": ["Classification"], "indirectAims": ["Scientific thinking"], "controlOfError": "Incorrect sorting", "chineseName": "蒙特梭利脊椎无脊椎", "levels": [{"level": 1, "name": "Sorting", "description": "Sort by backbone", "videoSearchTerms": ["montessori vertebrate invertebrate"]}]},
-        {"id": "cu_five_classes", "name": "Five Classes of Vertebrates", "description": "Fish, amphibian, reptile, bird, mammal", "ageRange": "primary_year1", "prerequisites": ["cu_vertebrate_invertebrate"], "sequence": 2, "materials": ["Classification cards"], "directAims": ["Animal classification"], "indirectAims": ["Vocabulary"], "controlOfError": "Incorrect sorting", "chineseName": "蒙特梭利五类脊椎动物", "levels": [{"level": 1, "name": "Fish", "description": "Gills, scales, fins", "videoSearchTerms": ["montessori fish classification"]}, {"level": 2, "name": "Amphibians", "description": "Moist skin, metamorphosis", "videoSearchTerms": ["montessori amphibian"]}, {"level": 3, "name": "Reptiles", "description": "Scales, cold-blooded", "videoSearchTerms": ["montessori reptile"]}, {"level": 4, "name": "Birds", "description": "Feathers, beaks", "videoSearchTerms": ["montessori bird classification"]}, {"level": 5, "name": "Mammals", "description": "Fur, milk", "videoSearchTerms": ["montessori mammal"]}, {"level": 6, "name": "All Five", "description": "Sort all classes", "videoSearchTerms": ["montessori five classes"]}]},
-        {"id": "cu_parts_fish", "name": "Parts of a Fish", "description": "Fish anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 3, "materials": ["Fish puzzle"], "directAims": ["Fish vocabulary"], "indirectAims": ["Anatomy"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利鱼的部位", "levels": [{"level": 1, "name": "Fish Puzzle", "description": "Fins, gills, scales", "videoSearchTerms": ["montessori parts fish puzzle"]}]},
-        {"id": "cu_parts_frog", "name": "Parts of a Frog", "description": "Amphibian anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 4, "materials": ["Frog puzzle"], "directAims": ["Amphibian vocabulary"], "indirectAims": ["Anatomy"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利青蛙部位", "levels": [{"level": 1, "name": "Frog Puzzle", "description": "Frog parts", "videoSearchTerms": ["montessori parts frog puzzle"]}]},
-        {"id": "cu_parts_turtle", "name": "Parts of a Turtle", "description": "Reptile anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 5, "materials": ["Turtle puzzle"], "directAims": ["Reptile vocabulary"], "indirectAims": ["Anatomy"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利乌龟部位", "levels": [{"level": 1, "name": "Turtle Puzzle", "description": "Shell, legs, head", "videoSearchTerms": ["montessori parts turtle puzzle"]}]},
-        {"id": "cu_parts_bird", "name": "Parts of a Bird", "description": "Bird anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 6, "materials": ["Bird puzzle"], "directAims": ["Bird vocabulary"], "indirectAims": ["Anatomy"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利鸟的部位", "levels": [{"level": 1, "name": "Bird Puzzle", "description": "Beak, feathers, wings", "videoSearchTerms": ["montessori parts bird puzzle"]}]},
-        {"id": "cu_parts_horse", "name": "Parts of a Horse", "description": "Mammal anatomy", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 7, "materials": ["Horse puzzle"], "directAims": ["Mammal vocabulary"], "indirectAims": ["Anatomy"], "controlOfError": "Parts mislabeled", "chineseName": "蒙特梭利马的部位", "levels": [{"level": 1, "name": "Horse Puzzle", "description": "Mane, hooves, tail", "videoSearchTerms": ["montessori parts horse puzzle"]}]},
-        {"id": "cu_animal_habitats", "name": "Animal Habitats", "description": "Where animals live", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 8, "materials": ["Habitat cards"], "directAims": ["Habitat vocabulary"], "indirectAims": ["Ecology"], "controlOfError": "Wrong habitat", "chineseName": "蒙特梭利动物栖息地", "levels": [{"level": 1, "name": "Habitats", "description": "Forest, ocean, desert, etc.", "videoSearchTerms": ["montessori animal habitats"]}]},
-        {"id": "cu_animals_continents", "name": "Animals of the Continents", "description": "Geographic distribution", "ageRange": "primary_year2", "prerequisites": ["cu_five_classes", "cu_puzzle_map_world"], "sequence": 9, "materials": ["Animal figurines", "Continent mats"], "directAims": ["Animal distribution"], "indirectAims": ["Global awareness"], "controlOfError": "Wrong continent", "chineseName": "蒙特梭利各大洲动物", "levels": [{"level": 1, "name": "Matching", "description": "Match animals to continents", "videoSearchTerms": ["montessori animals continents"]}]},
-        {"id": "cu_life_cycles", "name": "Animal Life Cycles", "description": "Life cycles of animals", "ageRange": "primary_year1", "prerequisites": ["cu_five_classes"], "sequence": 10, "materials": ["Life cycle cards"], "directAims": ["Metamorphosis", "Growth"], "indirectAims": ["Nature appreciation"], "controlOfError": "Stages order", "chineseName": "蒙特梭利动物生命周期", "levels": [{"level": 1, "name": "Butterfly", "description": "Egg, larva, pupa, adult", "videoSearchTerms": ["montessori butterfly life cycle"]}, {"level": 2, "name": "Frog", "description": "Egg, tadpole, frog", "videoSearchTerms": ["montessori frog life cycle"]}, {"level": 3, "name": "Chicken", "description": "Egg, chick, chicken", "videoSearchTerms": ["montessori chicken life cycle"]}]}
+        {
+          "id": "cu_vertebrate_invertebrate",
+          "name": "Vertebrate vs Invertebrate",
+          "description": "Backbone classification",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_plant_animal"
+          ],
+          "sequence": 1,
+          "materials": [
+            "Sorting cards"
+          ],
+          "directAims": [
+            "Classification"
+          ],
+          "indirectAims": [
+            "Scientific thinking"
+          ],
+          "controlOfError": "Incorrect sorting",
+          "chineseName": "蒙特梭利脊椎无脊椎",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Sorting",
+              "description": "Sort by backbone",
+              "videoSearchTerms": [
+                "montessori vertebrate invertebrate"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_five_classes",
+          "name": "Five Classes of Vertebrates",
+          "description": "Fish, amphibian, reptile, bird, mammal",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_vertebrate_invertebrate"
+          ],
+          "sequence": 2,
+          "materials": [
+            "Classification cards"
+          ],
+          "directAims": [
+            "Animal classification"
+          ],
+          "indirectAims": [
+            "Vocabulary"
+          ],
+          "controlOfError": "Incorrect sorting",
+          "chineseName": "蒙特梭利五类脊椎动物",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Fish",
+              "description": "Gills, scales, fins",
+              "videoSearchTerms": [
+                "montessori fish classification"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Amphibians",
+              "description": "Moist skin, metamorphosis",
+              "videoSearchTerms": [
+                "montessori amphibian"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Reptiles",
+              "description": "Scales, cold-blooded",
+              "videoSearchTerms": [
+                "montessori reptile"
+              ]
+            },
+            {
+              "level": 4,
+              "name": "Birds",
+              "description": "Feathers, beaks",
+              "videoSearchTerms": [
+                "montessori bird classification"
+              ]
+            },
+            {
+              "level": 5,
+              "name": "Mammals",
+              "description": "Fur, milk",
+              "videoSearchTerms": [
+                "montessori mammal"
+              ]
+            },
+            {
+              "level": 6,
+              "name": "All Five",
+              "description": "Sort all classes",
+              "videoSearchTerms": [
+                "montessori five classes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_fish",
+          "name": "Parts of a Fish",
+          "description": "Fish anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 3,
+          "materials": [
+            "Fish puzzle"
+          ],
+          "directAims": [
+            "Fish vocabulary"
+          ],
+          "indirectAims": [
+            "Anatomy"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利鱼的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Fish Puzzle",
+              "description": "Fins, gills, scales",
+              "videoSearchTerms": [
+                "montessori parts fish puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_frog",
+          "name": "Parts of a Frog",
+          "description": "Amphibian anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 4,
+          "materials": [
+            "Frog puzzle"
+          ],
+          "directAims": [
+            "Amphibian vocabulary"
+          ],
+          "indirectAims": [
+            "Anatomy"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利青蛙部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Frog Puzzle",
+              "description": "Frog parts",
+              "videoSearchTerms": [
+                "montessori parts frog puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_turtle",
+          "name": "Parts of a Turtle",
+          "description": "Reptile anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 5,
+          "materials": [
+            "Turtle puzzle"
+          ],
+          "directAims": [
+            "Reptile vocabulary"
+          ],
+          "indirectAims": [
+            "Anatomy"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利乌龟部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Turtle Puzzle",
+              "description": "Shell, legs, head",
+              "videoSearchTerms": [
+                "montessori parts turtle puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_bird",
+          "name": "Parts of a Bird",
+          "description": "Bird anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 6,
+          "materials": [
+            "Bird puzzle"
+          ],
+          "directAims": [
+            "Bird vocabulary"
+          ],
+          "indirectAims": [
+            "Anatomy"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利鸟的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Bird Puzzle",
+              "description": "Beak, feathers, wings",
+              "videoSearchTerms": [
+                "montessori parts bird puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_horse",
+          "name": "Parts of a Horse",
+          "description": "Mammal anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Horse puzzle"
+          ],
+          "directAims": [
+            "Mammal vocabulary"
+          ],
+          "indirectAims": [
+            "Anatomy"
+          ],
+          "controlOfError": "Parts mislabeled",
+          "chineseName": "蒙特梭利马的部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Horse Puzzle",
+              "description": "Mane, hooves, tail",
+              "videoSearchTerms": [
+                "montessori parts horse puzzle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_animal_habitats",
+          "name": "Animal Habitats",
+          "description": "Where animals live",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 8,
+          "materials": [
+            "Habitat cards"
+          ],
+          "directAims": [
+            "Habitat vocabulary"
+          ],
+          "indirectAims": [
+            "Ecology"
+          ],
+          "controlOfError": "Wrong habitat",
+          "chineseName": "蒙特梭利动物栖息地",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Habitats",
+              "description": "Forest, ocean, desert, etc.",
+              "videoSearchTerms": [
+                "montessori animal habitats"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_animals_continents",
+          "name": "Animals of the Continents",
+          "description": "Geographic distribution",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_five_classes",
+            "cu_puzzle_map_world"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Animal figurines",
+            "Continent mats"
+          ],
+          "directAims": [
+            "Animal distribution"
+          ],
+          "indirectAims": [
+            "Global awareness"
+          ],
+          "controlOfError": "Wrong continent",
+          "chineseName": "蒙特梭利各大洲动物",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Matching",
+              "description": "Match animals to continents",
+              "videoSearchTerms": [
+                "montessori animals continents"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_life_cycles",
+          "name": "Animal Life Cycles",
+          "description": "Life cycles of animals",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_five_classes"
+          ],
+          "sequence": 10,
+          "materials": [
+            "Life cycle cards"
+          ],
+          "directAims": [
+            "Metamorphosis",
+            "Growth"
+          ],
+          "indirectAims": [
+            "Nature appreciation"
+          ],
+          "controlOfError": "Stages order",
+          "chineseName": "蒙特梭利动物生命周期",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Butterfly",
+              "description": "Egg, larva, pupa, adult",
+              "videoSearchTerms": [
+                "montessori butterfly life cycle"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Frog",
+              "description": "Egg, tadpole, frog",
+              "videoSearchTerms": [
+                "montessori frog life cycle"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Chicken",
+              "description": "Egg, chick, chicken",
+              "videoSearchTerms": [
+                "montessori chicken life cycle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_parts_of_insect",
+          "name": "Parts of an Insect",
+          "description": "Nomenclature study of insect anatomy",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_animal_classification"
+          ],
+          "sequence": 11,
+          "materials": [
+            "Insect puzzle",
+            "Nomenclature cards",
+            "Real specimens or photos"
+          ],
+          "directAims": [
+            "Insect anatomy vocabulary",
+            "Classification"
+          ],
+          "indirectAims": [
+            "Observation",
+            "Fine motor (puzzle)"
+          ],
+          "controlOfError": "Parts labelled incorrectly",
+          "chineseName": "蒙特梭利昆虫部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Puzzle",
+              "description": "Complete insect puzzle, name parts",
+              "videoSearchTerms": [
+                "montessori parts of insect puzzle"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Nomenclature",
+              "description": "Match labels to parts: head, thorax, abdomen, antennae, wings, legs",
+              "videoSearchTerms": [
+                "montessori insect nomenclature"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Real Specimens",
+              "description": "Observe real insects with magnifying glass",
+              "videoSearchTerms": [
+                "montessori insect observation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_invertebrate_classification",
+          "name": "Invertebrate Classification",
+          "description": "Classifying animals without backbones",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_animal_classification"
+          ],
+          "sequence": 12,
+          "materials": [
+            "Invertebrate classification cards",
+            "Specimen photos",
+            "Sorting mat"
+          ],
+          "directAims": [
+            "Invertebrate groups",
+            "Scientific classification"
+          ],
+          "indirectAims": [
+            "Observation",
+            "Vocabulary"
+          ],
+          "controlOfError": "Animal placed in wrong group",
+          "chineseName": "蒙特梭利无脊椎动物分类",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Vertebrate vs Invertebrate",
+              "description": "Sort animals into two groups",
+              "videoSearchTerms": [
+                "montessori vertebrate invertebrate"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Invertebrate Groups",
+              "description": "Insects, arachnids, molluscs, crustaceans, worms",
+              "videoSearchTerms": [
+                "montessori invertebrate classification"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Features",
+              "description": "Identify features of each group",
+              "videoSearchTerms": [
+                "montessori invertebrate features"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_external_parts_human",
+          "name": "External Parts of a Human",
+          "description": "Body nomenclature study",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 13,
+          "materials": [
+            "Human body puzzle",
+            "Nomenclature cards",
+            "Mirror"
+          ],
+          "directAims": [
+            "Body part vocabulary",
+            "Self-awareness"
+          ],
+          "indirectAims": [
+            "Language enrichment",
+            "Gross motor awareness"
+          ],
+          "controlOfError": "Parts labelled incorrectly",
+          "chineseName": "蒙特梭利人体外部部位",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Major Parts",
+              "description": "Head, torso, arms, legs",
+              "videoSearchTerms": [
+                "montessori parts of human body"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Detailed Parts",
+              "description": "Shoulder, elbow, wrist, knee, ankle, hip",
+              "videoSearchTerms": [
+                "montessori human body nomenclature"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Senses",
+              "description": "Connect body parts to five senses",
+              "videoSearchTerms": [
+                "montessori five senses body"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -76,13 +1838,543 @@
       "description": "Basic science experiments",
       "sequence": 5,
       "works": [
-        {"id": "cu_sink_float", "name": "Sink and Float", "description": "Density exploration", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Water basin", "Various objects"], "directAims": ["Density concept"], "indirectAims": ["Scientific method"], "controlOfError": "Object sinks/floats", "chineseName": "蒙特梭利沉浮", "levels": [{"level": 1, "name": "Predict and Test", "description": "Predict then test", "videoSearchTerms": ["montessori sink float"]}]},
-        {"id": "cu_magnetic", "name": "Magnetic/Non-Magnetic", "description": "Magnetism exploration", "ageRange": "primary_year1", "prerequisites": [], "sequence": 2, "materials": ["Magnets", "Various objects"], "directAims": ["Magnetism concept"], "indirectAims": ["Scientific method"], "controlOfError": "Attracts or not", "chineseName": "蒙特梭利磁力", "levels": [{"level": 1, "name": "Predict and Test", "description": "Test with magnet", "videoSearchTerms": ["montessori magnetic"]}]},
-        {"id": "cu_states_matter", "name": "States of Matter", "description": "Solid, liquid, gas", "ageRange": "primary_year1", "prerequisites": [], "sequence": 3, "materials": ["Ice, water"], "directAims": ["Three states"], "indirectAims": ["Scientific concepts"], "controlOfError": "Classification", "chineseName": "蒙特梭利物质三态", "levels": [{"level": 1, "name": "Identifying States", "description": "Solid, liquid, gas", "videoSearchTerms": ["montessori states matter"]}, {"level": 2, "name": "Changing States", "description": "Melting, evaporating", "videoSearchTerms": ["montessori changing states"]}]},
-        {"id": "cu_color_mixing", "name": "Color Mixing", "description": "Primary and secondary colors", "ageRange": "primary_year1", "prerequisites": [], "sequence": 4, "materials": ["Primary colors"], "directAims": ["Color theory"], "indirectAims": ["Art preparation"], "controlOfError": "Color result", "chineseName": "蒙特梭利颜色混合", "levels": [{"level": 1, "name": "Secondary Colors", "description": "Red+yellow=orange, etc.", "videoSearchTerms": ["montessori color mixing"]}]},
-        {"id": "cu_simple_machines", "name": "Simple Machines", "description": "Basic mechanics", "ageRange": "primary_year2", "prerequisites": [], "sequence": 5, "materials": ["Simple machine examples"], "directAims": ["Mechanical concepts"], "indirectAims": ["Engineering"], "controlOfError": "Doesn't work", "chineseName": "蒙特梭利简单机械", "levels": [{"level": 1, "name": "Lever", "description": "How levers work", "videoSearchTerms": ["montessori lever"]}, {"level": 2, "name": "Pulley", "description": "How pulleys work", "videoSearchTerms": ["montessori pulley"]}, {"level": 3, "name": "Inclined Plane", "description": "Ramps", "videoSearchTerms": ["montessori inclined plane"]}]},
-        {"id": "cu_nature_study", "name": "Nature Study", "description": "Outdoor observation", "ageRange": "primary_year1", "prerequisites": [], "sequence": 6, "materials": ["Magnifying glass", "Nature journal"], "directAims": ["Observation skills"], "indirectAims": ["Nature appreciation"], "controlOfError": "None", "chineseName": "蒙特梭利自然观察", "levels": [{"level": 1, "name": "Nature Walk", "description": "Observe and collect", "videoSearchTerms": ["montessori nature walk"]}, {"level": 2, "name": "Nature Journal", "description": "Draw observations", "videoSearchTerms": ["montessori nature journal"]}]},
-        {"id": "cu_weather", "name": "Weather Study", "description": "Weather phenomena", "ageRange": "primary_year1", "prerequisites": [], "sequence": 7, "materials": ["Weather chart", "Thermometer"], "directAims": ["Weather vocabulary"], "indirectAims": ["Scientific recording"], "controlOfError": "Recording", "chineseName": "蒙特梭利天气", "levels": [{"level": 1, "name": "Daily Weather", "description": "Record weather", "videoSearchTerms": ["montessori weather chart"]}]}
+        {
+          "id": "cu_sink_float",
+          "name": "Sink and Float",
+          "description": "Density exploration",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Water basin",
+            "Various objects"
+          ],
+          "directAims": [
+            "Density concept"
+          ],
+          "indirectAims": [
+            "Scientific method"
+          ],
+          "controlOfError": "Object sinks/floats",
+          "chineseName": "蒙特梭利沉浮",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Predict and Test",
+              "description": "Predict then test",
+              "videoSearchTerms": [
+                "montessori sink float"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_magnetic",
+          "name": "Magnetic/Non-Magnetic",
+          "description": "Magnetism exploration",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 2,
+          "materials": [
+            "Magnets",
+            "Various objects"
+          ],
+          "directAims": [
+            "Magnetism concept"
+          ],
+          "indirectAims": [
+            "Scientific method"
+          ],
+          "controlOfError": "Attracts or not",
+          "chineseName": "蒙特梭利磁力",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Predict and Test",
+              "description": "Test with magnet",
+              "videoSearchTerms": [
+                "montessori magnetic"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_states_matter",
+          "name": "States of Matter",
+          "description": "Solid, liquid, gas",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 3,
+          "materials": [
+            "Ice, water"
+          ],
+          "directAims": [
+            "Three states"
+          ],
+          "indirectAims": [
+            "Scientific concepts"
+          ],
+          "controlOfError": "Classification",
+          "chineseName": "蒙特梭利物质三态",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Identifying States",
+              "description": "Solid, liquid, gas",
+              "videoSearchTerms": [
+                "montessori states matter"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Changing States",
+              "description": "Melting, evaporating",
+              "videoSearchTerms": [
+                "montessori changing states"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_color_mixing",
+          "name": "Color Mixing",
+          "description": "Primary and secondary colors",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 4,
+          "materials": [
+            "Primary colors"
+          ],
+          "directAims": [
+            "Color theory"
+          ],
+          "indirectAims": [
+            "Art preparation"
+          ],
+          "controlOfError": "Color result",
+          "chineseName": "蒙特梭利颜色混合",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Secondary Colors",
+              "description": "Red+yellow=orange, etc.",
+              "videoSearchTerms": [
+                "montessori color mixing"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_simple_machines",
+          "name": "Simple Machines",
+          "description": "Basic mechanics",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 5,
+          "materials": [
+            "Simple machine examples"
+          ],
+          "directAims": [
+            "Mechanical concepts"
+          ],
+          "indirectAims": [
+            "Engineering"
+          ],
+          "controlOfError": "Doesn't work",
+          "chineseName": "蒙特梭利简单机械",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Lever",
+              "description": "How levers work",
+              "videoSearchTerms": [
+                "montessori lever"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Pulley",
+              "description": "How pulleys work",
+              "videoSearchTerms": [
+                "montessori pulley"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Inclined Plane",
+              "description": "Ramps",
+              "videoSearchTerms": [
+                "montessori inclined plane"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_nature_study",
+          "name": "Nature Study",
+          "description": "Outdoor observation",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 6,
+          "materials": [
+            "Magnifying glass",
+            "Nature journal"
+          ],
+          "directAims": [
+            "Observation skills"
+          ],
+          "indirectAims": [
+            "Nature appreciation"
+          ],
+          "controlOfError": "None",
+          "chineseName": "蒙特梭利自然观察",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Nature Walk",
+              "description": "Observe and collect",
+              "videoSearchTerms": [
+                "montessori nature walk"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Nature Journal",
+              "description": "Draw observations",
+              "videoSearchTerms": [
+                "montessori nature journal"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_weather",
+          "name": "Weather Study",
+          "description": "Weather phenomena",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 7,
+          "materials": [
+            "Weather chart",
+            "Thermometer"
+          ],
+          "directAims": [
+            "Weather vocabulary"
+          ],
+          "indirectAims": [
+            "Scientific recording"
+          ],
+          "controlOfError": "Recording",
+          "chineseName": "蒙特梭利天气",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Daily Weather",
+              "description": "Record weather",
+              "videoSearchTerms": [
+                "montessori weather chart"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_air_experiments",
+          "name": "Air Experiments",
+          "description": "Discovering properties of air",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 8,
+          "materials": [
+            "Balloons",
+            "Paper bags",
+            "Feathers",
+            "Pinwheel"
+          ],
+          "directAims": [
+            "Air exists and has properties",
+            "Air pressure"
+          ],
+          "indirectAims": [
+            "Scientific method",
+            "Observation"
+          ],
+          "controlOfError": "Experiment doesn't show expected result — discuss why",
+          "chineseName": "蒙特梭利空气实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Air Exists",
+              "description": "Blow up balloon, feel air from bag",
+              "videoSearchTerms": [
+                "montessori air experiments"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Air Moves",
+              "description": "Pinwheel, feather floating",
+              "videoSearchTerms": [
+                "montessori wind experiments"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Air Pressure",
+              "description": "Suction cups, straw experiments",
+              "videoSearchTerms": [
+                "montessori air pressure experiments"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_water_experiments",
+          "name": "Water Experiments",
+          "description": "Properties of water: states, flow, buoyancy",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 9,
+          "materials": [
+            "Containers",
+            "Sponges",
+            "Objects for sink/float",
+            "Ice cubes"
+          ],
+          "directAims": [
+            "Water properties",
+            "States of matter"
+          ],
+          "indirectAims": [
+            "Scientific observation",
+            "Prediction"
+          ],
+          "controlOfError": "Prediction incorrect — discuss and revise",
+          "chineseName": "蒙特梭利水实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Sink or Float",
+              "description": "Predict then test objects",
+              "videoSearchTerms": [
+                "montessori sink float experiment"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "States",
+              "description": "Ice → water → steam observation",
+              "videoSearchTerms": [
+                "montessori states of water"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Properties",
+              "description": "Absorption, surface tension",
+              "videoSearchTerms": [
+                "montessori water properties experiments"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_sound_experiments",
+          "name": "Sound Experiments",
+          "description": "Exploring how sound is made and travels",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 10,
+          "materials": [
+            "Tuning fork",
+            "Rubber bands",
+            "Containers of different sizes",
+            "Rice"
+          ],
+          "directAims": [
+            "Sound is vibration",
+            "Pitch and volume"
+          ],
+          "indirectAims": [
+            "Listening skills",
+            "Scientific thinking"
+          ],
+          "controlOfError": "Sound not produced — check setup",
+          "chineseName": "蒙特梭利声音实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Vibration",
+              "description": "Tuning fork in water, rice on drum",
+              "videoSearchTerms": [
+                "montessori sound vibration experiments"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Pitch",
+              "description": "Rubber bands of different tension, water glasses",
+              "videoSearchTerms": [
+                "montessori pitch experiments"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Volume",
+              "description": "Loud vs soft, distance and sound",
+              "videoSearchTerms": [
+                "montessori volume experiments"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_light_shadow",
+          "name": "Light and Shadow",
+          "description": "Exploring light sources and shadow formation",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 11,
+          "materials": [
+            "Torch/flashlight",
+            "Opaque and transparent objects",
+            "White screen"
+          ],
+          "directAims": [
+            "Light travels in straight lines",
+            "Shadow formation"
+          ],
+          "indirectAims": [
+            "Prediction",
+            "Spatial reasoning"
+          ],
+          "controlOfError": "Shadow doesn't appear as expected — adjust position",
+          "chineseName": "蒙特梭利光与影",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Light Sources",
+              "description": "Identify natural and artificial light",
+              "videoSearchTerms": [
+                "montessori light sources"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Shadows",
+              "description": "Make shadows, change size and shape",
+              "videoSearchTerms": [
+                "montessori shadow experiments"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Transparent/Opaque",
+              "description": "Sort materials by light passage",
+              "videoSearchTerms": [
+                "montessori transparent opaque"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_gravity_experiments",
+          "name": "Gravity Experiments",
+          "description": "Understanding falling objects and weight",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 12,
+          "materials": [
+            "Objects of different weight and size",
+            "Ramp",
+            "Timer"
+          ],
+          "directAims": [
+            "Gravity pulls objects down",
+            "Heavy and light fall the same"
+          ],
+          "indirectAims": [
+            "Scientific method",
+            "Prediction and testing"
+          ],
+          "controlOfError": "Objects don't behave as predicted — discuss air resistance",
+          "chineseName": "蒙特梭利重力实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Drop Test",
+              "description": "Drop different objects from same height",
+              "videoSearchTerms": [
+                "montessori gravity experiment"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Ramps",
+              "description": "Roll objects down ramps",
+              "videoSearchTerms": [
+                "montessori ramp experiment"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Discussion",
+              "description": "Why do heavy and light objects fall together?",
+              "videoSearchTerms": [
+                "montessori gravity discussion"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_heat_experiments",
+          "name": "Heat Experiments",
+          "description": "Exploring temperature and heat transfer",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 13,
+          "materials": [
+            "Thermic tablets",
+            "Warm and cold water",
+            "Metal and wood spoons",
+            "Thermometer"
+          ],
+          "directAims": [
+            "Heat transfers between objects",
+            "Conductors and insulators"
+          ],
+          "indirectAims": [
+            "Scientific vocabulary",
+            "Safety awareness"
+          ],
+          "controlOfError": "Temperature not as expected — re-measure",
+          "chineseName": "蒙特梭利热量实验",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Thermic Sense",
+              "description": "Sort objects by temperature feel",
+              "videoSearchTerms": [
+                "montessori thermic experiments"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Conduction",
+              "description": "Metal vs wood spoon in warm water",
+              "videoSearchTerms": [
+                "montessori heat conduction"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Thermometer",
+              "description": "Read temperature, track changes",
+              "videoSearchTerms": [
+                "montessori thermometer reading"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -91,12 +2383,361 @@
       "description": "Visual arts and creative expression",
       "sequence": 6,
       "works": [
-        {"id": "cu_drawing", "name": "Drawing", "description": "Drawing skills", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Pencils", "Crayons", "Paper"], "directAims": ["Drawing skills"], "indirectAims": ["Fine motor"], "controlOfError": "None - creative", "chineseName": "蒙特梭利绘画", "levels": [{"level": 1, "name": "Free Drawing", "description": "Explore drawing", "videoSearchTerms": ["montessori drawing"]}, {"level": 2, "name": "Guided Drawing", "description": "Step-by-step drawing", "videoSearchTerms": ["montessori guided drawing"]}]},
-        {"id": "cu_painting", "name": "Painting", "description": "Painting techniques", "ageRange": "primary_year1", "prerequisites": [], "sequence": 2, "materials": ["Paints", "Brushes", "Paper", "Easel"], "directAims": ["Painting skills"], "indirectAims": ["Color awareness"], "controlOfError": "None - creative", "chineseName": "蒙特梭利绘画", "levels": [{"level": 1, "name": "Free Painting", "description": "Explore paint", "videoSearchTerms": ["montessori painting"]}, {"level": 2, "name": "Techniques", "description": "Specific techniques", "videoSearchTerms": ["montessori painting techniques"]}]},
-        {"id": "cu_collage", "name": "Collage", "description": "Cutting and pasting", "ageRange": "primary_year1", "prerequisites": [], "sequence": 3, "materials": ["Paper", "Scissors", "Glue"], "directAims": ["Composition"], "indirectAims": ["Fine motor"], "controlOfError": "None - creative", "chineseName": "蒙特梭利拼贴", "levels": [{"level": 1, "name": "Basic Collage", "description": "Cut and paste", "videoSearchTerms": ["montessori collage"]}]},
-        {"id": "cu_clay", "name": "Clay and Playdough", "description": "3D sculpting", "ageRange": "primary_year1", "prerequisites": [], "sequence": 4, "materials": ["Clay", "Playdough", "Tools"], "directAims": ["3D creation"], "indirectAims": ["Hand strength"], "controlOfError": "None - creative", "chineseName": "蒙特梭利粘土", "levels": [{"level": 1, "name": "Free Sculpting", "description": "Explore clay", "videoSearchTerms": ["montessori clay"]}]},
-        {"id": "cu_printmaking", "name": "Printmaking", "description": "Making prints", "ageRange": "primary_year1", "prerequisites": [], "sequence": 5, "materials": ["Stamps", "Ink", "Paper"], "directAims": ["Print techniques"], "indirectAims": ["Pattern awareness"], "controlOfError": "None - creative", "chineseName": "蒙特梭利版画", "levels": [{"level": 1, "name": "Stamping", "description": "Use stamps", "videoSearchTerms": ["montessori stamping printing"]}]},
-        {"id": "cu_art_appreciation", "name": "Art Appreciation", "description": "Looking at famous art", "ageRange": "primary_year2", "prerequisites": [], "sequence": 6, "materials": ["Art prints", "Artist cards"], "directAims": ["Art vocabulary"], "indirectAims": ["Aesthetic appreciation"], "controlOfError": "None", "chineseName": "蒙特梭利艺术欣赏", "levels": [{"level": 1, "name": "Famous Artists", "description": "Learn about artists", "videoSearchTerms": ["montessori art appreciation"]}]}
+        {
+          "id": "cu_drawing",
+          "name": "Drawing",
+          "description": "Drawing skills",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Pencils",
+            "Crayons",
+            "Paper"
+          ],
+          "directAims": [
+            "Drawing skills"
+          ],
+          "indirectAims": [
+            "Fine motor"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利绘画",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Free Drawing",
+              "description": "Explore drawing",
+              "videoSearchTerms": [
+                "montessori drawing"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Guided Drawing",
+              "description": "Step-by-step drawing",
+              "videoSearchTerms": [
+                "montessori guided drawing"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_painting",
+          "name": "Painting",
+          "description": "Painting techniques",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 2,
+          "materials": [
+            "Paints",
+            "Brushes",
+            "Paper",
+            "Easel"
+          ],
+          "directAims": [
+            "Painting skills"
+          ],
+          "indirectAims": [
+            "Color awareness"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利绘画",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Free Painting",
+              "description": "Explore paint",
+              "videoSearchTerms": [
+                "montessori painting"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Techniques",
+              "description": "Specific techniques",
+              "videoSearchTerms": [
+                "montessori painting techniques"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_collage",
+          "name": "Collage",
+          "description": "Cutting and pasting",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 3,
+          "materials": [
+            "Paper",
+            "Scissors",
+            "Glue"
+          ],
+          "directAims": [
+            "Composition"
+          ],
+          "indirectAims": [
+            "Fine motor"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利拼贴",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Basic Collage",
+              "description": "Cut and paste",
+              "videoSearchTerms": [
+                "montessori collage"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_clay",
+          "name": "Clay and Playdough",
+          "description": "3D sculpting",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 4,
+          "materials": [
+            "Clay",
+            "Playdough",
+            "Tools"
+          ],
+          "directAims": [
+            "3D creation"
+          ],
+          "indirectAims": [
+            "Hand strength"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利粘土",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Free Sculpting",
+              "description": "Explore clay",
+              "videoSearchTerms": [
+                "montessori clay"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_printmaking",
+          "name": "Printmaking",
+          "description": "Making prints",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 5,
+          "materials": [
+            "Stamps",
+            "Ink",
+            "Paper"
+          ],
+          "directAims": [
+            "Print techniques"
+          ],
+          "indirectAims": [
+            "Pattern awareness"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利版画",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Stamping",
+              "description": "Use stamps",
+              "videoSearchTerms": [
+                "montessori stamping printing"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_art_appreciation",
+          "name": "Art Appreciation",
+          "description": "Looking at famous art",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 6,
+          "materials": [
+            "Art prints",
+            "Artist cards"
+          ],
+          "directAims": [
+            "Art vocabulary"
+          ],
+          "indirectAims": [
+            "Aesthetic appreciation"
+          ],
+          "controlOfError": "None",
+          "chineseName": "蒙特梭利艺术欣赏",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Famous Artists",
+              "description": "Learn about artists",
+              "videoSearchTerms": [
+                "montessori art appreciation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_artist_study",
+          "name": "Artist Study",
+          "description": "In-depth study of famous artists and their techniques",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_art_appreciation"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Art prints",
+            "Artist biography cards",
+            "Art materials to try their style"
+          ],
+          "directAims": [
+            "Art vocabulary",
+            "Understanding art styles"
+          ],
+          "indirectAims": [
+            "Cultural literacy",
+            "Fine motor"
+          ],
+          "controlOfError": "None — creative interpretation",
+          "chineseName": "蒙特梭利艺术家研究",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Observe",
+              "description": "Study 3-4 prints by one artist, discuss what they notice",
+              "videoSearchTerms": [
+                "montessori artist study"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Biography",
+              "description": "Learn about the artist's life and times",
+              "videoSearchTerms": [
+                "montessori art biography"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Create",
+              "description": "Create own artwork inspired by the artist's style",
+              "videoSearchTerms": [
+                "montessori art inspired by artists"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_weaving",
+          "name": "Weaving and Textile Art",
+          "description": "Weaving on simple looms",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 8,
+          "materials": [
+            "Simple loom",
+            "Yarn in various colors",
+            "Large needle"
+          ],
+          "directAims": [
+            "Weaving technique",
+            "Pattern creation"
+          ],
+          "indirectAims": [
+            "Fine motor",
+            "Concentration",
+            "Mathematical patterning"
+          ],
+          "controlOfError": "Weave not tight enough or pattern incorrect",
+          "chineseName": "蒙特梭利编织与纺织艺术",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Paper Weaving",
+              "description": "Over-under with paper strips",
+              "videoSearchTerms": [
+                "montessori paper weaving"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Loom Weaving",
+              "description": "Simple loom with yarn",
+              "videoSearchTerms": [
+                "montessori loom weaving children"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Pattern",
+              "description": "Create color patterns while weaving",
+              "videoSearchTerms": [
+                "montessori weaving patterns"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_colour_theory",
+          "name": "Colour Theory",
+          "description": "Understanding colour mixing and relationships",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_painting"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Primary colour paints",
+            "Mixing palette",
+            "White paper",
+            "Colour wheel"
+          ],
+          "directAims": [
+            "Primary and secondary colours",
+            "Colour mixing"
+          ],
+          "indirectAims": [
+            "Preparation for art",
+            "Scientific observation"
+          ],
+          "controlOfError": "Colours don't mix as expected — discuss why",
+          "chineseName": "蒙特梭利色彩理论",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Primary Colours",
+              "description": "Identify red, blue, yellow — cannot be mixed",
+              "videoSearchTerms": [
+                "montessori primary colours"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Secondary Colours",
+              "description": "Mix pairs: red+blue=purple, red+yellow=orange, blue+yellow=green",
+              "videoSearchTerms": [
+                "montessori colour mixing"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Colour Wheel",
+              "description": "Arrange colours in a wheel, find complementary pairs",
+              "videoSearchTerms": [
+                "montessori colour wheel"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -105,11 +2746,381 @@
       "description": "Musical expression and appreciation",
       "sequence": 7,
       "works": [
-        {"id": "cu_singing", "name": "Singing", "description": "Group singing", "ageRange": "primary_year1", "prerequisites": [], "sequence": 1, "materials": ["Song cards"], "directAims": ["Musical expression"], "indirectAims": ["Language"], "controlOfError": "None - creative", "chineseName": "蒙特梭利歌唱", "levels": [{"level": 1, "name": "Group Songs", "description": "Sing together", "videoSearchTerms": ["montessori singing"]}]},
-        {"id": "cu_rhythm", "name": "Rhythm Instruments", "description": "Percussion", "ageRange": "primary_year1", "prerequisites": [], "sequence": 2, "materials": ["Rhythm instruments"], "directAims": ["Rhythm awareness"], "indirectAims": ["Coordination"], "controlOfError": "Rhythm off", "chineseName": "蒙特梭利节奏", "levels": [{"level": 1, "name": "Exploration", "description": "Explore instruments", "videoSearchTerms": ["montessori rhythm instruments"]}, {"level": 2, "name": "Patterns", "description": "Play patterns", "videoSearchTerms": ["montessori rhythm patterns"]}]},
-        {"id": "cu_movement", "name": "Movement to Music", "description": "Dance and movement", "ageRange": "primary_year1", "prerequisites": [], "sequence": 3, "materials": ["Music player"], "directAims": ["Body awareness"], "indirectAims": ["Gross motor"], "controlOfError": "None - creative", "chineseName": "蒙特梭利律动", "levels": [{"level": 1, "name": "Free Movement", "description": "Move to music", "videoSearchTerms": ["montessori movement music"]}]},
-        {"id": "cu_bells", "name": "Montessori Bells", "description": "Pitch discrimination and music", "ageRange": "primary_year2", "prerequisites": [], "sequence": 4, "materials": ["Montessori Bells"], "directAims": ["Pitch discrimination"], "indirectAims": ["Musical ear"], "controlOfError": "Pitch mismatch", "chineseName": "蒙特梭利音乐铃", "levels": [{"level": 1, "name": "Matching", "description": "Match pitches", "videoSearchTerms": ["montessori bells matching"]}, {"level": 2, "name": "Grading", "description": "Arrange by pitch", "videoSearchTerms": ["montessori bells grading"]}, {"level": 3, "name": "Songs", "description": "Play simple songs", "videoSearchTerms": ["montessori bells songs"]}]},
-        {"id": "cu_music_appreciation", "name": "Music Appreciation", "description": "Listening to classical music", "ageRange": "primary_year2", "prerequisites": [], "sequence": 5, "materials": ["Music recordings", "Composer cards"], "directAims": ["Music vocabulary"], "indirectAims": ["Aesthetic appreciation"], "controlOfError": "None", "chineseName": "蒙特梭利音乐欣赏", "levels": [{"level": 1, "name": "Composers", "description": "Learn about composers", "videoSearchTerms": ["montessori music appreciation"]}]}
+        {
+          "id": "cu_singing",
+          "name": "Singing",
+          "description": "Group singing",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 1,
+          "materials": [
+            "Song cards"
+          ],
+          "directAims": [
+            "Musical expression"
+          ],
+          "indirectAims": [
+            "Language"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利歌唱",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Group Songs",
+              "description": "Sing together",
+              "videoSearchTerms": [
+                "montessori singing"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_rhythm",
+          "name": "Rhythm Instruments",
+          "description": "Percussion",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 2,
+          "materials": [
+            "Rhythm instruments"
+          ],
+          "directAims": [
+            "Rhythm awareness"
+          ],
+          "indirectAims": [
+            "Coordination"
+          ],
+          "controlOfError": "Rhythm off",
+          "chineseName": "蒙特梭利节奏",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Exploration",
+              "description": "Explore instruments",
+              "videoSearchTerms": [
+                "montessori rhythm instruments"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Patterns",
+              "description": "Play patterns",
+              "videoSearchTerms": [
+                "montessori rhythm patterns"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_movement",
+          "name": "Movement to Music",
+          "description": "Dance and movement",
+          "ageRange": "primary_year1",
+          "prerequisites": [],
+          "sequence": 3,
+          "materials": [
+            "Music player"
+          ],
+          "directAims": [
+            "Body awareness"
+          ],
+          "indirectAims": [
+            "Gross motor"
+          ],
+          "controlOfError": "None - creative",
+          "chineseName": "蒙特梭利律动",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Free Movement",
+              "description": "Move to music",
+              "videoSearchTerms": [
+                "montessori movement music"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_bells",
+          "name": "Montessori Bells",
+          "description": "Pitch discrimination and music",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 4,
+          "materials": [
+            "Montessori Bells"
+          ],
+          "directAims": [
+            "Pitch discrimination"
+          ],
+          "indirectAims": [
+            "Musical ear"
+          ],
+          "controlOfError": "Pitch mismatch",
+          "chineseName": "蒙特梭利音乐铃",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Matching",
+              "description": "Match pitches",
+              "videoSearchTerms": [
+                "montessori bells matching"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Grading",
+              "description": "Arrange by pitch",
+              "videoSearchTerms": [
+                "montessori bells grading"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Songs",
+              "description": "Play simple songs",
+              "videoSearchTerms": [
+                "montessori bells songs"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_music_appreciation",
+          "name": "Music Appreciation",
+          "description": "Listening to classical music",
+          "ageRange": "primary_year2",
+          "prerequisites": [],
+          "sequence": 5,
+          "materials": [
+            "Music recordings",
+            "Composer cards"
+          ],
+          "directAims": [
+            "Music vocabulary"
+          ],
+          "indirectAims": [
+            "Aesthetic appreciation"
+          ],
+          "controlOfError": "None",
+          "chineseName": "蒙特梭利音乐欣赏",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Composers",
+              "description": "Learn about composers",
+              "videoSearchTerms": [
+                "montessori music appreciation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_staff_notation",
+          "name": "Staff Notation Introduction",
+          "description": "Reading music on a staff",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_bells"
+          ],
+          "sequence": 6,
+          "materials": [
+            "Staff board",
+            "Note tokens",
+            "Music notation cards"
+          ],
+          "directAims": [
+            "Reading musical notation",
+            "Note names on staff"
+          ],
+          "indirectAims": [
+            "Symbol recognition",
+            "Mathematical patterns"
+          ],
+          "controlOfError": "Note placed on wrong line or space",
+          "chineseName": "蒙特梭利五线谱入门",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Staff Lines",
+              "description": "Learn the five lines and four spaces",
+              "videoSearchTerms": [
+                "montessori staff notation introduction"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Note Names",
+              "description": "Place notes: E G B D F (lines) and F A C E (spaces)",
+              "videoSearchTerms": [
+                "montessori note names staff"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Simple Songs",
+              "description": "Read and play simple melodies from staff",
+              "videoSearchTerms": [
+                "montessori reading music staff"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_rhythm_exercises",
+          "name": "Rhythm Exercises",
+          "description": "Structured rhythm reading and clapping",
+          "ageRange": "primary_year1",
+          "prerequisites": [
+            "cu_rhythm"
+          ],
+          "sequence": 7,
+          "materials": [
+            "Rhythm cards",
+            "Claves or sticks",
+            "Drum"
+          ],
+          "directAims": [
+            "Reading rhythm patterns",
+            "Keeping a steady beat"
+          ],
+          "indirectAims": [
+            "Mathematical division of time",
+            "Coordination"
+          ],
+          "controlOfError": "Rhythm doesn't match card",
+          "chineseName": "蒙特梭利节奏练习",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Steady Beat",
+              "description": "Clap or tap a steady beat",
+              "videoSearchTerms": [
+                "montessori rhythm steady beat"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Simple Patterns",
+              "description": "Read and clap: ta (crotchet), ti-ti (quavers)",
+              "videoSearchTerms": [
+                "montessori rhythm patterns reading"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Complex Patterns",
+              "description": "Rests, dotted notes, syncopation",
+              "videoSearchTerms": [
+                "montessori advanced rhythm patterns"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_cultural_music",
+          "name": "Cultural Music Study",
+          "description": "Music from around the world",
+          "ageRange": "primary_year2",
+          "prerequisites": [
+            "cu_music_appreciation"
+          ],
+          "sequence": 8,
+          "materials": [
+            "World music recordings",
+            "Instrument pictures",
+            "Globe"
+          ],
+          "directAims": [
+            "Musical diversity",
+            "Cultural awareness"
+          ],
+          "indirectAims": [
+            "Geography connection",
+            "Listening skills"
+          ],
+          "controlOfError": "Instrument matched to wrong culture — research together",
+          "chineseName": "蒙特梭利世界音乐研究",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Instruments",
+              "description": "Instruments from different cultures: djembe, sitar, didgeridoo",
+              "videoSearchTerms": [
+                "montessori world instruments"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Music Styles",
+              "description": "Listen to and compare music from 5 continents",
+              "videoSearchTerms": [
+                "montessori world music cultures"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Connection",
+              "description": "Match music styles to continent folders",
+              "videoSearchTerms": [
+                "montessori music geography connection"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cu_composing",
+          "name": "Composing Simple Music",
+          "description": "Creating original melodies",
+          "ageRange": "primary_year3",
+          "prerequisites": [
+            "cu_bells",
+            "cu_staff_notation"
+          ],
+          "sequence": 9,
+          "materials": [
+            "Bells",
+            "Staff paper",
+            "Pencil"
+          ],
+          "directAims": [
+            "Creative musical expression",
+            "Understanding melody"
+          ],
+          "indirectAims": [
+            "Composition skills",
+            "Self-expression"
+          ],
+          "controlOfError": "Melody doesn't sound as intended — revise",
+          "chineseName": "蒙特梭利简单作曲",
+          "levels": [
+            {
+              "level": 1,
+              "name": "Two Notes",
+              "description": "Create melodies using just two notes",
+              "videoSearchTerms": [
+                "montessori composing simple melody"
+              ]
+            },
+            {
+              "level": 2,
+              "name": "Five Notes",
+              "description": "Pentatonic scale melodies (always sound pleasant)",
+              "videoSearchTerms": [
+                "montessori pentatonic composing"
+              ]
+            },
+            {
+              "level": 3,
+              "name": "Record",
+              "description": "Write melody on staff paper",
+              "videoSearchTerms": [
+                "montessori writing music staff notation"
+              ]
+            }
+          ]
+        }
       ]
     }
   ]

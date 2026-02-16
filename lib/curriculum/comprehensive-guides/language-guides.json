@@ -7,13 +7,13 @@
     {
       "work_id": "la_enrichment_vocabulary",
       "name": "Vocabulary Enrichment",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bcd\u6c47\u4e30\u5bcc",
+      "name_chinese": "蒙特梭利词汇丰富",
       "slug": "enrichment-vocabulary",
       "area": "language",
       "category": "Oral Language",
       "sequence": 1,
       "age_range": "2.5-6 years",
-      "quick_guide": "\u2022 Daily exposure to new words through formal Three Period Lessons\n\u2022 Use real objects, pictures, and classified cards to teach vocabulary\n\u2022 Introduce scientific names and descriptive words from the environment\n\u2022 Practice vocabulary through games, songs, and storytelling\n\u2022 Create opportunities for repetition and practice in authentic contexts",
+      "quick_guide": "• Daily exposure to new words through formal Three Period Lessons\n• Use real objects, pictures, and classified cards to teach vocabulary\n• Introduce scientific names and descriptive words from the environment\n• Practice vocabulary through games, songs, and storytelling\n• Create opportunities for repetition and practice in authentic contexts",
       "presentation_steps": [
         {
           "step": 1,
@@ -118,13 +118,13 @@
     {
       "work_id": "la_classified_cards",
       "name": "Classified Cards (Nomenclature Cards)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u7c7b\u5361\u7247",
+      "name_chinese": "蒙特梭利分类卡片",
       "slug": "classified-cards",
       "area": "language",
       "category": "Oral Language",
       "sequence": 2,
       "age_range": "2.5-6 years",
-      "quick_guide": "\u2022 Three-part card format: picture labeled, picture unlabeled, label only\n\u2022 Introduce using Three Period Lesson across multiple days\n\u2022 Begin with very familiar objects and categories\n\u2022 Progress from concrete to abstract presentations\n\u2022 Create opportunities for independent practice and extension",
+      "quick_guide": "• Three-part card format: picture labeled, picture unlabeled, label only\n• Introduce using Three Period Lesson across multiple days\n• Begin with very familiar objects and categories\n• Progress from concrete to abstract presentations\n• Create opportunities for independent practice and extension",
       "presentation_steps": [
         {
           "step": 1,
@@ -206,7 +206,7 @@
         "Baskets for independent organization"
       ],
       "extensions": [
-        "Moving from categories to subcategories (animals \u2192 mammals \u2192 carnivores)",
+        "Moving from categories to subcategories (animals → mammals → carnivores)",
         "Associating multiple attributes with objects (color, size, texture, function)",
         "Creating personal word banks or journals with illustrated vocabulary",
         "Introduction to phonetics through reading labels",
@@ -227,13 +227,13 @@
     {
       "work_id": "la_object_picture_matching",
       "name": "Object to Picture Matching",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5b9e\u7269\u56fe\u7247\u914d\u5bf9",
+      "name_chinese": "蒙特梭利实物图片配对",
       "slug": "object-picture-matching",
       "area": "language",
       "category": "Oral Language",
       "sequence": 3,
       "age_range": "18 months-4 years",
-      "quick_guide": "\u2022 Start with real objects and realistic photographs\n\u2022 Match 3-D objects to 2-D pictures\n\u2022 Begin with very familiar items\n\u2022 Gradually introduce less obvious or smaller objects\n\u2022 Use clear, uncluttered images to focus attention",
+      "quick_guide": "• Start with real objects and realistic photographs\n• Match 3-D objects to 2-D pictures\n• Begin with very familiar items\n• Gradually introduce less obvious or smaller objects\n• Use clear, uncluttered images to focus attention",
       "presentation_steps": [
         {
           "step": 1,
@@ -263,7 +263,7 @@
           "step": 5,
           "title": "Observation and Extension",
           "description": "Observe which materials the child gravitates toward. Extend with questions: 'Find all the animals,' 'Where would we find this?' Support vocabulary expansion as child works.",
-          "tip": "This work naturally leads to conversation and language enrichment\u2014use it as an opportunity for vocabulary development."
+          "tip": "This work naturally leads to conversation and language enrichment—use it as an opportunity for vocabulary development."
         }
       ],
       "direct_aims": [
@@ -283,7 +283,7 @@
         "Miniature objects",
         "Matching picture cards"
       ],
-      "control_of_error": "Visual comparison\u2014object and picture should obviously match; teacher provides a control card showing correct pairings; child can self-check by placing matched pair together",
+      "control_of_error": "Visual comparison—object and picture should obviously match; teacher provides a control card showing correct pairings; child can self-check by placing matched pair together",
       "prerequisites": [
         "la_classified_cards"
       ],
@@ -333,19 +333,19 @@
         "Find",
         "Compare"
       ],
-      "parent_description": "Object to Picture Matching is one of the first Montessori language works. Children learn to recognize that a real object and its photograph represent the same thing\u2014a crucial pre-reading skill. Starting with very familiar items, children pick up a real object, examine it, and find its matching picture. This work develops visual discrimination and vocabulary while teaching the abstract concept that a 2-D image can represent a 3-D object. It's a natural precursor to reading, where letters and words are symbols that represent sounds and meanings.",
+      "parent_description": "Object to Picture Matching is one of the first Montessori language works. Children learn to recognize that a real object and its photograph represent the same thing—a crucial pre-reading skill. Starting with very familiar items, children pick up a real object, examine it, and find its matching picture. This work develops visual discrimination and vocabulary while teaching the abstract concept that a 2-D image can represent a 3-D object. It's a natural precursor to reading, where letters and words are symbols that represent sounds and meanings.",
       "why_it_matters": "This work is foundational for literacy development. Reading requires understanding that symbols (letters and words) represent real things and ideas. Object to picture matching teaches this abstract concept concretely. It also supports visual discrimination skills needed for letter recognition, builds vocabulary through direct experience, and develops classification and logical thinking skills essential for all learning."
     },
     {
       "work_id": "la_sound_games",
       "name": "Sound Games (I Spy)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u58f0\u97f3\u6e38\u620f",
+      "name_chinese": "蒙特梭利声音游戏",
       "slug": "sound-games",
       "area": "language",
       "category": "Oral Language Development",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Oral language game using 'I Spy' format to develop phonemic awareness\n\u2022 Isolates beginning, ending, and middle sounds in words\n\u2022 Essential pre-reading activity connecting spoken sounds to future letter learning\n\u2022 Progresses from beginning sounds to ending sounds to middle sounds\n\u2022 Uses real objects initially, then moves to pictures and abstract thinking",
+      "quick_guide": "• Oral language game using 'I Spy' format to develop phonemic awareness\n• Isolates beginning, ending, and middle sounds in words\n• Essential pre-reading activity connecting spoken sounds to future letter learning\n• Progresses from beginning sounds to ending sounds to middle sounds\n• Uses real objects initially, then moves to pictures and abstract thinking",
       "presentation_steps": [
         {
           "step": 1,
@@ -425,19 +425,19 @@
         "Elkonin boxes",
         "Counters/chips"
       ],
-      "parent_description": "Your child is playing listening games to discover the individual sounds hidden in words. Using objects around the classroom, the teacher asks 'I spy something that starts with /s/' and your child listens carefully to isolate that beginning sound. This playful auditory work awakens your child's awareness of phonemic sounds\u2014the building blocks of both reading and writing.",
+      "parent_description": "Your child is playing listening games to discover the individual sounds hidden in words. Using objects around the classroom, the teacher asks 'I spy something that starts with /s/' and your child listens carefully to isolate that beginning sound. This playful auditory work awakens your child's awareness of phonemic sounds—the building blocks of both reading and writing.",
       "why_it_matters": "Phonemic awareness is the foundation for literacy. Learning to hear and isolate individual sounds helps children crack the code of how spoken language maps to written letters, making later reading instruction far more meaningful."
     },
     {
       "work_id": "la_rhyming",
       "name": "Rhyming Activities",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u62bc\u97f5\u6d3b\u52a8",
+      "name_chinese": "蒙特梭利押韵活动",
       "slug": "rhyming",
       "area": "language",
       "category": "Oral Language",
       "sequence": 5,
       "age_range": "2.5-6 years",
-      "quick_guide": "\u2022 Gather objects or picture cards that rhyme together\n\u2022 Emphasize final sounds in words through listening activities\n\u2022 Use songs, poems, and rhyming books\n\u2022 Incorporate movement with rhyming words\n\u2022 Create rhyming baskets with themed object groups",
+      "quick_guide": "• Gather objects or picture cards that rhyme together\n• Emphasize final sounds in words through listening activities\n• Use songs, poems, and rhyming books\n• Incorporate movement with rhyming words\n• Create rhyming baskets with themed object groups",
       "presentation_steps": [
         {
           "step": 1,
@@ -537,19 +537,19 @@
         "Pattern",
         "Rhythm"
       ],
-      "parent_description": "Rhyming Activities are a joyful introduction to the sound patterns of language. Children listen to familiar nursery rhymes and poems, play with rhyming objects, and sing songs where words rhyme. Through these playful activities, children develop sensitivity to the final sounds of words\u2014a critical skill for learning to read phonetically. Rhyming is both delightful and educational; the musicality and predictability of rhyming text makes language memorable and builds the phonemic awareness necessary for reading.",
-      "why_it_matters": "Rhyming is one of the most important precursors to reading success. Children who develop strong rhyming skills and phonemic awareness learn to read more easily and with better comprehension. Rhyming teaches children to break words into sound components and recognize patterns\u2014foundational skills for decoding words, spelling, and understanding how language works. The playful, multisensory nature of rhyming activities makes learning effortless for children."
+      "parent_description": "Rhyming Activities are a joyful introduction to the sound patterns of language. Children listen to familiar nursery rhymes and poems, play with rhyming objects, and sing songs where words rhyme. Through these playful activities, children develop sensitivity to the final sounds of words—a critical skill for learning to read phonetically. Rhyming is both delightful and educational; the musicality and predictability of rhyming text makes language memorable and builds the phonemic awareness necessary for reading.",
+      "why_it_matters": "Rhyming is one of the most important precursors to reading success. Children who develop strong rhyming skills and phonemic awareness learn to read more easily and with better comprehension. Rhyming teaches children to break words into sound components and recognize patterns—foundational skills for decoding words, spelling, and understanding how language works. The playful, multisensory nature of rhyming activities makes learning effortless for children."
     },
     {
       "work_id": "la_storytelling",
       "name": "Storytelling and Sequencing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bb2\u6545\u4e8b",
+      "name_chinese": "蒙特梭利讲故事",
       "slug": "storytelling",
       "area": "language",
       "category": "Oral Language",
       "sequence": 6,
       "age_range": "3-6 years",
-      "quick_guide": "\u2022 Use sequencing cards showing beginning, middle, and end of stories\n\u2022 Introduce story structure through familiar tales\n\u2022 Have children retell stories in correct order\n\u2022 Create original stories based on picture sequences\n\u2022 Develop oral narrative skills and comprehension",
+      "quick_guide": "• Use sequencing cards showing beginning, middle, and end of stories\n• Introduce story structure through familiar tales\n• Have children retell stories in correct order\n• Create original stories based on picture sequences\n• Develop oral narrative skills and comprehension",
       "presentation_steps": [
         {
           "step": 1,
@@ -654,19 +654,19 @@
         "Middle",
         "End"
       ],
-      "parent_description": "Storytelling and Sequencing helps children understand that stories have structure: a beginning, middle, and end. Using picture cards showing the steps of a simple story, children learn to recognize the order of events and develop the ability to retell stories with expression. This work develops both comprehension and narrative skills\u2014children learn to think about how events connect logically and to tell stories with clarity. As children become skilled, they create original stories, supporting imagination and creative thinking.",
+      "parent_description": "Storytelling and Sequencing helps children understand that stories have structure: a beginning, middle, and end. Using picture cards showing the steps of a simple story, children learn to recognize the order of events and develop the ability to retell stories with expression. This work develops both comprehension and narrative skills—children learn to think about how events connect logically and to tell stories with clarity. As children become skilled, they create original stories, supporting imagination and creative thinking.",
       "why_it_matters": "Strong narrative skills are essential for reading comprehension and academic success. Understanding story sequence and structure helps children follow complex texts, make predictions, and understand cause-and-effect relationships. Storytelling builds vocabulary, develops verbal fluency, and supports executive functioning as children learn to organize events logically. This work also fosters imagination and creativity while building the language skills children need for all future learning."
     },
     {
       "work_id": "la_poems_songs",
       "name": "Poems, Songs, and Fingerplays",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bd7\u6b4c\u6b4c\u66f2",
+      "name_chinese": "蒙特梭利诗歌歌曲",
       "slug": "poems-songs",
       "area": "language",
       "category": "Oral Language",
       "sequence": 7,
       "age_range": "2.5-6 years",
-      "quick_guide": "\u2022 Build a personal repertoire of age-appropriate poems, songs, and fingerplays\n\u2022 Use poetry and songs during circle time and transitions\n\u2022 Teach fingerplays that coordinate movement with language\n\u2022 Repeat the same poems/songs regularly for memorization\n\u2022 Emphasize the joy, rhythm, and musicality of language",
+      "quick_guide": "• Build a personal repertoire of age-appropriate poems, songs, and fingerplays\n• Use poetry and songs during circle time and transitions\n• Teach fingerplays that coordinate movement with language\n• Repeat the same poems/songs regularly for memorization\n• Emphasize the joy, rhythm, and musicality of language",
       "presentation_steps": [
         {
           "step": 1,
@@ -767,18 +767,18 @@
         "Melody"
       ],
       "parent_description": "Poems, Songs, and Fingerplays are woven throughout the Montessori day. Children hear poetry and songs recited by teachers during circle time, transitions, and quiet moments. These literary experiences expose children to the beauty and musicality of language while teaching new vocabulary and sound patterns. Fingerplays coordinate movement with language, creating a multisensory experience that supports memory and engagement. Through repetition, children memorize poems and songs, building confidence in their ability to express themselves. Poetry fosters a lifelong love of language and literature.",
-      "why_it_matters": "Poetry and music accelerate brain development, particularly in areas responsible for language, sound processing, and reading. Rhyming, rhythm, and repetition in poems and songs build phonemic awareness\u2014the foundation of reading. Memorizing poetry strengthens memory and concentration. The emotional resonance of poetry and music supports social-emotional development. Perhaps most importantly, sharing poems and songs creates a joyful association with language, fostering the love of reading and learning that lasts a lifetime."
+      "why_it_matters": "Poetry and music accelerate brain development, particularly in areas responsible for language, sound processing, and reading. Rhyming, rhythm, and repetition in poems and songs build phonemic awareness—the foundation of reading. Memorizing poetry strengthens memory and concentration. The emotional resonance of poetry and music supports social-emotional development. Perhaps most importantly, sharing poems and songs creates a joyful association with language, fostering the love of reading and learning that lasts a lifetime."
     },
     {
       "work_id": "la_conversation",
       "name": "Conversation and Discussion",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5bf9\u8bdd\u7ec3\u4e60",
+      "name_chinese": "蒙特梭利对话练习",
       "slug": "conversation",
       "area": "language",
       "category": "Oral Language",
       "sequence": 8,
       "age_range": "2.5-6 years",
-      "quick_guide": "\u2022 Create daily opportunities for meaningful conversation\n\u2022 Welcome children's ideas and questions during circle time\n\u2022 Practice Grace and Courtesy for respectful discussion\n\u2022 Use snack time for guided conversations\n\u2022 Model clear, respectful communication patterns",
+      "quick_guide": "• Create daily opportunities for meaningful conversation\n• Welcome children's ideas and questions during circle time\n• Practice Grace and Courtesy for respectful discussion\n• Use snack time for guided conversations\n• Model clear, respectful communication patterns",
       "presentation_steps": [
         {
           "step": 1,
@@ -878,19 +878,19 @@
         "Agree",
         "Disagree"
       ],
-      "parent_description": "Conversation and Discussion are central to Montessori language development. Every day, children engage in meaningful conversations with teachers and peers\u2014during morning greetings, snack time, circle discussions, and spontaneous moments. Teachers model respectful listening and clear communication, while children learn to share ideas, ask questions, and respond to others with kindness. Grace and Courtesy lessons explicitly teach social skills like turn-taking and respectful disagreement. Through these authentic daily conversations, children develop confidence, expand vocabulary, and build the communication skills essential for academic and social success.",
+      "parent_description": "Conversation and Discussion are central to Montessori language development. Every day, children engage in meaningful conversations with teachers and peers—during morning greetings, snack time, circle discussions, and spontaneous moments. Teachers model respectful listening and clear communication, while children learn to share ideas, ask questions, and respond to others with kindness. Grace and Courtesy lessons explicitly teach social skills like turn-taking and respectful disagreement. Through these authentic daily conversations, children develop confidence, expand vocabulary, and build the communication skills essential for academic and social success.",
       "why_it_matters": "Conversation is the most natural and powerful teacher of language. Children who engage in rich, frequent conversations with responsive adults develop larger vocabularies, stronger comprehension, and greater reading success. Discussion develops critical thinking, builds community, and supports social-emotional development. Feeling heard and valued during conversations boosts confidence and motivation. These daily interactions create a foundation for lifelong communication skills and a sense of belonging."
     },
     {
       "work_id": "la_metal_insets",
       "name": "Metal Insets",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u5c5e\u5d4c\u677f",
+      "name_chinese": "蒙特梭利金属嵌板",
       "slug": "metal-insets",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Ten geometric metal frames and insets for tracing and design\n\u2022 Develops pencil control and hand strength for writing preparation\n\u2022 Creates beautiful artwork while building fine motor skills\n\u2022 Progression from frame tracing to inset tracing to complex designs\n\u2022 Indirect preparation for letter formation curves and lines",
+      "quick_guide": "• Ten geometric metal frames and insets for tracing and design\n• Develops pencil control and hand strength for writing preparation\n• Creates beautiful artwork while building fine motor skills\n• Progression from frame tracing to inset tracing to complex designs\n• Indirect preparation for letter formation curves and lines",
       "presentation_steps": [
         {
           "step": 1,
@@ -971,18 +971,18 @@
         "Pencil holder"
       ],
       "parent_description": "Your child is strengthening their hand through beautiful geometric tracing and drawing work. By carefully outlining metal frame shapes with colored pencils and creating intricate designs, they're building the fine motor control, hand strength, and pencil grip needed for fluent writing. The precise movements required teach the exact pencil strokes that form letters.",
-      "why_it_matters": "The Metal Insets are the direct preparation for handwriting. This work develops not just the muscles needed for writing, but also hand-eye coordination and the ability to stay within lines\u2014all essential skills for confident, controlled written expression."
+      "why_it_matters": "The Metal Insets are the direct preparation for handwriting. This work develops not just the muscles needed for writing, but also hand-eye coordination and the ability to stay within lines—all essential skills for confident, controlled written expression."
     },
     {
       "work_id": "la_sandpaper_letters",
       "name": "Sandpaper Letters",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7802\u7eb8\u5b57\u6bcd",
+      "name_chinese": "蒙特梭利砂纸字母",
       "slug": "sandpaper-letters",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 2,
       "age_range": "3-5 years",
-      "quick_guide": "\u2022 Tactile, sensorial introduction to letter formation and sounds\n\u2022 Use Three Period Lesson for systematic presentation\n\u2022 Vowels on blue, consonants on pink (standard Montessori convention)\n\u2022 Child traces letter while hearing the sound\n\u2022 Practice independent tracing to build muscle memory",
+      "quick_guide": "• Tactile, sensorial introduction to letter formation and sounds\n• Use Three Period Lesson for systematic presentation\n• Vowels on blue, consonants on pink (standard Montessori convention)\n• Child traces letter while hearing the sound\n• Practice independent tracing to build muscle memory",
       "presentation_steps": [
         {
           "step": 1,
@@ -999,7 +999,7 @@
         {
           "step": 3,
           "title": "Second Period: Recognition",
-          "description": "Over several days, present the same letters. Mix in a new letter. Ask child: 'Trace the 's.' or 'Find the letter that makes the 'mmm' sound.' Child traces while saying the sound. Repeat many times\u2014second period is longer and deeper than first.",
+          "description": "Over several days, present the same letters. Mix in a new letter. Ask child: 'Trace the 's.' or 'Find the letter that makes the 'mmm' sound.' Child traces while saying the sound. Repeat many times—second period is longer and deeper than first.",
           "tip": "Some children master a letter in one session; others need a week or more. Follow the child's pace."
         },
         {
@@ -1012,7 +1012,7 @@
           "step": 5,
           "title": "Transition to Writing",
           "description": "Once child has internalized letter formation through sandpaper tracing, introduce chalkboard or paper writing. Child traces in sand tray first, then transfers to chalkboard (which allows erasure), then to paper.",
-          "tip": "Handwriting follows the progression: sandpaper (tactile) \u2192 sand tray \u2192 chalkboard (impermanent) \u2192 paper (permanent)."
+          "tip": "Handwriting follows the progression: sandpaper (tactile) → sand tray → chalkboard (impermanent) → paper (permanent)."
         }
       ],
       "direct_aims": [
@@ -1084,19 +1084,19 @@
         "Muscle memory",
         "Formation"
       ],
-      "parent_description": "Sandpaper Letters are the iconic Montessori material for writing preparation. Each letter is made of rough sandpaper mounted on a smooth colored card\u2014vowels on blue, consonants on pink. Children trace the letter shape with their finger while hearing the letter sound, engaging vision, touch, and hearing simultaneously. This multisensory approach helps children internalize letter shapes and their corresponding sounds. Through repeated tracing, children develop the muscle memory necessary for writing. The tactile feedback of the sandpaper helps children understand when they're tracing correctly.",
-      "why_it_matters": "Sandpaper Letters combine sensorial learning with phonetic instruction\u2014classic Montessori integration of senses with academics. The tactile-kinesthetic approach appeals to young learners who learn best through touch and movement. Tracing sandpaper letters builds the fine motor control and hand strength necessary for writing while establishing sound-symbol connections essential for reading. By the time children move to writing on paper, the letter formation is already internalized, making the transition smooth and confident."
+      "parent_description": "Sandpaper Letters are the iconic Montessori material for writing preparation. Each letter is made of rough sandpaper mounted on a smooth colored card—vowels on blue, consonants on pink. Children trace the letter shape with their finger while hearing the letter sound, engaging vision, touch, and hearing simultaneously. This multisensory approach helps children internalize letter shapes and their corresponding sounds. Through repeated tracing, children develop the muscle memory necessary for writing. The tactile feedback of the sandpaper helps children understand when they're tracing correctly.",
+      "why_it_matters": "Sandpaper Letters combine sensorial learning with phonetic instruction—classic Montessori integration of senses with academics. The tactile-kinesthetic approach appeals to young learners who learn best through touch and movement. Tracing sandpaper letters builds the fine motor control and hand strength necessary for writing while establishing sound-symbol connections essential for reading. By the time children move to writing on paper, the letter formation is already internalized, making the transition smooth and confident."
     },
     {
       "work_id": "la_sand_tray",
       "name": "Sand Tray Writing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6c99\u76d8\u4e66\u5199",
+      "name_chinese": "蒙特梭利沙盘书写",
       "slug": "sand-tray",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Tray with sand or salt for practicing letter formation\n\u2022 Transitional writing practice before paper and pencil\n\u2022 Child traces letters in sand, can easily erase and retry\n\u2022 Low stakes practice develops confidence\n\u2022 Prepares for chalkboard and paper writing",
+      "quick_guide": "• Tray with sand or salt for practicing letter formation\n• Transitional writing practice before paper and pencil\n• Child traces letters in sand, can easily erase and retry\n• Low stakes practice develops confidence\n• Prepares for chalkboard and paper writing",
       "presentation_steps": [
         {
           "step": 1,
@@ -1170,18 +1170,18 @@
         "Sand tray with colored sand"
       ],
       "parent_description": "Your child is using their fingers to trace letters in sand, creating a multisensory experience that connects sight, touch, and movement. After seeing a letter shape card, they reproduce it in the sand tray using a wooden stylus or their finger. This tactile feedback helps cement letter formation before pencil is ever picked up.",
-      "why_it_matters": "Sand tray work engages multiple senses simultaneously, which strengthens memory and muscle memory for letter shapes. The erasable medium removes pressure and encourages repeated practice\u2014perfect for developing the motor patterns that lead to automatic letter writing."
+      "why_it_matters": "Sand tray work engages multiple senses simultaneously, which strengthens memory and muscle memory for letter shapes. The erasable medium removes pressure and encourages repeated practice—perfect for developing the motor patterns that lead to automatic letter writing."
     },
     {
       "work_id": "la_chalkboard_writing",
       "name": "Chalkboard Writing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9ed1\u677f\u4e66\u5199",
+      "name_chinese": "蒙特梭利黑板书写",
       "slug": "chalkboard-writing",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 4,
       "age_range": "3.5-5.5 years",
-      "quick_guide": "\u2022 Low-pressure writing on erasable chalkboard surface\n\u2022 Child can experiment freely without fear of mistakes\n\u2022 Progress from lines \u2192 letters \u2192 words\n\u2022 Chalkboard work bridges sandpaper letters to paper\n\u2022 Allow impermanence to encourage creative risk-taking",
+      "quick_guide": "• Low-pressure writing on erasable chalkboard surface\n• Child can experiment freely without fear of mistakes\n• Progress from lines → letters → words\n• Chalkboard work bridges sandpaper letters to paper\n• Allow impermanence to encourage creative risk-taking",
       "presentation_steps": [
         {
           "step": 1,
@@ -1199,7 +1199,7 @@
           "step": 3,
           "title": "Write Individual Letters",
           "description": "Once lines are comfortable, introduce writing sandpaper letter shapes on the chalkboard. Start with familiar letters child has traced extensively. Write the letter slowly while child watches, then guide child's hand or let them trace it.",
-          "tip": "The impermanence of chalk allows freedom. If the letter doesn't look perfect, simply erase and try again\u2014no failure."
+          "tip": "The impermanence of chalk allows freedom. If the letter doesn't look perfect, simply erase and try again—no failure."
         },
         {
           "step": 4,
@@ -1283,19 +1283,19 @@
         "Line",
         "Erase"
       ],
-      "parent_description": "Chalkboard Writing bridges the gap between sandpaper letters and paper writing. Children practice writing on erasable chalkboards, where mistakes can easily disappear. This low-pressure environment encourages experimentation and builds confidence. Without the permanence of pencil on paper, children feel free to attempt letters, try new words, and risk making mistakes. Through playful chalkboard practice, children develop muscle memory, pencil grip, and letter formation\u2014all essential for successful paper writing. The emphasis remains on the joy of creating and expressing ideas, not on perfection.",
+      "parent_description": "Chalkboard Writing bridges the gap between sandpaper letters and paper writing. Children practice writing on erasable chalkboards, where mistakes can easily disappear. This low-pressure environment encourages experimentation and builds confidence. Without the permanence of pencil on paper, children feel free to attempt letters, try new words, and risk making mistakes. Through playful chalkboard practice, children develop muscle memory, pencil grip, and letter formation—all essential for successful paper writing. The emphasis remains on the joy of creating and expressing ideas, not on perfection.",
       "why_it_matters": "The transition from sandpaper letters to paper writing is significant. Chalkboard work provides a crucial intermediate step that maintains the tactile, low-pressure environment while building real writing skills. The impermanence of chalk writing helps children approach writing as playful exploration rather than high-stakes performance. Research shows that children who experience playful, low-pressure writing activities develop stronger writing skills and greater willingness to take risks in writing than children pushed to 'correct' writing too early."
     },
     {
       "work_id": "la_moveable_alphabet",
       "name": "Moveable Alphabet",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d3b\u52a8\u5b57\u6bcd",
+      "name_chinese": "蒙特梭利活动字母",
       "slug": "moveable-alphabet",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 5,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Box containing lowercase letters (consonants and vowels color-coded)\n\u2022 Allows children to build words before hand is ready for writing\n\u2022 Bridges phonemic awareness and reading through encoding\n\u2022 Child sounds out word and selects corresponding letters\n\u2022 Liberates expression from fine motor limitations",
+      "quick_guide": "• Box containing lowercase letters (consonants and vowels color-coded)\n• Allows children to build words before hand is ready for writing\n• Bridges phonemic awareness and reading through encoding\n• Child sounds out word and selects corresponding letters\n• Liberates expression from fine motor limitations",
       "presentation_steps": [
         {
           "step": 1,
@@ -1370,19 +1370,19 @@
       "materials_needed": [
         "Large Moveable Alphabet (blue consonants, red vowels)"
       ],
-      "parent_description": "Your child is building words by selecting individual letter tiles and arranging them on a mat. With vowels in blue and consonants in red, they sound out a word they hear and choose letters to represent each sound. This ingenious material allows children to express their thoughts in writing before their hand is ready for pencil work. Watch as your child 'writes' sentences and stories\u2014they're becoming an author!",
-      "why_it_matters": "The Moveable Alphabet bridges the gap between knowing letter sounds and actual writing, allowing children to compose words, sentences, and even stories. This early success with encoding builds confidence and a genuine love of writing\u2014often before traditional handwriting instruction."
+      "parent_description": "Your child is building words by selecting individual letter tiles and arranging them on a mat. With vowels in blue and consonants in red, they sound out a word they hear and choose letters to represent each sound. This ingenious material allows children to express their thoughts in writing before their hand is ready for pencil work. Watch as your child 'writes' sentences and stories—they're becoming an author!",
+      "why_it_matters": "The Moveable Alphabet bridges the gap between knowing letter sounds and actual writing, allowing children to compose words, sentences, and even stories. This early success with encoding builds confidence and a genuine love of writing—often before traditional handwriting instruction."
     },
     {
       "work_id": "la_handwriting_paper",
       "name": "Handwriting on Paper",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e66\u5199\u7ec3\u4e60",
+      "name_chinese": "蒙特梭利书写练习",
       "slug": "handwriting-paper",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 6,
       "age_range": "4-6 years",
-      "quick_guide": "\u2022 Final step in writing progression after sandpaper and chalkboard\n\u2022 Use proper Montessori writing paper (lines with specific spacing)\n\u2022 Progress from letter formation to word writing\n\u2022 Maintain focus on legibility and hand strength, not speed\n\u2022 Support individual developmental pace",
+      "quick_guide": "• Final step in writing progression after sandpaper and chalkboard\n• Use proper Montessori writing paper (lines with specific spacing)\n• Progress from letter formation to word writing\n• Maintain focus on legibility and hand strength, not speed\n• Support individual developmental pace",
       "presentation_steps": [
         {
           "step": 1,
@@ -1485,24 +1485,24 @@
         "Handwriting",
         "Legible"
       ],
-      "parent_description": "Handwriting on Paper is the culmination of the writing preparation sequence. After mastering sandpaper letters and chalkboard writing, children are ready to write with pencil on paper. Using special Montessori writing paper with guidelines to support letter formation, children write letters, then simple words and sentences. The focus is on legibility and purposeful communication rather than speed or perfection. Children practice writing in meaningful contexts\u2014labeling items in the classroom, creating stories, writing messages to friends. Through this real-world writing, children develop both the mechanics of handwriting and the motivation to communicate through the written word.",
+      "parent_description": "Handwriting on Paper is the culmination of the writing preparation sequence. After mastering sandpaper letters and chalkboard writing, children are ready to write with pencil on paper. Using special Montessori writing paper with guidelines to support letter formation, children write letters, then simple words and sentences. The focus is on legibility and purposeful communication rather than speed or perfection. Children practice writing in meaningful contexts—labeling items in the classroom, creating stories, writing messages to friends. Through this real-world writing, children develop both the mechanics of handwriting and the motivation to communicate through the written word.",
       "why_it_matters": "Proper handwriting instruction built on careful preparation prevents lifelong writing difficulties. Children who experience the Montessori writing progression develop confident, legible handwriting without tension or frustration. The progression from tactile (sandpaper) to temporary (chalkboard) to permanent (paper) respects children's developmental needs and cognitive ability to handle permanence. Most importantly, this sequence connects writing to meaningful communication, ensuring children view writing as a tool for expression rather than a chore."
     },
     {
       "work_id": "la_creative_writing",
       "name": "Creative Writing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u521b\u610f\u5199\u4f5c",
+      "name_chinese": "蒙特梭利创意写作",
       "slug": "creative-writing",
       "area": "language",
       "category": "Writing Preparation",
       "sequence": 7,
       "age_range": "3.5-6 years",
-      "quick_guide": "\u2022 Encourage original stories and self-expression in writing\n\u2022 Support inventive spelling and grammatical growth\n\u2022 Provide varied writing genres and purposes\n\u2022 Create classroom culture celebrating writing attempts\n\u2022 Connect writing to children's interests and experiences",
+      "quick_guide": "• Encourage original stories and self-expression in writing\n• Support inventive spelling and grammatical growth\n• Provide varied writing genres and purposes\n• Create classroom culture celebrating writing attempts\n• Connect writing to children's interests and experiences",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Model Writing Enthusiasm",
-          "description": "Write in front of children regularly. Tell them what you're writing and why: 'I'm writing a note to thank Maria for sharing snack with Diego.' Show them your writing process\u2014thinking, writing, rereading. Model the joy and purpose of writing.",
+          "description": "Write in front of children regularly. Tell them what you're writing and why: 'I'm writing a note to thank Maria for sharing snack with Diego.' Show them your writing process—thinking, writing, rereading. Model the joy and purpose of writing.",
           "tip": "Children who see adults writing purposefully become writers themselves. Model writing daily in visible ways."
         },
         {
@@ -1601,18 +1601,18 @@
         "Create"
       ],
       "parent_description": "Creative Writing is about encouraging children to express themselves through the written word. Beginning in early childhood, children are invited to write their own stories, messages, and ideas. Teachers celebrate invention and expression while gently supporting skill development. As children write, they naturally encounter questions: How do I spell this? Can I use this word? This authentic need drives learning more effectively than isolated spelling or grammar lessons. The Montessori approach trusts that children will develop conventional writing skills through purposeful, meaningful writing experiences.",
-      "why_it_matters": "Children who write regularly, creatively, and with support develop strong writing skills and lifelong writing habits. Creative writing supports emotional development, allowing children to process experiences and express feelings. It develops imagination, creativity, and problem-solving skills. Children who view themselves as capable writers in early childhood maintain that positive identity and confidence throughout their academic careers. Perhaps most importantly, creative writing is joyful\u2014when writing is about expressing ideas rather than following rules, children engage with enthusiasm and develop a love of the written word."
+      "why_it_matters": "Children who write regularly, creatively, and with support develop strong writing skills and lifelong writing habits. Creative writing supports emotional development, allowing children to process experiences and express feelings. It develops imagination, creativity, and problem-solving skills. Children who view themselves as capable writers in early childhood maintain that positive identity and confidence throughout their academic careers. Perhaps most importantly, creative writing is joyful—when writing is about expressing ideas rather than following rules, children engage with enthusiasm and develop a love of the written word."
     },
     {
       "work_id": "la_object_boxes",
       "name": "Object Boxes (Pink/Blue/Green)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7269\u54c1\u76d2",
+      "name_chinese": "蒙特梭利物品盒",
       "slug": "object-boxes",
       "area": "language",
       "category": "Reading",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Collections of miniature objects organized by phonetic pattern\n\u2022 Multi-sensory reading practice connecting objects to words\n\u2022 Supports all reading series (Pink, Blue, Green) with concrete materials\n\u2022 Child manipulates objects while reading, engaging kinesthetic learning\n\u2022 Bridge between abstract decoding and meaningful reading",
+      "quick_guide": "• Collections of miniature objects organized by phonetic pattern\n• Multi-sensory reading practice connecting objects to words\n• Supports all reading series (Pink, Blue, Green) with concrete materials\n• Child manipulates objects while reading, engaging kinesthetic learning\n• Bridge between abstract decoding and meaningful reading",
       "presentation_steps": [
         {
           "step": 1,
@@ -1685,19 +1685,19 @@
       "materials_needed": [
         "Object boxes with miniatures and labels"
       ],
-      "parent_description": "Your child is matching real objects to word cards, learning to recognize words through multiple exposures. These beautifully presented boxes contain miniature objects paired with phonetic word cards. By finding the matching word for each object, your child connects concrete items to their written symbols\u2014building reading skills through hands-on exploration.",
+      "parent_description": "Your child is matching real objects to word cards, learning to recognize words through multiple exposures. These beautifully presented boxes contain miniature objects paired with phonetic word cards. By finding the matching word for each object, your child connects concrete items to their written symbols—building reading skills through hands-on exploration.",
       "why_it_matters": "The Object Boxes build reading fluency through pattern recognition and repeated exposure to phonetic words. This multi-sensory approach helps children internalize word recognition and solidifies the connection between meaning, sound, and symbol."
     },
     {
       "work_id": "la_pink_series",
       "name": "Pink Series (CVC Words)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7c89\u8272\u7cfb\u5217",
+      "name_chinese": "蒙特梭利粉色系列",
       "slug": "pink-series",
       "area": "language",
       "category": "Reading",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Collection of phonetic CVC (consonant-vowel-consonant) words for beginning reading\n\u2022 Includes objects, pictures, and word cards for matching activities\n\u2022 Short vowel sounds only: cat, pen, pig, box, cup\n\u2022 Three-stage progression: object-word matching, picture-word matching, word lists\n\u2022 Foundation for phonetic reading before sight words",
+      "quick_guide": "• Collection of phonetic CVC (consonant-vowel-consonant) words for beginning reading\n• Includes objects, pictures, and word cards for matching activities\n• Short vowel sounds only: cat, pen, pig, box, cup\n• Three-stage progression: object-word matching, picture-word matching, word lists\n• Foundation for phonetic reading before sight words",
       "presentation_steps": [
         {
           "step": 1,
@@ -1771,19 +1771,19 @@
       "materials_needed": [
         "Pink Series materials: picture cards, word cards, phrases, sentences, booklets"
       ],
-      "parent_description": "Your child is discovering the joy of reading simple three-letter words using the consonant-vowel-consonant pattern\u2014words like cat, dog, and sit. These foundational words follow phonetic rules perfectly, allowing your child to apply their letter-sound knowledge immediately. By reading, tracing, and spelling CVC words, they're experiencing their first real reading success.",
+      "parent_description": "Your child is discovering the joy of reading simple three-letter words using the consonant-vowel-consonant pattern—words like cat, dog, and sit. These foundational words follow phonetic rules perfectly, allowing your child to apply their letter-sound knowledge immediately. By reading, tracing, and spelling CVC words, they're experiencing their first real reading success.",
       "why_it_matters": "The Pink Series builds early reading confidence by providing completely decodable words. This success with phonetic patterns gives children the foundation and motivation to become readers, and the predictable structure helps them apply learned letter sounds."
     },
     {
       "work_id": "la_blue_series",
       "name": "Blue Series (Blends)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u84dd\u8272\u7cfb\u5217",
+      "name_chinese": "蒙特梭利蓝色系列",
       "slug": "blue-series",
       "area": "language",
       "category": "Reading",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Words containing consonant blends (st, bl, fr) and digraphs (sh, ch, th)\n\u2022 Builds on Pink Series decoding skills with increased complexity\n\u2022 Includes objects, pictures, and word cards matching Pink Series format\n\u2022 Introduces concept of two letters making one sound (digraphs)\n\u2022 Prepares for Green Series long vowel patterns",
+      "quick_guide": "• Words containing consonant blends (st, bl, fr) and digraphs (sh, ch, th)\n• Builds on Pink Series decoding skills with increased complexity\n• Includes objects, pictures, and word cards matching Pink Series format\n• Introduces concept of two letters making one sound (digraphs)\n• Prepares for Green Series long vowel patterns",
       "presentation_steps": [
         {
           "step": 1,
@@ -1857,19 +1857,19 @@
       "materials_needed": [
         "Blue Series materials: picture cards, word cards, phrases, sentences, booklets"
       ],
-      "parent_description": "Your child is now tackling consonant blends\u2014those tricky beginning and ending sounds like 'bl' and 'st' where two consonants work together. The Blue Series introduces longer, slightly more complex words while maintaining the short vowel sounds they've mastered. Your child delights in discovering words like 'flag,' 'stop,' and 'brush.'",
+      "parent_description": "Your child is now tackling consonant blends—those tricky beginning and ending sounds like 'bl' and 'st' where two consonants work together. The Blue Series introduces longer, slightly more complex words while maintaining the short vowel sounds they've mastered. Your child delights in discovering words like 'flag,' 'stop,' and 'brush.'",
       "why_it_matters": "Consonant blends are the next natural step in phonetic reading. Understanding that letter combinations can work together to make new sounds expands your child's decoding strategies and pushes reading into more sophisticated words."
     },
     {
       "work_id": "la_phonogram_intro",
       "name": "Phonogram Introduction",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u97f3\u7d20\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利音素介绍",
       "slug": "phonogram-intro",
       "area": "language",
       "category": "Reading",
       "sequence": 4,
       "age_range": "4-6 years",
-      "quick_guide": "\u2022 Two-letter combinations that make single distinct sounds\n\u2022 Introduce using Three Period Lesson systematically\n\u2022 Focus on common phonograms (ch, sh, th, ng, ea, etc.)\n\u2022 Use picture boxes showing only that phonogram\n\u2022 Connect phonogram recognition to word building",
+      "quick_guide": "• Two-letter combinations that make single distinct sounds\n• Introduce using Three Period Lesson systematically\n• Focus on common phonograms (ch, sh, th, ng, ea, etc.)\n• Use picture boxes showing only that phonogram\n• Connect phonogram recognition to word building",
       "presentation_steps": [
         {
           "step": 1,
@@ -1969,19 +1969,19 @@
         "Pattern",
         "Word building"
       ],
-      "parent_description": "Phonogram Introduction teaches children that certain pairs of letters consistently make a single sound. After mastering individual letter sounds, children learn that 'ch' always makes the 'chhhh' sound, 'th' makes the 'thhhh' sound, and so on. Using Three Period Lessons and picture boxes containing only words with that phonogram, children systematically build knowledge of these sound patterns. Understanding phonograms is transformative\u2014suddenly, children can read many more words. A child who knows individual letters plus phonograms can decode far more complex text than one who relies on single letters alone.",
-      "why_it_matters": "English spelling is complex but has underlying patterns. Phonograms represent one of those patterns\u2014consistent letter combinations that produce predictable sounds. Teaching phonograms explicitly bridges the gap between simple CVC words and more complex text. Research shows that children who understand letter patterns and phonogram combinations become more fluent, confident readers. Phonogram knowledge also supports spelling, as children learn to recognize and reproduce these patterns. Most importantly, phonograms help children understand that reading is decipherable through pattern recognition\u2014an essential insight for reading growth."
+      "parent_description": "Phonogram Introduction teaches children that certain pairs of letters consistently make a single sound. After mastering individual letter sounds, children learn that 'ch' always makes the 'chhhh' sound, 'th' makes the 'thhhh' sound, and so on. Using Three Period Lessons and picture boxes containing only words with that phonogram, children systematically build knowledge of these sound patterns. Understanding phonograms is transformative—suddenly, children can read many more words. A child who knows individual letters plus phonograms can decode far more complex text than one who relies on single letters alone.",
+      "why_it_matters": "English spelling is complex but has underlying patterns. Phonograms represent one of those patterns—consistent letter combinations that produce predictable sounds. Teaching phonograms explicitly bridges the gap between simple CVC words and more complex text. Research shows that children who understand letter patterns and phonogram combinations become more fluent, confident readers. Phonogram knowledge also supports spelling, as children learn to recognize and reproduce these patterns. Most importantly, phonograms help children understand that reading is decipherable through pattern recognition—an essential insight for reading growth."
     },
     {
       "work_id": "la_green_series",
       "name": "Green Series (Phonograms)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7eff\u8272\u7cfb\u5217",
+      "name_chinese": "蒙特梭利绿色系列",
       "slug": "green-series",
       "area": "language",
       "category": "Reading",
       "sequence": 5,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Words containing long vowel patterns and vowel teams (oa, ea, ai, ee)\n\u2022 Most complex of the phonetic reading series\n\u2022 Introduces silent-e pattern and vowel combinations\n\u2022 Child discovers rules: 'When two vowels go walking, the first one does the talking'\n\u2022 Bridge to fluent reading of multi-syllable words",
+      "quick_guide": "• Words containing long vowel patterns and vowel teams (oa, ea, ai, ee)\n• Most complex of the phonetic reading series\n• Introduces silent-e pattern and vowel combinations\n• Child discovers rules: 'When two vowels go walking, the first one does the talking'\n• Bridge to fluent reading of multi-syllable words",
       "presentation_steps": [
         {
           "step": 1,
@@ -2055,19 +2055,19 @@
       "materials_needed": [
         "Green Series materials organized by phonogram"
       ],
-      "parent_description": "Your child is diving into the trickier aspects of English\u2014digraphs like 'ch' and 'sh,' silent letters, and vowel teams that don't follow the usual rules. The Green Series introduces phonograms: special letter combinations that sound different from what you'd expect. It's here that your child learns why English is wonderfully quirky!",
+      "parent_description": "Your child is diving into the trickier aspects of English—digraphs like 'ch' and 'sh,' silent letters, and vowel teams that don't follow the usual rules. The Green Series introduces phonograms: special letter combinations that sound different from what you'd expect. It's here that your child learns why English is wonderfully quirky!",
       "why_it_matters": "Phonograms and digraphs unlock a huge range of vocabulary beyond purely phonetic words. Understanding these special sound combinations allows children to read the majority of English words, preparing them for fluent, independent reading."
     },
     {
       "work_id": "la_puzzle_words",
       "name": "Puzzle Words (Sight Words)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9ad8\u9891\u8bcd",
+      "name_chinese": "蒙特梭利高频词",
       "slug": "puzzle-words",
       "area": "language",
       "category": "Reading",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 High-frequency words that don't follow phonetic patterns\n\u2022 Words like: the, was, said, have, of, to\n\u2022 Must be memorized as 'sight words' or 'puzzle words'\n\u2022 Introduced after phonetic reading foundation\n\u2022 Essential for fluent reading",
+      "quick_guide": "• High-frequency words that don't follow phonetic patterns\n• Words like: the, was, said, have, of, to\n• Must be memorized as 'sight words' or 'puzzle words'\n• Introduced after phonetic reading foundation\n• Essential for fluent reading",
       "presentation_steps": [
         {
           "step": 1,
@@ -2143,19 +2143,19 @@
         "Puzzle word cards",
         "Puzzle word booklets"
       ],
-      "parent_description": "Your child is learning the 'puzzle words'\u2014those tricky high-frequency words that can't be sounded out phonetically, like 'the,' 'said,' and 'where.' These words are so important in reading that they must be memorized. Your child learns these through playful matching games and repeated exposure, building reading speed and fluency.",
+      "parent_description": "Your child is learning the 'puzzle words'—those tricky high-frequency words that can't be sounded out phonetically, like 'the,' 'said,' and 'where.' These words are so important in reading that they must be memorized. Your child learns these through playful matching games and repeated exposure, building reading speed and fluency.",
       "why_it_matters": "Sight words are essential for reading fluency. Since these common words appear constantly in texts, learning to recognize them instantly without sounding them out dramatically increases reading speed and comprehension."
     },
     {
       "work_id": "la_reading_analysis",
       "name": "Reading Analysis",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9605\u8bfb\u5206\u6790",
+      "name_chinese": "蒙特梭利阅读分析",
       "slug": "reading-analysis",
       "area": "language",
       "category": "Reading",
       "sequence": 7,
       "age_range": "5-8 years",
-      "quick_guide": "\u2022 Analyze sentence structure and function of words within sentences\n\u2022 Color-code parts of speech for visual organization\n\u2022 Begin with simple sentences, progress to complex\n\u2022 Use Analysis Charts to isolate nouns, verbs, articles, etc.\n\u2022 Support comprehension through grammatical understanding",
+      "quick_guide": "• Analyze sentence structure and function of words within sentences\n• Color-code parts of speech for visual organization\n• Begin with simple sentences, progress to complex\n• Use Analysis Charts to isolate nouns, verbs, articles, etc.\n• Support comprehension through grammatical understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -2178,7 +2178,7 @@
         {
           "step": 4,
           "title": "Analyze Sample Sentences",
-          "description": "Work through sentences together, identifying and marking each word according to function. 'The cat sits on the mat.' \u2192 'The' (article), 'cat' (noun), 'sits' (verb), 'on' (preposition), 'the' (article), 'mat' (noun).",
+          "description": "Work through sentences together, identifying and marking each word according to function. 'The cat sits on the mat.' → 'The' (article), 'cat' (noun), 'sits' (verb), 'on' (preposition), 'the' (article), 'mat' (noun).",
           "tip": "Make this interactive. Have child point to and classify words while you guide."
         },
         {
@@ -2259,18 +2259,18 @@
         "Sentence structure"
       ],
       "parent_description": "Reading Analysis teaches children to look beneath the surface of sentences to understand how they're constructed. Using colorful Analysis Charts where parts of speech are marked with specific colors and shapes, children discover the function of each word in a sentence. They learn that 'the cat' contains an article and a noun; that 'sits' is the action verb; that 'on the mat' shows where the action happens. This grammatical understanding deepens reading comprehension and supports writing. Children see that sentences follow logical patterns, making even complex text decipherable.",
-      "why_it_matters": "Grammar isn't about following arbitrary rules\u2014it's about understanding how language conveys meaning. Reading Analysis gives children tools to decode not just words but the relationships between words. This metalinguistic awareness\u2014thinking about language itself\u2014supports reading comprehension, writing quality, and language learning generally. Children who understand sentence structure can tackle more complex texts with confidence. The Montessori approach to grammar is particularly effective because it makes the abstract structure of language concrete and visual."
+      "why_it_matters": "Grammar isn't about following arbitrary rules—it's about understanding how language conveys meaning. Reading Analysis gives children tools to decode not just words but the relationships between words. This metalinguistic awareness—thinking about language itself—supports reading comprehension, writing quality, and language learning generally. Children who understand sentence structure can tackle more complex texts with confidence. The Montessori approach to grammar is particularly effective because it makes the abstract structure of language concrete and visual."
     },
     {
       "work_id": "la_reading_classification",
       "name": "Reading Classification",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9605\u8bfb\u5206\u7c7b",
+      "name_chinese": "蒙特梭利阅读分类",
       "slug": "reading-classification",
       "area": "language",
       "category": "Reading",
       "sequence": 8,
       "age_range": "4.5-8 years",
-      "quick_guide": "\u2022 Organize words into meaningful categories\n\u2022 Sort words by function, meaning, or linguistic features\n\u2022 Use classification cards to group related words\n\u2022 Build vocabulary understanding through relationships\n\u2022 Support reading and spelling through pattern recognition",
+      "quick_guide": "• Organize words into meaningful categories\n• Sort words by function, meaning, or linguistic features\n• Use classification cards to group related words\n• Build vocabulary understanding through relationships\n• Support reading and spelling through pattern recognition",
       "presentation_steps": [
         {
           "step": 1,
@@ -2359,7 +2359,7 @@
         "Creating personal word categories and collections",
         "Using classifications to build sentences",
         "Understanding synonyms through classification",
-        "Exploring hierarchies (animal \u2192 mammal \u2192 dog)",
+        "Exploring hierarchies (animal → mammal → dog)",
         "Applying classification to writing (choosing strong verbs from verb category)"
       ],
       "vocabulary": [
@@ -2372,18 +2372,18 @@
         "Sort"
       ],
       "parent_description": "Reading Classification organizes words into meaningful groups. Children sort words by category: animals, actions, describing words, or many other possibilities. This work helps children see relationships between words and recognize patterns in language. For example, understanding that 'cat,' 'dog,' and 'bird' are all animals helps children predict meaning and remember vocabulary. Classification supports both reading and spelling, as children notice that words in the same category often follow similar patterns. This organized approach to vocabulary builds a stronger, more interconnected understanding of language.",
-      "why_it_matters": "Words aren't learned in isolation; they're learned as part of networks and categories. Classification work makes these networks visible and organized. Research on vocabulary acquisition shows that organizing words by meaning, function, or pattern supports learning and retention far better than memorization. Classification supports reading comprehension (knowing word categories helps predict meaning from context) and spelling (recognizing phonetic or structural patterns). Perhaps most importantly, it teaches children to think about language analytically\u2014an essential skill for advanced literacy."
+      "why_it_matters": "Words aren't learned in isolation; they're learned as part of networks and categories. Classification work makes these networks visible and organized. Research on vocabulary acquisition shows that organizing words by meaning, function, or pattern supports learning and retention far better than memorization. Classification supports reading comprehension (knowing word categories helps predict meaning from context) and spelling (recognizing phonetic or structural patterns). Perhaps most importantly, it teaches children to think about language analytically—an essential skill for advanced literacy."
     },
     {
       "work_id": "la_command_cards",
       "name": "Command Cards (Action Reading)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u547d\u4ee4\u5361",
+      "name_chinese": "蒙特梭利命令卡",
       "slug": "command-cards",
       "area": "language",
       "category": "Reading",
       "sequence": 9,
       "age_range": "3.5-6 years",
-      "quick_guide": "\u2022 Child reads a word or short sentence and performs the action\n\u2022 Combines literacy with physical movement and comprehension\n\u2022 Start with single action words (sit, hop, jog)\n\u2022 Progress to simple sentences (hop three times)\n\u2022 Build understanding through doing, not just reading",
+      "quick_guide": "• Child reads a word or short sentence and performs the action\n• Combines literacy with physical movement and comprehension\n• Start with single action words (sit, hop, jog)\n• Progress to simple sentences (hop three times)\n• Build understanding through doing, not just reading",
       "presentation_steps": [
         {
           "step": 1,
@@ -2483,19 +2483,19 @@
         "Execute",
         "Direction"
       ],
-      "parent_description": "Command Cards make reading active and joyful. Children read a word or short sentence card and then perform the action it describes: sit, hop, clap, spin. The physical action serves as both motivation and comprehension check\u2014if the child can do the action, they understood the reading. This work combines literacy with movement and is particularly engaging for kinesthetic learners. As children become fluent with single-word commands, they progress to short sentences and eventually to following written instructions for recipes or crafts. Command Cards teach that reading is about understanding meaning and taking action, not just decoding words.",
-      "why_it_matters": "Command Cards bridge the gap between decoding and comprehension. Many children can call out words without understanding meaning; Command Cards require true comprehension. The immediate physical feedback (doing the action) confirms understanding. The integration of movement with reading activates multiple pathways in the brain, supporting memory and engagement. Most importantly, Command Cards demonstrate that reading has purpose\u2014you read to understand and do something with that understanding. This realization transforms reading from a skill exercise to a meaningful tool."
+      "parent_description": "Command Cards make reading active and joyful. Children read a word or short sentence card and then perform the action it describes: sit, hop, clap, spin. The physical action serves as both motivation and comprehension check—if the child can do the action, they understood the reading. This work combines literacy with movement and is particularly engaging for kinesthetic learners. As children become fluent with single-word commands, they progress to short sentences and eventually to following written instructions for recipes or crafts. Command Cards teach that reading is about understanding meaning and taking action, not just decoding words.",
+      "why_it_matters": "Command Cards bridge the gap between decoding and comprehension. Many children can call out words without understanding meaning; Command Cards require true comprehension. The immediate physical feedback (doing the action) confirms understanding. The integration of movement with reading activates multiple pathways in the brain, supporting memory and engagement. Most importantly, Command Cards demonstrate that reading has purpose—you read to understand and do something with that understanding. This realization transforms reading from a skill exercise to a meaningful tool."
     },
     {
       "work_id": "la_interpretive_reading",
       "name": "Interpretive Reading",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8868\u8fbe\u6027\u9605\u8bfb",
+      "name_chinese": "蒙特梭利表达性阅读",
       "slug": "interpretive-reading",
       "area": "language",
       "category": "Reading",
       "sequence": 10,
       "age_range": "4-8 years",
-      "quick_guide": "\u2022 Read for full comprehension and ability to interpret meaning\n\u2022 Understand author's intent and emotional content\n\u2022 Act out selections from stories or books\n\u2022 Draw or create responses to reading\n\u2022 Develop critical thinking about text",
+      "quick_guide": "• Read for full comprehension and ability to interpret meaning\n• Understand author's intent and emotional content\n• Act out selections from stories or books\n• Draw or create responses to reading\n• Develop critical thinking about text",
       "presentation_steps": [
         {
           "step": 1,
@@ -2598,19 +2598,19 @@
         "Emotion",
         "Dramatize"
       ],
-      "parent_description": "Interpretive Reading is reading for meaning, not just decoding. After learning to read words and follow simple instructions, children begin to read for deeper understanding: What is the author trying to communicate? How do I feel about what I read? What does it mean? Children discuss stories, act them out, draw responses, and create their own interpretations. The focus shifts from 'Can you read this word?' to 'What does this story mean?' This is reading for real\u2014reading for pleasure, meaning, and connection. Interpretive reading develops critical thinking and builds a lifelong love of literature.",
-      "why_it_matters": "Reading with only surface comprehension is incomplete literacy. True reading means understanding and interpreting meaning. Interpretive reading develops the higher-order thinking skills essential for academic and lifelong success. Acting out stories and discussing meaning develops empathy\u2014understanding others' perspectives and emotions. When children see reading as a path to deeper understanding of the world and human experience, they become motivated readers. The emotional connection to stories, fostered through interpretation and dramatization, creates lifelong readers who read for pleasure and growth."
+      "parent_description": "Interpretive Reading is reading for meaning, not just decoding. After learning to read words and follow simple instructions, children begin to read for deeper understanding: What is the author trying to communicate? How do I feel about what I read? What does it mean? Children discuss stories, act them out, draw responses, and create their own interpretations. The focus shifts from 'Can you read this word?' to 'What does this story mean?' This is reading for real—reading for pleasure, meaning, and connection. Interpretive reading develops critical thinking and builds a lifelong love of literature.",
+      "why_it_matters": "Reading with only surface comprehension is incomplete literacy. True reading means understanding and interpreting meaning. Interpretive reading develops the higher-order thinking skills essential for academic and lifelong success. Acting out stories and discussing meaning develops empathy—understanding others' perspectives and emotions. When children see reading as a path to deeper understanding of the world and human experience, they become motivated readers. The emotional connection to stories, fostered through interpretation and dramatization, creates lifelong readers who read for pleasure and growth."
     },
     {
       "work_id": "la_silent_reading",
       "name": "Silent Reading",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9ed8\u8bfb",
+      "name_chinese": "蒙特梭利默读",
       "slug": "silent-reading",
       "area": "language",
       "category": "Reading",
       "sequence": 11,
       "age_range": "3-8+ years",
-      "quick_guide": "\u2022 Independent, quiet reading time for pleasure and practice\n\u2022 Child chooses books at their level of interest and ability\n\u2022 Teacher observes reading habits and provides new book suggestions\n\u2022 Create peaceful, beautiful space for reading\n\u2022 Balance teacher direction with child choice and autonomy",
+      "quick_guide": "• Independent, quiet reading time for pleasure and practice\n• Child chooses books at their level of interest and ability\n• Teacher observes reading habits and provides new book suggestions\n• Create peaceful, beautiful space for reading\n• Balance teacher direction with child choice and autonomy",
       "presentation_steps": [
         {
           "step": 1,
@@ -2713,18 +2713,18 @@
         "Pleasure reading"
       ],
       "parent_description": "Silent Reading is independent, quiet reading time where children choose books they want to read and read for pleasure. In a peaceful, beautiful classroom space, children read books they select, discovering stories they love. Teachers observe, gently guide book selection, and model reading alongside children. The focus is on building a love of reading, not on testing comprehension or meeting standards. Children discover that reading is pleasurable and meaningful. Over time, silent reading builds fluency, expands vocabulary, and creates the foundation for lifelong learning. Even early readers and children with fewer words can enjoy books through pictures and teacher reading aloud.",
-      "why_it_matters": "Silent reading time is essential for developing fluent readers and lifelong love of reading. Research clearly shows that children who engage in frequent, pleasurable reading develop stronger reading skills, larger vocabularies, and better comprehension than children who read less. Voluntary reading\u2014reading of one's own choice\u2014is particularly powerful for motivation and sustained engagement. Perhaps most importantly, silent reading creates an association between reading and pleasure, building the intrinsic motivation that sustains readers throughout life. Children who love reading succeed academically across all subjects."
+      "why_it_matters": "Silent reading time is essential for developing fluent readers and lifelong love of reading. Research clearly shows that children who engage in frequent, pleasurable reading develop stronger reading skills, larger vocabularies, and better comprehension than children who read less. Voluntary reading—reading of one's own choice—is particularly powerful for motivation and sustained engagement. Perhaps most importantly, silent reading creates an association between reading and pleasure, building the intrinsic motivation that sustains readers throughout life. Children who love reading succeed academically across all subjects."
     },
     {
       "work_id": "la_noun_intro",
       "name": "Introduction to the Noun",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u540d\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利名词介绍",
       "slug": "noun-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 1,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 First grammar introduction using concrete objects and experiences\n\u2022 Large black triangle symbol represents the noun (solid, stable things)\n\u2022 Child discovers that nouns are naming words for people, places, and things\n\u2022 Farm or environment used for concrete noun identification\n\u2022 Prepares for other parts of speech introduction",
+      "quick_guide": "• First grammar introduction using concrete objects and experiences\n• Large black triangle symbol represents the noun (solid, stable things)\n• Child discovers that nouns are naming words for people, places, and things\n• Farm or environment used for concrete noun identification\n• Prepares for other parts of speech introduction",
       "presentation_steps": [
         {
           "step": 1,
@@ -2802,19 +2802,19 @@
         "Black triangle symbol",
         "Objects and labels"
       ],
-      "parent_description": "Your child is beginning to understand grammar through a beautiful black pyramid symbol representing nouns. A noun is a 'naming word'\u2014the solid, concrete name of a person, place, or thing. Your child explores the classroom finding nouns (desk, book, teacher) and discovers that nouns are the foundation of language. The concrete symbol and hands-on exploration make this concept tangible.",
+      "parent_description": "Your child is beginning to understand grammar through a beautiful black pyramid symbol representing nouns. A noun is a 'naming word'—the solid, concrete name of a person, place, or thing. Your child explores the classroom finding nouns (desk, book, teacher) and discovers that nouns are the foundation of language. The concrete symbol and hands-on exploration make this concept tangible.",
       "why_it_matters": "Understanding nouns is the foundation for all grammar learning. By recognizing nouns, children begin to see how language is structured, preparing them for deeper comprehension of sentence construction and meaningful writing."
     },
     {
       "work_id": "la_article_intro",
       "name": "Introduction to the Article",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51a0\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利冠词介绍",
       "slug": "article-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 2,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to articles: a, an, the (determiners)\n\u2022 Small light blue triangle symbol for article\n\u2022 Shows that articles accompany nouns\n\u2022 First grammar function word introduction\n\u2022 Prepares for complete sentence analysis",
+      "quick_guide": "• Introduction to articles: a, an, the (determiners)\n• Small light blue triangle symbol for article\n• Shows that articles accompany nouns\n• First grammar function word introduction\n• Prepares for complete sentence analysis",
       "presentation_steps": [
         {
           "step": 1,
@@ -2889,19 +2889,19 @@
         "Article materials",
         "Small light blue triangle"
       ],
-      "parent_description": "Your child is discovering articles\u2014the small words 'a,' 'an,' and 'the' that introduce nouns. Using concrete materials and a light blue triangle symbol, they explore how articles work with nouns to give us more specific information. This subtle but powerful work helps children understand how words work together to create meaning.",
+      "parent_description": "Your child is discovering articles—the small words 'a,' 'an,' and 'the' that introduce nouns. Using concrete materials and a light blue triangle symbol, they explore how articles work with nouns to give us more specific information. This subtle but powerful work helps children understand how words work together to create meaning.",
       "why_it_matters": "Articles are essential for precise communication. Understanding how they function helps children appreciate how small words carry significant meaning, and prepares them for more complex grammar study."
     },
     {
       "work_id": "la_adjective_intro",
       "name": "Introduction to the Adjective",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5f62\u5bb9\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利形容词介绍",
       "slug": "adjective-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 3,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to adjectives as describing words\n\u2022 Medium blue triangle symbol for adjective\n\u2022 Adjectives describe nouns: big cat, red ball\n\u2022 Detective game: 'Which one?' leads to adjective need\n\u2022 Develops descriptive language and vocabulary",
+      "quick_guide": "• Introduction to adjectives as describing words\n• Medium blue triangle symbol for adjective\n• Adjectives describe nouns: big cat, red ball\n• Detective game: 'Which one?' leads to adjective need\n• Develops descriptive language and vocabulary",
       "presentation_steps": [
         {
           "step": 1,
@@ -2984,13 +2984,13 @@
     {
       "work_id": "la_verb_intro",
       "name": "Introduction to the Verb",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a8\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利动词介绍",
       "slug": "verb-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 4,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to verbs as action words\n\u2022 Large red circle symbol for verb\n\u2022 Verbs show what nouns do: runs, jumps, eats\n\u2022 Action card games reinforce verb concept\n\u2022 Energy of circle represents action energy",
+      "quick_guide": "• Introduction to verbs as action words\n• Large red circle symbol for verb\n• Verbs show what nouns do: runs, jumps, eats\n• Action card games reinforce verb concept\n• Energy of circle represents action energy",
       "presentation_steps": [
         {
           "step": 1,
@@ -3067,19 +3067,19 @@
         "Large red circle symbol",
         "Action cards"
       ],
-      "parent_description": "Your child is discovering the energy of language through verbs\u2014action words represented by a red circle, just like the vital sun! They delight in acting out verbs like 'skip,' 'wiggle,' and 'jump' while classmates guess the action. This kinesthetic, joyful introduction helps children understand that verbs bring sentences to life with movement and energy.",
+      "parent_description": "Your child is discovering the energy of language through verbs—action words represented by a red circle, just like the vital sun! They delight in acting out verbs like 'skip,' 'wiggle,' and 'jump' while classmates guess the action. This kinesthetic, joyful introduction helps children understand that verbs bring sentences to life with movement and energy.",
       "why_it_matters": "Verbs are the heart of meaningful sentences. Understanding action and state-of-being verbs helps children compose sentences with purpose and energy, and deepens their comprehension of what makes a complete thought."
     },
     {
       "work_id": "la_adverb_intro",
       "name": "Introduction to the Adverb",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u526f\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利副词介绍",
       "slug": "adverb-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 5,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to adverbs as words describing verbs\n\u2022 Small orange circle symbol mirrors verb relationship\n\u2022 Answers: how, when, where regarding actions\n\u2022 Demonstrated through varied action performance\n\u2022 Develops precise descriptive language",
+      "quick_guide": "• Introduction to adverbs as words describing verbs\n• Small orange circle symbol mirrors verb relationship\n• Answers: how, when, where regarding actions\n• Demonstrated through varied action performance\n• Develops precise descriptive language",
       "presentation_steps": [
         {
           "step": 1,
@@ -3162,13 +3162,13 @@
     {
       "work_id": "la_pronoun_intro",
       "name": "Introduction to the Pronoun",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4ee3\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利代词介绍",
       "slug": "pronoun-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 6,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to pronouns as noun replacements\n\u2022 Purple triangle symbol (like noun but different color)\n\u2022 Pronouns: he, she, it, they, we, I, you\n\u2022 Prevents repetitive noun use in sentences\n\u2022 Develops understanding of reference in text",
+      "quick_guide": "• Introduction to pronouns as noun replacements\n• Purple triangle symbol (like noun but different color)\n• Pronouns: he, she, it, they, we, I, you\n• Prevents repetitive noun use in sentences\n• Develops understanding of reference in text",
       "presentation_steps": [
         {
           "step": 1,
@@ -3243,19 +3243,19 @@
         "Pronoun materials",
         "Purple/violet triangle"
       ],
-      "parent_description": "Your child is discovering pronouns\u2014words that stand in for nouns, like 'he,' 'she,' 'they,' and 'I.' Using a purple triangle symbol, they explore how pronouns replace names to avoid repetition. This concept becomes concrete when they record sentences and swap pronouns in place of repeated nouns, seeing how language becomes more elegant.",
+      "parent_description": "Your child is discovering pronouns—words that stand in for nouns, like 'he,' 'she,' 'they,' and 'I.' Using a purple triangle symbol, they explore how pronouns replace names to avoid repetition. This concept becomes concrete when they record sentences and swap pronouns in place of repeated nouns, seeing how language becomes more elegant.",
       "why_it_matters": "Pronouns are essential for writing flow and clarity. Understanding how pronouns replace nouns helps children write more sophisticated sentences and comprehend how language maintains meaning while varying word choice."
     },
     {
       "work_id": "la_preposition_intro",
       "name": "Introduction to the Preposition",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4ecb\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利介词介绍",
       "slug": "preposition-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 7,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Introduction to prepositions as position words\n\u2022 Green crescent/bridge symbol represents connection\n\u2022 Shows relationship between nouns: on, in, under, beside\n\u2022 Physical activities demonstrate preposition meaning\n\u2022 Essential for following directions",
+      "quick_guide": "• Introduction to prepositions as position words\n• Green crescent/bridge symbol represents connection\n• Shows relationship between nouns: on, in, under, beside\n• Physical activities demonstrate preposition meaning\n• Essential for following directions",
       "presentation_steps": [
         {
           "step": 1,
@@ -3332,19 +3332,19 @@
         "Green crescent symbol",
         "Preposition game"
       ],
-      "parent_description": "Your child is exploring relationships between objects using prepositions\u2014words that show location and connection, like 'in,' 'under,' 'beside,' and 'between.' With a green symbol and hands-on materials (like beads and boxes), they physically place objects in different positions and discover how prepositions describe these spatial relationships.",
+      "parent_description": "Your child is exploring relationships between objects using prepositions—words that show location and connection, like 'in,' 'under,' 'beside,' and 'between.' With a green symbol and hands-on materials (like beads and boxes), they physically place objects in different positions and discover how prepositions describe these spatial relationships.",
       "why_it_matters": "Prepositions are crucial for expressing relationships and giving directions. This work helps children understand how spatial and logical relationships are expressed in language, preparing them for clear writing and reading comprehension."
     },
     {
       "work_id": "la_conjunction_intro",
       "name": "Introduction to the Conjunction",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8fde\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利连词介绍",
       "slug": "conjunction-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 8,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Introduction to conjunctions as connecting words\n\u2022 Pink rectangle symbol represents bridge between ideas\n\u2022 Words: and, but, or, because, so\n\u2022 Connects words, phrases, and sentences\n\u2022 Develops compound sentence construction",
+      "quick_guide": "• Introduction to conjunctions as connecting words\n• Pink rectangle symbol represents bridge between ideas\n• Words: and, but, or, because, so\n• Connects words, phrases, and sentences\n• Develops compound sentence construction",
       "presentation_steps": [
         {
           "step": 1,
@@ -3419,19 +3419,19 @@
         "Conjunction materials",
         "Pink rectangle symbol"
       ],
-      "parent_description": "Your child is discovering conjunctions\u2014the connecting words like 'and,' 'but,' and 'or' represented by a pink rectangle or ribbon symbol. By exploring how conjunctions tie ideas together (like a ribbon connecting two objects), they understand how these words link words and ideas to create more interesting, complex sentences.",
+      "parent_description": "Your child is discovering conjunctions—the connecting words like 'and,' 'but,' and 'or' represented by a pink rectangle or ribbon symbol. By exploring how conjunctions tie ideas together (like a ribbon connecting two objects), they understand how these words link words and ideas to create more interesting, complex sentences.",
       "why_it_matters": "Conjunctions are the glue that holds more sophisticated sentences together. Understanding how to use connectives helps children move beyond simple, choppy sentences and begin composing complex thoughts with nuance and flow."
     },
     {
       "work_id": "la_interjection_intro",
       "name": "Introduction to the Interjection",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u611f\u53f9\u8bcd\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利感叹词介绍",
       "slug": "interjection-intro",
       "area": "language",
       "category": "Grammar",
       "sequence": 9,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Introduction to interjections as exclamation words\n\u2022 Gold keyhole/exclamation symbol represents expression\n\u2022 Words: oh, wow, ouch, hey, hooray\n\u2022 Express strong emotion or reaction\n\u2022 Often followed by exclamation point",
+      "quick_guide": "• Introduction to interjections as exclamation words\n• Gold keyhole/exclamation symbol represents expression\n• Words: oh, wow, ouch, hey, hooray\n• Express strong emotion or reaction\n• Often followed by exclamation point",
       "presentation_steps": [
         {
           "step": 1,
@@ -3506,19 +3506,19 @@
         "Interjection materials",
         "Gold keyhole symbol"
       ],
-      "parent_description": "Your child is discovering interjections\u2014those expressive one-word exclamations like 'Wow!' 'Yikes!' and 'Stop!' represented by a gold exclamation point symbol. These words burst with emotion and stand alone as complete units. Your child explores the feelings behind interjections, understanding how they add personality and emotion to writing.",
+      "parent_description": "Your child is discovering interjections—those expressive one-word exclamations like 'Wow!' 'Yikes!' and 'Stop!' represented by a gold exclamation point symbol. These words burst with emotion and stand alone as complete units. Your child explores the feelings behind interjections, understanding how they add personality and emotion to writing.",
       "why_it_matters": "Interjections bring authentic emotion and voice to writing. Understanding how to use these powerful words helps children write with genuine expression and personality, making their writing more engaging and true to their voice."
     },
     {
       "work_id": "la_grammar_boxes",
       "name": "Grammar Boxes",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bed\u6cd5\u76d2",
+      "name_chinese": "蒙特梭利语法盒",
       "slug": "grammar-boxes",
       "area": "language",
       "category": "Grammar",
       "sequence": 10,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Color-coded boxes for sorting words by part of speech\n\u2022 Each box matches grammar symbol color\n\u2022 Child sorts word cards into appropriate boxes\n\u2022 Reinforces all parts of speech recognition\n\u2022 Develops automatic classification ability",
+      "quick_guide": "• Color-coded boxes for sorting words by part of speech\n• Each box matches grammar symbol color\n• Child sorts word cards into appropriate boxes\n• Reinforces all parts of speech recognition\n• Develops automatic classification ability",
       "presentation_steps": [
         {
           "step": 1,
@@ -3601,13 +3601,13 @@
     {
       "work_id": "la_sentence_analysis",
       "name": "Sentence Analysis",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u53e5\u5b50\u5206\u6790",
+      "name_chinese": "蒙特梭利句子分析",
       "slug": "sentence-analysis",
       "area": "language",
       "category": "Grammar",
       "sequence": 11,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Breaking sentences into grammatical components\n\u2022 Subject/predicate division using arrows and symbols\n\u2022 Visual analysis of sentence structure\n\u2022 Develops understanding of sentence mechanics\n\u2022 Prepares for complex sentence construction",
+      "quick_guide": "• Breaking sentences into grammatical components\n• Subject/predicate division using arrows and symbols\n• Visual analysis of sentence structure\n• Develops understanding of sentence mechanics\n• Prepares for complex sentence construction",
       "presentation_steps": [
         {
           "step": 1,
@@ -3688,13 +3688,13 @@
     {
       "work_id": "la_word_families",
       "name": "Word Families",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bcd\u65cf",
+      "name_chinese": "蒙特梭利词族",
       "slug": "word-families",
       "area": "language",
       "category": "Word Study",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Groups of words sharing common phonetic patterns\n\u2022 Example: -at family: cat, bat, hat, mat, sat\n\u2022 Develops phonemic awareness and decoding skills\n\u2022 Shows spelling patterns across words\n\u2022 Accelerates reading and spelling",
+      "quick_guide": "• Groups of words sharing common phonetic patterns\n• Example: -at family: cat, bat, hat, mat, sat\n• Develops phonemic awareness and decoding skills\n• Shows spelling patterns across words\n• Accelerates reading and spelling",
       "presentation_steps": [
         {
           "step": 1,
@@ -3770,19 +3770,19 @@
         "Word family cards",
         "Word family charts"
       ],
-      "parent_description": "Your child is discovering patterns in words by exploring word families\u2014groups of words with similar sounds and structures, like 'cat, sat, bat, mat' or 'make, bake, take, shake.' By recognizing these patterns, your child learns to decode new words more efficiently and builds phonemic awareness through exploring words that rhyme and share patterns.",
+      "parent_description": "Your child is discovering patterns in words by exploring word families—groups of words with similar sounds and structures, like 'cat, sat, bat, mat' or 'make, bake, take, shake.' By recognizing these patterns, your child learns to decode new words more efficiently and builds phonemic awareness through exploring words that rhyme and share patterns.",
       "why_it_matters": "Word families are an efficient way to decode and spell words. By understanding phonetic patterns, children can apply knowledge of one word to unlock the reading of many related words, dramatically accelerating vocabulary development and reading fluency."
     },
     {
       "work_id": "la_spelling_rules",
       "name": "Spelling Rules",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u62fc\u5199\u89c4\u5219",
+      "name_chinese": "蒙特梭利拼写规则",
       "slug": "spelling-rules",
       "area": "language",
       "category": "Word Study",
       "sequence": 2,
       "age_range": "5-8+ years",
-      "quick_guide": "\u2022 Teach explicit spelling patterns and rules\n\u2022 Focus on common, high-utility rules first\n\u2022 Use word families and pattern recognition\n\u2022 Provide mnemonic helpers for complex rules\n\u2022 Connect spelling to phonetics and word structure",
+      "quick_guide": "• Teach explicit spelling patterns and rules\n• Focus on common, high-utility rules first\n• Use word families and pattern recognition\n• Provide mnemonic helpers for complex rules\n• Connect spelling to phonetics and word structure",
       "presentation_steps": [
         {
           "step": 1,
@@ -3793,7 +3793,7 @@
         {
           "step": 2,
           "title": "Introduce Common Rules First",
-          "description": "Begin with high-utility rules that apply to many words: doubling consonants before adding suffix (hop\u2192hopped), dropping final e before adding -ing (make\u2192making), changing y to i (happy\u2192happily). Teach rules that help spell the most words.",
+          "description": "Begin with high-utility rules that apply to many words: doubling consonants before adding suffix (hop→hopped), dropping final e before adding -ing (make→making), changing y to i (happy→happily). Teach rules that help spell the most words.",
           "tip": "Montessori teachers often supplement standard materials with explicit spelling rule instruction, as Dr. Montessori developed materials for Italian, which has simpler spelling."
         },
         {
@@ -3837,7 +3837,7 @@
         "la_green_series"
       ],
       "points_of_interest": [
-        "Discovery that spelling isn't random\u2014it follows patterns",
+        "Discovery that spelling isn't random—it follows patterns",
         "Recognition of familiar patterns in new words",
         "Ability to spell more complex words using rules",
         "Confidence in attempting to spell unfamiliar words",
@@ -3884,19 +3884,19 @@
         "Word family",
         "Exception"
       ],
-      "parent_description": "Spelling Rules teach that English spelling, while complex, follows underlying patterns. Rather than requiring children to memorize each word, teaching rules and patterns gives them tools to spell unfamiliar words. Children learn that hopping doubles the p, that dropping the final e occurs before adding -ing, that changing y to i happens before adding -ly. These patterns, seen across many words, help children spell more independently. While English contains exceptions, knowing the rules gets you 84% of the way\u2014enough to support confident, independent spelling.",
-      "why_it_matters": "Teaching spelling rules explicitly supports spelling accuracy and writing fluency. Children who understand spelling patterns become more confident writers, less likely to avoid writing complex words. Pattern-based spelling instruction is more effective than memorization because it's generalizable\u2014once a child knows the doubling rule, they can apply it to numerous words, not just those memorized. Spelling competence also supports reading, as recognizing spelling patterns helps children decode unfamiliar words."
+      "parent_description": "Spelling Rules teach that English spelling, while complex, follows underlying patterns. Rather than requiring children to memorize each word, teaching rules and patterns gives them tools to spell unfamiliar words. Children learn that hopping doubles the p, that dropping the final e occurs before adding -ing, that changing y to i happens before adding -ly. These patterns, seen across many words, help children spell more independently. While English contains exceptions, knowing the rules gets you 84% of the way—enough to support confident, independent spelling.",
+      "why_it_matters": "Teaching spelling rules explicitly supports spelling accuracy and writing fluency. Children who understand spelling patterns become more confident writers, less likely to avoid writing complex words. Pattern-based spelling instruction is more effective than memorization because it's generalizable—once a child knows the doubling rule, they can apply it to numerous words, not just those memorized. Spelling competence also supports reading, as recognizing spelling patterns helps children decode unfamiliar words."
     },
     {
       "work_id": "la_compound_words",
       "name": "Compound Words",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u590d\u5408\u8bcd",
+      "name_chinese": "蒙特梭利复合词",
       "slug": "compound-words",
       "area": "language",
       "category": "Word Study",
       "sequence": 3,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Words made from combining two smaller words\n\u2022 Examples: rainbow, sunflower, baseball\n\u2022 Develops vocabulary and word analysis skills\n\u2022 Shows how meaning combines from parts\n\u2022 Prepares for prefix/suffix understanding",
+      "quick_guide": "• Words made from combining two smaller words\n• Examples: rainbow, sunflower, baseball\n• Develops vocabulary and word analysis skills\n• Shows how meaning combines from parts\n• Prepares for prefix/suffix understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -3971,19 +3971,19 @@
         "Compound word cards",
         "Matching materials"
       ],
-      "parent_description": "Your child is delighted to discover that two separate words can combine to create a brand new word with its own unique meaning! Words like 'sunflower' (sun + flower), 'sometimes' (some + times), and 'butterfly' (butter + fly) fascinate children as they break compounds into parts and create their own new combinations. This work reveals the logic\u2014and sometimes the beautiful illogic\u2014of English.",
+      "parent_description": "Your child is delighted to discover that two separate words can combine to create a brand new word with its own unique meaning! Words like 'sunflower' (sun + flower), 'sometimes' (some + times), and 'butterfly' (butter + fly) fascinate children as they break compounds into parts and create their own new combinations. This work reveals the logic—and sometimes the beautiful illogic—of English.",
       "why_it_matters": "Understanding compound words expands vocabulary and develops word analysis skills. Children learn that knowing smaller words helps unlock larger ones, and the creativity of combining words captures their interest in how language works."
     },
     {
       "work_id": "la_prefixes_suffixes",
       "name": "Prefixes and Suffixes",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u524d\u7f00\u540e\u7f00",
+      "name_chinese": "蒙特梭利前缀后缀",
       "slug": "prefixes-suffixes",
       "area": "language",
       "category": "Word Study",
       "sequence": 4,
       "age_range": "5-8+ years",
-      "quick_guide": "\u2022 Word elements that modify meaning (un-, re-, -ful, -less)\n\u2022 Teach common prefixes and suffixes explicitly\n\u2022 Show how affixes change word meaning and function\n\u2022 Practice building new words with affixes\n\u2022 Connect to reading and writing skills",
+      "quick_guide": "• Word elements that modify meaning (un-, re-, -ful, -less)\n• Teach common prefixes and suffixes explicitly\n• Show how affixes change word meaning and function\n• Practice building new words with affixes\n• Connect to reading and writing skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -4001,7 +4001,7 @@
           "step": 3,
           "title": "Introduce Suffixes",
           "description": "Show word pairs showing suffix addition: walk/walker, slow/slowly, beauty/beautiful. Discuss: 'What part is the same?' 'What's added?' 'How does it change meaning or function?' Introduce suffix concept.",
-          "tip": "Suffixes often change parts of speech: walk (verb) \u2192 walker (noun), slow (adjective) \u2192 slowly (adverb)."
+          "tip": "Suffixes often change parts of speech: walk (verb) → walker (noun), slow (adjective) → slowly (adverb)."
         },
         {
           "step": 4,
@@ -4053,7 +4053,7 @@
       ],
       "common_challenges": [
         "Children confuse root meaning with affix meaning",
-        "Words where letters within root change when affix is added (happy\u2192happily, not happyly)",
+        "Words where letters within root change when affix is added (happy→happily, not happyly)",
         "Affixes with multiple meanings (re- can mean again or back)",
         "Pseudo-affixes: words that look like they have affixes but are roots (under, over)",
         "Applying rules mechanically without understanding meaning"
@@ -4086,18 +4086,18 @@
         "Morpheme"
       ],
       "parent_description": "Prefixes and Suffixes are word parts that modify meaning. Prefixes (un-, re-, pre-) attach to the beginning of words; suffixes (-ful, -less, -ing, -ly) attach to the end. Teaching these word elements explicitly empowers children to decode unfamiliar words. Learning that 'un-' means not helps children understand that unkind means not kind, unhappy means not happy. Learning that '-ful' means full of helps them understand that careful means full of care. By recognizing these parts in new words, children can decode them independently and expand vocabulary significantly.",
-      "why_it_matters": "Prefixes and suffixes are powerful tools for word learning and reading fluency. A child who knows common affixes can decode hundreds of words they've never seen before. Etymology and morphological awareness (understanding word structure) directly supports reading comprehension and vocabulary growth. Research shows that explicit instruction in affixes significantly improves reading comprehension and spelling. Perhaps most importantly, understanding affixes teaches children that language is systematic\u2014words are built from parts that follow rules, not random collections of letters."
+      "why_it_matters": "Prefixes and suffixes are powerful tools for word learning and reading fluency. A child who knows common affixes can decode hundreds of words they've never seen before. Etymology and morphological awareness (understanding word structure) directly supports reading comprehension and vocabulary growth. Research shows that explicit instruction in affixes significantly improves reading comprehension and spelling. Perhaps most importantly, understanding affixes teaches children that language is systematic—words are built from parts that follow rules, not random collections of letters."
     },
     {
       "work_id": "la_synonyms_antonyms",
       "name": "Synonyms and Antonyms",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8fd1\u4e49\u8bcd\u53cd\u4e49\u8bcd",
+      "name_chinese": "蒙特梭利近义词反义词",
       "slug": "synonyms-antonyms",
       "area": "language",
       "category": "Word Study",
       "sequence": 5,
       "age_range": "5-8+ years",
-      "quick_guide": "\u2022 Synonyms: words with similar meanings (big/large, happy/joyful)\n\u2022 Antonyms: words with opposite meanings (big/small, happy/sad)\n\u2022 Teach through comparison and categorization\n\u2022 Use in reading to expand vocabulary and comprehension\n\u2022 Support writing through word choice variety",
+      "quick_guide": "• Synonyms: words with similar meanings (big/large, happy/joyful)\n• Antonyms: words with opposite meanings (big/small, happy/sad)\n• Teach through comparison and categorization\n• Use in reading to expand vocabulary and comprehension\n• Support writing through word choice variety",
       "presentation_steps": [
         {
           "step": 1,
@@ -4159,7 +4159,7 @@
         "Understanding how words relate to each other"
       ],
       "variations": [
-        "Organizing synonyms by intensity (sad \u2192 upset \u2192 devastated)",
+        "Organizing synonyms by intensity (sad → upset → devastated)",
         "Finding antonyms that form compound words or phrases",
         "Creating personal thesaurus of favorite synonyms",
         "Exploring how synonyms appear in different contexts",
@@ -4198,19 +4198,19 @@
         "Word relationship",
         "Vocabulary"
       ],
-      "parent_description": "Synonyms are words with similar meanings; antonyms are words with opposite meanings. Children learn that 'big' and 'large' are synonyms\u2014similar but not identical. They learn that 'big' and 'small' are antonyms\u2014opposite meanings. Understanding these relationships helps children understand texts (using context and word relationships to infer meaning), expand vocabulary, and vary word choices in writing. Rather than always using the same word (happy, happy, happy), children learn alternatives (joyful, delighted, glad) that add sophistication and precision. This work is playful and visual, often involving sorting, categorizing, and building connections between words.",
-      "why_it_matters": "Understanding word relationships is central to vocabulary growth and reading comprehension. When children understand that words have synonyms and antonyms, they recognize larger patterns in language. In reading, knowing an antonym can help infer meaning: 'The opposite of cloudy is clear, so clearing up means getting clearer.' In writing, choosing among synonyms helps express subtle meanings and add variety. Most importantly, working with synonyms and antonyms teaches children to think about language analytically\u2014to see words not as isolated items but as parts of an interconnected system. This metalinguistic awareness supports all future language learning."
+      "parent_description": "Synonyms are words with similar meanings; antonyms are words with opposite meanings. Children learn that 'big' and 'large' are synonyms—similar but not identical. They learn that 'big' and 'small' are antonyms—opposite meanings. Understanding these relationships helps children understand texts (using context and word relationships to infer meaning), expand vocabulary, and vary word choices in writing. Rather than always using the same word (happy, happy, happy), children learn alternatives (joyful, delighted, glad) that add sophistication and precision. This work is playful and visual, often involving sorting, categorizing, and building connections between words.",
+      "why_it_matters": "Understanding word relationships is central to vocabulary growth and reading comprehension. When children understand that words have synonyms and antonyms, they recognize larger patterns in language. In reading, knowing an antonym can help infer meaning: 'The opposite of cloudy is clear, so clearing up means getting clearer.' In writing, choosing among synonyms helps express subtle meanings and add variety. Most importantly, working with synonyms and antonyms teaches children to think about language analytically—to see words not as isolated items but as parts of an interconnected system. This metalinguistic awareness supports all future language learning."
     },
     {
       "work_id": "la_homonyms",
       "name": "Homonyms",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u540c\u97f3\u8bcd",
+      "name_chinese": "蒙特梭利同音词",
       "slug": "homonyms",
       "area": "language",
       "category": "Word Study",
       "sequence": 6,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Word relationship studies for vocabulary development\n\u2022 Synonyms: same/similar meaning (big/large)\n\u2022 Antonyms: opposite meaning (big/small)\n\u2022 Homonyms: same sound, different meaning (bear/bare)\n\u2022 Develops precise word choice and vocabulary",
+      "quick_guide": "• Word relationship studies for vocabulary development\n• Synonyms: same/similar meaning (big/large)\n• Antonyms: opposite meaning (big/small)\n• Homonyms: same sound, different meaning (bear/bare)\n• Develops precise word choice and vocabulary",
       "presentation_steps": [
         {
           "step": 1,
@@ -4283,8 +4283,1054 @@
       "materials_needed": [
         "Homonym cards with pictures"
       ],
-      "parent_description": "Your child is exploring the playful complexity of English by discovering homonyms\u2014words that are spelled the same but have different meanings (like 'bat: the animal' vs. 'bat: the sports equipment'), and homophones\u2014words that sound the same but are spelled differently (like 'there/their/they're'). Using matching cards and definition work, your child discovers why context matters so much in reading.",
+      "parent_description": "Your child is exploring the playful complexity of English by discovering homonyms—words that are spelled the same but have different meanings (like 'bat: the animal' vs. 'bat: the sports equipment'), and homophones—words that sound the same but are spelled differently (like 'there/their/they're'). Using matching cards and definition work, your child discovers why context matters so much in reading.",
       "why_it_matters": "Understanding homonyms and homophones develops reading comprehension and spelling accuracy. This work helps children understand that multiple words can sound or look alike but carry completely different meanings, making them more careful readers and writers."
+    },
+    {
+      "work_id": "la_dictation",
+      "name": "Dictation",
+      "name_chinese": "蒙特梭利听写",
+      "slug": "dictation",
+      "area": "language",
+      "category": "Writing Preparation",
+      "sequence": 8,
+      "age_range": "primary_year2",
+      "quick_guide": "• Teacher says a word slowly, child writes what they hear\n• Start with phonetic CVC words the child can already read\n• Progress to words with phonograms, then short sentences\n• Child self-corrects by comparing to a control card\n• Develops encoding (sound→letter) which strengthens reading\n• Described in Elementary Material as natural follow-up to spontaneous writing",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Choose Words",
+          "description": "Select 3-5 phonetic words the child can read",
+          "tip": "Start with words from the Pink Series the child knows well"
+        },
+        {
+          "step": 2,
+          "title": "Say the Word",
+          "description": "Say the first word clearly and slowly. Child repeats it",
+          "tip": "Don't segment sounds — say the whole word naturally"
+        },
+        {
+          "step": 3,
+          "title": "Child Writes",
+          "description": "Child writes the word on paper, sounding out as they go",
+          "tip": "Don't interrupt or correct during writing"
+        },
+        {
+          "step": 4,
+          "title": "Self-Check",
+          "description": "Show the control card. Child compares their spelling",
+          "tip": "Celebrate effort. Errors show which phonograms need more work"
+        },
+        {
+          "step": 5,
+          "title": "Continue",
+          "description": "Repeat with remaining words",
+          "tip": "3-5 words is enough for one session"
+        }
+      ],
+      "direct_aims": [
+        "Encoding skills",
+        "Spelling practice"
+      ],
+      "indirect_aims": [
+        "Listening skills",
+        "Phonemic awareness"
+      ],
+      "materials_needed": [
+        "Pencil",
+        "Paper",
+        "Word lists",
+        "Control cards"
+      ],
+      "control_of_error": "Written word doesn't match spoken word",
+      "prerequisites": [
+        "la_handwriting"
+      ],
+      "points_of_interest": [
+        "Hearing sounds in sequence",
+        "Writing independently",
+        "Self-correcting"
+      ],
+      "variations": [
+        "Use picture cards if child needs visual support",
+        "Dictate sentences once words are mastered",
+        "Themed word lists (animals, foods)"
+      ],
+      "common_challenges": [
+        "Child may want to copy rather than listen — cover control cards",
+        "Some children need words repeated multiple times — that's fine"
+      ],
+      "video_search_term": "montessori dictation phonetic words",
+      "parent_description": "Your child listens to a word and writes it down, sounding it out as they go. This exercise flips reading on its head — instead of seeing letters and making sounds, they hear sounds and write letters. It powerfully reinforces both reading and writing skills.",
+      "why_it_matters": "Dictation builds the connection between hearing and writing. When your child can hear a word and write it independently, they've mastered a fundamental literacy skill that will serve them through all of their education."
+    },
+    {
+      "work_id": "la_copywork",
+      "name": "Copywork",
+      "name_chinese": "蒙特梭利抄写",
+      "slug": "copywork",
+      "area": "language",
+      "category": "Writing Preparation",
+      "sequence": 9,
+      "age_range": "primary_year2",
+      "quick_guide": "• Child selects a beautiful passage and copies it with careful handwriting\n• Absorbs spelling, punctuation, and sentence structure naturally\n• Choose passages from poetry, literature, or Montessori quotes\n• Not about speed — about beauty and accuracy\n• Montessori described children spontaneously wanting to copy beautiful text\n• Develops patience, attention to detail, and appreciation of language",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Select Text",
+          "description": "Offer 2-3 prepared text cards with short, beautiful passages",
+          "tip": "Choose texts that are slightly above the child's writing level"
+        },
+        {
+          "step": 2,
+          "title": "Read Together",
+          "description": "Read the passage aloud together",
+          "tip": "Ensure the child understands the meaning"
+        },
+        {
+          "step": 3,
+          "title": "Child Copies",
+          "description": "Child copies the text carefully onto lined paper",
+          "tip": "Model sitting posture and pencil grip if needed"
+        },
+        {
+          "step": 4,
+          "title": "Review",
+          "description": "Child compares their copy to the original",
+          "tip": "Focus on effort and beauty, not perfection"
+        }
+      ],
+      "direct_aims": [
+        "Handwriting refinement",
+        "Spelling absorption"
+      ],
+      "indirect_aims": [
+        "Appreciation of literature",
+        "Patience"
+      ],
+      "materials_needed": [
+        "Prepared text cards",
+        "Lined paper",
+        "Pencil"
+      ],
+      "control_of_error": "Written copy doesn't match original",
+      "prerequisites": [
+        "la_handwriting"
+      ],
+      "points_of_interest": [
+        "Beautiful handwriting",
+        "Meaningful text",
+        "Comparing finished work"
+      ],
+      "variations": [
+        "Poetry passages",
+        "Famous quotes",
+        "Song lyrics",
+        "Passages from Montessori books"
+      ],
+      "common_challenges": [
+        "Child may rush — encourage slow, deliberate letter formation",
+        "Choose passages that interest the child"
+      ],
+      "video_search_term": "montessori copywork handwriting",
+      "parent_description": "Your child carefully copies a beautiful piece of text — a poem, a quote, or a passage from a book. Through this calm, focused activity they naturally absorb correct spelling, punctuation, and sentence structure while refining their handwriting.",
+      "why_it_matters": "Copywork is one of the oldest and most effective ways to learn writing conventions. By copying well-crafted text, your child absorbs the patterns of good writing — spelling, grammar, punctuation — without needing formal rules."
+    },
+    {
+      "work_id": "la_punctuation",
+      "name": "Punctuation",
+      "name_chinese": "蒙特梭利标点符号",
+      "slug": "punctuation",
+      "area": "language",
+      "category": "Writing Preparation",
+      "sequence": 10,
+      "age_range": "primary_year2",
+      "quick_guide": "• Introduce one punctuation mark at a time with large physical symbols\n• Period: 'This tells us to stop. The thought is complete.'\n• Question mark: 'This asks something. Your voice goes up.'\n• Exclamation: 'This shows strong feeling! Surprise! Excitement!'\n• Comma: 'This is a little pause. Take a breath.'\n• Child reads sentences aloud and places the correct mark at the end\n• Physical, sensorial approach makes abstract grammar concrete",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Introduce Period",
+          "description": "Show large period cutout. Read a statement: 'The cat sat on the mat.' Place period",
+          "tip": "Use dramatic pause at the period — stop your voice completely"
+        },
+        {
+          "step": 2,
+          "title": "Introduce Question Mark",
+          "description": "Show cutout. Read a question: 'Where is the cat?' Place mark",
+          "tip": "Exaggerate the rising voice at the end"
+        },
+        {
+          "step": 3,
+          "title": "Sorting Exercise",
+          "description": "Give child sentence strips. Sort into statements and questions. Place correct marks",
+          "tip": "Start with just period and question mark"
+        },
+        {
+          "step": 4,
+          "title": "Add Exclamation",
+          "description": "Introduce exclamation mark with exciting sentences: 'Look out!'",
+          "tip": "Children love exclamation marks — good motivation"
+        },
+        {
+          "step": 5,
+          "title": "Comma Introduction",
+          "description": "Show how lists use commas: 'I bought apples, bananas, and oranges'",
+          "tip": "Comma is hardest — introduce last and simply"
+        }
+      ],
+      "direct_aims": [
+        "Understanding punctuation marks",
+        "Reading fluency"
+      ],
+      "indirect_aims": [
+        "Writing conventions",
+        "Expression"
+      ],
+      "materials_needed": [
+        "Large punctuation cutouts",
+        "Sentence strips",
+        "Pencil"
+      ],
+      "control_of_error": "Punctuation placed incorrectly changes meaning",
+      "prerequisites": [
+        "la_handwriting"
+      ],
+      "points_of_interest": [
+        "Voice changes with different marks",
+        "Physical symbols are tangible",
+        "Sentence meaning changes"
+      ],
+      "variations": [
+        "Let's eat grandma vs Let's eat, grandma",
+        "Rewrite stories adding punctuation",
+        "Create punctuation stamps"
+      ],
+      "common_challenges": [
+        "Children often overuse exclamation marks — gently redirect",
+        "Comma rules are complex — keep simple at this age"
+      ],
+      "video_search_term": "montessori punctuation introduction",
+      "parent_description": "Your child is learning that those little dots and squiggles in books actually mean something! A period means stop, a question mark means 'I'm asking something,' and an exclamation mark means excitement. They use large physical symbols they can touch and place, making these abstract concepts concrete.",
+      "why_it_matters": "Punctuation is the traffic system of written language. When your child understands that a question mark changes 'you're going' into 'you're going?', they're learning that writing carries tone and meaning — a crucial insight for both reading and writing."
+    },
+    {
+      "work_id": "la_labelling",
+      "name": "Labelling the Environment",
+      "name_chinese": "蒙特梭利环境标签",
+      "slug": "labelling-the-environment",
+      "area": "language",
+      "category": "Reading",
+      "sequence": 12,
+      "age_range": "primary_year1",
+      "quick_guide": "• The very first reading exercise described by Montessori in The Method\n• Child reads a word card and places it on the matching object in the classroom\n• Profoundly motivating — reading suddenly has real-world purpose\n• Start with 5-6 familiar phonetic objects: mat, pen, cup, box, pin\n• Child walks around placing labels — reading becomes an active, physical experience\n• Later extend to detailed labels: 'the red chair', 'a tall shelf'",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Prepare Labels",
+          "description": "Write 5-6 phonetic word labels for classroom objects",
+          "tip": "Use clear, large print on card stock"
+        },
+        {
+          "step": 2,
+          "title": "Read First Label",
+          "description": "Hand child a label. They read it aloud",
+          "tip": "Choose a very familiar object like 'mat'"
+        },
+        {
+          "step": 3,
+          "title": "Place the Label",
+          "description": "Child walks to the object and places the label on it",
+          "tip": "The physical act of walking makes this exciting"
+        },
+        {
+          "step": 4,
+          "title": "Continue",
+          "description": "Child reads and places remaining labels",
+          "tip": "Watch their face — this moment of 'I can READ' is magical"
+        },
+        {
+          "step": 5,
+          "title": "Verification",
+          "description": "Walk around together checking all labels",
+          "tip": "Celebrate correct placements, gently correct errors"
+        }
+      ],
+      "direct_aims": [
+        "Reading comprehension",
+        "Word recognition"
+      ],
+      "indirect_aims": [
+        "Environmental awareness",
+        "Vocabulary"
+      ],
+      "materials_needed": [
+        "Word cards",
+        "Classroom objects"
+      ],
+      "control_of_error": "Label doesn't match object",
+      "prerequisites": [
+        "la_pink_series"
+      ],
+      "points_of_interest": [
+        "The 'aha' moment when reading clicks",
+        "Walking around the room",
+        "Labels on real things"
+      ],
+      "variations": [
+        "Include unusual objects",
+        "Extend to two-word labels",
+        "Child makes their own labels"
+      ],
+      "common_challenges": [
+        "Ensure child can decode the words — not guessing from context",
+        "Some children want to label everything — have extra blank cards ready"
+      ],
+      "video_search_term": "montessori labelling environment reading",
+      "parent_description": "Your child reads a word card and places it on the matching object in the classroom — 'door', 'mat', 'cup'. This is the magical moment where reading becomes real. Your child isn't just decoding sounds anymore; they're reading words that mean something in the world around them.",
+      "why_it_matters": "This is where reading transforms from an abstract exercise into a real-life skill. When your child reads 'door' and places the label on the actual door, they experience the power of literacy firsthand. This motivation drives further reading progress."
+    },
+    {
+      "work_id": "la_phonetic_object_box",
+      "name": "Phonetic Object Box",
+      "name_chinese": "蒙特梭利语音物品盒",
+      "slug": "phonetic-object-box",
+      "area": "language",
+      "category": "Reading",
+      "sequence": 13,
+      "age_range": "primary_year1",
+      "quick_guide": "• Box containing small objects with matching phonetic word cards\n• Child reads card and matches to correct object\n• Also called 'Animal Farm' when using animal figures\n• Bridges gap between Moveable Alphabet work and fluent reading\n• Objects make reading concrete and self-correcting\n• Progress from CVC objects to blends and phonograms",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Lay Out Objects",
+          "description": "Place 5-6 small objects on the mat: cat, pen, cup, bed, etc.",
+          "tip": "Use real miniatures, not pictures — the 3D object is key"
+        },
+        {
+          "step": 2,
+          "title": "Read First Card",
+          "description": "Child picks a card, reads it aloud",
+          "tip": "If child struggles, they're not ready — return to phonetic work"
+        },
+        {
+          "step": 3,
+          "title": "Match",
+          "description": "Child places card next to matching object",
+          "tip": "Self-correcting: the word either makes sense or doesn't"
+        },
+        {
+          "step": 4,
+          "title": "Continue",
+          "description": "Match remaining cards to objects",
+          "tip": "Child works independently — step back"
+        },
+        {
+          "step": 5,
+          "title": "Control",
+          "description": "Turn cards over to reveal picture or check marks",
+          "tip": "Optional — the matching itself is the control"
+        }
+      ],
+      "direct_aims": [
+        "Phonetic reading",
+        "Object-word association"
+      ],
+      "indirect_aims": [
+        "Vocabulary building",
+        "Concentration"
+      ],
+      "materials_needed": [
+        "Box of small objects",
+        "Matching word cards"
+      ],
+      "control_of_error": "Object doesn't match card",
+      "prerequisites": [
+        "la_pink_series"
+      ],
+      "points_of_interest": [
+        "Small realistic objects",
+        "The satisfaction of matching",
+        "Reading independently"
+      ],
+      "variations": [
+        "Different themed boxes: farm animals, kitchen items, classroom objects",
+        "Add blend objects",
+        "Child creates own object boxes"
+      ],
+      "common_challenges": [
+        "Ensure objects are clearly identifiable",
+        "Cards should be phonetic at the child's reading level"
+      ],
+      "video_search_term": "montessori phonetic object box",
+      "parent_description": "Your child opens a box of small objects — a tiny cat, a little cup, a small bed — and reads word cards to match each one. It's like a treasure hunt that requires reading! This hands-on approach makes reading feel like play while building real decoding skills.",
+      "why_it_matters": "Matching physical objects to written words cements the connection between reading and reality. Your child isn't just sounding out letters — they're proving to themselves that they can read, building the confidence that drives reading fluency."
+    },
+    {
+      "work_id": "la_definition_stages",
+      "name": "Definition Stages",
+      "name_chinese": "蒙特梭利定义阶段",
+      "slug": "definition-stages",
+      "area": "language",
+      "category": "Reading",
+      "sequence": 14,
+      "age_range": "primary_year3",
+      "quick_guide": "• Three-stage progression: naming → describing → defining\n• Stage 1 (Naming): 'This is a triangle'\n• Stage 2 (Describing): 'It has three sides, three angles, it is red'\n• Stage 3 (Defining): 'A triangle is a closed figure with three straight sides'\n• Child creates definition booklets for each subject studied\n• Develops precise scientific language and logical thinking\n• Standard AMI language exercise connecting to all curriculum areas",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Naming Stage",
+          "description": "Present an object. Ask: 'What is this?'",
+          "tip": "Child should already know the name — this is review"
+        },
+        {
+          "step": 2,
+          "title": "Describing Stage",
+          "description": "Ask: 'Tell me about it. What does it have? What does it look like?'",
+          "tip": "Write down the child's descriptions"
+        },
+        {
+          "step": 3,
+          "title": "Refining Description",
+          "description": "Help child organize descriptions into categories: shape, color, size, parts",
+          "tip": "Model precise vocabulary"
+        },
+        {
+          "step": 4,
+          "title": "Defining Stage",
+          "description": "Guide child to create a formal definition: 'A ___ is a ___ that ___'",
+          "tip": "Start with familiar geometric shapes where definitions are clear"
+        },
+        {
+          "step": 5,
+          "title": "Definition Booklets",
+          "description": "Child creates booklets with picture, name, description, and definition",
+          "tip": "Beautiful booklet work motivates precision"
+        }
+      ],
+      "direct_aims": [
+        "Defining skills",
+        "Precise language"
+      ],
+      "indirect_aims": [
+        "Logical thinking",
+        "Scientific classification"
+      ],
+      "materials_needed": [
+        "Definition booklets",
+        "Classified pictures",
+        "Writing materials"
+      ],
+      "control_of_error": "Definition doesn't accurately describe the object",
+      "prerequisites": [
+        "la_reading_classification"
+      ],
+      "points_of_interest": [
+        "Creating their own definitions",
+        "Beautiful booklet work",
+        "Discovering precise language"
+      ],
+      "variations": [
+        "Apply to botany: define parts of a plant",
+        "Apply to geometry: define shapes",
+        "Apply to zoology: define animal classes"
+      ],
+      "common_challenges": [
+        "Defining is hard — accept approximations and refine gradually",
+        "Don't expect adult-quality definitions from young children"
+      ],
+      "video_search_term": "montessori definition stages",
+      "parent_description": "Your child is learning to move from simply naming things ('this is a leaf') to describing them ('it is green, oval, and has veins') to formally defining them ('a leaf is the part of a plant that makes food from sunlight'). This three-stage progression builds the precise, scientific language skills used in every academic field.",
+      "why_it_matters": "The ability to define something precisely is the foundation of all scientific and academic thinking. When your child can create a definition, they're showing deep understanding — not just memorization but real comprehension of what makes something what it is."
+    },
+    {
+      "work_id": "la_logical_adjective",
+      "name": "Logical Adjective Game",
+      "name_chinese": "蒙特梭利逻辑形容词游戏",
+      "slug": "logical-adjective-game",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 12,
+      "age_range": "primary_year2",
+      "quick_guide": "• 63 triangles: 7 colors × 3 sizes × 3 types (equilateral, isosceles, scalene)\n• Teacher describes one: 'Bring me the large red scalene triangle'\n• Child must use ALL adjectives to find the exact one — demonstrates adjective necessity\n• If child brings wrong one, ask: 'Did I say large or small?' — the adjective matters\n• Signature AMI grammar exercise — makes grammar sensorial, not abstract\n• Connects to sensorial work with Constructive Triangles",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Lay Out Triangles",
+          "description": "Spread all 63 triangles on a large mat",
+          "tip": "Organize loosely by color for visual clarity"
+        },
+        {
+          "step": 2,
+          "title": "Simple Request",
+          "description": "'Bring me a red triangle' — child discovers there are many red ones",
+          "tip": "This confusion is the point — they need MORE adjectives"
+        },
+        {
+          "step": 3,
+          "title": "Add Size",
+          "description": "'Bring me the LARGE red triangle' — still multiple options",
+          "tip": "Child sees one adjective isn't enough"
+        },
+        {
+          "step": 4,
+          "title": "Full Description",
+          "description": "'Bring me the large red SCALENE triangle' — now only one fits",
+          "tip": "The 'aha' moment: adjectives narrow down to exactly one"
+        },
+        {
+          "step": 5,
+          "title": "Child's Turn",
+          "description": "Child describes a triangle for the teacher or another child to find",
+          "tip": "Role reversal deepens understanding"
+        }
+      ],
+      "direct_aims": [
+        "Understanding adjective function",
+        "Logical thinking"
+      ],
+      "indirect_aims": [
+        "Precision of language",
+        "Mathematical classification"
+      ],
+      "materials_needed": [
+        "63 triangles (7 colors × 3 sizes × 3 shapes)",
+        "Label cards"
+      ],
+      "control_of_error": "Wrong triangle selected — description must be more precise",
+      "prerequisites": [
+        "la_adjective"
+      ],
+      "points_of_interest": [
+        "Discovering that adjectives are necessary",
+        "The challenge of 63 possibilities",
+        "Role reversal"
+      ],
+      "variations": [
+        "Use with other objects",
+        "Write descriptions on cards",
+        "Create adjective stories"
+      ],
+      "common_challenges": [
+        "Ensure child knows triangle vocabulary (equilateral, isosceles, scalene) first",
+        "Some children need many sessions — the logic takes time"
+      ],
+      "video_search_term": "montessori logical adjective game 63 triangles",
+      "parent_description": "Your child works with 63 triangles that vary in color, size, and shape. When asked to find 'a red triangle', they discover there are many! Only when all the adjectives are used — 'the small red scalene triangle' — can they find the exact one. This brilliant exercise shows your child WHY adjectives matter.",
+      "why_it_matters": "This exercise makes grammar come alive. Instead of memorizing rules, your child discovers through experience that adjectives are essential for precise communication. This logical thinking skill transfers directly to science, math, and clear writing."
+    },
+    {
+      "work_id": "la_detective_adjective",
+      "name": "Detective Adjective Game",
+      "name_chinese": "蒙特梭利侦探形容词游戏",
+      "slug": "detective-adjective-game",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 13,
+      "age_range": "primary_year2",
+      "quick_guide": "• Extension of the Logical Adjective Game into the real environment\n• One child describes a classroom object using adjectives only\n• Other child must find the exact object from the description\n• Develops oral language precision and careful observation\n• Children discover they need to be specific: 'the book' isn't enough\n• Fun, social grammar exercise that children love",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Model",
+          "description": "Describe a classroom object: 'I'm thinking of a small, red, rectangular object on the shelf'",
+          "tip": "Be specific enough that only one object fits"
+        },
+        {
+          "step": 2,
+          "title": "Child Searches",
+          "description": "Child looks around the room using each adjective as a clue",
+          "tip": "Encourage systematic elimination"
+        },
+        {
+          "step": 3,
+          "title": "Verify",
+          "description": "Did they find the right object? If not, which adjective did they miss?",
+          "tip": "This is detective work — celebrate the process"
+        },
+        {
+          "step": 4,
+          "title": "Child Describes",
+          "description": "Child chooses an object and describes it for others to find",
+          "tip": "Describing is harder than finding — be patient"
+        }
+      ],
+      "direct_aims": [
+        "Oral language precision",
+        "Adjective usage"
+      ],
+      "indirect_aims": [
+        "Observation",
+        "Social interaction"
+      ],
+      "materials_needed": [
+        "Objects in the classroom",
+        "Description cards"
+      ],
+      "control_of_error": "Wrong object found — description needs refinement",
+      "prerequisites": [
+        "la_logical_adjective"
+      ],
+      "points_of_interest": [
+        "The detective challenge",
+        "Describing for others",
+        "Using observation skills"
+      ],
+      "variations": [
+        "Write descriptions on cards",
+        "Work in pairs",
+        "Describe objects in books or pictures"
+      ],
+      "common_challenges": [
+        "Children may describe function rather than qualities — redirect to adjectives",
+        "Some objects are hard to distinguish — start with very different ones"
+      ],
+      "video_search_term": "montessori detective adjective game",
+      "parent_description": "Your child plays detective! One child describes a classroom object using only describing words (adjectives), and the other must find it. 'I'm thinking of something small, blue, and rectangular...' This fun game teaches your child to use precise language — and proves that adjectives really matter in communication.",
+      "why_it_matters": "Clear communication is a life skill. When your child learns to describe something so precisely that another person can find it, they're developing the same clarity of expression needed for good writing, presentations, and problem-solving."
+    },
+    {
+      "work_id": "la_logical_adverb",
+      "name": "Logical Adverb Game",
+      "name_chinese": "蒙特梭利逻辑副词游戏",
+      "slug": "logical-adverb-game",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 14,
+      "age_range": "primary_year2",
+      "quick_guide": "• Child reads a command card: 'Walk slowly' then 'Walk quickly'\n• The contrast shows how the adverb changes the action\n• Same verb, different adverb = completely different experience\n• Children love the movement — walking, talking, singing at different speeds/volumes\n• Connects grammar to physical experience, making it unforgettable\n• Extension of verb command game with adverb layer",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Two Commands",
+          "description": "Give child two cards: 'Walk slowly' and 'Walk quickly'",
+          "tip": "Same verb, different adverb — the contrast is the lesson"
+        },
+        {
+          "step": 2,
+          "title": "Child Acts",
+          "description": "Child reads and performs both commands",
+          "tip": "Other children watch — the difference is visible and fun"
+        },
+        {
+          "step": 3,
+          "title": "Discussion",
+          "description": "How was the walking different? What word changed?",
+          "tip": "Help child isolate the adverb as the word that changed the action"
+        },
+        {
+          "step": 4,
+          "title": "More Pairs",
+          "description": "speak loudly/speak softly, draw carefully/draw quickly",
+          "tip": "Movement-based pairs are most powerful"
+        }
+      ],
+      "direct_aims": [
+        "Understanding adverb function",
+        "Reading comprehension"
+      ],
+      "indirect_aims": [
+        "Expression",
+        "Movement control"
+      ],
+      "materials_needed": [
+        "Command cards with adverbs"
+      ],
+      "control_of_error": "Action doesn't match the adverb",
+      "prerequisites": [
+        "la_adverb"
+      ],
+      "points_of_interest": [
+        "The funny contrasts",
+        "Physical movement",
+        "Performing for others"
+      ],
+      "variations": [
+        "Create adverb cards for different verbs",
+        "Act out stories with adverbs",
+        "Adverb charades"
+      ],
+      "common_challenges": [
+        "Ensure child can read the cards fluently",
+        "Some adverbs are abstract — start with movement and manner adverbs"
+      ],
+      "video_search_term": "montessori logical adverb game",
+      "parent_description": "Your child reads command cards like 'Walk slowly' and 'Walk quickly' — then acts them out! By performing the same action in different ways, they experience firsthand how adverbs change the meaning of a verb. Grammar becomes physical and fun.",
+      "why_it_matters": "Understanding that one word can change an entire action builds your child's language awareness. This physical experience of grammar is far more powerful than memorizing rules — your child will remember what an adverb does because they felt the difference."
+    },
+    {
+      "work_id": "la_verb_command",
+      "name": "Verb Command Game",
+      "name_chinese": "蒙特梭利动词命令游戏",
+      "slug": "verb-command-game",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 15,
+      "age_range": "primary_year1",
+      "quick_guide": "• Red command slips with action words the child reads and performs\n• First presentation: single verbs — 'sit', 'stand', 'walk', 'run'\n• Second: verb + object — 'open the door', 'close the book'\n• Third: complex multi-step commands — 'walk to the window and wave'\n• Described extensively in The Montessori Method as the 'reading of actions'\n• Verbs are traditionally represented in red in Montessori grammar",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Single Verbs",
+          "description": "Prepare 5-6 red slips: sit, stand, walk, run, jump, wave",
+          "tip": "Red = verb color in Montessori grammar"
+        },
+        {
+          "step": 2,
+          "title": "Child Reads",
+          "description": "Child picks a slip, reads silently, performs the action",
+          "tip": "Silent reading then acting — proves comprehension"
+        },
+        {
+          "step": 3,
+          "title": "Others Guess",
+          "description": "Other children guess which verb was on the card",
+          "tip": "Social element adds motivation"
+        },
+        {
+          "step": 4,
+          "title": "Verb + Object",
+          "description": "Progress to: 'open the door', 'sharpen the pencil'",
+          "tip": "Child must understand both words"
+        },
+        {
+          "step": 5,
+          "title": "Complex Commands",
+          "description": "Multi-step: 'Walk to the shelf, pick up the bell, ring it three times'",
+          "tip": "These develop sequencing and memory too"
+        }
+      ],
+      "direct_aims": [
+        "Reading comprehension",
+        "Verb understanding"
+      ],
+      "indirect_aims": [
+        "Following instructions",
+        "Movement"
+      ],
+      "materials_needed": [
+        "Command slips (red)",
+        "Props as needed"
+      ],
+      "control_of_error": "Action doesn't match the written command",
+      "prerequisites": [
+        "la_verb"
+      ],
+      "points_of_interest": [
+        "Performing secretly",
+        "Others guessing",
+        "Increasingly complex commands"
+      ],
+      "variations": [
+        "Silly commands",
+        "Outdoor commands",
+        "Child writes commands for teacher"
+      ],
+      "common_challenges": [
+        "Ensure child can decode the words — this is a reading exercise",
+        "Start very simple and build complexity gradually"
+      ],
+      "video_search_term": "montessori verb command game red slips",
+      "parent_description": "Your child reads a secret command written on a red slip — 'jump!' — and acts it out while others guess what the word says. This playful exercise proves that your child truly understands what they're reading, because they have to turn written words into real actions.",
+      "why_it_matters": "The verb command game is where reading meets comprehension. Any child can sound out letters, but acting out a written command proves genuine understanding. This active approach to grammar makes verbs memorable and meaningful."
+    },
+    {
+      "work_id": "la_conjunction_exercise",
+      "name": "Conjunction Exercise",
+      "name_chinese": "蒙特梭利连词练习",
+      "slug": "conjunction-exercise",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 16,
+      "age_range": "primary_year2",
+      "quick_guide": "• Sensorial experience of how conjunctions join words and ideas\n• 'Bring me the cup AND the saucer' — child brings both\n• Without 'and': 'Bring me the cup. Bring me the saucer' — two trips!\n• The conjunction saves effort and connects ideas\n• Pink is the Montessori color for conjunctions\n• Later: 'Bring me the pen OR the pencil' shows choice",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Two Separate Commands",
+          "description": "Give two commands: 'Bring me the cup. Bring me the saucer.'",
+          "tip": "Child makes two trips"
+        },
+        {
+          "step": 2,
+          "title": "One Joined Command",
+          "description": "'Bring me the cup AND the saucer'",
+          "tip": "Child brings both in one trip — more efficient!"
+        },
+        {
+          "step": 3,
+          "title": "Discussion",
+          "description": "What word let us join those? Why is it useful?",
+          "tip": "The conjunction is a 'joining word'"
+        },
+        {
+          "step": 4,
+          "title": "Or",
+          "description": "'Bring me the pen OR the pencil' — now it means choice",
+          "tip": "Contrast AND (both) with OR (choose)"
+        }
+      ],
+      "direct_aims": [
+        "Understanding conjunction function",
+        "Sentence building"
+      ],
+      "indirect_aims": [
+        "Logical thinking",
+        "Reading fluency"
+      ],
+      "materials_needed": [
+        "Object pairs",
+        "Conjunction word cards (pink)"
+      ],
+      "control_of_error": "Sentence doesn't make sense without the conjunction",
+      "prerequisites": [
+        "la_conjunction"
+      ],
+      "points_of_interest": [
+        "Efficiency of joined commands",
+        "The difference between AND and OR",
+        "Real-world usefulness"
+      ],
+      "variations": [
+        "Join sentences in stories",
+        "Find conjunctions in books",
+        "Write sentences with conjunctions"
+      ],
+      "common_challenges": [
+        "Children may not see why this matters — the physical exercise makes it clear",
+        "Keep it active and fun"
+      ],
+      "video_search_term": "montessori conjunction exercise grammar",
+      "parent_description": "Your child discovers that little words like 'and', 'but', and 'or' are powerful connectors. By following commands like 'bring the cup AND the saucer' versus separate commands, they physically experience how conjunctions join ideas and save effort.",
+      "why_it_matters": "Conjunctions are the glue of language. When your child understands how joining words work, their writing and speaking become more fluent and sophisticated — they can express complex ideas instead of only simple ones."
+    },
+    {
+      "work_id": "la_preposition_exercise",
+      "name": "Preposition Exercise",
+      "name_chinese": "蒙特梭利介词练习",
+      "slug": "preposition-exercise",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 17,
+      "age_range": "primary_year2",
+      "quick_guide": "• Child physically places objects according to preposition commands\n• 'Put the ball ON the box' → 'Put the ball UNDER the box' → 'Put the ball BEHIND the box'\n• Same objects, different preposition = completely different arrangement\n• Green is the Montessori color for prepositions\n• Bridges language and spatial reasoning\n• Children love the physical movement aspect",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Set Up",
+          "description": "Place a box on the mat. Give child a small ball",
+          "tip": "Simple, clear objects work best"
+        },
+        {
+          "step": 2,
+          "title": "First Prepositions",
+          "description": "Read commands: 'Put the ball ON the box', 'Put the ball IN the box'",
+          "tip": "Start with very concrete, visible positions"
+        },
+        {
+          "step": 3,
+          "title": "More Positions",
+          "description": "UNDER, BEHIND, BESIDE, IN FRONT OF",
+          "tip": "Each new preposition is a separate card"
+        },
+        {
+          "step": 4,
+          "title": "Discussion",
+          "description": "'What word told you WHERE to put the ball?'",
+          "tip": "The preposition is a 'position word'"
+        },
+        {
+          "step": 5,
+          "title": "Complex",
+          "description": "BETWEEN, THROUGH, ABOVE",
+          "tip": "These are harder — only when basic prepositions are solid"
+        }
+      ],
+      "direct_aims": [
+        "Understanding preposition function",
+        "Spatial language"
+      ],
+      "indirect_aims": [
+        "Spatial awareness",
+        "Following directions"
+      ],
+      "materials_needed": [
+        "Small objects",
+        "Box or container",
+        "Preposition command cards (green)"
+      ],
+      "control_of_error": "Object not placed in correct spatial relationship",
+      "prerequisites": [
+        "la_preposition"
+      ],
+      "points_of_interest": [
+        "The ball moves to different positions",
+        "Physical movement",
+        "Reading commands"
+      ],
+      "variations": [
+        "Use different objects",
+        "Photograph each position",
+        "Create a preposition book"
+      ],
+      "common_challenges": [
+        "Abstract prepositions like 'through' are harder — save for later",
+        "Ensure child understands spatial terms before reading them"
+      ],
+      "video_search_term": "montessori preposition exercise grammar",
+      "parent_description": "Your child reads commands like 'put the ball ON the box' and 'put the ball UNDER the box' — then physically moves objects into position. The same ball and box in different arrangements shows exactly what prepositions do: they tell us WHERE things are.",
+      "why_it_matters": "Spatial language is crucial for math (geometry), science (describing observations), and everyday communication. When your child physically experiences 'on', 'under', 'between', these abstract position words become concrete and permanent."
+    },
+    {
+      "work_id": "la_singular_plural",
+      "name": "Singular and Plural",
+      "name_chinese": "蒙特梭利单数复数",
+      "slug": "singular-and-plural",
+      "area": "language",
+      "category": "Grammar",
+      "sequence": 18,
+      "age_range": "primary_year1",
+      "quick_guide": "• Object box with single items and groups: one pen, many pens\n• Child sorts objects, then matches singular and plural word cards\n• Sensorial experience of how language marks quantity\n• Regular plurals first (add -s), then irregular (child/children, mouse/mice)\n• Connects to math concept of one vs. many\n• Black noun cards used (noun color in Montessori grammar)",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Present Objects",
+          "description": "Lay out pairs: one pen + several pens, one cup + several cups",
+          "tip": "Clear visual contrast between one and many"
+        },
+        {
+          "step": 2,
+          "title": "Name",
+          "description": "'This is one pen. These are pens.' Point to each",
+          "tip": "Emphasize the -s sound"
+        },
+        {
+          "step": 3,
+          "title": "Word Cards",
+          "description": "Give cards: 'pen' and 'pens'. Child places on correct group",
+          "tip": "Reading + grammar in one exercise"
+        },
+        {
+          "step": 4,
+          "title": "Regular Plurals",
+          "description": "Practice with multiple regular pairs",
+          "tip": "The pattern becomes clear: add -s"
+        },
+        {
+          "step": 5,
+          "title": "Irregular Plurals",
+          "description": "Introduce: child/children, foot/feet, mouse/mice",
+          "tip": "These are exceptions — children find them fascinating"
+        }
+      ],
+      "direct_aims": [
+        "Understanding number in language",
+        "Reading"
+      ],
+      "indirect_aims": [
+        "Grammar awareness",
+        "Vocabulary"
+      ],
+      "materials_needed": [
+        "Pairs of objects (1 and several)",
+        "Singular/plural word cards"
+      ],
+      "control_of_error": "Singular card placed with plural objects or vice versa",
+      "prerequisites": [
+        "la_noun"
+      ],
+      "points_of_interest": [
+        "Seeing one vs many",
+        "The -s sound",
+        "Funny irregular plurals"
+      ],
+      "variations": [
+        "Create a singular/plural sorting mat",
+        "Find plurals in books",
+        "Irregular plural memory game"
+      ],
+      "common_challenges": [
+        "Don't overwhelm with irregulars — start with regular patterns",
+        "Ensure child understands the concept of one vs many before introducing words"
+      ],
+      "video_search_term": "montessori singular plural exercise",
+      "parent_description": "Your child works with objects in ones and groups — one pen beside many pens — and matches them to word cards. They discover the simple pattern: add an 's' for more than one! Then come the fun exceptions like 'mice' and 'children' that make English so interesting.",
+      "why_it_matters": "Understanding singular and plural is fundamental to both grammar and math. When your child notices that language changes to show quantity, they're developing the same awareness of pattern and number that underlies mathematical thinking."
+    },
+    {
+      "work_id": "la_secret_messages",
+      "name": "Secret Messages",
+      "name_chinese": "蒙特梭利秘密信息",
+      "slug": "secret-messages",
+      "area": "language",
+      "category": "Total Reading",
+      "sequence": 1,
+      "age_range": "primary_year2",
+      "quick_guide": "• Folded messages hidden around the room that the child reads for a reward or instruction\n• 'Look under the blue mat' → child finds a sticker or small treasure there\n• Powerful reading motivation — there's a REASON to decode the words\n• Progress from simple to multi-step messages\n• Children often want to write secret messages for each other\n• Creates genuine joy and purpose around reading",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Prepare Messages",
+          "description": "Write 5-6 simple messages on folded paper. Hide small treasures at each location",
+          "tip": "Messages should use words the child can decode"
+        },
+        {
+          "step": 2,
+          "title": "First Message",
+          "description": "Hand child a folded message. They read it: 'Look under the red mat'",
+          "tip": "The anticipation builds excitement"
+        },
+        {
+          "step": 3,
+          "title": "Discovery",
+          "description": "Child follows the instruction and finds a treasure or another message",
+          "tip": "Chain messages (treasure hunt) are extra exciting"
+        },
+        {
+          "step": 4,
+          "title": "Continue",
+          "description": "Work through all messages",
+          "tip": "Each success builds reading confidence"
+        },
+        {
+          "step": 5,
+          "title": "Child Writes",
+          "description": "Invite child to write secret messages for classmates",
+          "tip": "This extends into writing practice too"
+        }
+      ],
+      "direct_aims": [
+        "Reading motivation",
+        "Comprehension"
+      ],
+      "indirect_aims": [
+        "Joy of reading",
+        "Independence"
+      ],
+      "materials_needed": [
+        "Folded message cards",
+        "Small treasures or instructions"
+      ],
+      "control_of_error": "Child cannot complete the instruction — re-read for understanding",
+      "prerequisites": [
+        "la_pink_series"
+      ],
+      "points_of_interest": [
+        "The excitement of hidden messages",
+        "Finding treasures",
+        "Writing messages for others"
+      ],
+      "variations": [
+        "Treasure hunt chains",
+        "Messages that lead to activities",
+        "Birthday secret messages"
+      ],
+      "common_challenges": [
+        "Ensure messages are phonetically decodable",
+        "Don't make treasures too exciting — the reading IS the reward"
+      ],
+      "video_search_term": "montessori secret messages reading motivation",
+      "parent_description": "Your child reads secret folded messages that lead them on adventures around the classroom! 'Look under the blue mat' — and there's a surprise waiting! This turns reading into a treasure hunt, creating genuine excitement and purpose for decoding words.",
+      "why_it_matters": "Motivation is everything in reading. When your child WANTS to read because there's a secret message waiting, they practice more willingly and joyfully than with any workbook. This intrinsic motivation is what creates lifelong readers."
     }
   ]
 }

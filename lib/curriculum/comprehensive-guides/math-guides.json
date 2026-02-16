@@ -7,13 +7,13 @@
     {
       "work_id": "ma_number_rods",
       "name": "Number Rods",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6570\u68d2",
+      "name_chinese": "蒙特梭利数棒",
       "slug": "number-rods",
       "area": "math",
       "category": "Introduction to Numbers (1-10)",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Ten red and blue graduated rods representing quantities 1-10\n\u2022 First concrete introduction to quantity and the decimal system\n\u2022 Color alternation isolates the unit concept within larger quantities\n\u2022 Prepares for addition, subtraction, and number operations\n\u2022 Combined with number cards to associate numeral with quantity",
+      "quick_guide": "• Ten red and blue graduated rods representing quantities 1-10\n• First concrete introduction to quantity and the decimal system\n• Color alternation isolates the unit concept within larger quantities\n• Prepares for addition, subtraction, and number operations\n• Combined with number cards to associate numeral with quantity",
       "presentation_steps": [
         {
           "step": 1,
@@ -86,19 +86,19 @@
       "materials_needed": [
         "Number Rods (10 rods from 10cm to 1m)"
       ],
-      "parent_description": "Your child is learning to associate quantities with numbers using beautiful colored rods of increasing length. By lining up the rods from shortest to longest and counting the segments, they're developing a concrete, visual understanding of how numbers grow in sequence. These tactile rods help children grasp that numbers aren't just symbols\u2014they represent real quantities that can be compared and ordered.",
+      "parent_description": "Your child is learning to associate quantities with numbers using beautiful colored rods of increasing length. By lining up the rods from shortest to longest and counting the segments, they're developing a concrete, visual understanding of how numbers grow in sequence. These tactile rods help children grasp that numbers aren't just symbols—they represent real quantities that can be compared and ordered.",
       "why_it_matters": "Number rods lay the essential groundwork for all future math by helping children internalize the concept of numerical sequence and magnitude. This sensory-based understanding prevents later struggles with number sense and makes abstract math feel natural and logical."
     },
     {
       "work_id": "ma_sandpaper_numerals",
       "name": "Sandpaper Numerals",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7802\u7eb8\u6570\u5b57",
+      "name_chinese": "蒙特梭利砂纸数字",
       "slug": "sandpaper-numerals",
       "area": "math",
       "category": "Introduction to Numbers (1-10)",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Tactile numerals 0-9 cut from sandpaper mounted on wooden boards\n\u2022 Multi-sensory approach: visual, tactile, and kinesthetic learning combined\n\u2022 Teaches correct numeral formation through muscle memory\n\u2022 Prepares hand for writing while learning number symbols\n\u2022 Three-period lesson format for vocabulary introduction",
+      "quick_guide": "• Tactile numerals 0-9 cut from sandpaper mounted on wooden boards\n• Multi-sensory approach: visual, tactile, and kinesthetic learning combined\n• Teaches correct numeral formation through muscle memory\n• Prepares hand for writing while learning number symbols\n• Three-period lesson format for vocabulary introduction",
       "presentation_steps": [
         {
           "step": 1,
@@ -172,19 +172,19 @@
       "materials_needed": [
         "Sandpaper Numerals 0-9"
       ],
-      "parent_description": "Your child is tracing numerals 0-9 made of sandpaper on smooth boards, engaging their sense of touch to learn how each number is formed and written. By feeling the shape of each numeral with their fingers, they're creating a deep, muscle-memory connection between the symbol and the written form\u2014preparing their hands for writing while their mind absorbs the visual patterns.",
+      "parent_description": "Your child is tracing numerals 0-9 made of sandpaper on smooth boards, engaging their sense of touch to learn how each number is formed and written. By feeling the shape of each numeral with their fingers, they're creating a deep, muscle-memory connection between the symbol and the written form—preparing their hands for writing while their mind absorbs the visual patterns.",
       "why_it_matters": "This tactile learning method activates multiple sensory pathways, making number recognition stick longer and making handwriting practice feel natural rather than forced. Children who learn numerals this way rarely reverse or confuse numbers later in their academic journey."
     },
     {
       "work_id": "ma_number_rods_numerals",
       "name": "Number Rods with Numerals",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6570\u68d2\u4e0e\u6570\u5b57\u5361",
+      "name_chinese": "蒙特梭利数棒与数字卡",
       "slug": "number-rods-numerals",
       "area": "math",
       "category": "Number Concepts",
       "sequence": 3,
       "age_range": "3.5 to 5 years old",
-      "quick_guide": "\u2022 First material associating quantities with written numbers\n\u2022 Red and blue striped rods from 1-10 in increasing length\n\u2022 Child counts and matches numerals to quantities\n\u2022 Builds foundation for decimal system understanding\n\u2022 Prepares for advanced arithmetic work",
+      "quick_guide": "• First material associating quantities with written numbers\n• Red and blue striped rods from 1-10 in increasing length\n• Child counts and matches numerals to quantities\n• Builds foundation for decimal system understanding\n• Prepares for advanced arithmetic work",
       "presentation_steps": [
         {
           "step": 1,
@@ -233,7 +233,7 @@
         "Number Rods",
         "Numeral cards 1-10"
       ],
-      "control_of_error": "The rods themselves provide control\u2014if arranged correctly, they form a perfect stair. Numeral cards can be checked against known quantities.",
+      "control_of_error": "The rods themselves provide control—if arranged correctly, they form a perfect stair. Numeral cards can be checked against known quantities.",
       "prerequisites": [
         "ma_sandpaper_numerals"
       ],
@@ -283,13 +283,13 @@
     {
       "work_id": "ma_spindle_box",
       "name": "Spindle Boxes",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7eba\u9524\u68d2\u7bb1",
+      "name_chinese": "蒙特梭利纺锤棒箱",
       "slug": "spindle-box",
       "area": "math",
       "category": "Number Concepts",
       "sequence": 4,
       "age_range": "4 to 5 years old",
-      "quick_guide": "\u2022 Two partitioned boxes with compartments labeled 0-9\n\u2022 Child places correct number of spindles (dowels) in each compartment\n\u2022 Introduces concept of zero and quantity-number matching\n\u2022 Bundling spindles develops muscular impression\n\u2022 Built-in control of error through total spindle count",
+      "quick_guide": "• Two partitioned boxes with compartments labeled 0-9\n• Child places correct number of spindles (dowels) in each compartment\n• Introduces concept of zero and quantity-number matching\n• Bundling spindles develops muscular impression\n• Built-in control of error through total spindle count",
       "presentation_steps": [
         {
           "step": 1,
@@ -383,19 +383,19 @@
         "Number",
         "Count"
       ],
-      "parent_description": "Spindle Boxes help your child develop a muscular impression of numbers 0-9. By physically placing spindles into compartments and bundling them, your child's hands and mind work together to understand quantity. The built-in error correction teaches independence\u2014if spindles remain at the end, your child can find and fix the mistake themselves.",
+      "parent_description": "Spindle Boxes help your child develop a muscular impression of numbers 0-9. By physically placing spindles into compartments and bundling them, your child's hands and mind work together to understand quantity. The built-in error correction teaches independence—if spindles remain at the end, your child can find and fix the mistake themselves.",
       "why_it_matters": "This work solidifies number concept understanding and introduces the crucial concept of zero. It transitions from abstract numeral recognition to active engagement with quantity, preparing children for the decimal system and arithmetic operations where zero plays an essential role."
     },
     {
       "work_id": "ma_cards_counters",
       "name": "Cards and Counters",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6570\u5b57\u4e0e\u7b79\u7801",
+      "name_chinese": "蒙特梭利数字与筹码",
       "slug": "cards-counters",
       "area": "math",
       "category": "Introduction to Numbers (1-10)",
       "sequence": 5,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Number cards 1-10 and 55 identical counters (usually red circles)\n\u2022 Introduces odd and even numbers through visual pattern\n\u2022 Final consolidation of the 1-10 sequence before decimal system\n\u2022 Counters arranged in pairs reveal which numbers have 'lonely' counters\n\u2022 Prepares for division concepts through equal grouping",
+      "quick_guide": "• Number cards 1-10 and 55 identical counters (usually red circles)\n• Introduces odd and even numbers through visual pattern\n• Final consolidation of the 1-10 sequence before decimal system\n• Counters arranged in pairs reveal which numbers have 'lonely' counters\n• Prepares for division concepts through equal grouping",
       "presentation_steps": [
         {
           "step": 1,
@@ -479,13 +479,13 @@
     {
       "work_id": "ma_memory_game",
       "name": "Memory Game of Numbers",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6570\u5b57\u8bb0\u5fc6\u6e38\u620f",
+      "name_chinese": "蒙特梭利数字记忆游戏",
       "slug": "memory-game",
       "area": "math",
       "category": "Introduction to Numbers (1-10)",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Game where child fetches quantities from memory to match cards\n\u2022 Cards with numerals 1-10 on table; objects across room\n\u2022 Child draws card, remembers quantity, fetches that many objects\n\u2022 Develops number memory and one-to-one correspondence\n\u2022 Fun game format reinforces quantity understanding",
+      "quick_guide": "• Game where child fetches quantities from memory to match cards\n• Cards with numerals 1-10 on table; objects across room\n• Child draws card, remembers quantity, fetches that many objects\n• Develops number memory and one-to-one correspondence\n• Fun game format reinforces quantity understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -568,13 +568,13 @@
     {
       "work_id": "ma_number_puzzles",
       "name": "Number Puzzles and Games",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6570\u5b57\u62fc\u56fe",
+      "name_chinese": "蒙特梭利数字拼图",
       "slug": "number-puzzles",
       "area": "math",
       "category": "Number Concepts",
       "sequence": 7,
       "age_range": "3.5 to 5 years old",
-      "quick_guide": "\u2022 Matching cards with quantity dots to numeral cards\n\u2022 Self-correcting puzzle pieces fit only with correct pairings\n\u2022 Reinforces one-to-one correspondence\n\u2022 Engaging extension activity for number concepts\n\u2022 Develops visual discrimination and pattern recognition",
+      "quick_guide": "• Matching cards with quantity dots to numeral cards\n• Self-correcting puzzle pieces fit only with correct pairings\n• Reinforces one-to-one correspondence\n• Engaging extension activity for number concepts\n• Develops visual discrimination and pattern recognition",
       "presentation_steps": [
         {
           "step": 1,
@@ -591,7 +591,7 @@
         {
           "step": 3,
           "title": "Puzzle Matching",
-          "description": "Take the puzzle pieces from the card with three dots. Show how the pieces fit together only with the corresponding numeral card. Try to fit incorrect cards together to demonstrate the control of error\u2014they don't fit.",
+          "description": "Take the puzzle pieces from the card with three dots. Show how the pieces fit together only with the corresponding numeral card. Try to fit incorrect cards together to demonstrate the control of error—they don't fit.",
           "tip": "Let the child discover the self-correcting nature through exploration."
         },
         {
@@ -673,13 +673,13 @@
     {
       "work_id": "ma_short_bead_stair",
       "name": "Short Bead Stair",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5f69\u8272\u4e32\u73e0\u68af",
+      "name_chinese": "蒙特梭利彩色串珠梯",
       "slug": "short-bead-stair",
       "area": "math",
       "category": "Number Concepts",
       "sequence": 8,
       "age_range": "3 to 4.5 years old",
-      "quick_guide": "\u2022 Nine colored bead bars representing quantities 1-9\n\u2022 Each bar uniquely colored for visual differentiation\n\u2022 Arranged in stair formation for visual quantity progression\n\u2022 Combines with numeral cards for quantity-symbol association\n\u2022 Sensorial foundation for understanding number relationships",
+      "quick_guide": "• Nine colored bead bars representing quantities 1-9\n• Each bar uniquely colored for visual differentiation\n• Arranged in stair formation for visual quantity progression\n• Combines with numeral cards for quantity-symbol association\n• Sensorial foundation for understanding number relationships",
       "presentation_steps": [
         {
           "step": 1,
@@ -785,13 +785,13 @@
     {
       "work_id": "ma_golden_beads_intro",
       "name": "Introduction to Golden Beads",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u8272\u4e32\u73e0",
+      "name_chinese": "蒙特梭利金色串珠",
       "slug": "golden-beads-intro",
       "area": "math",
       "category": "Decimal System",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Concrete representation of the decimal system: unit beads, ten bars, hundred squares, thousand cubes\n\u2022 Golden color isolates the concept of quantity from numeral\n\u2022 Each category is exactly 10x the previous, building place value understanding\n\u2022 Sensorial experience of quantity through weight and size differences\n\u2022 Foundation for all four mathematical operations",
+      "quick_guide": "• Concrete representation of the decimal system: unit beads, ten bars, hundred squares, thousand cubes\n• Golden color isolates the concept of quantity from numeral\n• Each category is exactly 10x the previous, building place value understanding\n• Sensorial experience of quantity through weight and size differences\n• Foundation for all four mathematical operations",
       "presentation_steps": [
         {
           "step": 1,
@@ -866,18 +866,18 @@
         "Golden Bead Material (units, ten-bars, hundred-squares, thousand-cubes)"
       ],
       "parent_description": "Your child is being introduced to the foundation of our entire number system using beautiful golden beads. A single bead represents 'one,' a bar of ten beads represents 'ten,' a square of 100 beads represents 'hundred,' and a cube of 1,000 beads represents 'thousand.' By holding and observing these different quantities, they're experiencing place value in a tangible, visual way that makes abstract decimal concepts concrete.",
-      "why_it_matters": "This introduction to the decimal system creates a powerful mental foundation that makes all future math\u2014from addition with regrouping to multi-digit multiplication\u2014feel logical and manageable. Children who understand place value deeply rarely struggle with 'carrying' or 'borrowing' in later years."
+      "why_it_matters": "This introduction to the decimal system creates a powerful mental foundation that makes all future math—from addition with regrouping to multi-digit multiplication—feel logical and manageable. Children who understand place value deeply rarely struggle with 'carrying' or 'borrowing' in later years."
     },
     {
       "work_id": "ma_golden_beads_tray",
       "name": "Golden Bead Tray Exercises",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u6258\u76d8",
+      "name_chinese": "蒙特梭利金珠托盘",
       "slug": "golden-beads-tray",
       "area": "math",
       "category": "Decimal System",
       "sequence": 2,
       "age_range": "4 to 5.5 years old",
-      "quick_guide": "\u2022 Introduction to decimal system using concrete golden beads\n\u2022 Unit beads, ten bars, hundred squares, thousand cube represent place value\n\u2022 Child manipulates materials to understand quantity relationships\n\u2022 Foundation for all decimal system work\n\u2022 Concrete before abstract progression",
+      "quick_guide": "• Introduction to decimal system using concrete golden beads\n• Unit beads, ten bars, hundred squares, thousand cube represent place value\n• Child manipulates materials to understand quantity relationships\n• Foundation for all decimal system work\n• Concrete before abstract progression",
       "presentation_steps": [
         {
           "step": 1,
@@ -991,13 +991,13 @@
     {
       "work_id": "ma_large_numeral_cards",
       "name": "Large Numeral Cards",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5927\u6570\u5b57\u5361",
+      "name_chinese": "蒙特梭利大数字卡",
       "slug": "large-numeral-cards",
       "area": "math",
       "category": "Decimal System",
       "sequence": 3,
       "age_range": "4 to 5 years old",
-      "quick_guide": "\u2022 Introduces written symbols for decimal place values\n\u2022 Cards show numerals for units, tens, hundreds, thousands\n\u2022 Child reads large numbers through symbol association\n\u2022 Three-period lesson format with material already familiar from beads\n\u2022 Bridges concrete quantity to abstract numeral representation",
+      "quick_guide": "• Introduces written symbols for decimal place values\n• Cards show numerals for units, tens, hundreds, thousands\n• Child reads large numbers through symbol association\n• Three-period lesson format with material already familiar from beads\n• Bridges concrete quantity to abstract numeral representation",
       "presentation_steps": [
         {
           "step": 1,
@@ -1015,7 +1015,7 @@
           "step": 3,
           "title": "Three-Period Lesson - Introduction (Tens)",
           "description": "Hold up the ten card (10). Say 'This is ten. You know about the ten bar. This is how we write ten.' Trace the numerals with your finger. Emphasize that it takes two symbols (1 and 0) to write ten.",
-          "tip": "The zero is crucial\u2014it's a placeholder, not 'nothing' in this context."
+          "tip": "The zero is crucial—it's a placeholder, not 'nothing' in this context."
         },
         {
           "step": 4,
@@ -1108,13 +1108,13 @@
     {
       "work_id": "ma_formation_quantity",
       "name": "Formation of Quantity",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u6570\u91cf\u5f62\u6210",
+      "name_chinese": "蒙特梭利金珠数量形成",
       "slug": "formation-quantity",
       "area": "math",
       "category": "Decimal System",
       "sequence": 4,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Child selects golden beads to build specific quantities from teacher direction\n\u2022 'Give me 324' - child gathers 3 hundreds, 2 tens, 4 units\n\u2022 Deepens understanding of place value composition\n\u2022 Requires child to understand relationships between place values\n\u2022 Bridges naming numbers to manipulating quantities",
+      "quick_guide": "• Child selects golden beads to build specific quantities from teacher direction\n• 'Give me 324' - child gathers 3 hundreds, 2 tens, 4 units\n• Deepens understanding of place value composition\n• Requires child to understand relationships between place values\n• Bridges naming numbers to manipulating quantities",
       "presentation_steps": [
         {
           "step": 1,
@@ -1221,19 +1221,19 @@
         "Compose",
         "Decompose"
       ],
-      "parent_description": "Formation of Quantity asks your child to listen to a number and gather the correct beads to represent it. This activity deepens understanding of place value by requiring your child to decompose numbers into their component parts\u2014ones, tens, hundreds, and thousands. It's the bridge between understanding place value theory and using it in real math.",
+      "parent_description": "Formation of Quantity asks your child to listen to a number and gather the correct beads to represent it. This activity deepens understanding of place value by requiring your child to decompose numbers into their component parts—ones, tens, hundreds, and thousands. It's the bridge between understanding place value theory and using it in real math.",
       "why_it_matters": "This work transitions children from passive understanding (observing and naming quantities) to active mathematical thinking (composing and decomposing numbers). This active engagement is crucial for developing flexible number sense and preparing for arithmetic operations where place value decomposition is essential."
     },
     {
       "work_id": "ma_formation_symbol",
       "name": "Formation of Symbol",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u7b26\u53f7\u5f62\u6210",
+      "name_chinese": "蒙特梭利金珠符号形成",
       "slug": "formation-symbol",
       "area": "math",
       "category": "Decimal System",
       "sequence": 5,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Child writes numerals to represent gathered golden bead quantities\n\u2022 'Here are beads for 324' - child writes '324' using numeral cards or pencil\n\u2022 Transitions from physical quantity to written representation\n\u2022 Strengthens understanding of place value notation\n\u2022 Critical bridge from concrete to abstract mathematics",
+      "quick_guide": "• Child writes numerals to represent gathered golden bead quantities\n• 'Here are beads for 324' - child writes '324' using numeral cards or pencil\n• Transitions from physical quantity to written representation\n• Strengthens understanding of place value notation\n• Critical bridge from concrete to abstract mathematics",
       "presentation_steps": [
         {
           "step": 1,
@@ -1340,18 +1340,18 @@
         "Thousands place"
       ],
       "parent_description": "Formation of Symbol teaches your child to write numbers that represent specific quantities of beads. After gathering beads for two hundred thirty-four, your child learns to write '234'. This connects the abstract written number to the concrete quantity they've physically organized, making mathematical notation meaningful.",
-      "why_it_matters": "This work is crucial for developing true place value understanding. Many children learn to 'read' numerals without understanding they represent specific quantities in specific positions. By connecting writing numerals to physical bead quantities, children develop deep comprehension of how our positional notation system works\u2014essential for all future mathematics."
+      "why_it_matters": "This work is crucial for developing true place value understanding. Many children learn to 'read' numerals without understanding they represent specific quantities in specific positions. By connecting writing numerals to physical bead quantities, children develop deep comprehension of how our positional notation system works—essential for all future mathematics."
     },
     {
       "work_id": "ma_association_quantity_symbol",
       "name": "Association of Quantity and Symbol",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u6570\u91cf\u7b26\u53f7\u5bf9\u5e94",
+      "name_chinese": "蒙特梭利金珠数量符号对应",
       "slug": "association-quantity-symbol",
       "area": "math",
       "category": "Decimal System",
       "sequence": 6,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Combines golden beads (quantity) with numeral cards and large numeral cards (symbol)\n\u2022 Child matches gathered beads to their written representations\n\u2022 Strengthens place value understanding through multiple representations\n\u2022 Bridges formation of quantity and formation of symbol\n\u2022 Consolidates decimal system knowledge",
+      "quick_guide": "• Combines golden beads (quantity) with numeral cards and large numeral cards (symbol)\n• Child matches gathered beads to their written representations\n• Strengthens place value understanding through multiple representations\n• Bridges formation of quantity and formation of symbol\n• Consolidates decimal system knowledge",
       "presentation_steps": [
         {
           "step": 1,
@@ -1459,19 +1459,19 @@
         "Numeral",
         "Correspondence"
       ],
-      "parent_description": "Association of Quantity and Symbol combines all your child's place value learning. By working with gathered beads alongside numeral cards, your child sees that the same quantity can be shown in different ways\u2014physical beads, individual number cards, and written numerals. This flexibility in representation is foundational for all advanced mathematical thinking.",
-      "why_it_matters": "This consolidation work solidifies place value understanding by showing that quantity and symbol are inseparable. Children who truly understand that 324 is the same as 3 hundreds, 2 tens, and 4 units\u2014and can represent this multiple ways\u2014have developed deep, flexible mathematical thinking that supports all future learning. Without this understanding, arithmetic operations become rote memorization rather than logical thinking."
+      "parent_description": "Association of Quantity and Symbol combines all your child's place value learning. By working with gathered beads alongside numeral cards, your child sees that the same quantity can be shown in different ways—physical beads, individual number cards, and written numerals. This flexibility in representation is foundational for all advanced mathematical thinking.",
+      "why_it_matters": "This consolidation work solidifies place value understanding by showing that quantity and symbol are inseparable. Children who truly understand that 324 is the same as 3 hundreds, 2 tens, and 4 units—and can represent this multiple ways—have developed deep, flexible mathematical thinking that supports all future learning. Without this understanding, arithmetic operations become rote memorization rather than logical thinking."
     },
     {
       "work_id": "ma_exchange_game",
       "name": "Exchange Game (Change Game)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u6362\u7b97\u6e38\u620f",
+      "name_chinese": "蒙特梭利金珠换算游戏",
       "slug": "exchange-game",
       "area": "math",
       "category": "Decimal System",
       "sequence": 7,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Child exchanges 10 smaller units for 1 larger unit using golden beads\n\u2022 10 units become 1 ten, 10 tens become 1 hundred, etc.\n\u2022 Reinforces place value relationships and value conversions\n\u2022 Prepares understanding for carrying/regrouping in operations\n\u2022 Integrates quantity and symbol work",
+      "quick_guide": "• Child exchanges 10 smaller units for 1 larger unit using golden beads\n• 10 units become 1 ten, 10 tens become 1 hundred, etc.\n• Reinforces place value relationships and value conversions\n• Prepares understanding for carrying/regrouping in operations\n• Integrates quantity and symbol work",
       "presentation_steps": [
         {
           "step": 1,
@@ -1580,19 +1580,19 @@
         "Hundred",
         "Thousand"
       ],
-      "parent_description": "The Exchange Game teaches your child that our number system is organized around groups of ten. When your child has gathered ten unit beads, they trade them for one ten bar from the 'bank.' This simple action\u2014exchanging ten ones for one ten\u2014is the key concept behind carrying in addition and borrowing in subtraction. Playing this game repeatedly builds deep understanding of how regrouping works.",
+      "parent_description": "The Exchange Game teaches your child that our number system is organized around groups of ten. When your child has gathered ten unit beads, they trade them for one ten bar from the 'bank.' This simple action—exchanging ten ones for one ten—is the key concept behind carrying in addition and borrowing in subtraction. Playing this game repeatedly builds deep understanding of how regrouping works.",
       "why_it_matters": "This work is essential for understanding regrouping in all arithmetic operations. Children who physically exchange beads and see that the value remains the same understand carrying in addition not as a mysterious rule to follow, but as a logical consequence of place value organization. This conceptual understanding prevents arithmetic from becoming rote procedure."
     },
     {
       "work_id": "ma_golden_beads_addition",
       "name": "Golden Bead Addition",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u52a0\u6cd5",
+      "name_chinese": "蒙特梭利金珠加法",
       "slug": "golden-beads-addition",
       "area": "math",
       "category": "Decimal System",
       "sequence": 8,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 First operation with golden bead material\n\u2022 Two addends formed separately, then combined\n\u2022 Introduces exchange: 10 units = 1 ten, etc.\n\u2022 Concrete experience of addition with regrouping\n\u2022 Foundation for all addition understanding",
+      "quick_guide": "• First operation with golden bead material\n• Two addends formed separately, then combined\n• Introduces exchange: 10 units = 1 ten, etc.\n• Concrete experience of addition with regrouping\n• Foundation for all addition understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -1621,7 +1621,7 @@
         {
           "step": 5,
           "title": "Exchange",
-          "description": "10 units \u2192 1 ten, 10 tens \u2192 1 hundred, etc.",
+          "description": "10 units → 1 ten, 10 tens → 1 hundred, etc.",
           "tip": "Carry to next category."
         },
         {
@@ -1669,19 +1669,19 @@
         "Large Numeral Cards",
         "Problem cards"
       ],
-      "parent_description": "Your child is discovering addition by physically combining beautiful golden beads. They might place a bead bar (10) and a single bead (1) together, then exchange them for a unit bar and a single unit to see that 11 is the result. They're experiencing the magic of 'exchange'\u2014the moment when 10 units combine into 1 ten\u2014which is the heart of regrouping.",
-      "why_it_matters": "This concrete experience with addition and the concept of 'carrying' creates an intuitive understanding that prevents the confusion many children face with standard algorithms later. Children who learn this way rarely treat regrouping as a mysterious rule\u2014they understand why it's necessary."
+      "parent_description": "Your child is discovering addition by physically combining beautiful golden beads. They might place a bead bar (10) and a single bead (1) together, then exchange them for a unit bar and a single unit to see that 11 is the result. They're experiencing the magic of 'exchange'—the moment when 10 units combine into 1 ten—which is the heart of regrouping.",
+      "why_it_matters": "This concrete experience with addition and the concept of 'carrying' creates an intuitive understanding that prevents the confusion many children face with standard algorithms later. Children who learn this way rarely treat regrouping as a mysterious rule—they understand why it's necessary."
     },
     {
       "work_id": "ma_golden_beads_subtraction",
       "name": "Golden Bead Subtraction",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u51cf\u6cd5",
+      "name_chinese": "蒙特梭利金珠减法",
       "slug": "golden-beads-subtraction",
       "area": "math",
       "category": "Decimal System",
       "sequence": 9,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Subtraction using golden bead material with exchanging\n\u2022 Minuend formed; subtrahend taken away\n\u2022 Exchange needed when category has insufficient quantity\n\u2022 Concrete experience of subtraction with borrowing\n\u2022 Foundation for subtraction understanding",
+      "quick_guide": "• Subtraction using golden bead material with exchanging\n• Minuend formed; subtrahend taken away\n• Exchange needed when category has insufficient quantity\n• Concrete experience of subtraction with borrowing\n• Foundation for subtraction understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -1758,24 +1758,24 @@
         "Large Numeral Cards",
         "Problem cards"
       ],
-      "parent_description": "Your child is learning subtraction by physically taking away golden beads from a larger quantity and discovering what remains. If they start with a golden bead square (100), bead bars (tens), and unit beads, and remove a specified amount, they see directly what's left\u2014and sometimes they need to 'exchange' a larger unit for smaller ones to complete the subtraction, just like 'borrowing' in real math.",
+      "parent_description": "Your child is learning subtraction by physically taking away golden beads from a larger quantity and discovering what remains. If they start with a golden bead square (100), bead bars (tens), and unit beads, and remove a specified amount, they see directly what's left—and sometimes they need to 'exchange' a larger unit for smaller ones to complete the subtraction, just like 'borrowing' in real math.",
       "why_it_matters": "Hands-on subtraction with concrete materials makes 'borrowing' feel logical and necessary rather than arbitrary. Children develop strong number sense and rarely have the math anxiety that comes from memorizing rules they don't understand."
     },
     {
       "work_id": "ma_golden_beads_multiplication",
       "name": "Golden Bead Multiplication",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u4e58\u6cd5",
+      "name_chinese": "蒙特梭利金珠乘法",
       "slug": "golden-beads-multiplication",
       "area": "math",
       "category": "Decimal System",
       "sequence": 10,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Child multiplies using golden beads with place value columns\n\u2022 'Three groups of twenty-three' - child builds 3 separate groups\n\u2022 Transitions from concrete understanding to abstract algorithms\n\u2022 Reinforces place value through regrouping/exchanging\n\u2022 Prepares for memorization work with multiplication board",
+      "quick_guide": "• Child multiplies using golden beads with place value columns\n• 'Three groups of twenty-three' - child builds 3 separate groups\n• Transitions from concrete understanding to abstract algorithms\n• Reinforces place value through regrouping/exchanging\n• Prepares for memorization work with multiplication board",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Prerequisites and Setup",
-          "description": "Child should understand golden beads thoroughly and have completed Exchange Game. Present a multiplication problem: 3 \u00d7 24. Say 'We're going to make three groups of twenty-four.'",
+          "description": "Child should understand golden beads thoroughly and have completed Exchange Game. Present a multiplication problem: 3 × 24. Say 'We're going to make three groups of twenty-four.'",
           "tip": "Start with single-digit multipliers and two-digit multiplicands before progressing."
         },
         {
@@ -1805,13 +1805,13 @@
         {
           "step": 6,
           "title": "Reading the Final Result",
-          "description": "After all exchanges, read the result: 'Three groups of twenty-four equals seventy-two.' Write the number: 3 \u00d7 24 = 72.",
+          "description": "After all exchanges, read the result: 'Three groups of twenty-four equals seventy-two.' Write the number: 3 × 24 = 72.",
           "tip": "The visual, tactile experience helps the child understand what the numeral represents."
         },
         {
           "step": 7,
           "title": "Multiple Problems",
-          "description": "Repeat with 2 \u00d7 15, 4 \u00d7 12, and other suitable problems. Have child gather increasingly more material as confidence builds.",
+          "description": "Repeat with 2 × 15, 4 × 12, and other suitable problems. Have child gather increasingly more material as confidence builds.",
           "tip": "Repetition with varied problems builds fluency and flexibility."
         }
       ],
@@ -1839,14 +1839,14 @@
       "points_of_interest": [
         "Building multiple identical groups shows multiplication means 'groups of'",
         "The need for exchanges when combining groups (introduces regrouping concept)",
-        "How the concrete action (making groups) connects to abstract algorithm (3 \u00d7 24)",
+        "How the concrete action (making groups) connects to abstract algorithm (3 × 24)",
         "The dramatic result when three small groups create a larger quantity"
       ],
       "variations": [
         "Child chooses the multiplier and multiplicand for problems",
         "Using multiplication word problems: 'If we have 4 baskets with 13 apples each...'",
         "Building groups in a line (left to right) vs. grouped layout",
-        "Three-place multipliers (e.g., 2 \u00d7 324) for advanced children"
+        "Three-place multipliers (e.g., 2 × 324) for advanced children"
       ],
       "common_challenges": [
         "Child gathers incorrect quantity for each group",
@@ -1877,24 +1877,24 @@
         "Regroup",
         "Place value"
       ],
-      "parent_description": "Golden Bead Multiplication shows your child that multiplication means 'making groups of.' When your child makes three separate groups of twenty-four and then combines them, they physically see that 3 \u00d7 24 = 72. The exchanges that happen when combining the groups\u2014trading ten units for a ten bar\u2014show why larger numbers result. This concrete understanding prevents multiplication from being a mysterious procedure and makes the numbers meaningful.",
+      "parent_description": "Golden Bead Multiplication shows your child that multiplication means 'making groups of.' When your child makes three separate groups of twenty-four and then combines them, they physically see that 3 × 24 = 72. The exchanges that happen when combining the groups—trading ten units for a ten bar—show why larger numbers result. This concrete understanding prevents multiplication from being a mysterious procedure and makes the numbers meaningful.",
       "why_it_matters": "This work is foundational for all multiplication understanding. Children who have physically made groups of items and combined them understand multiplication conceptually, not just procedurally. This understanding prepares them for the Multiplication Board (memorization), Bead Board (efficiency), and eventually abstract multiplication algorithms."
     },
     {
       "work_id": "ma_golden_beads_division",
       "name": "Golden Bead Division",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u73e0\u9664\u6cd5",
+      "name_chinese": "蒙特梭利金珠除法",
       "slug": "golden-beads-division",
       "area": "math",
       "category": "Decimal System",
       "sequence": 11,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Child divides golden beads into equal groups\n\u2022 'Share sixty-eight beads equally among four people' \n\u2022 Uses concrete materials to understand division as distribution\n\u2022 Inverse operation of multiplication\n\u2022 Foundation for abstract division algorithms",
+      "quick_guide": "• Child divides golden beads into equal groups\n• 'Share sixty-eight beads equally among four people' \n• Uses concrete materials to understand division as distribution\n• Inverse operation of multiplication\n• Foundation for abstract division algorithms",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Prerequisites and Setup",
-          "description": "Child should understand multiplication with beads and be comfortable with place values. Use a concrete frame: 'Imagine we have toys to share equally among friends. Let's use beads to show this.' Start with 48 \u00f7 4.",
+          "description": "Child should understand multiplication with beads and be comfortable with place values. Use a concrete frame: 'Imagine we have toys to share equally among friends. Let's use beads to show this.' Start with 48 ÷ 4.",
           "tip": "Use division problems that divide evenly initially; no remainders."
         },
         {
@@ -1918,7 +1918,7 @@
         {
           "step": 5,
           "title": "Distributing the Units",
-          "description": "Deal out the units one at a time to each person in turn. Say 'One, two, three, four\u2014everyone gets one. One, two, three, four\u2014everyone gets another one. One, two, three, four\u2014everyone gets one more.'",
+          "description": "Deal out the units one at a time to each person in turn. Say 'One, two, three, four—everyone gets one. One, two, three, four—everyone gets another one. One, two, three, four—everyone gets one more.'",
           "tip": "The dealing process shows division's meaning: fair distribution."
         },
         {
@@ -1930,13 +1930,13 @@
         {
           "step": 7,
           "title": "Recording the Problem",
-          "description": "Write the division problem: '48 \u00f7 4 = 12' or '4)48'. Say 'Forty-eight divided into four equal groups is twelve in each group.'",
+          "description": "Write the division problem: '48 ÷ 4 = 12' or '4)48'. Say 'Forty-eight divided into four equal groups is twelve in each group.'",
           "tip": "Connect the concrete action to the abstract notation."
         },
         {
           "step": 8,
           "title": "Multiple Problems",
-          "description": "Repeat with 63 \u00f7 3, 84 \u00f7 6, and other suitable problems, gradually progressing to three-digit dividends.",
+          "description": "Repeat with 63 ÷ 3, 84 ÷ 6, and other suitable problems, gradually progressing to three-digit dividends.",
           "tip": "Each problem deepens understanding; celebrate the pattern recognition."
         }
       ],
@@ -1971,7 +1971,7 @@
         "Child chooses the dividend and divisor",
         "Using real-world stories: 'Forty cookies shared among four friends'",
         "Introducing remainders after understanding basic division",
-        "Three-digit dividends (e.g., 248 \u00f7 4) for advanced children"
+        "Three-digit dividends (e.g., 248 ÷ 4) for advanced children"
       ],
       "common_challenges": [
         "Child gives unequal shares when distributing",
@@ -2004,19 +2004,19 @@
         "Share",
         "Fair"
       ],
-      "parent_description": "Golden Bead Division shows your child that division means sharing fairly. When your child divides forty-eight beads equally among four people, getting twelve for each person, they physically understand what 48 \u00f7 4 = 12 means. This concrete foundation prevents division from becoming a confusing, abstract procedure and builds real understanding of fair sharing and equal groups.",
+      "parent_description": "Golden Bead Division shows your child that division means sharing fairly. When your child divides forty-eight beads equally among four people, getting twelve for each person, they physically understand what 48 ÷ 4 = 12 means. This concrete foundation prevents division from becoming a confusing, abstract procedure and builds real understanding of fair sharing and equal groups.",
       "why_it_matters": "This work is foundational for all division understanding. Children who have physically divided quantities into equal groups understand division conceptually, not just as a procedure to memorize. This understanding supports the Division Board (memorization), long division algorithms, and later algebraic thinking about equal groups and fair distribution."
     },
     {
       "work_id": "ma_teen_board_1",
       "name": "Teen Board 1 (Seguin Board A)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5341\u4f4d\u677f1",
+      "name_chinese": "蒙特梭利十位板1",
       "slug": "teen-board-1",
       "area": "math",
       "category": "Teens and Tens",
       "sequence": 1,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Seguin boards for teaching teen numbers 11-19 (Board 1) and counting teens (Board 2)\n\u2022 Wooden boards with printed '10' slots where unit cards 1-9 slide to form teens\n\u2022 Shows that teen numbers are '10 and some more' - addressing irregular naming\n\u2022 Connected with golden bead ten bar and unit beads for concrete understanding\n\u2022 Prepares for tens board and understanding of place value",
+      "quick_guide": "• Seguin boards for teaching teen numbers 11-19 (Board 1) and counting teens (Board 2)\n• Wooden boards with printed '10' slots where unit cards 1-9 slide to form teens\n• Shows that teen numbers are '10 and some more' - addressing irregular naming\n• Connected with golden bead ten bar and unit beads for concrete understanding\n• Prepares for tens board and understanding of place value",
       "presentation_steps": [
         {
           "step": 1,
@@ -2100,13 +2100,13 @@
     {
       "work_id": "ma_teen_board_2",
       "name": "Teen Board 2 (Seguin Board B)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5341\u4f4d\u677f2",
+      "name_chinese": "蒙特梭利十位板2",
       "slug": "teen-board-2",
       "area": "math",
       "category": "Teens and Tens",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Seguin boards for teaching teen numbers 11-19 (Board 1) and counting teens (Board 2)\n\u2022 Wooden boards with printed '10' slots where unit cards 1-9 slide to form teens\n\u2022 Shows that teen numbers are '10 and some more' - addressing irregular naming\n\u2022 Connected with golden bead ten bar and unit beads for concrete understanding\n\u2022 Prepares for tens board and understanding of place value",
+      "quick_guide": "• Seguin boards for teaching teen numbers 11-19 (Board 1) and counting teens (Board 2)\n• Wooden boards with printed '10' slots where unit cards 1-9 slide to form teens\n• Shows that teen numbers are '10 and some more' - addressing irregular naming\n• Connected with golden bead ten bar and unit beads for concrete understanding\n• Prepares for tens board and understanding of place value",
       "presentation_steps": [
         {
           "step": 1,
@@ -2184,13 +2184,13 @@
     {
       "work_id": "ma_ten_board_1",
       "name": "Ten Board 1 (Seguin Board C)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5341\u4f4d\u677f3",
+      "name_chinese": "蒙特梭利十位板3",
       "slug": "ten-board-1",
       "area": "math",
       "category": "Teens and Tens",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Seguin boards for teaching tens (10-90) with cards and beads\n\u2022 Board shows 10s in order; unit cards slide to show complete number\n\u2022 Connects tens quantities to decade names\n\u2022 Bridge between teen numbers and hundred board\n\u2022 Three-period lesson for decade vocabulary",
+      "quick_guide": "• Seguin boards for teaching tens (10-90) with cards and beads\n• Board shows 10s in order; unit cards slide to show complete number\n• Connects tens quantities to decade names\n• Bridge between teen numbers and hundred board\n• Three-period lesson for decade vocabulary",
       "presentation_steps": [
         {
           "step": 1,
@@ -2272,13 +2272,13 @@
     {
       "work_id": "ma_ten_board_2",
       "name": "Ten Board 2 (Seguin Board D)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5341\u4f4d\u677f4",
+      "name_chinese": "蒙特梭利十位板4",
       "slug": "ten-board-2",
       "area": "math",
       "category": "Teens and Tens",
       "sequence": 4,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Seguin boards for teaching tens (10-90) with cards and beads\n\u2022 Board shows 10s in order; unit cards slide to show complete number\n\u2022 Connects tens quantities to decade names\n\u2022 Bridge between teen numbers and hundred board\n\u2022 Three-period lesson for decade vocabulary",
+      "quick_guide": "• Seguin boards for teaching tens (10-90) with cards and beads\n• Board shows 10s in order; unit cards slide to show complete number\n• Connects tens quantities to decade names\n• Bridge between teen numbers and hundred board\n• Three-period lesson for decade vocabulary",
       "presentation_steps": [
         {
           "step": 1,
@@ -2361,13 +2361,13 @@
     {
       "work_id": "ma_hundred_board",
       "name": "Hundred Board",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u767e\u6570\u677f",
+      "name_chinese": "蒙特梭利百数板",
       "slug": "hundred-board",
       "area": "math",
       "category": "Linear Counting",
       "sequence": 5,
       "age_range": "3.5 to 5 years old",
-      "quick_guide": "\u2022 Wooden board with 100 squares and numbered tiles 1-100\n\u2022 Child sequences numbers and discovers patterns\n\u2022 Develops understanding of number order and place value\n\u2022 Visual representation of hundred quantity\n\u2022 Foundation for understanding linear sequence",
+      "quick_guide": "• Wooden board with 100 squares and numbered tiles 1-100\n• Child sequences numbers and discovers patterns\n• Develops understanding of number order and place value\n• Visual representation of hundred quantity\n• Foundation for understanding linear sequence",
       "presentation_steps": [
         {
           "step": 1,
@@ -2456,19 +2456,19 @@
         "Row",
         "Column"
       ],
-      "parent_description": "The Hundred Board helps your child understand number order 1-100 and discover patterns. Placing tiles reveals that tens organize in columns and ones repeat in rows\u2014visual patterns that build deep place value understanding.",
-      "why_it_matters": "Number sequence and patterns are foundational for mental math and place value operations. The Hundred Board makes abstract relationships visible, allowing children to discover patterns\u2014more powerful than being told."
+      "parent_description": "The Hundred Board helps your child understand number order 1-100 and discover patterns. Placing tiles reveals that tens organize in columns and ones repeat in rows—visual patterns that build deep place value understanding.",
+      "why_it_matters": "Number sequence and patterns are foundational for mental math and place value operations. The Hundred Board makes abstract relationships visible, allowing children to discover patterns—more powerful than being told."
     },
     {
       "work_id": "ma_hundred_chain",
       "name": "Hundred Chain",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u767e\u73e0\u94fe",
+      "name_chinese": "蒙特梭利百珠链",
       "slug": "hundred-chain",
       "area": "math",
       "category": "Teens and Tens",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Bead chains for linear counting and skip counting\n\u2022 Short chains: 1\u00b2-10\u00b2 (square chains) for counting sequences\n\u2022 Hundred chain: 10 ten-bars linked for counting to 100\n\u2022 Tickets mark every 10, arrows mark squares\n\u2022 Develops number sequence and skip counting skills",
+      "quick_guide": "• Bead chains for linear counting and skip counting\n• Short chains: 1²-10² (square chains) for counting sequences\n• Hundred chain: 10 ten-bars linked for counting to 100\n• Tickets mark every 10, arrows mark squares\n• Develops number sequence and skip counting skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -2543,19 +2543,19 @@
         "Hundred Chain (10 connected ten-bars)",
         "Arrow labels 1-100"
       ],
-      "parent_description": "Your child is exploring a long, beautiful chain of 100 beads\u2014connected in groups of ten to form a visible, tangible representation of 100. As they count along the chain, placing labels at each ten, they see 100 as both a single large quantity and as ten groups of ten. They might even loop the chain into a square shape and compare it to the 100-bead square from the Golden Beads, discovering that different physical forms can represent the same quantity.",
+      "parent_description": "Your child is exploring a long, beautiful chain of 100 beads—connected in groups of ten to form a visible, tangible representation of 100. As they count along the chain, placing labels at each ten, they see 100 as both a single large quantity and as ten groups of ten. They might even loop the chain into a square shape and compare it to the 100-bead square from the Golden Beads, discovering that different physical forms can represent the same quantity.",
       "why_it_matters": "The Hundred Chain makes the concept of 100 tangible and memorable. Children who have physically handled and counted through 100 have a concrete mental image that makes 'hundred' feel real, not abstract. This concrete foundation supports place value understanding and prepares them for multiplication."
     },
     {
       "work_id": "ma_thousand_chain",
       "name": "Thousand Chain",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5343\u73e0\u94fe",
+      "name_chinese": "蒙特梭利千珠链",
       "slug": "thousand-chain",
       "area": "math",
       "category": "Linear Counting",
       "sequence": 7,
       "age_range": "4.5 to 6 years old",
-      "quick_guide": "\u2022 Continuous chain of 1,000 golden beads in segmented groups\n\u2022 Child counts by ones, understanding long numbers kinesthetically\n\u2022 Unfolds in dramatic length, showing magnitude of 1,000\n\u2022 Integrates with hundred squares and numeral labels\n\u2022 Connects linear counting to skip counting and squaring",
+      "quick_guide": "• Continuous chain of 1,000 golden beads in segmented groups\n• Child counts by ones, understanding long numbers kinesthetically\n• Unfolds in dramatic length, showing magnitude of 1,000\n• Integrates with hundred squares and numeral labels\n• Connects linear counting to skip counting and squaring",
       "presentation_steps": [
         {
           "step": 1,
@@ -2585,7 +2585,7 @@
           "step": 5,
           "title": "Folding the Chain",
           "description": "Beginning at the end, fold the chain into ten-segment rows. As you fold, show how the chain is creating rows of ten segments (hundreds). Eventually, you form the shape of the thousand cube.",
-          "tip": "The folding reveals that the thousand chain can form the thousand cube\u2014a profound geometric insight."
+          "tip": "The folding reveals that the thousand chain can form the thousand cube—a profound geometric insight."
         },
         {
           "step": 6,
@@ -2664,24 +2664,24 @@
         "Fold",
         "Segment"
       ],
-      "parent_description": "The Thousand Chain is an extraordinary, memorable Montessori experience. Your child counts one thousand beads, one by one, discovering through their own counting how long a thousand really is. When the chain is then folded into the shape of the thousand cube, children experience a remarkable 'aha' moment\u2014the same quantity can be stretched out in a line or packed compactly. This sensorial understanding of magnitude deeply impacts how children think about large numbers.",
+      "parent_description": "The Thousand Chain is an extraordinary, memorable Montessori experience. Your child counts one thousand beads, one by one, discovering through their own counting how long a thousand really is. When the chain is then folded into the shape of the thousand cube, children experience a remarkable 'aha' moment—the same quantity can be stretched out in a line or packed compactly. This sensorial understanding of magnitude deeply impacts how children think about large numbers.",
       "why_it_matters": "Many children have heard the word 'thousand' but have no sense of its actual magnitude. The Thousand Chain provides a visceral, kinesthetic understanding of what one thousand looks like, feels like, and takes to count. This concrete understanding prevents 'thousand' from being just a word and makes it a real, comprehensible quantity. This experience has lasting impact on number sense development."
     },
     {
       "work_id": "ma_short_chains",
       "name": "Short Bead Chains (Squares)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u77ed\u4e32\u73e0\u94fe",
+      "name_chinese": "蒙特梭利短串珠链",
       "slug": "short-chains",
       "area": "math",
       "category": "Linear Counting",
       "sequence": 1,
       "age_range": "4.5 to 6 years old",
-      "quick_guide": "\u2022 Colored bead chains representing 1\u00d71, 2\u00d72, 3\u00d73 through 10\u00d710\n\u2022 Child folds chains to show square geometric patterns\n\u2022 Skip counting (counting by 2s, 3s, 4s, etc.)\n\u2022 Concrete introduction to squaring numbers\n\u2022 Integration of linear counting and multiplication",
+      "quick_guide": "• Colored bead chains representing 1×1, 2×2, 3×3 through 10×10\n• Child folds chains to show square geometric patterns\n• Skip counting (counting by 2s, 3s, 4s, etc.)\n• Concrete introduction to squaring numbers\n• Integration of linear counting and multiplication",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Material Introduction",
-          "description": "Invite the child to work with the bead chains. Show the short chain of 4 (2\u00d72 chain). Say 'Today we're exploring chains that make special shapes. This chain has four beads.'",
+          "description": "Invite the child to work with the bead chains. Show the short chain of 4 (2×2 chain). Say 'Today we're exploring chains that make special shapes. This chain has four beads.'",
           "tip": "Start with smaller chains (2, 3, 4) before progressing to larger ones."
         },
         {
@@ -2693,19 +2693,19 @@
         {
           "step": 3,
           "title": "Folding into a Square",
-          "description": "Begin to fold the chain. Say 'Watch what happens when we fold this chain.' Fold into rows showing 2 beads in each of 2 rows. Create a 2\u00d72 square pattern.",
+          "description": "Begin to fold the chain. Say 'Watch what happens when we fold this chain.' Fold into rows showing 2 beads in each of 2 rows. Create a 2×2 square pattern.",
           "tip": "The geometric revelation is powerful; allow the child time to observe."
         },
         {
           "step": 4,
           "title": "Introducing the Square",
-          "description": "Show the corresponding square (a physical grid showing 2\u00d72 dots). Say 'This is what the chain makes when we fold it: a square. Two by two makes a square of four.'",
+          "description": "Show the corresponding square (a physical grid showing 2×2 dots). Say 'This is what the chain makes when we fold it: a square. Two by two makes a square of four.'",
           "tip": "The square bead material makes the concept visual and tactile."
         },
         {
           "step": 5,
           "title": "Labeling with Numerals",
-          "description": "Place the numeral label '4' or '2\u00b2' near the folded chain and square. Say 'When we fold the two times two chain, we get four. That's two squared.'",
+          "description": "Place the numeral label '4' or '2²' near the folded chain and square. Say 'When we fold the two times two chain, we get four. That's two squared.'",
           "tip": "Introduce the squared notation naturally: 'Two squared' not just 'two times two.'"
         },
         {
@@ -2728,7 +2728,7 @@
         }
       ],
       "direct_aims": [
-        "Understand squaring numbers (2\u00b2, 3\u00b2, 4\u00b2, etc.) concretely",
+        "Understand squaring numbers (2², 3², 4², etc.) concretely",
         "Connect multiplication to geometric square shapes",
         "Practice skip counting (counting by 2s, 3s, 4s, etc.)",
         "Develop understanding of perfect squares"
@@ -2740,7 +2740,7 @@
         "Develop concentration through extended counting and folding"
       ],
       "materials": [
-        "Short Bead Chains (1\u00b2-10\u00b2)",
+        "Short Bead Chains (1²-10²)",
         "Arrow tickets",
         "Square of each number"
       ],
@@ -2763,22 +2763,22 @@
       ],
       "common_challenges": [
         "Child has difficulty folding chains accurately",
-        "Not yet ready to understand that 2\u00d72 means 'square'",
+        "Not yet ready to understand that 2×2 means 'square'",
         "Losing count when skip counting through chains",
         "Confusion between regular multiplication and squaring"
       ],
       "video_search_term": "montessori short chain of 2",
       "data_status": "needs_guide",
       "materials_needed": [
-        "Short Bead Chains (chains of 1-10 representing 1\u00b2-10\u00b2)",
+        "Short Bead Chains (chains of 1-10 representing 1²-10²)",
         "Colored beads in chains (each chain a distinct color)",
-        "Bead Squares (10 of them, showing 1\u00d71, 2\u00d72, 3\u00d73... through 10\u00d710)",
+        "Bead Squares (10 of them, showing 1×1, 2×2, 3×3... through 10×10)",
         "Numeral labels (1, 4, 9, 16, 25, 36, 49, 64, 81, 100)",
         "Large work mat or floor space"
       ],
       "extensions": [
         "Long Bead Chains (cubes) for understanding 3D volume",
-        "Thousand Chain for understanding 10 \u00d7 10 \u00d7 10",
+        "Thousand Chain for understanding 10 × 10 × 10",
         "Multiplication Board for memorizing basic facts",
         "Algebraic thinking about exponential growth"
       ],
@@ -2794,23 +2794,23 @@
         "Exponent"
       ],
       "parent_description": "Short Bead Chains make squaring numbers concrete and beautiful. Your child counts and folds a chain of beads, discovering that when a chain of four beads folds into a square, it shows visually what '2 squared' means. With chains through ten, your child develops deep understanding that squaring numbers creates perfect squares with specific growth patterns.",
-      "why_it_matters": "Understanding squaring through physical manipulation prevents it from becoming an abstract, meaningless operation. Children who have folded chains and seen how 2\u00d72 = 4, 3\u00d73 = 9, 4\u00d74 = 16, and so on visually understand perfect squares. This foundation supports geometry, algebraic thinking, and advanced mathematics where squaring is essential."
+      "why_it_matters": "Understanding squaring through physical manipulation prevents it from becoming an abstract, meaningless operation. Children who have folded chains and seen how 2×2 = 4, 3×3 = 9, 4×4 = 16, and so on visually understand perfect squares. This foundation supports geometry, algebraic thinking, and advanced mathematics where squaring is essential."
     },
     {
       "work_id": "ma_long_chains",
       "name": "Long Bead Chains (Cubes)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u957f\u4e32\u73e0\u94fe",
+      "name_chinese": "蒙特梭利长串珠链",
       "slug": "long-chains",
       "area": "math",
       "category": "Linear Counting",
       "sequence": 2,
       "age_range": "5 to 6 years old",
-      "quick_guide": "\u2022 Lengthy bead chains representing cubes (1\u00b3, 2\u00b3, 3\u00b3... 10\u00b3)\n\u2022 Child folds chains to create cubic three-dimensional structures\n\u2022 Skip counting through extended chains\n\u2022 Concrete understanding of cubing and volume\n\u2022 Dramatic visualization of exponential growth",
+      "quick_guide": "• Lengthy bead chains representing cubes (1³, 2³, 3³... 10³)\n• Child folds chains to create cubic three-dimensional structures\n• Skip counting through extended chains\n• Concrete understanding of cubing and volume\n• Dramatic visualization of exponential growth",
       "presentation_steps": [
         {
           "step": 1,
           "title": "Material Introduction",
-          "description": "Invite the child to work in a space with significant floor room. Show the long chain of 8 (2\u00d72\u00d72). Say 'This is a special chain that will surprise us when we fold it.'",
+          "description": "Invite the child to work in a space with significant floor room. Show the long chain of 8 (2×2×2). Say 'This is a special chain that will surprise us when we fold it.'",
           "tip": "Long chains are impressive in length; a child's wonder is important to cultivate."
         },
         {
@@ -2834,25 +2834,25 @@
         {
           "step": 5,
           "title": "Revealing the Cube",
-          "description": "Complete the folding to reveal a 2\u00d72\u00d72 cube structure. Say 'Look! The chain made a cube! This is two cubed.' Show how the chain, when folded, fills the space of the thousand cube for a 2\u00d72\u00d72 section.",
+          "description": "Complete the folding to reveal a 2×2×2 cube structure. Say 'Look! The chain made a cube! This is two cubed.' Show how the chain, when folded, fills the space of the thousand cube for a 2×2×2 section.",
           "tip": "The moment of revelation is powerful; allow the child to absorb the wonder."
         },
         {
           "step": 6,
           "title": "Comparing with Cube Bead",
-          "description": "Show the actual cube bead representing 2\u00b3 (8 beads in cube form). Say 'This chain and this cube both show the same thing: eight beads arranged in a cube shape.'",
+          "description": "Show the actual cube bead representing 2³ (8 beads in cube form). Say 'This chain and this cube both show the same thing: eight beads arranged in a cube shape.'",
           "tip": "Connection between linear and three-dimensional representation."
         },
         {
           "step": 7,
           "title": "Labeling",
-          "description": "Place the numeral label '8' or '2\u00b3' near the folded chain and cube. Introduce the cubed notation: 'Two cubed equals eight.'",
+          "description": "Place the numeral label '8' or '2³' near the folded chain and cube. Introduce the cubed notation: 'Two cubed equals eight.'",
           "tip": "Mathematical notation is being attached to physical, meaningful experience."
         },
         {
           "step": 8,
           "title": "Progressing to Larger Cubes",
-          "description": "Repeat with chains for 3\u00b3 (27 beads), 4\u00b3 (64 beads), and if the child is engaged, continue through 10\u00b3 (1000 beads\u2014which is the entire thousand chain).",
+          "description": "Repeat with chains for 3³ (27 beads), 4³ (64 beads), and if the child is engaged, continue through 10³ (1000 beads—which is the entire thousand chain).",
           "tip": "Each cubing experience reveals increasingly dramatic growth."
         },
         {
@@ -2863,7 +2863,7 @@
         }
       ],
       "direct_aims": [
-        "Understand cubing numbers (2\u00b3, 3\u00b3, 4\u00b3, etc.) concretely",
+        "Understand cubing numbers (2³, 3³, 4³, etc.) concretely",
         "Connect multiplication to three-dimensional cubic volume",
         "Develop visual-spatial understanding of volume",
         "Comprehend exponential growth through skip counting"
@@ -2875,7 +2875,7 @@
         "Prepare for understanding volume and spatial mathematics"
       ],
       "materials": [
-        "Long Bead Chains (1\u00b3-10\u00b3)",
+        "Long Bead Chains (1³-10³)",
         "Arrow tickets",
         "Cube of each number"
       ],
@@ -2905,15 +2905,15 @@
       "video_search_term": "montessori long chain of 2",
       "data_status": "needs_guide",
       "materials_needed": [
-        "Long Bead Chains (chains of lengths 1-10 representing 1\u00b3-10\u00b3)",
+        "Long Bead Chains (chains of lengths 1-10 representing 1³-10³)",
         "Colored beads in chains (distinct color for each cube)",
-        "Bead Cubes (10 of them, showing 1\u00d71\u00d71, 2\u00d72\u00d72, etc., through 10\u00d710\u00d710)",
+        "Bead Cubes (10 of them, showing 1×1×1, 2×2×2, etc., through 10×10×10)",
         "Numeral labels (1, 8, 27, 64, 125, 216, 343, 512, 729, 1000)",
         "Thousand Chain and Thousand Cube for reference",
         "Large, clear floor space"
       ],
       "extensions": [
-        "Thousand Chain for understanding 10\u00b3 = 1000",
+        "Thousand Chain for understanding 10³ = 1000",
         "Bead Cabinet for comprehensive bead chain work",
         "Volume calculations using cube understanding",
         "Algebraic thinking about exponential functions"
@@ -2929,19 +2929,19 @@
         "Exponent",
         "Perfect cube"
       ],
-      "parent_description": "Long Bead Chains make cubing a tangible, visual experience. Your child counts eight beads, then watches as the chain folds into a tiny 2\u00d72\u00d72 cube. When they fold a chain of 27 beads into a 3\u00d73\u00d73 cube, the dramatic size difference shows how fast numbers grow when cubed. This concrete experience of cubing prevents it from being an abstract, meaningless operation and builds deep understanding of volume.",
-      "why_it_matters": "Cubing is often left abstract in traditional math education. By allowing children to count and fold actual chains representing 2\u00b3, 3\u00b3, 4\u00b3, and beyond, children develop intuitive understanding of how volume grows exponentially. This foundation supports later geometry, physics, and any field involving three-dimensional thinking."
+      "parent_description": "Long Bead Chains make cubing a tangible, visual experience. Your child counts eight beads, then watches as the chain folds into a tiny 2×2×2 cube. When they fold a chain of 27 beads into a 3×3×3 cube, the dramatic size difference shows how fast numbers grow when cubed. This concrete experience of cubing prevents it from being an abstract, meaningless operation and builds deep understanding of volume.",
+      "why_it_matters": "Cubing is often left abstract in traditional math education. By allowing children to count and fold actual chains representing 2³, 3³, 4³, and beyond, children develop intuitive understanding of how volume grows exponentially. This foundation supports later geometry, physics, and any field involving three-dimensional thinking."
     },
     {
       "work_id": "ma_bead_cabinet",
       "name": "Bead Cabinet",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e32\u73e0\u67dc",
+      "name_chinese": "蒙特梭利串珠柜",
       "slug": "bead-cabinet",
       "area": "math",
       "category": "Linear Counting",
       "sequence": 3,
       "age_range": "4.5 to 6 years old",
-      "quick_guide": "\u2022 Organized cabinet with all bead chains, squares, and cubes (1-10)\n\u2022 Comprehensive display of linear, squared, and cubic progressions\n\u2022 Child selects materials for counting and folding exercises\n\u2022 Visually shows relationship between linear, square, and cubic\n\u2022 Integration of skip counting, squaring, and cubing",
+      "quick_guide": "• Organized cabinet with all bead chains, squares, and cubes (1-10)\n• Comprehensive display of linear, squared, and cubic progressions\n• Child selects materials for counting and folding exercises\n• Visually shows relationship between linear, square, and cubic\n• Integration of skip counting, squaring, and cubing",
       "presentation_steps": [
         {
           "step": 1,
@@ -3064,13 +3064,13 @@
     {
       "work_id": "ma_addition_snake_game",
       "name": "Addition Snake Game",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a0\u6cd5\u86c7\u6e38\u620f",
+      "name_chinese": "蒙特梭利加法蛇游戏",
       "slug": "addition-snake-game",
       "area": "math",
       "category": "Memorization",
       "sequence": 1,
       "age_range": "4.5 to 5.5 years old",
-      "quick_guide": "\u2022 Uses colored bead bars to build 'snakes' representing addition equations\n\u2022 Child exchanges shorter bars for longer bars (trading)\n\u2022 Develops fluency with addition facts and number bonds\n\u2022 Bridges concrete addition work to memorization\n\u2022 Introduction to bonds of ten and complementary numbers",
+      "quick_guide": "• Uses colored bead bars to build 'snakes' representing addition equations\n• Child exchanges shorter bars for longer bars (trading)\n• Develops fluency with addition facts and number bonds\n• Bridges concrete addition work to memorization\n• Introduction to bonds of ten and complementary numbers",
       "presentation_steps": [
         {
           "step": 1,
@@ -3094,7 +3094,7 @@
           "step": 4,
           "title": "Making an Exchange",
           "description": "Show that we can trade the colored bead bars for equivalent longer bars. Say 'Instead of these short bars, we can use one eight bar. It shows the same amount.' Exchange for a single gold 8 bar.",
-          "tip": "This exchange activity is crucial\u2014it transitions from concrete counting to symbolic representation."
+          "tip": "This exchange activity is crucial—it transitions from concrete counting to symbolic representation."
         },
         {
           "step": 5,
@@ -3192,13 +3192,13 @@
     {
       "work_id": "ma_subtraction_snake_game",
       "name": "Subtraction Snake Game",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51cf\u6cd5\u86c7\u6e38\u620f",
+      "name_chinese": "蒙特梭利减法蛇游戏",
       "slug": "subtraction-snake-game",
       "area": "math",
       "category": "Memorization",
       "sequence": 2,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Uses colored bead bars and grey (negative) bars for subtraction\n\u2022 'Ten minus three equals...' - child removes subtrahend bar\n\u2022 Reinforces inverse relationship between addition and subtraction\n\u2022 Develops subtraction fact fluency\n\u2022 Naturally shows how subtraction and addition are related",
+      "quick_guide": "• Uses colored bead bars and grey (negative) bars for subtraction\n• 'Ten minus three equals...' - child removes subtrahend bar\n• Reinforces inverse relationship between addition and subtraction\n• Develops subtraction fact fluency\n• Naturally shows how subtraction and addition are related",
       "presentation_steps": [
         {
           "step": 1,
@@ -3320,13 +3320,13 @@
     {
       "work_id": "ma_addition_strip_board",
       "name": "Addition Strip Board",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a0\u6cd5\u6761\u677f",
+      "name_chinese": "蒙特梭利加法条板",
       "slug": "addition-strip-board",
       "area": "math",
       "category": "Memorization of Math Facts",
       "sequence": 3,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Board with squares numbered 1-18 and two sets of numbered strips (red 1-9, blue 1-9)\n\u2022 Concrete visualization of addition facts through strip combination\n\u2022 Child discovers that different combinations make the same sum\n\u2022 Leads to memorization of addition tables through repeated practice\n\u2022 Prepares for subtraction strip board and fact families",
+      "quick_guide": "• Board with squares numbered 1-18 and two sets of numbered strips (red 1-9, blue 1-9)\n• Concrete visualization of addition facts through strip combination\n• Child discovers that different combinations make the same sum\n• Leads to memorization of addition tables through repeated practice\n• Prepares for subtraction strip board and fact families",
       "presentation_steps": [
         {
           "step": 1,
@@ -3409,13 +3409,13 @@
     {
       "work_id": "ma_addition_charts",
       "name": "Addition Charts (Finger Charts)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a0\u6cd5\u8868",
+      "name_chinese": "蒙特梭利加法表",
       "slug": "addition-charts",
       "area": "math",
       "category": "Memorization",
       "sequence": 4,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Visual charts showing all addition combinations (0-9 + 0-9)\n\u2022 Child uses fingers to find intersections of numbers\n\u2022 Transition from concrete snake game to abstract facts\n\u2022 Self-correcting control chart available\n\u2022 Develops efficiency from concrete to memorized facts",
+      "quick_guide": "• Visual charts showing all addition combinations (0-9 + 0-9)\n• Child uses fingers to find intersections of numbers\n• Transition from concrete snake game to abstract facts\n• Self-correcting control chart available\n• Develops efficiency from concrete to memorized facts",
       "presentation_steps": [
         {
           "step": 1,
@@ -3529,19 +3529,19 @@
         "Control",
         "Verify"
       ],
-      "parent_description": "Addition Charts help your child move from Snake Game activities to memorizing addition facts. Using the finger method to find where numbers intersect on the chart, your child learns facts efficiently and can self-check using a control chart. The visual patterns in the chart help memory\u2014like seeing that all the tens form a diagonal line. This bridges concrete bead work and abstract memorization.",
+      "parent_description": "Addition Charts help your child move from Snake Game activities to memorizing addition facts. Using the finger method to find where numbers intersect on the chart, your child learns facts efficiently and can self-check using a control chart. The visual patterns in the chart help memory—like seeing that all the tens form a diagonal line. This bridges concrete bead work and abstract memorization.",
       "why_it_matters": "Charts provide a bridge between concrete manipulatives and abstract memorization. Without this bridge, some children either remain dependent on counting or memorize facts without pattern recognition. Charts build both automaticity and number sense through visible patterns, creating a more robust mathematical foundation than rote memorization alone."
     },
     {
       "work_id": "ma_subtraction_strip_board",
       "name": "Subtraction Strip Board",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51cf\u6cd5\u6761\u677f",
+      "name_chinese": "蒙特梭利减法条板",
       "slug": "subtraction-strip-board",
       "area": "math",
       "category": "Memorization of Math Facts",
       "sequence": 5,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Strip board with ruler numbered 1-18 for subtraction facts\n\u2022 Blue strips for minuend, red strips cover subtrahend\n\u2022 Visual demonstration of 'taking away'\n\u2022 Charts for memorization after board understanding\n\u2022 Leads to subtraction fact fluency",
+      "quick_guide": "• Strip board with ruler numbered 1-18 for subtraction facts\n• Blue strips for minuend, red strips cover subtrahend\n• Visual demonstration of 'taking away'\n• Charts for memorization after board understanding\n• Leads to subtraction fact fluency",
       "presentation_steps": [
         {
           "step": 1,
@@ -3619,18 +3619,18 @@
         "Tables booklet"
       ],
       "parent_description": "Your child is practicing subtraction by working with strips to understand 'taking away.' They see a strip representing the total amount, place another strip beneath it to represent the amount being removed, and the space between shows the answer. This visual, hands-on approach shows why 'borrowing' is necessary when the amount being subtracted is larger than what's available in a particular place value.",
-      "why_it_matters": "Strip board work makes the sometimes-confusing concept of 'borrowing' in subtraction visual and logical. Children develop subtraction fluency and are no longer guessing\u2014they understand the 'why' behind the process."
+      "why_it_matters": "Strip board work makes the sometimes-confusing concept of 'borrowing' in subtraction visual and logical. Children develop subtraction fluency and are no longer guessing—they understand the 'why' behind the process."
     },
     {
       "work_id": "ma_subtraction_charts",
       "name": "Subtraction Charts",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51cf\u6cd5\u8868",
+      "name_chinese": "蒙特梭利减法表",
       "slug": "subtraction-charts",
       "area": "math",
       "category": "Memorization",
       "sequence": 6,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Charts showing all subtraction combinations systematically\n\u2022 Child uses finger method to find subtractive pairs\n\u2022 Similar format to Addition Charts, showing inverse relationship\n\u2022 Self-correcting control chart for verification\n\u2022 Develops subtraction fact automaticity",
+      "quick_guide": "• Charts showing all subtraction combinations systematically\n• Child uses finger method to find subtractive pairs\n• Similar format to Addition Charts, showing inverse relationship\n• Self-correcting control chart for verification\n• Develops subtraction fact automaticity",
       "presentation_steps": [
         {
           "step": 1,
@@ -3704,7 +3704,7 @@
         "The finger method's efficiency for chart navigation",
         "Patterns visible (complements to ten, consecutive facts)",
         "The explicit connection to addition showing inverse relationship",
-        "How commutative property doesn't apply to subtraction (9 - 3 \u2260 3 - 9)",
+        "How commutative property doesn't apply to subtraction (9 - 3 ≠ 3 - 9)",
         "The progression from chart dependence to memory"
       ],
       "variations": [
@@ -3743,19 +3743,19 @@
         "Bonds of ten",
         "Complements"
       ],
-      "parent_description": "Subtraction Charts help your child memorize subtraction facts using the same visual, efficient method as Addition Charts. By placing fingers on the chart to find where numbers intersect, your child learns facts while discovering the inverse relationship to addition. The patterns visible in the chart\u2014like all the 'subtract from ten' facts\u2014help memory and build deeper understanding.",
+      "parent_description": "Subtraction Charts help your child memorize subtraction facts using the same visual, efficient method as Addition Charts. By placing fingers on the chart to find where numbers intersect, your child learns facts while discovering the inverse relationship to addition. The patterns visible in the chart—like all the 'subtract from ten' facts—help memory and build deeper understanding.",
       "why_it_matters": "Without explicit chart work, many children learn subtraction as a separate operation from addition, missing the profound relationship between them. Subtraction Charts make this connection clear through their structure and format, building a more integrated, flexible understanding of arithmetic operations."
     },
     {
       "work_id": "ma_multiplication_bead_board",
       "name": "Multiplication Bead Board",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e58\u6cd5\u73e0\u677f",
+      "name_chinese": "蒙特梭利乘法珠板",
       "slug": "multiplication-bead-board",
       "area": "math",
       "category": "Memorization",
       "sequence": 7,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Wooden board with rows 1-9 and colored bead bars\n\u2022 Child places beads below each number to show multiplication groups\n\u2022 'Four times six' - place four beads below six\n\u2022 Visual representation of skip counting through multiplication\n\u2022 Efficient memorization tool after concrete bead work",
+      "quick_guide": "• Wooden board with rows 1-9 and colored bead bars\n• Child places beads below each number to show multiplication groups\n• 'Four times six' - place four beads below six\n• Visual representation of skip counting through multiplication\n• Efficient memorization tool after concrete bead work",
       "presentation_steps": [
         {
           "step": 1,
@@ -3766,7 +3766,7 @@
         {
           "step": 2,
           "title": "Demonstrating the Process",
-          "description": "Present: 3 \u00d7 4 = ?. Say 'Three times four means three groups of four.' Place a counter above the 4. Say 'Now we put three beads below the four.'",
+          "description": "Present: 3 × 4 = ?. Say 'Three times four means three groups of four.' Place a counter above the 4. Say 'Now we put three beads below the four.'",
           "tip": "The counter shows which multiplier row you're working with."
         },
         {
@@ -3778,19 +3778,19 @@
         {
           "step": 4,
           "title": "Progressing Through Facts",
-          "description": "Continue with 4 \u00d7 4, 5 \u00d7 4, 6 \u00d7 4, etc., working through one multiplier row at a time. This systematic approach builds understanding.",
-          "tip": "Complete one 'times' set before moving to another (all \u00d74, then all \u00d75)."
+          "description": "Continue with 4 × 4, 5 × 4, 6 × 4, etc., working through one multiplier row at a time. This systematic approach builds understanding.",
+          "tip": "Complete one 'times' set before moving to another (all ×4, then all ×5)."
         },
         {
           "step": 5,
           "title": "Recording and Verification",
-          "description": "Child writes each problem and answer: '3 \u00d7 4 = 12'. Keep a notebook of completed facts for reference and pride in progress.",
+          "description": "Child writes each problem and answer: '3 × 4 = 12'. Keep a notebook of completed facts for reference and pride in progress.",
           "tip": "Written recording reinforces learning and provides a study tool."
         },
         {
           "step": 6,
           "title": "Discovering Patterns",
-          "description": "Point out patterns: 'All the \u00d75 facts end in 5 or 0.' 'The \u00d79 facts add up to 9.' These patterns aid memory.",
+          "description": "Point out patterns: 'All the ×5 facts end in 5 or 0.' 'The ×9 facts add up to 9.' These patterns aid memory.",
           "tip": "Pattern recognition makes facts stick better than rote memorization."
         },
         {
@@ -3802,7 +3802,7 @@
         {
           "step": 8,
           "title": "Commutative Property",
-          "description": "After facts are mostly memorized, show 4 \u00d7 3 = 12 and 3 \u00d7 4 = 12. Say 'Notice, the answer is the same! The order doesn't matter in multiplication.'",
+          "description": "After facts are mostly memorized, show 4 × 3 = 12 and 3 × 4 = 12. Say 'Notice, the answer is the same! The order doesn't matter in multiplication.'",
           "tip": "This insight reduces the facts to learn by about half."
         }
       ],
@@ -3836,7 +3836,7 @@
         "The progression from counting beads to automatic recall"
       ],
       "variations": [
-        "Working through \u00d72, \u00d73, etc., systematically",
+        "Working through ×2, ×3, etc., systematically",
         "Child creates random problems and solves",
         "Partner play with one problem-setter and one solver",
         "Checking work against a multiplication chart"
@@ -3871,19 +3871,19 @@
         "Skip count",
         "Commutative"
       ],
-      "parent_description": "The Multiplication Bead Board makes multiplication concrete and efficient. When your child places beads to show 'three groups of four' and then counts them as 'four, eight, twelve,' they're learning that 3 \u00d7 4 = 12. The board bridges the concrete bead work and abstract fact memorization, building automaticity with understanding rather than rote memorization alone.",
+      "parent_description": "The Multiplication Bead Board makes multiplication concrete and efficient. When your child places beads to show 'three groups of four' and then counts them as 'four, eight, twelve,' they're learning that 3 × 4 = 12. The board bridges the concrete bead work and abstract fact memorization, building automaticity with understanding rather than rote memorization alone.",
       "why_it_matters": "Without the board, many children memorize multiplication facts without understanding what multiplication means. The Bead Board shows multiplication as 'groups of,' preventing the operation from being abstract or meaningless. This concrete-to-abstract progression creates robust, transferable understanding of multiplication."
     },
     {
       "work_id": "ma_multiplication_charts",
       "name": "Multiplication Charts",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e58\u6cd5\u8868",
+      "name_chinese": "蒙特梭利乘法表",
       "slug": "multiplication-charts",
       "area": "math",
       "category": "Memorization",
       "sequence": 8,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Charts showing multiplication facts systematically organized\n\u2022 Working and control chart versions like Addition/Subtraction Charts\n\u2022 Finger method for efficient fact finding\n\u2022 Bridges bead board work to abstract memorization\n\u2022 Develops multiplication fact automaticity through patterns",
+      "quick_guide": "• Charts showing multiplication facts systematically organized\n• Working and control chart versions like Addition/Subtraction Charts\n• Finger method for efficient fact finding\n• Bridges bead board work to abstract memorization\n• Develops multiplication fact automaticity through patterns",
       "presentation_steps": [
         {
           "step": 1,
@@ -3894,7 +3894,7 @@
         {
           "step": 2,
           "title": "Demonstrating Finger Method",
-          "description": "Find 4 \u00d7 6. Finger on 4 at top, on 6 at side. Slide until they meet: 24.",
+          "description": "Find 4 × 6. Finger on 4 at top, on 6 at side. Slide until they meet: 24.",
           "tip": "Tactile method is intuitive and efficient for chart navigation."
         },
         {
@@ -3906,18 +3906,18 @@
         {
           "step": 4,
           "title": "Child-Guided Practice",
-          "description": "Present problems: 3\u00d77, 5\u00d75, 8\u00d74. Child finds answers using fingers. Gradually without fingers.",
+          "description": "Present problems: 3×7, 5×5, 8×4. Child finds answers using fingers. Gradually without fingers.",
           "tip": "Systematic progression from supported to independent."
         },
         {
           "step": 5,
           "title": "Recognizing Patterns",
-          "description": "Point out patterns: '\u00d75 facts end in 5 or 0.' '\u00d79 facts: tens decrease, ones increase by 1.'",
+          "description": "Point out patterns: '×5 facts end in 5 or 0.' '×9 facts: tens decrease, ones increase by 1.'",
           "tip": "Pattern recognition makes facts more memorable."
         }
       ],
       "direct_aims": [
-        "Memorize 1-9 \u00d7 1-9 multiplication facts",
+        "Memorize 1-9 × 1-9 multiplication facts",
         "Develop efficient product retrieval",
         "Recognize multiplication patterns"
       ],
@@ -3955,7 +3955,7 @@
       "video_search_term": "montessori multiplication chart 1",
       "data_status": "complete",
       "materials_needed": [
-        "Multiplication Chart (9\u00d79 or 10\u00d710 array)",
+        "Multiplication Chart (9×9 or 10×10 array)",
         "Control Chart",
         "Blank charts",
         "Pencils"
@@ -3976,13 +3976,13 @@
         "Pattern",
         "Fact"
       ],
-      "parent_description": "Multiplication Charts help move from bead board to memorizing facts efficiently. The finger-sliding method finds products while patterns (like \u00d75 ending in 5 or 0) make memorization logical rather than rote.",
+      "parent_description": "Multiplication Charts help move from bead board to memorizing facts efficiently. The finger-sliding method finds products while patterns (like ×5 ending in 5 or 0) make memorization logical rather than rote.",
       "why_it_matters": "Charts bridge concrete and abstract learning. Without them, children either remain material-dependent or memorize without understanding. Charts build automaticity while maintaining connection to skip-counting and grouping concepts that give multiplication meaning."
     },
     {
       "work_id": "ma_unit_division_board",
       "name": "Unit Division Board",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9664\u6cd5\u677f",
+      "name_chinese": "蒙特梭利除法板",
       "slug": "unit-division-board",
       "area": "math",
       "category": "Mathematics - Arithmetic Operations",
@@ -4003,22 +4003,22 @@
         },
         {
           "title": "Demonstrate Simple Division",
-          "description": "Choose a simple division problem (e.g., 6 \u00f7 2). Place 2 skittles at the top of the board. Count out 6 beads and place them in a small bowl. Explain: 'We have 6 beads to share among 2 people.' Begin distributing one bead to each skittle, alternating back and forth until all beads are distributed.",
+          "description": "Choose a simple division problem (e.g., 6 ÷ 2). Place 2 skittles at the top of the board. Count out 6 beads and place them in a small bowl. Explain: 'We have 6 beads to share among 2 people.' Begin distributing one bead to each skittle, alternating back and forth until all beads are distributed.",
           "tip": "Use consistent language: 'This is our dividend (total beads), these are our divisors (skittles), and this is our quotient (beads per skittle).'"
         },
         {
           "title": "Count and Verify the Result",
-          "description": "Once all beads are distributed, point to each skittle's pile and count together. Record the number in each pile. Have the child notice that each skittle received the same amount. Write the division equation on paper (6 \u00f7 2 = 3).",
+          "description": "Once all beads are distributed, point to each skittle's pile and count together. Record the number in each pile. Have the child notice that each skittle received the same amount. Write the division equation on paper (6 ÷ 2 = 3).",
           "tip": "Help the child see the pattern: equal distribution is the essence of division."
         },
         {
           "title": "Repeat with Different Divisors",
-          "description": "Try another problem with a different number of skittles (e.g., 9 \u00f7 3). Repeat the same process. Encourage the child to predict how many beads each person will receive before distributing.",
+          "description": "Try another problem with a different number of skittles (e.g., 9 ÷ 3). Repeat the same process. Encourage the child to predict how many beads each person will receive before distributing.",
           "tip": "Vary the dividend and divisor to help the child discover the relationship between them."
         },
         {
           "title": "Introduce Work with Remainders",
-          "description": "Present a division problem that results in a remainder (e.g., 7 \u00f7 2). Distribute beads evenly, then acknowledge the remaining bead. Explain that sometimes items cannot be divided perfectly. Record as '7 \u00f7 2 = 3 R1'.",
+          "description": "Present a division problem that results in a remainder (e.g., 7 ÷ 2). Distribute beads evenly, then acknowledge the remaining bead. Explain that sometimes items cannot be divided perfectly. Record as '7 ÷ 2 = 3 R1'.",
           "tip": "Remainders are important; don't skip them even in early lessons as children are naturally curious about what happens to the 'leftover.'"
         },
         {
@@ -4053,13 +4053,13 @@
     {
       "work_id": "ma_division_charts",
       "name": "Division Charts",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9664\u6cd5\u8868",
+      "name_chinese": "蒙特梭利除法表",
       "slug": "division-charts",
       "area": "math",
       "category": "Memorization",
       "sequence": 10,
       "age_range": "5 to 5.5 years old",
-      "quick_guide": "\u2022 Charts showing division facts with working and control versions\n\u2022 Finger method for finding quotients\n\u2022 Shows relationship between division and multiplication\n\u2022 Systematic approach to fact automaticity\n\u2022 Bridges division board work to abstract thinking",
+      "quick_guide": "• Charts showing division facts with working and control versions\n• Finger method for finding quotients\n• Shows relationship between division and multiplication\n• Systematic approach to fact automaticity\n• Bridges division board work to abstract thinking",
       "presentation_steps": [
         {
           "step": 1,
@@ -4070,25 +4070,25 @@
         {
           "step": 2,
           "title": "Demonstrating Finger Method",
-          "description": "Find 12 \u00f7 4. Finger on 12 at top, on 4 at side. They meet at 3.",
+          "description": "Find 12 ÷ 4. Finger on 12 at top, on 4 at side. They meet at 3.",
           "tip": "Same efficient tactile method as multiplication charts."
         },
         {
           "step": 3,
           "title": "Connection to Multiplication",
-          "description": "Show 12 \u00f7 3 = 4 and verify with 3 \u00d7 4 = 12. Say 'Division and multiplication are opposites!'",
+          "description": "Show 12 ÷ 3 = 4 and verify with 3 × 4 = 12. Say 'Division and multiplication are opposites!'",
           "tip": "Explicit connection builds integrated understanding."
         },
         {
           "step": 4,
           "title": "Child-Guided Practice",
-          "description": "Guide through problems: 15\u00f73, 24\u00f76, 18\u00f72. Child finds answers using fingers.",
+          "description": "Guide through problems: 15÷3, 24÷6, 18÷2. Child finds answers using fingers.",
           "tip": "Progress from supported to independent gradually."
         },
         {
           "step": 5,
           "title": "Self-Checking",
-          "description": "Use control chart to verify. Multiply quotient by divisor to check: '3 \u00d7 4 = 12, so 12\u00f74=3 is correct!'",
+          "description": "Use control chart to verify. Multiply quotient by divisor to check: '3 × 4 = 12, so 12÷4=3 is correct!'",
           "tip": "Verification through inverse operation builds confidence."
         }
       ],
@@ -4152,19 +4152,19 @@
         "Remainder",
         "Fact"
       ],
-      "parent_description": "Division Charts help memorize division facts using the inverse relationship to multiplication. When your child finds 12\u00f73=4 on the chart, they verify by multiplying 3\u00d74=12. This explicit connection prevents division from seeming like an isolated operation.",
+      "parent_description": "Division Charts help memorize division facts using the inverse relationship to multiplication. When your child finds 12÷3=4 on the chart, they verify by multiplying 3×4=12. This explicit connection prevents division from seeming like an isolated operation.",
       "why_it_matters": "Understanding division as inverse multiplication is critical for all division work. Charts make this relationship explicit and visible, building integrated understanding of all four operations rather than isolated skill compartments."
     },
     {
       "work_id": "ma_stamp_game",
       "name": "Stamp Game",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u90ae\u7968\u6e38\u620f",
+      "name_chinese": "蒙特梭利邮票游戏",
       "slug": "stamp-game",
       "area": "math",
       "category": "Passage to Abstraction",
       "sequence": 1,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Color-coded stamps representing units (green), tens (blue), hundreds (red), thousands (green)\n\u2022 Abstract representation of golden beads for portable, efficient calculation\n\u2022 Supports all four operations: addition, subtraction, multiplication, division\n\u2022 Bridge between concrete golden beads and abstract written algorithms\n\u2022 Includes skittles for division and color-coded tiles for problem setup",
+      "quick_guide": "• Color-coded stamps representing units (green), tens (blue), hundreds (red), thousands (green)\n• Abstract representation of golden beads for portable, efficient calculation\n• Supports all four operations: addition, subtraction, multiplication, division\n• Bridge between concrete golden beads and abstract written algorithms\n• Includes skittles for division and color-coded tiles for problem setup",
       "presentation_steps": [
         {
           "step": 1,
@@ -4238,19 +4238,19 @@
         "Stamp Game box with colored stamps",
         "Skittles for division"
       ],
-      "parent_description": "Your child is using small colored 'stamps' (or tiles) to represent place values: green for ones, blue for tens, red for hundreds, and green again for thousands. Unlike the golden beads where each physical piece is a separate unit, stamps are more abstract\u2014a single stamp represents an entire group. They're learning to perform addition, subtraction, and even multiplication by arranging and exchanging these stamps, moving toward abstract mathematical thinking.",
+      "parent_description": "Your child is using small colored 'stamps' (or tiles) to represent place values: green for ones, blue for tens, red for hundreds, and green again for thousands. Unlike the golden beads where each physical piece is a separate unit, stamps are more abstract—a single stamp represents an entire group. They're learning to perform addition, subtraction, and even multiplication by arranging and exchanging these stamps, moving toward abstract mathematical thinking.",
       "why_it_matters": "The Stamp Game is a critical bridge between concrete golden bead work and abstract math. Children learn that symbols and representations can stand for quantities, building the abstract thinking necessary for higher mathematics. Many children experience a 'light bulb moment' with the Stamp Game where math suddenly feels organized and powerful."
     },
     {
       "work_id": "ma_dot_game",
       "name": "Dot Game",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u70b9\u6e38\u620f",
+      "name_chinese": "蒙特梭利点游戏",
       "slug": "dot-game",
       "area": "math",
       "category": "Passage to Abstraction",
       "sequence": 2,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Paper-based addition practice transitioning from stamp game\n\u2022 Dots represent quantities in place value columns\n\u2022 Child writes dots, counts, exchanges by crossing out\n\u2022 Bridge between concrete stamps and abstract algorithms\n\u2022 Develops written notation skills",
+      "quick_guide": "• Paper-based addition practice transitioning from stamp game\n• Dots represent quantities in place value columns\n• Child writes dots, counts, exchanges by crossing out\n• Bridge between concrete stamps and abstract algorithms\n• Develops written notation skills",
       "presentation_steps": [
         {
           "step": 1,
@@ -4324,19 +4324,19 @@
         "Dot Game paper",
         "Colored pencils"
       ],
-      "parent_description": "Your child is working with an even more abstract material\u2014dots marked on a grid\u2014to solve addition, subtraction, and multiplication problems. They create dots in columns representing each place value and use exchange rules to find answers. The Dot Game is the gateway to working with numbers without any concrete materials, as children learn to visualize quantities through symbols alone.",
+      "parent_description": "Your child is working with an even more abstract material—dots marked on a grid—to solve addition, subtraction, and multiplication problems. They create dots in columns representing each place value and use exchange rules to find answers. The Dot Game is the gateway to working with numbers without any concrete materials, as children learn to visualize quantities through symbols alone.",
       "why_it_matters": "The progression from golden beads (completely concrete), to stamps (semi-concrete), to dots (nearly abstract) is crucial for developing the abstract mathematical thinking that will serve children throughout their academic careers. Children who make this journey gradually rarely develop math anxiety."
     },
     {
       "work_id": "ma_small_bead_frame",
       "name": "Small Bead Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5c0f\u7b97\u76d8",
+      "name_chinese": "蒙特梭利小算盘",
       "slug": "small-bead-frame",
       "area": "math",
       "category": "Passage to Abstraction",
       "sequence": 3,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Abacus-style frames for addition and subtraction\n\u2022 Small frame: units, tens, hundreds, thousands\n\u2022 Large frame: extends to millions\n\u2022 Beads slide to represent operations\n\u2022 Further abstraction from golden beads toward algorithms",
+      "quick_guide": "• Abacus-style frames for addition and subtraction\n• Small frame: units, tens, hundreds, thousands\n• Large frame: extends to millions\n• Beads slide to represent operations\n• Further abstraction from golden beads toward algorithms",
       "presentation_steps": [
         {
           "step": 1,
@@ -4417,13 +4417,13 @@
     {
       "work_id": "ma_large_bead_frame",
       "name": "Large Bead Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5927\u7b97\u76d8",
+      "name_chinese": "蒙特梭利大算盘",
       "slug": "large-bead-frame",
       "area": "math",
       "category": "Passage to Abstraction",
       "sequence": 4,
       "age_range": "primary_year3",
-      "quick_guide": "\u2022 Abacus-style frames for addition and subtraction\n\u2022 Small frame: units, tens, hundreds, thousands\n\u2022 Large frame: extends to millions\n\u2022 Beads slide to represent operations\n\u2022 Further abstraction from golden beads toward algorithms",
+      "quick_guide": "• Abacus-style frames for addition and subtraction\n• Small frame: units, tens, hundreds, thousands\n• Large frame: extends to millions\n• Beads slide to represent operations\n• Further abstraction from golden beads toward algorithms",
       "presentation_steps": [
         {
           "step": 1,
@@ -4499,12 +4499,12 @@
         "Paper for recording"
       ],
       "parent_description": "Your child is using a larger frame with seven wires that extends all the way to the millions place, allowing them to practice operations with much larger numbers. By sliding beads representing ones, tens, hundreds, thousands, ten-thousands, hundred-thousands, and millions, they're seeing that the same operational principles apply to all numbers, no matter how large.",
-      "why_it_matters": "The Large Bead Frame helps children understand that mathematical patterns are consistent across place values. This insight is powerfully empowering\u2014it shows children that they can handle any number by applying the same logic they've learned, building mathematical confidence that extends far beyond elementary school."
+      "why_it_matters": "The Large Bead Frame helps children understand that mathematical patterns are consistent across place values. This insight is powerfully empowering—it shows children that they can handle any number by applying the same logic they've learned, building mathematical confidence that extends far beyond elementary school."
     },
     {
       "work_id": "ma_checkerboard",
       "name": "Checkerboard (Multiplication)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u68cb\u76d8\u4e58\u6cd5",
+      "name_chinese": "蒙特梭利棋盘乘法",
       "slug": "checkerboard",
       "area": "math",
       "category": "Mathematics - Arithmetic Operations",
@@ -4514,7 +4514,7 @@
         "Large wooden board with color-coded columns (green units, blue tens, red hundreds) and rows for hierarchical visualization",
         "Children place bead bars and number tiles to represent multi-digit multiplication visually",
         "Demonstrates how each digit of a multiplier creates a new partial product at different hierarchical levels",
-        "Shows geometric representation of multiplication (length \u00d7 width concept)",
+        "Shows geometric representation of multiplication (length × width concept)",
         "Bridges concrete bead materials to abstract symbolic multiplication"
       ],
       "presentation_steps": [
@@ -4525,22 +4525,22 @@
         },
         {
           "title": "Demonstrate Simple Multiplication",
-          "description": "Start with a manageable problem like 23 \u00d7 3. Place grey number tiles along the bottom: 20 (represented as 2 in the tens column and 0 in the units) and 3. Place a white number tile for the multiplier (3) on the right side. Explain: 'We're making 23 three times.'",
+          "description": "Start with a manageable problem like 23 × 3. Place grey number tiles along the bottom: 20 (represented as 2 in the tens column and 0 in the units) and 3. Place a white number tile for the multiplier (3) on the right side. Explain: 'We're making 23 three times.'",
           "tip": "Use consistent language: 'multiplicand' (the number being multiplied) and 'multiplier' (how many times)."
         },
         {
           "title": "Layer Bead Bars for Each Partial Product",
-          "description": "For each digit of the multiplicand, multiply by the entire multiplier. First, take the 20 (two ten-bars) and place them in the tens column. Multiply: 20 \u00d7 3 = 60 (six ten-bars). Arrange them in the tens column. Next, take the 3 (three unit-bars) and multiply: 3 \u00d7 3 = 9 (nine unit-bars). Place these in the units column.",
+          "description": "For each digit of the multiplicand, multiply by the entire multiplier. First, take the 20 (two ten-bars) and place them in the tens column. Multiply: 20 × 3 = 60 (six ten-bars). Arrange them in the tens column. Next, take the 3 (three unit-bars) and multiply: 3 × 3 = 9 (nine unit-bars). Place these in the units column.",
           "tip": "Each digit multiplication creates a 'layer' on the board. Keeping layers visually separate helps children see partial products clearly."
         },
         {
           "title": "Collect and Count the Results",
-          "description": "Once all beads are placed, count them column by column. In the units column: 9 units. In the tens column: 6 tens. Read the result: 69. Write the multiplication equation: 23 \u00d7 3 = 69.",
+          "description": "Once all beads are placed, count them column by column. In the units column: 9 units. In the tens column: 6 tens. Read the result: 69. Write the multiplication equation: 23 × 3 = 69.",
           "tip": "Make sure to perform the collecting and counting in the correct order (units first, then tens, then hundreds) to avoid errors."
         },
         {
           "title": "Practice with Two-Digit Multipliers",
-          "description": "Present a problem like 12 \u00d7 11. This creates multiple partial products that need to be added across the board. Place 12 along the bottom and 11 on the right side. Work through each digit of the multiplier (the 1 in the tens place and the 1 in the ones place), creating separate bead layers for each multiplication step.",
+          "description": "Present a problem like 12 × 11. This creates multiple partial products that need to be added across the board. Place 12 along the bottom and 11 on the right side. Work through each digit of the multiplier (the 1 in the tens place and the 1 in the ones place), creating separate bead layers for each multiplication step.",
           "tip": "This is where the geometric beauty of the Checkerboard appears; children see how multiplication 'builds' in layers."
         },
         {
@@ -4566,15 +4566,15 @@
       "video_search_term": "montessori checkerboard multiplication introduction",
       "data_status": "needs_guide",
       "materials_needed": "Montessori Checkerboard (over 2 feet long, with 4 rows and 9 columns of 7cm squares), bead bars in all denominations (units, tens, hundreds, thousands), grey number tiles (multiplicand), white number tiles (multiplier), multiplication problem cards",
-      "extensions": "Progress to the Colored Bead Multiplication for four-digit \u00d7 four-digit problems; introduce the distributive property explicitly; connect to area models; prepare for long multiplication with pencil and paper",
+      "extensions": "Progress to the Colored Bead Multiplication for four-digit × four-digit problems; introduce the distributive property explicitly; connect to area models; prepare for long multiplication with pencil and paper",
       "vocabulary": "Multiply, multiplication, multiplicand, multiplier, product, partial product, tens, units, hundreds, hierarchy, exchange, regroup",
-      "parent_description": "The Checkerboard shows children how multiplication works with bigger numbers. Instead of just memorizing facts, they physically build the answer using beads arranged in colored columns. When multiplying 23 \u00d7 3, they see that 20 \u00d7 3 and 3 \u00d7 3 must be added together. This visual system helps children understand why multiplication algorithms work the way they do.",
-      "why_it_matters": "The Checkerboard bridges concrete understanding and symbolic mathematics. It prevents children from mechanically following procedures without understanding. By seeing the geometric representation of multiplication (length \u00d7 width), children develop deeper number sense and are prepared for algebra, area concepts, and more complex mathematics."
+      "parent_description": "The Checkerboard shows children how multiplication works with bigger numbers. Instead of just memorizing facts, they physically build the answer using beads arranged in colored columns. When multiplying 23 × 3, they see that 20 × 3 and 3 × 3 must be added together. This visual system helps children understand why multiplication algorithms work the way they do.",
+      "why_it_matters": "The Checkerboard bridges concrete understanding and symbolic mathematics. It prevents children from mechanically following procedures without understanding. By seeing the geometric representation of multiplication (length × width), children develop deeper number sense and are prepared for algebra, area concepts, and more complex mathematics."
     },
     {
       "work_id": "ma_racks_tubes",
       "name": "Racks and Tubes (Long Division)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bd5\u7ba1\u9664\u6cd5",
+      "name_chinese": "蒙特梭利试管除法",
       "slug": "racks-tubes",
       "area": "math",
       "category": "Mathematics - Arithmetic Operations",
@@ -4595,7 +4595,7 @@
         },
         {
           "title": "Present the Division Problem",
-          "description": "Choose a long division problem (e.g., 364 \u00f7 7). Write it in vertical division format. Explain the setup: '364 is what we're dividing (the dividend). 7 is how many groups we're making (the divisor). We need to find how many each group gets (the quotient).'",
+          "description": "Choose a long division problem (e.g., 364 ÷ 7). Write it in vertical division format. Explain the setup: '364 is what we're dividing (the dividend). 7 is how many groups we're making (the divisor). We need to find how many each group gets (the quotient).'",
           "tip": "Start with dividends up to the thousands; larger problems with racks and tubes are more impressive and keep children engaged."
         },
         {
@@ -4605,8 +4605,8 @@
         },
         {
           "title": "Distribute the Regrouped Units",
-          "description": "Now distribute the 36 tens among the 7 groups (using 7 cups or marked spaces). Give 5 tens to each group. Count: 7 \u00d7 5 = 35 tens, leaving 1 ten as remainder. Record: 'Each group gets 5 tens, and we have 1 ten left over.'",
-          "tip": "After distribution, the physical arrangement on the table mirrors the long division algorithm\u2014children see where each digit in the quotient comes from."
+          "description": "Now distribute the 36 tens among the 7 groups (using 7 cups or marked spaces). Give 5 tens to each group. Count: 7 × 5 = 35 tens, leaving 1 ten as remainder. Record: 'Each group gets 5 tens, and we have 1 ten left over.'",
+          "tip": "After distribution, the physical arrangement on the table mirrors the long division algorithm—children see where each digit in the quotient comes from."
         },
         {
           "title": "Continue with the Remainder",
@@ -4615,12 +4615,12 @@
         },
         {
           "title": "Read and Record the Complete Answer",
-          "description": "Look at what each group received: 5 tens and 2 units. This is 52. Write the final answer: 364 \u00f7 7 = 52. Have the child verify: 52 \u00d7 7 should equal 364 (this is the multiplicative check).",
+          "description": "Look at what each group received: 5 tens and 2 units. This is 52. Write the final answer: 364 ÷ 7 = 52. Have the child verify: 52 × 7 should equal 364 (this is the multiplicative check).",
           "tip": "Always verify the answer using multiplication as the inverse operation; this reinforces the relationship between operations."
         },
         {
           "title": "Practice with Problems Involving Remainders",
-          "description": "Present a division problem that results in a remainder (e.g., 385 \u00f7 6). Work through the process. At the end, if there are leftover beads that cannot be distributed evenly, acknowledge the remainder and record it (e.g., 385 \u00f7 6 = 64 R1).",
+          "description": "Present a division problem that results in a remainder (e.g., 385 ÷ 6). Work through the process. At the end, if there are leftover beads that cannot be distributed evenly, acknowledge the remainder and record it (e.g., 385 ÷ 6 = 64 R1).",
           "tip": "Remainders become very concrete with this material; children understand that leftover beads represent a real remainder, not a mistake."
         }
       ],
@@ -4650,13 +4650,13 @@
     {
       "work_id": "ma_fraction_circles",
       "name": "Fraction Insets (Metal or Plastic)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u5d4c\u677f",
+      "name_chinese": "蒙特梭利分数嵌板",
       "slug": "fraction-circles",
       "area": "math",
       "category": "Fractions",
       "sequence": 1,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Concrete introduction to fraction concepts\n\u2022 Skittles: 10 identical skittles for sharing equally\n\u2022 Circles: divided into halves, thirds, quarters, etc.\n\u2022 Develops vocabulary: whole, half, third, quarter\n\u2022 Foundation for fraction operations",
+      "quick_guide": "• Concrete introduction to fraction concepts\n• Skittles: 10 identical skittles for sharing equally\n• Circles: divided into halves, thirds, quarters, etc.\n• Develops vocabulary: whole, half, third, quarter\n• Foundation for fraction operations",
       "presentation_steps": [
         {
           "step": 1,
@@ -4735,7 +4735,7 @@
     {
       "work_id": "ma_fraction_addition",
       "name": "Fraction Addition",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u52a0\u6cd5",
+      "name_chinese": "蒙特梭利分数加法",
       "slug": "fraction-addition",
       "area": "math",
       "category": "Mathematics - Fractions",
@@ -4804,12 +4804,12 @@
       "extensions": "Progress to larger fractions (e.g., 5/8 + 3/8); introduce mixed numbers (e.g., 1 1/4 + 1/2); move toward symbolic addition without concrete materials; connect to decimal addition; explore real-world contexts (cooking, sharing food, measuring)",
       "vocabulary": "Fraction, add, addition, numerator, denominator, equal, equivalent, common denominator, like denominators, unlike denominators, combine, whole, part",
       "parent_description": "Fraction addition is taught using colorful pieces called fraction circles. These pieces are different sizes representing different fractions. Children physically place 1/3 and 1/3 together and see they make 2/3. When fractions are different sizes, they learn to 'match' them first (finding equivalent fractions) before adding. This hands-on approach makes abstract fraction concepts concrete and understandable.",
-      "why_it_matters": "Many children struggle with fractions because they lack a concrete foundation. This work builds that foundation through manipulation. Understanding fraction addition concretely prevents mechanical errors later. It also develops flexibility in thinking about numbers\u2014the understanding that 1/2 and 2/4 are the same value is crucial for higher mathematics including algebra and calculus."
+      "why_it_matters": "Many children struggle with fractions because they lack a concrete foundation. This work builds that foundation through manipulation. Understanding fraction addition concretely prevents mechanical errors later. It also develops flexibility in thinking about numbers—the understanding that 1/2 and 2/4 are the same value is crucial for higher mathematics including algebra and calculus."
     },
     {
       "work_id": "ma_fraction_subtraction",
       "name": "Fraction Subtraction",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u51cf\u6cd5",
+      "name_chinese": "蒙特梭利分数减法",
       "slug": "fraction-subtraction",
       "area": "math",
       "category": "Mathematics - Fractions",
@@ -4878,12 +4878,12 @@
       "extensions": "Progress to mixed number subtraction (e.g., 2 1/4 - 1/2); introduce regrouping with mixed numbers; move toward symbolic subtraction; connect to decimal subtraction; explore real-world contexts (time remaining, distances, quantities)",
       "vocabulary": "Subtract, subtraction, take away, remove, difference, numerator, denominator, common denominator, equivalent, regroup, borrow, whole, part",
       "parent_description": "Fraction subtraction uses the same colored pieces as fraction addition. Children physically take away fractional parts to show subtraction. When subtracting 2/3 - 1/3, they remove one third and see two thirds remain. When pieces don't match (like 3/4 - 1/8), they first convert pieces to the same size before subtracting. This concrete approach prevents confusion about denominators and makes subtraction intuitive.",
-      "why_it_matters": "Subtraction is often the most confusing operation with fractions. By building concrete understanding first, children develop genuine comprehension rather than memorizing rules. Understanding that subtraction and addition are inverse operations\u2014that 2/3 - 1/3 = 1/3 means 1/3 + 1/3 = 2/3\u2014is a crucial step in mathematical thinking that extends to all mathematics."
+      "why_it_matters": "Subtraction is often the most confusing operation with fractions. By building concrete understanding first, children develop genuine comprehension rather than memorizing rules. Understanding that subtraction and addition are inverse operations—that 2/3 - 1/3 = 1/3 means 1/3 + 1/3 = 2/3—is a crucial step in mathematical thinking that extends to all mathematics."
     },
     {
       "work_id": "ma_fraction_multiplication",
       "name": "Fraction Multiplication",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u4e58\u6cd5",
+      "name_chinese": "蒙特梭利分数乘法",
       "slug": "fraction-multiplication",
       "area": "math",
       "category": "Mathematics - Fractions",
@@ -4892,7 +4892,7 @@
       "quick_guide": [
         "Uses fraction circles to explore multiplication as 'groups of' or 'of' language",
         "Shows how multiplying a fraction by a whole number creates larger quantities or wholes",
-        "Visual model demonstrates that 1/3 \u00d7 3 = 1 whole (the reciprocal relationship)",
+        "Visual model demonstrates that 1/3 × 3 = 1 whole (the reciprocal relationship)",
         "Explores multiplying fractions by fractions to create smaller results",
         "Develops conceptual understanding before introducing procedural rules"
       ],
@@ -4904,36 +4904,36 @@
         },
         {
           "title": "Introduce Multiplication by Whole Numbers",
-          "description": "Start with a concrete problem: 1/10 \u00d7 3 (or '3 times 1/10'). Place one tenth-piece on the table. Say: 'We have 1/10. Now we're going to take that piece 3 times.' Place two more tenth-pieces. Ask: 'What fraction do we have now?' Count: 3/10. Write: 1/10 \u00d7 3 = 3/10.",
+          "description": "Start with a concrete problem: 1/10 × 3 (or '3 times 1/10'). Place one tenth-piece on the table. Say: 'We have 1/10. Now we're going to take that piece 3 times.' Place two more tenth-pieces. Ask: 'What fraction do we have now?' Count: 3/10. Write: 1/10 × 3 = 3/10.",
           "tip": "Use language that mirrors both multiplication and fractions: 'three times one tenth' or 'one tenth taken three times.'"
         },
         {
           "title": "Practice: Multiplying Unit Fractions by Whole Numbers",
-          "description": "Continue with problems like 1/4 \u00d7 5, 1/6 \u00d7 4, 1/8 \u00d7 2, etc. Have the child place the fraction piece, count it multiple times, combine the pieces, and write the equation. Help them see patterns emerging.",
+          "description": "Continue with problems like 1/4 × 5, 1/6 × 4, 1/8 × 2, etc. Have the child place the fraction piece, count it multiple times, combine the pieces, and write the equation. Help them see patterns emerging.",
           "tip": "Help the child notice: When we take a unit fraction (1/something) and multiply by a whole number, we get a larger fraction."
         },
         {
           "title": "Explore Multiplication Resulting in a Whole",
-          "description": "Present a problem like 1/4 \u00d7 4. Have the child place four quarter-pieces. Together, count: 4/4 = 1 whole. Write: 1/4 \u00d7 4 = 4/4 = 1. Explore more: 1/5 \u00d7 5, 1/8 \u00d7 8, etc. Celebrate this discovery.",
-          "tip": "This shows the reciprocal relationship: 1/n \u00d7 n = 1. This is a profound mathematical insight for children."
+          "description": "Present a problem like 1/4 × 4. Have the child place four quarter-pieces. Together, count: 4/4 = 1 whole. Write: 1/4 × 4 = 4/4 = 1. Explore more: 1/5 × 5, 1/8 × 8, etc. Celebrate this discovery.",
+          "tip": "This shows the reciprocal relationship: 1/n × n = 1. This is a profound mathematical insight for children."
         },
         {
           "title": "Practice: Multiplying Non-Unit Fractions by Whole Numbers",
-          "description": "Introduce problems like 2/5 \u00d7 3. Place two fifth-pieces on the table. Say: 'We have 2/5. Now we take it 3 times.' Place two more groups of 2/5 pieces. Count the result: 6/5 = 1 1/5. Write: 2/5 \u00d7 3 = 6/5 = 1 1/5.",
+          "description": "Introduce problems like 2/5 × 3. Place two fifth-pieces on the table. Say: 'We have 2/5. Now we take it 3 times.' Place two more groups of 2/5 pieces. Count the result: 6/5 = 1 1/5. Write: 2/5 × 3 = 6/5 = 1 1/5.",
           "tip": "This introduces improper fractions and mixed numbers in a natural way."
         },
         {
           "title": "Introduce Multiplying Fractions by Fractions",
-          "description": "Present a problem like 1/2 \u00d7 1/3. Use two-dimensional fraction materials if available. Place a half. Ask: 'What's 1/3 of this 1/2?' Visually show 1/3 of the 1/2 piece, which is 1/6. Write: 1/2 \u00d7 1/3 = 1/6.",
+          "description": "Present a problem like 1/2 × 1/3. Use two-dimensional fraction materials if available. Place a half. Ask: 'What's 1/3 of this 1/2?' Visually show 1/3 of the 1/2 piece, which is 1/6. Write: 1/2 × 1/3 = 1/6.",
           "tip": "This is more abstract; use materials that can show 'taking a fraction OF a fraction' visually (grid-based materials work well)."
         },
         {
           "title": "Practice Fraction-by-Fraction Multiplication",
-          "description": "Continue with problems like 1/2 \u00d7 1/4, 1/3 \u00d7 1/3, 2/3 \u00d7 1/4, etc. Each time, show the visual result and write the equation. Help children see that multiplying fractions creates smaller results than multiplying by whole numbers.",
+          "description": "Continue with problems like 1/2 × 1/4, 1/3 × 1/3, 2/3 × 1/4, etc. Each time, show the visual result and write the equation. Help children see that multiplying fractions creates smaller results than multiplying by whole numbers.",
           "tip": "Point out the pattern: 'When we multiply a fraction by a fraction, we get a smaller answer than either fraction we started with.'"
         }
       ],
-      "direct_aims": "Understand fraction multiplication through concrete manipulation; learn that multiplication by whole numbers can result in larger fractions; understand that fraction \u00d7 fraction results in a smaller fraction; develop fluency with fraction multiplication",
+      "direct_aims": "Understand fraction multiplication through concrete manipulation; learn that multiplication by whole numbers can result in larger fractions; understand that fraction × fraction results in a smaller fraction; develop fluency with fraction multiplication",
       "indirect_aims": "Understand reciprocal relationships; prepare for division of fractions; develop flexible thinking about multiplication; recognize that multiplication doesn't always make things 'bigger'; prepare for algebraic reasoning with fractions",
       "materials": [
         "Fraction Insets",
@@ -4943,21 +4943,21 @@
       "prerequisites": [
         "ma_fraction_subtraction"
       ],
-      "points_of_interest": "The discovery that 1/4 \u00d7 4 makes a whole, the visual representation of taking a fraction multiple times, the surprising result that multiplication can make things smaller (when multiplying fractions), the geometric patterns created by fraction multiplication",
+      "points_of_interest": "The discovery that 1/4 × 4 makes a whole, the visual representation of taking a fraction multiple times, the surprising result that multiplication can make things smaller (when multiplying fractions), the geometric patterns created by fraction multiplication",
       "variations": "Create context-based problems (e.g., 'Find 1/4 of a pizza if the pizza is cut into eighths'); explore fraction families (multiplying all fractions in a family by a single whole number); combine with other operations in mixed-operation problems",
-      "common_challenges": "Child confused by 'multiply' meaning repetition (tip: use 'groups of' language to clarify); child expects multiplication to always make things bigger (tip: contrast multiplying by whole numbers with multiplying by fractions); child struggles with fraction \u00d7 fraction visualizations (tip: use grid materials that make the overlap visible)",
+      "common_challenges": "Child confused by 'multiply' meaning repetition (tip: use 'groups of' language to clarify); child expects multiplication to always make things bigger (tip: contrast multiplying by whole numbers with multiplying by fractions); child struggles with fraction × fraction visualizations (tip: use grid materials that make the overlap visible)",
       "video_search_term": "montessori fraction multiplication whole number",
       "data_status": "needs_guide",
-      "materials_needed": "Fraction circles (sets with all denominations in different colors), grid-based fraction materials (for fraction \u00d7 fraction work), two-dimensional fraction insets, fraction multiplication task cards, paper and pencil",
-      "extensions": "Introduce fraction multiplication with unlike fractions (e.g., 2/3 \u00d7 3/5); progress to mixed number multiplication (e.g., 1 1/2 \u00d7 2/3); move toward symbolic multiplication using the procedural rule (multiply numerators, multiply denominators); connect to scaling and resizing real-world objects",
+      "materials_needed": "Fraction circles (sets with all denominations in different colors), grid-based fraction materials (for fraction × fraction work), two-dimensional fraction insets, fraction multiplication task cards, paper and pencil",
+      "extensions": "Introduce fraction multiplication with unlike fractions (e.g., 2/3 × 3/5); progress to mixed number multiplication (e.g., 1 1/2 × 2/3); move toward symbolic multiplication using the procedural rule (multiply numerators, multiply denominators); connect to scaling and resizing real-world objects",
       "vocabulary": "Multiply, multiplication, times, fraction, numerator, denominator, product, unit fraction, improper fraction, mixed number, whole",
-      "parent_description": "Fraction multiplication is introduced by taking a fraction multiple times. If we have 1/4 and take it 3 times, we get 3/4. We can also find 'a fraction of a fraction'\u2014like finding 1/2 of 1/4 to get 1/8. Children use visual materials to see what happens instead of memorizing rules. This builds intuition for why the multiplication procedures work.",
-      "why_it_matters": "Fraction multiplication is counterintuitive for many children because it doesn't always make quantities bigger. By building concrete understanding through manipulation, children develop the flexibility in thinking necessary for higher mathematics. Understanding that 1/2 \u00d7 1/2 = 1/4 (a smaller result) is crucial for understanding scaling, ratios, and eventually calculus."
+      "parent_description": "Fraction multiplication is introduced by taking a fraction multiple times. If we have 1/4 and take it 3 times, we get 3/4. We can also find 'a fraction of a fraction'—like finding 1/2 of 1/4 to get 1/8. Children use visual materials to see what happens instead of memorizing rules. This builds intuition for why the multiplication procedures work.",
+      "why_it_matters": "Fraction multiplication is counterintuitive for many children because it doesn't always make quantities bigger. By building concrete understanding through manipulation, children develop the flexibility in thinking necessary for higher mathematics. Understanding that 1/2 × 1/2 = 1/4 (a smaller result) is crucial for understanding scaling, ratios, and eventually calculus."
     },
     {
       "work_id": "ma_fraction_division",
       "name": "Fraction Division",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u9664\u6cd5",
+      "name_chinese": "蒙特梭利分数除法",
       "slug": "fraction-division",
       "area": "math",
       "category": "Mathematics - Fractions",
@@ -4978,32 +4978,32 @@
         },
         {
           "title": "Introduce Dividing a Fraction by a Whole Number",
-          "description": "Start with a simple problem: 3/10 \u00f7 3 (or '3/10 shared among 3 people'). Place three tenth-pieces on the table. Say: 'We have 3/10. We're sharing it equally among 3 people. How much does each person get?' Distribute one piece to each person. Each person gets 1/10. Write: 3/10 \u00f7 3 = 1/10.",
+          "description": "Start with a simple problem: 3/10 ÷ 3 (or '3/10 shared among 3 people'). Place three tenth-pieces on the table. Say: 'We have 3/10. We're sharing it equally among 3 people. How much does each person get?' Distribute one piece to each person. Each person gets 1/10. Write: 3/10 ÷ 3 = 1/10.",
           "tip": "Use three cups or marked spaces to represent the three people or groups making distribution physical and visual."
         },
         {
           "title": "Practice: Dividing Fractions by Small Whole Numbers",
-          "description": "Continue with problems like 6/8 \u00f7 2, 4/6 \u00f7 4, 8/10 \u00f7 2, etc. Each time, have the child place the fraction pieces and distribute them evenly among the designated groups. Count what each group receives and write the equation.",
+          "description": "Continue with problems like 6/8 ÷ 2, 4/6 ÷ 4, 8/10 ÷ 2, etc. Each time, have the child place the fraction pieces and distribute them evenly among the designated groups. Count what each group receives and write the equation.",
           "tip": "Start with problems where the numerator is divisible by the whole number (no remainders) to build confidence before introducing more complex problems."
         },
         {
           "title": "Explore the Pattern: Division and the Inverse",
-          "description": "Help the child notice a pattern. When dividing 6/8 \u00f7 2, we get 3/8. Point out: 'This is the same as if we took 6/8 and found 1/2 of it!' Show: 6/8 \u00d7 1/2 = 3/8. This shows that 'dividing by 2 is the same as multiplying by 1/2.'",
+          "description": "Help the child notice a pattern. When dividing 6/8 ÷ 2, we get 3/8. Point out: 'This is the same as if we took 6/8 and found 1/2 of it!' Show: 6/8 × 1/2 = 3/8. This shows that 'dividing by 2 is the same as multiplying by 1/2.'",
           "tip": "This is an advanced insight; build toward it rather than forcing it immediately."
         },
         {
           "title": "Introduce Dividing a Fraction by a Fraction",
-          "description": "Present a more complex problem: 1/2 \u00f7 1/4 (or 'How many 1/4s fit in 1/2?'). Use fraction circles. Show 1/2 and ask: 'How many 1/4 pieces fit into this 1/2 piece?' Physically place 1/4 pieces into the 1/2 space. Count: 2 quarter-pieces fit. Write: 1/2 \u00f7 1/4 = 2.",
+          "description": "Present a more complex problem: 1/2 ÷ 1/4 (or 'How many 1/4s fit in 1/2?'). Use fraction circles. Show 1/2 and ask: 'How many 1/4 pieces fit into this 1/2 piece?' Physically place 1/4 pieces into the 1/2 space. Count: 2 quarter-pieces fit. Write: 1/2 ÷ 1/4 = 2.",
           "tip": "This is the 'grouping' model of division; it's more intuitive with fractions than 'sharing.'"
         },
         {
           "title": "Practice: Division Using the Grouping Model",
-          "description": "Continue with problems like 3/4 \u00f7 1/8, 1 \u00f7 1/3, 2 \u00f7 1/4, etc. Each time, use fraction circles to show 'how many groups fit.' Start with answers that are whole numbers before moving to fractional answers.",
+          "description": "Continue with problems like 3/4 ÷ 1/8, 1 ÷ 1/3, 2 ÷ 1/4, etc. Each time, use fraction circles to show 'how many groups fit.' Start with answers that are whole numbers before moving to fractional answers.",
           "tip": "The visual model makes this form of division accessible; children can see the groups."
         },
         {
           "title": "Connect to the Division Algorithm",
-          "description": "Once the child is comfortable with the visual model, introduce the procedural rule: 'To divide by a fraction, multiply by its reciprocal.' For 1/2 \u00f7 1/4, rewrite as: 1/2 \u00d7 4/1 = 4/2 = 2. Show that this produces the same answer as the physical model.",
+          "description": "Once the child is comfortable with the visual model, introduce the procedural rule: 'To divide by a fraction, multiply by its reciprocal.' For 1/2 ÷ 1/4, rewrite as: 1/2 × 4/1 = 4/2 = 2. Show that this produces the same answer as the physical model.",
           "tip": "Only introduce the algorithm after concrete understanding is solid; the rule makes sense because of what they've already discovered."
         }
       ],
@@ -5017,27 +5017,27 @@
       "prerequisites": [
         "ma_fraction_multiplication"
       ],
-      "points_of_interest": "The surprising discovery that dividing by a fraction makes the answer larger (e.g., 1 \u00f7 1/4 = 4), the physical distribution of fraction pieces into groups, the pattern recognition that 'dividing by 2 is like multiplying by 1/2', the visual model of 'how many fit'",
+      "points_of_interest": "The surprising discovery that dividing by a fraction makes the answer larger (e.g., 1 ÷ 1/4 = 4), the physical distribution of fraction pieces into groups, the pattern recognition that 'dividing by 2 is like multiplying by 1/2', the visual model of 'how many fit'",
       "variations": "Create story problems involving sharing fractional quantities (e.g., 'We have 3/4 of a cake to divide among 2 people'); explore patterns by dividing the same fraction by different divisors; combine with other operations",
       "common_challenges": "Child confused about when division makes answers larger (tip: compare multiplying vs. dividing by fractions explicitly); child struggles with the reciprocal rule (tip: ground in concrete materials first, only introduce rule after understanding); child forgets which fraction to flip (tip: always work from the visual model to build intuition)",
       "video_search_term": "montessori fraction division whole number",
       "data_status": "needs_guide",
       "materials_needed": "Fraction circles (complete sets with multiple denominations), division markers or cups (for the sharing model), fraction division task cards, paper and pencil, grid-based materials (optional, for more complex fraction divisions)",
-      "extensions": "Progress to dividing whole numbers by fractions (e.g., 3 \u00f7 1/2); introduce mixed number division; move toward symbolic division using the reciprocal rule; explore real-world contexts (cutting fabric, sharing portions, measurements)",
+      "extensions": "Progress to dividing whole numbers by fractions (e.g., 3 ÷ 1/2); introduce mixed number division; move toward symbolic division using the reciprocal rule; explore real-world contexts (cutting fabric, sharing portions, measurements)",
       "vocabulary": "Divide, division, divisor, dividend, quotient, fraction, numerator, denominator, reciprocal, share, groups, fit",
       "parent_description": "Fraction division is taught through sharing and grouping activities. When dividing 1/2 by 1/4, children ask 'How many quarter pieces fit in a half piece?' Using fraction circles, they can physically count: 2 quarter-pieces fit in 1/2. This visual approach helps children understand division deeply rather than just following a rule about 'flip and multiply.'",
-      "why_it_matters": "Division of fractions is where many children abandon conceptual understanding and resort to memorization. By building concrete understanding first, children develop genuine comprehension of why the algorithm works. This understanding supports not just fractions but also proportional reasoning, scaling, and eventually calculus\u2014all areas where this intuition is invaluable."
+      "why_it_matters": "Division of fractions is where many children abandon conceptual understanding and resort to memorization. By building concrete understanding first, children develop genuine comprehension of why the algorithm works. This understanding supports not just fractions but also proportional reasoning, scaling, and eventually calculus—all areas where this intuition is invaluable."
     },
     {
       "work_id": "ma_fraction_skittles",
       "name": "Fraction Skittles",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u6570\u4fdd\u9f84\u7403",
+      "name_chinese": "蒙特梭利分数保龄球",
       "slug": "fraction-skittles",
       "area": "math",
       "category": "Memorization",
       "sequence": 6,
       "age_range": "4.5 to 6 years old",
-      "quick_guide": "\u2022 Wooden skittles divided into halves, thirds, fourths\n\u2022 Each fraction color-coded (red halves, yellow thirds, green fourths)\n\u2022 Child explores equivalent fractions by combining pieces\n\u2022 Sensorial introduction to fraction concepts\n\u2022 Visual and kinesthetic understanding of parts and wholes",
+      "quick_guide": "• Wooden skittles divided into halves, thirds, fourths\n• Each fraction color-coded (red halves, yellow thirds, green fourths)\n• Child explores equivalent fractions by combining pieces\n• Sensorial introduction to fraction concepts\n• Visual and kinesthetic understanding of parts and wholes",
       "presentation_steps": [
         {
           "step": 1,
@@ -5061,7 +5061,7 @@
           "step": 4,
           "title": "Introducing Thirds",
           "description": "Show skittle divided into three equal pieces (yellow). Say 'This is one third. One of three equal pieces. Two thirds. Three thirds make one whole.'",
-          "tip": "Emphasizing that all pieces are equal is essential\u2014different-sized pieces aren't fractions."
+          "tip": "Emphasizing that all pieces are equal is essential—different-sized pieces aren't fractions."
         },
         {
           "step": 5,
@@ -5151,12 +5151,12 @@
         "Equivalent"
       ],
       "parent_description": "Fraction Skittles introduce your child to fractions through beautiful, manipulable materials. By holding and combining fraction pieces, your child discovers that two halves make a whole, and that three fourths are the same amount as six eighths. This concrete, sensorial exploration makes fractions meaningful rather than mysterious.",
-      "why_it_matters": "Fractions are often taught abstractly, causing widespread confusion and math anxiety. The Skittles allow children to develop intuitive understanding through physical exploration. This foundation\u2014understanding what fractions are and how they relate\u2014is essential for all later fraction work, decimals, and percentages."
+      "why_it_matters": "Fractions are often taught abstractly, causing widespread confusion and math anxiety. The Skittles allow children to develop intuitive understanding through physical exploration. This foundation—understanding what fractions are and how they relate—is essential for all later fraction work, decimals, and percentages."
     },
     {
       "work_id": "ma_geometry_sticks",
       "name": "Geometry Sticks",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51e0\u4f55\u68d2",
+      "name_chinese": "蒙特梭利几何棒",
       "slug": "geometry-sticks",
       "area": "math",
       "category": "Mathematics - Geometry",
@@ -5187,13 +5187,13 @@
         },
         {
           "title": "Explore Angles by Pinning Sticks",
-          "description": "Pin one stick vertically in the center of the cork board. Pin another stick at an angle from the first. Say: 'This opening between the two lines is an angle.' Slowly move the second stick in a circle around the first, demonstrating how angles change. At 90 degrees, label it a 'right angle.' Continue to show acute (less than 90\u00b0) and obtuse (greater than 90\u00b0) angles.",
+          "description": "Pin one stick vertically in the center of the cork board. Pin another stick at an angle from the first. Say: 'This opening between the two lines is an angle.' Slowly move the second stick in a circle around the first, demonstrating how angles change. At 90 degrees, label it a 'right angle.' Continue to show acute (less than 90°) and obtuse (greater than 90°) angles.",
           "tip": "The visual motion of the stick rotating around the center point creates a kinesthetic understanding of angles."
         },
         {
           "title": "Use the Measuring Angle Tool",
-          "description": "Show the child the measuring angle (a tool marked with degree measurements). Place it on angles to verify their size. Have the child identify right angles (90\u00b0), acute angles (less than 90\u00b0), and obtuse angles (greater than 90\u00b0) using the measuring angle as verification.",
-          "tip": "Introduce the degree symbol (\u00b0) and the concept of measuring angles numerically."
+          "description": "Show the child the measuring angle (a tool marked with degree measurements). Place it on angles to verify their size. Have the child identify right angles (90°), acute angles (less than 90°), and obtuse angles (greater than 90°) using the measuring angle as verification.",
+          "tip": "Introduce the degree symbol (°) and the concept of measuring angles numerically."
         },
         {
           "title": "Construct Plane Geometric Shapes",
@@ -5232,7 +5232,7 @@
     {
       "work_id": "ma_classified_nomenclature",
       "name": "Geometry Nomenclature",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u51e0\u4f55\u547d\u540d\u5361",
+      "name_chinese": "蒙特梭利几何命名卡",
       "slug": "classified-nomenclature",
       "area": "math",
       "category": "Mathematics - Geometry",
@@ -5283,7 +5283,7 @@
         },
         {
           "title": "Practice with Three-Period Lessons",
-          "description": "Conduct three-period lessons for each group of terminology: First period\u2014presentation ('This is a right angle'). Second period\u2014recognition ('Show me the right angle,' with distractors). Third period\u2014recall ('What is this?' pointing to a right angle). Cycle through until the child demonstrates mastery.",
+          "description": "Conduct three-period lessons for each group of terminology: First period—presentation ('This is a right angle'). Second period—recognition ('Show me the right angle,' with distractors). Third period—recall ('What is this?' pointing to a right angle). Cycle through until the child demonstrates mastery.",
           "tip": "Use real geometric materials alongside cards; the combination is powerful."
         },
         {
@@ -5313,7 +5313,7 @@
     {
       "work_id": "ma_area_introduction",
       "name": "Introduction to Area",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9762\u79ef\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利面积介绍",
       "slug": "area-introduction",
       "area": "math",
       "category": "Mathematics - Geometry",
@@ -5322,7 +5322,7 @@
       "quick_guide": [
         "Concrete material (rods or unit squares) used to measure the space inside flat geometric figures",
         "Children physically construct rectangles and measure area by counting unit squares",
-        "Introduces the concept that area = length \u00d7 width before formula memorization",
+        "Introduces the concept that area = length × width before formula memorization",
         "Extends to irregular shapes by breaking them into measurable rectangles",
         "Builds from concrete measurement to abstract area formulas"
       ],
@@ -5339,17 +5339,17 @@
         },
         {
           "title": "Measure Area Using Unit Squares",
-          "description": "Provide unit squares (small wooden or cardstock squares, each 1 unit \u00d7 1 unit). Have the child fill a rectangular outline completely with unit squares. Count the total number of squares. Say: 'This rectangle has 6 square units of area.' Record: Area = 6 square units.",
+          "description": "Provide unit squares (small wooden or cardstock squares, each 1 unit × 1 unit). Have the child fill a rectangular outline completely with unit squares. Count the total number of squares. Say: 'This rectangle has 6 square units of area.' Record: Area = 6 square units.",
           "tip": "Ensure complete coverage with no overlaps or gaps; count row by row to prevent errors."
         },
         {
           "title": "Explore Rectangles of Different Dimensions",
-          "description": "Create or draw several rectangles: a 2\u00d73 rectangle, a 4\u00d72 rectangle, a 5\u00d74 rectangle, etc. Have the child fill each with unit squares and count the total. Record each: '2\u00d73 = 6 square units, 4\u00d72 = 8 square units,' etc. Create a chart showing the relationship.",
-          "tip": "Help the child notice the pattern: length \u00d7 width = area. Don't name it 'the formula' yet; let discovery come first."
+          "description": "Create or draw several rectangles: a 2×3 rectangle, a 4×2 rectangle, a 5×4 rectangle, etc. Have the child fill each with unit squares and count the total. Record each: '2×3 = 6 square units, 4×2 = 8 square units,' etc. Create a chart showing the relationship.",
+          "tip": "Help the child notice the pattern: length × width = area. Don't name it 'the formula' yet; let discovery come first."
         },
         {
           "title": "Introduce Rows and Columns Shortcut",
-          "description": "Show the child that instead of counting every square, they can count the squares in one row, then count the rows. For a 3\u00d74 rectangle: 'There are 4 squares in each row, and 3 rows. 4 + 4 + 4 = 12.' Later: '4 \u00d7 3 = 12.' This is the foundation of the multiplication formula.",
+          "description": "Show the child that instead of counting every square, they can count the squares in one row, then count the rows. For a 3×4 rectangle: 'There are 4 squares in each row, and 3 rows. 4 + 4 + 4 = 12.' Later: '4 × 3 = 12.' This is the foundation of the multiplication formula.",
           "tip": "Use multiplication language: 'We have 3 groups of 4' or '4 repeated 3 times.'"
         },
         {
@@ -5359,7 +5359,7 @@
         },
         {
           "title": "Measure Irregular Shapes",
-          "description": "Present an irregular shape (made from multiple rectangles). Have the child break it into rectangles, measure each rectangle's area, and add them together. For example, an L-shape might be broken into a 3\u00d74 rectangle and a 2\u00d72 rectangle: (3\u00d74) + (2\u00d72) = 12 + 4 = 16 square units.",
+          "description": "Present an irregular shape (made from multiple rectangles). Have the child break it into rectangles, measure each rectangle's area, and add them together. For example, an L-shape might be broken into a 3×4 rectangle and a 2×2 rectangle: (3×4) + (2×2) = 12 + 4 = 16 square units.",
           "tip": "This develops problem-solving and shows that area formulas apply to complex shapes when broken down."
         },
         {
@@ -5368,7 +5368,7 @@
           "tip": "Creating problems deepens understanding more than solving pre-made problems."
         }
       ],
-      "direct_aims": "Understand area as a two-dimensional measurement of space; learn that area = length \u00d7 width for rectangles; develop ability to calculate area of composite shapes; understand square units",
+      "direct_aims": "Understand area as a two-dimensional measurement of space; learn that area = length × width for rectangles; develop ability to calculate area of composite shapes; understand square units",
       "indirect_aims": "Prepare for perimeter and area distinction; understand that different shapes can have the same area; develop spatial reasoning; prepare for surface area and volume; build algebraic thinking (variables for length and width)",
       "materials": [
         "Yellow triangles for area",
@@ -5378,7 +5378,7 @@
       "prerequisites": [
         "ma_geometry_sticks"
       ],
-      "points_of_interest": "The visual pattern of filling a shape completely with unit squares, the discovery that you can multiply dimensions instead of counting every square, the realization that area applies to all shapes if broken into rectangles, the visual evidence that a 2\u00d75 and a 5\u00d72 rectangle have the same area",
+      "points_of_interest": "The visual pattern of filling a shape completely with unit squares, the discovery that you can multiply dimensions instead of counting every square, the realization that area applies to all shapes if broken into rectangles, the visual evidence that a 2×5 and a 5×2 rectangle have the same area",
       "variations": "Use colored unit squares to distinguish rows and columns; create area patterns or mosaics that show equivalence (shapes with same area but different dimensions); combine with perimeter work to show the difference; create context-based problems (e.g., 'Find the area of a garden plot')",
       "common_challenges": "Child confuses area with perimeter (tip: measure both and compare; show that shapes with same perimeter can have different areas); child miscounts unit squares, especially in large rectangles (tip: use rows and columns method earlier); child doesn't understand why area changes when dimensions change (tip: use concrete examples with varied manipulatives)",
       "video_search_term": "montessori area rectangle",
@@ -5386,13 +5386,13 @@
       "materials_needed": "Unit squares (wooden or cardstock, preferably in multiple colors to distinguish dimensions), rectangles or outlines to fill with unit squares, graph paper, standard square-unit tools (square inches, square centimeters), irregular shapes for decomposition practice, area task cards or problems",
       "extensions": "Introduce area of triangles (half of rectangles); explore area of parallelograms and other quadrilaterals; introduce area formulas for other shapes; connect to volume; explore surface area of three-dimensional figures; apply area to real-world problems (buying paint, tiling floors, landscaping)",
       "vocabulary": "Area, space, flat, two-dimensional, length, width, rectangle, dimension, square unit, square inch, square centimeter, square foot, measure, calculate, composite shape, decompose",
-      "parent_description": "Area is introduced by physically filling flat shapes with small unit squares. A 3 by 4 rectangle holds 12 unit squares, so its area is 12 square units. Children eventually notice they can multiply the dimensions (3 \u00d7 4) instead of counting every square. Through this discovery, the area formula becomes intuitive rather than arbitrary. Later, they learn to measure odd-shaped areas by breaking them into rectangles.",
-      "why_it_matters": "Understanding area concretely prevents the formula from being just a procedure children memorize and forget. By building understanding through manipulation, children develop intuition about space and measurement that supports geometry, algebra, and practical life skills. Understanding that area = length \u00d7 width is a gateway concept to multiplication of larger numbers, algebraic thinking, and eventually calculus."
+      "parent_description": "Area is introduced by physically filling flat shapes with small unit squares. A 3 by 4 rectangle holds 12 unit squares, so its area is 12 square units. Children eventually notice they can multiply the dimensions (3 × 4) instead of counting every square. Through this discovery, the area formula becomes intuitive rather than arbitrary. Later, they learn to measure odd-shaped areas by breaking them into rectangles.",
+      "why_it_matters": "Understanding area concretely prevents the formula from being just a procedure children memorize and forget. By building understanding through manipulation, children develop intuition about space and measurement that supports geometry, algebra, and practical life skills. Understanding that area = length × width is a gateway concept to multiplication of larger numbers, algebraic thinking, and eventually calculus."
     },
     {
       "work_id": "ma_clock",
       "name": "Clock Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u65f6\u949f",
+      "name_chinese": "蒙特梭利时钟",
       "slug": "clock",
       "area": "math",
       "category": "Mathematics - Practical Life & Measurement",
@@ -5413,12 +5413,12 @@
         },
         {
           "title": "Explain How Clocks Work: Direction and Movement",
-          "description": "Show the child how both hands move clockwise (the direction around the clock). Use the demonstration clock to slowly move the minute hand all the way around (representing 1 hour = 60 minutes). Have the child notice that when the minute hand completes a full rotation, the hour hand moves from one number to the next. Say: 'The hands always move in this direction\u2014we never go backwards on a clock.'",
+          "description": "Show the child how both hands move clockwise (the direction around the clock). Use the demonstration clock to slowly move the minute hand all the way around (representing 1 hour = 60 minutes). Have the child notice that when the minute hand completes a full rotation, the hour hand moves from one number to the next. Say: 'The hands always move in this direction—we never go backwards on a clock.'",
           "tip": "This counterintuitive concept is difficult for many children; use the physical movement to build understanding."
         },
         {
           "title": "Teach 'On the Hour' Times",
-          "description": "Start with 'on the hour' times\u2014when the minute hand points to 12 and the hour hand points to a number. Set the demonstration clock to various whole hours: 1 o'clock, 3 o'clock, 5 o'clock, etc. Have the child read each time aloud. Practice reading times across many clock faces (task cards, flash cards, or manipulative clocks).",
+          "description": "Start with 'on the hour' times—when the minute hand points to 12 and the hour hand points to a number. Set the demonstration clock to various whole hours: 1 o'clock, 3 o'clock, 5 o'clock, etc. Have the child read each time aloud. Practice reading times across many clock faces (task cards, flash cards, or manipulative clocks).",
           "tip": "Success at this level builds confidence; don't progress until the child can reliably identify whole hours."
         },
         {
@@ -5476,7 +5476,7 @@
     {
       "work_id": "ma_money",
       "name": "Money Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8d27\u5e01",
+      "name_chinese": "蒙特梭利货币",
       "slug": "money",
       "area": "math",
       "category": "Mathematics - Practical Life & Arithmetic",
@@ -5492,7 +5492,7 @@
       "presentation_steps": [
         {
           "title": "Introduce Individual Coins and Their Values",
-          "description": "Present one coin type at a time. Begin with the penny: 'This is a penny. It's worth 1 cent.' Show the child a penny coin and a '1\u00a2' card. Place them together. Repeat with other coins individually: nickel (5\u00a2), dime (10\u00a2), quarter (25\u00a2). For each, show the coin and its numerical value.",
+          "description": "Present one coin type at a time. Begin with the penny: 'This is a penny. It's worth 1 cent.' Show the child a penny coin and a '1¢' card. Place them together. Repeat with other coins individually: nickel (5¢), dime (10¢), quarter (25¢). For each, show the coin and its numerical value.",
           "tip": "Use actual coins alongside manipulatives; the real objects are most meaningful."
         },
         {
@@ -5517,7 +5517,7 @@
         },
         {
           "title": "Practice Counting Mixed Collections",
-          "description": "Give the child a mixed pile of coins (pennies, nickels, dimes, quarters). Have them count the total value by sorting into piles and counting by highest denomination first. For example: 3 quarters (75\u00a2) + 2 dimes (20\u00a2) + 1 nickel (5\u00a2) = 100 cents = 1 dollar.",
+          "description": "Give the child a mixed pile of coins (pennies, nickels, dimes, quarters). Have them count the total value by sorting into piles and counting by highest denomination first. For example: 3 quarters (75¢) + 2 dimes (20¢) + 1 nickel (5¢) = 100 cents = 1 dollar.",
           "tip": "Organizing by denomination before counting prevents errors; this strategic thinking is valuable."
         },
         {
@@ -5527,7 +5527,7 @@
         },
         {
           "title": "Practice Money Operations",
-          "description": "Create money-based problems for addition, subtraction, multiplication, and division: 'You have $2.50 and earn $1.75 more. How much do you have? (addition)' 'A book costs $8 and you pay with a $20 bill. What's your change? (subtraction)' 'Pencils cost 25\u00a2 each. You want 4. What's the total? (multiplication)' 'You have $3.00 to split equally among 3 friends. Each gets? (division)'",
+          "description": "Create money-based problems for addition, subtraction, multiplication, and division: 'You have $2.50 and earn $1.75 more. How much do you have? (addition)' 'A book costs $8 and you pay with a $20 bill. What's your change? (subtraction)' 'Pencils cost 25¢ each. You want 4. What's the total? (multiplication)' 'You have $3.00 to split equally among 3 friends. Each gets? (division)'",
           "tip": "Money provides context that makes abstract operations meaningful."
         },
         {
@@ -5561,7 +5561,7 @@
     {
       "work_id": "ma_calendar",
       "name": "Calendar Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u65e5\u5386",
+      "name_chinese": "蒙特梭利日历",
       "slug": "calendar",
       "area": "math",
       "category": "Mathematics - Practical Life & Measurement",
@@ -5643,7 +5643,7 @@
     {
       "name": "Division Board",
       "category": "Memorization",
-      "quick_guide": "\u2022 Wooden board with skittles (pegs) representing divisor\n\u2022 Child distributes beads to each skittle equally\n\u2022 Visual representation of division as fair distribution\n\u2022 Develops division fact fluency\n\u2022 Extends concrete bead division work to memorization",
+      "quick_guide": "• Wooden board with skittles (pegs) representing divisor\n• Child distributes beads to each skittle equally\n• Visual representation of division as fair distribution\n• Develops division fact fluency\n• Extends concrete bead division work to memorization",
       "presentation_steps": [
         {
           "step": 1,
@@ -5654,37 +5654,37 @@
         {
           "step": 2,
           "title": "Simple Division Problem",
-          "description": "Present: 12 \u00f7 3 = ?. Say 'We have twelve beads to share among three people. Let's place them one at a time to each person.'",
+          "description": "Present: 12 ÷ 3 = ?. Say 'We have twelve beads to share among three people. Let's place them one at a time to each person.'",
           "tip": "'Deal out' beads one at a time in round-robin fashion to emphasize fair distribution."
         },
         {
           "step": 3,
           "title": "Distributing and Counting",
           "description": "Place beads under each skittle in turn: one, two, three, one, two, three, continuing until all beads are distributed. Say 'Each person got four beads. Twelve divided by three equals four.'",
-          "tip": "The dealing motion is important\u2014it shows division's meaning kinesthetically."
+          "tip": "The dealing motion is important—it shows division's meaning kinesthetically."
         },
         {
           "step": 4,
           "title": "Recording the Fact",
-          "description": "Write: 12 \u00f7 3 = 4. Say 'Twelve divided by three equals four. We can write it like this.'",
+          "description": "Write: 12 ÷ 3 = 4. Say 'Twelve divided by three equals four. We can write it like this.'",
           "tip": "Connecting concrete action to symbolic notation is crucial."
         },
         {
           "step": 5,
           "title": "Verification Through Multiplication",
-          "description": "Show the inverse: '3 \u00d7 4 = 12. That proves our answer is correct! Multiplication and division are opposites.'",
+          "description": "Show the inverse: '3 × 4 = 12. That proves our answer is correct! Multiplication and division are opposites.'",
           "tip": "Explicit verification builds confidence in the relationship between operations."
         },
         {
           "step": 6,
           "title": "Progressive Problems",
-          "description": "Work through division facts systematically: 2-divisor facts (2, 4, 6, 8... \u00f7 2), then 3-divisor facts, continuing through 9.",
+          "description": "Work through division facts systematically: 2-divisor facts (2, 4, 6, 8... ÷ 2), then 3-divisor facts, continuing through 9.",
           "tip": "Systematic approach prevents overwhelm and builds methodically."
         },
         {
           "step": 7,
           "title": "Recognizing Patterns",
-          "description": "Point out patterns: 'All the \u00f72 facts are even numbers. \u00f75 facts end in 5 or 0 before division.' Patterns aid memorization.",
+          "description": "Point out patterns: 'All the ÷2 facts are even numbers. ÷5 facts end in 5 or 0 before division.' Patterns aid memorization.",
           "tip": "Pattern recognition makes facts more memorable than rote repetition."
         },
         {
@@ -5698,12 +5698,12 @@
         "The dealing process making distribution concrete",
         "The multiple skittles showing how many groups there are",
         "The quantity under each skittle being the quotient",
-        "Patterns that aid memory (\u00f75 facts, \u00f72 facts, etc.)",
+        "Patterns that aid memory (÷5 facts, ÷2 facts, etc.)",
         "The inverse relationship to multiplication for verification"
       ],
-      "control_of_error": "Counting the beads under each skittle provides control. Multiplying (divisor \u00d7 quotient) verifies the answer.",
+      "control_of_error": "Counting the beads under each skittle provides control. Multiplying (divisor × quotient) verifies the answer.",
       "direct_aims": [
-        "Memorize basic division facts (\u00f72 through \u00f79)",
+        "Memorize basic division facts (÷2 through ÷9)",
         "Understand division as fair distribution into equal groups",
         "Connect division to multiplication as inverse",
         "Build automaticity with facts"
@@ -5750,13 +5750,13 @@
         "Difficulty with uneven division (remainders)",
         "Confusion about which number is divisor vs. dividend"
       ],
-      "parent_description": "The Division Board shows your child that division means sharing fairly. When your child distributes twelve beads equally among three skittles, getting four beads per skittle, they understand that 12 \u00f7 3 = 4. The board bridges concrete division work (golden beads) and abstract fact memorization, building understanding not just memorization.",
-      "why_it_matters": "Division is often taught as the most abstract operation. The Division Board makes it concrete, showing what division really means\u2014fair distribution or equal grouping. Children who understand division conceptually through boards are better equipped to handle remainders, interpret remainders in context, and understand division in higher mathematics."
+      "parent_description": "The Division Board shows your child that division means sharing fairly. When your child distributes twelve beads equally among three skittles, getting four beads per skittle, they understand that 12 ÷ 3 = 4. The board bridges concrete division work (golden beads) and abstract fact memorization, building understanding not just memorization.",
+      "why_it_matters": "Division is often taught as the most abstract operation. The Division Board makes it concrete, showing what division really means—fair distribution or equal grouping. Children who understand division conceptually through boards are better equipped to handle remainders, interpret remainders in context, and understand division in higher mathematics."
     },
     {
       "name": "Skip Counting",
       "category": "Memorization",
-      "quick_guide": "\u2022 Systematic counting by 2s, 3s, 4s, 5s, etc.\n\u2022 Using bead chains or number sequences as tools\n\u2022 Foundation for multiplication understanding\n\u2022 Bridges concrete bead work to abstract patterns\n\u2022 Develops mental math and pattern recognition",
+      "quick_guide": "• Systematic counting by 2s, 3s, 4s, 5s, etc.\n• Using bead chains or number sequences as tools\n• Foundation for multiplication understanding\n• Bridges concrete bead work to abstract patterns\n• Develops mental math and pattern recognition",
       "presentation_steps": [
         {
           "step": 1,
@@ -5797,7 +5797,7 @@
         {
           "step": 7,
           "title": "Connection to Multiplication",
-          "description": "Explain: 'Counting by fives is the same as the times five facts! Two times five is ten\u2014that's the second number we said when counting by fives.'",
+          "description": "Explain: 'Counting by fives is the same as the times five facts! Two times five is ten—that's the second number we said when counting by fives.'",
           "tip": "Explicit connection to multiplication shows why skip counting matters."
         },
         {
@@ -5862,13 +5862,13 @@
         "Difficulty recognizing patterns in skip-count sequences",
         "Confusing different skip-count patterns (mixing 3s and 4s)"
       ],
-      "parent_description": "Skip counting teaches your child to count in patterns\u2014by 2s, 3s, 4s, and so on. This is the foundation for understanding multiplication. When your child can count by fives (five, ten, fifteen, twenty...), they're essentially learning the times-five facts. Skip counting makes multiplication's pattern and logic obvious rather than abstract.",
+      "parent_description": "Skip counting teaches your child to count in patterns—by 2s, 3s, 4s, and so on. This is the foundation for understanding multiplication. When your child can count by fives (five, ten, fifteen, twenty...), they're essentially learning the times-five facts. Skip counting makes multiplication's pattern and logic obvious rather than abstract.",
       "why_it_matters": "Skip counting is one of the most important bridges between concrete arithmetic and abstract number sense. Children who develop fluency with skip counting understand multiplication deeply, can work more efficiently with numbers, and develop mathematical thinking that recognizes and uses patterns. This foundation supports all higher mathematics."
     },
     {
       "name": "Passage to Abstraction",
       "category": "Memorization",
-      "quick_guide": "\u2022 Materials for transitioning from concrete to abstract thinking\n\u2022 Includes Small Bead Frame, Wooden Hierarchy, Racks and Tubes\n\u2022 Child performs operations with materials while recording on paper\n\u2022 Recording becomes progressively more detailed\n\u2022 Bridge between manipulatives and algorithms",
+      "quick_guide": "• Materials for transitioning from concrete to abstract thinking\n• Includes Small Bead Frame, Wooden Hierarchy, Racks and Tubes\n• Child performs operations with materials while recording on paper\n• Recording becomes progressively more detailed\n• Bridge between manipulatives and algorithms",
       "presentation_steps": [
         {
           "step": 1,
@@ -5897,7 +5897,7 @@
         {
           "step": 5,
           "title": "Solving Larger Problems",
-          "description": "Using wooden hierarchy blocks, solve multiplication problems: 2 \u00d7 2,345. Arrange blocks, then record the algorithm on paper side by side.",
+          "description": "Using wooden hierarchy blocks, solve multiplication problems: 2 × 2,345. Arrange blocks, then record the algorithm on paper side by side.",
           "tip": "Paper recording becomes increasingly abstract while concrete material remains available."
         },
         {
@@ -5975,13 +5975,13 @@
         "Moving to paper too quickly without material understanding",
         "Reverting to rote memorization of algorithm steps"
       ],
-      "parent_description": "Passage to Abstraction is the bridge from hands-on math materials to standard pencil-and-paper algorithms. Your child learns that the algorithm we write\u2014the steps we follow to add, subtract, multiply, or divide on paper\u2014is exactly what their hands were doing with beads and materials. Once this connection is clear, algorithms make sense rather than seeming like arbitrary rules to memorize.",
+      "parent_description": "Passage to Abstraction is the bridge from hands-on math materials to standard pencil-and-paper algorithms. Your child learns that the algorithm we write—the steps we follow to add, subtract, multiply, or divide on paper—is exactly what their hands were doing with beads and materials. Once this connection is clear, algorithms make sense rather than seeming like arbitrary rules to memorize.",
       "why_it_matters": "This is perhaps the most critical material for preventing math from becoming meaningless rote procedure. Children who understand that algorithms represent concrete operations understand not just how to follow steps, but why those steps work. This deep understanding supports all future mathematics and prevents the common experience of being able to 'do math' but not understanding what you're doing."
     },
     {
       "name": "Teen Board and Tens Board (Seguin Boards)",
       "category": "Linear Counting",
-      "quick_guide": "\u2022 Teen Board (11-19) and Tens Board (20-99) with bead and numeral combinations\n\u2022 Child places colored beads with numeral cards to form numbers\n\u2022 Develops understanding of teen and tens composition\n\u2022 Bridges single-digit to multi-digit numbers\n\u2022 Critical for place value naming conventions",
+      "quick_guide": "• Teen Board (11-19) and Tens Board (20-99) with bead and numeral combinations\n• Child places colored beads with numeral cards to form numbers\n• Develops understanding of teen and tens composition\n• Bridges single-digit to multi-digit numbers\n• Critical for place value naming conventions",
       "presentation_steps": [
         {
           "step": 1,
@@ -6011,7 +6011,7 @@
           "step": 5,
           "title": "Tens Board Introduction",
           "description": "Show Tens Board. Say 'These numbers have tens and ones. Twenty has two tens. Thirty has three tens.'",
-          "tip": "This marks shift in structure\u2014now multiple tens, not always one."
+          "tip": "This marks shift in structure—now multiple tens, not always one."
         }
       ],
       "points_of_interest": [
@@ -6070,7 +6070,7 @@
     {
       "name": "Colored Bead Stair",
       "category": "Number Concepts",
-      "quick_guide": "\u2022 Nine bars with unique Montessori color-coding (red through dark blue)\n\u2022 Sensorial foundation using color association with quantity\n\u2022 Color system continues through all advanced Montessori math\n\u2022 Develops visual discrimination through color and quantity\n\u2022 Precursor to golden bead understanding",
+      "quick_guide": "• Nine bars with unique Montessori color-coding (red through dark blue)\n• Sensorial foundation using color association with quantity\n• Color system continues through all advanced Montessori math\n• Develops visual discrimination through color and quantity\n• Precursor to golden bead understanding",
       "presentation_steps": [
         {
           "step": 1,
@@ -6144,7 +6144,7 @@
     {
       "name": "Hundred and Thousand Cube Understanding",
       "category": "Decimal System",
-      "quick_guide": "\u2022 Comprehending the hundred square and thousand cube as units and place values\n\u2022 Recognizing that 10 tens = 1 hundred; 10 hundreds = 1 thousand\n\u2022 Visual and tactile understanding of place value relationships\n\u2022 Dramatic sizing shows the growth of powers of 10\n\u2022 Foundation for understanding larger numbers and their composition",
+      "quick_guide": "• Comprehending the hundred square and thousand cube as units and place values\n• Recognizing that 10 tens = 1 hundred; 10 hundreds = 1 thousand\n• Visual and tactile understanding of place value relationships\n• Dramatic sizing shows the growth of powers of 10\n• Foundation for understanding larger numbers and their composition",
       "presentation_steps": [
         {
           "step": 1,
@@ -6219,13 +6219,13 @@
         "Not believing equivalence despite appearance",
         "Difficulty seeing transformation"
       ],
-      "parent_description": "When your child holds ten ten-bars and then sees them as one hundred square, they understand that value can look completely different but remain the same. This principle\u2014that quantities can be reorganized without changing value\u2014is foundational to all mathematics.",
+      "parent_description": "When your child holds ten ten-bars and then sees them as one hundred square, they understand that value can look completely different but remain the same. This principle—that quantities can be reorganized without changing value—is foundational to all mathematics.",
       "why_it_matters": "Understanding place value relationships concretely prevents children from treating operations mechanically. Children who truly grasp that 10 tens equal 1 hundred understand carrying and borrowing, not as arbitrary rules, but as logical reorganization of value."
     },
     {
       "name": "Equivalence Exercises with Golden Beads",
       "category": "Decimal System",
-      "quick_guide": "\u2022 Exploring that same quantity can be represented multiple ways\n\u2022 324 = 32 tens + 4 units = 3 hundreds + 2 tens + 4 units\n\u2022 Deepens place value flexibility and understanding\n\u2022 Prepares for efficient arithmetic strategies\n\u2022 Builds foundation for algebraic equivalence thinking",
+      "quick_guide": "• Exploring that same quantity can be represented multiple ways\n• 324 = 32 tens + 4 units = 3 hundreds + 2 tens + 4 units\n• Deepens place value flexibility and understanding\n• Prepares for efficient arithmetic strategies\n• Builds foundation for algebraic equivalence thinking",
       "presentation_steps": [
         {
           "step": 1,
@@ -6310,7 +6310,7 @@
     {
       "name": "Golden Beads: Operations Overview",
       "category": "Decimal System",
-      "quick_guide": "\u2022 Complete framework showing all four operations using golden beads\n\u2022 From concrete bead manipulation to symbolic notation\n\u2022 Addition, subtraction, multiplication, division progressions\n\u2022 Holistic understanding of how operations relate\n\u2022 Demonstrates mathematical principles through place value",
+      "quick_guide": "• Complete framework showing all four operations using golden beads\n• From concrete bead manipulation to symbolic notation\n• Addition, subtraction, multiplication, division progressions\n• Holistic understanding of how operations relate\n• Demonstrates mathematical principles through place value",
       "presentation_steps": [
         {
           "step": 1,
@@ -6391,8 +6391,238 @@
         "Not yet ready to see all relationships",
         "Losing concentration with overview approach"
       ],
-      "parent_description": "The Golden Beads support all four operations\u2014addition, subtraction, multiplication, and division. By using the same materials for different operations, your child sees how they're all related. This integrated view prevents operations from seeming like separate, disconnected skills.",
+      "parent_description": "The Golden Beads support all four operations—addition, subtraction, multiplication, and division. By using the same materials for different operations, your child sees how they're all related. This integrated view prevents operations from seeming like separate, disconnected skills.",
       "why_it_matters": "Many children learn operations in isolation, never understanding how they relate. Seeing addition, subtraction, multiplication, and division all supported by the same golden beads and place value principles builds integrated mathematical thinking that supports higher-level mathematics. Children understand not just how to operate, but why operations make sense together."
+    },
+    {
+      "work_id": "ma_decanomial_layout",
+      "name": "Decanomial Layout",
+      "name_chinese": "蒙特梭利十项式排列",
+      "slug": "decanomial-layout",
+      "area": "math",
+      "category": "Passage to Abstraction",
+      "sequence": 1,
+      "age_range": "primary_year2",
+      "quick_guide": "• Bead bar box containing bars 1-10 in Montessori colors\n• Child builds a 10×10 grid: 1×1, 1×2... up to 10×10\n• Creates a stunning visual display of all multiplication facts\n• Commutative law becomes visible: 3×7 and 7×3 bars can swap\n• Adjusted decanomial replaces pairs with same-color squares\n• Leads directly to algebraic understanding of (a+b)²",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Layout",
+          "description": "Child places bead bars: row 1 is 1 one-bar, row 2 is 2 two-bars... row 10 is 10 ten-bars",
+          "tip": "This takes time — it's a beautiful meditative work"
+        },
+        {
+          "step": 2,
+          "title": "Observe",
+          "description": "Look at the diagonal — these are square numbers: 1,4,9,16...",
+          "tip": "The visual pattern is striking"
+        },
+        {
+          "step": 3,
+          "title": "Commutative Exchange",
+          "description": "Take 3×7 (three 7-bars) and 7×3 (seven 3-bars) — they make the same rectangle",
+          "tip": "This is a profound mathematical discovery"
+        },
+        {
+          "step": 4,
+          "title": "Adjusted Layout",
+          "description": "Replace each pair with same-color equivalent bars",
+          "tip": "The pattern transforms beautifully"
+        },
+        {
+          "step": 5,
+          "title": "Record",
+          "description": "Child can record the layout on paper",
+          "tip": "Connects concrete to abstract"
+        }
+      ],
+      "direct_aims": [
+        "Visual multiplication understanding",
+        "Square numbers"
+      ],
+      "indirect_aims": [
+        "Algebraic preparation",
+        "Pattern recognition"
+      ],
+      "materials_needed": [
+        "Decanomial bead bar box",
+        "Large felt mat"
+      ],
+      "control_of_error": "Bead bars placed in wrong position",
+      "prerequisites": [
+        "ma_multiplication_bead_board"
+      ],
+      "points_of_interest": [
+        "The beautiful color pattern",
+        "Square numbers on diagonal",
+        "Commutative discovery"
+      ],
+      "variations": [
+        "Record results in a table",
+        "Calculate the total of all beads",
+        "Find other patterns"
+      ],
+      "common_challenges": [
+        "This is a long work — allow plenty of time",
+        "Some children need help with the systematic layout"
+      ],
+      "video_search_term": "montessori decanomial layout bead bars",
+      "parent_description": "Your child builds a spectacular 10×10 grid using colored bead bars — every multiplication fact from 1×1 to 10×10 laid out in a rainbow pattern. They discover that 3×7 and 7×3 make the same shape, and that perfect squares run down the diagonal. It's mathematics as art.",
+      "why_it_matters": "The decanomial is one of Montessori's most brilliant materials. It gives children a complete, visual map of multiplication that reveals deep patterns — commutative property, square numbers, even the foundations of algebra. Children who work with this material develop an intuitive feel for number relationships that serves them throughout mathematics."
+    },
+    {
+      "work_id": "ma_length_measurement",
+      "name": "Length Measurement",
+      "name_chinese": "蒙特梭利长度测量",
+      "slug": "length-measurement",
+      "area": "math",
+      "category": "Measurement",
+      "sequence": 1,
+      "age_range": "primary_year2",
+      "quick_guide": "• Begin with non-standard units: 'This table is 12 paperclips long'\n• Move to standard units: centimetres, then metres\n• The Red Rods and Number Rods already prepared this concept\n• Child measures real objects around the classroom\n• Estimation before measuring builds number sense\n• Recording measurements connects to writing and math",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Non-Standard",
+          "description": "Measure objects with paperclips or cubes. 'The book is 8 cubes long'",
+          "tip": "Everyone's cubes are the same — that's why it works"
+        },
+        {
+          "step": 2,
+          "title": "Problem",
+          "description": "Two children measure the same table with different units and get different numbers",
+          "tip": "Why do we need a STANDARD unit?"
+        },
+        {
+          "step": 3,
+          "title": "Ruler",
+          "description": "Introduce the centimetre ruler. Show how to align at zero",
+          "tip": "Aligning at zero is a common challenge"
+        },
+        {
+          "step": 4,
+          "title": "Practice",
+          "description": "Measure classroom objects. Estimate first, then check",
+          "tip": "Estimation builds number sense"
+        },
+        {
+          "step": 5,
+          "title": "Metre",
+          "description": "For bigger things, introduce the metre stick",
+          "tip": "'How many metres is the classroom?'"
+        }
+      ],
+      "direct_aims": [
+        "Understanding measurement",
+        "Using rulers"
+      ],
+      "indirect_aims": [
+        "Estimation",
+        "Number sense"
+      ],
+      "materials_needed": [
+        "Ruler",
+        "Measuring tape",
+        "Paperclips or cubes for non-standard"
+      ],
+      "control_of_error": "Measurement doesn't match — re-measure to find error",
+      "prerequisites": [
+        "ma_red_blue_rods"
+      ],
+      "points_of_interest": [
+        "The surprise of non-standard results",
+        "Estimating then checking",
+        "Measuring large things"
+      ],
+      "variations": [
+        "Measure everything in the classroom",
+        "Create a measurement chart",
+        "Compare objects by length"
+      ],
+      "common_challenges": [
+        "Ensure child aligns ruler at zero, not the edge",
+        "Estimation is as important as the measurement itself"
+      ],
+      "video_search_term": "montessori length measurement primary",
+      "parent_description": "Your child starts by measuring things with paperclips and cubes, then discovers why we need standard units when two children get different answers for the same table! They learn to use rulers and metre sticks to measure real things around the classroom — always estimating first.",
+      "why_it_matters": "Measurement connects abstract numbers to the physical world. When your child measures their desk, the classroom, or the playground, mathematics becomes real and useful. The progression from non-standard to standard units mirrors the historical development of measurement systems."
+    },
+    {
+      "work_id": "ma_weight_measurement",
+      "name": "Weight Measurement",
+      "name_chinese": "蒙特梭利重量测量",
+      "slug": "weight-measurement",
+      "area": "math",
+      "category": "Measurement",
+      "sequence": 2,
+      "age_range": "primary_year2",
+      "quick_guide": "• Begin with hands: 'Which is heavier?' holding one object in each hand\n• Introduce the balance scale — a beautiful, precise instrument\n• Use standard weights (1g, 5g, 10g, 20g, 50g, 100g)\n• Baric tablets from Sensorial prepared this sense\n• Children love weighing classroom objects\n• Estimation before weighing builds intuition",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Hands",
+          "description": "Hold two objects, one in each hand. 'Which is heavier?'",
+          "tip": "Start with obviously different weights"
+        },
+        {
+          "step": 2,
+          "title": "Balance Introduction",
+          "description": "Place one object on each side. Which goes down?",
+          "tip": "The heavier side goes down — very clear"
+        },
+        {
+          "step": 3,
+          "title": "Standard Weights",
+          "description": "Use weights to balance objects. 'The apple weighs 150 grams'",
+          "tip": "Start with round numbers"
+        },
+        {
+          "step": 4,
+          "title": "Estimation",
+          "description": "Before weighing, estimate. 'I think this is about 200 grams'",
+          "tip": "Builds weight intuition"
+        },
+        {
+          "step": 5,
+          "title": "Recording",
+          "description": "Keep a chart of objects and their weights",
+          "tip": "Compare and order by weight"
+        }
+      ],
+      "direct_aims": [
+        "Understanding weight",
+        "Using a balance scale"
+      ],
+      "indirect_aims": [
+        "Estimation",
+        "Scientific observation"
+      ],
+      "materials_needed": [
+        "Balance scale",
+        "Set of standard weights",
+        "Objects to weigh"
+      ],
+      "control_of_error": "Scale doesn't balance — adjust weights",
+      "prerequisites": [
+        "ma_golden_beads_intro"
+      ],
+      "points_of_interest": [
+        "The balance tipping",
+        "Getting exact weight",
+        "Surprising results (heavy small objects)"
+      ],
+      "variations": [
+        "Weigh ingredients for cooking",
+        "Order objects lightest to heaviest",
+        "Compare volumes vs weights"
+      ],
+      "common_challenges": [
+        "Some children confuse size with weight — use dense small objects to challenge this",
+        "Let the child handle the weights carefully"
+      ],
+      "video_search_term": "montessori weight measurement balance scale",
+      "parent_description": "Your child compares objects by weight — first by hand ('which feels heavier?'), then using a beautiful balance scale with real brass weights. They discover that size doesn't always predict weight when a small stone outweighs a big ball of cotton!",
+      "why_it_matters": "Weight measurement develops scientific thinking — hypothesising, testing, and recording. The balance scale is one of humanity's oldest scientific instruments, and when your child uses it, they're practising the same careful observation that underlies all science."
     }
   ]
 }
