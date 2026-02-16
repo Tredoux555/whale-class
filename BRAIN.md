@@ -7,7 +7,7 @@
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Curriculum expanded from 268 → 319 works. Docker CACHEBUST updated to force Railway rebuild. **After Railway deploys, click "Re-import Master" on the curriculum page to seed the 319 works into Supabase.**
+**Status**: 🚀 LIVE — Curriculum expanded from 268 → 329 works (319 after first pass, then +10 Language). Re-import done, live site confirmed at 329. **Home parent system exists and works** — signup at `/montree/try`, login with 6-char code at `/montree/login`.
 
 ## ⚠️ CRITICAL RULE — HOME SYSTEM
 
@@ -20,6 +20,31 @@ The live database was set up via Supabase UI before the migration files were wri
 When modifying curriculum JSON files (`lib/montree/stem/*.json` or `lib/curriculum/comprehensive-guides/*.json`), you **MUST** also update the `CACHEBUST` ARG in the `Dockerfile`. The curriculum-loader uses static ES module imports which get bundled at **build time** by `npm run build`. If Docker caches the build layer, the new JSON data won't be included. Update the CACHEBUST value to any new unique string to force a fresh build.
 
 ## Recent Changes
+
+### Session 166b - Feb 16, 2026 (LANGUAGE COMPLETION + LOGIN FIX)
+
+**Handoff:** `HANDOFF.md`
+**Commits:** `5cf4a8f4`, `db81c1b2` — pushed to main.
+
+**Language curriculum expanded from 57 → 67 works.** Audited Language area against standard AMI/AMS 3-6 curriculum and added 10 missing works:
+
+| Category | Added |
+|----------|-------|
+| Oral Language (+1) | Syllable Work |
+| Reading (+3) | Phonogram Box, Digraph Practice, Story Sequencing Cards |
+| Grammar (+4) | Function of Words, Sentence Building, Sentence Diagramming, Verb Tense Work |
+| Word Study (+2) | Root Words and Word Origins, Poetry Analysis |
+
+**Category structure fixes:**
+- Removed orphan "Total Reading" category (1 work) — moved Secret Messages into Reading
+- Moved Definition Stages from Reading → Word Study (better semantic fit)
+- Language now has 5 clean categories: Oral Language (9), Writing Prep (10), Reading (17), Grammar (22), Word Study (9)
+
+**Login page UX fix:** Added note clarifying teachers, principals, AND home parents all log in with their 6-char code. Added "Don't have a code? Get started →" link to `/montree/try`.
+
+**Key discovery:** The Home parent system IS built (was unclear from previous handoffs). Home parents sign up at `/montree/try` → "Parent at Home", get a 6-char code, stored in `montree_teachers` with `role = 'homeschool_parent'`. Dashboard conditionally renders via `isHomeschoolParent()` in `lib/montree/auth.ts`.
+
+**Total curriculum: 329 works** (PL 89, Sensorial 39, Language 67, Math 60, Cultural 74).
 
 ### Session 166 - Feb 16, 2026 (CURRICULUM EXPANSION — 268 → 319 WORKS ✅)
 
