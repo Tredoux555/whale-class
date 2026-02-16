@@ -3988,13 +3988,7 @@
       "category": "Mathematics - Arithmetic Operations",
       "sequence": 9,
       "age_range": "5.5 - 7 years (Primary lower elementary, typically Grade 1-2)",
-      "quick_guide": [
-        "Concrete material demonstrating simple division with green skittles as divisors",
-        "Children distribute equal quantities of beads to represent sharing amounts equally",
-        "Introduces dividend, divisor, and quotient through hands-on manipulation",
-        "Builds foundation for understanding division as equal distribution",
-        "Progresses from small divisors (2-9) to larger dividend amounts"
-      ],
+      "quick_guide": "• Concrete material demonstrating simple division with green skittles as divisors\n• Children distribute equal quantities of beads to represent sharing amounts equally\n• Introduces dividend, divisor, and quotient through hands-on manipulation\n• Builds foundation for understanding division as equal distribution\n• Progresses from small divisors (2-9) to larger dividend amounts",
       "presentation_steps": [
         {
           "title": "Introduction to the Materials",
@@ -4510,13 +4504,7 @@
       "category": "Mathematics - Arithmetic Operations",
       "sequence": 5,
       "age_range": "6.5 - 9 years (Upper elementary, typically Grade 2-4)",
-      "quick_guide": [
-        "Large wooden board with color-coded columns (green units, blue tens, red hundreds) and rows for hierarchical visualization",
-        "Children place bead bars and number tiles to represent multi-digit multiplication visually",
-        "Demonstrates how each digit of a multiplier creates a new partial product at different hierarchical levels",
-        "Shows geometric representation of multiplication (length × width concept)",
-        "Bridges concrete bead materials to abstract symbolic multiplication"
-      ],
+      "quick_guide": "• Large wooden board with color-coded columns (green units, blue tens, red hundreds) and rows for hierarchical visualization\n• Children place bead bars and number tiles to represent multi-digit multiplication visually\n• Demonstrates how each digit of a multiplier creates a new partial product at different hierarchical levels\n• Shows geometric representation of multiplication (length × width concept)\n• Bridges concrete bead materials to abstract symbolic multiplication",
       "presentation_steps": [
         {
           "title": "Introduction to the Board Layout",
@@ -4580,13 +4568,7 @@
       "category": "Mathematics - Arithmetic Operations",
       "sequence": 6,
       "age_range": "8 - 10 years (Upper elementary, typically Grade 3-5)",
-      "quick_guide": [
-        "Hierarchical material with 7 racks containing tubes of colored beads (units to millions) for concrete division",
-        "Children redistribute uneven quantities using exchange system (10 smaller beads = 1 larger bead)",
-        "Demonstrates long division algorithm through hands-on process without symbolic notation initially",
-        "Shows how remainders are regrouped and exchanged into smaller units to continue dividing",
-        "Bridges to abstract long division recording through visual understanding of the process"
-      ],
+      "quick_guide": "• Hierarchical material with 7 racks containing tubes of colored beads (units to millions) for concrete division\n• Children redistribute uneven quantities using exchange system (10 smaller beads = 1 larger bead)\n• Demonstrates long division algorithm through hands-on process without symbolic notation initially\n• Shows how remainders are regrouped and exchanged into smaller units to continue dividing\n• Bridges to abstract long division recording through visual understanding of the process",
       "presentation_steps": [
         {
           "title": "Introduce the Materials and Counting",
@@ -4741,13 +4723,7 @@
       "category": "Mathematics - Fractions",
       "sequence": 2,
       "age_range": "7 - 9 years (Elementary, typically Grade 2-4)",
-      "quick_guide": [
-        "Uses colored fraction circles or fraction insets to physically manipulate fractional parts",
-        "Children match pieces to discover equivalent fractions and common denominators visually",
-        "Begins with like denominators (same-sized pieces) before moving to unlike denominators",
-        "Shows how fractions combine into larger units or wholes through hands-on arrangement",
-        "Develops conceptual understanding before symbolic fraction notation"
-      ],
+      "quick_guide": "• Uses colored fraction circles or fraction insets to physically manipulate fractional parts\n• Children match pieces to discover equivalent fractions and common denominators visually\n• Begins with like denominators (same-sized pieces) before moving to unlike denominators\n• Shows how fractions combine into larger units or wholes through hands-on arrangement\n• Develops conceptual understanding before symbolic fraction notation",
       "presentation_steps": [
         {
           "title": "Review Fraction Concept with Fraction Circles",
@@ -4815,13 +4791,7 @@
       "category": "Mathematics - Fractions",
       "sequence": 3,
       "age_range": "7.5 - 9.5 years (Elementary, typically Grade 2-4)",
-      "quick_guide": [
-        "Extends fraction circles and insets to explore taking away fractional parts",
-        "Children physically remove pieces to show subtraction as 'taking away' or 'finding the difference'",
-        "Begins with like denominators (same-sized pieces) before moving to unlike denominators",
-        "Explores regrouping when subtracting larger fractions from smaller ones (e.g., borrowing a whole)",
-        "Develops understanding of subtraction as inverse of addition"
-      ],
+      "quick_guide": "• Extends fraction circles and insets to explore taking away fractional parts\n• Children physically remove pieces to show subtraction as 'taking away' or 'finding the difference'\n• Begins with like denominators (same-sized pieces) before moving to unlike denominators\n• Explores regrouping when subtracting larger fractions from smaller ones (e.g., borrowing a whole)\n• Develops understanding of subtraction as inverse of addition",
       "presentation_steps": [
         {
           "title": "Review Fraction Concepts and Verify Understanding",
@@ -4889,13 +4859,7 @@
       "category": "Mathematics - Fractions",
       "sequence": 4,
       "age_range": "8 - 10 years (Upper elementary, typically Grade 3-5)",
-      "quick_guide": [
-        "Uses fraction circles to explore multiplication as 'groups of' or 'of' language",
-        "Shows how multiplying a fraction by a whole number creates larger quantities or wholes",
-        "Visual model demonstrates that 1/3 × 3 = 1 whole (the reciprocal relationship)",
-        "Explores multiplying fractions by fractions to create smaller results",
-        "Develops conceptual understanding before introducing procedural rules"
-      ],
+      "quick_guide": "• Uses fraction circles to explore multiplication as 'groups of' or 'of' language\n• Shows how multiplying a fraction by a whole number creates larger quantities or wholes\n• Visual model demonstrates that 1/3 × 3 = 1 whole (the reciprocal relationship)\n• Explores multiplying fractions by fractions to create smaller results\n• Develops conceptual understanding before introducing procedural rules",
       "presentation_steps": [
         {
           "title": "Review Fractions and Their Relationships",
@@ -4963,13 +4927,7 @@
       "category": "Mathematics - Fractions",
       "sequence": 5,
       "age_range": "8.5 - 10 years (Upper elementary, typically Grade 4-5)",
-      "quick_guide": [
-        "Uses fraction circles and division skittles to explore dividing fractions by whole numbers",
-        "Shows how 'sharing a fraction among people' creates smaller fractional parts",
-        "Demonstrates the relationship: dividing a fraction by n is equivalent to multiplying by 1/n",
-        "Introduces dividing whole numbers by fractions (more complex, often delayed)",
-        "Builds understanding of division as both 'sharing' and 'how many groups' models"
-      ],
+      "quick_guide": "• Uses fraction circles and division skittles to explore dividing fractions by whole numbers\n• Shows how 'sharing a fraction among people' creates smaller fractional parts\n• Demonstrates the relationship: dividing a fraction by n is equivalent to multiplying by 1/n\n• Introduces dividing whole numbers by fractions (more complex, often delayed)\n• Builds understanding of division as both 'sharing' and 'how many groups' models",
       "presentation_steps": [
         {
           "title": "Review Fractions and Division Concepts",
@@ -5162,13 +5120,7 @@
       "category": "Mathematics - Geometry",
       "sequence": 1,
       "age_range": "6.5 - 9 years (Elementary, typically Grade 1-4)",
-      "quick_guide": [
-        "Color-coded wooden sticks with measuring angles, plumb line, and fasteners for building geometric shapes",
-        "Children construct, identify, and classify lines, angles, and plane geometric figures",
-        "Progression from straight and curved lines to acute, right, obtuse, and straight angles",
-        "Combines with geometry nomenclature cards and booklets to build vocabulary",
-        "Serves as bridge between three-dimensional shapes (sensorial) and abstract geometric concepts"
-      ],
+      "quick_guide": "• Color-coded wooden sticks with measuring angles, plumb line, and fasteners for building geometric shapes\n• Children construct, identify, and classify lines, angles, and plane geometric figures\n• Progression from straight and curved lines to acute, right, obtuse, and straight angles\n• Combines with geometry nomenclature cards and booklets to build vocabulary\n• Serves as bridge between three-dimensional shapes (sensorial) and abstract geometric concepts",
       "presentation_steps": [
         {
           "title": "Introduce the Materials and Cork Board Setup",
@@ -5238,13 +5190,7 @@
       "category": "Mathematics - Geometry",
       "sequence": 2,
       "age_range": "7 - 10 years (Elementary, typically Grade 2-5)",
-      "quick_guide": [
-        "Classified cards with drawings and printed labels for geometric terminology",
-        "Three-period lesson progression: presentation, recognition, recall of geometric vocabulary",
-        "Covers basic concepts (point, line, surface) through complex shapes (regular polygons, circles)",
-        "Combines with Geometry Sticks and other geometric materials for reinforcement",
-        "Builds from simple to complex classification systems"
-      ],
+      "quick_guide": "• Classified cards with drawings and printed labels for geometric terminology\n• Three-period lesson progression: presentation, recognition, recall of geometric vocabulary\n• Covers basic concepts (point, line, surface) through complex shapes (regular polygons, circles)\n• Combines with Geometry Sticks and other geometric materials for reinforcement\n• Builds from simple to complex classification systems",
       "presentation_steps": [
         {
           "title": "Begin with Basic Concepts: Point, Line, Surface",
@@ -5319,13 +5265,7 @@
       "category": "Mathematics - Geometry",
       "sequence": 3,
       "age_range": "7.5 - 9 years (Elementary, typically Grade 2-4)",
-      "quick_guide": [
-        "Concrete material (rods or unit squares) used to measure the space inside flat geometric figures",
-        "Children physically construct rectangles and measure area by counting unit squares",
-        "Introduces the concept that area = length × width before formula memorization",
-        "Extends to irregular shapes by breaking them into measurable rectangles",
-        "Builds from concrete measurement to abstract area formulas"
-      ],
+      "quick_guide": "• Concrete material (rods or unit squares) used to measure the space inside flat geometric figures\n• Children physically construct rectangles and measure area by counting unit squares\n• Introduces the concept that area = length × width before formula memorization\n• Extends to irregular shapes by breaking them into measurable rectangles\n• Builds from concrete measurement to abstract area formulas",
       "presentation_steps": [
         {
           "title": "Review Measurement with Linear Units",
@@ -5398,13 +5338,7 @@
       "category": "Mathematics - Practical Life & Measurement",
       "sequence": 1,
       "age_range": "5.5 - 8 years (Primary through early elementary, typically ages K-3)",
-      "quick_guide": [
-        "Wooden or manipulative clocks with movable hour and minute hands for learning to tell time",
-        "Progression from 'on the hour' (whole hours) to half hours, quarter hours, and minutes",
-        "Connects with calendar work and historical timeline work in the curriculum",
-        "Develops understanding of time measurement and daily routine awareness",
-        "Bridges from sensorial materials to numerical time-telling and abstract time concepts"
-      ],
+      "quick_guide": "• Wooden or manipulative clocks with movable hour and minute hands for learning to tell time\n• Progression from 'on the hour' (whole hours) to half hours, quarter hours, and minutes\n• Connects with calendar work and historical timeline work in the curriculum\n• Develops understanding of time measurement and daily routine awareness\n• Bridges from sensorial materials to numerical time-telling and abstract time concepts",
       "presentation_steps": [
         {
           "title": "Introduce the Clock Face and Its Parts",
@@ -5482,13 +5416,7 @@
       "category": "Mathematics - Practical Life & Arithmetic",
       "sequence": 2,
       "age_range": "5 - 9 years (Primary through elementary, typically ages K-3, can extend to grade 4)",
-      "quick_guide": [
-        "Play money (coins and bills) used to learn value recognition and exchange equivalencies",
-        "Progression from cent coins through dollars, mirroring the decimal system work",
-        "Children practice counting, making change, and performing arithmetic operations with money",
-        "Real-world application of addition, subtraction, multiplication, and division",
-        "Develops practical life skills while reinforcing mathematical concepts"
-      ],
+      "quick_guide": "• Play money (coins and bills) used to learn value recognition and exchange equivalencies\n• Progression from cent coins through dollars, mirroring the decimal system work\n• Children practice counting, making change, and performing arithmetic operations with money\n• Real-world application of addition, subtraction, multiplication, and division\n• Develops practical life skills while reinforcing mathematical concepts",
       "presentation_steps": [
         {
           "title": "Introduce Individual Coins and Their Values",
@@ -5567,13 +5495,7 @@
       "category": "Mathematics - Practical Life & Measurement",
       "sequence": 3,
       "age_range": "3 - 8 years (Toddler through early elementary, typically ages 2-4 for introduction, ages 4-8 for development)",
-      "quick_guide": [
-        "Large calendar display used daily for building time awareness and measurement skills",
-        "Children mark the date, day of week, and weather; track patterns and progressions",
-        "Integrates with history, culture, and practical life routines",
-        "Develops understanding of days, weeks, months, years, and seasonal cycles",
-        "Foundation for understanding historical timelines and time intervals"
-      ],
+      "quick_guide": "• Large calendar display used daily for building time awareness and measurement skills\n• Children mark the date, day of week, and weather; track patterns and progressions\n• Integrates with history, culture, and practical life routines\n• Develops understanding of days, weeks, months, years, and seasonal cycles\n• Foundation for understanding historical timelines and time intervals",
       "presentation_steps": [
         {
           "title": "Introduce the Calendar and Its Components",
