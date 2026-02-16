@@ -7,13 +7,13 @@
     {
       "work_id": "pl_carrying_mat",
       "name": "Carrying a Mat",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5de5\u4f5c\u6bef",
+      "name_chinese": "蒙特梭利工作毯",
       "slug": "carrying-mat",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 1,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Demonstrate how to fold and hold the mat properly\n\u2022 Show how to carry it with both hands at chest level\n\u2022 Practice walking carefully and laying it down gently\n\u2022 Allow child to repeat the sequence multiple times\n\u2022 Emphasize care and control of movement",
+      "quick_guide": "• Demonstrate how to fold and hold the mat properly\n• Show how to carry it with both hands at chest level\n• Practice walking carefully and laying it down gently\n• Allow child to repeat the sequence multiple times\n• Emphasize care and control of movement",
       "presentation_steps": [
         {
           "step": 1,
@@ -111,13 +111,13 @@
     {
       "work_id": "pl_carrying_chair",
       "name": "Carrying a Chair",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6905\u5b50",
+      "name_chinese": "蒙特梭利椅子",
       "slug": "carrying-chair",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 2,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Demonstrate proper grip on the chair (one hand on seat, one on back)\n\u2022 Show how to lift the chair carefully without noise\n\u2022 Practice walking with controlled movement\n\u2022 Demonstrate how to place the chair down gently\n\u2022 Allow repetition to develop skill and concentration",
+      "quick_guide": "• Demonstrate proper grip on the chair (one hand on seat, one on back)\n• Show how to lift the chair carefully without noise\n• Practice walking with controlled movement\n• Demonstrate how to place the chair down gently\n• Allow repetition to develop skill and concentration",
       "presentation_steps": [
         {
           "step": 1,
@@ -216,13 +216,13 @@
     {
       "work_id": "pl_carrying_tray",
       "name": "Carrying a Tray",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6258\u76d8",
+      "name_chinese": "蒙特梭利托盘",
       "slug": "carrying-tray",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Proper technique for carrying trays safely across the classroom\n\u2022 Thumbs on top, fingers underneath, elbows close to body\n\u2022 Essential skill for transporting work materials independently\n\u2022 Develops balance, coordination, and careful movement\n\u2022 Foundation for serving and table setting activities",
+      "quick_guide": "• Proper technique for carrying trays safely across the classroom\n• Thumbs on top, fingers underneath, elbows close to body\n• Essential skill for transporting work materials independently\n• Develops balance, coordination, and careful movement\n• Foundation for serving and table setting activities",
       "presentation_steps": [
         {
           "step": 1,
@@ -302,13 +302,13 @@
     {
       "work_id": "pl_carrying_table",
       "name": "Carrying a Table",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u684c\u5b50\u642c\u8fd0",
+      "name_chinese": "蒙特梭利桌子搬运",
       "slug": "carrying-table",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 4,
       "age_range": "3 - 4 years (after mastering chair carrying)",
-      "quick_guide": "\u2022 Show proper grip with both hands on the sides or legs\n\u2022 Demonstrate lifting using leg strength, not just arms\n\u2022 Practice walking with a stable, controlled pace\n\u2022 Show how to place the table down gently and quietly\n\u2022 Emphasize safety and awareness of space",
+      "quick_guide": "• Show proper grip with both hands on the sides or legs\n• Demonstrate lifting using leg strength, not just arms\n• Practice walking with a stable, controlled pace\n• Show how to place the table down gently and quietly\n• Emphasize safety and awareness of space",
       "presentation_steps": [
         {
           "step": 1,
@@ -409,13 +409,13 @@
     {
       "work_id": "pl_opening_closing_door",
       "name": "Opening and Closing a Door",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5f00\u5173\u95e8",
+      "name_chinese": "蒙特梭利开关门",
       "slug": "opening-closing-door",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 5,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Demonstrate how to approach the door and locate the handle\n\u2022 Show proper hand placement and gentle pulling/pushing\n\u2022 Practice opening and closing with controlled speed\n\u2022 Emphasize awareness of others and safety\n\u2022 Allow the child to practice repeatedly",
+      "quick_guide": "• Demonstrate how to approach the door and locate the handle\n• Show proper hand placement and gentle pulling/pushing\n• Practice opening and closing with controlled speed\n• Emphasize awareness of others and safety\n• Allow the child to practice repeatedly",
       "presentation_steps": [
         {
           "step": 1,
@@ -514,13 +514,13 @@
     {
       "work_id": "pl_walking_line",
       "name": "Walking on the Line",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8d70\u7ebf",
+      "name_chinese": "蒙特梭利走线",
       "slug": "walking-line",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Elliptical line on floor for practicing controlled, graceful walking\n\u2022 Child walks heel-to-toe, maintaining balance and concentration\n\u2022 Variations include carrying objects, walking to music, or walking backwards\n\u2022 Develops body awareness, spatial orientation, and self-control\n\u2022 Foundation for all movement in the classroom",
+      "quick_guide": "• Elliptical line on floor for practicing controlled, graceful walking\n• Child walks heel-to-toe, maintaining balance and concentration\n• Variations include carrying objects, walking to music, or walking backwards\n• Develops body awareness, spatial orientation, and self-control\n• Foundation for all movement in the classroom",
       "presentation_steps": [
         {
           "step": 1,
@@ -611,13 +611,13 @@
     {
       "work_id": "pl_sitting_standing",
       "name": "Sitting and Standing at a Table",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5750\u7ad9\u793c\u4eea",
+      "name_chinese": "蒙特梭利坐站礼仪",
       "slug": "sitting-standing",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 7,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Show how to approach a table and pull out a chair\n\u2022 Demonstrate proper sitting posture with feet flat\n\u2022 Practice sitting with the chair properly tucked in\n\u2022 Show how to stand up and push in the chair\n\u2022 Emphasize control and quiet movement",
+      "quick_guide": "• Show how to approach a table and pull out a chair\n• Demonstrate proper sitting posture with feet flat\n• Practice sitting with the chair properly tucked in\n• Show how to stand up and push in the chair\n• Emphasize control and quiet movement",
       "presentation_steps": [
         {
           "step": 1,
@@ -717,13 +717,13 @@
     {
       "work_id": "pl_silence_game",
       "name": "The Silence Game",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5b89\u9759\u6e38\u620f",
+      "name_chinese": "蒙特梭利安静游戏",
       "slug": "silence-game",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 8,
       "age_range": "2.5 - 6 years (adjusted for attention span)",
-      "quick_guide": "\u2022 Explain that this is a special game about listening quietly\n\u2022 Demonstrate sitting or moving in complete silence\n\u2022 Use a signal to start and end the silence\n\u2022 Encourage listening to quiet sounds in the environment\n\u2022 Praise effort and participation in maintaining silence",
+      "quick_guide": "• Explain that this is a special game about listening quietly\n• Demonstrate sitting or moving in complete silence\n• Use a signal to start and end the silence\n• Encourage listening to quiet sounds in the environment\n• Praise effort and participation in maintaining silence",
       "presentation_steps": [
         {
           "step": 1,
@@ -825,13 +825,13 @@
     {
       "work_id": "pl_turning_pages",
       "name": "Turning Pages of a Book",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7ffb\u4e66\u9875",
+      "name_chinese": "蒙特梭利翻书页",
       "slug": "turning-pages",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 9,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Show how to open a book gently\n\u2022 Demonstrate holding the book with one hand\n\u2022 Show how to turn pages from right to left carefully\n\u2022 Emphasize respect for the book and care of materials\n\u2022 Practice turning pages repeatedly for mastery",
+      "quick_guide": "• Show how to open a book gently\n• Demonstrate holding the book with one hand\n• Show how to turn pages from right to left carefully\n• Emphasize respect for the book and care of materials\n• Practice turning pages repeatedly for mastery",
       "presentation_steps": [
         {
           "step": 1,
@@ -933,13 +933,13 @@
     {
       "work_id": "pl_folding_cloth",
       "name": "Folding Cloths",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6298\u5e03",
+      "name_chinese": "蒙特梭利折布",
       "slug": "folding-cloth",
       "area": "practical_life",
       "category": "Preliminary Exercises",
       "sequence": 10,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Fold FROM BODY AWAY (bottom to top) - stitched line appears on fold edge\n\u2022 Match CORNERS EXACTLY - this precision IS the point of interest\n\u2022 SLIDE fingers along fold to smooth - don't press hard (no crease yet)\n\u2022 Use cloths with CONTRASTING STITCHED LINES as visual guides\n\u2022 Progress: single horizontal \u2192 double \u2192 diagonal \u2192 double diagonal",
+      "quick_guide": "• Fold FROM BODY AWAY (bottom to top) - stitched line appears on fold edge\n• Match CORNERS EXACTLY - this precision IS the point of interest\n• SLIDE fingers along fold to smooth - don't press hard (no crease yet)\n• Use cloths with CONTRASTING STITCHED LINES as visual guides\n• Progress: single horizontal → double → diagonal → double diagonal",
       "presentation_steps": [
         {
           "step": 1,
@@ -1005,8 +1005,8 @@
         "Symmetry created by folding"
       ],
       "variations": [
-        "Single horizontal \u2192 double horizontal",
-        "Single diagonal \u2192 double diagonal",
+        "Single horizontal → double horizontal",
+        "Single diagonal → double diagonal",
         "Folding napkins and towels",
         "Rolling socks"
       ],
@@ -1028,13 +1028,13 @@
     {
       "work_id": "pl_dry_transfer_hand",
       "name": "Dry Transfer - Hands",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u624b\u6293\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利手抓转移",
       "slug": "dry-transfer-hand",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 1,
       "age_range": "2 - 3.5 years",
-      "quick_guide": "\u2022 Set up two bowls or containers with dry material (beads, buttons, beans)\n\u2022 Show how to pick up one item at a time using fingers\n\u2022 Transfer items carefully from one bowl to another\n\u2022 Emphasize precision and control\n\u2022 Allow multiple repetitions for mastery",
+      "quick_guide": "• Set up two bowls or containers with dry material (beads, buttons, beans)\n• Show how to pick up one item at a time using fingers\n• Transfer items carefully from one bowl to another\n• Emphasize precision and control\n• Allow multiple repetitions for mastery",
       "presentation_steps": [
         {
           "step": 1,
@@ -1138,13 +1138,13 @@
     {
       "work_id": "pl_spooning",
       "name": "Spooning",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52fa\u5b50\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利勺子转移",
       "slug": "spooning",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 THREE-FINGER GRIP on spoon (thumb, index, middle) - EXACT pencil grip preparation\n\u2022 Scoop TOWARD body, lift ABOVE bowl rim, pause, then release over target bowl\n\u2022 Non-dominant hand GROUNDS the bowl throughout - stability is key\n\u2022 Progress: large spoon + large items \u2192 small spoon + small items\n\u2022 Let child continue HALFWAY through - don't demonstrate entire transfer",
+      "quick_guide": "• THREE-FINGER GRIP on spoon (thumb, index, middle) - EXACT pencil grip preparation\n• Scoop TOWARD body, lift ABOVE bowl rim, pause, then release over target bowl\n• Non-dominant hand GROUNDS the bowl throughout - stability is key\n• Progress: large spoon + large items → small spoon + small items\n• Let child continue HALFWAY through - don't demonstrate entire transfer",
       "presentation_steps": [
         {
           "step": 1,
@@ -1243,13 +1243,13 @@
     {
       "work_id": "pl_tonging",
       "name": "Tonging",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5939\u5b50\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利夹子转移",
       "slug": "tonging",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Transferring small objects using kitchen tongs or tweezers\n\u2022 Develops pincer grip and hand strength essential for writing\n\u2022 Transfer from one container to another with precision\n\u2022 Progresses from large tongs/objects to small tweezers/objects\n\u2022 Foundational fine motor exercise for pencil grip preparation",
+      "quick_guide": "• Transferring small objects using kitchen tongs or tweezers\n• Develops pincer grip and hand strength essential for writing\n• Transfer from one container to another with precision\n• Progresses from large tongs/objects to small tweezers/objects\n• Foundational fine motor exercise for pencil grip preparation",
       "presentation_steps": [
         {
           "step": 1,
@@ -1333,13 +1333,13 @@
     {
       "work_id": "pl_tweezers",
       "name": "Tweezers Transfer",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u954a\u5b50\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利镊子转移",
       "slug": "tweezers",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 4,
       "age_range": "3 - 4.5 years (after hand transfer mastery)",
-      "quick_guide": "\u2022 Set up tweezers with small objects in one bowl\n\u2022 Show proper grip on the tweezers (thumb and two fingers)\n\u2022 Transfer items one at a time to another container\n\u2022 Emphasize precise control and gentle pressure\n\u2022 Allow for repetition and mastery",
+      "quick_guide": "• Set up tweezers with small objects in one bowl\n• Show proper grip on the tweezers (thumb and two fingers)\n• Transfer items one at a time to another container\n• Emphasize precise control and gentle pressure\n• Allow for repetition and mastery",
       "presentation_steps": [
         {
           "step": 1,
@@ -1447,13 +1447,13 @@
     {
       "work_id": "pl_chopsticks",
       "name": "Chopsticks Transfer",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7b77\u5b50\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利筷子转移",
       "slug": "chopsticks",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 5,
       "age_range": "3.5 - 5 years (after tweezers mastery)",
-      "quick_guide": "\u2022 Show proper chopstick grip with fingers\n\u2022 Demonstrate how to pick up items using both sticks\n\u2022 Transfer objects from one bowl to another\n\u2022 Emphasize coordination between both hands\n\u2022 Allow practice for skill development",
+      "quick_guide": "• Show proper chopstick grip with fingers\n• Demonstrate how to pick up items using both sticks\n• Transfer objects from one bowl to another\n• Emphasize coordination between both hands\n• Allow practice for skill development",
       "presentation_steps": [
         {
           "step": 1,
@@ -1561,13 +1561,13 @@
     {
       "work_id": "pl_pouring_dry",
       "name": "Pouring Dry Materials",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5e72\u5012",
+      "name_chinese": "蒙特梭利干倒",
       "slug": "pouring-dry",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Hold pitcher with THUMB ON TOP, four fingers below - pour from left to right\n\u2022 Slow, analyzed movements - pause between steps for child to observe\n\u2022 Tilt SLOWLY, watch the stream, wait for LAST DROP before straightening\n\u2022 Spills are learning opportunities - show cleanup as part of the work\n\u2022 Progress: large beans \u2192 rice \u2192 sand \u2192 water (wet comes AFTER dry mastery)",
+      "quick_guide": "• Hold pitcher with THUMB ON TOP, four fingers below - pour from left to right\n• Slow, analyzed movements - pause between steps for child to observe\n• Tilt SLOWLY, watch the stream, wait for LAST DROP before straightening\n• Spills are learning opportunities - show cleanup as part of the work\n• Progress: large beans → rice → sand → water (wet comes AFTER dry mastery)",
       "presentation_steps": [
         {
           "step": 1,
@@ -1690,13 +1690,13 @@
     {
       "work_id": "pl_pouring_water",
       "name": "Pouring Water",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5012\u6c34",
+      "name_chinese": "蒙特梭利倒水",
       "slug": "pouring-water",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 7,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Hold pitcher with THUMB ON TOP, four fingers below - pour from left to right\n\u2022 Slow, analyzed movements - pause between steps for child to observe\n\u2022 Tilt SLOWLY, watch the stream, wait for LAST DROP before straightening\n\u2022 Spills are learning opportunities - show cleanup as part of the work\n\u2022 Progress: large beans \u2192 rice \u2192 sand \u2192 water (wet comes AFTER dry mastery)",
+      "quick_guide": "• Hold pitcher with THUMB ON TOP, four fingers below - pour from left to right\n• Slow, analyzed movements - pause between steps for child to observe\n• Tilt SLOWLY, watch the stream, wait for LAST DROP before straightening\n• Spills are learning opportunities - show cleanup as part of the work\n• Progress: large beans → rice → sand → water (wet comes AFTER dry mastery)",
       "presentation_steps": [
         {
           "step": 1,
@@ -1821,13 +1821,13 @@
     {
       "work_id": "pl_sponging",
       "name": "Sponging",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d77\u7ef5\u8f6c\u79fb",
+      "name_chinese": "蒙特梭利海绵转移",
       "slug": "sponging",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 8,
       "age_range": "2.5 - 4 years",
-      "quick_guide": "\u2022 Set up containers with water and a sponge\n\u2022 Show how to soak the sponge and squeeze out excess water\n\u2022 Transfer water from one container to another\n\u2022 Emphasize control and preventing spills\n\u2022 Allow for water play and exploration",
+      "quick_guide": "• Set up containers with water and a sponge\n• Show how to soak the sponge and squeeze out excess water\n• Transfer water from one container to another\n• Emphasize control and preventing spills\n• Allow for water play and exploration",
       "presentation_steps": [
         {
           "step": 1,
@@ -1936,13 +1936,13 @@
     {
       "work_id": "pl_basting",
       "name": "Basting (Turkey Baster)",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6ef4\u7ba1\u5927",
+      "name_chinese": "蒙特梭利滴管大",
       "slug": "basting",
       "area": "practical_life",
       "category": "Transfer Activities",
       "sequence": 9,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Transferring liquid using a baster (turkey baster style)\n\u2022 Develops hand strength and coordination\n\u2022 Squeezing action strengthens writing muscles\n\u2022 Water transferred from one container to another\n\u2022 Progression from large to small containers",
+      "quick_guide": "• Transferring liquid using a baster (turkey baster style)\n• Develops hand strength and coordination\n• Squeezing action strengthens writing muscles\n• Water transferred from one container to another\n• Progression from large to small containers",
       "presentation_steps": [
         {
           "step": 1,
@@ -2026,23 +2026,17 @@
     {
       "work_id": "pl_dropper",
       "name": "Eye Dropper",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6ef4\u7ba1",
+      "name_chinese": "蒙特梭利滴管",
       "slug": "dropper",
       "area": "practical_life",
       "category": "Transfer",
       "sequence": 10,
       "age_range": "2.5 - 4 years",
-      "quick_guide": [
-        "Dip dropper into colored water and squeeze until bubbles appear",
-        "Release pressure to fill dropper with water",
-        "Carefully transfer drops to empty container",
-        "Focus on smooth, controlled movements",
-        "Repeat until mastery and concentration develop"
-      ],
+      "quick_guide": "• Dip dropper into colored water and squeeze until bubbles appear\n• Release pressure to fill dropper with water\n• Carefully transfer drops to empty container\n• Focus on smooth, controlled movements\n• Repeat until mastery and concentration develop",
       "presentation_steps": [
         {
           "title": "Invitation & Setup",
-          "description": "Invite the child with enthusiasm. Prepare a tray with two clear containers\u2014one filled with colored water (add 1-2 drops of food coloring), one empty. Place beside the child.",
+          "description": "Invite the child with enthusiasm. Prepare a tray with two clear containers—one filled with colored water (add 1-2 drops of food coloring), one empty. Place beside the child.",
           "tip": "Use a small, child-sized tray so everything is visible and accessible."
         },
         {
@@ -2112,8 +2106,8 @@
       "common_challenges": [
         "Squeezing too hard and spraying water",
         "Dropping dropper in water",
-        "Becoming frustrated with slow pace\u2014encourage patience",
-        "Losing interest\u2014offer for short periods only"
+        "Becoming frustrated with slow pace—encourage patience",
+        "Losing interest—offer for short periods only"
       ],
       "video_search_term": "montessori eye dropper transfer",
       "data_status": "needs_guide",
@@ -2147,13 +2141,13 @@
     {
       "work_id": "pl_frame_velcro",
       "name": "Velcro Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9b54\u672f\u8d34\u6846",
+      "name_chinese": "蒙特梭利魔术贴框",
       "slug": "frame-velcro",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 1,
       "age_range": "2.5 - 3.5 years",
-      "quick_guide": "\u2022 Show how velcro strips connect with a light pressing motion\n\u2022 Demonstrate how to align the strips properly\n\u2022 Practice pressing together and pulling apart gently\n\u2022 Emphasize care in handling the velcro\n\u2022 Allow for repetition to develop skill",
+      "quick_guide": "• Show how velcro strips connect with a light pressing motion\n• Demonstrate how to align the strips properly\n• Practice pressing together and pulling apart gently\n• Emphasize care in handling the velcro\n• Allow for repetition to develop skill",
       "presentation_steps": [
         {
           "step": 1,
@@ -2251,13 +2245,13 @@
     {
       "work_id": "pl_frame_snaps",
       "name": "Snaps Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6309\u6263\u6846",
+      "name_chinese": "蒙特梭利按扣框",
       "slug": "frame-snaps",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 2,
       "age_range": "3 - 4.5 years (after velcro mastery)",
-      "quick_guide": "\u2022 Show how snap halves align and connect\n\u2022 Demonstrate pushing together firmly and evenly\n\u2022 Practice separating snaps with controlled force\n\u2022 Emphasize the alignment of snap components\n\u2022 Allow for gradual skill development through repetition",
+      "quick_guide": "• Show how snap halves align and connect\n• Demonstrate pushing together firmly and evenly\n• Practice separating snaps with controlled force\n• Emphasize the alignment of snap components\n• Allow for gradual skill development through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -2357,13 +2351,13 @@
     {
       "work_id": "pl_frame_large_buttons",
       "name": "Large Buttons Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5927\u7ebd\u6263\u6846",
+      "name_chinese": "蒙特梭利大纽扣框",
       "slug": "frame-large-buttons",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 3,
       "age_range": "3.5 - 5 years (after snaps mastery)",
-      "quick_guide": "\u2022 Show how to hold the button and pass it through the buttonhole\n\u2022 Demonstrate alignment and smooth entry\n\u2022 Emphasize using both hands for control\n\u2022 Practice repeated buttoning and unbuttoning\n\u2022 Allow patience for developing this complex skill",
+      "quick_guide": "• Show how to hold the button and pass it through the buttonhole\n• Demonstrate alignment and smooth entry\n• Emphasize using both hands for control\n• Practice repeated buttoning and unbuttoning\n• Allow patience for developing this complex skill",
       "presentation_steps": [
         {
           "step": 1,
@@ -2467,13 +2461,13 @@
     {
       "work_id": "pl_frame_small_buttons",
       "name": "Small Buttons Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5c0f\u7ebd\u6263\u6846",
+      "name_chinese": "蒙特梭利小纽扣框",
       "slug": "frame-small-buttons",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 4,
       "age_range": "4 - 5.5 years (after large buttons mastery)",
-      "quick_guide": "\u2022 Show how to handle smaller buttons with more precision\n\u2022 Demonstrate alignment with smaller buttonholes\n\u2022 Practice refined finger control and positioning\n\u2022 Emphasize patience with this challenging task\n\u2022 Allow for gradual mastery through repetition",
+      "quick_guide": "• Show how to handle smaller buttons with more precision\n• Demonstrate alignment with smaller buttonholes\n• Practice refined finger control and positioning\n• Emphasize patience with this challenging task\n• Allow for gradual mastery through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -2576,13 +2570,13 @@
     {
       "work_id": "pl_frame_zipper",
       "name": "Zipper Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u62c9\u94fe\u6846",
+      "name_chinese": "蒙特梭利拉链框",
       "slug": "frame-zipper",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 5,
       "age_range": "3.5 - 5 years",
-      "quick_guide": "\u2022 Show how to position the zipper slider and fabric\n\u2022 Demonstrate pulling the slider up and down smoothly\n\u2022 Emphasize care in handling the zipper mechanism\n\u2022 Practice the complete zipper motion repeatedly\n\u2022 Allow for gradual mastery of this complex fastener",
+      "quick_guide": "• Show how to position the zipper slider and fabric\n• Demonstrate pulling the slider up and down smoothly\n• Emphasize care in handling the zipper mechanism\n• Practice the complete zipper motion repeatedly\n• Allow for gradual mastery of this complex fastener",
       "presentation_steps": [
         {
           "step": 1,
@@ -2685,13 +2679,13 @@
     {
       "work_id": "pl_frame_hook_eye",
       "name": "Hook and Eye Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u94a9\u773c\u6846",
+      "name_chinese": "蒙特梭利钩眼框",
       "slug": "frame-hook-eye",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 6,
       "age_range": "4 - 5.5 years",
-      "quick_guide": "\u2022 Show how the hook and eye pieces align\n\u2022 Demonstrate positioning the hook into the eye loop\n\u2022 Emphasize precise alignment and gentle pressure\n\u2022 Practice repeated hooking and unhooking\n\u2022 Allow patience for developing this fine skill",
+      "quick_guide": "• Show how the hook and eye pieces align\n• Demonstrate positioning the hook into the eye loop\n• Emphasize precise alignment and gentle pressure\n• Practice repeated hooking and unhooking\n• Allow patience for developing this fine skill",
       "presentation_steps": [
         {
           "step": 1,
@@ -2793,13 +2787,13 @@
     {
       "work_id": "pl_frame_buckles",
       "name": "Buckles Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u76ae\u5e26\u6263\u6846",
+      "name_chinese": "蒙特梭利皮带扣框",
       "slug": "frame-buckles",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 7,
       "age_range": "4 - 5.5 years",
-      "quick_guide": "\u2022 Show how the buckle strap passes through the buckle clasp\n\u2022 Demonstrate inserting the strap smoothly and evenly\n\u2022 Practice pulling the strap tight after fastening\n\u2022 Emphasize proper positioning and tension\n\u2022 Allow for repeated practice to develop skill",
+      "quick_guide": "• Show how the buckle strap passes through the buckle clasp\n• Demonstrate inserting the strap smoothly and evenly\n• Practice pulling the strap tight after fastening\n• Emphasize proper positioning and tension\n• Allow for repeated practice to develop skill",
       "presentation_steps": [
         {
           "step": 1,
@@ -2901,13 +2895,13 @@
     {
       "work_id": "pl_frame_safety_pins",
       "name": "Safety Pins Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5b89\u5168\u522b\u9488\u6846",
+      "name_chinese": "蒙特梭利安全别针框",
       "slug": "frame-safety-pins",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 8,
       "age_range": "4.5 - 6 years (with close adult supervision)",
-      "quick_guide": "\u2022 Demonstrate proper handling of safety pins for safety\n\u2022 Show how to open and close the safety pin mechanism\n\u2022 Practice securing fabric with the pin\n\u2022 Emphasize careful, controlled movements\n\u2022 Supervise closely for safety",
+      "quick_guide": "• Demonstrate proper handling of safety pins for safety\n• Show how to open and close the safety pin mechanism\n• Practice securing fabric with the pin\n• Emphasize careful, controlled movements\n• Supervise closely for safety",
       "presentation_steps": [
         {
           "step": 1,
@@ -3009,13 +3003,13 @@
     {
       "work_id": "pl_frame_lacing",
       "name": "Lacing Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7a7f\u5b54\u6846",
+      "name_chinese": "蒙特梭利穿孔框",
       "slug": "frame-lacing",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 9,
       "age_range": "3.5 - 5 years",
-      "quick_guide": "\u2022 Show how to thread laces through eyelets\n\u2022 Demonstrate the crisscross lacing pattern\n\u2022 Practice tightening and loosening the laces\n\u2022 Emphasize coordination and pattern awareness\n\u2022 Allow for skill development through repetition",
+      "quick_guide": "• Show how to thread laces through eyelets\n• Demonstrate the crisscross lacing pattern\n• Practice tightening and loosening the laces\n• Emphasize coordination and pattern awareness\n• Allow for skill development through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -3117,13 +3111,13 @@
     {
       "work_id": "pl_frame_bow_tying",
       "name": "Bow Tying Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8774\u8776\u7ed3\u6846",
+      "name_chinese": "蒙特梭利蝴蝶结框",
       "slug": "frame-bow-tying",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 10,
       "age_range": "4 - 6 years (after lacing mastery)",
-      "quick_guide": "\u2022 Show how to cross the laces to create the first knot\n\u2022 Demonstrate making loops with the second lace\n\u2022 Practice pulling loops tight to complete the bow\n\u2022 Emphasize sequencing and hand coordination\n\u2022 Allow for gradual mastery through repetition",
+      "quick_guide": "• Show how to cross the laces to create the first knot\n• Demonstrate making loops with the second lace\n• Practice pulling loops tight to complete the bow\n• Emphasize sequencing and hand coordination\n• Allow for gradual mastery through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -3225,19 +3219,13 @@
     {
       "work_id": "pl_shoe_polishing",
       "name": "Shoe Polishing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u64e6\u978b",
+      "name_chinese": "蒙特梭利擦鞋",
       "slug": "shoe-polishing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 11,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Brush away loose dirt with hard brush",
-        "Apply polish with applicator brush in circular motions",
-        "Buff with soft brush using long strokes",
-        "Final polish with buffer cloth until shine appears",
-        "Sequence builds pride in personal appearance"
-      ],
+      "quick_guide": "• Brush away loose dirt with hard brush\n• Apply polish with applicator brush in circular motions\n• Buff with soft brush using long strokes\n• Final polish with buffer cloth until shine appears\n• Sequence builds pride in personal appearance",
       "presentation_steps": [
         {
           "title": "Preparation & Invitation",
@@ -3252,11 +3240,11 @@
         {
           "title": "Brushing Away Loose Dirt",
           "description": "Place the shoe on the oilcloth. Hold it steady with your non-dominant hand. Using the hard brush, brush away loose dirt with back-and-forth strokes, starting from the base and moving upward.",
-          "tip": "Show controlled, methodical strokes\u2014not hasty scrubbing."
+          "tip": "Show controlled, methodical strokes—not hasty scrubbing."
         },
         {
           "title": "Applying Polish",
-          "description": "Open the polish. Gently press the applicator bristles into the polish, then apply in small circular motions to the entire shoe\u2014front, sides, then back. Keep pressure light and even.",
+          "description": "Open the polish. Gently press the applicator bristles into the polish, then apply in small circular motions to the entire shoe—front, sides, then back. Keep pressure light and even.",
           "tip": "The circular motion is soothing and effective; avoid streaking."
         },
         {
@@ -3317,9 +3305,9 @@
         "Teach leather care as extension"
       ],
       "common_challenges": [
-        "Using too much polish\u2014guide toward less-is-more",
-        "Impatience with multiple buffing passes\u2014normalize practice",
-        "Frustration if shoes don't get shiny\u2014ensure shoes are appropriate for polishing"
+        "Using too much polish—guide toward less-is-more",
+        "Impatience with multiple buffing passes—normalize practice",
+        "Frustration if shoes don't get shiny—ensure shoes are appropriate for polishing"
       ],
       "video_search_term": "montessori shoe polishing",
       "data_status": "needs_guide",
@@ -3356,19 +3344,13 @@
     {
       "work_id": "pl_braiding",
       "name": "Braiding Frame",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7f16\u7ec7\u6846",
+      "name_chinese": "蒙特梭利编织框",
       "slug": "braiding",
       "area": "practical_life",
       "category": "Dressing Frames",
       "sequence": 12,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Understand three-strand braiding pattern",
-        "Practice cross-over motion of strands",
-        "Develop hand coordination for complex movement",
-        "Build fine motor strength",
-        "Prepares for real hair braiding"
-      ],
+      "quick_guide": "• Understand three-strand braiding pattern\n• Practice cross-over motion of strands\n• Develop hand coordination for complex movement\n• Build fine motor strength\n• Prepares for real hair braiding",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Frame",
@@ -3474,13 +3456,13 @@
     {
       "work_id": "pl_hand_washing",
       "name": "Hand Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d17\u624b\u53f0",
+      "name_chinese": "蒙特梭利洗手台",
       "slug": "hand-washing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 1,
       "age_range": "2.5 - 6 years",
-      "quick_guide": "\u2022 Set up a low sink with child-accessible controls\n\u2022 Show how to wet hands and apply soap\n\u2022 Demonstrate scrubbing all surfaces of hands\n\u2022 Practice rinsing and drying completely\n\u2022 Emphasize thoroughness and independence",
+      "quick_guide": "• Set up a low sink with child-accessible controls\n• Show how to wet hands and apply soap\n• Demonstrate scrubbing all surfaces of hands\n• Practice rinsing and drying completely\n• Emphasize thoroughness and independence",
       "presentation_steps": [
         {
           "step": 1,
@@ -3591,13 +3573,13 @@
     {
       "work_id": "pl_face_washing",
       "name": "Face Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d17\u8138",
+      "name_chinese": "蒙特梭利洗脸",
       "slug": "face-washing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 2,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Complete face washing routine for personal hygiene\n\u2022 Includes water temperature, soap use, rinsing, drying\n\u2022 Develops care of self and daily routine skills\n\u2022 Promotes cleanliness and health awareness\n\u2022 Builds body awareness and self-care independence",
+      "quick_guide": "• Complete face washing routine for personal hygiene\n• Includes water temperature, soap use, rinsing, drying\n• Develops care of self and daily routine skills\n• Promotes cleanliness and health awareness\n• Builds body awareness and self-care independence",
       "presentation_steps": [
         {
           "step": 1,
@@ -3684,13 +3666,13 @@
     {
       "work_id": "pl_teeth_brushing",
       "name": "Teeth Brushing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5237\u7259",
+      "name_chinese": "蒙特梭利刷牙",
       "slug": "teeth-brushing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 3,
       "age_range": "2.5 - 6 years (adjusted for age and ability)",
-      "quick_guide": "\u2022 Show how to hold the toothbrush properly\n\u2022 Demonstrate placing toothpaste on the brush\n\u2022 Show brushing all tooth surfaces gently\n\u2022 Practice rinsing mouth and brush\n\u2022 Emphasize that teeth brushing is a daily routine",
+      "quick_guide": "• Show how to hold the toothbrush properly\n• Demonstrate placing toothpaste on the brush\n• Show brushing all tooth surfaces gently\n• Practice rinsing mouth and brush\n• Emphasize that teeth brushing is a daily routine",
       "presentation_steps": [
         {
           "step": 1,
@@ -3799,13 +3781,13 @@
     {
       "work_id": "pl_nose_blowing",
       "name": "Nose Blowing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u64e4\u9f3b\u6d95",
+      "name_chinese": "蒙特梭利擤鼻涕",
       "slug": "nose-blowing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 4,
       "age_range": "2.5 - 6 years (adjusted for developmental readiness)",
-      "quick_guide": "\u2022 Demonstrate proper nose blowing technique\n\u2022 Show how to hold and use facial tissue\n\u2022 Practice gentle, controlled blowing\n\u2022 Teach proper disposal of tissue\n\u2022 Emphasize that this is a normal, necessary skill",
+      "quick_guide": "• Demonstrate proper nose blowing technique\n• Show how to hold and use facial tissue\n• Practice gentle, controlled blowing\n• Teach proper disposal of tissue\n• Emphasize that this is a normal, necessary skill",
       "presentation_steps": [
         {
           "step": 1,
@@ -3907,19 +3889,13 @@
     {
       "work_id": "pl_coughing_sneezing",
       "name": "Covering Coughs and Sneezes",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u54b3\u55fd\u55b7\u568f\u793c\u4eea",
+      "name_chinese": "蒙特梭利咳嗽喷嚏礼仪",
       "slug": "coughing-sneezing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 5,
       "age_range": "2.5 - 6 years (ongoing throughout childhood)",
-      "quick_guide": [
-        "Feel a cough or sneeze coming on",
-        "Quickly bring elbow or tissue to mouth/nose",
-        "Turn head away from others",
-        "Dispose of tissue if used",
-        "Practice develops healthy habits automatically"
-      ],
+      "quick_guide": "• Feel a cough or sneeze coming on\n• Quickly bring elbow or tissue to mouth/nose\n• Turn head away from others\n• Dispose of tissue if used\n• Practice develops healthy habits automatically",
       "presentation_steps": [
         {
           "title": "Introduction & Naming",
@@ -3981,7 +3957,7 @@
         "Practice with seasonal allergies discussions"
       ],
       "common_challenges": [
-        "Forgetting to cover (normal\u2014requires many reminders)",
+        "Forgetting to cover (normal—requires many reminders)",
         "Covering but still turning toward others (model the full motion again)",
         "Resistance to the behavior (frame as 'hero' action protecting friends)"
       ],
@@ -4011,18 +3987,18 @@
         "care for others"
       ],
       "parent_description": "Teaching children to cover coughs and sneezes is foundational health education. This simple habit, repeated thousands of times, becomes automatic and protects entire communities. It also teaches children that small individual actions have real effects on others.",
-      "why_it_matters": "This work develops both physical reflexes and social awareness. Children learn that their actions directly impact others' health and wellbeing\u2014a powerful lesson in community responsibility that extends far beyond hygiene."
+      "why_it_matters": "This work develops both physical reflexes and social awareness. Children learn that their actions directly impact others' health and wellbeing—a powerful lesson in community responsibility that extends far beyond hygiene."
     },
     {
       "work_id": "pl_hair_brushing",
       "name": "Hair Brushing/Combing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u68b3\u5934",
+      "name_chinese": "蒙特梭利梳头",
       "slug": "hair-brushing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 6,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Proper hair brushing technique for personal grooming\n\u2022 Includes gentle technique to avoid pulling\n\u2022 Develops care of self and personal appearance awareness\n\u2022 Promotes body awareness and self-care independence\n\u2022 Different techniques for different hair types",
+      "quick_guide": "• Proper hair brushing technique for personal grooming\n• Includes gentle technique to avoid pulling\n• Develops care of self and personal appearance awareness\n• Promotes body awareness and self-care independence\n• Different techniques for different hair types",
       "presentation_steps": [
         {
           "step": 1,
@@ -4104,19 +4080,13 @@
     {
       "work_id": "pl_hair_washing",
       "name": "Hair Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d17\u5934",
+      "name_chinese": "蒙特梭利洗头",
       "slug": "hair-washing",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 7,
       "age_range": "3.5 - 6 years (some self-washing; full independence develops)",
-      "quick_guide": [
-        "Wet hair thoroughly with warm water",
-        "Apply small amount of shampoo to scalp",
-        "Massage scalp gently with fingertips",
-        "Rinse completely until water runs clear",
-        "Squeeze water gently, then dry with towel"
-      ],
+      "quick_guide": "• Wet hair thoroughly with warm water\n• Apply small amount of shampoo to scalp\n• Massage scalp gently with fingertips\n• Rinse completely until water runs clear\n• Squeeze water gently, then dry with towel",
       "presentation_steps": [
         {
           "title": "Introduction & Safety Discussion",
@@ -4233,19 +4203,13 @@
     {
       "work_id": "pl_dressing_self",
       "name": "Dressing Oneself",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u81ea\u5df1\u7a7f\u8863",
+      "name_chinese": "蒙特梭利自己穿衣",
       "slug": "dressing-self",
       "area": "practical_life",
       "category": "Care of Self",
       "sequence": 8,
       "age_range": "2.5 - 6 years (increasingly independent through practice)",
-      "quick_guide": [
-        "Gather clothing items in order of dressing",
-        "Manage fastenings step by step",
-        "Practice balancing and coordination",
-        "Check appearance in mirror when finished",
-        "Takes repetition to develop full independence"
-      ],
+      "quick_guide": "• Gather clothing items in order of dressing\n• Manage fastenings step by step\n• Practice balancing and coordination\n• Check appearance in mirror when finished\n• Takes repetition to develop full independence",
       "presentation_steps": [
         {
           "title": "Introduction & Motivation",
@@ -4363,13 +4327,13 @@
     {
       "work_id": "pl_dusting",
       "name": "Dusting",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u63b8\u7070",
+      "name_chinese": "蒙特梭利掸灰",
       "slug": "dusting",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 1,
       "age_range": "3.5 - 6 years",
-      "quick_guide": "\u2022 Set up dusting cloths and objects to dust\n\u2022 Show proper dusting technique with gentle motions\n\u2022 Demonstrate dusting all surfaces of objects\n\u2022 Practice care to avoid breaking items\n\u2022 Emphasize revealing shine through dusting",
+      "quick_guide": "• Set up dusting cloths and objects to dust\n• Show proper dusting technique with gentle motions\n• Demonstrate dusting all surfaces of objects\n• Practice care to avoid breaking items\n• Emphasize revealing shine through dusting",
       "presentation_steps": [
         {
           "step": 1,
@@ -4473,13 +4437,13 @@
     {
       "work_id": "pl_sweeping",
       "name": "Sweeping",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u626b\u5730",
+      "name_chinese": "蒙特梭利扫地",
       "slug": "sweeping",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 2,
       "age_range": "4 - 6 years",
-      "quick_guide": "\u2022 Set up a child-sized broom and dustpan\n\u2022 Show proper sweeping technique and posture\n\u2022 Demonstrate gathering debris into a pile\n\u2022 Teach sweeping into a dustpan efficiently\n\u2022 Emphasize thoroughness and care",
+      "quick_guide": "• Set up a child-sized broom and dustpan\n• Show proper sweeping technique and posture\n• Demonstrate gathering debris into a pile\n• Teach sweeping into a dustpan efficiently\n• Emphasize thoroughness and care",
       "presentation_steps": [
         {
           "step": 1,
@@ -4585,13 +4549,13 @@
     {
       "work_id": "pl_mopping",
       "name": "Mopping",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u62d6\u5730",
+      "name_chinese": "蒙特梭利拖地",
       "slug": "mopping",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Wet cleaning of floor surfaces using appropriate mop and technique\n\u2022 Follows sweeping to remove remaining dirt\n\u2022 Child-sized mop and bucket for proper handling\n\u2022 Develops strength, coordination, and systematic coverage\n\u2022 Completes floor care routine",
+      "quick_guide": "• Wet cleaning of floor surfaces using appropriate mop and technique\n• Follows sweeping to remove remaining dirt\n• Child-sized mop and bucket for proper handling\n• Develops strength, coordination, and systematic coverage\n• Completes floor care routine",
       "presentation_steps": [
         {
           "step": 1,
@@ -4675,19 +4639,13 @@
     {
       "work_id": "pl_table_scrubbing",
       "name": "Table Scrubbing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u64e6\u684c\u5b50",
+      "name_chinese": "蒙特梭利擦桌子",
       "slug": "table-scrubbing",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 4,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Prepare soapy water and scrubbing cloth",
-        "Work in circular motions from edges to center",
-        "Scrub thoroughly with control and care",
-        "Rinse with clean water thoroughly",
-        "Dry completely with dry cloth"
-      ],
+      "quick_guide": "• Prepare soapy water and scrubbing cloth\n• Work in circular motions from edges to center\n• Scrub thoroughly with control and care\n• Rinse with clean water thoroughly\n• Dry completely with dry cloth",
       "presentation_steps": [
         {
           "title": "Invitation & Purpose",
@@ -4706,7 +4664,7 @@
         },
         {
           "title": "Scrubbing the Table Surface",
-          "description": "Starting at the far edge of the table, use circular motions to scrub the surface, working toward the near edge. Cover the entire surface methodically. Maintain consistent pressure\u2014firm enough to clean, gentle enough to be graceful.",
+          "description": "Starting at the far edge of the table, use circular motions to scrub the surface, working toward the near edge. Cover the entire surface methodically. Maintain consistent pressure—firm enough to clean, gentle enough to be graceful.",
           "tip": "The circular motion is soothing and effective; narrate the motion as you work."
         },
         {
@@ -4811,13 +4769,13 @@
     {
       "work_id": "pl_window_washing",
       "name": "Window Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u64e6\u7a97\u6237",
+      "name_chinese": "蒙特梭利擦窗户",
       "slug": "window-washing",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 5,
       "age_range": "4 - 6 years",
-      "quick_guide": "\u2022 Set up window washing supplies (water, cloth, squeegee)\n\u2022 Show how to apply water and soap gently\n\u2022 Demonstrate wiping and drying technique\n\u2022 Practice creating transparent, clean windows\n\u2022 Emphasize the transformation and care involved",
+      "quick_guide": "• Set up window washing supplies (water, cloth, squeegee)\n• Show how to apply water and soap gently\n• Demonstrate wiping and drying technique\n• Practice creating transparent, clean windows\n• Emphasize the transformation and care involved",
       "presentation_steps": [
         {
           "step": 1,
@@ -4925,19 +4883,13 @@
     {
       "work_id": "pl_polishing_wood",
       "name": "Wood Polishing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6728\u5668\u629b\u5149",
+      "name_chinese": "蒙特梭利木器抛光",
       "slug": "polishing-wood",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 6,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Arrange polishing materials left to right in order",
-        "Fold cloth over fingers properly",
-        "Dip cloth lightly in polish",
-        "Apply polish in smooth, even strokes",
-        "Buff with clean cloth until shine appears"
-      ],
+      "quick_guide": "• Arrange polishing materials left to right in order\n• Fold cloth over fingers properly\n• Dip cloth lightly in polish\n• Apply polish in smooth, even strokes\n• Buff with clean cloth until shine appears",
       "presentation_steps": [
         {
           "title": "Preparation & Invitation",
@@ -4956,7 +4908,7 @@
         },
         {
           "title": "Dipping in Polish",
-          "description": "Gently dip the cloth-wrapped fingers into the polish. Show that less is more\u2014only a light coating on the cloth is needed. Excess polish wastes product and creates streaks.",
+          "description": "Gently dip the cloth-wrapped fingers into the polish. Show that less is more—only a light coating on the cloth is needed. Excess polish wastes product and creates streaks.",
           "tip": "Model restraint; this is not a heavy scrubbing job."
         },
         {
@@ -5056,23 +5008,17 @@
     {
       "work_id": "pl_polishing_metal",
       "name": "Metal Polishing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u91d1\u5c5e\u629b\u5149",
+      "name_chinese": "蒙特梭利金属抛光",
       "slug": "polishing-metal",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 7,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Set out materials left to right: polish, stick, cotton, cloth, sponge",
-        "Swirl metal object in polish using circular motions",
-        "Watch tarnish transfer to cotton ball",
-        "Buff with back-and-forth motion on cloth",
-        "Dispose of used cotton, return items to shelf"
-      ],
+      "quick_guide": "• Set out materials left to right: polish, stick, cotton, cloth, sponge\n• Swirl metal object in polish using circular motions\n• Watch tarnish transfer to cotton ball\n• Buff with back-and-forth motion on cloth\n• Dispose of used cotton, return items to shelf",
       "presentation_steps": [
         {
           "title": "Invitation with Context",
-          "description": "Invite the child: 'This shiny metal piece has become tarnished. Let me show you how to make it shine beautifully again.' Show the before\u2014the dull, tarnished metal.",
+          "description": "Invite the child: 'This shiny metal piece has become tarnished. Let me show you how to make it shine beautifully again.' Show the before—the dull, tarnished metal.",
           "tip": "The dramatic before/after is visually motivating."
         },
         {
@@ -5082,7 +5028,7 @@
         },
         {
           "title": "Introducing the Metal Object",
-          "description": "Hold the tarnished metal object (spoon, decorative piece, etc.) and point out the tarnish\u2014the dark, dull coating. Explain: 'Polish will remove this and make it shine.'",
+          "description": "Hold the tarnished metal object (spoon, decorative piece, etc.) and point out the tarnish—the dark, dull coating. Explain: 'Polish will remove this and make it shine.'",
           "tip": "Children are fascinated by the visible tarnish and the promise of transformation."
         },
         {
@@ -5167,7 +5113,7 @@
         "Wooden stick or polish applicator",
         "Cotton balls (several)",
         "Polishing cloths (lint-free)",
-        "Metal object(s) to polish\u2014spoon, decorative piece, small sculpture",
+        "Metal object(s) to polish—spoon, decorative piece, small sculpture",
         "Oilcloth mat for workspace",
         "Sponge or cloth for wiping excess polish",
         "Apron (optional, as polish can stain)"
@@ -5191,29 +5137,23 @@
         "reflection"
       ],
       "parent_description": "Metal polishing is satisfying work because the results are visible and dramatic. Children see their effort directly transform a dull object into a gleaming one. This work teaches that care and attention restore beauty and preserve valuable items.",
-      "why_it_matters": "This work develops persistence and attention to detail while building pride in contribution. The dramatic transformation from tarnished to shining teaches children that sustained effort produces visible results\u2014a profound lesson about the value of work and care."
+      "why_it_matters": "This work develops persistence and attention to detail while building pride in contribution. The dramatic transformation from tarnished to shining teaches children that sustained effort produces visible results—a profound lesson about the value of work and care."
     },
     {
       "work_id": "pl_polishing_glass",
       "name": "Glass Polishing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u73bb\u7483\u629b\u5149",
+      "name_chinese": "蒙特梭利玻璃抛光",
       "slug": "polishing-glass",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 8,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Arrange materials: dust cloth, glass cleaner, polishing cloths",
-        "Dust glass object first to remove particles",
-        "Spray or apply glass cleaner carefully",
-        "Wipe thoroughly with circular motions",
-        "Buff to clear shine with dry, lint-free cloth"
-      ],
+      "quick_guide": "• Arrange materials: dust cloth, glass cleaner, polishing cloths\n• Dust glass object first to remove particles\n• Spray or apply glass cleaner carefully\n• Wipe thoroughly with circular motions\n• Buff to clear shine with dry, lint-free cloth",
       "presentation_steps": [
         {
           "title": "Invitation & Showing the Need",
           "description": "Invite the child: 'This mirror has fingerprints and dust on it. Let me show you how to make it clear and shiny again.' Point out the smudges and dust clearly.",
-          "tip": "Children understand this work immediately\u2014they see dirty mirrors all the time."
+          "tip": "Children understand this work immediately—they see dirty mirrors all the time."
         },
         {
           "title": "Organizing Materials on Mat",
@@ -5227,7 +5167,7 @@
         },
         {
           "title": "Applying Glass Cleaner",
-          "description": "Apply glass cleaner carefully\u2014either spray (with light misting) or apply with cloth. Don't oversaturate. Show how the cleaner begins to break down fingerprints and smudges.",
+          "description": "Apply glass cleaner carefully—either spray (with light misting) or apply with cloth. Don't oversaturate. Show how the cleaner begins to break down fingerprints and smudges.",
           "tip": "Model careful, controlled application to avoid waste."
         },
         {
@@ -5300,7 +5240,7 @@
       "video_search_term": "montessori glass polishing",
       "data_status": "needs_guide",
       "materials_needed": [
-        "Glass object\u2014mirror, window pane, or framed glass (child-safe size)",
+        "Glass object—mirror, window pane, or framed glass (child-safe size)",
         "Glass cleaner (mild, non-toxic, child-safe) or vinegar solution",
         "Soft cloths for dusting (damp)",
         "Polishing cloths (lint-free cotton or microfiber)",
@@ -5328,19 +5268,19 @@
         "shine / shiny",
         "reflection"
       ],
-      "parent_description": "Glass polishing teaches children that clear surfaces make environments feel bright and open. The work is straightforward\u2014even young children understand 'dirty' and 'clean'\u2014making it deeply satisfying. The clarity that emerges is rewarding motivation.",
+      "parent_description": "Glass polishing teaches children that clear surfaces make environments feel bright and open. The work is straightforward—even young children understand 'dirty' and 'clean'—making it deeply satisfying. The clarity that emerges is rewarding motivation.",
       "why_it_matters": "This work combines practical care with visual satisfaction. Children see immediate results of their effort, understanding that their work directly improves the environment's functionality and beauty. It teaches attention to detail and the value of thorough work."
     },
     {
       "work_id": "pl_plant_care",
       "name": "Plant Care",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u690d\u7269\u62a4\u7406",
+      "name_chinese": "蒙特梭利植物护理",
       "slug": "plant-care",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 9,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Complete care routine for classroom plants: watering, dusting, pruning\n\u2022 Develops responsibility for living things and scientific observation\n\u2022 Teaches that living things have needs like water and light\n\u2022 Child observes growth changes over time\n\u2022 Connection to botany curriculum",
+      "quick_guide": "• Complete care routine for classroom plants: watering, dusting, pruning\n• Develops responsibility for living things and scientific observation\n• Teaches that living things have needs like water and light\n• Child observes growth changes over time\n• Connection to botany curriculum",
       "presentation_steps": [
         {
           "step": 1,
@@ -5428,13 +5368,13 @@
     {
       "work_id": "pl_flower_arranging",
       "name": "Flower Arranging",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u63d2\u82b1",
+      "name_chinese": "蒙特梭利插花",
       "slug": "flower-arranging",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 10,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Arranging cut flowers in a vase for classroom beautification\n\u2022 Complete sequence: prepare vase, cut stems, arrange aesthetically\n\u2022 Develops aesthetic sense and care for beauty\n\u2022 Child contributes to classroom environment\n\u2022 Grace and courtesy application",
+      "quick_guide": "• Arranging cut flowers in a vase for classroom beautification\n• Complete sequence: prepare vase, cut stems, arrange aesthetically\n• Develops aesthetic sense and care for beauty\n• Child contributes to classroom environment\n• Grace and courtesy application",
       "presentation_steps": [
         {
           "step": 1,
@@ -5528,19 +5468,13 @@
     {
       "work_id": "pl_animal_care",
       "name": "Animal Care",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u52a8\u7269\u62a4\u7406",
+      "name_chinese": "蒙特梭利动物护理",
       "slug": "animal-care",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 11,
       "age_range": "3 - 6 years (with guidance, becoming more independent)",
-      "quick_guide": [
-        "Check animal's food and water daily",
-        "Provide fresh food appropriate for the species",
-        "Refresh water completely",
-        "Clean living space gently",
-        "Observe animal behavior with respect and interest"
-      ],
+      "quick_guide": "• Check animal's food and water daily\n• Provide fresh food appropriate for the species\n• Refresh water completely\n• Clean living space gently\n• Observe animal behavior with respect and interest",
       "presentation_steps": [
         {
           "title": "Introduction to the Animal",
@@ -5559,13 +5493,13 @@
         },
         {
           "title": "Providing Fresh Food",
-          "description": "Show the appropriate food for the animal (hay, pellets, seed, vegetables\u2014depending on the animal). Measure the correct amount together. Place it in the food dish gently. Explain: '[Animal] eats this to stay healthy.'",
+          "description": "Show the appropriate food for the animal (hay, pellets, seed, vegetables—depending on the animal). Measure the correct amount together. Place it in the food dish gently. Explain: '[Animal] eats this to stay healthy.'",
           "tip": "Children should understand what the animal eats and why."
         },
         {
           "title": "Checking & Refreshing Water",
           "description": "Check the water container. If water is present but old or dirty, empty it completely. Show the child how to fill a fresh, clean container with water at room temperature. Place it where the animal can access it easily.",
-          "tip": "Explain: 'Fresh water is very important\u2014just like you need clean water to drink.'"
+          "tip": "Explain: 'Fresh water is very important—just like you need clean water to drink.'"
         },
         {
           "title": "Gentle Cleaning of Living Space",
@@ -5593,7 +5527,7 @@
         "Understand that all living things have needs and deserve respect",
         "Develop daily responsibility habits that last a lifetime",
         "Learn observation skills and attention to detail",
-        "Create connection between actions and consequences (care \u2192 health, neglect \u2192 suffering)",
+        "Create connection between actions and consequences (care → health, neglect → suffering)",
         "Build confidence through meaningful contribution"
       ],
       "materials": [
@@ -5663,19 +5597,19 @@
         "depend on",
         "healthy / health"
       ],
-      "parent_description": "Classroom animals teach children that other living beings depend on them. This work builds genuine responsibility\u2014not an abstract concept, but real, daily care with visible consequences. Children develop empathy and understand that their actions directly affect another creature's wellbeing.",
+      "parent_description": "Classroom animals teach children that other living beings depend on them. This work builds genuine responsibility—not an abstract concept, but real, daily care with visible consequences. Children develop empathy and understand that their actions directly affect another creature's wellbeing.",
       "why_it_matters": "Animal care is among the most important practical life works because it connects children to life itself. It teaches empathy, responsibility, and the understanding that all living things deserve respect and care. These lessons transfer directly to all future relationships and ethical development."
     },
     {
       "work_id": "pl_dish_washing",
       "name": "Dish Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d17\u7897",
+      "name_chinese": "蒙特梭利洗碗",
       "slug": "dish-washing",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 12,
       "age_range": "3 - 6 years",
-      "quick_guide": "\u2022 Set up wash station with warm soapy water and clear water for rinsing\n\u2022 Show how to wash each dish thoroughly\n\u2022 Demonstrate proper rinsing to remove all soap\n\u2022 Practice drying and putting away dishes\n\u2022 Emphasize care to prevent breakage",
+      "quick_guide": "• Set up wash station with warm soapy water and clear water for rinsing\n• Show how to wash each dish thoroughly\n• Demonstrate proper rinsing to remove all soap\n• Practice drying and putting away dishes\n• Emphasize care to prevent breakage",
       "presentation_steps": [
         {
           "step": 1,
@@ -5786,19 +5720,13 @@
     {
       "work_id": "pl_laundry",
       "name": "Laundry - Hand Washing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u624b\u6d17\u8863\u7269",
+      "name_chinese": "蒙特梭利手洗衣物",
       "slug": "laundry",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 13,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Fill basin with warm water and add mild soap",
-        "Wet cloth item thoroughly",
-        "Rub soap on cloth or scrub with brush",
-        "Scrub along washboard in circular motions",
-        "Rinse in clean water multiple times until clear"
-      ],
+      "quick_guide": "• Fill basin with warm water and add mild soap\n• Wet cloth item thoroughly\n• Rub soap on cloth or scrub with brush\n• Scrub along washboard in circular motions\n• Rinse in clean water multiple times until clear",
       "presentation_steps": [
         {
           "title": "Introduction & Purpose",
@@ -5859,7 +5787,7 @@
       "indirect_aims": [
         "Build arm strength through scrubbing and wringing",
         "Develop concentration through repetitive motions",
-        "Understand cause and effect (dirt \u2192 washing \u2192 clean)",
+        "Understand cause and effect (dirt → washing → clean)",
         "Practice sequential steps with multiple iterations (multiple rinses)",
         "Develop responsibility for maintaining the environment",
         "Learn that resources (water) are used purposefully"
@@ -5935,24 +5863,18 @@
         "bubbles"
       ],
       "parent_description": "Hand washing laundry connects children to the work that keeps clothing clean. This real, necessary work teaches that effort produces results. Many children find the water and scrubbing satisfying and meditative.",
-      "why_it_matters": "This work teaches practical life skills while building arm strength, concentration, and understanding of care. Children learn that clothes don't clean themselves\u2014their care keeps things comfortable and hygienic. It's foundational to independence."
+      "why_it_matters": "This work teaches practical life skills while building arm strength, concentration, and understanding of care. Children learn that clothes don't clean themselves—their care keeps things comfortable and hygienic. It's foundational to independence."
     },
     {
       "work_id": "pl_folding_laundry",
       "name": "Folding Laundry",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6298\u53e0\u8863\u7269",
+      "name_chinese": "蒙特梭利折叠衣物",
       "slug": "folding-laundry",
       "area": "practical_life",
       "category": "Care of Environment",
       "sequence": 14,
       "age_range": "2.5 - 6 years (starting very simple, becoming complex)",
-      "quick_guide": [
-        "Start with smooth, square items (napkins, cloths)",
-        "Fold in half lengthwise, then in half again",
-        "Create neat, rectangular shapes",
-        "Stack folded items in organized piles",
-        "Progress to larger items as skill develops"
-      ],
+      "quick_guide": "• Start with smooth, square items (napkins, cloths)\n• Fold in half lengthwise, then in half again\n• Create neat, rectangular shapes\n• Stack folded items in organized piles\n• Progress to larger items as skill develops",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Need",
@@ -6021,7 +5943,7 @@
         "pl_folding_cloth"
       ],
       "points_of_interest": [
-        "The geometry of folding\u2014seeing shapes change",
+        "The geometry of folding—seeing shapes change",
         "The satisfying crease of each fold",
         "Creating neat, uniform rectangles",
         "The growing stack of folded items",
@@ -6043,7 +5965,7 @@
       "video_search_term": "montessori folding washcloths",
       "data_status": "needs_guide",
       "materials_needed": [
-        "Clean, dry or nearly-dry laundry\u2014start with small items",
+        "Clean, dry or nearly-dry laundry—start with small items",
         "Large, flat surface (table or bed)",
         "Basket or container for organized stacks",
         "Storage locations (shelves, drawers) with labels or visual cues"
@@ -6068,25 +5990,19 @@
         "neatly",
         "carefully"
       ],
-      "parent_description": "Folding laundry teaches organization and care. While it might seem simple, the precision required\u2014aligning corners, creating straight lines, consistent size\u2014develops fine motor skills and spatial awareness. It's also deeply satisfying to create order from disorder.",
+      "parent_description": "Folding laundry teaches organization and care. While it might seem simple, the precision required—aligning corners, creating straight lines, consistent size—develops fine motor skills and spatial awareness. It's also deeply satisfying to create order from disorder.",
       "why_it_matters": "This work combines practical care with mathematical thinking (geometry, sequencing). Children learn that organized systems make life easier and more beautiful. The meditative quality of repetitive folding builds concentration and calm."
     },
     {
       "work_id": "pl_greetings",
       "name": "Greetings",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u95ee\u5019\u793c\u4eea",
+      "name_chinese": "蒙特梭利问候礼仪",
       "slug": "greetings",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 1,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Make eye contact and smile",
-        "Use appropriate greeting word (hello, good morning)",
-        "Stand with good posture",
-        "Offer hand for handshake if appropriate",
-        "Practice across multiple interactions daily"
-      ],
+      "quick_guide": "• Make eye contact and smile\n• Use appropriate greeting word (hello, good morning)\n• Stand with good posture\n• Offer hand for handshake if appropriate\n• Practice across multiple interactions daily",
       "presentation_steps": [
         {
           "title": "Introduction & Modeling",
@@ -6154,7 +6070,7 @@
         "Shyness or reluctance to greet (start with familiar adults, build from there)",
         "Forgetting to make eye contact (gentle reminders, model consistently)",
         "Mumbling greetings (encourage clear speech and repeat if not heard)",
-        "Inconsistency (some days they greet, other days they don't\u2014normalize and encourage)"
+        "Inconsistency (some days they greet, other days they don't—normalize and encourage)"
       ],
       "video_search_term": "montessori greetings lesson",
       "data_status": "needs_guide",
@@ -6184,19 +6100,13 @@
     {
       "work_id": "pl_introductions",
       "name": "Introductions",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u81ea\u6211\u4ecb\u7ecd",
+      "name_chinese": "蒙特梭利自我介绍",
       "slug": "introductions",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 2,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Use proper introduction formula",
-        "Make eye contact with both people",
-        "Speak clearly and with respect",
-        "Encourage handshake or appropriate greeting",
-        "Practice with new people or classroom visitors"
-      ],
+      "quick_guide": "• Use proper introduction formula\n• Make eye contact with both people\n• Speak clearly and with respect\n• Encourage handshake or appropriate greeting\n• Practice with new people or classroom visitors",
       "presentation_steps": [
         {
           "title": "Introduction & Purpose",
@@ -6293,18 +6203,18 @@
         "respect"
       ],
       "parent_description": "Learning to introduce people is a valuable social skill. Children who can comfortably introduce others gain confidence and become bridges in their communities. This skill serves them throughout life in school, work, and social settings.",
-      "why_it_matters": "Introductions teach children that they have power to create connections. Understanding how to facilitate relationships builds social confidence and generosity of spirit\u2014they're giving the gift of connection to others."
+      "why_it_matters": "Introductions teach children that they have power to create connections. Understanding how to facilitate relationships builds social confidence and generosity of spirit—they're giving the gift of connection to others."
     },
     {
       "work_id": "pl_please_thank_you",
       "name": "Please and Thank You",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u8bf7\u8c22\u8c22",
+      "name_chinese": "蒙特梭利请谢谢",
       "slug": "please-thank-you",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 3,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Proper use of polite words in daily interactions\n\u2022 Includes please, thank you, you're welcome, excuse me\n\u2022 Grace and courtesy foundation for all social situations\n\u2022 Role-play and modeling for natural integration\n\u2022 Develops appreciation and respectful communication",
+      "quick_guide": "• Proper use of polite words in daily interactions\n• Includes please, thank you, you're welcome, excuse me\n• Grace and courtesy foundation for all social situations\n• Role-play and modeling for natural integration\n• Develops appreciation and respectful communication",
       "presentation_steps": [
         {
           "step": 1,
@@ -6383,19 +6293,13 @@
     {
       "work_id": "pl_excuse_me",
       "name": "Saying Excuse Me",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u501f\u8fc7\u6253\u6270",
+      "name_chinese": "蒙特梭利借过打扰",
       "slug": "excuse-me",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 4,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Use when needing to pass or interrupt gently",
-        "Speak softly and politely",
-        "Wait for acknowledgment before proceeding",
-        "Thank the person for listening",
-        "Practice respectful interruption"
-      ],
+      "quick_guide": "• Use when needing to pass or interrupt gently\n• Speak softly and politely\n• Wait for acknowledgment before proceeding\n• Thank the person for listening\n• Practice respectful interruption",
       "presentation_steps": [
         {
           "title": "Introduction & Context",
@@ -6409,7 +6313,7 @@
         },
         {
           "title": "Scenario: Passing Someone",
-          "description": "Act out a scenario: You're standing in a doorway. The child needs to pass. They say 'Excuse me.' You move. They say 'Thank you.' Show: request \u2192 response \u2192 gratitude.",
+          "description": "Act out a scenario: You're standing in a doorway. The child needs to pass. They say 'Excuse me.' You move. They say 'Thank you.' Show: request → response → gratitude.",
           "tip": "The complete sequence teaches full courtesy."
         },
         {
@@ -6491,24 +6395,18 @@
         "acknowledge"
       ],
       "parent_description": "Teaching 'excuse me' teaches children that other people's space, time, and attention matter. This simple phrase, used consistently, shows respect and generally gets positive responses. It's a building block for successful social interaction.",
-      "why_it_matters": "This work teaches children to balance their own needs with respect for others. They learn that politeness is powerful\u2014people are more willing to help and accommodate polite requests. This directly impacts their ability to navigate social and professional situations throughout life."
+      "why_it_matters": "This work teaches children to balance their own needs with respect for others. They learn that politeness is powerful—people are more willing to help and accommodate polite requests. This directly impacts their ability to navigate social and professional situations throughout life."
     },
     {
       "work_id": "pl_interrupting",
       "name": "How to Interrupt",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u793c\u8c8c\u6253\u65ad",
+      "name_chinese": "蒙特梭利礼貌打断",
       "slug": "interrupting",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 5,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Approach gently with 'excuse me'",
-        "Wait for appropriate moment",
-        "Make brief, clear statement of need",
-        "Show appreciation for interruption acceptance",
-        "Practice with real-world scenarios"
-      ],
+      "quick_guide": "• Approach gently with 'excuse me'\n• Wait for appropriate moment\n• Make brief, clear statement of need\n• Show appreciation for interruption acceptance\n• Practice with real-world scenarios",
       "presentation_steps": [
         {
           "title": "Understanding When to Interrupt",
@@ -6518,7 +6416,7 @@
         {
           "title": "Demonstration of Polite Approach",
           "description": "Role-play: You're teaching a small group. The child approaches, says 'Excuse me' quietly, and waits. You acknowledge them. They state their need briefly. You help or listen.",
-          "tip": "Model the waiting\u2014sometimes a teacher needs a moment before responding."
+          "tip": "Model the waiting—sometimes a teacher needs a moment before responding."
         },
         {
           "title": "Finding the Right Moment",
@@ -6607,25 +6505,19 @@
         "acknowledge",
         "thank you"
       ],
-      "parent_description": "Learning to interrupt respectfully teaches children to balance their needs with respect for others. It's a crucial skill for school and life\u2014knowing how to ask for help appropriately increases their success and confidence.",
-      "why_it_matters": "This work teaches children that their needs matter AND that others' time matters. They learn to advocate for themselves while respecting others\u2014a balance essential for healthy relationships and social success throughout life."
+      "parent_description": "Learning to interrupt respectfully teaches children to balance their needs with respect for others. It's a crucial skill for school and life—knowing how to ask for help appropriately increases their success and confidence.",
+      "why_it_matters": "This work teaches children that their needs matter AND that others' time matters. They learn to advocate for themselves while respecting others—a balance essential for healthy relationships and social success throughout life."
     },
     {
       "work_id": "pl_offering_help",
       "name": "Offering and Accepting Help",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u63d0\u4f9b\u5e2e\u52a9",
+      "name_chinese": "蒙特梭利提供帮助",
       "slug": "offering-help",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 6,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Notice when someone needs help",
-        "Offer assistance politely and respectfully",
-        "Accept help graciously when offered",
-        "Say thank you genuinely",
-        "Understand different needs different help"
-      ],
+      "quick_guide": "• Notice when someone needs help\n• Offer assistance politely and respectfully\n• Accept help graciously when offered\n• Say thank you genuinely\n• Understand different needs different help",
       "presentation_steps": [
         {
           "title": "Introduction & Importance",
@@ -6739,19 +6631,13 @@
     {
       "work_id": "pl_apologizing",
       "name": "Apologizing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9053\u6b49",
+      "name_chinese": "蒙特梭利道歉",
       "slug": "apologizing",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 7,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Recognize when you've done something unkind or hurtful",
-        "Approach the person sincerely",
-        "Say 'I'm sorry' and name what happened",
-        "Show understanding of impact on the other person",
-        "Make amends if possible"
-      ],
+      "quick_guide": "• Recognize when you've done something unkind or hurtful\n• Approach the person sincerely\n• Say 'I'm sorry' and name what happened\n• Show understanding of impact on the other person\n• Make amends if possible",
       "presentation_steps": [
         {
           "title": "Introduction & Honesty",
@@ -6797,7 +6683,7 @@
       "indirect_aims": [
         "Build empathy and awareness of impact on others",
         "Develop emotional intelligence and maturity",
-        "Learn that mistakes don't define you\u2014how you handle them does",
+        "Learn that mistakes don't define you—how you handle them does",
         "Practice humility and accountability",
         "Build strong relationships through honest communication",
         "Develop resilience (ability to recover from mistakes)"
@@ -6860,13 +6746,13 @@
     {
       "work_id": "pl_table_manners",
       "name": "Table Manners",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u9910\u684c\u793c\u4eea",
+      "name_chinese": "蒙特梭利餐桌礼仪",
       "slug": "table-manners",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 8,
       "age_range": "3 - 6 years",
-      "quick_guide": "\u2022 Show how to sit properly at a table with food\n\u2022 Demonstrate using utensils correctly\n\u2022 Teach chewing with mouth closed\n\u2022 Practice napkin use and wiping hands\n\u2022 Emphasize respectful, quiet eating behaviors",
+      "quick_guide": "• Show how to sit properly at a table with food\n• Demonstrate using utensils correctly\n• Teach chewing with mouth closed\n• Practice napkin use and wiping hands\n• Emphasize respectful, quiet eating behaviors",
       "presentation_steps": [
         {
           "step": 1,
@@ -6971,19 +6857,13 @@
     {
       "work_id": "pl_table_setting",
       "name": "Setting the Table",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6446\u9910\u5177",
+      "name_chinese": "蒙特梭利摆餐具",
       "slug": "table-setting",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 9,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Gather appropriate items: placemats, dishes, utensils, napkins",
-        "Arrange placemats in organized placement",
-        "Place dishes and utensils in proper positions",
-        "Add napkins and water glasses",
-        "Check alignment and organization"
-      ],
+      "quick_guide": "• Gather appropriate items: placemats, dishes, utensils, napkins\n• Arrange placemats in organized placement\n• Place dishes and utensils in proper positions\n• Add napkins and water glasses\n• Check alignment and organization",
       "presentation_steps": [
         {
           "title": "Introduction & Purpose",
@@ -6992,7 +6872,7 @@
         },
         {
           "title": "Gathering Materials",
-          "description": "Together, gather: placemats, plates/bowls, napkins, utensils (forks, spoons, knives\u2014appropriately sized for age), water glasses, and any centerpiece.",
+          "description": "Together, gather: placemats, plates/bowls, napkins, utensils (forks, spoons, knives—appropriately sized for age), water glasses, and any centerpiece.",
           "tip": "Let the child help gather; it builds understanding of what's needed."
         },
         {
@@ -7086,7 +6966,7 @@
         "Placemats",
         "Dishes and bowls (child-sized or full-sized, depending on age)",
         "Napkins",
-        "Utensils (forks, spoons, knives\u2014appropriately sized)",
+        "Utensils (forks, spoons, knives—appropriately sized)",
         "Water glasses",
         "Optional: centerpiece (flowers, small plant, candle)",
         "Table to set"
@@ -7117,19 +6997,13 @@
     {
       "work_id": "pl_observing_work",
       "name": "Observing Another's Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u89c2\u5bdf\u4ed6\u4eba\u5de5\u4f5c",
+      "name_chinese": "蒙特梭利观察他人工作",
       "slug": "observing-work",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 10,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Wait until work is in progress or complete",
-        "Watch quietly without interrupting",
-        "Make brief, genuine observation or compliment",
-        "Don't offer help unless asked",
-        "Respect the person's concentration"
-      ],
+      "quick_guide": "• Wait until work is in progress or complete\n• Watch quietly without interrupting\n• Make brief, genuine observation or compliment\n• Don't offer help unless asked\n• Respect the person's concentration",
       "presentation_steps": [
         {
           "title": "Introduction & Why It Matters",
@@ -7230,24 +7104,18 @@
         "patience"
       ],
       "parent_description": "Teaching children to observe respectfully teaches them to value others' processes and concentration. It's a quiet form of respect that shows genuine interest without intrusion. This skill supports both the observer and the observed.",
-      "why_it_matters": "This work teaches that being present and attentive is a form of respect and kindness. Children learn that they can support others' learning through quiet, genuine appreciation\u2014without needing to do anything or say much. It builds the foundation for respectful, contemplative presence."
+      "why_it_matters": "This work teaches that being present and attentive is a form of respect and kindness. Children learn that they can support others' learning through quiet, genuine appreciation—without needing to do anything or say much. It builds the foundation for respectful, contemplative presence."
     },
     {
       "work_id": "pl_walking_around_work",
       "name": "Walking Around Someone's Work",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7ed5\u5f00\u5de5\u4f5c\u533a",
+      "name_chinese": "蒙特梭利绕开工作区",
       "slug": "walking-around-work",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 11,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Recognize that someone's work takes up floor space",
-        "Look at what they're doing before moving near them",
-        "Walk around their work at a respectful distance",
-        "Never step on or disturb their materials",
-        "Practice graceful, aware navigation"
-      ],
+      "quick_guide": "• Recognize that someone's work takes up floor space\n• Look at what they're doing before moving near them\n• Walk around their work at a respectful distance\n• Never step on or disturb their materials\n• Practice graceful, aware navigation",
       "presentation_steps": [
         {
           "title": "Introduction & Awareness",
@@ -7267,7 +7135,7 @@
         {
           "title": "Demonstrating the Graceful Walk",
           "description": "Walk slowly and carefully around the work, giving it plenty of space. Show awareness of your body and feet. Move smoothly, not hurried.",
-          "tip": "Model the exact movement you want to see\u2014graceful and mindful."
+          "tip": "Model the exact movement you want to see—graceful and mindful."
         },
         {
           "title": "Practicing Together",
@@ -7355,19 +7223,13 @@
     {
       "work_id": "pl_sharing",
       "name": "Sharing and Taking Turns",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5206\u4eab\u8f6e\u6d41",
+      "name_chinese": "蒙特梭利分享轮流",
       "slug": "sharing",
       "area": "practical_life",
       "category": "Grace and Courtesy",
       "sequence": 12,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Recognize when materials are shared or limited",
-        "Wait patiently for your turn",
-        "Respect the person currently using materials",
-        "Take your turn gracefully, aware of waiting person",
-        "Return materials promptly"
-      ],
+      "quick_guide": "• Recognize when materials are shared or limited\n• Wait patiently for your turn\n• Respect the person currently using materials\n• Take your turn gracefully, aware of waiting person\n• Return materials promptly",
       "presentation_steps": [
         {
           "title": "Introduction & Context",
@@ -7470,25 +7332,19 @@
         "community",
         "equal"
       ],
-      "parent_description": "Teaching children to share and take turns teaches patience and fairness. In a classroom with limited materials, this is essential. Children learn that waiting isn't punishment\u2014it's how fair communities work. This builds empathy and community responsibility.",
+      "parent_description": "Teaching children to share and take turns teaches patience and fairness. In a classroom with limited materials, this is essential. Children learn that waiting isn't punishment—it's how fair communities work. This builds empathy and community responsibility.",
       "why_it_matters": "This work teaches fundamental social and emotional skills: patience, empathy, fairness, and delayed gratification. Children learn that they're part of a community where everyone's needs matter, including their own. This builds the foundation for healthy relationships and social participation throughout life."
     },
     {
       "work_id": "pl_washing_produce",
       "name": "Washing Fruits and Vegetables",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d17\u6c34\u679c\u852c\u83dc",
+      "name_chinese": "蒙特梭利洗水果蔬菜",
       "slug": "washing-produce",
       "area": "practical_life",
       "category": "Food Prep",
       "sequence": 1,
       "age_range": "2.5 - 6 years",
-      "quick_guide": [
-        "Gather fresh produce and place in basin",
-        "Fill basin with cool, clean water",
-        "Gently rub each item to remove dirt",
-        "Rinse under running water thoroughly",
-        "Pat dry and place on clean towel"
-      ],
+      "quick_guide": "• Gather fresh produce and place in basin\n• Fill basin with cool, clean water\n• Gently rub each item to remove dirt\n• Rinse under running water thoroughly\n• Pat dry and place on clean towel",
       "presentation_steps": [
         {
           "title": "Introduction & Purpose",
@@ -7497,7 +7353,7 @@
         },
         {
           "title": "Gathering Produce",
-          "description": "Together, gather produce: apples, carrots, tomatoes, cucumbers\u2014whatever's appropriate for the season. Place them in a large, shallow basin.",
+          "description": "Together, gather produce: apples, carrots, tomatoes, cucumbers—whatever's appropriate for the season. Place them in a large, shallow basin.",
           "tip": "Let the child select items; it builds interest in the food."
         },
         {
@@ -7607,13 +7463,13 @@
     {
       "work_id": "pl_spreading",
       "name": "Spreading",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6d82\u62b9",
+      "name_chinese": "蒙特梭利涂抹",
       "slug": "spreading",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 2,
       "age_range": "3 - 6 years",
-      "quick_guide": "\u2022 Set up spreads (butter, jam, peanut butter) and bread\n\u2022 Show how to hold the spreader and bread\n\u2022 Demonstrate smooth spreading motions\n\u2022 Practice spreading evenly across the surface\n\u2022 Emphasize precision and neatness",
+      "quick_guide": "• Set up spreads (butter, jam, peanut butter) and bread\n• Show how to hold the spreader and bread\n• Demonstrate smooth spreading motions\n• Practice spreading evenly across the surface\n• Emphasize precision and neatness",
       "presentation_steps": [
         {
           "step": 1,
@@ -7721,23 +7577,17 @@
     {
       "work_id": "pl_peeling_easy",
       "name": "Peeling - Easy Items",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5265\u76ae\u7b80\u5355",
+      "name_chinese": "蒙特梭利剥皮简单",
       "slug": "peeling-easy",
       "area": "practical_life",
       "category": "Food Prep",
       "sequence": 3,
       "age_range": "2.5 - 5 years (as stepping stone to harder peeling)",
-      "quick_guide": [
-        "Start with easy-peel items (bananas, mandarins)",
-        "Show proper hand position and technique",
-        "Peel slowly and deliberately",
-        "Contain pieces in a bowl",
-        "Dispose of peels appropriately"
-      ],
+      "quick_guide": "• Start with easy-peel items (bananas, mandarins)\n• Show proper hand position and technique\n• Peel slowly and deliberately\n• Contain pieces in a bowl\n• Dispose of peels appropriately",
       "presentation_steps": [
         {
           "title": "Introduction & Choosing Items",
-          "description": "Explain: 'Some foods have skins we peel before eating. Let me show you with easy items first\u2014bananas and mandarins.' These are forgiving for learners.",
+          "description": "Explain: 'Some foods have skins we peel before eating. Let me show you with easy items first—bananas and mandarins.' These are forgiving for learners.",
           "tip": "Success early builds confidence for harder peeling."
         },
         {
@@ -7804,7 +7654,7 @@
         "The satisfaction of a peeled, ready-to-eat fruit"
       ],
       "variations": [
-        "Peel different easy fruits (oranges, clementines, avocados\u2014for older children)",
+        "Peel different easy fruits (oranges, clementines, avocados—for older children)",
         "Count pieces as you peel",
         "Observe and discuss the structure of the fruit"
       ],
@@ -7847,19 +7697,13 @@
     {
       "work_id": "pl_peeling_tool",
       "name": "Peeling - With Peeler",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u524a\u76ae\u5668",
+      "name_chinese": "蒙特梭利削皮器",
       "slug": "peeling-tool",
       "area": "practical_life",
       "category": "Food Prep",
       "sequence": 4,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Hold vegetable firmly with non-dominant hand",
-        "Grip peeler with thumb and fingers",
-        "Draw peeler toward yourself with steady pressure",
-        "Work all around the vegetable systematically",
-        "Continue until thin skin is completely removed"
-      ],
+      "quick_guide": "• Hold vegetable firmly with non-dominant hand\n• Grip peeler with thumb and fingers\n• Draw peeler toward yourself with steady pressure\n• Work all around the vegetable systematically\n• Continue until thin skin is completely removed",
       "presentation_steps": [
         {
           "title": "Introduction & Tool Handling",
@@ -7986,13 +7830,13 @@
     {
       "work_id": "pl_cutting_soft",
       "name": "Cutting Soft Foods",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5207\u8f6f\u98df\u7269",
+      "name_chinese": "蒙特梭利切软食物",
       "slug": "cutting-soft",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 5,
       "age_range": "primary_year1",
-      "quick_guide": "\u2022 Start with NARROW BLANK STRIPS (\u00bd\" wide) - single snip success builds confidence\n\u2022 Thumb UP in smaller hole, fingers DOWN in larger hole - check grip before cutting\n\u2022 Present SAFETY first: carry closed, cut away from body, pass handles first\n\u2022 Progress: blank strips \u2192 straight lines \u2192 curves \u2192 zigzag \u2192 shapes\n\u2022 Dominant hand cuts, non-dominant hand FEEDS paper toward scissors",
+      "quick_guide": "• Start with NARROW BLANK STRIPS (½\" wide) - single snip success builds confidence\n• Thumb UP in smaller hole, fingers DOWN in larger hole - check grip before cutting\n• Present SAFETY first: carry closed, cut away from body, pass handles first\n• Progress: blank strips → straight lines → curves → zigzag → shapes\n• Dominant hand cuts, non-dominant hand FEEDS paper toward scissors",
       "presentation_steps": [
         {
           "step": 1,
@@ -8015,7 +7859,7 @@
         {
           "step": 4,
           "title": "First Cuts",
-          "description": "Present narrow strip (\u00bd inch). Show single snip that cuts strip in one motion.",
+          "description": "Present narrow strip (½ inch). Show single snip that cuts strip in one motion.",
           "tip": "Narrow strips = single snip success"
         },
         {
@@ -8060,8 +7904,8 @@
         "Sensory feedback of hand movement"
       ],
       "variations": [
-        "Narrow strips \u2192 wider strips \u2192 marked lines",
-        "Straight \u2192 diagonal \u2192 curved \u2192 zigzag",
+        "Narrow strips → wider strips → marked lines",
+        "Straight → diagonal → curved → zigzag",
         "Cutting pictures from magazines"
       ],
       "common_challenges": [
@@ -8082,13 +7926,13 @@
     {
       "work_id": "pl_cutting_hard",
       "name": "Cutting Harder Foods",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5207\u786c\u98df\u7269",
+      "name_chinese": "蒙特梭利切硬食物",
       "slug": "cutting-hard",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 6,
       "age_range": "primary_year2",
-      "quick_guide": "\u2022 Start with NARROW BLANK STRIPS (\u00bd\" wide) - single snip success builds confidence\n\u2022 Thumb UP in smaller hole, fingers DOWN in larger hole - check grip before cutting\n\u2022 Present SAFETY first: carry closed, cut away from body, pass handles first\n\u2022 Progress: blank strips \u2192 straight lines \u2192 curves \u2192 zigzag \u2192 shapes\n\u2022 Dominant hand cuts, non-dominant hand FEEDS paper toward scissors",
+      "quick_guide": "• Start with NARROW BLANK STRIPS (½\" wide) - single snip success builds confidence\n• Thumb UP in smaller hole, fingers DOWN in larger hole - check grip before cutting\n• Present SAFETY first: carry closed, cut away from body, pass handles first\n• Progress: blank strips → straight lines → curves → zigzag → shapes\n• Dominant hand cuts, non-dominant hand FEEDS paper toward scissors",
       "presentation_steps": [
         {
           "step": 1,
@@ -8111,7 +7955,7 @@
         {
           "step": 4,
           "title": "First Cuts",
-          "description": "Present narrow strip (\u00bd inch). Show single snip that cuts strip in one motion.",
+          "description": "Present narrow strip (½ inch). Show single snip that cuts strip in one motion.",
           "tip": "Narrow strips = single snip success"
         },
         {
@@ -8157,8 +8001,8 @@
         "Sensory feedback of hand movement"
       ],
       "variations": [
-        "Narrow strips \u2192 wider strips \u2192 marked lines",
-        "Straight \u2192 diagonal \u2192 curved \u2192 zigzag",
+        "Narrow strips → wider strips → marked lines",
+        "Straight → diagonal → curved → zigzag",
         "Cutting pictures from magazines"
       ],
       "common_challenges": [
@@ -8180,13 +8024,13 @@
     {
       "work_id": "pl_grating",
       "name": "Grating",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u64e6\u4e1d\u5668",
+      "name_chinese": "蒙特梭利擦丝器",
       "slug": "grating",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 7,
       "age_range": "4 - 6 years",
-      "quick_guide": "\u2022 Set up a child-safe grater and foods to grate\n\u2022 Show how to hold the grater and food properly\n\u2022 Demonstrate controlled grating motions\n\u2022 Practice with different foods (cheese, vegetables)\n\u2022 Emphasize safety to avoid grating fingers",
+      "quick_guide": "• Set up a child-safe grater and foods to grate\n• Show how to hold the grater and food properly\n• Demonstrate controlled grating motions\n• Practice with different foods (cheese, vegetables)\n• Emphasize safety to avoid grating fingers",
       "presentation_steps": [
         {
           "step": 1,
@@ -8295,13 +8139,13 @@
     {
       "work_id": "pl_juicing",
       "name": "Juicing",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u69a8\u6c41",
+      "name_chinese": "蒙特梭利榨汁",
       "slug": "juicing",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 8,
       "age_range": "3.5 - 6 years",
-      "quick_guide": "\u2022 Set up a juicer and citrus fruits\n\u2022 Show how to cut fruit in half (with assistance)\n\u2022 Demonstrate proper juicing press technique\n\u2022 Practice extracting juice without waste\n\u2022 Emphasize control and care with the tool",
+      "quick_guide": "• Set up a juicer and citrus fruits\n• Show how to cut fruit in half (with assistance)\n• Demonstrate proper juicing press technique\n• Practice extracting juice without waste\n• Emphasize control and care with the tool",
       "presentation_steps": [
         {
           "step": 1,
@@ -8409,19 +8253,13 @@
     {
       "work_id": "pl_cracking_eggs",
       "name": "Cracking Eggs",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6253\u9e21\u86cb",
+      "name_chinese": "蒙特梭利打鸡蛋",
       "slug": "cracking-eggs",
       "area": "practical_life",
       "category": "Food Prep",
       "sequence": 9,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Hold egg firmly with both hands",
-        "Tap sharply against a hard edge to create a crack",
-        "Use thumbs to pull shell halves apart gently",
-        "Let egg contents slide into a bowl",
-        "Separate shell pieces and discard"
-      ],
+      "quick_guide": "• Hold egg firmly with both hands\n• Tap sharply against a hard edge to create a crack\n• Use thumbs to pull shell halves apart gently\n• Let egg contents slide into a bowl\n• Separate shell pieces and discard",
       "presentation_steps": [
         {
           "title": "Introduction & Purpose",
@@ -8545,13 +8383,13 @@
     {
       "work_id": "pl_making_snack",
       "name": "Making a Snack",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5236\u4f5c\u70b9\u5fc3",
+      "name_chinese": "蒙特梭利制作点心",
       "slug": "making-snack",
       "area": "practical_life",
       "category": "Food Preparation",
       "sequence": 10,
       "age_range": "3.5 - 6 years",
-      "quick_guide": "\u2022 Demonstrate simple snack preparation (sandwiches, fruit, crackers)\n\u2022 Show proper hygiene and food safety\n\u2022 Teach how to use simple tools and utensils\n\u2022 Practice creating complete, balanced snacks\n\u2022 Build independence in food preparation",
+      "quick_guide": "• Demonstrate simple snack preparation (sandwiches, fruit, crackers)\n• Show proper hygiene and food safety\n• Teach how to use simple tools and utensils\n• Practice creating complete, balanced snacks\n• Build independence in food preparation",
       "presentation_steps": [
         {
           "step": 1,
@@ -8659,19 +8497,13 @@
     {
       "work_id": "pl_threading_beads",
       "name": "Threading Beads",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u4e32\u73e0",
+      "name_chinese": "蒙特梭利串珠",
       "slug": "threading-beads",
       "area": "practical_life",
       "category": "Sewing/Handwork",
       "sequence": 1,
       "age_range": "2.5 - 5 years",
-      "quick_guide": [
-        "Hold thread or string with steady hand",
-        "Guide beads one at a time onto thread",
-        "Maintain consistent pace and focus",
-        "Create patterns if desired",
-        "Complete piece when desired length reached"
-      ],
+      "quick_guide": "• Hold thread or string with steady hand\n• Guide beads one at a time onto thread\n• Maintain consistent pace and focus\n• Create patterns if desired\n• Complete piece when desired length reached",
       "presentation_steps": [
         {
           "title": "Introduction & Setup",
@@ -8789,19 +8621,13 @@
     {
       "work_id": "pl_sewing_cards",
       "name": "Sewing Cards",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7f1d\u7eab\u5361",
+      "name_chinese": "蒙特梭利缝纫卡",
       "slug": "sewing-cards",
       "area": "practical_life",
       "category": "Sewing/Handwork",
       "sequence": 2,
       "age_range": "3.5 - 6 years",
-      "quick_guide": [
-        "Thread needle with yarn",
-        "Follow pre-punched holes in sequence",
-        "Push needle through hole from one side",
-        "Pull yarn all the way through smoothly",
-        "Continue until pattern or card is complete"
-      ],
+      "quick_guide": "• Thread needle with yarn\n• Follow pre-punched holes in sequence\n• Push needle through hole from one side\n• Pull yarn all the way through smoothly\n• Continue until pattern or card is complete",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Card",
@@ -8918,19 +8744,13 @@
     {
       "work_id": "pl_punching",
       "name": "Paper Punching",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u6253\u5b54\u5668",
+      "name_chinese": "蒙特梭利打孔器",
       "slug": "punching",
       "area": "practical_life",
       "category": "Sewing/Handwork",
       "sequence": 3,
       "age_range": "3 - 6 years",
-      "quick_guide": [
-        "Hold paper firmly on flat surface",
-        "Position punch where you want a hole",
-        "Apply steady, firm pressure straight down",
-        "Lift punch to remove the small paper circle",
-        "Repeat across paper to create pattern"
-      ],
+      "quick_guide": "• Hold paper firmly on flat surface\n• Position punch where you want a hole\n• Apply steady, firm pressure straight down\n• Lift punch to remove the small paper circle\n• Repeat across paper to create pattern",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Tool",
@@ -9053,13 +8873,13 @@
     {
       "work_id": "pl_running_stitch",
       "name": "Running Stitch",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5e73\u9488",
+      "name_chinese": "蒙特梭利平针",
       "slug": "running-stitch",
       "area": "practical_life",
       "category": "Sewing",
       "sequence": 4,
       "age_range": "4.5 - 6 years (after threading mastery)",
-      "quick_guide": "\u2022 Show the in-and-out needle motion\n\u2022 Demonstrate even, consistent stitch spacing\n\u2022 Practice on open fabric before closing stitches\n\u2022 Emphasize rhythm and control\n\u2022 Allow for gradual mastery through repetition",
+      "quick_guide": "• Show the in-and-out needle motion\n• Demonstrate even, consistent stitch spacing\n• Practice on open fabric before closing stitches\n• Emphasize rhythm and control\n• Allow for gradual mastery through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -9167,19 +8987,13 @@
     {
       "work_id": "pl_cross_stitch",
       "name": "Cross Stitch",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u5341\u5b57\u7ee3",
+      "name_chinese": "蒙特梭利十字绣",
       "slug": "cross-stitch",
       "area": "practical_life",
       "category": "Sewing/Handwork",
       "sequence": 5,
       "age_range": "4.5 - 6 years (requires significant dexterity and focus)",
-      "quick_guide": [
-        "Thread needle with embroidery floss",
-        "Understand the cross-stitch pattern (diagonal grid)",
-        "Create an X pattern: diagonal one way, then diagonal back",
-        "Work in rows or sections methodically",
-        "Continue until pattern or picture is complete"
-      ],
+      "quick_guide": "• Thread needle with embroidery floss\n• Understand the cross-stitch pattern (diagonal grid)\n• Create an X pattern: diagonal one way, then diagonal back\n• Work in rows or sections methodically\n• Continue until pattern or picture is complete",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Technique",
@@ -9313,13 +9127,13 @@
     {
       "work_id": "pl_button_sewing",
       "name": "Sewing a Button",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7f1d\u7ebd\u6263",
+      "name_chinese": "蒙特梭利缝纽扣",
       "slug": "button-sewing",
       "area": "practical_life",
       "category": "Sewing",
       "sequence": 6,
       "age_range": "4.5 - 6 years (after running stitch mastery)",
-      "quick_guide": "\u2022 Show how to thread needle and position button\n\u2022 Demonstrate sewing up and down through button holes\n\u2022 Practice creating secure stitches\n\u2022 Teach knotting and finishing technique\n\u2022 Build confidence through completing a practical repair",
+      "quick_guide": "• Show how to thread needle and position button\n• Demonstrate sewing up and down through button holes\n• Practice creating secure stitches\n• Teach knotting and finishing technique\n• Build confidence through completing a practical repair",
       "presentation_steps": [
         {
           "step": 1,
@@ -9427,19 +9241,13 @@
     {
       "work_id": "pl_weaving",
       "name": "Weaving",
-      "name_chinese": "\u8499\u7279\u68ad\u5229\u7f16\u7ec7",
+      "name_chinese": "蒙特梭利编织",
       "slug": "weaving",
       "area": "practical_life",
       "category": "Sewing/Handwork",
       "sequence": 7,
       "age_range": "3.5 - 6 years (with varying complexity)",
-      "quick_guide": [
-        "Understand warp (vertical threads) and weft (horizontal threads)",
-        "Set up loom with warp threads at even tension",
-        "Thread shuttle or pass yarn back and forth over and under warps",
-        "Push each row of weft down firmly to create fabric",
-        "Continue until desired width or length is achieved"
-      ],
+      "quick_guide": "• Understand warp (vertical threads) and weft (horizontal threads)\n• Set up loom with warp threads at even tension\n• Thread shuttle or pass yarn back and forth over and under warps\n• Push each row of weft down firmly to create fabric\n• Continue until desired width or length is achieved",
       "presentation_steps": [
         {
           "title": "Introduction & Showing the Loom",
@@ -9511,7 +9319,7 @@
         "Yarn or strips"
       ],
       "control_of_error": [
-        "Pattern mistakes (going over twice in a row or under twice) result in uneven weaving\u2014visible and easily fixed",
+        "Pattern mistakes (going over twice in a row or under twice) result in uneven weaving—visible and easily fixed",
         "Tension too loose creates loose fabric (child learns to push down consistently)",
         "Leaving weft too tight creates pulling or distortion (child learns balance through practice)"
       ],
@@ -9571,13 +9379,13 @@
         "row",
         "rhythm"
       ],
-      "parent_description": "Weaving is creating cloth from scratch\u2014a profound, meditative experience. Children understand viscerally how fabric is made. The finished weaving is tangible proof of their work and can be worn, displayed, or gifted. It builds tremendous pride and accomplishment.",
+      "parent_description": "Weaving is creating cloth from scratch—a profound, meditative experience. Children understand viscerally how fabric is made. The finished weaving is tangible proof of their work and can be worn, displayed, or gifted. It builds tremendous pride and accomplishment.",
       "why_it_matters": "This work teaches that beautiful, functional things are created through repetitive, focused work. The meditative rhythm of weaving builds concentration and calm. Understanding how fabric is made creates respect for textiles and appreciation for craftsmanship. The creation of something truly useful and beautiful is deeply satisfying and empowering."
     },
     {
       "name": "Eye Dropper Transfer",
       "category": "Transfer Activities",
-      "quick_guide": "\u2022 Set up two containers with water or colored liquid\n\u2022 Show how to fill the eye dropper by squeezing and releasing\n\u2022 Demonstrate transferring drops from one container to another\n\u2022 Emphasize fine motor control and precision\n\u2022 Allow for extended exploration and experimentation",
+      "quick_guide": "• Set up two containers with water or colored liquid\n• Show how to fill the eye dropper by squeezing and releasing\n• Demonstrate transferring drops from one container to another\n• Emphasize fine motor control and precision\n• Allow for extended exploration and experimentation",
       "presentation_steps": [
         {
           "step": 1,
@@ -9678,7 +9486,7 @@
     {
       "name": "Hair Brushing",
       "category": "Care of Self",
-      "quick_guide": "\u2022 Set up a low mirror at child height\n\u2022 Show how to hold and manipulate the brush\n\u2022 Demonstrate gentle brushing strokes\n\u2022 Practice brushing different areas of the head\n\u2022 Emphasize care and gentleness with hair",
+      "quick_guide": "• Set up a low mirror at child height\n• Show how to hold and manipulate the brush\n• Demonstrate gentle brushing strokes\n• Practice brushing different areas of the head\n• Emphasize care and gentleness with hair",
       "presentation_steps": [
         {
           "step": 1,
@@ -9772,7 +9580,7 @@
     {
       "name": "Polishing Metal",
       "category": "Care of Environment",
-      "quick_guide": "\u2022 Set up metal polish and polishing cloths\n\u2022 Show how to apply polish to the metal surface\n\u2022 Demonstrate rubbing and buffing motions\n\u2022 Practice until the object shines\n\u2022 Emphasize care and attention to detail",
+      "quick_guide": "• Set up metal polish and polishing cloths\n• Show how to apply polish to the metal surface\n• Demonstrate rubbing and buffing motions\n• Practice until the object shines\n• Emphasize care and attention to detail",
       "presentation_steps": [
         {
           "step": 1,
@@ -9869,7 +9677,7 @@
     {
       "name": "Polishing Wood",
       "category": "Care of Environment",
-      "quick_guide": "\u2022 Set up wood polish and soft cloths\n\u2022 Show how to apply polish in the direction of the grain\n\u2022 Demonstrate buffing with circular motions\n\u2022 Practice until the wood develops a natural sheen\n\u2022 Emphasize care and respect for materials",
+      "quick_guide": "• Set up wood polish and soft cloths\n• Show how to apply polish in the direction of the grain\n• Demonstrate buffing with circular motions\n• Practice until the wood develops a natural sheen\n• Emphasize care and respect for materials",
       "presentation_steps": [
         {
           "step": 1,
@@ -9967,7 +9775,7 @@
     {
       "name": "Cloth Washing",
       "category": "Care of Environment",
-      "quick_guide": "\u2022 Set up washing station with water and soap\n\u2022 Show how to immerse cloth and rub together\n\u2022 Demonstrate gentle scrubbing and wringing\n\u2022 Practice rinsing thoroughly to remove soap\n\u2022 Teach proper drying and storage",
+      "quick_guide": "• Set up washing station with water and soap\n• Show how to immerse cloth and rub together\n• Demonstrate gentle scrubbing and wringing\n• Practice rinsing thoroughly to remove soap\n• Teach proper drying and storage",
       "presentation_steps": [
         {
           "step": 1,
@@ -10065,7 +9873,7 @@
     {
       "name": "Scrubbing a Table",
       "category": "Care of Environment",
-      "quick_guide": "\u2022 Set up supplies: warm soapy water, scrub brush, and towels\n\u2022 Show how to scrub the entire table surface\n\u2022 Demonstrate working from outer edges toward the center\n\u2022 Practice rinsing and drying completely\n\u2022 Emphasize thoroughness and care",
+      "quick_guide": "• Set up supplies: warm soapy water, scrub brush, and towels\n• Show how to scrub the entire table surface\n• Demonstrate working from outer edges toward the center\n• Practice rinsing and drying completely\n• Emphasize thoroughness and care",
       "presentation_steps": [
         {
           "step": 1,
@@ -10163,7 +9971,7 @@
     {
       "name": "Peeling",
       "category": "Food Preparation",
-      "quick_guide": "\u2022 Show how to hold the food and peeler properly\n\u2022 Demonstrate controlled peeling strokes\n\u2022 Practice peeling various fruits and vegetables\n\u2022 Emphasize safe technique and preventing waste\n\u2022 Allow for mastery through repetition",
+      "quick_guide": "• Show how to hold the food and peeler properly\n• Demonstrate controlled peeling strokes\n• Practice peeling various fruits and vegetables\n• Emphasize safe technique and preventing waste\n• Allow for mastery through repetition",
       "presentation_steps": [
         {
           "step": 1,
@@ -10260,7 +10068,7 @@
     {
       "name": "Cutting/Slicing",
       "category": "Food Preparation",
-      "quick_guide": "\u2022 Show proper knife grip and food holding technique\n\u2022 Demonstrate safe cutting on a cutting board\n\u2022 Practice with soft foods (banana, bread) before harder foods\n\u2022 Emphasize safety and control\n\u2022 Build skills gradually through varied practice",
+      "quick_guide": "• Show proper knife grip and food holding technique\n• Demonstrate safe cutting on a cutting board\n• Practice with soft foods (banana, bread) before harder foods\n• Emphasize safety and control\n• Build skills gradually through varied practice",
       "presentation_steps": [
         {
           "step": 1,
@@ -10357,7 +10165,7 @@
     {
       "name": "Greeting",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show how to greet a person with eye contact and smile\n\u2022 Demonstrate saying a pleasant greeting\n\u2022 Practice respectful tone of voice\n\u2022 Emphasize genuine, warm interactions\n\u2022 Model appropriate greetings for different contexts",
+      "quick_guide": "• Show how to greet a person with eye contact and smile\n• Demonstrate saying a pleasant greeting\n• Practice respectful tone of voice\n• Emphasize genuine, warm interactions\n• Model appropriate greetings for different contexts",
       "presentation_steps": [
         {
           "step": 1,
@@ -10452,7 +10260,7 @@
     {
       "name": "Interrupting",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show how to wait quietly rather than interrupt\n\u2022 Teach the signal for getting attention politely (raising hand)\n\u2022 Demonstrate saying \"excuse me\" respectfully\n\u2022 Practice waiting for a response before speaking\n\u2022 Emphasize respect for others' work and conversation",
+      "quick_guide": "• Show how to wait quietly rather than interrupt\n• Teach the signal for getting attention politely (raising hand)\n• Demonstrate saying \"excuse me\" respectfully\n• Practice waiting for a response before speaking\n• Emphasize respect for others' work and conversation",
       "presentation_steps": [
         {
           "step": 1,
@@ -10547,7 +10355,7 @@
     {
       "name": "Walking Around Mats",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show how to observe mats with work on them\n\u2022 Demonstrate walking carefully around the work space\n\u2022 Teach respect for others' workspace and concentration\n\u2022 Practice walking with awareness of others\n\u2022 Emphasize that everyone's work deserves respect",
+      "quick_guide": "• Show how to observe mats with work on them\n• Demonstrate walking carefully around the work space\n• Teach respect for others' workspace and concentration\n• Practice walking with awareness of others\n• Emphasize that everyone's work deserves respect",
       "presentation_steps": [
         {
           "step": 1,
@@ -10643,7 +10451,7 @@
     {
       "name": "Threading a Needle",
       "category": "Sewing",
-      "quick_guide": "\u2022 Show proper needle holding and thread manipulation\n\u2022 Demonstrate threading the needle eye precisely\n\u2022 Practice steadiness and fine motor control\n\u2022 Use needle threader if needed for assistance\n\u2022 Build confidence through successful threading",
+      "quick_guide": "• Show proper needle holding and thread manipulation\n• Demonstrate threading the needle eye precisely\n• Practice steadiness and fine motor control\n• Use needle threader if needed for assistance\n• Build confidence through successful threading",
       "presentation_steps": [
         {
           "step": 1,
@@ -10740,7 +10548,7 @@
     {
       "name": "Rolling and Unrolling a Mat",
       "category": "Preliminary Exercises",
-      "quick_guide": "\u2022 Demonstrate starting from one end and rolling tightly\n\u2022 Show how to hold the rolled mat in both hands\n\u2022 Practice smooth, controlled unrolling\n\u2022 Emphasize order and care in handling\n\u2022 Allow for repetition to develop coordination",
+      "quick_guide": "• Demonstrate starting from one end and rolling tightly\n• Show how to hold the rolled mat in both hands\n• Practice smooth, controlled unrolling\n• Emphasize order and care in handling\n• Allow for repetition to develop coordination",
       "presentation_steps": [
         {
           "step": 1,
@@ -10836,7 +10644,7 @@
     {
       "name": "Opening and Closing a Book",
       "category": "Preliminary Exercises",
-      "quick_guide": "\u2022 Show how to hold the book properly\n\u2022 Demonstrate gentle opening of the cover\n\u2022 Practice opening to specific pages\n\u2022 Show how to close the book carefully\n\u2022 Emphasize respect and care for books",
+      "quick_guide": "• Show how to hold the book properly\n• Demonstrate gentle opening of the cover\n• Practice opening to specific pages\n• Show how to close the book carefully\n• Emphasize respect and care for books",
       "presentation_steps": [
         {
           "step": 1,
@@ -10932,7 +10740,7 @@
     {
       "name": "Self-Dressing",
       "category": "Care of Self",
-      "quick_guide": "\u2022 Demonstrate putting on clothing items independently\n\u2022 Show how to remove clothing and place in appropriate locations\n\u2022 Practice with different clothing types\n\u2022 Emphasize the sequence and organization\n\u2022 Build confidence through successful dressing",
+      "quick_guide": "• Demonstrate putting on clothing items independently\n• Show how to remove clothing and place in appropriate locations\n• Practice with different clothing types\n• Emphasize the sequence and organization\n• Build confidence through successful dressing",
       "presentation_steps": [
         {
           "step": 1,
@@ -11028,7 +10836,7 @@
     {
       "name": "Dry Pouring",
       "category": "Transfer Activities",
-      "quick_guide": "\u2022 Set up containers with dry material (beans, rice, lentils)\n\u2022 Show how to hold the pitcher and pour steadily\n\u2022 Demonstrate pouring with control to avoid spills\n\u2022 Practice transferring from one container to another\n\u2022 Emphasize precision and limiting waste",
+      "quick_guide": "• Set up containers with dry material (beans, rice, lentils)\n• Show how to hold the pitcher and pour steadily\n• Demonstrate pouring with control to avoid spills\n• Practice transferring from one container to another\n• Emphasize precision and limiting waste",
       "presentation_steps": [
         {
           "step": 1,
@@ -11125,7 +10933,7 @@
     {
       "name": "Water Pouring",
       "category": "Transfer Activities",
-      "quick_guide": "\u2022 Set up containers with water and pouring pitcher\n\u2022 Show proper pouring grip and technique\n\u2022 Demonstrate controlled pouring into receiving container\n\u2022 Practice filling to different levels\n\u2022 Emphasize precision and preventing spills",
+      "quick_guide": "• Set up containers with water and pouring pitcher\n• Show proper pouring grip and technique\n• Demonstrate controlled pouring into receiving container\n• Practice filling to different levels\n• Emphasize precision and preventing spills",
       "presentation_steps": [
         {
           "step": 1,
@@ -11225,7 +11033,7 @@
     {
       "name": "Undressing",
       "category": "Care of Self",
-      "quick_guide": "\u2022 Show how to remove clothing items one at a time\n\u2022 Demonstrate proper placement of dirty clothes\n\u2022 Practice with various clothing types\n\u2022 Emphasize organization and care\n\u2022 Build independence in clothing management",
+      "quick_guide": "• Show how to remove clothing items one at a time\n• Demonstrate proper placement of dirty clothes\n• Practice with various clothing types\n• Emphasize organization and care\n• Build independence in clothing management",
       "presentation_steps": [
         {
           "step": 1,
@@ -11321,7 +11129,7 @@
     {
       "name": "Bathing",
       "category": "Care of Self",
-      "quick_guide": "\u2022 Show how to prepare bathwater safely\n\u2022 Demonstrate washing body systematically\n\u2022 Practice using soap and washcloth\n\u2022 Teach drying and putting on clean clothes\n\u2022 Emphasize water safety and independence",
+      "quick_guide": "• Show how to prepare bathwater safely\n• Demonstrate washing body systematically\n• Practice using soap and washcloth\n• Teach drying and putting on clean clothes\n• Emphasize water safety and independence",
       "presentation_steps": [
         {
           "step": 1,
@@ -11420,7 +11228,7 @@
     {
       "name": "Meal Preparation and Serving",
       "category": "Food Preparation",
-      "quick_guide": "\u2022 Show how to set a table with dishes and utensils\n\u2022 Demonstrate serving food to oneself and others\n\u2022 Teach how to pass dishes appropriately\n\u2022 Practice clearing dishes after meals\n\u2022 Emphasize care and consideration",
+      "quick_guide": "• Show how to set a table with dishes and utensils\n• Demonstrate serving food to oneself and others\n• Teach how to pass dishes appropriately\n• Practice clearing dishes after meals\n• Emphasize care and consideration",
       "presentation_steps": [
         {
           "step": 1,
@@ -11518,7 +11326,7 @@
     {
       "name": "Saying Thank You and Please",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show how to say \"please\" when asking for something\n\u2022 Demonstrate saying \"thank you\" when receiving\n\u2022 Teach grateful tone and facial expression\n\u2022 Practice in various situations\n\u2022 Model courteous language consistently",
+      "quick_guide": "• Show how to say \"please\" when asking for something\n• Demonstrate saying \"thank you\" when receiving\n• Teach grateful tone and facial expression\n• Practice in various situations\n• Model courteous language consistently",
       "presentation_steps": [
         {
           "step": 1,
@@ -11614,7 +11422,7 @@
     {
       "name": "Care of Living Things",
       "category": "Care of Environment",
-      "quick_guide": "\u2022 Show how to water plants gently\n\u2022 Demonstrate caring for classroom animals\n\u2022 Teach responsibility and observation\n\u2022 Practice consistent care routines\n\u2022 Build understanding that living things need care",
+      "quick_guide": "• Show how to water plants gently\n• Demonstrate caring for classroom animals\n• Teach responsibility and observation\n• Practice consistent care routines\n• Build understanding that living things need care",
       "presentation_steps": [
         {
           "step": 1,
@@ -11712,7 +11520,7 @@
     {
       "name": "Setting a Table",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show proper placement of plates and bowls\n\u2022 Demonstrate utensil, cup, and napkin placement\n\u2022 Practice creating a complete place setting\n\u2022 Teach that order creates welcoming meals\n\u2022 Build understanding of preparation and care",
+      "quick_guide": "• Show proper placement of plates and bowls\n• Demonstrate utensil, cup, and napkin placement\n• Practice creating a complete place setting\n• Teach that order creates welcoming meals\n• Build understanding of preparation and care",
       "presentation_steps": [
         {
           "step": 1,
@@ -11810,7 +11618,7 @@
     {
       "name": "Asking for Help Politely",
       "category": "Grace and Courtesy",
-      "quick_guide": "\u2022 Show how to recognize when help is needed\n\u2022 Demonstrate asking politely and respectfully\n\u2022 Teach appropriate tone and language\n\u2022 Practice in various situations\n\u2022 Model asking for help yourself",
+      "quick_guide": "• Show how to recognize when help is needed\n• Demonstrate asking politely and respectfully\n• Teach appropriate tone and language\n• Practice in various situations\n• Model asking for help yourself",
       "presentation_steps": [
         {
           "step": 1,
@@ -11906,7 +11714,7 @@
     {
       "name": "Laundry",
       "category": "Care of Self",
-      "quick_guide": "\u2022 Show how to sort dirty clothes\n\u2022 Demonstrate placing clothes in washer\n\u2022 Teach loading the dryer\n\u2022 Practice folding clean clothes\n\u2022 Build complete laundry independence",
+      "quick_guide": "• Show how to sort dirty clothes\n• Demonstrate placing clothes in washer\n• Teach loading the dryer\n• Practice folding clean clothes\n• Build complete laundry independence",
       "presentation_steps": [
         {
           "step": 1,
@@ -12000,6 +11808,476 @@
       ],
       "parent_description": "Your child is learning laundry management, a critical self-care and household skill. Laundry teaches responsibility for clothing and contributes meaningfully to family functioning. This practical skill builds independence and demonstrates the child's ability to manage significant household tasks.",
       "why_it_matters": "Laundry is a comprehensive practical life activity that teaches children complete responsibility for clothing care from dirty to clean to storage. It develops independence and demonstrates that children can manage substantial household tasks. This activity builds pride in contributing to family functioning and creates habits of responsibility and cleanliness that support independence throughout life. Learning laundry skills shows that children are capable of managing complex, multi-step tasks essential to daily living."
+    },
+    {
+      "work_id": "pl_opening_closing_containers",
+      "name": "Opening and Closing Containers",
+      "name_chinese": "蒙特梭利开关容器",
+      "slug": "opening-closing-containers",
+      "area": "practical-life",
+      "category": "Preliminary Exercises",
+      "sequence": 11,
+      "age_range": "primary_year1",
+      "quick_guide": "• Tray with 6-8 containers of different closures: screw tops, snap lids, cork bottles, latched boxes\n• Child opens each container, then closes it again\n• Isolates one movement at a time — each closure type is a different challenge\n• Develops wrist rotation, pincer grip, and finger dexterity\n• Prepares the hand for writing through diverse manipulations\n• Satisfying click, pop, and twist sounds provide auditory feedback",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Select",
+          "description": "Bring tray to table. Choose one container to demonstrate",
+          "tip": "Start with the easiest closure type"
+        },
+        {
+          "step": 2,
+          "title": "Open",
+          "description": "Slowly demonstrate how to open: show hand position, movement",
+          "tip": "Exaggerate the wrist movement so child can see clearly"
+        },
+        {
+          "step": 3,
+          "title": "Close",
+          "description": "Slowly demonstrate closing the container",
+          "tip": "Show how to check it is properly closed"
+        },
+        {
+          "step": 4,
+          "title": "Invite",
+          "description": "Child tries the same container. Then moves to next",
+          "tip": "Left to right across the tray, easiest to hardest"
+        },
+        {
+          "step": 5,
+          "title": "Complete",
+          "description": "Work through all containers on the tray",
+          "tip": "Child can repeat any container as many times as they wish"
+        }
+      ],
+      "direct_aims": [
+        "Hand manipulation",
+        "Wrist rotation",
+        "Finger dexterity"
+      ],
+      "indirect_aims": [
+        "Independence",
+        "Concentration",
+        "Writing preparation"
+      ],
+      "materials_needed": [
+        "Tray",
+        "Screw-top jars",
+        "Snap-lid boxes",
+        "Cork bottles",
+        "Latched boxes"
+      ],
+      "control_of_error": "Container not properly closed",
+      "prerequisites": [],
+      "points_of_interest": [
+        "The different sounds each closure makes",
+        "The satisfying click of a snap lid",
+        "Managing the cork"
+      ],
+      "variations": [
+        "Blindfold version",
+        "Time challenge",
+        "Add more complex closures over time"
+      ],
+      "common_challenges": [
+        "Screw tops need wrist rotation which is hard for young children",
+        "Cork bottles need pulling strength"
+      ],
+      "video_search_term": "montessori opening closing containers practical life",
+      "parent_description": "Your child works with a tray of containers — screw-top jars, snap-lid boxes, cork bottles, latched boxes — opening and closing each one. Every closure requires a different hand movement: twisting, pulling, pressing, flipping. It is like a gym workout for little fingers!",
+      "why_it_matters": "Every day we open and close things — lunchboxes, bottles, containers. When your child masters these movements, they gain real independence. The diverse hand movements also prepare the fingers and wrist for writing, as each closure type strengthens different muscles."
+    },
+    {
+      "work_id": "pl_nuts_and_bolts",
+      "name": "Nuts and Bolts Board",
+      "name_chinese": "蒙特梭利螺母螺栓板",
+      "slug": "nuts-and-bolts-board",
+      "area": "practical-life",
+      "category": "Preliminary Exercises",
+      "sequence": 12,
+      "age_range": "primary_year1",
+      "quick_guide": "• Board with bolts of different sizes mounted vertically\n• Child matches the correct nut to each bolt and screws it on\n• Develops wrist rotation — the same movement needed for writing\n• Size discrimination: only the right nut fits the right bolt\n• Self-correcting: wrong nut will not thread onto bolt\n• Children find this deeply satisfying and repeat it many times",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Present",
+          "description": "Show the board with bolts. Show the basket of nuts",
+          "tip": "Start with the largest bolt — easiest to manipulate"
+        },
+        {
+          "step": 2,
+          "title": "Match",
+          "description": "Pick up a nut, try it on the bolt. If it does not fit, try the next bolt",
+          "tip": "Let the child discover the matching through trial"
+        },
+        {
+          "step": 3,
+          "title": "Thread",
+          "description": "Once matched, slowly screw the nut onto the bolt with finger and thumb",
+          "tip": "Show the wrist rotation movement clearly"
+        },
+        {
+          "step": 4,
+          "title": "Complete",
+          "description": "Match and thread all nuts onto their bolts",
+          "tip": "Then remove all and replace in basket to reset"
+        },
+        {
+          "step": 5,
+          "title": "Repeat",
+          "description": "Child repeats independently as many times as desired",
+          "tip": "This is a work children return to again and again"
+        }
+      ],
+      "direct_aims": [
+        "Wrist rotation",
+        "Fine motor coordination",
+        "Size discrimination"
+      ],
+      "indirect_aims": [
+        "Concentration",
+        "Writing preparation",
+        "Problem solving"
+      ],
+      "materials_needed": [
+        "Bolt board with different sized bolts",
+        "Matching nuts in basket"
+      ],
+      "control_of_error": "Wrong nut does not fit on bolt",
+      "prerequisites": [],
+      "points_of_interest": [
+        "Finding the matching nut",
+        "The threading sensation",
+        "Completing all bolts"
+      ],
+      "variations": [
+        "Use a timer for challenge",
+        "Blindfold matching by feel",
+        "Sort nuts by size first"
+      ],
+      "common_challenges": [
+        "Small nuts need strong pincer grip",
+        "Cross-threading can frustrate — show gentle starting technique"
+      ],
+      "video_search_term": "montessori nuts bolts board practical life",
+      "parent_description": "Your child matches nuts to bolts of different sizes — only the right nut fits the right bolt! Then they screw each nut on with a satisfying twist of the wrist. This simple work develops the exact wrist rotation movement used in writing.",
+      "why_it_matters": "The twisting, gripping, and matching involved in this work builds the hand strength and wrist rotation that underpin handwriting. The self-correcting nature teaches problem-solving: if it does not fit, try another. Children love the satisfaction of threading each nut home."
+    },
+    {
+      "work_id": "pl_stirring",
+      "name": "Stirring",
+      "name_chinese": "蒙特梭利搅拌",
+      "slug": "stirring",
+      "area": "practical-life",
+      "category": "Transfer Activities",
+      "sequence": 11,
+      "age_range": "primary_year1",
+      "quick_guide": "• Bowl, spoon, and materials to stir (dry rice, water, or water with food colouring)\n• Child stirs in controlled circular motions without spilling\n• Develops wrist rotation and controlled arm movement\n• A bridge between transfer activities and food preparation\n• Children learn clockwise and counter-clockwise movement\n• Progress from dry to wet — wet is harder (splashing risk)",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Set Up",
+          "description": "Place bowl with material and spoon on tray",
+          "tip": "Start with dry materials — less mess"
+        },
+        {
+          "step": 2,
+          "title": "Demonstrate",
+          "description": "Slow, controlled circular stirring. Spoon stays in the bowl",
+          "tip": "Show how to hold the spoon at the correct angle"
+        },
+        {
+          "step": 3,
+          "title": "Direction",
+          "description": "Stir clockwise, then counter-clockwise",
+          "tip": "Name the directions — children love this vocabulary"
+        },
+        {
+          "step": 4,
+          "title": "Child Tries",
+          "description": "Child stirs, focusing on keeping materials in the bowl",
+          "tip": "Speed control is the challenge — slow is better"
+        },
+        {
+          "step": 5,
+          "title": "Wet Stirring",
+          "description": "Progress to water when dry stirring is controlled",
+          "tip": "Have a cloth ready for spills — they are learning"
+        }
+      ],
+      "direct_aims": [
+        "Controlled wrist rotation",
+        "Hand-eye coordination"
+      ],
+      "indirect_aims": [
+        "Food preparation",
+        "Writing preparation",
+        "Concentration"
+      ],
+      "materials_needed": [
+        "Bowl",
+        "Spoon",
+        "Dry materials (rice) or water",
+        "Tray",
+        "Cloth"
+      ],
+      "control_of_error": "Material spills over the edge",
+      "prerequisites": [
+        "pl_spooning"
+      ],
+      "points_of_interest": [
+        "The circular movement",
+        "Controlling the speed",
+        "Changing direction"
+      ],
+      "variations": [
+        "Add food colouring to water for visual interest",
+        "Stir with a whisk",
+        "Stir in a figure-eight pattern"
+      ],
+      "common_challenges": [
+        "Speed control — children tend to stir too fast",
+        "Ensure bowl is stable on tray"
+      ],
+      "video_search_term": "montessori stirring exercise practical life",
+      "parent_description": "Your child practises controlled circular stirring — first with dry materials like rice, then with water. They learn to keep the spoon in the bowl, control their speed, and stir in both directions. It sounds simple, but controlling a circular motion requires real concentration!",
+      "why_it_matters": "Stirring develops the same controlled wrist rotation used in writing. When your child can stir smoothly and slowly without spilling, they have developed the motor control needed for making letter shapes. It also builds genuine kitchen skills for a lifetime of cooking."
+    },
+    {
+      "work_id": "pl_hammering",
+      "name": "Hammering",
+      "name_chinese": "蒙特梭利锤击",
+      "slug": "hammering",
+      "area": "practical-life",
+      "category": "Transfer Activities",
+      "sequence": 12,
+      "age_range": "primary_year1",
+      "quick_guide": "• Wooden mallet, cork board or soft surface, golf tees or pegs\n• Child taps pegs into the board with controlled strikes\n• Develops hand-eye coordination and controlled force\n• Children must judge how hard to hit — too soft and nothing happens, too hard and it damages\n• Deeply satisfying and concentration-building\n• Prepares for real tool use",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Set Up",
+          "description": "Cork board on table, tees in container, mallet beside",
+          "tip": "Show proper grip on mallet first"
+        },
+        {
+          "step": 2,
+          "title": "Demonstrate",
+          "description": "Hold a tee with one hand, tap gently with mallet in other",
+          "tip": "Start with gentle taps — show controlled force"
+        },
+        {
+          "step": 3,
+          "title": "Safety",
+          "description": "Show how to keep holding hand clear of mallet",
+          "tip": "Once tee is started, remove fingers before hitting harder"
+        },
+        {
+          "step": 4,
+          "title": "Pattern",
+          "description": "Tap tees in a line or pattern",
+          "tip": "Creating patterns adds interest"
+        },
+        {
+          "step": 5,
+          "title": "Remove",
+          "description": "Pull tees out to reset the work",
+          "tip": "Pulling requires different hand strength — also valuable"
+        }
+      ],
+      "direct_aims": [
+        "Hand-eye coordination",
+        "Controlled force",
+        "Tool use"
+      ],
+      "indirect_aims": [
+        "Concentration",
+        "Spatial planning",
+        "Confidence with tools"
+      ],
+      "materials_needed": [
+        "Wooden mallet",
+        "Cork board",
+        "Golf tees or wooden pegs"
+      ],
+      "control_of_error": "Tee goes in crooked or board is damaged",
+      "prerequisites": [],
+      "points_of_interest": [
+        "The satisfying tap-tap-tap",
+        "Getting tees perfectly straight",
+        "Creating patterns"
+      ],
+      "variations": [
+        "Hammer tees into a specific shape outline",
+        "Use different sized tees",
+        "Hammer nails into wood (older children with supervision)"
+      ],
+      "common_challenges": [
+        "Force control is the main challenge — demonstrate gentle tapping",
+        "Safety awareness for holding hand"
+      ],
+      "video_search_term": "montessori hammering practical life children",
+      "parent_description": "Your child uses a wooden mallet to tap golf tees into a cork board — tap, tap, tap until the tee stands straight! They learn to control how hard they hit (too soft and nothing happens, too hard and things break) and develop the hand-eye coordination needed for all kinds of tool use.",
+      "why_it_matters": "Using tools is a fundamental human skill, and hammering is often a child is first experience of it. Learning to judge force — not too much, not too little — develops proprioceptive awareness and self-regulation. Children who use tools gain confidence and real-world capability."
+    },
+    {
+      "work_id": "pl_mixing_stirring_food",
+      "name": "Mixing and Stirring Food",
+      "name_chinese": "蒙特梭利食物搅拌",
+      "slug": "mixing-stirring-food",
+      "area": "practical-life",
+      "category": "Food Preparation",
+      "sequence": 11,
+      "age_range": "primary_year1",
+      "quick_guide": "• Mixing ingredients for simple recipes: pancake batter, cookie dough, salad dressing\n• Builds on transfer activity stirring but now with real food and purpose\n• Following a recipe sequence: add ingredient, stir, add next\n• Develops arm strength, wrist control, and patience\n• The product can be eaten — real-world relevance\n• Children learn about texture changes: liquid becomes thick",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Recipe",
+          "description": "Show simple picture recipe. Gather all ingredients",
+          "tip": "Picture recipes support pre-readers"
+        },
+        {
+          "step": 2,
+          "title": "Measure",
+          "description": "Child measures ingredients into bowl",
+          "tip": "Connects to math — practical measurement"
+        },
+        {
+          "step": 3,
+          "title": "Mix",
+          "description": "Stir ingredients together with spoon or whisk",
+          "tip": "Watch for the texture change — children notice this"
+        },
+        {
+          "step": 4,
+          "title": "Observe",
+          "description": "What happened? It changed! Flour and water became dough",
+          "tip": "This is science too — transformation of materials"
+        },
+        {
+          "step": 5,
+          "title": "Complete",
+          "description": "Finish the recipe. Clean up. Enjoy the result!",
+          "tip": "The full cycle: prepare, cook, eat, clean"
+        }
+      ],
+      "direct_aims": [
+        "Following a recipe",
+        "Mixing technique"
+      ],
+      "indirect_aims": [
+        "Reading (picture recipes)",
+        "Math (measuring)",
+        "Science (transformation)"
+      ],
+      "materials_needed": [
+        "Bowl",
+        "Whisk or spoon",
+        "Ingredients for simple recipe",
+        "Measuring cups"
+      ],
+      "control_of_error": "Mixture not combined evenly or spills",
+      "prerequisites": [
+        "pl_spooning"
+      ],
+      "points_of_interest": [
+        "Texture changing during mixing",
+        "Following a sequence",
+        "Eating the result!"
+      ],
+      "variations": [
+        "Different recipes each week",
+        "Children choose recipes",
+        "Cook for the whole class"
+      ],
+      "common_challenges": [
+        "Ensure recipe is simple enough for independence",
+        "Patience while mixing — it takes time"
+      ],
+      "video_search_term": "montessori food mixing cooking practical life",
+      "parent_description": "Your child follows a simple picture recipe to mix real food — measuring flour, cracking an egg, stirring until the batter is smooth. They watch the magic of transformation as separate ingredients become something entirely new. And then they get to eat what they made!",
+      "why_it_matters": "Cooking is where practical life, math, science, and reading all come together. When your child measures ingredients, they practise math. When they watch flour and water become dough, they observe science. When they follow a recipe, they read. And the result is real food — genuinely meaningful work."
+    },
+    {
+      "work_id": "pl_ironing",
+      "name": "Ironing",
+      "name_chinese": "蒙特梭利熨烫",
+      "slug": "ironing",
+      "area": "practical-life",
+      "category": "Care of Environment",
+      "sequence": 15,
+      "age_range": "primary_year2",
+      "quick_guide": "• Child-safe iron on lowest heat setting for small cloth items\n• Napkins, handkerchiefs, doll clothes\n• Long, smooth left-to-right strokes\n• Spray bottle to dampen cloth before ironing\n• Develops concentration, care, and precise movement\n• Safety awareness is a key part of the presentation\n• One of the most \"adult\" works — children feel very grown-up",
+      "presentation_steps": [
+        {
+          "step": 1,
+          "title": "Safety",
+          "description": "Discuss heat safety. Show how to test if iron is warm (hover hand above). Never touch the plate",
+          "tip": "Safety first — this must be very clear"
+        },
+        {
+          "step": 2,
+          "title": "Prepare",
+          "description": "Spray the napkin lightly with water. Lay flat on small ironing board",
+          "tip": "Damp cloth irons better than dry"
+        },
+        {
+          "step": 3,
+          "title": "Iron",
+          "description": "Long, smooth strokes from left to right. Press gently",
+          "tip": "The movement is like reading — left to right"
+        },
+        {
+          "step": 4,
+          "title": "Fold",
+          "description": "Iron the other side. Fold neatly when done",
+          "tip": "The smooth, wrinkle-free result is very satisfying"
+        },
+        {
+          "step": 5,
+          "title": "Cool Down",
+          "description": "Turn off iron, place in safe position, allow to cool",
+          "tip": "The complete cycle includes proper shutdown and storage"
+        }
+      ],
+      "direct_aims": [
+        "Ironing technique",
+        "Safety awareness with heat"
+      ],
+      "indirect_aims": [
+        "Left-to-right movement (reading preparation)",
+        "Care of environment",
+        "Concentration"
+      ],
+      "materials_needed": [
+        "Child-safe iron (low heat)",
+        "Small ironing board",
+        "Napkins or handkerchiefs",
+        "Spray bottle"
+      ],
+      "control_of_error": "Wrinkles remain in the cloth",
+      "prerequisites": [
+        "pl_folding_cloth"
+      ],
+      "points_of_interest": [
+        "Wrinkles disappearing",
+        "The warm cloth",
+        "Feeling very grown-up"
+      ],
+      "variations": [
+        "Iron doll clothes",
+        "Iron artwork printed on transfer paper (with teacher)",
+        "Compare ironed vs unironed cloth"
+      ],
+      "common_challenges": [
+        "Safety must be thoroughly established before independence",
+        "Low heat only — ensure iron settings are child-appropriate"
+      ],
+      "video_search_term": "montessori ironing practical life children",
+      "parent_description": "Your child uses a low-heat iron to smooth wrinkles from napkins and handkerchiefs — one of the most \"grown-up\" works in the classroom! They learn safety rules, spray the cloth with water, and make long smooth strokes from left to right, watching wrinkles magically disappear.",
+      "why_it_matters": "Ironing builds concentration, safety awareness, and the left-to-right movement pattern that prepares for reading and writing. Children feel tremendously capable when trusted with a real iron. The satisfaction of transforming a wrinkled cloth into a smooth one builds self-esteem and genuine care for the environment."
     }
   ]
 }
