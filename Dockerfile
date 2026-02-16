@@ -1,4 +1,4 @@
-# FORCE REBUILD: 20260124-2225-BUST-ALL-CACHE
+# FORCE REBUILD: 20260216-CURRICULUM-UPDATE
 # Use Node.js 20
 FROM node:20-slim
 
@@ -33,7 +33,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260124-2225-V1
+ARG CACHEBUST=20260216-CURRICULUM-V2
 
 # Copy application files
 COPY . .
