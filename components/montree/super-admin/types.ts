@@ -14,6 +14,11 @@ export interface School {
   classroom_count?: number;
   teacher_count?: number;
   student_count?: number;
+  signup_country?: string | null;
+  signup_country_code?: string | null;
+  signup_city?: string | null;
+  signup_region?: string | null;
+  signup_timezone?: string | null;
 }
 
 export interface Feedback {
