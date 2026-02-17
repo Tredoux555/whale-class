@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useOnboardingStore } from '@/hooks/useOnboarding';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 interface Child {
   id: string;
@@ -62,6 +64,12 @@ interface Milestone {
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const initializeOnboarding = useOnboardingStore(s => s.initialize);
+
+  // Client-side-only onboarding init for parents (no JWT, no API calls)
+  useEffect(() => {
+    initializeOnboarding('parent', true);
+  }, [initializeOnboarding]);
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
@@ -268,6 +276,7 @@ export default function ParentDashboardPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="dashboard_overview" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       <Toaster position="top-center" />
       {/* Header */}
@@ -326,7 +335,7 @@ export default function ParentDashboardPage() {
         {selectedChild ? (
           <div className="space-y-6">
             {/* Child Header */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div data-tutorial="parent-dashboard" className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-2xl">
                   {selectedChild.photo_url ? (
@@ -432,6 +441,7 @@ export default function ParentDashboardPage() {
                   </h3>
                   <Link
                     href="/montree/parent/photos"
+                    data-tutorial="photos-link"
                     className="text-sm text-emerald-600 hover:text-emerald-700"
                   >
                     View all →
@@ -548,5 +558,6 @@ export default function ParentDashboardPage() {
         )}
       </main>
     </div>
+    </FeatureWrapper>
   );
 }

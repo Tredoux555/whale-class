@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
+import WelcomeModal from '@/components/montree/WelcomeModal';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 interface Child {
   id: string;
@@ -19,6 +21,7 @@ export default function DashboardPage() {
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
@@ -27,6 +30,11 @@ export default function DashboardPage() {
       return;
     }
     setSession(sess);
+
+    // Show welcome modal if tutorial not completed
+    if (!sess.teacher.has_completed_tutorial) {
+      setShowWelcome(true);
+    }
   }, [router]);
 
   useEffect(() => {
@@ -56,6 +64,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="student_management" autoStart={!session.teacher.has_completed_tutorial}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" />
 
@@ -69,7 +78,7 @@ export default function DashboardPage() {
         {children.length === 0 ? (
           <Link
             href="/montree/dashboard/students"
-            className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow"
+            className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
           >
             <span className="text-6xl mb-4 block">👶</span>
             <p className="text-gray-600 font-medium text-lg">
@@ -77,11 +86,12 @@ export default function DashboardPage() {
             </p>
           </Link>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+          <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
             {children.map((child) => (
               <Link
                 key={child.id}
                 href={`/montree/dashboard/${child.id}`}
+                data-tutorial="student-card"
                 className="bg-white rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-4 flex flex-col items-center"
               >
                 {/* Avatar */}
@@ -102,6 +112,7 @@ export default function DashboardPage() {
             {/* Add Student Card */}
             <Link
               href="/montree/dashboard/students"
+              data-tutorial="add-student-button"
               className="bg-white/60 border-2 border-dashed border-gray-300 rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 transition-all p-4 flex flex-col items-center justify-center min-h-[120px]"
             >
               <span className="text-3xl text-gray-400 mb-1">+</span>
@@ -110,6 +121,31 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Welcome Modal for first-time users */}
+      {showWelcome && session && (
+        <WelcomeModal
+          teacherName={session.teacher.name}
+          isOpen={showWelcome}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
+
+      {/* Custom pulsing ring animation */}
+      <style jsx>{`
+        @keyframes pulse-ring {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+          }
+          50% {
+            box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+          }
+        }
+        .animate-pulse-ring {
+          animation: pulse-ring 2s infinite;
+        }
+      `}</style>
     </div>
+    </FeatureWrapper>
   );
 }

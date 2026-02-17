@@ -15,6 +15,7 @@ import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 export default function CurriculumPage() {
   const router = useRouter();
@@ -168,6 +169,7 @@ export default function CurriculumPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="curriculum" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" richColors />
       
@@ -322,5 +324,6 @@ export default function CurriculumPage() {
       />
 
     </div>
+    </FeatureWrapper>
   );
 }

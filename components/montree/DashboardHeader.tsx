@@ -36,9 +36,11 @@ export default function DashboardHeader() {
           <InboxButton
             conversationId={session.teacher.id}
             userName={session.teacher.name || 'Teacher'}
+            data-tutorial="inbox-button"
           />
           <Link
             href="/montree/dashboard/curriculum"
+            data-tutorial="curriculum-link"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
             title="Curriculum"
           >
@@ -46,6 +48,7 @@ export default function DashboardHeader() {
           </Link>
           <Link
             href="/montree/dashboard/guru"
+            data-tutorial="guru-link"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
             title="Montessori Guru"
           >
