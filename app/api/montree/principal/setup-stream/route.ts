@@ -4,9 +4,10 @@ import { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
+import { legacySha256 } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
@@ -289,6 +290,7 @@ export async function POST(request: NextRequest) {
                   name: teacher.name.trim(),
                   email: teacher.email?.trim() || null,
                   login_code: loginCode,
+                  password_hash: legacySha256(loginCode),
                   role: 'teacher',
                   is_active: true,
                 })

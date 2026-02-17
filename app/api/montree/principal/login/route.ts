@@ -54,7 +54,9 @@ export async function POST(request: NextRequest) {
 
         for (const p of (allPrincipals || [])) {
           if (p.password_hash?.startsWith('$2')) {
-            const valid = await verifyPassword(normalizedCode, p.password_hash);
+            // Try uppercase first, then lowercase (old accounts used lowercase codes)
+            const valid = await verifyPassword(normalizedCode, p.password_hash)
+              || await verifyPassword(normalizedCode.toLowerCase(), p.password_hash);
             if (valid) {
               principal = p;
               break;
