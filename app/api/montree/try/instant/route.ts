@@ -2,7 +2,7 @@
 // Zero-friction instant trial - generates account + code in one shot
 
 import { NextRequest, NextResponse } from 'next/server';
-import { hashPassword, legacySha256 } from '@/lib/montree/password';
+import { legacySha256 } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
