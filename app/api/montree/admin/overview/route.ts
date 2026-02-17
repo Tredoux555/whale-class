@@ -85,6 +85,11 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Filter out empty placeholder classrooms (auto-created "My Classroom" with no teachers/students)
+    const activeClassrooms = classroomsWithData.filter(c =>
+      !(c.name === 'My Classroom' && c.teacher_count === 0 && c.student_count === 0)
+    );
+
     // Get principal info
     const { data: principal } = await supabase
       .from('montree_school_admins')
@@ -93,18 +98,18 @@ export async function GET(request: NextRequest) {
       .eq('role', 'principal')
       .single();
 
-    // Calculate stats
+    // Calculate stats (use filtered classrooms)
     const stats = {
-      total_classrooms: classrooms?.length || 0,
+      total_classrooms: activeClassrooms.length,
       total_teachers: teachers?.length || 0,
       total_students: students?.length || 0,
-      classrooms_without_teacher: classroomsWithData.filter(c => c.teacher_count === 0).length,
+      classrooms_without_teacher: activeClassrooms.filter(c => c.teacher_count === 0).length,
     };
 
     return NextResponse.json({
       school,
       principal,
-      classrooms: classroomsWithData,
+      classrooms: activeClassrooms,
       stats,
     });
 

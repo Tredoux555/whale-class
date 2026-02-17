@@ -43,13 +43,24 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true)
         .single();
 
-      // If found with SHA-256, silently re-hash to bcrypt
-      if (principal) {
-        const bcryptHash = await hashPassword(normalizedCode);
-        await supabase
+      if (!principal) {
+        // Fallback: try bcrypt for accounts created before SHA-256 fix
+        const { data: allPrincipals } = await supabase
           .from('montree_school_admins')
-          .update({ password_hash: bcryptHash })
-          .eq('id', principal.id);
+          .select('*')
+          .eq('role', 'principal')
+          .eq('is_active', true)
+          .limit(20);
+
+        for (const p of (allPrincipals || [])) {
+          if (p.password_hash?.startsWith('$2')) {
+            const valid = await verifyPassword(normalizedCode, p.password_hash);
+            if (valid) {
+              principal = p;
+              break;
+            }
+          }
+        }
       }
 
       if (!principal) {

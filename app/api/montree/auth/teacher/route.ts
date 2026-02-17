@@ -81,6 +81,25 @@ export async function POST(request: NextRequest) {
         teacher = data;
       }
 
+      // Step 3: Fallback for accounts created with bcrypt hashes (before fix)
+      if (!teacher) {
+        const { data: bcryptCandidates } = await supabase
+          .from('montree_teachers')
+          .select('id, name, email, classroom_id, school_id, is_active, password_hash, password_set_at, role')
+          .eq('is_active', true)
+          .limit(50);
+
+        for (const t of (bcryptCandidates || [])) {
+          if (t.password_hash?.startsWith('$2')) {
+            const valid = await verifyPassword(normalizedCode, t.password_hash);
+            if (valid) {
+              teacher = t;
+              break;
+            }
+          }
+        }
+      }
+
       if (!teacher) {
         await logAudit(supabase, {
           adminIdentifier: email || ip,
@@ -90,12 +109,6 @@ export async function POST(request: NextRequest) {
           userAgent,
         });
         return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
-      }
-
-      // Silently re-hash legacy SHA-256 to bcrypt
-      if (isLegacyHash(teacher.password_hash)) {
-        const bcryptHash = await hashPassword(normalizedCode);
-        await supabase.from('montree_teachers').update({ password_hash: bcryptHash }).eq('id', teacher.id);
       }
     }
     // Method 2: Login with email+password (dual-verify: bcrypt or legacy SHA-256)
