@@ -64,7 +64,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="student_management" autoStart={!session.teacher.has_completed_tutorial}>
+    <FeatureWrapper featureModule="student_management" autoStart={!session.teacher.has_completed_tutorial && !showWelcome}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" />
 
