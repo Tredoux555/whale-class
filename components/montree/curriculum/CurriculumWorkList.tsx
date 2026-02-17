@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Work, AREA_COLORS, AREA_ICONS } from './types';
+import { Work, AREA_COLORS } from './types';
+import AreaBadge from '../shared/AreaBadge';
 
 interface CurriculumWorkListProps {
   selectedArea: string;
@@ -63,7 +64,7 @@ export default function CurriculumWorkList({
     <div className="bg-white rounded-2xl p-4 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800 capitalize flex items-center gap-2">
-          {AREA_ICONS[selectedArea]} {selectedArea.replace('_', ' ')}
+          <AreaBadge area={selectedArea} size="md" /> {selectedArea.replace('_', ' ')}
         </h3>
         <span className="text-xs text-gray-400 flex items-center gap-1">
           {reordering && <span className="animate-spin">⏳</span>}

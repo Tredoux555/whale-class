@@ -14,6 +14,7 @@ export interface MontreeSession {
     role: string;
     email?: string;
     password_set?: boolean;
+    has_completed_tutorial?: boolean;
   };
   school: {
     id: string;
