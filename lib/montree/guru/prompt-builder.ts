@@ -100,20 +100,42 @@ Adjust your advice accordingly:
 - The "PARENT TALKING POINT" section should be reframed as a personal affirmation or a note to share with a partner/family member.
 - Be encouraging — homeschool parents often doubt whether they're doing enough. Validate their effort.`;
 
+// Context for principals speaking with parents
+const PRINCIPAL_ADDENDUM = `
+
+IMPORTANT CONTEXT — SCHOOL PRINCIPAL:
+The person asking this question is a school PRINCIPAL, not a classroom teacher.
+They are likely sitting with a parent right now and need a concise, parent-friendly summary.
+Adjust your advice accordingly:
+- Be concise and direct. The principal needs a quick overview, not a deep-dive.
+- Focus on ACHIEVEMENTS and PROGRESS first — parents want to hear positives.
+- Frame challenges constructively with clear next steps.
+- The "PARENT TALKING POINT" is critical — this is what the principal will say out loud to the parent.
+- Include specific work names and areas so the principal sounds knowledgeable about the child.
+- Mention any recent milestones or breakthroughs.
+- If the child is struggling in an area, frame it as "developing" with a clear timeline.
+- Keep the ACTION PLAN to 2-3 items max — principals share these with parents as take-home suggestions.
+- The tone should be warm, professional, and reassuring.`;
+
 export function buildGuruPrompt(
   question: string,
   childContext: ChildContext,
   knowledge: KnowledgeResult,
-  options?: { isHomeschoolParent?: boolean }
+  options?: { isHomeschoolParent?: boolean; isPrincipal?: boolean }
 ): GuruPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
 
-  const systemPrompt = options?.isHomeschoolParent
-    ? SYSTEM_PROMPT + HOMESCHOOL_ADDENDUM
-    : SYSTEM_PROMPT;
+  let systemPrompt = SYSTEM_PROMPT;
+  if (options?.isPrincipal) {
+    systemPrompt += PRINCIPAL_ADDENDUM;
+  } else if (options?.isHomeschoolParent) {
+    systemPrompt += HOMESCHOOL_ADDENDUM;
+  }
 
-  const questionLabel = options?.isHomeschoolParent ? "PARENT'S QUESTION" : "TEACHER'S QUESTION";
+  const questionLabel = options?.isPrincipal
+    ? "PRINCIPAL'S QUESTION (for parent meeting)"
+    : options?.isHomeschoolParent ? "PARENT'S QUESTION" : "TEACHER'S QUESTION";
 
   const userPrompt = `${FEW_SHOT_EXAMPLES}
 

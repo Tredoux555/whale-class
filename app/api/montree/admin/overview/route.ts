@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // Get teachers for this school
     const { data: teachers } = await supabase
       .from('montree_teachers')
-      .select('id, name, email, classroom_id, is_active, last_login_at')
+      .select('id, name, email, classroom_id, role, is_active, last_login_at, login_code')
       .eq('school_id', schoolId)
       .eq('is_active', true);
 
@@ -53,15 +53,34 @@ export async function GET(request: NextRequest) {
 
     // Build classroom data with teachers and student counts
     const classroomsWithData = (classrooms || []).map(classroom => {
-      const teacher = teachers?.find(t => t.classroom_id === classroom.id);
+      const classroomTeachers = teachers?.filter(t => t.classroom_id === classroom.id) || [];
       const studentCount = students?.filter(s => s.classroom_id === classroom.id).length || 0;
-      
+
+      // Sort: lead_teacher first, then assistant_teacher, then teacher
+      const sortedTeachers = classroomTeachers.sort((a, b) => {
+        const order: Record<string, number> = { lead_teacher: 0, teacher: 1, assistant_teacher: 2 };
+        return (order[a.role || 'teacher'] ?? 1) - (order[b.role || 'teacher'] ?? 1);
+      });
+
+      const leadTeacher = sortedTeachers[0] || null;
+
       return {
         ...classroom,
-        teacher_id: teacher?.id || null,
-        teacher_name: teacher?.name || null,
-        teacher_email: teacher?.email || null,
-        teacher_last_login: teacher?.last_login_at || null,
+        // Legacy single-teacher fields (backward compat)
+        teacher_id: leadTeacher?.id || null,
+        teacher_name: leadTeacher?.name || null,
+        teacher_email: leadTeacher?.email || null,
+        teacher_last_login: leadTeacher?.last_login_at || null,
+        // New: full teachers array
+        teachers: sortedTeachers.map(t => ({
+          id: t.id,
+          name: t.name,
+          email: t.email,
+          role: t.role || 'teacher',
+          last_login: t.last_login_at,
+          login_code: t.login_code,
+        })),
+        teacher_count: classroomTeachers.length,
         student_count: studentCount,
       };
     });
@@ -79,7 +98,7 @@ export async function GET(request: NextRequest) {
       total_classrooms: classrooms?.length || 0,
       total_teachers: teachers?.length || 0,
       total_students: students?.length || 0,
-      classrooms_without_teacher: classroomsWithData.filter(c => !c.teacher_id).length,
+      classrooms_without_teacher: classroomsWithData.filter(c => c.teacher_count === 0).length,
     };
 
     return NextResponse.json({
