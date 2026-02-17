@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (!data) {
-        // Try login_code lookup (new accounts with bcrypt hashes)
+        // Try login_code lookup (fallback for accounts with login_code column)
         const { data: newData, error: newError } = await supabase
           .from('montree_teachers')
           .select(`

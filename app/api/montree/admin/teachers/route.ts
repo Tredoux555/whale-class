@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { hashPassword, legacySha256 } from '@/lib/montree/password';
+import { legacySha256 } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
