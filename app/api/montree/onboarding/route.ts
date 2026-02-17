@@ -2,7 +2,7 @@
 // Session 105: Real onboarding API - saves to Supabase
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { hashPassword } from '@/lib/montree/password';
+import { legacySha256 } from '@/lib/montree/password';
 
 // Generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -15,7 +15,7 @@ function generateSlug(name: string): string {
 
 // Generate 6-character login code
 function generateLoginCode(): string {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; // No confusing chars
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No confusing chars
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         if (!teacher.name?.trim()) continue;
 
         const loginCode = generateLoginCode();
-        const passwordHash = await hashPassword(loginCode);
+        const passwordHash = legacySha256(loginCode);
 
         const { data: createdTeacher, error: teacherError } = await supabase
           .from('montree_teachers')
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
             name: teacher.name.trim(),
             email: teacher.email?.trim() || null,
             password_hash: passwordHash,
-            login_code: loginCode.toUpperCase(),
+            login_code: loginCode,
             role: 'teacher',
             is_active: true,
           })
