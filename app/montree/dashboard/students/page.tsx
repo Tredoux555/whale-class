@@ -10,6 +10,7 @@ import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 // Derive curriculum areas from shared config (canonical colors)
 const CURRICULUM_AREAS = AREA_ORDER.map(id => ({
@@ -552,6 +553,7 @@ export default function StudentsPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="student_management" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Toaster position="top-center" />
 
@@ -571,6 +573,7 @@ export default function StudentsPage() {
             </button>
           )}
           <button
+            data-tutorial="add-student-button"
             onClick={openAddForm}
             className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
           >
@@ -1000,5 +1003,6 @@ export default function StudentsPage() {
         </div>
       )}
     </div>
+    </FeatureWrapper>
   );
 }

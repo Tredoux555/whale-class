@@ -28,8 +28,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           initialize(role, true);
           return;
         }
-        const roleKey = role === 'homeschool_parent' ? 'homeschool_parent_enabled' : `${role}_enabled`;
-        const enabled = data.settings?.[roleKey] ?? true;
+        const roleKey = role === 'homeschool_parent' ? 'enabled_for_homeschool_parents' : `enabled_for_${role}s`;
+        const enabled = data?.[roleKey] ?? true;
         initialize(role, enabled);
       })
       .catch(() => {

@@ -66,9 +66,17 @@ export default function ParentDashboardPage() {
   const [loading, setLoading] = useState(true);
   const initializeOnboarding = useOnboardingStore(s => s.initialize);
 
-  // Client-side-only onboarding init for parents (no JWT, no API calls)
+  // Client-side onboarding init for parents (no JWT, so no progress API — localStorage only)
   useEffect(() => {
-    initializeOnboarding('parent', true);
+    fetch('/api/montree/onboarding/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const enabled = data?.enabled_for_parents ?? true;
+        initializeOnboarding('parent', enabled);
+      })
+      .catch(() => {
+        initializeOnboarding('parent', true);
+      });
   }, [initializeOnboarding]);
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
