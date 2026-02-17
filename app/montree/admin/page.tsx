@@ -3,7 +3,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 
@@ -249,17 +248,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Management Tools (compact row) */}
-        <div className="border-t border-white/10 pt-4">
-          <p className="text-emerald-400/60 text-xs mb-3 uppercase tracking-wider">Management Tools</p>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/montree/admin/teachers" className="px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10">👩‍🏫 Teachers</Link>
-            <Link href="/montree/admin/students" className="px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10">👨‍👩‍👧 Students</Link>
-            <Link href="/montree/admin/reports" className="px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10">📊 Reports</Link>
-            <Link href="/montree/admin/import" className="px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10">📄 Import</Link>
-            <Link href="/montree/admin/parent-codes" className="px-3 py-2 bg-white/5 rounded-lg text-white/70 text-sm hover:bg-white/10">👪 Parent Codes</Link>
-          </div>
-        </div>
       </div>
 
       {/* Classroom Modal */}
