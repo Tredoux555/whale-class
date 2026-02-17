@@ -12,34 +12,35 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## 🔥 NEXT SESSION PRIORITY #1 (Feb 16, 2026)
+## 🔥 NEXT SESSION PRIORITY #1 (Feb 17, 2026)
 
-### Story Vault Image Viewer
+### Onboarding System — Phase 3-5 Integration
 
-**User Request:** Add ability to view images in the Story admin vault directly (lightbox/modal), instead of requiring download first.
+**What:** Wire up the completed onboarding foundation (Phase 1-2) into actual pages so users see guided tutorials on first use.
 
-**Status:** Ready for implementation (handoff complete)
+**Status:** Foundation complete (8 files, 968 lines), integration not started. Opus audited and fixed 7 issues in Sonnet's code.
 
-**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
+**Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md` (comprehensive step-by-step guide)
 
-**Estimated Effort:** 2-4 hours for MVP
+**Estimated Effort:** 3-4 hours
 
-**What to Build:**
-1. Add "👁 View" button for image files (JPG, PNG, GIF, WEBP)
-2. Create lightbox modal component (`components/story/admin/VaultImageViewer.tsx`)
-3. Decrypt image in memory and display in modal
-4. ESC/click-outside to close
-5. Keep existing Download button for saving to disk
+**Steps:**
+1. Run migration 131: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
+2. Add onboarding state init to `app/montree/dashboard/layout.tsx` (fetch settings + progress from API, init Zustand store)
+3. Add `data-tutorial` attributes to ~15 pages (see handoff for exact selectors per page)
+4. Wrap pages with `<FeatureWrapper featureModule="..." autoStart={condition}>`
+5. Test all 4 user flows (Teacher, Principal, Homeschool Parent, Parent)
+6. Push to main
 
-**Files to Modify:**
-- `app/story/admin/dashboard/components/VaultTab.tsx` — Add View button
-- `app/story/admin/dashboard/hooks/useVault.ts` — Add handleVaultView function
-- `app/story/admin/dashboard/utils.ts` — Update getVaultFileIcon to return type
-- NEW: `components/story/admin/VaultImageViewer.tsx` — Lightbox component
+**Key Files to Modify:** `dashboard/layout.tsx`, `dashboard/page.tsx`, `dashboard/[childId]/page.tsx`, `dashboard/curriculum/page.tsx`, `dashboard/capture/page.tsx`, `dashboard/guru/page.tsx`, `dashboard/students/page.tsx`, `principal/setup/page.tsx`, `parent/dashboard/page.tsx`
 
-**Why This Matters:** Major UX improvement for vault users. View images instantly without downloading files to disk. Faster workflow, less clutter.
+**Plan File:** `.claude/plans/splendid-herding-tome.md`
 
-**Implementation Approach:** Client-side decryption (reuse existing download API), display in modal, revoke object URL on close (no memory leaks).
+---
+
+### Story Vault Image Viewer (Priority #2)
+
+**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md` — Ready for implementation, 2-4 hours
 
 ---
 
@@ -60,6 +61,83 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 - ✅ Overview API filters out empty "My Classroom" placeholders (name match + 0 teachers + 0 students)
 
 **Handoff:** `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md`
+
+---
+
+### 🎓 Comprehensive Onboarding System — PHASE 1-2 COMPLETE (Feb 17, 2026)
+
+Platform-wide onboarding system for guiding all user types through features on first use.
+
+**Status:** Foundation complete (database + API + components), integration pending
+
+| Phase | What | Status |
+|-------|------|--------|
+| 1 | Database (3 tables) + API (3 endpoints) | ✅ Complete |
+| 2 | Components (OnboardingOverlay, FeatureWrapper) + State (Zustand) | ✅ Complete |
+| 3-5 | Integration (data-tutorial attrs + page wrapping) | ❌ Not Started |
+
+**What's Ready:**
+- ✅ Migration 131 created (progress, settings, events tables)
+- ✅ 3 API routes (settings toggle, progress tracking, skip module)
+- ✅ Super-admin toggle UI (4 checkboxes for role-based enable/disable)
+- ✅ OnboardingOverlay component (tutorial modal with SVG spotlight effect)
+- ✅ FeatureWrapper component (contextual tour trigger)
+- ✅ Zustand store with localStorage persistence
+- ✅ Type-safe configs (role-specific onboarding flows)
+- ✅ 968 lines of code written
+
+**What's Not Ready:**
+- ❌ Migration 131 NOT run against Supabase (tables don't exist yet)
+- ❌ data-tutorial attributes NOT added to pages (~20 files)
+- ❌ FeatureWrapper NOT used on pages (no wrapping yet)
+- ❌ State initialization NOT added to layouts
+- ❌ Zero user-facing changes (foundation only)
+
+**Estimated Time to Complete:** 3-4 hours for Phase 3-5 integration + testing
+
+**Architecture:**
+- 3 PostgreSQL tables: `montree_onboarding_progress` (step tracking), `montree_onboarding_settings` (role toggles), `montree_onboarding_events` (analytics)
+- JWT auth via `verifySchoolRequest()` (existing pattern)
+- Super-admin password protection on settings PATCH
+- Zustand store with Set-based completedSteps tracking
+- SVG mask for spotlight cutout effect
+- Progressive disclosure (tours trigger on first visit per feature)
+
+**Files Created (8 new):**
+- `migrations/131_onboarding_system.sql` — 3 tables + 5 indexes
+- `app/api/montree/onboarding/settings/route.ts` — Toggle GET/PATCH
+- `app/api/montree/onboarding/progress/route.ts` — Progress GET/POST
+- `app/api/montree/onboarding/skip/route.ts` — Skip module POST
+- `lib/montree/onboarding/configs.ts` — Type-safe step definitions
+- `components/montree/onboarding/OnboardingOverlay.tsx` — Tutorial modal
+- `components/montree/onboarding/FeatureWrapper.tsx` — Page wrapper
+- `hooks/useOnboarding.ts` — Zustand store (154 lines)
+
+**Files Modified (2):**
+- `app/montree/super-admin/page.tsx` — Added toggle UI section (+65 lines)
+- `package.json` — Added zustand dependency
+
+**Onboarding Flows Defined:**
+- Teachers: 5 modules, ~15-20 steps (student mgmt, week view, curriculum, capture, guru)
+- Principals: 3 modules, ~9 steps (classroom mgmt, teacher mgmt, overview)
+- Homeschool Parents: Same as teachers, auto-derived with label swaps
+- Parents: 2 modules, ~5 steps (dashboard overview, reports/photos)
+
+**Next Steps:**
+1. Run migration 131 against Supabase: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
+2. Audit foundation with Opus (comprehensive handoff written)
+3. Decide: Continue with Phase 3-5 or iterate on foundation
+4. If approved: Add data-tutorial attributes to ~20 pages (3-4 hours)
+
+**Plan File:** `.claude/plans/splendid-herding-tome.md`
+**Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md`
+
+**Key Design Decisions:**
+- Zustand over Redux (simpler API, built-in persistence)
+- Normalized tables over JSONB (easier analytics, better indexing)
+- Singleton settings table (no env restarts needed)
+- Step-level tracking (not just module completion)
+- Client + server storage (offline support + DB backup)
 
 ---
 
