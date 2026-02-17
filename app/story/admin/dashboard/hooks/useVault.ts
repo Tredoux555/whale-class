@@ -7,6 +7,8 @@ export const useVault = (getSession: () => string | null) => {
   const [vaultFiles, setVaultFiles] = useState<VaultFile[]>([]);
   const [uploadingVault, setUploadingVault] = useState(false);
   const [vaultError, setVaultError] = useState('');
+  const [viewingImage, setViewingImage] = useState<{ url: string; filename: string } | null>(null);
+  const [loadingView, setLoadingView] = useState(false);
 
   const loadVaultFiles = useCallback(async () => {
     const session = getSession();
@@ -116,6 +118,35 @@ export const useVault = (getSession: () => string | null) => {
     }
   }, [getSession, loadVaultFiles]);
 
+  const handleVaultView = useCallback(async (fileId: number, filename: string) => {
+    setLoadingView(true);
+    try {
+      const session = getSession();
+      const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
+        headers: { 'Authorization': `Bearer ${session}` }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        setViewingImage({ url, filename });
+      } else {
+        alert('Failed to load image');
+      }
+    } catch (err) {
+      console.error('View error:', err);
+      alert('Failed to load image');
+    } finally {
+      setLoadingView(false);
+    }
+  }, [getSession]);
+
+  const handleCloseViewer = useCallback(() => {
+    if (viewingImage?.url) {
+      window.URL.revokeObjectURL(viewingImage.url);
+    }
+    setViewingImage(null);
+  }, [viewingImage]);
+
   return {
     vaultPassword,
     setVaultPassword,
@@ -125,10 +156,14 @@ export const useVault = (getSession: () => string | null) => {
     uploadingVault,
     vaultError,
     setVaultError,
+    viewingImage,
+    loadingView,
     loadVaultFiles,
     handleVaultUnlock,
     handleVaultUpload,
     handleVaultDownload,
-    handleVaultDelete
+    handleVaultDelete,
+    handleVaultView,
+    handleCloseViewer
   };
 };

@@ -12,7 +12,62 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 15, 2026)
+## 🔥 NEXT SESSION PRIORITY #1 (Feb 16, 2026)
+
+### Story Vault Image Viewer
+
+**User Request:** Add ability to view images in the Story admin vault directly (lightbox/modal), instead of requiring download first.
+
+**Status:** Ready for implementation (handoff complete)
+
+**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
+
+**Estimated Effort:** 2-4 hours for MVP
+
+**What to Build:**
+1. Add "👁 View" button for image files (JPG, PNG, GIF, WEBP)
+2. Create lightbox modal component (`components/story/admin/VaultImageViewer.tsx`)
+3. Decrypt image in memory and display in modal
+4. ESC/click-outside to close
+5. Keep existing Download button for saving to disk
+
+**Files to Modify:**
+- `app/story/admin/dashboard/components/VaultTab.tsx` — Add View button
+- `app/story/admin/dashboard/hooks/useVault.ts` — Add handleVaultView function
+- `app/story/admin/dashboard/utils.ts` — Update getVaultFileIcon to return type
+- NEW: `components/story/admin/VaultImageViewer.tsx` — Lightbox component
+
+**Why This Matters:** Major UX improvement for vault users. View images instantly without downloading files to disk. Faster workflow, less clutter.
+
+**Implementation Approach:** Client-side decryption (reuse existing download API), display in modal, revoke object URL on close (no memory leaks).
+
+---
+
+## CURRENT STATUS (Feb 16, 2026)
+
+### ✅ DEPLOYED TODAY (Feb 16, 2026)
+
+**Location Tracking:**
+- ✅ Code deployed (commit 286ccc35)
+- ✅ Migrations run (126, 127, 128)
+- ✅ Super-admin panel shows flag emoji + city/country for all new signups
+- IP geolocation via ip-api.com (45 req/min free tier)
+- Captures: country, city, region, timezone, IP address
+
+**Three-Issue Child Week Fix:**
+- ✅ Code deployed (commit 333d884e)
+- ✅ Migration 124 run (montree_child_extras table)
+- Extras leak fixed (no more historical record pollution)
+- Auto-mastery (setting focus #15 masters works 1-14 automatically)
+- Area icon uniformity (shared AreaBadge component across 11 pages)
+
+**Cleanup:**
+- ✅ Deleted dead homeschool auth route
+- ✅ Added audit docs + task list
+
+**Handoffs:** `docs/AUDIT_LOCATION_TRACKING_FEB16.md`, `docs/SUGGESTED_TASKS_FEB16.md`, `docs/HANDOFF_THREE_ISSUE_FIX.md`
+
+---
 
 ### 🏠 Montree Home — ALL 4 PHASES DEPLOYED (Feb 15, 2026)
 
