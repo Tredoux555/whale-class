@@ -38,6 +38,7 @@ export default function TeachersPage() {
   // Form state
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
+  const [formClassroomId, setFormClassroomId] = useState('');
   const [assignedClassrooms, setAssignedClassrooms] = useState<string[]>([]);
 
   useEffect(() => {
@@ -92,7 +93,8 @@ export default function TeachersPage() {
         body: JSON.stringify({
           school_id: schoolId,
           name: formName.trim(),
-          email: formEmail.trim().toLowerCase()
+          email: formEmail.trim().toLowerCase(),
+          classroom_id: formClassroomId || undefined,
         })
       });
       
@@ -106,6 +108,7 @@ export default function TeachersPage() {
       setShowAddModal(false);
       setFormName('');
       setFormEmail('');
+      setFormClassroomId('');
       fetchData();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to add teacher');
@@ -116,10 +119,10 @@ export default function TeachersPage() {
 
   const handleToggleActive = async (teacher: Teacher) => {
     try {
-      const res = await fetch(`/api/montree/admin/teachers/${teacher.id}`, {
+      const res = await fetch('/api/montree/admin/teachers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !teacher.is_active })
+        body: JSON.stringify({ id: teacher.id, is_active: !teacher.is_active })
       });
       
       if (!res.ok) throw new Error('Failed to update');
@@ -143,10 +146,10 @@ export default function TeachersPage() {
     setSaving(true);
     
     try {
-      const res = await fetch(`/api/montree/admin/teachers/${selectedTeacher.id}/classrooms`, {
-        method: 'PUT',
+      const res = await fetch('/api/montree/admin/teachers', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ classroom_ids: assignedClassrooms })
+        body: JSON.stringify({ id: selectedTeacher.id, classroom_id: assignedClassrooms[0] || null })
       });
       
       if (!res.ok) throw new Error('Failed to assign');
@@ -290,6 +293,19 @@ export default function TeachersPage() {
                   placeholder="teacher@school.com"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-white/70 text-sm mb-1">Classroom (optional)</label>
+                <select
+                  value={formClassroomId}
+                  onChange={e => setFormClassroomId(e.target.value)}
+                  className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white"
+                >
+                  <option value="">— No classroom yet —</option>
+                  {classrooms.map(c => (
+                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-2 pt-2">
                 <button

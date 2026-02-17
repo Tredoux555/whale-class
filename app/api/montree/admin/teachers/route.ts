@@ -114,13 +114,14 @@ export async function PATCH(request: NextRequest) {
 
     const schoolId = auth.schoolId;
 
-    const { id, name, email, classroom_id, is_active, regenerate_code } = await request.json();
+    const { id, name, email, classroom_id, is_active, role, regenerate_code } = await request.json();
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
     if (classroom_id !== undefined) updateData.classroom_id = classroom_id;
     if (is_active !== undefined) updateData.is_active = is_active;
+    if (role !== undefined && ['lead_teacher', 'teacher', 'assistant_teacher'].includes(role)) updateData.role = role;
 
     let newCode: string | null = null;
     if (regenerate_code) {
