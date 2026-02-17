@@ -78,6 +78,7 @@ export default function DashboardPage() {
         {children.length === 0 ? (
           <Link
             href="/montree/dashboard/students"
+            data-tutorial="student-grid"
             className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
           >
             <span className="text-6xl mb-4 block">👶</span>

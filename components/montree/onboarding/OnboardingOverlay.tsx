@@ -68,7 +68,47 @@ export default function OnboardingOverlay({
     };
   }, [isActive, updateTargetRect, onDismiss]);
 
-  if (!isActive || !targetRect) return null;
+  if (!isActive) return null;
+
+  // If target element not found, show centered modal without spotlight
+  if (!targetRect) {
+    return (
+      <>
+        <div className="fixed inset-0 z-[9998] bg-black/50" onClick={onDismiss} aria-hidden="true" />
+        <div
+          className="fixed z-[9999] bg-white rounded-2xl shadow-2xl p-5 w-80"
+          style={{
+            left: '50%',
+            top: '40%',
+            transform: 'translate(-50%, -50%)',
+            animation: 'onboarding-fade-in 0.25s ease-out',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+              Step {currentStepNumber} of {totalSteps}
+            </span>
+            <button onClick={onDismiss} className="text-gray-400 hover:text-gray-600 text-lg leading-none p-1" aria-label="Close tutorial">✕</button>
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1.5">{step.title}</h3>
+          <p className="text-sm text-gray-600 mb-5 leading-relaxed">{step.description}</p>
+          <div className="flex gap-2">
+            <button onClick={onSkip} className="flex-1 py-2 text-sm border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors">Skip Tour</button>
+            <button onClick={onNext} className="flex-1 py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors">
+              {currentStepNumber === totalSteps ? 'Finish' : 'Next →'}
+            </button>
+          </div>
+        </div>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes onboarding-fade-in {
+            from { opacity: 0; transform: translate(-50%, -50%) translateY(8px); }
+            to { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+          }
+        `}} />
+      </>
+    );
+  }
 
   // Calculate modal position based on step.position (where modal sits relative to target)
   const modalPos = calculateModalPosition(targetRect, step.position);
