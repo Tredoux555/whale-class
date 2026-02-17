@@ -43,9 +43,27 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 16, 2026)
+## CURRENT STATUS (Feb 17, 2026)
 
-### ✅ DEPLOYED TODAY (Feb 16, 2026)
+### ✅ DEPLOYED TODAY (Feb 17, 2026)
+
+**Teacher Login Code Fix (Complete):**
+- ✅ Code deployed (commits `b4917e1`, `99a3d0b`, `68887b2`)
+- Root cause: `principal/setup-stream` and `principal/setup` routes generated lowercase codes and never set `password_hash` (NULL). Auth route normalized to uppercase → case mismatch + NULL lookup = all 3 auth steps failed.
+- Fix: All 5 teacher-creation routes now use uppercase charset + `legacySha256()` for `password_hash`
+- Auth route Step 2 now case-insensitive (`.ilike()`), handles NULL password_hash, tries both cases in bcrypt fallback
+- `onboarding/route.ts` also fixed: `hashPassword` (bcrypt) → `legacySha256` (SHA-256)
+- Backward compatible: old teachers with lowercase login_code or bcrypt hashes still work via fallback paths
+
+**My Classroom Cleanup:**
+- ✅ Principals no longer get auto-created "My Classroom" during onboarding (`try/instant`)
+- ✅ Overview API filters out empty "My Classroom" placeholders (name match + 0 teachers + 0 students)
+
+**Handoff:** `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md`
+
+---
+
+### ✅ DEPLOYED PREVIOUSLY (Feb 16, 2026)
 
 **Location Tracking:**
 - ✅ Code deployed (commit 286ccc35)
@@ -1000,7 +1018,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | **CURRENT** — Docker ARG fix for Next.js build-time env vars |
+| `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md` | **CURRENT** — Complete login code fix (setup routes + case-insensitive auth) |
+| `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | Docker ARG fix for Next.js build-time env vars |
 | `docs/HANDOFF_GIT_SSL_FIX_FEB15.md` | Astrill VPN root cause, clean montree repo, git workflow fix |
 | `docs/HANDOFF_DEPLOY_MONTREE_HOME_FEB15.md` | Montree Home deploy: repo cleanup, REST API push, LibreSSL fix |
 | `docs/HANDOFF_MONTREE_HOME_PHASE4.md` | Montree Home Phase 4: Curriculum browser (all 4 phases complete) |
