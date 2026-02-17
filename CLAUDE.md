@@ -12,13 +12,13 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## 🔥 NEXT SESSION PRIORITY #1 (Feb 17, 2026)
+## 🔥 NEXT SESSION PRIORITIES (Feb 18, 2026)
 
-### Onboarding System — Phase 3-5 Integration
+### Onboarding System — Phase 3-5 Integration (Priority #1)
 
 **What:** Wire up the completed onboarding foundation (Phase 1-2) into actual pages so users see guided tutorials on first use.
 
-**Status:** Foundation complete (8 files, 968 lines), integration not started. Opus audited and fixed 7 issues in Sonnet's code.
+**Status:** Foundation complete (8 files, 968 lines), integration not started. Opus audited and fixed 7 issues in Sonnet's code. Phase 3-5 integration code was pushed but NOT yet tested in production.
 
 **Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md` (comprehensive step-by-step guide)
 
@@ -26,13 +26,9 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 **Steps:**
 1. Run migration 131: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
-2. Add onboarding state init to `app/montree/dashboard/layout.tsx` (fetch settings + progress from API, init Zustand store)
-3. Add `data-tutorial` attributes to ~15 pages (see handoff for exact selectors per page)
-4. Wrap pages with `<FeatureWrapper featureModule="..." autoStart={condition}>`
-5. Test all 4 user flows (Teacher, Principal, Homeschool Parent, Parent)
-6. Push to main
-
-**Key Files to Modify:** `dashboard/layout.tsx`, `dashboard/page.tsx`, `dashboard/[childId]/page.tsx`, `dashboard/curriculum/page.tsx`, `dashboard/capture/page.tsx`, `dashboard/guru/page.tsx`, `dashboard/students/page.tsx`, `principal/setup/page.tsx`, `parent/dashboard/page.tsx`
+2. Test existing integration on live site (data-tutorial attributes + FeatureWrapper were added in previous session)
+3. Verify all 4 user flows (Teacher, Principal, Homeschool Parent, Parent)
+4. Fix any issues found during testing
 
 **Plan File:** `.claude/plans/splendid-herding-tome.md`
 
@@ -44,9 +40,31 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
+### Curriculum Inconsistency Resolution (Priority #3)
+
+**What:** Static JSON files have 329 works but Brain DB and some creation flows only seed 220. Need to audit and align all curriculum data sources.
+
+**Status:** Deep audit completed (Feb 17), inconsistencies documented. Static JSON is the authoritative source (329 works). `setup-stream` route already fixed to use static JSON exclusively.
+
+**Key finding:** `principal/setup-stream` was querying Brain DB (220 works) instead of static JSON (329 works). Fixed to use `loadAllCurriculumWorks()` from static files.
+
+**Remaining:** Verify all other curriculum creation flows also use static JSON as source of truth.
+
+---
+
 ## CURRENT STATUS (Feb 17, 2026)
 
 ### ✅ DEPLOYED TODAY (Feb 17, 2026)
+
+**Late Session Fixes (commit `f42529e`):**
+- ✅ CurriculumWorkList: replaced emoji area icons (🧹👁️🔢📚🌍) with uniform AreaBadge colored circles (P/S/M/L/C)
+- ✅ Principal setup overlay: replaced chaotic statusMessage animation with smooth curated 6-step progression (timer-based, CSS transitions, step indicators)
+- ✅ Cleaned up stale `statusMessage` state — button now shows simple spinner during loading
+- ✅ `setup-stream` route: fixed to use static JSON curriculum (329 works) instead of Brain DB (220 works)
+- ✅ Admin panel: new classroom/student management pages, guru page, student search API
+- ✅ Tutorial complete API endpoint + teacher tutorial flag migration (130)
+- ✅ English Language Curriculum Guide DOCX created
+- ✅ Zustand added to dependencies
 
 **Teacher Login Code Fix (Complete):**
 - ✅ Code deployed (commits `b4917e1`, `99a3d0b`, `68887b2`)
@@ -482,25 +500,23 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 - Bulletproof `.gitignore` (blocks node_modules, .next, media, audio, videos, env files, large binaries)
 - NOT yet used for Railway deployment — whale-class still active
 
-**GitHub PATs:**
-- `cowork-permanent` — **USE THIS ONE** — no expiration, whale-class, Contents read/write. Saved at `.github-pat` in project root (gitignored). Every Cowork session should read this file and use it for HTTPS push.
-- `cowork-push-feb15` — active, expires Mar 17 2026 (whale-class, Contents read/write)
-- `cowork-push-feb14` — active, expires Feb 14 2027
-- Fine-grained montree PAT — active (montree repo only, Contents read/write)
+**GitHub PAT:**
+- User has a `cowork-permanent` PAT — **ASK USER FOR IT** if not provided. GitHub push protection blocks PATs in committed files.
+- ⚠️ `.github-pat` file does NOT exist in Cowork mount — user must provide PAT in chat each session
 
 **⚡ Cowork Push Workflow (NO SSH keys needed):**
 ```bash
-# 1. Read PAT from persistent file
-PAT=$(cat /path/to/whale/.github-pat)
+# 1. User provides PAT in chat, set as variable
+PAT="<ask-user-for-pat>"
 # 2. Clone to /tmp (avoids FUSE locks on mounted workspace)
 cd /tmp && rm -rf whale-push
 git clone --depth=10 https://Tredoux555:${PAT}@github.com/Tredoux555/whale-class.git whale-push
 # 3. Copy changed files from workspace to /tmp clone
 cp /path/to/whale/changed-file.ts /tmp/whale-push/changed-file.ts
-# 4. Commit and push
+# 4. Commit and push (use HTTP/1.1 to avoid TLS issues in Cowork VM)
 cd /tmp/whale-push && git add -A
 git -c user.name="Tredoux" -c user.email="tredoux555@gmail.com" commit -m "message"
-git push origin main
+git -c http.version=HTTP/1.1 push origin main
 ```
 
 **Mac git config (set during debugging, needs cleanup):**
@@ -522,7 +538,8 @@ git config --global --unset http.lowspeedtime  # currently 0
 - "My Mac" (Nov 2025) — user's MacBook
 - "Cowork VM" (Feb 11) — ⚠️ stale, can delete
 - "Cowork VM Feb 14" — previous session
-- "Cowork VM Feb 15" — current session
+- "Cowork VM Feb 15" — previous session
+- Note: SSH keys are per-session in Cowork. Prefer PAT workflow above instead.
 
 **Handoff:** `docs/HANDOFF_GIT_SSL_FIX_FEB15.md`, `docs/HANDOFF_GIT_PUSH_FIX_FEB15.md`
 
