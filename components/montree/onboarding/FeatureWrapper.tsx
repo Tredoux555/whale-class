@@ -17,6 +17,7 @@ export default function FeatureWrapper({
 }: FeatureWrapperProps) {
   const {
     isOnboardingEnabled,
+    userRole,
     getModuleProgress,
     startModule,
     currentModule,
@@ -30,7 +31,8 @@ export default function FeatureWrapper({
   const dismissedRef = useRef(false);
 
   useEffect(() => {
-    if (!isOnboardingEnabled || !autoStart || dismissedRef.current) return;
+    // Wait for store to be initialized with a role (async layout fetch)
+    if (!userRole || !isOnboardingEnabled || !autoStart || dismissedRef.current) return;
 
     const progress = getModuleProgress(featureModule);
 
@@ -38,7 +40,7 @@ export default function FeatureWrapper({
     if (!progress.completed && !progress.skipped) {
       startModule(featureModule);
     }
-  }, [featureModule, isOnboardingEnabled, autoStart, getModuleProgress, startModule]);
+  }, [featureModule, userRole, isOnboardingEnabled, autoStart, getModuleProgress, startModule]);
 
   const isActive = currentModule === featureModule && currentStep !== null;
 
