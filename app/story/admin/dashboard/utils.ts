@@ -46,6 +46,11 @@ export const getVaultFileIcon = (filename: string) => {
   return '📄';
 };
 
+export const isImageFile = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
+};
+
 export const getFileIcon = (mimeType: string, filename: string) => {
   if (mimeType.includes('pdf')) return '📕';
   if (mimeType.includes('word') || filename.match(/\.docx?$/i)) return '📘';
