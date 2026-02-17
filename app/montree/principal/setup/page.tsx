@@ -345,6 +345,7 @@ export default function PrincipalSetupPage() {
 
             <button
               onClick={addClassroom}
+              data-tutorial="create-classroom-button"
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-white/60 hover:text-white hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all"
             >
               + Add Classroom
@@ -406,6 +407,7 @@ export default function PrincipalSetupPage() {
                   
                   <button
                     onClick={() => addTeacher(classroom.id)}
+                    data-tutorial="add-teacher-button"
                     className="mt-3 text-sm text-emerald-400 hover:text-emerald-300"
                   >
                     + Add another teacher
@@ -457,7 +459,7 @@ export default function PrincipalSetupPage() {
             )}
 
             {/* Success Message */}
-            <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
+            <div data-tutorial="overview-section" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
               <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-white mb-2">
                 {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Created!
