@@ -2,7 +2,7 @@
 // Zero-friction instant trial - generates account + code in one shot
 
 import { NextRequest, NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/montree/password';
+import { hashPassword, legacySha256 } from '@/lib/montree/password';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { createMontreeToken, setMontreeAuthCookie } from '@/lib/montree/server-auth';
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
     const userSchoolName = (schoolName && schoolName.trim()) || `Trial ${role === 'principal' ? 'School' : role === 'homeschool_parent' ? 'Homeschool' : 'Classroom'}`;
 
     const code = generateCode();
-    const codeHash = await hashPassword(code.toUpperCase());
+    const codeHash = legacySha256(code.toUpperCase());
     const trialEndsAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
 
     // ── Step 1: Create trial school ──
@@ -187,34 +187,38 @@ export async function POST(req: NextRequest) {
       steps.push('2b-location-fail:' + message);
     }
 
-    // ── Step 2: Create classroom (all roles including homeschool — identical flow) ──
+    // ── Step 2: Create classroom (teachers + homeschool only — principals create their own) ──
     let classroom: Record<string, unknown> | null = null;
-    steps.push('3-classroom');
-    const classroomName = role === 'homeschool_parent' ? 'My Home' : 'My Classroom';
-    const { data: classroomData, error: classroomErr } = await supabase
-      .from('montree_classrooms')
-      .insert({ name: classroomName, school_id: school.id })
-      .select()
-      .single();
+    if (role !== 'principal') {
+      steps.push('3-classroom');
+      const classroomName = role === 'homeschool_parent' ? 'My Home' : 'My Classroom';
+      const { data: classroomData, error: classroomErr } = await supabase
+        .from('montree_classrooms')
+        .insert({ name: classroomName, school_id: school.id })
+        .select()
+        .single();
 
-    classroom = classroomData;
+      classroom = classroomData;
 
-    if (classroomErr) {
-      console.error('CLASSROOM FAIL:', JSON.stringify(classroomErr));
-      steps.push('3-classroom-fail:' + classroomErr.message);
-    } else {
-      steps.push('3-classroom-ok');
-    }
-
-    // ── Step 2b: Seed curriculum for classroom (non-blocking) ──
-    if (classroom?.id) {
-      steps.push('3b-curriculum');
-      const seedResult = await seedCurriculumForClassroom(supabase, classroom.id as string);
-      if (seedResult.success) {
-        steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
+      if (classroomErr) {
+        console.error('CLASSROOM FAIL:', JSON.stringify(classroomErr));
+        steps.push('3-classroom-fail:' + classroomErr.message);
       } else {
-        steps.push('3b-curriculum-fail');
+        steps.push('3-classroom-ok');
       }
+
+      // ── Step 2b: Seed curriculum for classroom (non-blocking) ──
+      if (classroom?.id) {
+        steps.push('3b-curriculum');
+        const seedResult = await seedCurriculumForClassroom(supabase, classroom.id as string);
+        if (seedResult.success) {
+          steps.push(`3b-curriculum-ok:${seedResult.worksCount}`);
+        } else {
+          steps.push('3b-curriculum-fail');
+        }
+      }
+    } else {
+      steps.push('3-classroom-skip-principal');
     }
 
     // ── Step 3: Create user account ──

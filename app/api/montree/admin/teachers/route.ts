@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { hashPassword } from '@/lib/montree/password';
+import { hashPassword, legacySha256 } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const { name, email, classroom_id } = await request.json();
     
     const loginCode = generateLoginCode();
-    const passwordHash = await hashPassword(loginCode);
+    const passwordHash = legacySha256(loginCode);
 
     const { data: teacher, error } = await supabase
       .from('montree_teachers')
@@ -126,7 +126,7 @@ export async function PATCH(request: NextRequest) {
     let newCode: string | null = null;
     if (regenerate_code) {
       newCode = generateLoginCode();
-      updateData.password_hash = await hashPassword(newCode);
+      updateData.password_hash = legacySha256(newCode);
       updateData.login_code = newCode.toUpperCase();
     }
 
