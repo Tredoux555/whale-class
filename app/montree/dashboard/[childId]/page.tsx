@@ -552,6 +552,7 @@ export default function WeekPage() {
 
       {/* Add Work Button */}
       <button
+        data-tutorial="add-work-button"
         onClick={openPicker}
         className="w-full py-4 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300
           hover:border-emerald-400 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
