@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 interface Child {
   id: string;
@@ -64,7 +64,6 @@ export default function DashboardPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="student_management" autoStart={!session.teacher.has_completed_tutorial && !showWelcome}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" />
 
@@ -147,6 +146,5 @@ export default function DashboardPage() {
         }
       `}</style>
     </div>
-    </FeatureWrapper>
   );
 }

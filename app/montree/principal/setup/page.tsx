@@ -4,8 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useOnboardingStore } from '@/hooks/useOnboarding';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
 const COLOR_OPTIONS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
@@ -35,12 +34,6 @@ export default function PrincipalSetupPage() {
   const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
-
-  // Initialize onboarding for principals (no shared layout like teacher dashboard)
-  const initializeOnboarding = useOnboardingStore(s => s.initialize);
-  useEffect(() => {
-    initializeOnboarding('principal', true);
-  }, [initializeOnboarding]);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -235,7 +228,6 @@ export default function PrincipalSetupPage() {
   if (!school) return null;
 
   return (
-    <FeatureWrapper featureModule="classroom_setup" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -599,6 +591,5 @@ export default function PrincipalSetupPage() {
         </p>
       </div>
     </div>
-    </FeatureWrapper>
   );
 }

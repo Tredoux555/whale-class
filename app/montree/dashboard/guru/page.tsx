@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 interface Child {
   id: string;
@@ -646,14 +646,12 @@ function GuruContent() {
 
 export default function GuruPage() {
   return (
-    <FeatureWrapper featureModule="guru" autoStart>
-      <Suspense fallback={
-        <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
-          <div className="animate-bounce text-4xl">🔮</div>
-        </div>
-      }>
-        <GuruContent />
-      </Suspense>
-    </FeatureWrapper>
+    <Suspense fallback={
+      <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
+        <div className="animate-bounce text-4xl">🔮</div>
+      </div>
+    }>
+      <GuruContent />
+    </Suspense>
   );
 }

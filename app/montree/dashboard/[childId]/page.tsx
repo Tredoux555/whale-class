@@ -19,7 +19,7 @@ import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 interface Assignment {
   work_name: string;
@@ -473,7 +473,6 @@ export default function WeekPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="week_view" autoStart>
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
 
@@ -619,6 +618,5 @@ export default function WeekPage() {
         loading={quickGuideLoading}
       />
     </div>
-    </FeatureWrapper>
   );
 }
