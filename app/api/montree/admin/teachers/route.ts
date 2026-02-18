@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { hashPassword } from '@/lib/montree/password';
+import { legacySha256 } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const { name, email, classroom_id } = await request.json();
     
     const loginCode = generateLoginCode();
-    const passwordHash = await hashPassword(loginCode);
+    const passwordHash = legacySha256(loginCode);
 
     const { data: teacher, error } = await supabase
       .from('montree_teachers')
@@ -114,18 +114,19 @@ export async function PATCH(request: NextRequest) {
 
     const schoolId = auth.schoolId;
 
-    const { id, name, email, classroom_id, is_active, regenerate_code } = await request.json();
+    const { id, name, email, classroom_id, is_active, role, regenerate_code } = await request.json();
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
     if (classroom_id !== undefined) updateData.classroom_id = classroom_id;
     if (is_active !== undefined) updateData.is_active = is_active;
+    if (role !== undefined && ['lead_teacher', 'teacher', 'assistant_teacher'].includes(role)) updateData.role = role;
 
     let newCode: string | null = null;
     if (regenerate_code) {
       newCode = generateLoginCode();
-      updateData.password_hash = await hashPassword(newCode);
+      updateData.password_hash = legacySha256(newCode);
       updateData.login_code = newCode.toUpperCase();
     }
 

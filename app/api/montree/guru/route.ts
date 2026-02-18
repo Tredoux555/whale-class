@@ -15,6 +15,7 @@ export interface GuruRequest {
   question: string;
   classroom_id?: string;
   teacher_id?: string;
+  role?: string; // 'principal' skips freemium checks and uses principal prompt
 }
 
 export interface GuruResponse {
@@ -53,7 +54,8 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    const { child_id, question, classroom_id, teacher_id } = body;
+    const { child_id, question, classroom_id, teacher_id, role } = body;
+    const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
       return NextResponse.json(
@@ -79,14 +81,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // --- Freemium gate for homeschool parents ---
+    // --- Freemium gate for homeschool parents (principals skip this) ---
     // FEATURE FLAG: Set GURU_FREEMIUM_ENABLED=true on Railway to activate paywall.
     // When false (default), all homeschool parents get unlimited Guru for free.
+    // Principals always get unlimited access.
     const freemiumEnabled = process.env.GURU_FREEMIUM_ENABLED === 'true';
     const teacherId = teacher_id || auth.userId;
     let isParentRole = false;
     let shouldIncrementPrompt = false;
-    if (teacherId) {
+    if (isPrincipal) {
+      // Principals get unlimited access, skip all freemium checks
+    } else if (teacherId) {
       const { data: teacherData } = await supabase
         .from('montree_teachers')
         .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end')
@@ -141,6 +146,7 @@ export async function POST(request: NextRequest) {
     // 3. Build prompt (isParentRole set during freemium gate check above)
     const { systemPrompt, userPrompt } = buildGuruPrompt(question, childContext, knowledge, {
       isHomeschoolParent: isParentRole,
+      isPrincipal,
     });
 
     // 4. Call Claude API

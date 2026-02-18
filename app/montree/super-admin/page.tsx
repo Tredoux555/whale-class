@@ -40,6 +40,7 @@ export default function SuperAdminPage() {
   const [dmMessages, setDmMessages] = useState<DmMessage[]>([]);
   const [dmNewMsg, setDmNewMsg] = useState('');
   const [dmSending, setDmSending] = useState(false);
+  const [onboardingSettings, setOnboardingSettings] = useState<any>(null);
 
   // Simple audit logging
   const logAction = useCallback(async (action: string, details?: Record<string, unknown>) => {
@@ -107,6 +108,24 @@ export default function SuperAdminPage() {
       window.removeEventListener('keydown', trackActivity);
     };
   }, [authenticated, trackActivity]);
+
+  // Fetch onboarding settings
+  useEffect(() => {
+    if (!authenticated) return;
+
+    fetch('/api/montree/onboarding/settings')
+      .then(r => r.json())
+      .then(setOnboardingSettings)
+      .catch(() => {
+        // Failed to fetch, use defaults
+        setOnboardingSettings({
+          enabled_for_teachers: true,
+          enabled_for_principals: true,
+          enabled_for_parents: true,
+          enabled_for_homeschool_parents: true,
+        });
+      });
+  }, [authenticated]);
 
   const handleLogin = async () => {
     try {
@@ -221,6 +240,30 @@ export default function SuperAdminPage() {
     }
   };
 
+  // Toggle onboarding for a role
+  const toggleOnboarding = async (role: string, enabled: boolean) => {
+    try {
+      const field = `enabled_for_${role}s`; // 'enabled_for_teachers', etc.
+
+      await fetch('/api/montree/onboarding/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-password': password,
+        },
+        body: JSON.stringify({ [field]: enabled }),
+      });
+
+      // Refresh settings
+      const updated = await fetch('/api/montree/onboarding/settings').then(r => r.json());
+      setOnboardingSettings(updated);
+
+      await logAction('onboarding_toggle', { role, enabled });
+    } catch (err) {
+      console.error('Failed to toggle onboarding:', err);
+    }
+  };
+
   // Stats
   const trialSchools = adminData.schools.filter(s => s.subscription_tier === 'trial' || s.subscription_status === 'trialing');
   const freeSchools = adminData.schools.filter(s => s.subscription_tier === 'free');
@@ -304,6 +347,57 @@ export default function SuperAdminPage() {
         {sessionWarning && (
           <div className="mb-4 p-3 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-400 text-sm">
             ⚠️ Session expiring soon. Move mouse to stay logged in.
+          </div>
+        )}
+
+        {/* Onboarding System Settings */}
+        {onboardingSettings && (
+          <div className="mb-6 bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              🎓 Onboarding System
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
+                <span className="text-slate-300 text-sm font-medium">Teachers</span>
+                <input
+                  type="checkbox"
+                  checked={onboardingSettings.enabled_for_teachers}
+                  onChange={(e) => toggleOnboarding('teacher', e.target.checked)}
+                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
+                <span className="text-slate-300 text-sm font-medium">Principals</span>
+                <input
+                  type="checkbox"
+                  checked={onboardingSettings.enabled_for_principals}
+                  onChange={(e) => toggleOnboarding('principal', e.target.checked)}
+                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
+                <span className="text-slate-300 text-sm font-medium">Homeschool</span>
+                <input
+                  type="checkbox"
+                  checked={onboardingSettings.enabled_for_homeschool_parents}
+                  onChange={(e) => toggleOnboarding('homeschool_parent', e.target.checked)}
+                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
+                <span className="text-slate-300 text-sm font-medium">Parents</span>
+                <input
+                  type="checkbox"
+                  checked={onboardingSettings.enabled_for_parents}
+                  onChange={(e) => toggleOnboarding('parent', e.target.checked)}
+                  className="w-5 h-5 text-emerald-500 bg-slate-600 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2"
+                />
+              </label>
+            </div>
           </div>
         )}
 

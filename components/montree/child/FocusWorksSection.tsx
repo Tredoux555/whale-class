@@ -58,7 +58,7 @@ export default function FocusWorksSection({
       <h2 className="font-bold text-gray-800 mb-3">This Week's Focus</h2>
       {focusWorks.length > 0 ? (
         <div className="space-y-3">
-          {focusWorks.map((work) => {
+          {focusWorks.map((work, i) => {
             const status = STATUS_CONFIG[work.status] || STATUS_CONFIG.not_started;
             const areaConfig = getAreaConfig(work.area);
             const isExpanded = expandedIndex === work.work_name;
@@ -101,6 +101,7 @@ export default function FocusWorksSection({
 
                   {/* Status badge - tap to cycle */}
                   <button
+                    {...(i === 0 ? { 'data-tutorial': 'status-badge-first' } : {})}
                     onClick={() => onCycleStatus(work, true)}
                     className={`w-9 h-9 rounded-full ${status.bg} ${status.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90 transition-transform`}
                   >

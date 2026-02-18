@@ -5,11 +5,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 // Derive curriculum areas from shared config (canonical colors)
 const CURRICULUM_AREAS = AREA_ORDER.map(id => ({
@@ -407,6 +408,23 @@ export default function StudentsPage() {
         });
         if (!res.ok) throw new Error('Failed to add');
         toast.success(`${formData.name} added to class`);
+
+        // Mark tutorial complete after first student added
+        if (session.teacher && !session.teacher.has_completed_tutorial) {
+          try {
+            await fetch('/api/montree/tutorial/complete', { method: 'POST' });
+            // Update session in localStorage
+            const updatedSession = {
+              ...session,
+              teacher: { ...session.teacher, has_completed_tutorial: true }
+            };
+            saveSession(updatedSession);
+            setSession(updatedSession);
+          } catch (err) {
+            console.error('Failed to mark tutorial complete:', err);
+            // Non-blocking error - student was still added successfully
+          }
+        }
       }
 
       closeForm();
@@ -456,6 +474,23 @@ export default function StudentsPage() {
       toast.dismiss(toastId);
       const addedLbl = isHomeschoolParent(session) ? (validStudents.length !== 1 ? 'children' : 'child') : (validStudents.length !== 1 ? 'students' : 'student');
       toast.success(`${validStudents.length} ${addedLbl} added!`);
+
+      // Mark tutorial complete after bulk add
+      if (session?.teacher && !session.teacher.has_completed_tutorial) {
+        try {
+          await fetch('/api/montree/tutorial/complete', { method: 'POST' });
+          // Update session
+          const updatedSession = {
+            ...session,
+            teacher: { ...session.teacher, has_completed_tutorial: true }
+          };
+          saveSession(updatedSession);
+          setSession(updatedSession);
+        } catch (err) {
+          console.error('Failed to mark tutorial complete:', err);
+        }
+      }
+
       closeForm();
       loadStudents(session.classroom?.id);
     } catch (err) {
@@ -518,6 +553,7 @@ export default function StudentsPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="student_management" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Toaster position="top-center" />
 
@@ -537,6 +573,7 @@ export default function StudentsPage() {
             </button>
           )}
           <button
+            data-tutorial="add-student-button"
             onClick={openAddForm}
             className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
           >
@@ -634,7 +671,7 @@ export default function StudentsPage() {
       {/* Add/Edit Form Modal */}
       {showForm && !bulkMode && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
+          <div data-tutorial="student-form" className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="font-bold text-lg text-slate-800">
                 {editingStudent
@@ -966,5 +1003,6 @@ export default function StudentsPage() {
         </div>
       )}
     </div>
+    </FeatureWrapper>
   );
 }

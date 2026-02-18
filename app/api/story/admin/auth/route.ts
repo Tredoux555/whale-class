@@ -25,15 +25,19 @@ async function logAdminLogin(
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    await supabase.from('story_admin_login_logs').insert({
+    const { error } = await supabase.from('story_admin_login_logs').insert({
       username,
       login_at: new Date().toISOString(),
       session_token: token.substring(0, 50),
       ip_address: ip,
       user_agent: userAgent
     });
+
+    if (error) {
+      console.error('[AdminAuth] Login log FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
+    }
   } catch (e) {
-    console.error('[AdminAuth] Login log failed:', e);
+    console.error('[AdminAuth] Login log exception:', e);
   }
 }
 

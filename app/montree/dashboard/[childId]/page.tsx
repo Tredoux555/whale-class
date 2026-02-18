@@ -19,6 +19,7 @@ import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 interface Assignment {
   work_name: string;
@@ -472,6 +473,7 @@ export default function WeekPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="week_view" autoStart>
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
 
@@ -489,6 +491,7 @@ export default function WeekPage() {
       {/* Search + Actions Row */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1" />
+        <div data-tutorial="work-search-bar">
         <WorkSearchBar
           curriculum={curriculum}
           onSelectWork={(work, areaKey) => {
@@ -518,8 +521,10 @@ export default function WeekPage() {
           }}
           placeholder="Find a work..."
         />
+        </div>
         {!isHomeschoolParent(session) && (
           <button
+            data-tutorial="invite-parent-button"
             onClick={() => setInviteModalOpen(true)}
             className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
           >
@@ -529,6 +534,7 @@ export default function WeekPage() {
       </div>
 
       {/* FOCUS WORKS - One per area, with extras grouped underneath */}
+      <div data-tutorial="focus-section">
       <FocusWorksSection
         focusWorks={focusWorks}
         extraWorks={extraWorks}
@@ -545,9 +551,11 @@ export default function WeekPage() {
         childId={childId}
         getAreaConfig={getAreaConfig}
       />
+      </div>
 
       {/* Add Work Button */}
       <button
+        data-tutorial="add-work-button"
         onClick={openPicker}
         className="w-full py-4 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300
           hover:border-emerald-400 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
@@ -611,5 +619,6 @@ export default function WeekPage() {
         loading={quickGuideLoading}
       />
     </div>
+    </FeatureWrapper>
   );
 }

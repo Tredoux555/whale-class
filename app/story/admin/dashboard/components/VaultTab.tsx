@@ -1,7 +1,8 @@
 'use client';
 
 import { VaultFile } from '../types';
-import { formatTime, getVaultFileIcon } from '../utils';
+import { formatTime, getVaultFileIcon, isImageFile } from '../utils';
+import { VaultImageViewer } from '@/components/story/admin/VaultImageViewer';
 
 interface VaultTabProps {
   vaultUnlocked: boolean;
@@ -15,6 +16,10 @@ interface VaultTabProps {
   onVaultUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onVaultDownload: (fileId: number, filename: string) => void;
   onVaultDelete: (fileId: number) => void;
+  viewingImage: { url: string; filename: string } | null;
+  loadingView: boolean;
+  onVaultView: (fileId: number, filename: string) => void;
+  onCloseViewer: () => void;
 }
 
 export function VaultTab({
@@ -28,9 +33,21 @@ export function VaultTab({
   uploadingVault,
   onVaultUpload,
   onVaultDownload,
-  onVaultDelete
+  onVaultDelete,
+  viewingImage,
+  loadingView,
+  onVaultView,
+  onCloseViewer
 }: VaultTabProps) {
   return (
+    <>
+      {viewingImage && (
+        <VaultImageViewer
+          imageUrl={viewingImage.url}
+          filename={viewingImage.filename}
+          onClose={onCloseViewer}
+        />
+      )}
     <div className="space-y-4">
       {!vaultUnlocked ? (
         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -109,6 +126,15 @@ export function VaultTab({
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      {isImageFile(file.filename) && (
+                        <button
+                          onClick={() => onVaultView(file.id, file.filename)}
+                          disabled={loadingView}
+                          className="px-3 py-1 text-xs bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 transition-colors disabled:opacity-50"
+                        >
+                          {loadingView ? '⟳ Loading...' : '👁 View'}
+                        </button>
+                      )}
                       <button
                         onClick={() => onVaultDownload(file.id, file.filename)}
                         className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
@@ -130,5 +156,6 @@ export function VaultTab({
         </div>
       )}
     </div>
+    </>
   );
 }

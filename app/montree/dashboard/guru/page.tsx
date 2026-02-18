@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 interface Child {
   id: string;
@@ -376,7 +377,7 @@ function GuruContent() {
 
       <main className="max-w-2xl mx-auto p-4 pb-32">
         {/* Child Selector */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+        <div data-tutorial="guru-child-selector" className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
             Which child do you need help with?
           </label>
@@ -434,7 +435,7 @@ function GuruContent() {
 
         {/* Question Input */}
         {selectedChild && (
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <div data-tutorial="guru-question-input" className="bg-white rounded-xl shadow-sm p-4 mb-4">
             <label className="text-sm font-medium text-gray-700 mb-2 block">
               What would you like help with for {selectedChild.name.split(' ')[0]}?
             </label>
@@ -605,7 +606,7 @@ function GuruContent() {
 
         {/* Quick Questions (when no child selected or no response yet) */}
         {selectedChild && !response && !loading && (
-          <div className="bg-white rounded-xl shadow-sm p-4">
+          <div data-tutorial="guru-quick-questions" className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="text-sm font-medium text-gray-500 mb-3">Common questions</h3>
             <div className="space-y-2">
               {(isHomeschoolParent(session) ? [
@@ -645,12 +646,14 @@ function GuruContent() {
 
 export default function GuruPage() {
   return (
-    <Suspense fallback={
-      <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🔮</div>
-      </div>
-    }>
-      <GuruContent />
-    </Suspense>
+    <FeatureWrapper featureModule="guru" autoStart>
+      <Suspense fallback={
+        <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
+          <div className="animate-bounce text-4xl">🔮</div>
+        </div>
+      }>
+        <GuruContent />
+      </Suspense>
+    </FeatureWrapper>
   );
 }

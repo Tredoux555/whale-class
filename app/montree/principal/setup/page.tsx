@@ -4,6 +4,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useOnboardingStore } from '@/hooks/useOnboarding';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
 const COLOR_OPTIONS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
@@ -12,21 +14,20 @@ type Teacher = { id: string; name: string; email: string };
 type Classroom = { id: string; name: string; icon: string; color: string; teachers: Teacher[] };
 type CreatedTeacher = { id: string; name: string; login_code: string; classroom_name: string; classroom_icon: string };
 
-// Friendly status messages for creation process
-const SETUP_MESSAGES = [
-  { emoji: '🏫', text: 'Creating your classrooms...' },
-  { emoji: '📚', text: 'Setting up Montessori curriculum...' },
-  { emoji: '🎨', text: 'Adding learning activities...' },
-  { emoji: '👩‍🏫', text: 'Creating teacher accounts...' },
-  { emoji: '🔑', text: 'Generating secure login codes...' },
-  { emoji: '✨', text: 'Almost there, finishing up...' },
+// Curated setup steps — shown one at a time with smooth transitions
+const SETUP_STEPS = [
+  { emoji: '🏫', text: 'Creating your classrooms' },
+  { emoji: '📚', text: 'Loading Montessori curriculum' },
+  { emoji: '🌱', text: 'Seeding 329 learning activities' },
+  { emoji: '👩‍🏫', text: 'Setting up teacher accounts' },
+  { emoji: '🔑', text: 'Generating secure login codes' },
+  { emoji: '✨', text: 'Finishing up' },
 ];
 
 export default function PrincipalSetupPage() {
   const router = useRouter();
   const [step, setStep] = useState(1); // 1: classrooms, 2: teachers, 3: success
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ emoji: '', text: '' });
   const [error, setError] = useState('');
   const [school, setSchool] = useState<any>(null);
 
@@ -34,6 +35,12 @@ export default function PrincipalSetupPage() {
   const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+
+  // Initialize onboarding for principals (no shared layout like teacher dashboard)
+  const initializeOnboarding = useOnboardingStore(s => s.initialize);
+  useEffect(() => {
+    initializeOnboarding('principal', true);
+  }, [initializeOnboarding]);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -99,12 +106,19 @@ export default function PrincipalSetupPage() {
 
   const [progressDetail, setProgressDetail] = useState<string>('');
   const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [setupStepIndex, setSetupStepIndex] = useState(0);
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
     setProgressDetail('');
     setProgressPercent(0);
+    setSetupStepIndex(0);
+
+    // Smooth step advancement — advance every 2.5s, capped at second-to-last step
+    const stepTimer = setInterval(() => {
+      setSetupStepIndex(prev => Math.min(prev + 1, SETUP_STEPS.length - 2));
+    }, 2500);
 
     try {
       // Use streaming endpoint for real-time progress
@@ -132,25 +146,29 @@ export default function PrincipalSetupPage() {
 
         for (const line of lines) {
           if (line.startsWith('event: ')) {
-            const eventType = line.slice(7);
             continue;
           }
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
 
-              if (data.message) {
-                setStatusMessage({ emoji: data.emoji || '⏳', text: data.message });
+              // Map server steps to our curated step indices for key milestones
+              if (data.step === 'curriculum' || data.step === 'curriculum_with_guides') {
+                setSetupStepIndex(2);
+              } else if (data.step === 'teachers' || data.step === 'teacher_created') {
+                setSetupStepIndex(3);
+              } else if (data.step === 'curriculum_done') {
+                setSetupStepIndex(3);
               }
-              if (data.detail) {
-                setProgressDetail(data.detail);
-              }
+
+              // Track real progress percentage from curriculum seeding
               if (data.current && data.total) {
                 setProgressPercent(Math.round((data.current / data.total) * 100));
               }
 
               // Handle completion
               if (data.teachers) {
+                setSetupStepIndex(SETUP_STEPS.length - 1);
                 setCreatedTeachers(data.teachers);
               }
               if (data.warnings) {
@@ -168,10 +186,11 @@ export default function PrincipalSetupPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {
+      clearInterval(stepTimer);
       setLoading(false);
-      setStatusMessage({ emoji: '', text: '' });
       setProgressDetail('');
       setProgressPercent(0);
+      setSetupStepIndex(0);
     }
   };
 
@@ -216,6 +235,7 @@ export default function PrincipalSetupPage() {
   if (!school) return null;
 
   return (
+    <FeatureWrapper featureModule="classroom_setup" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -243,47 +263,48 @@ export default function PrincipalSetupPage() {
           )}
         </div>
 
-        {/* Loading Overlay with REAL progress */}
+        {/* Loading Overlay — smooth curated step progression */}
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
             <div className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl p-8 text-center max-w-md mx-4">
-              <div className="text-6xl mb-4 animate-bounce">
-                {statusMessage.emoji || '⏳'}
+              <div className="text-6xl mb-6 transition-all duration-700 ease-in-out" key={setupStepIndex}>
+                {SETUP_STEPS[setupStepIndex]?.emoji || '⏳'}
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-xl font-semibold text-white mb-3">
                 Setting Up Your School
               </h2>
-              <p className="text-emerald-300 text-lg mb-2">
-                {statusMessage.text || 'Getting everything ready...'}
+              <p className="text-emerald-300 text-lg mb-4 transition-opacity duration-500" key={`text-${setupStepIndex}`}>
+                {SETUP_STEPS[setupStepIndex]?.text || 'Getting everything ready...'}
               </p>
-              {progressDetail && (
-                <p className="text-white/60 text-sm mb-4">
-                  {progressDetail}
-                </p>
-              )}
 
-              {/* Progress bar */}
+              {/* Step indicators */}
+              <div className="flex justify-center gap-2 mb-5">
+                {SETUP_STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      i <= setupStepIndex
+                        ? 'w-6 bg-emerald-400'
+                        : 'w-3 bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Progress bar for curriculum seeding */}
               {progressPercent > 0 && (
                 <div className="w-full bg-white/10 rounded-full h-2 mb-4 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${progressPercent}%` }}
                   />
-                </div>
-              )}
-
-              {progressPercent === 0 && (
-                <div className="flex justify-center gap-1 mb-4">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
                 </div>
               )}
 
               <p className="text-white/40 text-xs">
                 {progressPercent > 0
                   ? `${progressPercent}% complete`
-                  : 'The curriculum is gold - worth the wait! ✨'}
+                  : 'Building your Montessori environment...'}
               </p>
             </div>
           </div>
@@ -345,6 +366,7 @@ export default function PrincipalSetupPage() {
 
             <button
               onClick={addClassroom}
+              data-tutorial="create-classroom-button"
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-white/60 hover:text-white hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all"
             >
               + Add Classroom
@@ -406,6 +428,7 @@ export default function PrincipalSetupPage() {
                   
                   <button
                     onClick={() => addTeacher(classroom.id)}
+                    data-tutorial="add-teacher-button"
                     className="mt-3 text-sm text-emerald-400 hover:text-emerald-300"
                   >
                     + Add another teacher
@@ -422,14 +445,15 @@ export default function PrincipalSetupPage() {
                 ← Back
               </button>
               <button
+                data-tutorial="setup-submit-button"
                 onClick={handleSubmit}
                 disabled={loading || classrooms.some(c => c.teachers.every(t => !t.name.trim()))}
                 className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="animate-bounce">{statusMessage.emoji || '⏳'}</span>
-                    <span>{statusMessage.text || 'Creating...'}</span>
+                    <span className="animate-spin">⏳</span>
+                    <span>Setting up...</span>
                   </span>
                 ) : 'Complete Setup ✓'}
               </button>
@@ -457,7 +481,7 @@ export default function PrincipalSetupPage() {
             )}
 
             {/* Success Message */}
-            <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
+            <div data-tutorial="overview-section" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
               <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-white mb-2">
                 {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Created!
@@ -575,5 +599,6 @@ export default function PrincipalSetupPage() {
         </p>
       </div>
     </div>
+    </FeatureWrapper>
   );
 }
