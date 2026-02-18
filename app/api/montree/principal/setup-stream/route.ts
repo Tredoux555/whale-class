@@ -2,11 +2,11 @@
 // Real-time streaming setup with Server-Sent Events
 import { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { CURRICULUM } from '@/lib/montree/curriculum-data';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
+import { legacySha256 } from '@/lib/montree/password';
 
 function generateLoginCode(): string {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
@@ -22,15 +22,7 @@ const DEFAULT_AREAS = [
   { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
 ];
 
-const BRAIN_AREA_MAPPING: Record<string, string> = {
-  'practical_life': 'practical_life',
-  'sensorial': 'sensorial',
-  'mathematics': 'mathematics',
-  'math': 'mathematics',
-  'language': 'language',
-  'cultural': 'cultural',
-  'culture': 'cultural',
-};
+// Brain area mapping removed — using static curriculum exclusively
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -141,126 +133,16 @@ export async function POST(request: NextRequest) {
             areaMap[area.area_key] = area.id;
           }
 
-          // Seed curriculum works from Brain with timeout protection
+          // Seed curriculum from AUTHORITATIVE static JSON files
+          // DO NOT use Brain database — it has stale/incomplete data (220 vs 329 works)
           send('progress', {
             step: 'curriculum',
-            message: `Loading Montessori curriculum from the Brain...`,
-            emoji: '🧠'
+            message: `Loading Montessori curriculum...`,
+            emoji: '📚'
           });
 
-          // Fetch with timeout to prevent hanging
-          let brainWorks: Array<Record<string, unknown>> | null = null;
-          let brainError: Error | null = null;
-
-          try {
-            const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Brain fetch timeout')), 10000)
-            );
-
-            const fetchPromise = supabase
-              .from('montessori_works')
-              .select('*')
-              .order('sequence_order');
-
-            const result = await Promise.race([fetchPromise, timeoutPromise]) as { data: Array<Record<string, unknown>>; error: Error | null };
-            brainWorks = result.data;
-            brainError = result.error;
-          } catch (timeoutErr) {
-            send('progress', {
-              step: 'brain_timeout',
-              message: `Brain connection slow, using built-in curriculum...`,
-              emoji: '⏱️'
-            });
-            brainError = timeoutErr;
-          }
-
           let worksCount = 0;
-
-          if (brainError || !brainWorks?.length) {
-            send('progress', {
-              step: 'curriculum_fallback',
-              message: `Using built-in curriculum (Brain unavailable)...`,
-              emoji: '📚'
-            });
-            // Fallback to static curriculum
-            worksCount = await seedFromStaticCurriculum(supabase, createdClassroom.id, areaMap, send);
-          } else {
-            send('progress', {
-              step: 'curriculum_seed',
-              message: `Seeding ${brainWorks.length} Montessori works...`,
-              emoji: '🌱',
-              total: brainWorks.length
-            });
-
-            const worksToInsert: Array<Record<string, unknown>> = [];
-            for (const work of brainWorks) {
-              const mappedAreaKey = BRAIN_AREA_MAPPING[work.curriculum_area] || 'practical_life';
-              const areaUuid = areaMap[mappedAreaKey];
-              if (!areaUuid) continue;
-
-              worksToInsert.push({
-                classroom_id: createdClassroom.id,
-                area_id: areaUuid,
-                work_key: work.slug || work.name.toLowerCase().replace(/\s+/g, '_'),
-                name: work.name,
-                name_chinese: work.name_chinese || null,
-                description: work.parent_explanation_simple || null,
-                age_range: work.age_min && work.age_max ? `${work.age_min}-${work.age_max}` : '3-6',
-                sequence: work.sequence_order || 999,
-                is_active: true,
-                direct_aims: work.direct_aims || [],
-                indirect_aims: work.indirect_aims || [],
-                materials: work.materials_needed || [],
-                control_of_error: work.control_of_error || null,
-                prerequisites: work.readiness_indicators || [],
-                quick_guide: work.quick_guide || null,
-                presentation_steps: work.presentation_steps || [],
-                presentation_notes: work.presentation_notes || null,
-                parent_description: work.parent_explanation_detailed || null,
-                why_it_matters: work.parent_why_it_matters || null,
-                video_search_terms: work.video_search_term || null,
-              });
-            }
-
-            // Batch insert in chunks with retry logic for reliability
-            const BATCH_SIZE = 50;
-            const MAX_RETRIES = 3;
-
-            for (let i = 0; i < worksToInsert.length; i += BATCH_SIZE) {
-              const batch = worksToInsert.slice(i, i + BATCH_SIZE);
-              let success = false;
-
-              for (let attempt = 1; attempt <= MAX_RETRIES && !success; attempt++) {
-                const { error: worksError } = await supabase
-                  .from('montree_classroom_curriculum_works')
-                  .insert(batch);
-
-                if (worksError) {
-                  if (attempt < MAX_RETRIES) {
-                    send('progress', {
-                      step: 'retry',
-                      message: `Retrying batch (attempt ${attempt + 1}/${MAX_RETRIES})...`,
-                      emoji: '🔄'
-                    });
-                    await new Promise(r => setTimeout(r, 500 * attempt)); // Backoff
-                  } else {
-                    send('warning', { message: `Some works failed after ${MAX_RETRIES} attempts` });
-                  }
-                } else {
-                  success = true;
-                }
-              }
-
-              worksCount += batch.length;
-              send('progress', {
-                step: 'curriculum_progress',
-                message: `Inserted ${worksCount}/${worksToInsert.length} works...`,
-                emoji: '📝',
-                current: worksCount,
-                total: worksToInsert.length
-              });
-            }
-          }
+          worksCount = await seedFromStaticCurriculum(supabase, createdClassroom.id, areaMap, send);
 
           send('progress', {
             step: 'curriculum_done',
@@ -289,6 +171,7 @@ export async function POST(request: NextRequest) {
                   name: teacher.name.trim(),
                   email: teacher.email?.trim() || null,
                   login_code: loginCode,
+                  password_hash: legacySha256(loginCode),
                   role: 'teacher',
                   is_active: true,
                 })

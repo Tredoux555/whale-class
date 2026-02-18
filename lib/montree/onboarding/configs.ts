@@ -1,0 +1,453 @@
+// Onboarding configuration for all user types
+// Defines step-by-step tutorial flows for each role
+
+export interface OnboardingStep {
+  key: string; // Unique identifier: 'click_add_student'
+  title: string; // Modal heading: "Add Your First Student"
+  description: string; // Modal body text
+  targetSelector: string; // CSS selector for arrow positioning: '[data-tutorial="add-student-button"]'
+  position: 'top' | 'bottom' | 'left' | 'right'; // Arrow direction
+  action?: 'click' | 'hover' | 'none'; // Expected user action
+  nextTrigger?: 'manual' | 'automatic'; // Advance on click or button press
+}
+
+export interface FeatureModule {
+  id: string; // 'student_management'
+  name: string; // "Student Management"
+  icon: string; // 👨‍🎓
+  steps: OnboardingStep[];
+  prerequisite?: string; // Another module ID that must complete first
+}
+
+export interface OnboardingConfig {
+  role: 'teacher' | 'principal' | 'parent' | 'homeschool_parent';
+  modules: FeatureModule[];
+}
+
+// ============================================================
+// TEACHER ONBOARDING — 5 modules, 22 steps
+// ============================================================
+export const TEACHER_ONBOARDING: OnboardingConfig = {
+  role: 'teacher',
+  modules: [
+    // ── Module 1: Student Management (Dashboard + Students page) ──
+    {
+      id: 'student_management',
+      name: 'Getting Started',
+      icon: '👨‍🎓',
+      steps: [
+        {
+          key: 'welcome_dashboard',
+          title: 'Welcome to Your Dashboard',
+          description: 'This is your classroom hub. Each card represents a child in your class.',
+          targetSelector: '[data-tutorial="student-grid"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'tap_child',
+          title: 'Open a Child\'s Week',
+          description: 'Tap any child to see their weekly work plan and track daily progress.',
+          targetSelector: '[data-tutorial="student-card"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'add_student',
+          title: 'Add Your First Student',
+          description: 'Click here to add students to your classroom.',
+          targetSelector: '[data-tutorial="add-student-button"]',
+          position: 'left',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+        {
+          key: 'fill_student_form',
+          title: 'Enter Student Details',
+          description: 'Fill in the name and age — curriculum progress is optional for now. You can always update it later.',
+          targetSelector: '[data-tutorial="student-form"]',
+          position: 'right',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 2: Week View (Child page) ──
+    {
+      id: 'week_view',
+      name: 'Weekly Focus',
+      icon: '📅',
+      prerequisite: 'student_management',
+      steps: [
+        {
+          key: 'focus_intro',
+          title: 'The Weekly Focus View',
+          description: 'This is the heart of Montree. Each child has one focus work per area, presented each Monday.',
+          targetSelector: '[data-tutorial="focus-section"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'status_cycle',
+          title: 'Track Progress',
+          description: 'Tap the status badge to cycle through: Not Started → Presented → Practicing → Mastered.',
+          targetSelector: '[data-tutorial="status-badge-first"]',
+          position: 'right',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'add_extra_work',
+          title: 'Add Extra Works',
+          description: 'Need more? Add extra works from the full curriculum when a child is ready for a challenge.',
+          targetSelector: '[data-tutorial="add-work-button"]',
+          position: 'top',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'search_works',
+          title: 'Search Works',
+          description: 'Quickly find any work by name across all five Montessori areas.',
+          targetSelector: '[data-tutorial="work-search-bar"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'invite_parent',
+          title: 'Invite Parents',
+          description: 'Share a code with parents so they can see their child\'s progress and photos from home.',
+          targetSelector: '[data-tutorial="invite-parent-button"]',
+          position: 'left',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 3: Curriculum (Curriculum page) ──
+    {
+      id: 'curriculum',
+      name: 'Curriculum',
+      icon: '📚',
+      prerequisite: 'week_view',
+      steps: [
+        {
+          key: 'area_cards',
+          title: 'Five Montessori Areas',
+          description: 'Your curriculum is organized into Practical Life, Sensorial, Mathematics, Language, and Cultural Studies. Tap an area to explore.',
+          targetSelector: '[data-tutorial="area-cards"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'work_list',
+          title: 'Explore Works',
+          description: 'Each work includes teaching guides, materials lists, and recommended age ranges.',
+          targetSelector: '[data-tutorial="curriculum-work-first"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'add_custom_work',
+          title: 'Add Custom Works',
+          description: 'Create your own works for activities unique to your classroom.',
+          targetSelector: '[data-tutorial="curriculum-add-button"]',
+          position: 'top',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'browse_guide',
+          title: 'Full Curriculum Guide',
+          description: 'Browse the complete Montessori curriculum with detailed teaching instructions and materials.',
+          targetSelector: '[data-tutorial="browse-guide-link"]',
+          position: 'left',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 4: Photo Capture ──
+    {
+      id: 'photo_capture',
+      name: 'Photo Capture',
+      icon: '📷',
+      prerequisite: 'week_view',
+      steps: [
+        {
+          key: 'select_child_capture',
+          title: 'Select a Child',
+          description: 'First, pick which child (or children) you\'re photographing.',
+          targetSelector: '[data-tutorial="capture-child-selector"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'group_mode',
+          title: 'Group Photos',
+          description: 'Toggle group mode to tag multiple children in a single photo.',
+          targetSelector: '[data-tutorial="capture-group-toggle"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'take_photo',
+          title: 'Snap a Photo',
+          description: 'Take a photo — it\'ll be saved to the child\'s portfolio and shared with parents.',
+          targetSelector: '[data-tutorial="capture-camera-button"]',
+          position: 'top',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 5: Guru AI Advisor ──
+    {
+      id: 'guru',
+      name: 'AI Advisor',
+      icon: '🧠',
+      prerequisite: 'student_management',
+      steps: [
+        {
+          key: 'select_child_guru',
+          title: 'Choose a Child',
+          description: 'Select a child to get personalized development advice about.',
+          targetSelector: '[data-tutorial="guru-child-selector"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'quick_questions',
+          title: 'Quick Questions',
+          description: 'Try a quick question to see what Guru can do — or type your own below.',
+          targetSelector: '[data-tutorial="guru-quick-questions"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'ask_custom',
+          title: 'Ask Anything',
+          description: 'Type any question about development, behavior, or curriculum — Guru draws on your child\'s history for tailored advice.',
+          targetSelector: '[data-tutorial="guru-question-input"]',
+          position: 'top',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+  ],
+};
+
+// ============================================================
+// PRINCIPAL ONBOARDING — 2 modules, 6 steps
+// ============================================================
+export const PRINCIPAL_ONBOARDING: OnboardingConfig = {
+  role: 'principal',
+  modules: [
+    // ── Module 1: School Setup ──
+    {
+      id: 'classroom_setup',
+      name: 'School Setup',
+      icon: '🏫',
+      steps: [
+        {
+          key: 'create_classroom',
+          title: 'Create a Classroom',
+          description: 'Give your first classroom a name and pick an icon to represent it.',
+          targetSelector: '[data-tutorial="create-classroom-button"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'add_teacher',
+          title: 'Add a Teacher',
+          description: 'Add a teacher to this classroom. They\'ll receive a unique 6-character login code.',
+          targetSelector: '[data-tutorial="add-teacher-button"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'submit_setup',
+          title: 'Create Everything',
+          description: 'Hit create — classrooms and teacher login codes will be generated automatically.',
+          targetSelector: '[data-tutorial="setup-submit-button"]',
+          position: 'top',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 2: School Overview ──
+    {
+      id: 'school_overview',
+      name: 'School Dashboard',
+      icon: '📊',
+      prerequisite: 'classroom_setup',
+      steps: [
+        {
+          key: 'overview_stats',
+          title: 'Your School at a Glance',
+          description: 'See all classrooms, student counts, and teacher assignments in one view.',
+          targetSelector: '[data-tutorial="overview-section"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'manage_teachers',
+          title: 'Manage Teachers',
+          description: 'Reset login codes, add new teachers, or reassign classrooms from here.',
+          targetSelector: '[data-tutorial="manage-teachers-button"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'view_classroom',
+          title: 'Explore a Classroom',
+          description: 'Tap any classroom to see its students and curriculum progress.',
+          targetSelector: '[data-tutorial="classroom-card"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+  ],
+};
+
+// ============================================================
+// HOMESCHOOL PARENT ONBOARDING — Derived from teacher flow
+// Swaps "student" → "child", "classroom" → "home"
+// Filters out the invite-parent step (they ARE the parent)
+// ============================================================
+export const HOMESCHOOL_PARENT_ONBOARDING: OnboardingConfig = {
+  role: 'homeschool_parent',
+  modules: TEACHER_ONBOARDING.modules.map(m => ({
+    ...m,
+    steps: m.steps
+      .filter(s => s.key !== 'invite_parent') // Homeschool parents don't invite themselves
+      .map(s => ({
+        ...s,
+        title: s.title
+          .replace(/Students?/g, match => match === 'Students' ? 'Children' : 'Child')
+          .replace(/students?/g, match => match === 'students' ? 'children' : 'child')
+          .replace(/Classroom/g, 'Home')
+          .replace(/classroom/g, 'home'),
+        description: s.description
+          .replace(/students?/g, match => match === 'students' ? 'children' : 'child')
+          .replace(/classroom/g, 'home')
+          .replace(/class\b/g, 'home')
+          .replace(/parents/g, 'family members'),
+      })),
+  })),
+};
+
+// ============================================================
+// PARENT ONBOARDING — 2 modules, 5 steps (view-only role)
+// ============================================================
+export const PARENT_ONBOARDING: OnboardingConfig = {
+  role: 'parent',
+  modules: [
+    // ── Module 1: Dashboard Overview ──
+    {
+      id: 'dashboard_overview',
+      name: 'Your Child\'s Progress',
+      icon: '👶',
+      steps: [
+        {
+          key: 'welcome_parent',
+          title: 'Welcome!',
+          description: 'This is where you can follow your child\'s Montessori journey — see what they\'re working on and how they\'re progressing.',
+          targetSelector: '[data-tutorial="parent-dashboard"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'weekly_reports',
+          title: 'Weekly Reports',
+          description: 'Your child\'s teacher shares weekly progress reports here — see what they\'ve been working on.',
+          targetSelector: '[data-tutorial="parent-weekly-reports"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'view_stats',
+          title: 'Overall Progress',
+          description: 'Tap here to see how your child is progressing across all Montessori areas.',
+          targetSelector: '[data-tutorial="parent-stats"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+
+    // ── Module 2: Reports & Photos ──
+    {
+      id: 'reports_photos',
+      name: 'Reports & Photos',
+      icon: '📸',
+      prerequisite: 'dashboard_overview',
+      steps: [
+        {
+          key: 'photo_gallery',
+          title: 'Photo Gallery',
+          description: 'Photos from the classroom are shared here — see your child at work!',
+          targetSelector: '[data-tutorial="parent-photo-gallery"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+        {
+          key: 'milestones',
+          title: 'Milestones',
+          description: 'Track your child\'s achievements and milestones over time.',
+          targetSelector: '[data-tutorial="parent-milestones"]',
+          position: 'bottom',
+          action: 'none',
+          nextTrigger: 'manual',
+        },
+      ],
+    },
+  ],
+};
+
+// ============================================================
+// Config Lookup
+// ============================================================
+export function getOnboardingConfig(role: string): OnboardingConfig {
+  switch (role) {
+    case 'teacher':
+      return TEACHER_ONBOARDING;
+    case 'principal':
+      return PRINCIPAL_ONBOARDING;
+    case 'homeschool_parent':
+      return HOMESCHOOL_PARENT_ONBOARDING;
+    case 'parent':
+      return PARENT_ONBOARDING;
+    default:
+      // Safe fallback — don't crash the app for unknown roles
+      console.warn(`[ONBOARDING] Unknown role: ${role}, returning empty config`);
+      return { role: 'teacher', modules: [] };
+  }
+}

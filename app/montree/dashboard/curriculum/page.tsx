@@ -15,6 +15,7 @@ import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 export default function CurriculumPage() {
   const router = useRouter();
@@ -168,6 +169,7 @@ export default function CurriculumPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="curriculum" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" richColors />
       
@@ -194,6 +196,7 @@ export default function CurriculumPage() {
               placeholder="Search works..."
             />
             <Link
+              data-tutorial="browse-guide-link"
               href="/montree/dashboard/curriculum/browse"
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
             >
@@ -202,6 +205,7 @@ export default function CurriculumPage() {
             </Link>
             {curriculum.length > 0 && (
               <button
+                data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
               >
@@ -237,7 +241,7 @@ export default function CurriculumPage() {
             </div>
             
             {/* Area Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+            <div data-tutorial="area-cards" className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
               {Object.entries(byArea).map(([area, works]) => (
                 <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
                   className={`bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
@@ -256,6 +260,7 @@ export default function CurriculumPage() {
 
             {/* Selected Area Works */}
             {selectedArea && byArea[selectedArea] && (
+              <div data-tutorial="curriculum-work-first">
               <CurriculumWorkList
                 selectedArea={selectedArea}
                 works={byArea[selectedArea]}
@@ -277,6 +282,7 @@ export default function CurriculumPage() {
                 startAutoScroll={startAutoScroll}
                 stopAutoScroll={stopAutoScroll}
               />
+              </div>
             )}
           </>
         )}
@@ -322,5 +328,6 @@ export default function CurriculumPage() {
       />
 
     </div>
+    </FeatureWrapper>
   );
 }

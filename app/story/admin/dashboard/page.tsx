@@ -47,11 +47,15 @@ export default function AdminDashboard() {
     uploadingVault,
     vaultError,
     setVaultError,
+    viewingImage,
+    loadingView,
     loadVaultFiles,
     handleVaultUnlock,
     handleVaultUpload,
     handleVaultDownload,
-    handleVaultDelete
+    handleVaultDelete,
+    handleVaultView,
+    handleCloseViewer
   } = useVault(getSession);
   const {
     sharedFiles,
@@ -244,6 +248,10 @@ export default function AdminDashboard() {
                 }}
                 onVaultDownload={handleVaultDownload}
                 onVaultDelete={handleVaultDelete}
+                viewingImage={viewingImage}
+                loadingView={loadingView}
+                onVaultView={handleVaultView}
+                onCloseViewer={handleCloseViewer}
               />
             )}
 

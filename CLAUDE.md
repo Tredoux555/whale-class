@@ -12,7 +12,176 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## CURRENT STATUS (Feb 15, 2026)
+## 🔥 NEXT SESSION PRIORITIES (Feb 18, 2026)
+
+### Onboarding System — Phase 3-5 Integration (Priority #1)
+
+**What:** Wire up the completed onboarding foundation (Phase 1-2) into actual pages so users see guided tutorials on first use.
+
+**Status:** Foundation complete (8 files, 968 lines), integration not started. Opus audited and fixed 7 issues in Sonnet's code. Phase 3-5 integration code was pushed but NOT yet tested in production.
+
+**Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md` (comprehensive step-by-step guide)
+
+**Estimated Effort:** 3-4 hours
+
+**Steps:**
+1. Run migration 131: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
+2. Test existing integration on live site (data-tutorial attributes + FeatureWrapper were added in previous session)
+3. Verify all 4 user flows (Teacher, Principal, Homeschool Parent, Parent)
+4. Fix any issues found during testing
+
+**Plan File:** `.claude/plans/splendid-herding-tome.md`
+
+---
+
+### Story Vault Image Viewer (Priority #2)
+
+**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md` — Ready for implementation, 2-4 hours
+
+---
+
+### Curriculum Inconsistency Resolution (Priority #3)
+
+**What:** Static JSON files have 329 works but Brain DB and some creation flows only seed 220. Need to audit and align all curriculum data sources.
+
+**Status:** Deep audit completed (Feb 17), inconsistencies documented. Static JSON is the authoritative source (329 works). `setup-stream` route already fixed to use static JSON exclusively.
+
+**Key finding:** `principal/setup-stream` was querying Brain DB (220 works) instead of static JSON (329 works). Fixed to use `loadAllCurriculumWorks()` from static files.
+
+**Remaining:** Verify all other curriculum creation flows also use static JSON as source of truth.
+
+---
+
+## CURRENT STATUS (Feb 17, 2026)
+
+### ✅ DEPLOYED TODAY (Feb 17, 2026)
+
+**Late Session Fixes (commit `f42529e`):**
+- ✅ CurriculumWorkList: replaced emoji area icons (🧹👁️🔢📚🌍) with uniform AreaBadge colored circles (P/S/M/L/C)
+- ✅ Principal setup overlay: replaced chaotic statusMessage animation with smooth curated 6-step progression (timer-based, CSS transitions, step indicators)
+- ✅ Cleaned up stale `statusMessage` state — button now shows simple spinner during loading
+- ✅ `setup-stream` route: fixed to use static JSON curriculum (329 works) instead of Brain DB (220 works)
+- ✅ Admin panel: new classroom/student management pages, guru page, student search API
+- ✅ Tutorial complete API endpoint + teacher tutorial flag migration (130)
+- ✅ English Language Curriculum Guide DOCX created
+- ✅ Zustand added to dependencies
+
+**Teacher Login Code Fix (Complete):**
+- ✅ Code deployed (commits `b4917e1`, `99a3d0b`, `68887b2`)
+- Root cause: `principal/setup-stream` and `principal/setup` routes generated lowercase codes and never set `password_hash` (NULL). Auth route normalized to uppercase → case mismatch + NULL lookup = all 3 auth steps failed.
+- Fix: All 5 teacher-creation routes now use uppercase charset + `legacySha256()` for `password_hash`
+- Auth route Step 2 now case-insensitive (`.ilike()`), handles NULL password_hash, tries both cases in bcrypt fallback
+- `onboarding/route.ts` also fixed: `hashPassword` (bcrypt) → `legacySha256` (SHA-256)
+- Backward compatible: old teachers with lowercase login_code or bcrypt hashes still work via fallback paths
+
+**My Classroom Cleanup:**
+- ✅ Principals no longer get auto-created "My Classroom" during onboarding (`try/instant`)
+- ✅ Overview API filters out empty "My Classroom" placeholders (name match + 0 teachers + 0 students)
+
+**Handoff:** `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md`
+
+---
+
+### 🎓 Comprehensive Onboarding System — PHASE 1-2 COMPLETE (Feb 17, 2026)
+
+Platform-wide onboarding system for guiding all user types through features on first use.
+
+**Status:** Foundation complete (database + API + components), integration pending
+
+| Phase | What | Status |
+|-------|------|--------|
+| 1 | Database (3 tables) + API (3 endpoints) | ✅ Complete |
+| 2 | Components (OnboardingOverlay, FeatureWrapper) + State (Zustand) | ✅ Complete |
+| 3-5 | Integration (data-tutorial attrs + page wrapping) | ❌ Not Started |
+
+**What's Ready:**
+- ✅ Migration 131 created (progress, settings, events tables)
+- ✅ 3 API routes (settings toggle, progress tracking, skip module)
+- ✅ Super-admin toggle UI (4 checkboxes for role-based enable/disable)
+- ✅ OnboardingOverlay component (tutorial modal with SVG spotlight effect)
+- ✅ FeatureWrapper component (contextual tour trigger)
+- ✅ Zustand store with localStorage persistence
+- ✅ Type-safe configs (role-specific onboarding flows)
+- ✅ 968 lines of code written
+
+**What's Not Ready:**
+- ❌ Migration 131 NOT run against Supabase (tables don't exist yet)
+- ❌ data-tutorial attributes NOT added to pages (~20 files)
+- ❌ FeatureWrapper NOT used on pages (no wrapping yet)
+- ❌ State initialization NOT added to layouts
+- ❌ Zero user-facing changes (foundation only)
+
+**Estimated Time to Complete:** 3-4 hours for Phase 3-5 integration + testing
+
+**Architecture:**
+- 3 PostgreSQL tables: `montree_onboarding_progress` (step tracking), `montree_onboarding_settings` (role toggles), `montree_onboarding_events` (analytics)
+- JWT auth via `verifySchoolRequest()` (existing pattern)
+- Super-admin password protection on settings PATCH
+- Zustand store with Set-based completedSteps tracking
+- SVG mask for spotlight cutout effect
+- Progressive disclosure (tours trigger on first visit per feature)
+
+**Files Created (8 new):**
+- `migrations/131_onboarding_system.sql` — 3 tables + 5 indexes
+- `app/api/montree/onboarding/settings/route.ts` — Toggle GET/PATCH
+- `app/api/montree/onboarding/progress/route.ts` — Progress GET/POST
+- `app/api/montree/onboarding/skip/route.ts` — Skip module POST
+- `lib/montree/onboarding/configs.ts` — Type-safe step definitions
+- `components/montree/onboarding/OnboardingOverlay.tsx` — Tutorial modal
+- `components/montree/onboarding/FeatureWrapper.tsx` — Page wrapper
+- `hooks/useOnboarding.ts` — Zustand store (154 lines)
+
+**Files Modified (2):**
+- `app/montree/super-admin/page.tsx` — Added toggle UI section (+65 lines)
+- `package.json` — Added zustand dependency
+
+**Onboarding Flows Defined:**
+- Teachers: 5 modules, ~15-20 steps (student mgmt, week view, curriculum, capture, guru)
+- Principals: 3 modules, ~9 steps (classroom mgmt, teacher mgmt, overview)
+- Homeschool Parents: Same as teachers, auto-derived with label swaps
+- Parents: 2 modules, ~5 steps (dashboard overview, reports/photos)
+
+**Next Steps:**
+1. Run migration 131 against Supabase: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
+2. Audit foundation with Opus (comprehensive handoff written)
+3. Decide: Continue with Phase 3-5 or iterate on foundation
+4. If approved: Add data-tutorial attributes to ~20 pages (3-4 hours)
+
+**Plan File:** `.claude/plans/splendid-herding-tome.md`
+**Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md`
+
+**Key Design Decisions:**
+- Zustand over Redux (simpler API, built-in persistence)
+- Normalized tables over JSONB (easier analytics, better indexing)
+- Singleton settings table (no env restarts needed)
+- Step-level tracking (not just module completion)
+- Client + server storage (offline support + DB backup)
+
+---
+
+### ✅ DEPLOYED PREVIOUSLY (Feb 16, 2026)
+
+**Location Tracking:**
+- ✅ Code deployed (commit 286ccc35)
+- ✅ Migrations run (126, 127, 128)
+- ✅ Super-admin panel shows flag emoji + city/country for all new signups
+- IP geolocation via ip-api.com (45 req/min free tier)
+- Captures: country, city, region, timezone, IP address
+
+**Three-Issue Child Week Fix:**
+- ✅ Code deployed (commit 333d884e)
+- ✅ Migration 124 run (montree_child_extras table)
+- Extras leak fixed (no more historical record pollution)
+- Auto-mastery (setting focus #15 masters works 1-14 automatically)
+- Area icon uniformity (shared AreaBadge component across 11 pages)
+
+**Cleanup:**
+- ✅ Deleted dead homeschool auth route
+- ✅ Added audit docs + task list
+
+**Handoffs:** `docs/AUDIT_LOCATION_TRACKING_FEB16.md`, `docs/SUGGESTED_TASKS_FEB16.md`, `docs/HANDOFF_THREE_ISSUE_FIX.md`
+
+---
 
 ### 🏠 Montree Home — ALL 4 PHASES DEPLOYED (Feb 15, 2026)
 
@@ -331,25 +500,23 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 - Bulletproof `.gitignore` (blocks node_modules, .next, media, audio, videos, env files, large binaries)
 - NOT yet used for Railway deployment — whale-class still active
 
-**GitHub PATs:**
-- `cowork-permanent` — **USE THIS ONE** — no expiration, whale-class, Contents read/write. Saved at `.github-pat` in project root (gitignored). Every Cowork session should read this file and use it for HTTPS push.
-- `cowork-push-feb15` — active, expires Mar 17 2026 (whale-class, Contents read/write)
-- `cowork-push-feb14` — active, expires Feb 14 2027
-- Fine-grained montree PAT — active (montree repo only, Contents read/write)
+**GitHub PAT:**
+- User has a `cowork-permanent` PAT — **ASK USER FOR IT** if not provided. GitHub push protection blocks PATs in committed files.
+- ⚠️ `.github-pat` file does NOT exist in Cowork mount — user must provide PAT in chat each session
 
 **⚡ Cowork Push Workflow (NO SSH keys needed):**
 ```bash
-# 1. Read PAT from persistent file
-PAT=$(cat /path/to/whale/.github-pat)
+# 1. User provides PAT in chat, set as variable
+PAT="<ask-user-for-pat>"
 # 2. Clone to /tmp (avoids FUSE locks on mounted workspace)
 cd /tmp && rm -rf whale-push
 git clone --depth=10 https://Tredoux555:${PAT}@github.com/Tredoux555/whale-class.git whale-push
 # 3. Copy changed files from workspace to /tmp clone
 cp /path/to/whale/changed-file.ts /tmp/whale-push/changed-file.ts
-# 4. Commit and push
+# 4. Commit and push (use HTTP/1.1 to avoid TLS issues in Cowork VM)
 cd /tmp/whale-push && git add -A
 git -c user.name="Tredoux" -c user.email="tredoux555@gmail.com" commit -m "message"
-git push origin main
+git -c http.version=HTTP/1.1 push origin main
 ```
 
 **Mac git config (set during debugging, needs cleanup):**
@@ -371,7 +538,8 @@ git config --global --unset http.lowspeedtime  # currently 0
 - "My Mac" (Nov 2025) — user's MacBook
 - "Cowork VM" (Feb 11) — ⚠️ stale, can delete
 - "Cowork VM Feb 14" — previous session
-- "Cowork VM Feb 15" — current session
+- "Cowork VM Feb 15" — previous session
+- Note: SSH keys are per-session in Cowork. Prefer PAT workflow above instead.
 
 **Handoff:** `docs/HANDOFF_GIT_SSL_FIX_FEB15.md`, `docs/HANDOFF_GIT_PUSH_FIX_FEB15.md`
 
@@ -945,7 +1113,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | **CURRENT** — Docker ARG fix for Next.js build-time env vars |
+| `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md` | **CURRENT** — Complete login code fix (setup routes + case-insensitive auth) |
+| `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | Docker ARG fix for Next.js build-time env vars |
 | `docs/HANDOFF_GIT_SSL_FIX_FEB15.md` | Astrill VPN root cause, clean montree repo, git workflow fix |
 | `docs/HANDOFF_DEPLOY_MONTREE_HOME_FEB15.md` | Montree Home deploy: repo cleanup, REST API push, LibreSSL fix |
 | `docs/HANDOFF_MONTREE_HOME_PHASE4.md` | Montree Home Phase 4: Curriculum browser (all 4 phases complete) |

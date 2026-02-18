@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useOnboardingStore } from '@/hooks/useOnboarding';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 interface Child {
   id: string;
@@ -62,6 +64,20 @@ interface Milestone {
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const initializeOnboarding = useOnboardingStore(s => s.initialize);
+
+  // Client-side onboarding init for parents (no JWT, so no progress API — localStorage only)
+  useEffect(() => {
+    fetch('/api/montree/onboarding/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const enabled = data?.enabled_for_parents ?? true;
+        initializeOnboarding('parent', enabled);
+      })
+      .catch(() => {
+        initializeOnboarding('parent', true);
+      });
+  }, [initializeOnboarding]);
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
@@ -268,6 +284,7 @@ export default function ParentDashboardPage() {
   }
 
   return (
+    <FeatureWrapper featureModule="dashboard_overview" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       <Toaster position="top-center" />
       {/* Header */}
@@ -326,7 +343,7 @@ export default function ParentDashboardPage() {
         {selectedChild ? (
           <div className="space-y-6">
             {/* Child Header */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div data-tutorial="parent-dashboard" className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-2xl">
                   {selectedChild.photo_url ? (
@@ -365,7 +382,7 @@ export default function ParentDashboardPage() {
             )}
 
             {/* Weekly Reports */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div data-tutorial="parent-weekly-reports" className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span>📊</span> Weekly Reports
               </h3>
@@ -410,7 +427,7 @@ export default function ParentDashboardPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            <div data-tutorial="parent-stats" className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-xl p-4 shadow-sm text-center">
                 <div className="text-3xl mb-1">🎯</div>
                 <div className="text-2xl font-bold text-emerald-600">{stats?.works_this_week ?? '--'}</div>
@@ -425,13 +442,14 @@ export default function ParentDashboardPage() {
 
             {/* Photo Gallery Preview */}
             {photos.length > 0 && (
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div data-tutorial="parent-photo-gallery" className="bg-white rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
                     <span>📸</span> Photos
                   </h3>
                   <Link
                     href="/montree/parent/photos"
+                    data-tutorial="photos-link"
                     className="text-sm text-emerald-600 hover:text-emerald-700"
                   >
                     View all →
@@ -459,7 +477,7 @@ export default function ParentDashboardPage() {
 
             {/* Milestones Preview */}
             {milestones.length > 0 && (
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div data-tutorial="parent-milestones" className="bg-white rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
                     <span>⭐</span> Recent Milestones
@@ -548,5 +566,6 @@ export default function ParentDashboardPage() {
         )}
       </main>
     </div>
+    </FeatureWrapper>
   );
 }

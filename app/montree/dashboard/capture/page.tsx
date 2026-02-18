@@ -13,6 +13,7 @@ import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
 import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia, UploadProgress } from '@/lib/montree/media/types';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 // ============================================
 // TYPES
@@ -401,7 +402,7 @@ function CaptureContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex flex-col">
       {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <div data-tutorial="capture-link" className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">📷</span>
           <div>
@@ -414,6 +415,7 @@ function CaptureContent() {
 
         {/* Group mode toggle */}
         <Link
+          data-tutorial="capture-group-toggle"
           href={isGroupMode ? '/montree/dashboard/capture' : '/montree/dashboard/capture?group=true'}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             isGroupMode
@@ -426,7 +428,7 @@ function CaptureContent() {
       </div>
 
       {/* Child selector */}
-      <main className="flex-1 overflow-hidden">
+      <main data-tutorial="capture-child-selector" className="flex-1 overflow-hidden">
         <ChildSelector
           children={children}
           selectedIds={selectedChildIds}
@@ -440,6 +442,7 @@ function CaptureContent() {
       {/* Bottom action bar */}
       <div className="bg-white/80 backdrop-blur-sm border-t border-emerald-100 px-4 py-4 safe-area-bottom">
         <button
+          data-tutorial="capture-camera-button"
           onClick={handleProceedToCamera}
           disabled={selectedChildIds.length === 0}
           className={`
@@ -471,8 +474,10 @@ function CaptureContent() {
 
 export default function CapturePage() {
   return (
-    <Suspense fallback={<CaptureLoading />}>
-      <CaptureContent />
-    </Suspense>
+    <FeatureWrapper featureModule="photo_capture" autoStart>
+      <Suspense fallback={<CaptureLoading />}>
+        <CaptureContent />
+      </Suspense>
+    </FeatureWrapper>
   );
 }
