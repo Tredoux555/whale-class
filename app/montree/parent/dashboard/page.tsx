@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { useOnboardingStore } from '@/hooks/useOnboarding';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 interface Child {
   id: string;
@@ -64,20 +63,6 @@ interface Milestone {
 export default function ParentDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const initializeOnboarding = useOnboardingStore(s => s.initialize);
-
-  // Client-side onboarding init for parents (no JWT, so no progress API — localStorage only)
-  useEffect(() => {
-    fetch('/api/montree/onboarding/settings')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const enabled = data?.enabled_for_parents ?? true;
-        initializeOnboarding('parent', enabled);
-      })
-      .catch(() => {
-        initializeOnboarding('parent', true);
-      });
-  }, [initializeOnboarding]);
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
@@ -284,7 +269,6 @@ export default function ParentDashboardPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="dashboard_overview" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       <Toaster position="top-center" />
       {/* Header */}
@@ -566,6 +550,5 @@ export default function ParentDashboardPage() {
         )}
       </main>
     </div>
-    </FeatureWrapper>
   );
 }
