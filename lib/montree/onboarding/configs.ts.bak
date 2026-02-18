@@ -2,21 +2,21 @@
 // Defines step-by-step tutorial flows for each role
 
 export interface OnboardingStep {
-  key: string;
-  title: string;
-  description: string;
-  targetSelector: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
-  action?: 'click' | 'hover' | 'none';
-  nextTrigger?: 'manual' | 'automatic';
+  key: string; // Unique identifier: 'click_add_student'
+  title: string; // Modal heading: "Add Your First Student"
+  description: string; // Modal body text
+  targetSelector: string; // CSS selector for arrow positioning: '[data-tutorial="add-student-button"]'
+  position: 'top' | 'bottom' | 'left' | 'right'; // Arrow direction
+  action?: 'click' | 'hover' | 'none'; // Expected user action
+  nextTrigger?: 'manual' | 'automatic'; // Advance on click or button press
 }
 
 export interface FeatureModule {
-  id: string;
-  name: string;
-  icon: string;
+  id: string; // 'student_management'
+  name: string; // "Student Management"
+  icon: string; // 👨‍🎓
   steps: OnboardingStep[];
-  prerequisite?: string;
+  prerequisite?: string; // Another module ID that must complete first
 }
 
 export interface OnboardingConfig {
@@ -24,12 +24,14 @@ export interface OnboardingConfig {
   modules: FeatureModule[];
 }
 
+<<<<<<< HEAD
 // ============================================================
 // TEACHER ONBOARDING — 5 modules, 22 steps
 // ============================================================
 export const TEACHER_ONBOARDING: OnboardingConfig = {
   role: 'teacher',
   modules: [
+    // ── Module 1: Student Management (Dashboard + Students page) ──
     {
       id: 'student_management',
       name: 'Getting Started',
@@ -39,12 +41,28 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
           key: 'welcome_dashboard',
           title: 'Welcome to Your Dashboard',
           description: 'This is your classroom hub. Each card represents a child in your class.',
+=======
+// Teacher onboarding: 5 modules, 15-20 total steps
+export const TEACHER_ONBOARDING: OnboardingConfig = {
+  role: 'teacher',
+  modules: [
+    {
+      id: 'student_management',
+      name: 'Student Management',
+      icon: '👨‍🎓',
+      steps: [
+        {
+          key: 'intro_dashboard',
+          title: 'Welcome to Your Dashboard',
+          description: 'This is your classroom hub. Let\'s add your first student.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="student-grid"]',
           position: 'bottom',
           action: 'none',
           nextTrigger: 'manual',
         },
         {
+<<<<<<< HEAD
           key: 'tap_child',
           title: 'Open a Child\'s Week',
           description: 'Tap any child to see their weekly work plan and track daily progress.',
@@ -57,6 +75,11 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
           key: 'add_student',
           title: 'Add Your First Student',
           description: 'Click here to add students to your classroom.',
+=======
+          key: 'click_add_student',
+          title: 'Add a Student',
+          description: 'Click here to add your first student to the class.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="add-student-button"]',
           position: 'left',
           action: 'click',
@@ -64,8 +87,13 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
         },
         {
           key: 'fill_student_form',
+<<<<<<< HEAD
           title: 'Enter Student Details',
           description: 'Fill in the name and age — curriculum progress is optional for now. You can always update it later.',
+=======
+          title: 'Student Details',
+          description: 'Enter your student\'s name and age, then click Save.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="student-form"]',
           position: 'right',
           action: 'none',
@@ -73,6 +101,9 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+<<<<<<< HEAD
+
+    // ── Module 2: Week View (Child page) ──
     {
       id: 'week_view',
       name: 'Weekly Focus',
@@ -83,11 +114,33 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
           key: 'focus_intro',
           title: 'The Weekly Focus View',
           description: 'This is the heart of Montree. Each child has one focus work per area, presented each Monday.',
+=======
+    {
+      id: 'week_view',
+      name: 'Child Week View',
+      icon: '📅',
+      prerequisite: 'student_management', // Must add student first
+      steps: [
+        {
+          key: 'open_child_week',
+          title: 'Track Daily Progress',
+          description: 'Click a student to see their weekly focus works.',
+          targetSelector: '[data-tutorial="student-card"]:first-child',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+        {
+          key: 'view_focus_works',
+          title: 'Focus Works',
+          description: 'These are the works your student is currently practicing.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="focus-section"]',
           position: 'bottom',
           action: 'none',
           nextTrigger: 'manual',
         },
+<<<<<<< HEAD
         {
           key: 'status_cycle',
           title: 'Track Progress',
@@ -126,6 +179,8 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+
+    // ── Module 3: Curriculum (Curriculum page) ──
     {
       id: 'curriculum',
       name: 'Curriculum',
@@ -170,10 +225,33 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+
+    // ── Module 4: Photo Capture ──
+=======
+      ],
+    },
+    {
+      id: 'curriculum',
+      name: 'Curriculum Browser',
+      icon: '📚',
+      steps: [
+        {
+          key: 'open_curriculum',
+          title: 'Explore the Curriculum',
+          description: 'Browse works across 5 Montessori areas.',
+          targetSelector: '[data-tutorial="curriculum-link"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+      ],
+    },
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
     {
       id: 'photo_capture',
       name: 'Photo Capture',
       icon: '📷',
+<<<<<<< HEAD
       prerequisite: 'week_view',
       steps: [
         {
@@ -205,6 +283,8 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+
+    // ── Module 5: Guru AI Advisor ──
     {
       id: 'guru',
       name: 'AI Advisor',
@@ -237,26 +317,65 @@ export const TEACHER_ONBOARDING: OnboardingConfig = {
           position: 'top',
           action: 'none',
           nextTrigger: 'manual',
+=======
+      steps: [
+        {
+          key: 'open_capture',
+          title: 'Capture Moments',
+          description: 'Take photos and videos of your students at work.',
+          targetSelector: '[data-tutorial="capture-link"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+      ],
+    },
+    {
+      id: 'guru',
+      name: 'AI Teacher Advisor',
+      icon: '🧠',
+      steps: [
+        {
+          key: 'open_guru',
+          title: 'Ask the Guru',
+          description: 'Get child development advice from our AI advisor.',
+          targetSelector: '[data-tutorial="guru-link"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
         },
       ],
     },
   ],
 };
 
+<<<<<<< HEAD
 // ============================================================
 // PRINCIPAL ONBOARDING — 2 modules, 6 steps
 // ============================================================
 export const PRINCIPAL_ONBOARDING: OnboardingConfig = {
   role: 'principal',
   modules: [
+    // ── Module 1: School Setup ──
     {
       id: 'classroom_setup',
       name: 'School Setup',
+=======
+// Principal onboarding: 3 modules, 8-10 steps
+export const PRINCIPAL_ONBOARDING: OnboardingConfig = {
+  role: 'principal',
+  modules: [
+    {
+      id: 'classroom_setup',
+      name: 'Classroom Management',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
       icon: '🏫',
       steps: [
         {
           key: 'create_classroom',
           title: 'Create a Classroom',
+<<<<<<< HEAD
           description: 'Give your first classroom a name and pick an icon to represent it.',
           targetSelector: '[data-tutorial="create-classroom-button"]',
           position: 'bottom',
@@ -283,21 +402,58 @@ export const PRINCIPAL_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+
+    // ── Module 2: School Overview ──
+=======
+          description: 'Set up your first classroom to get started.',
+          targetSelector: '[data-tutorial="create-classroom-button"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+      ],
+    },
+    {
+      id: 'teacher_management',
+      name: 'Teacher Setup',
+      icon: '👩‍🏫',
+      steps: [
+        {
+          key: 'add_teacher',
+          title: 'Add Teachers',
+          description: 'Generate login codes for your teachers.',
+          targetSelector: '[data-tutorial="add-teacher-button"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+        },
+      ],
+    },
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
     {
       id: 'school_overview',
       name: 'School Dashboard',
       icon: '📊',
+<<<<<<< HEAD
       prerequisite: 'classroom_setup',
       steps: [
         {
           key: 'overview_stats',
           title: 'Your School at a Glance',
           description: 'See all classrooms, student counts, and teacher assignments in one view.',
+=======
+      steps: [
+        {
+          key: 'view_overview',
+          title: 'School Overview',
+          description: 'See all classrooms and teachers at a glance.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="overview-section"]',
           position: 'bottom',
           action: 'none',
           nextTrigger: 'manual',
         },
+<<<<<<< HEAD
         {
           key: 'manage_teachers',
           title: 'Manage Teachers',
@@ -316,22 +472,29 @@ export const PRINCIPAL_ONBOARDING: OnboardingConfig = {
           action: 'none',
           nextTrigger: 'manual',
         },
+=======
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
       ],
     },
   ],
 };
 
+<<<<<<< HEAD
 // ============================================================
 // HOMESCHOOL PARENT ONBOARDING — Derived from teacher flow
 // Swaps "student" → "child", "classroom" → "home"
 // Filters out the invite-parent step (they ARE the parent)
 // ============================================================
+=======
+// Homeschool parent: Same as teacher, with label overrides
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
 export const HOMESCHOOL_PARENT_ONBOARDING: OnboardingConfig = {
   role: 'homeschool_parent',
   modules: TEACHER_ONBOARDING.modules.map(m => ({
     ...m,
+<<<<<<< HEAD
     steps: m.steps
-      .filter(s => s.key !== 'invite_parent')
+      .filter(s => s.key !== 'invite_parent') // Homeschool parents don't invite themselves
       .map(s => ({
         ...s,
         title: s.title
@@ -354,20 +517,49 @@ export const HOMESCHOOL_PARENT_ONBOARDING: OnboardingConfig = {
 export const PARENT_ONBOARDING: OnboardingConfig = {
   role: 'parent',
   modules: [
+    // ── Module 1: Dashboard Overview ──
+=======
+    steps: m.steps.map(s => ({
+      ...s,
+      title: s.title
+        .replace('Student', 'Child')
+        .replace('student', 'child')
+        .replace('Classroom', 'Home')
+        .replace('classroom', 'home'),
+      description: s.description
+        .replace('students', 'children')
+        .replace('student', 'child')
+        .replace('classroom', 'home'),
+    })),
+  })),
+};
+
+// Parent (view-only): 2 modules, 4-6 steps
+export const PARENT_ONBOARDING: OnboardingConfig = {
+  role: 'parent',
+  modules: [
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
     {
       id: 'dashboard_overview',
       name: 'Your Child\'s Progress',
       icon: '👶',
       steps: [
         {
+<<<<<<< HEAD
           key: 'welcome_parent',
           title: 'Welcome!',
           description: 'This is where you can follow your child\'s Montessori journey — see what they\'re working on and how they\'re progressing.',
+=======
+          key: 'view_dashboard',
+          title: 'Welcome!',
+          description: 'See your child\'s current focus works and progress.',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
           targetSelector: '[data-tutorial="parent-dashboard"]',
           position: 'bottom',
           action: 'none',
           nextTrigger: 'manual',
         },
+<<<<<<< HEAD
         {
           key: 'weekly_reports',
           title: 'Weekly Reports',
@@ -388,10 +580,17 @@ export const PARENT_ONBOARDING: OnboardingConfig = {
         },
       ],
     },
+
+    // ── Module 2: Reports & Photos ──
+=======
+      ],
+    },
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
     {
       id: 'reports_photos',
       name: 'Reports & Photos',
       icon: '📸',
+<<<<<<< HEAD
       prerequisite: 'dashboard_overview',
       steps: [
         {
@@ -411,15 +610,29 @@ export const PARENT_ONBOARDING: OnboardingConfig = {
           position: 'bottom',
           action: 'none',
           nextTrigger: 'manual',
+=======
+      steps: [
+        {
+          key: 'view_photos',
+          title: 'Photo Gallery',
+          description: 'Browse photos of your child at work.',
+          targetSelector: '[data-tutorial="photos-link"]',
+          position: 'bottom',
+          action: 'click',
+          nextTrigger: 'automatic',
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
         },
       ],
     },
   ],
 };
 
+<<<<<<< HEAD
 // ============================================================
 // Config Lookup
 // ============================================================
+=======
+>>>>>>> 6a199779276d0805bd37adf28d6362fbfa16008e
 export function getOnboardingConfig(role: string): OnboardingConfig {
   switch (role) {
     case 'teacher':
@@ -431,6 +644,7 @@ export function getOnboardingConfig(role: string): OnboardingConfig {
     case 'parent':
       return PARENT_ONBOARDING;
     default:
+      // Safe fallback — don't crash the app for unknown roles
       console.warn(`[ONBOARDING] Unknown role: ${role}, returning empty config`);
       return { role: 'teacher', modules: [] };
   }
