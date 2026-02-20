@@ -4,6 +4,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+import { useOnboardingStore } from '@/hooks/useOnboarding';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -29,11 +31,29 @@ export default function PrincipalSetupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [school, setSchool] = useState<any>(null);
+  const [principalName, setPrincipalName] = useState('');
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [createdTeachers, setCreatedTeachers] = useState<CreatedTeacher[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+
+  // Initialize onboarding for principals (not under dashboard layout)
+  const initOnboarding = useOnboardingStore(s => s.initialize);
+  const loadProgress = useOnboardingStore(s => s.loadProgressFromDB);
+
+  useEffect(() => {
+    // Init onboarding for principal role
+    fetch('/api/montree/onboarding/settings')
+      .then(r => r.json())
+      .then(settings => initOnboarding('principal', settings?.enabled_for_principals ?? true))
+      .catch(() => initOnboarding('principal', true));
+    fetch('/api/montree/onboarding/progress')
+      .then(r => r.json())
+      .then(data => { if (data?.progress) loadProgress(data.progress); })
+      .catch(() => {});
+  }, [initOnboarding, loadProgress]);
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -41,6 +61,20 @@ export default function PrincipalSetupPage() {
       setSchool(JSON.parse(stored));
     } else {
       router.push('/montree/principal/login');
+      return;
+    }
+
+    // Get principal name
+    const principalData = localStorage.getItem('montree_principal');
+    if (principalData) {
+      const p = JSON.parse(principalData);
+      setPrincipalName(p.name || '');
+    }
+
+    // Show welcome overlay on first visit only
+    const hasSeenWelcome = sessionStorage.getItem('montree_setup_welcome_seen');
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
     }
   }, [router]);
 
@@ -227,11 +261,81 @@ export default function PrincipalSetupPage() {
 
   if (!school) return null;
 
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    sessionStorage.setItem('montree_setup_welcome_seen', 'true');
+  };
+
   return (
+    <FeatureWrapper featureModule="classroom_setup" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+
+      {/* ============ WELCOME OVERLAY ============ */}
+      {showWelcome && school && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md">
+          {/* Ambient glow behind the card */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[120px] pointer-events-none" />
+
+          <div
+            className="relative z-10 text-center px-6"
+            style={{ animation: 'welcome-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+          >
+            {/* Tree icon with glow ring */}
+            <div className="relative inline-block mb-8">
+              <div className="absolute inset-0 w-24 h-24 rounded-full bg-emerald-400/20 blur-xl" style={{ animation: 'welcome-pulse 3s ease-in-out infinite' }} />
+              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/40 flex items-center justify-center">
+                <span className="text-5xl">🌳</span>
+              </div>
+            </div>
+
+            {/* Welcome text */}
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
+              Welcome, {principalName ? `Principal ${principalName.split(' ')[0]}` : 'Principal'}!
+            </h1>
+
+            <p className="text-lg sm:text-xl text-emerald-200/80 mb-2 font-light">
+              Are you ready to set up{' '}
+              <span className="text-emerald-300 font-medium">{school.name}</span>?
+            </p>
+
+            <p className="text-emerald-400/60 text-sm mb-10">
+              Let&apos;s add your classrooms first.
+            </p>
+
+            {/* Let's Go button */}
+            <button
+              onClick={dismissWelcome}
+              className="group relative inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-lg font-semibold rounded-2xl shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+            >
+              <span>Let&apos;s Go!</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+
+            {/* Subtle Montree branding */}
+            <p className="mt-12 text-slate-500 text-xs tracking-widest uppercase">
+              Montree
+            </p>
+          </div>
+
+          {/* Animations */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes welcome-enter {
+              from { opacity: 0; transform: scale(0.92) translateY(20px); }
+              to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            @keyframes welcome-pulse {
+              0%, 100% { opacity: 0.4; transform: scale(1); }
+              50% { opacity: 0.7; transform: scale(1.15); }
+            }
+          `}} />
+        </div>
+      )}
+
       {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      
+
       <div className="relative z-10 max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -498,7 +602,7 @@ export default function PrincipalSetupPage() {
 
             {/* Teacher Codes */}
             {createdTeachers.length > 0 && (
-              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+              <div data-tutorial="manage-teachers-button" className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <span>🔑</span> Teacher Login Codes
@@ -591,5 +695,6 @@ export default function PrincipalSetupPage() {
         </p>
       </div>
     </div>
+    </FeatureWrapper>
   );
 }

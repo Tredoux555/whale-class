@@ -12,49 +12,181 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES (Feb 18, 2026)
+## 🔥 NEXT SESSION PRIORITIES (Feb 22, 2026)
 
-### Onboarding System — Phase 3-5 Integration (Priority #1)
+### ⚠️ CRITICAL BLOCKER: Run Migrations 126, 127, 131 (Priority #0)
 
-**What:** Wire up the completed onboarding foundation (Phase 1-2) into actual pages so users see guided tutorials on first use.
+**This has been deferred across 7+ sessions. NOTHING ELSE WORKS UNTIL THESE RUN.**
 
-**Status:** Foundation complete (8 files, 968 lines), integration not started. Opus audited and fixed 7 issues in Sonnet's code. Phase 3-5 integration code was pushed but NOT yet tested in production.
+```bash
+psql $DATABASE_URL -f migrations/126_homeschool_tables.sql
+psql $DATABASE_URL -f migrations/127_guru_freemium.sql
+psql $DATABASE_URL -f migrations/131_onboarding_system.sql
+```
 
-**Handoff:** `docs/HANDOFF_ONBOARDING_SYSTEM_FEB17.md` (comprehensive step-by-step guide)
+- 126: Adds `role` column to `montree_teachers` + `school_id` to `montree_children` — without this, homeschool parent signup crashes
+- 127: Adds Guru billing columns — without this, Guru freemium/billing fails
+- 131: Creates onboarding tables — without this, onboarding API calls fail
 
-**Estimated Effort:** 3-4 hours
+### Feb 22 — Dedicated Home System Honing Day (Priority #1)
 
-**Steps:**
-1. Run migration 131: `psql $DATABASE_URL -f migrations/131_onboarding_system.sql`
-2. Test existing integration on live site (data-tutorial attributes + FeatureWrapper were added in previous session)
-3. Verify all 4 user flows (Teacher, Principal, Homeschool Parent, Parent)
-4. Fix any issues found during testing
+**What:** Full day dedicated to polishing and refining the homeschool parent experience end-to-end.
+- Test full homeschool flow (Try Free → signup → login → dashboard → add child → Guru → curriculum)
+- Test Guru Daily Coach (daily plan generation, work guide, YouTube links)
+- Fix any visual issues found during testing
+- Potentially add voice notes system (`react-media-recorder` + OpenAI Whisper)
+- Requires migrations to be run first
 
-**Plan File:** `.claude/plans/splendid-herding-tome.md`
+### Remaining Guru Integration (Priority #2)
 
----
+**What:** Additional contextual Guru components from design doc. Core daily coach is DONE, these are enhancements.
 
-### Story Vault Image Viewer (Priority #2)
+**Still to build:**
+1. Voice Notes system — `react-media-recorder` + OpenAI Whisper transcription, mic button on notes/observations/Guru chat
+2. GuruContextBubble — floating contextual tips on each page
+3. GuruInlinePrompt — inline prompt suggestions
+4. GuruSuggestionCard — proactive suggestions based on child progress
+5. Welcome sequence — guided first-login flow that generates personalised starter works
+6. End-of-day analysis — reviews what child did, suggests tomorrow's focus
+
+**Handoff:** `docs/HANDOFF_GURU_HOME_INTEGRATION_FEB19.md`
+**Design Doc:** `Montree_Home_Guru_Design.docx` (in `assets/`)
+
+### Stripe Setup (Priority #3 — Deferred)
+
+**What:** Configure Stripe products, prices, and env vars. Currently ZERO Stripe vars set locally or on Railway.
+
+**Needs:**
+- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`
+- `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM` (school tiers)
+- Optionally: `GURU_FREEMIUM_ENABLED=true` (currently false — everyone gets unlimited Guru free)
+
+**Pricing model (updated):**
+- Schools: Free / Basic $29/mo / Pro $79/mo
+- Homeschool: $5/mo/child subscription (code exists), future migration to credits-based (2x API cost markup + $2/mo base)
+
+### Story Vault Image Viewer (Priority #4 — Deferred)
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md` — Ready for implementation, 2-4 hours
 
----
+### Curriculum Inconsistency Resolution (Priority #5 — Deferred)
 
-### Curriculum Inconsistency Resolution (Priority #3)
-
-**What:** Static JSON files have 329 works but Brain DB and some creation flows only seed 220. Need to audit and align all curriculum data sources.
-
-**Status:** Deep audit completed (Feb 17), inconsistencies documented. Static JSON is the authoritative source (329 works). `setup-stream` route already fixed to use static JSON exclusively.
-
-**Key finding:** `principal/setup-stream` was querying Brain DB (220 works) instead of static JSON (329 works). Fixed to use `loadAllCurriculumWorks()` from static files.
-
-**Remaining:** Verify all other curriculum creation flows also use static JSON as source of truth.
+**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed. Remaining: verify all other creation flows use static JSON.
 
 ---
 
-## CURRENT STATUS (Feb 17, 2026)
+## CURRENT STATUS (Feb 21, 2026)
 
-### ✅ DEPLOYED TODAY (Feb 17, 2026)
+### Session Work (Feb 21, 2026)
+
+**Onboarding Phase 3-5 Integration — COMPLETE:**
+- Wrapped all 6 pages with FeatureWrapper (dashboard, week view, curriculum, capture, guru, principal setup)
+- Principal setup got separate onboarding init (not under dashboard layout)
+- All `data-tutorial` attributes were already in place from Phase 1-2
+- Module names verified against configs.ts definitions
+
+**Home Guru Daily Coach — COMPLETE (4 new files):**
+- `app/api/montree/guru/daily-plan/route.ts` — Personalized daily plan using Haiku (~$0.001/plan), cached per child per day in `montree_guru_interactions`
+- `app/api/montree/guru/work-guide/route.ts` — Step-by-step presentation guide using Haiku, assumes zero Montessori experience
+- `components/montree/guru/GuruDailyBriefing.tsx` — Dashboard card with "Generate Today's Plan" button
+- `components/montree/guru/GuruWorkGuide.tsx` — Inline "How to Present This" button on each expanded work card
+- All gated behind `isHomeschoolParent()` — teachers see ZERO changes
+
+**Guru Wiring (3 files modified):**
+- `app/montree/dashboard/page.tsx` — GuruDailyBriefing rendered per child above student grid (home parents only)
+- `components/montree/child/FocusWorksSection.tsx` — GuruWorkGuide inside expanded work cards (home parents only)
+- `app/montree/dashboard/[childId]/page.tsx` — Passes `isHomeschoolParent` prop to FocusWorksSection
+
+**Whale Folder Cleanup — COMPLETE:**
+- Root: 209 items → 34 items
+- Moved: 66 .md → `docs/archive/`, 22 .sql → `migrations/archive/`, assets → `assets/`, old scripts → `scripts/archive/`, marketing → `archive/marketing/`
+- Fixed broken reference in `api/guides/language-making-guide/route.ts`
+
+**Handoff:** `docs/HANDOFF_GURU_COACH_ONBOARDING_FEB21.md`
+
+### Session Work (Feb 20, 2026)
+
+**Montree Home Botanical Aesthetic — COMPLETE:**
+- Applied "Tender Cartography" botanical theme to ALL homeschool parent pages
+- Created `lib/montree/home-theme.ts` — centralized theme constants (HOME_COLORS + HOME_THEME Tailwind classes)
+- Modified 5 files: DashboardHeader, try/page, dashboard/page, guru/page, curriculum/browse/page
+- All changes gated behind `isHomeschoolParent()` — teachers see ZERO visual changes
+- Palette: dark teal (#0D3330) primary, warm cream (#FFF8E7) backgrounds, soft cream (#F5E6D3) sections, near-white (#FFFDF8) cards
+- Botanical emoji (🌿🌱) replaces generic icons for home parents
+- Full holistic audit passed — 30+ conditionals verified, no broken syntax, consistent colors
+- **Plan file:** `.claude/plans/home-aesthetic-v1.md`
+
+**3D Printable Montessori Classroom — Folder Structure Created:**
+- Created `whale/3d-montessori/` with full folder tree: 5 shelves (language, mathematics, sensorial, practical-life, culture) + guides
+- README.md = concept doc (mission, work schema, cost estimates, print schedule, trilingual scope)
+- Trilingual: English + Afrikaans + Arabic subfolders for sandpaper letters, moveable alphabet, object boxes
+- No STL files yet — user designing with web Claude separately
+- Vision: open-source STL database for 3D-printing complete Montessori classrooms, mobile printer vehicle for disadvantaged schools
+
+**Handoff:** `docs/HANDOFF_HOME_AESTHETIC_FEB20.md`
+
+### Session Work (Feb 19, 2026) — Late Session
+
+**Guru-Guided Home Parent Experience — Design Complete:**
+- Deep codebase audit of homeschool system, Guru, Stripe, voice notes feasibility
+- Created `Montree_Home_Guru_Design.docx` — 10-section design document covering full Guru integration
+- Designed 3 new UI primitives: GuruContextBubble, GuruInlinePrompt, GuruSuggestionCard
+- Designed voice notes system: `react-media-recorder` + OpenAI Whisper + optional Guru enhancement
+- All Guru integration ONLY for homeschool parents — gated behind `isHomeschoolParent()`, teachers never see it
+- Contextual tips use Haiku (cheap/fast), full Guru chat stays on Sonnet
+- New caching layer: `montree_guru_cache` table, 24h TTL, invalidated on progress change
+- Updated monetisation model: credits-based (2x API markup + $2/mo base), deferred in favour of existing $5/child subscription for launch
+
+**Critical Audit Findings:**
+- ⚠️ Migrations 126, 127, 131 STILL not run — homeschool system cannot function
+- ⚠️ Zero Stripe env vars set — all billing crashes on call
+- ⚠️ `GURU_FREEMIUM_ENABLED` not set — defaults to false, everyone gets unlimited Guru free
+- ✅ All homeschool code IS complete (try page, auth, dashboard trimming, isHomeschoolParent helper)
+- ✅ Guru model is `claude-sonnet-4-20250514` (current)
+- ❌ `react-media-recorder` not in package.json (needs install for voice notes)
+
+**Voice Notes Research:**
+- Best recording lib: `react-media-recorder` (64K weekly downloads, hook-based API)
+- Best transcription: OpenAI Whisper via existing `OPENAI_API_KEY` ($0.006/min)
+- Alternative: AssemblyAI Universal-2 (comparable price, has streaming + sentiment)
+- iOS Safari 18.4+ finally supports WebM/Opus (Jan 2025)
+- No pre-built full voice-note component exists — must compose libs
+
+**Visual Asset — Montessori Quote Poster:**
+- `Montree_Montessori_Quote.pdf` + `.png` — "Never help a child with a task at which he feels he can succeed."
+- Montree brand palette (deep teal, emerald, warm cream)
+- "Tender Cartography" design philosophy — botanical specimen plate aesthetic
+- Phyllotaxis (Fibonacci) seed pattern, naturalist field study framing
+
+**Handoff:** `docs/HANDOFF_GURU_HOME_INTEGRATION_FEB19.md`
+
+### Session Work (Feb 19, 2026) — Early Session
+
+**Story System Analysis:**
+- Accessed Story messaging system (1,875 messages total in `story_message_history`)
+- Decrypted 218 text messages (Feb 11-19) using current `MESSAGE_ENCRYPTION_KEY`
+- 1,364 older messages (pre-Feb 11) failed to decrypt — encrypted with the rotated key that only exists on Railway, NOT in `.env.local`
+- **To decrypt all messages:** Need the `MESSAGE_ENCRYPTION_KEY` from Railway env vars (the one set during the Feb 11 rotation)
+- Two participants: "T" (904 msgs) and "Z" (971 msgs), dating from Jan 11 to Feb 19, 2026
+- Psychological analysis completed and discussed with user
+
+**12-Month Roadmap Created:**
+- `TREDOUX_ROADMAP_2026.pdf` — 7-page strategic plan covering personal + business goals
+- 4 phases: Detach (M1-2) → Monetize (M2-4) → Scale (M4-8) → Exit (M8-12)
+- Includes pricing strategy, financial projections, weekly schedule, success metrics
+- Generated via reportlab (`roadmap.py` in session working dir)
+
+**1688 Shopping Cart Status (from earlier in session):**
+- ✅ Xinshicheng — 7" IPS Cloud Photo Album (WiFi+BT), White, qty 1 — ¥144.40
+- ✅ Baishunda — 7" WiFi Digital Photo Frame, 8GB, qty 1 — ¥192.00
+- ✅ Mansray — 7" Video Brochure LCD, White, qty 2 — ¥218.76
+- ❌ Greentech P1.875 LED modules still in cart (unchecked, needs deletion)
+- Total checked: ~¥805 (4 sellers, 4 varieties, 6 pcs including shipping)
+- **1688 cart bug:** Clicking "Add cart" resets qty to 0 visually but item IS added. Double-clicking causes qty 2. Always check cart and reduce after adding.
+
+---
+
+### ✅ DEPLOYED PREVIOUSLY (Feb 17, 2026)
 
 **Late Session Fixes (commit `f42529e`):**
 - ✅ CurriculumWorkList: replaced emoji area icons (🧹👁️🔢📚🌍) with uniform AreaBadge colored circles (P/S/M/L/C)
@@ -82,17 +214,17 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ---
 
-### 🎓 Comprehensive Onboarding System — PHASE 1-2 COMPLETE (Feb 17, 2026)
+### 🎓 Comprehensive Onboarding System — ALL PHASES COMPLETE (Feb 21, 2026)
 
 Platform-wide onboarding system for guiding all user types through features on first use.
 
-**Status:** Foundation complete (database + API + components), integration pending
+**Status:** All phases complete. Needs migration 131 run to function.
 
 | Phase | What | Status |
 |-------|------|--------|
 | 1 | Database (3 tables) + API (3 endpoints) | ✅ Complete |
 | 2 | Components (OnboardingOverlay, FeatureWrapper) + State (Zustand) | ✅ Complete |
-| 3-5 | Integration (data-tutorial attrs + page wrapping) | ❌ Not Started |
+| 3-5 | Integration (data-tutorial attrs + page wrapping) | ✅ Complete (Feb 21) |
 
 **What's Ready:**
 - ✅ Migration 131 created (progress, settings, events tables)
@@ -105,13 +237,7 @@ Platform-wide onboarding system for guiding all user types through features on f
 - ✅ 968 lines of code written
 
 **What's Not Ready:**
-- ❌ Migration 131 NOT run against Supabase (tables don't exist yet)
-- ❌ data-tutorial attributes NOT added to pages (~20 files)
-- ❌ FeatureWrapper NOT used on pages (no wrapping yet)
-- ❌ State initialization NOT added to layouts
-- ❌ Zero user-facing changes (foundation only)
-
-**Estimated Time to Complete:** 3-4 hours for Phase 3-5 integration + testing
+- ❌ Migration 131 NOT run against Supabase (tables don't exist yet — only remaining blocker)
 
 **Architecture:**
 - 3 PostgreSQL tables: `montree_onboarding_progress` (step tracking), `montree_onboarding_settings` (role toggles), `montree_onboarding_events` (analytics)
@@ -1052,6 +1178,14 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - **Search bar** — Add search functionality (scope TBD)
 - **Run migrations** — `migrations/126_homeschool_tables.sql` + `migrations/127_guru_freemium.sql` not yet run against Supabase
 
+### 3D Printable Montessori Classroom
+- **Location:** `whale/3d-montessori/` — full folder structure for all 5 Montessori shelves
+- **Mission:** Democratize Montessori by making every material 3D-printable. Traditional materials cost $10K-$30K+, a 3D printer + filament costs ~$200.
+- **Outreach vision:** Mobile printer vehicle visiting disadvantaged schools, printing materials over a few days or donating printers
+- **Trilingual:** English + Afrikaans + Arabic
+- **Status:** Folder structure created, concept doc as README.md. No STL files yet — user designing separately with web Claude.
+- **Concept doc:** `docs/CONCEPT_3D_PRINTABLE_CLASSROOM.md`
+
 ### Deferred (Future Sessions)
 - Centralized logging service
 - PWA manifest not linked
@@ -1073,10 +1207,22 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 
 AI advisor for child development questions. Uses Anthropic API.
 
-Key files:
+**Core chat (Sonnet):**
 - `lib/montree/guru/context-builder.ts` — builds child context
 - `lib/montree/guru/knowledge-retrieval.ts` — Montessori knowledge
-- `app/api/montree/guru/route.ts` — main endpoint
+- `lib/montree/guru/prompt-builder.ts` — system prompt + homeschool addendum
+- `app/api/montree/guru/route.ts` — main chat endpoint
+
+**Daily Coach (Haiku — homeschool parents only):**
+- `app/api/montree/guru/daily-plan/route.ts` — personalized daily plan, cached per child per day
+- `app/api/montree/guru/work-guide/route.ts` — step-by-step work presentation guide
+- `components/montree/guru/GuruDailyBriefing.tsx` — dashboard card ("Generate Today's Plan")
+- `components/montree/guru/GuruWorkGuide.tsx` — inline "How to Present This" on expanded work cards
+
+**Billing:**
+- `app/api/montree/guru/status/route.ts` — access level check (unlimited/paid/free_trial)
+- `app/api/montree/guru/checkout/route.ts` — Stripe checkout session
+- `app/api/montree/guru/webhook/route.ts` — Stripe webhook handler
 
 Tables: `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`, `montree_child_patterns`
 
@@ -1113,7 +1259,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md` | **CURRENT** — Complete login code fix (setup routes + case-insensitive auth) |
+| `docs/HANDOFF_GURU_COACH_ONBOARDING_FEB21.md` | **CURRENT** — Guru Daily Coach + Onboarding Phase 3-5 wiring + folder cleanup |
+| `docs/HANDOFF_HOME_AESTHETIC_FEB20.md` | Botanical theme for home parents + 3D Montessori folder setup |
+| `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md` | Complete login code fix (setup routes + case-insensitive auth) |
 | `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | Docker ARG fix for Next.js build-time env vars |
 | `docs/HANDOFF_GIT_SSL_FIX_FEB15.md` | Astrill VPN root cause, clean montree repo, git workflow fix |
 | `docs/HANDOFF_DEPLOY_MONTREE_HOME_FEB15.md` | Montree Home deploy: repo cleanup, REST API push, LibreSSL fix |

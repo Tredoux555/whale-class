@@ -5,7 +5,7 @@ import { join } from 'path';
 export async function GET() {
   // Try multiple locations
   const locations = [
-    join(process.cwd(), 'Montessori_Language_Making_Guide.docx'),
+    join(process.cwd(), 'assets', 'Montessori_Language_Making_Guide.docx'),
     join(process.cwd(), 'public', 'guides', 'Montessori_Language_Making_Guide.docx'),
   ];
   

@@ -2,12 +2,38 @@
 
 > Say "read the brain" at session start. Say "update brain" at session end.
 
-## Current State (Feb 16, 2026)
+## Current State (Feb 20, 2026)
 
 **App**: Montree - Montessori classroom management
 **Stack**: Next.js 16, React 19, TypeScript, Supabase, Tailwind
 **Deployed**: Railway at montree.xyz
-**Status**: 🚀 LIVE — Curriculum expanded from 268 → 329 works (319 after first pass, then +10 Language). Re-import done, live site confirmed at 329. **Home parent system exists and works** — signup at `/montree/try`, login with 6-char code at `/montree/login`.
+**Status**: 🚀 LIVE — Curriculum at 329 works. Home parent system works. **Drive cleanup done Feb 20** — see below.
+
+## 📂 SYSTEM CLEANUP — Feb 20, 2026
+
+**Major drive cleanup completed.** ~18GB recovered. Key changes:
+
+**Deleted (confirmed by user):**
+- `whale-old/` (3.7GB) — obsolete older version of whale
+- `montree/` (133MB) — exact duplicate of whale (same package.json, same code)
+- `montree-mobile/` (2MB) — abandoned Vite/Ionic prototype. Whale already has Capacitor + `build-native.sh` for mobile builds
+- `whale-clean/` (141MB) — older subset of whale, missing games/onboard/teacher dirs
+- `whale-class-mirror.git` (535MB) — bare git mirror, redundant
+- All `node_modules` across all projects (~4.1GB) — run `npm install` to restore
+- Entire `CODE-ARCHIVE/` folder (gardian-connect, jc, 1688-extension, tredoux-OS, etc.)
+- Entire `ARCHIVE/` folder (Old Projects, Sentinal, Master Code, etc.)
+- Entire `Documents/GitHub/` (whale-class, jeffy-commerce, ssp, jeffyb, jeffy-delivery — all old clones)
+- Entire `Downloads/` content (videos, installers, old project folders, screenshots)
+
+**What remains in Desktop/ACTIVE:**
+- `whale/` (1.7GB) — THE project. Everything lives here.
+- `jeffy-mvp/` (163MB) — separate MVP project
+
+**Env files:** All .env files backed up to `~/env-backup-KEEP-SECURE.zip` before cleanup. User needs to move this somewhere secure and delete it.
+
+**Google Drive:** Google Drive for Desktop installed Feb 20. User should sync `Desktop/ACTIVE/` to Drive.
+
+**Montree poster kit:** Created at `/mnt/outputs/montree-poster-kit/` — contains brand guide, design philosophy, logos, and a motivational poster brief ("The Daily Reset") for handoff to Claude web.
 
 ## ⚠️ CRITICAL RULE — HOME SYSTEM
 
