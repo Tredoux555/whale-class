@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { HOME_THEME } from '@/lib/montree/home-theme';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 
 interface Child {
@@ -295,30 +297,33 @@ function GuruContent() {
     }
   };
 
+  const isParent = isHomeschoolParent(session);
+  const guruEmoji = isParent ? HOME_THEME.guruIcon : HOME_THEME.guruIconTeacher;
+
   if (pageLoading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🔮</div>
+      <div className={`h-screen flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
+        <div className="animate-bounce text-4xl">{guruEmoji}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50">
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50'}`}>
       <Toaster position="top-center" />
 
       {/* Paywall Modal Overlay */}
       {showPaywall && guruStatus?.is_locked && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
-            <div className="text-5xl mb-4">🔮</div>
+            <div className="text-5xl mb-4">{guruEmoji}</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Unlock Montessori Guru</h2>
             <p className="text-gray-600 mb-4">
               You&apos;ve used your 3 free sessions. Upgrade to get unlimited Guru advice for all your children.
             </p>
-            <div className="bg-violet-50 rounded-xl p-4 mb-5">
-              <div className="text-3xl font-bold text-violet-700">$5<span className="text-base font-normal text-violet-500">/month per child</span></div>
-              <div className="text-sm text-violet-600 mt-1">Unlimited questions &bull; Cancel anytime</div>
+            <div className={`rounded-xl p-4 mb-5 ${isParent ? 'bg-[#F5E6D3]/60' : 'bg-violet-50'}`}>
+              <div className={`text-3xl font-bold ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>$5<span className={`text-base font-normal ${isParent ? 'text-[#0D3330]/60' : 'text-violet-500'}`}>/month per child</span></div>
+              <div className={`text-sm mt-1 ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>Unlimited questions &bull; Cancel anytime</div>
             </div>
             <div className="text-left text-sm text-gray-600 mb-5 space-y-2">
               <div className="flex items-center gap-2"><span>✅</span> Unlimited Guru conversations</div>
@@ -329,7 +334,9 @@ function GuruContent() {
             <button
               onClick={handleUpgrade}
               disabled={checkoutLoading}
-              className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-600 hover:to-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+              className={`w-full py-3 text-white font-semibold rounded-xl active:scale-95 transition-all disabled:opacity-50 ${
+                isParent ? 'bg-[#0D3330] hover:bg-[#164340]' : 'bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700'
+              }`}
             >
               {checkoutLoading ? 'Opening checkout...' : 'Upgrade Now'}
             </button>
@@ -345,10 +352,10 @@ function GuruContent() {
 
       {/* Free trial prompts banner for homeschool parents */}
       {guruStatus && guruStatus.guru_access === 'free_trial' && !guruStatus.is_locked && (
-        <div className="bg-violet-100 border-b border-violet-200 px-4 py-2 text-center text-sm text-violet-700">
+        <div className={`border-b px-4 py-2 text-center text-sm ${isParent ? 'bg-[#F5E6D3] border-[#0D3330]/10 text-[#0D3330]' : 'bg-violet-100 border-violet-200 text-violet-700'}`}>
           <span className="font-medium">{guruStatus.prompts_remaining} free {guruStatus.prompts_remaining === 1 ? 'session' : 'sessions'} remaining</span>
           <span className="mx-2">&bull;</span>
-          <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-violet-900">Upgrade for unlimited</button>
+          <button onClick={() => setShowPaywall(true)} className={`underline font-medium ${isParent ? 'hover:text-[#164340]' : 'hover:text-violet-900'}`}>Upgrade for unlimited</button>
         </div>
       )}
 
@@ -357,16 +364,16 @@ function GuruContent() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-              <span>🔮</span> Montessori Guru
+              <span>{guruEmoji}</span> Montessori Guru
             </h1>
             <p className="text-xs text-gray-500">
-              {isHomeschoolParent(session) ? 'AI-powered insights for your homeschool' : 'AI-powered insights for your classroom'}
+              {isParent ? 'AI-powered insights for your homeschool' : 'AI-powered insights for your classroom'}
             </p>
           </div>
           {selectedChild && history.length > 0 && (
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="p-2 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-700 active:scale-95 transition-all"
+              className={`p-2 rounded-lg active:scale-95 transition-all ${isParent ? 'bg-[#F5E6D3] hover:bg-[#EDD5C0] text-[#0D3330]' : 'bg-violet-100 hover:bg-violet-200 text-violet-700'}`}
               title="Past conversations"
             >
               <span className="text-lg">📜</span>
@@ -389,7 +396,9 @@ function GuruContent() {
               setResponse(null);
               setShowHistory(false);
             }}
-            className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800"
+            className={`w-full p-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-800 ${
+              isParent ? 'focus:ring-2 focus:ring-[#0D3330]/30 focus:border-[#0D3330]/40' : 'focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+            }`}
           >
             <option value="">Select a child...</option>
             {children.map(child => (
@@ -443,11 +452,13 @@ function GuruContent() {
               ref={textareaRef}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder={isHomeschoolParent(session)
+              placeholder={isParent
                 ? "e.g., My child can't seem to focus lately. She wanders around and won't settle into work at home. What should I do?"
                 : "e.g., Rachel can't seem to focus lately. She wanders around the classroom and won't settle into work. What should I do?"
               }
-              className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 placeholder:text-gray-400 resize-none min-h-[100px]"
+              className={`w-full p-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 resize-none min-h-[100px] ${
+                isParent ? 'focus:ring-2 focus:ring-[#0D3330]/30 focus:border-[#0D3330]/40' : 'focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              }`}
               rows={3}
             />
             <div className="flex justify-between items-center mt-3">
@@ -457,20 +468,21 @@ function GuruContent() {
               <button
                 onClick={handleSubmit}
                 disabled={!question.trim() || loading || question.length > 1000}
-                className="px-6 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-medium rounded-lg
+                className={`px-6 py-2.5 text-white font-medium rounded-lg
                          disabled:opacity-50 disabled:cursor-not-allowed
-                         hover:from-violet-600 hover:to-indigo-700
                          active:scale-95 transition-all
-                         flex items-center gap-2"
+                         flex items-center gap-2 ${
+                  isParent ? 'bg-[#0D3330] hover:bg-[#164340]' : 'bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700'
+                }`}
               >
                 {loading ? (
                   <>
-                    <span className="animate-spin">🔮</span>
+                    <span className="animate-spin">{guruEmoji}</span>
                     Thinking...
                   </>
                 ) : (
                   <>
-                    <span>✨</span>
+                    <span>{isParent ? '🌿' : '✨'}</span>
                     Ask Guru
                   </>
                 )}
@@ -485,8 +497,8 @@ function GuruContent() {
             {streamingText ? (
               <>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg animate-pulse">🔮</span>
-                  <span className="text-sm text-violet-600">Writing...</span>
+                  <span className="text-lg animate-pulse">{guruEmoji}</span>
+                  <span className={`text-sm ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>Writing...</span>
                 </div>
                 <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {streamingText}
@@ -495,8 +507,8 @@ function GuruContent() {
               </>
             ) : (
               <div className="text-center py-4">
-                <div className="text-4xl mb-4 animate-pulse">🔮</div>
-                <p className="text-gray-600 font-medium">Gathering insights...</p>
+                <div className="text-4xl mb-4 animate-pulse">{guruEmoji}</div>
+                <p className="text-gray-600 font-medium">{isParent ? 'Gathering wisdom...' : 'Gathering insights...'}</p>
                 <p className="text-sm text-gray-400 mt-2">
                   Analyzing {selectedChild?.name.split(' ')[0]}&apos;s profile and Montessori wisdom
                 </p>
@@ -510,7 +522,7 @@ function GuruContent() {
           <div className="space-y-4">
             {/* Insight */}
             <div className="bg-white rounded-xl shadow-sm p-4">
-              <h3 className="font-bold text-violet-700 mb-2 flex items-center gap-2">
+              <h3 className={`font-bold mb-2 flex items-center gap-2 ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>
                 <span>💡</span> Insight
               </h3>
               <p className="text-gray-700 leading-relaxed">{response.insight}</p>
@@ -518,8 +530,8 @@ function GuruContent() {
 
             {/* Root Cause */}
             {response.root_cause && (
-              <div className="bg-violet-50 rounded-xl p-4 border border-violet-100">
-                <h3 className="font-medium text-violet-700 mb-1 text-sm">Root Cause</h3>
+              <div className={`rounded-xl p-4 border ${isParent ? 'bg-[#F5E6D3]/40 border-[#0D3330]/10' : 'bg-violet-50 border-violet-100'}`}>
+                <h3 className={`font-medium mb-1 text-sm ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>Root Cause</h3>
                 <p className="text-gray-700">{response.root_cause}</p>
               </div>
             )}
@@ -527,13 +539,13 @@ function GuruContent() {
             {/* Action Plan */}
             {response.action_plan && response.action_plan.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-4">
-                <h3 className="font-bold text-indigo-700 mb-3 flex items-center gap-2">
+                <h3 className={`font-bold mb-3 flex items-center gap-2 ${isParent ? 'text-[#0D3330]' : 'text-indigo-700'}`}>
                   <span>📋</span> This Week&apos;s Plan
                 </h3>
                 <div className="space-y-3">
                   {response.action_plan.map((item, index) => (
                     <div key={index} className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-bold">
+                      <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${isParent ? 'bg-[#0D3330] text-white' : 'bg-indigo-100 text-indigo-700'}`}>
                         {item.priority}
                       </span>
                       <div>
@@ -596,7 +608,7 @@ function GuruContent() {
                   setResponse(null);
                   textareaRef.current?.focus();
                 }}
-                className="px-6 py-2 text-violet-600 font-medium hover:bg-violet-50 rounded-lg transition-colors"
+                className={`px-6 py-2 font-medium rounded-lg transition-colors ${isParent ? 'text-[#0D3330] hover:bg-[#F5E6D3]/50' : 'text-violet-600 hover:bg-violet-50'}`}
               >
                 Ask Another Question
               </button>
@@ -609,7 +621,7 @@ function GuruContent() {
           <div data-tutorial="guru-quick-questions" className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="text-sm font-medium text-gray-500 mb-3">Common questions</h3>
             <div className="space-y-2">
-              {(isHomeschoolParent(session) ? [
+              {(isParent ? [
                 `${selectedChild.name.split(' ')[0]} can't focus and wanders away from work. What should I do?`,
                 `How do I set up our home environment for ${selectedChild.name.split(' ')[0]}?`,
                 `How can I help ${selectedChild.name.split(' ')[0]} choose work independently at home?`,
@@ -623,7 +635,9 @@ function GuruContent() {
                 <button
                   key={i}
                   onClick={() => setQuestion(q)}
-                  className="w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-violet-50 text-gray-700 hover:text-violet-700 text-sm transition-colors"
+                  className={`w-full text-left p-3 rounded-lg bg-gray-50 text-gray-700 text-sm transition-colors ${
+                    isParent ? 'hover:bg-[#F5E6D3]/50 hover:text-[#0D3330]' : 'hover:bg-violet-50 hover:text-violet-700'
+                  }`}
                 >
                   {q}
                 </button>
@@ -646,12 +660,14 @@ function GuruContent() {
 
 export default function GuruPage() {
   return (
-    <Suspense fallback={
-      <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
-        <div className="animate-bounce text-4xl">🔮</div>
-      </div>
-    }>
-      <GuruContent />
-    </Suspense>
+    <FeatureWrapper featureModule="guru" autoStart>
+      <Suspense fallback={
+        <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
+          <div className="animate-bounce text-4xl">🌿</div>
+        </div>
+      }>
+        <GuruContent />
+      </Suspense>
+    </FeatureWrapper>
   );
 }

@@ -6,8 +6,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { HOME_THEME } from '@/lib/montree/home-theme';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
+import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+import GuruDailyBriefing from '@/components/montree/guru/GuruDailyBriefing';
 
 
 interface Child {
@@ -55,22 +58,36 @@ export default function DashboardPage() {
       });
   }, [session?.classroom?.id]);
 
+  const isParent = session ? isHomeschoolParent(session) : false;
+
   if (!session || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="animate-bounce text-5xl">🌳</div>
+      <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-emerald-50 to-teal-50'} flex items-center justify-center`}>
+        <div className="animate-bounce text-5xl">{isParent ? '🌿' : '🌳'}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+    <FeatureWrapper featureModule="student_management" autoStart={children.length === 0}>
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50'}`}>
       <Toaster position="top-center" />
 
       {/* Student/child count subtitle */}
-      <div className="bg-emerald-50 border-b border-emerald-100 px-4 py-2 text-center text-sm text-emerald-700 font-medium">
-        {children.length} {isHomeschoolParent(session) ? 'children' : 'students'}
+      <div className={`${isParent ? `${HOME_THEME.sectionBgSubtle} border-b ${HOME_THEME.border} text-[#0D3330]/70` : 'bg-emerald-50 border-b border-emerald-100 text-emerald-700'} px-4 py-2 text-center text-sm font-medium`}>
+        {children.length} {isParent ? 'children' : 'students'}
       </div>
+
+      {/* Guru Daily Briefing — homeschool parents only */}
+      {isParent && children.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          {children.map((child) => (
+            <div key={child.id} className="mb-4">
+              <GuruDailyBriefing childId={child.id} childName={child.name.split(' ')[0]} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Student Grid */}
       <main className="max-w-6xl mx-auto px-4 py-8">
@@ -78,11 +95,11 @@ export default function DashboardPage() {
           <Link
             href="/montree/dashboard/students"
             data-tutorial="student-grid"
-            className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+            className={`block ${isParent ? `${HOME_THEME.cardBg} border ${HOME_THEME.border}` : 'bg-white'} rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring`}
           >
-            <span className="text-6xl mb-4 block">👶</span>
-            <p className="text-gray-600 font-medium text-lg">
-              {isHomeschoolParent(session) ? 'Tap to add your first child' : 'Tap to add your first student'}
+            <span className="text-6xl mb-4 block">{isParent ? '🌱' : '👶'}</span>
+            <p className={`${isParent ? HOME_THEME.headingText : 'text-gray-600'} font-medium text-lg`}>
+              {isParent ? 'Tap to add your first child' : 'Tap to add your first student'}
             </p>
           </Link>
         ) : (
@@ -92,10 +109,10 @@ export default function DashboardPage() {
                 key={child.id}
                 href={`/montree/dashboard/${child.id}`}
                 data-tutorial="student-card"
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-4 flex flex-col items-center"
+                className={`${isParent ? `${HOME_THEME.cardBg} border ${HOME_THEME.border}` : 'bg-white'} rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-4 flex flex-col items-center`}
               >
                 {/* Avatar */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-2xl sm:text-3xl overflow-hidden mb-3 shadow-md">
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full ${isParent ? 'bg-gradient-to-br from-[#0D3330] to-[#164340]' : 'bg-gradient-to-br from-emerald-400 to-teal-500'} flex items-center justify-center text-white font-bold text-2xl sm:text-3xl overflow-hidden mb-3 shadow-md`}>
                   {child.photo_url ? (
                     <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
                   ) : (
@@ -113,10 +130,10 @@ export default function DashboardPage() {
             <Link
               href="/montree/dashboard/students"
               data-tutorial="add-student-button"
-              className="bg-white/60 border-2 border-dashed border-gray-300 rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 transition-all p-4 flex flex-col items-center justify-center min-h-[120px]"
+              className={`${isParent ? 'bg-[#FFFDF8]/60 border-2 border-dashed border-[#0D3330]/20 hover:border-[#0D3330]/40 hover:bg-[#F5E6D3]/50' : 'bg-white/60 border-2 border-dashed border-gray-300 hover:border-emerald-400 hover:bg-emerald-50'} rounded-2xl transition-all p-4 flex flex-col items-center justify-center min-h-[120px]`}
             >
-              <span className="text-3xl text-gray-400 mb-1">+</span>
-              <span className="text-xs text-gray-400">Add</span>
+              <span className={`text-3xl ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'} mb-1`}>+</span>
+              <span className={`text-xs ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'}`}>Add</span>
             </Link>
           </div>
         )}
@@ -135,10 +152,10 @@ export default function DashboardPage() {
       <style jsx>{`
         @keyframes pulse-ring {
           0%, 100% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            box-shadow: 0 0 0 0 ${isParent ? 'rgba(13, 51, 48, 0.5)' : 'rgba(16, 185, 129, 0.7)'};
           }
           50% {
-            box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 20px ${isParent ? 'rgba(13, 51, 48, 0)' : 'rgba(16, 185, 129, 0)'};
           }
         }
         .animate-pulse-ring {
@@ -146,5 +163,6 @@ export default function DashboardPage() {
         }
       `}</style>
     </div>
+    </FeatureWrapper>
   );
 }

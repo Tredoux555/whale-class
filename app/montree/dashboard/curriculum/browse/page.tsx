@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
+import { HOME_THEME } from '@/lib/montree/home-theme';
 
 // Import curriculum data directly (static JSON — no API needed)
 import languageData from '@/lib/curriculum/data/language.json';
@@ -166,24 +167,24 @@ export default function CurriculumBrowsePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBg : 'bg-slate-50'}`}>
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-20">
+      <div className={`border-b sticky top-0 z-20 ${isParent ? 'bg-[#0D3330] border-[#0D3330]' : 'bg-white border-slate-200'}`}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="text-slate-500 hover:text-slate-700 p-1"
+              className={`p-1 ${isParent ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-slate-700'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <div className="flex-1">
-              <h1 className="text-lg font-bold text-slate-900">
+              <h1 className={`text-lg font-bold ${isParent ? 'text-white' : 'text-slate-900'}`}>
                 {isParent ? 'Montessori Curriculum Guide' : 'Curriculum Browser'}
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className={`text-xs ${isParent ? 'text-white/60' : 'text-slate-500'}`}>
                 {totalWorks} works across 5 areas
                 {isParent && ' — your guide to Montessori at home'}
               </p>
@@ -193,7 +194,7 @@ export default function CurriculumBrowsePage() {
       </div>
 
       {/* Area Tabs — horizontal scroll */}
-      <div className="bg-white border-b border-slate-100 sticky top-[57px] z-10">
+      <div className={`border-b sticky top-[57px] z-10 ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white border-slate-100'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-2 -mx-1 scrollbar-hide">
             {AREA_ORDER.map(areaId => {
@@ -238,7 +239,9 @@ export default function CurriculumBrowsePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search ${areaConfig?.name || ''} works...`}
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                isParent ? 'border-[#0D3330]/15 focus:ring-[#0D3330]/30 bg-[#FFFDF8]' : 'border-slate-200 focus:ring-emerald-500'
+              }`}
             />
             {searchQuery && (
               <button
@@ -253,7 +256,9 @@ export default function CurriculumBrowsePage() {
           <select
             value={ageFilter}
             onChange={(e) => setAgeFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 ${
+              isParent ? 'border-[#0D3330]/15 bg-[#FFFDF8] focus:ring-[#0D3330]/30' : 'border-slate-200 bg-white focus:ring-emerald-500'
+            }`}
           >
             {Object.entries(AGE_LABELS).map(([val, label]) => (
               <option key={val} value={val}>{label}</option>
@@ -284,7 +289,9 @@ export default function CurriculumBrowsePage() {
                 onClick={() => setExpandedCategory(
                   expandedCategory === category.id ? null : category.id
                 )}
-                className="w-full flex items-center gap-2 px-3 py-2.5 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors ${
+                  isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10 hover:bg-[#F5E6D3]/30' : 'bg-white border-slate-200 hover:bg-slate-50'
+                }`}
               >
                 <span
                   className="w-1 h-8 rounded-full"
@@ -346,11 +353,11 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
   const ageLabel = AGE_LABELS[work.ageRange] || work.ageRange;
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div className={`rounded-lg border overflow-hidden ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white border-slate-200'}`}>
       {/* Collapsed view */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${isParent ? 'hover:bg-[#F5E6D3]/20' : 'hover:bg-slate-50'}`}
       >
         <span
           className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"

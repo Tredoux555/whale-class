@@ -2,6 +2,7 @@
 
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
 
 export interface Assignment {
   work_name: string;
@@ -27,6 +28,7 @@ export interface FocusWorksSectionProps {
   onOpenQuickGuide: (workName: string) => void;
   childId: string;
   getAreaConfig: (area: string) => AreaConfig;
+  isHomeschoolParent?: boolean;
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
@@ -52,6 +54,7 @@ export default function FocusWorksSection({
   onOpenQuickGuide,
   childId,
   getAreaConfig,
+  isHomeschoolParent: isParent = false,
 }: FocusWorksSectionProps) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -133,6 +136,11 @@ export default function FocusWorksSection({
                         📸 Capture
                       </button>
                     </div>
+
+                    {/* Guru Work Guide — homeschool parents only */}
+                    {isParent && (
+                      <GuruWorkGuide workName={work.work_name} childId={childId} />
+                    )}
 
                     {/* Notes */}
                     <div className="relative">

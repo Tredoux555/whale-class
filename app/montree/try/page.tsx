@@ -219,10 +219,10 @@ export default function TryMontreePage() {
 
               <button
                 onClick={() => handleRoleSelect('homeschool_parent')}
-                className="w-full px-6 py-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
+                className="w-full px-6 py-5 bg-[#FFF8E7] text-[#0D3330] font-semibold rounded-2xl shadow-lg shadow-[#0D3330]/10 border border-[#0D3330]/15 hover:shadow-xl hover:scale-[1.02] hover:bg-[#F5E6D3] transition-all text-left"
               >
-                <span className="text-lg block">👨‍👩‍👧 Parent at Home</span>
-                <span className="text-sm text-emerald-100/70 font-normal mt-1 block">I&apos;m doing Montessori at home with my child</span>
+                <span className="text-lg block">🌿 Parent at Home</span>
+                <span className="text-sm text-[#0D3330]/60 font-normal mt-1 block">I&apos;m doing Montessori at home with my child</span>
               </button>
             </div>
           </div>
@@ -240,7 +240,7 @@ export default function TryMontreePage() {
 
             <div className="flex flex-col gap-4 text-left">
               <div>
-                <label className="block text-sm text-emerald-300/70 mb-2">Your Name</label>
+                <label className={`block text-sm mb-2 ${selectedRole === 'homeschool_parent' ? 'text-[#F5E6D3]' : 'text-emerald-300/70'}`}>Your Name</label>
                 <input
                   type="text"
                   value={userName}
@@ -252,7 +252,7 @@ export default function TryMontreePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-emerald-300/70 mb-2">
+                <label className={`block text-sm mb-2 ${selectedRole === 'homeschool_parent' ? 'text-[#F5E6D3]' : 'text-emerald-300/70'}`}>
                   {selectedRole === 'principal' ? 'School Name' : selectedRole === 'homeschool_parent' ? 'Homeschool Name' : 'School / Classroom Name'}
                 </label>
                 <input
@@ -266,7 +266,7 @@ export default function TryMontreePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-emerald-300/70 mb-2">Email (optional)</label>
+                <label className={`block text-sm mb-2 ${selectedRole === 'homeschool_parent' ? 'text-[#F5E6D3]' : 'text-emerald-300/70'}`}>Email (optional)</label>
                 <input
                   type="email"
                   value={userEmail}
@@ -285,9 +285,13 @@ export default function TryMontreePage() {
 
               <button
                 onClick={handleDetailsSubmit}
-                className="w-full mt-2 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+                className={`w-full mt-2 py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all ${
+                  selectedRole === 'homeschool_parent'
+                    ? 'bg-[#0D3330] text-white shadow-[#0D3330]/30'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30'
+                }`}
               >
-                Get my code →
+                {selectedRole === 'homeschool_parent' ? 'Start my journey →' : 'Get my code →'}
               </button>
 
               <button
@@ -374,9 +378,13 @@ export default function TryMontreePage() {
             {/* Take me in button */}
             <button
               onClick={handleTakeMeIn}
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+              className={`w-full py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all ${
+                responseData?.role === 'homeschool_parent'
+                  ? 'bg-[#0D3330] text-white shadow-[#0D3330]/30'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30'
+              }`}
             >
-              Take me in →
+              {responseData?.role === 'homeschool_parent' ? 'Enter my home 🌿' : 'Take me in →'}
             </button>
           </div>
         )}
