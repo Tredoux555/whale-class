@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // GET: List observations for a child
 export async function GET(request: NextRequest) {
@@ -24,6 +25,11 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     // Calculate date range
     const cutoffDate = new Date();
@@ -88,6 +94,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
     // Validate behavior_function
     const validFunctions = ['attention', 'escape', 'sensory', 'tangible', 'unknown'];
     if (behavior_function && !validFunctions.includes(behavior_function)) {
@@ -134,8 +147,6 @@ export async function POST(request: NextRequest) {
     if (observed_by && observed_by.length > 200) {
       return NextResponse.json({ success: false, error: 'Observer name too long' }, { status: 400 });
     }
-
-    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('montree_behavioral_observations')

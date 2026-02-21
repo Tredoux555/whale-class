@@ -3,14 +3,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 import GuruDailyBriefing from '@/components/montree/guru/GuruDailyBriefing';
+import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
 
 
 interface Child {
@@ -21,10 +21,12 @@ interface Child {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showDashboardGuide, setShowDashboardGuide] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
@@ -34,8 +36,8 @@ export default function DashboardPage() {
     }
     setSession(sess);
 
-    // Show welcome modal if tutorial not completed
-    if (!sess.teacher.has_completed_tutorial) {
+    // Show welcome modal only once per device (localStorage) AND only if tutorial not completed
+    if (!sess.teacher.has_completed_tutorial && !localStorage.getItem('montree_welcome_done')) {
       setShowWelcome(true);
     }
   }, [router]);
@@ -49,14 +51,24 @@ export default function DashboardPage() {
     fetch(`/api/montree/children?classroom_id=${session.classroom.id}`)
       .then(r => r.json())
       .then(data => {
-        setChildren(data.children || []);
+        const kids = data.children || [];
+        setChildren(kids);
         setLoading(false);
+        // Show dashboard guide once — on first onboard or first visit with children
+        const justOnboarded = searchParams.get('onboarded') === '1';
+        const guideDone = !!localStorage.getItem('montree_guide_dashboard_done');
+        if (kids.length > 0 && !guideDone && (justOnboarded || !session?.teacher?.has_completed_tutorial)) {
+          setShowDashboardGuide(true);
+          if (justOnboarded) {
+            window.history.replaceState({}, '', '/montree/dashboard');
+          }
+        }
       })
       .catch(() => {
         toast.error('Failed to load');
         setLoading(false);
       });
-  }, [session?.classroom?.id]);
+  }, [session?.classroom?.id, searchParams]);
 
   const isParent = session ? isHomeschoolParent(session) : false;
 
@@ -69,7 +81,6 @@ export default function DashboardPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="student_management" autoStart={children.length === 0}>
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50'}`}>
       <Toaster position="top-center" />
 
@@ -104,11 +115,12 @@ export default function DashboardPage() {
           </Link>
         ) : (
           <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-            {children.map((child) => (
+            {children.map((child, index) => (
               <Link
                 key={child.id}
                 href={`/montree/dashboard/${child.id}`}
                 data-tutorial="student-card"
+                {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
                 className={`${isParent ? `${HOME_THEME.cardBg} border ${HOME_THEME.border}` : 'bg-white'} rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-4 flex flex-col items-center`}
               >
                 {/* Avatar */}
@@ -144,7 +156,16 @@ export default function DashboardPage() {
         <WelcomeModal
           teacherName={session.teacher.name}
           isOpen={showWelcome}
-          onClose={() => setShowWelcome(false)}
+          onClose={() => { localStorage.setItem('montree_welcome_done', '1'); setShowWelcome(false); }}
+        />
+      )}
+
+      {/* Post-onboarding guide — highlights first child card */}
+      {showDashboardGuide && children.length > 0 && (
+        <DashboardGuide
+          childName={children[0].name}
+          isHomeschoolParent={isParent}
+          onDismiss={() => { localStorage.setItem('montree_guide_dashboard_done', '1'); setShowDashboardGuide(false); }}
         />
       )}
 
@@ -163,6 +184,5 @@ export default function DashboardPage() {
         }
       `}</style>
     </div>
-    </FeatureWrapper>
   );
 }

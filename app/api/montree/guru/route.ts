@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
@@ -62,6 +63,11 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'child_id and question are required' },
         { status: 400 }
       );
+    }
+
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     if (question.length < 5) {
@@ -285,6 +291,11 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     const { data: history, error } = await supabase
       .from('montree_guru_interactions')

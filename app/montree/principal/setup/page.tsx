@@ -4,8 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
-import { useOnboardingStore } from '@/hooks/useOnboarding';
+import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
 
 
 const EMOJI_OPTIONS = ['🌳', '🐼', '🦁', '🐘', '🦋', '🌟', '🌈', '🌻', '🍎', '🎨', '📚', '🎵'];
@@ -39,21 +38,13 @@ export default function PrincipalSetupPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
 
-  // Initialize onboarding for principals (not under dashboard layout)
-  const initOnboarding = useOnboardingStore(s => s.initialize);
-  const loadProgress = useOnboardingStore(s => s.loadProgressFromDB);
-
-  useEffect(() => {
-    // Init onboarding for principal role
-    fetch('/api/montree/onboarding/settings')
-      .then(r => r.json())
-      .then(settings => initOnboarding('principal', settings?.enabled_for_principals ?? true))
-      .catch(() => initOnboarding('principal', true));
-    fetch('/api/montree/onboarding/progress')
-      .then(r => r.json())
-      .then(data => { if (data?.progress) loadProgress(data.progress); })
-      .catch(() => {});
-  }, [initOnboarding, loadProgress]);
+  // Principal setup guide state — only show once per device
+  const [showSetupGuide, setShowSetupGuide] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('montree_guide_principal_done');
+    }
+    return true;
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem('montree_school');
@@ -71,9 +62,8 @@ export default function PrincipalSetupPage() {
       setPrincipalName(p.name || '');
     }
 
-    // Show welcome overlay on first visit only
-    const hasSeenWelcome = sessionStorage.getItem('montree_setup_welcome_seen');
-    if (!hasSeenWelcome) {
+    // Show welcome overlay only once per device
+    if (!localStorage.getItem('montree_principal_welcome_done')) {
       setShowWelcome(true);
     }
   }, [router]);
@@ -263,11 +253,19 @@ export default function PrincipalSetupPage() {
 
   const dismissWelcome = () => {
     setShowWelcome(false);
-    sessionStorage.setItem('montree_setup_welcome_seen', 'true');
+    localStorage.setItem('montree_principal_welcome_done', '1');
   };
 
   return (
-    <FeatureWrapper featureModule="classroom_setup" autoStart>
+    <>
+    <PrincipalSetupGuide
+      isVisible={showSetupGuide && !showWelcome && !loading}
+      onComplete={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
+      onSkip={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
+      wizardStep={step}
+      hasClassrooms={classrooms.length > 0}
+      hasTeachers={createdTeachers.length > 0}
+    />
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
 
       {/* ============ WELCOME OVERLAY ============ */}
@@ -463,6 +461,7 @@ export default function PrincipalSetupPage() {
             <button
               onClick={addClassroom}
               data-tutorial="create-classroom-button"
+              data-guide="add-classroom-btn"
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-white/60 hover:text-white hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all"
             >
               + Add Classroom
@@ -471,6 +470,7 @@ export default function PrincipalSetupPage() {
             <button
               onClick={() => setStep(2)}
               disabled={classrooms.length === 0 || classrooms.some(c => !c.name.trim())}
+              data-guide="continue-teachers-btn"
               className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue to Teachers →
@@ -494,13 +494,14 @@ export default function PrincipalSetupPage() {
                   </div>
                   
                   <div className="space-y-3">
-                    {classroom.teachers.map((teacher, index) => (
+                    {classroom.teachers.map((teacher, tIndex) => (
                       <div key={teacher.id} className="flex gap-3 items-center">
                         <input
                           type="text"
                           value={teacher.name}
                           onChange={(e) => updateTeacher(classroom.id, teacher.id, { name: e.target.value })}
                           placeholder="Teacher name"
+                          {...(tIndex === 0 ? { 'data-guide': 'teacher-name-first' } : {})}
                           className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
                         />
                         <input
@@ -542,6 +543,7 @@ export default function PrincipalSetupPage() {
               </button>
               <button
                 data-tutorial="setup-submit-button"
+                data-guide="complete-setup-btn"
                 onClick={handleSubmit}
                 disabled={loading || classrooms.some(c => c.teachers.every(t => !t.name.trim()))}
                 className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -577,32 +579,19 @@ export default function PrincipalSetupPage() {
             )}
 
             {/* Success Message */}
-            <div data-tutorial="overview-section" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
+            <div data-tutorial="overview-section" data-guide="setup-overview" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
               <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Created!
+                {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Ready!
               </h2>
               <p className="text-emerald-200">
-                Each classroom has a comprehensive, customizable Montessori curriculum complete with guides and a teacher dashboard.
-              </p>
-            </div>
-
-            {/* What&apos;s Next */}
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                <span>👉</span> What&apos;s Next?
-              </h3>
-              <p className="text-emerald-200/80 mb-4">
-                Your teachers need to get on board! They&apos;ll review the curriculum, customize it to match their classroom, and add their students.
-              </p>
-              <p className="text-emerald-200/80">
-                But first, they need their login credentials...
+                Share these login codes with your teachers — they&apos;ll take it from here.
               </p>
             </div>
 
             {/* Teacher Codes */}
             {createdTeachers.length > 0 && (
-              <div data-tutorial="manage-teachers-button" className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+              <div data-tutorial="manage-teachers-button" data-guide="teacher-codes" className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <span>🔑</span> Teacher Login Codes
@@ -680,6 +669,7 @@ export default function PrincipalSetupPage() {
             {/* Go to Dashboard */}
             <button
               onClick={() => router.push('/montree/admin')}
+              data-guide="go-dashboard-btn"
               className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
             >
               Go to Dashboard →
@@ -695,6 +685,6 @@ export default function PrincipalSetupPage() {
         </p>
       </div>
     </div>
-    </FeatureWrapper>
+    </>
   );
 }

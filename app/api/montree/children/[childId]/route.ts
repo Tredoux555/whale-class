@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
 interface RouteContext {
@@ -17,6 +18,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (auth instanceof NextResponse) return auth;
 
     const { childId } = await context.params;
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const supabase = getSupabase();
     const schoolId = auth.schoolId;
 
@@ -74,6 +81,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (auth instanceof NextResponse) return auth;
 
     const { childId } = await context.params;
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const supabase = getSupabase();
     const schoolId = auth.schoolId;
 
@@ -144,6 +157,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (auth instanceof NextResponse) return auth;
 
     const { childId } = await context.params;
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     const supabase = getSupabase();
     const schoolId = auth.schoolId;
 

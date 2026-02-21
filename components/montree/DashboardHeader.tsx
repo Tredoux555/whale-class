@@ -27,7 +27,7 @@ export default function DashboardHeader() {
     <header className={`${isHomeschoolParent(session) ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left: Logo + classroom */}
-        <Link href="/montree/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <span className="text-2xl">🌳</span>
           <span className="font-bold text-lg">{session.classroom?.name || 'Montree'}</span>
         </Link>
@@ -42,6 +42,7 @@ export default function DashboardHeader() {
           <Link
             href="/montree/dashboard/curriculum"
             data-tutorial="curriculum-link"
+            data-guide="nav-curriculum"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
             title="Curriculum"
           >
@@ -50,17 +51,11 @@ export default function DashboardHeader() {
           <Link
             href="/montree/dashboard/guru"
             data-tutorial="guru-link"
+            data-guide="nav-guru"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
             title="Montessori Guru"
           >
             🧠
-          </Link>
-          <Link
-            href="/montree/dashboard/print"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title="Print"
-          >
-            🖨️
           </Link>
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}

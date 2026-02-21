@@ -256,11 +256,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-            {students.map(student => (
+            {students.map((student, sIdx) => (
               <button
                 key={student.id}
                 onClick={() => router.push(`/montree/admin/classrooms/${classroomId}/students/${student.id}`)}
                 className="bg-white/10 rounded-xl p-3 flex flex-col items-center hover:bg-white/15 hover:scale-[1.03] active:scale-[0.97] transition-all group"
+                {...(sIdx === 0 ? { 'data-guide': 'first-student' } : {})}
               >
                 {/* Avatar */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-2 overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow">

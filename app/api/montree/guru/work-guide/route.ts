@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import Anthropic from '@anthropic-ai/sdk';
 
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
@@ -54,6 +55,13 @@ export async function POST(request: NextRequest) {
 
     if (!work_name) {
       return NextResponse.json({ success: false, error: 'work_name is required' }, { status: 400 });
+    }
+
+    if (child_id) {
+      const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+      if (!access.allowed) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
     }
 
     // Find the work in our curriculum

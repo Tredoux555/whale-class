@@ -196,7 +196,7 @@ export default function AdminPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {classrooms.map(classroom => {
+            {classrooms.map((classroom, index) => {
               const lead = leadTeacher(classroom);
               const assistants = assistantCount(classroom);
 
@@ -206,6 +206,7 @@ export default function AdminPage() {
                   onClick={() => router.push(`/montree/admin/classrooms/${classroom.id}`)}
                   className="bg-white/10 rounded-2xl p-4 border-l-4 text-left hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all group"
                   style={{ borderLeftColor: classroom.color }}
+                  {...(index === 0 ? { 'data-guide': 'first-classroom', 'data-href': `/montree/admin/classrooms/${classroom.id}` } : {})}
                 >
                   {/* Icon + Name */}
                   <div className="flex items-center gap-3 mb-3">

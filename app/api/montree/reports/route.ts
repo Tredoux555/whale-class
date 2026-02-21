@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
@@ -111,6 +112,11 @@ export async function POST(request: NextRequest) {
 
     if (!child_id || !week_start) {
       return NextResponse.json({ error: 'child_id and week_start required' }, { status: 400 });
+    }
+
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Get child info

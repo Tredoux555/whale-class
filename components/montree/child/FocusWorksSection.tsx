@@ -75,9 +75,12 @@ export default function FocusWorksSection({
             return (
               <div key={`focus-${work.area}-${work.work_name}`} className="space-y-1">
                 {/* Focus work row */}
-                <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                <div
+                  {...(i === 0 ? { 'data-guide': 'first-work-row' } : {})}
+                  className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isExpanded ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                   {/* Area icon - tap or long-press to swap focus work */}
                   <button
+                    {...(i === 0 ? { 'data-guide': 'area-badge-first' } : {})}
                     className="active:scale-90 transition-transform"
                     onClick={() => onOpenWheelPicker(work.area, work.work_name)}
                     onContextMenu={(e) => {
@@ -98,7 +101,11 @@ export default function FocusWorksSection({
                   </button>
 
                   {/* Work name - tap to expand */}
-                  <button onClick={() => setExpandedIndex(isExpanded ? null : work.work_name)} className="flex-1 text-left">
+                  <button
+                    {...(i === 0 ? { 'data-guide': 'first-work-name' } : {})}
+                    onClick={() => setExpandedIndex(isExpanded ? null : work.work_name)}
+                    className="flex-1 text-left"
+                  >
                     <p className="font-medium text-gray-800 text-sm">{work.work_name}</p>
                   </button>
 
@@ -124,12 +131,14 @@ export default function FocusWorksSection({
                   <div className="mt-1 ml-7 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 space-y-2">
                     <div className="flex gap-2">
                       <button
+                        {...(i === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
                         onClick={() => onOpenQuickGuide(work.work_name)}
                         className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                       >
                         📖 Quick Guide
                       </button>
                       <button
+                        {...(i === 0 ? { 'data-guide': 'capture-btn' } : {})}
                         onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(work.work_name)}&area=${encodeURIComponent(work.area)}`}
                         className="flex-1 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
                       >
@@ -143,7 +152,7 @@ export default function FocusWorksSection({
                     )}
 
                     {/* Notes */}
-                    <div className="relative">
+                    <div {...(i === 0 ? { 'data-guide': 'notes-area' } : {})} className="relative">
                       <textarea
                         value={notes[work.work_name] || ''}
                         onChange={(e) => setNotes(prev => ({ ...prev, [work.work_name]: e.target.value }))}

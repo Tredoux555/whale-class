@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // Normalize status to standard string format
 function normalizeStatus(status: unknown): string {
@@ -40,6 +41,12 @@ export async function POST(request: NextRequest) {
 
     if (!child_id || (!work_key && !work_name)) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
+    }
+
+    // SECURITY: Verify child belongs to this user's school
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // EARLY RETURN: Remove extra — just delete from extras table, don't touch progress

@@ -19,7 +19,7 @@ import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 
 
 interface Assignment {
@@ -84,6 +84,14 @@ export default function WeekPage() {
   const [quickGuideLoading, setQuickGuideLoading] = useState(false);
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
 
+  // Week view guide state — only show once per device
+  const [showWeekViewGuide, setShowWeekViewGuide] = useState(false);
+  useEffect(() => {
+    if (!localStorage.getItem('montree_guide_weekview_done')) {
+      setShowWeekViewGuide(true);
+    }
+  }, []);
+
   // Fetch quick guide for a work
   const openQuickGuide = async (workName: string) => {
     setQuickGuideWork(workName);
@@ -114,8 +122,9 @@ export default function WeekPage() {
     fetch(`/api/montree/progress?child_id=${childId}`)
       .then(r => {
         if (!r.ok) {
-          console.error('Progress API returned:', r.status);
-          throw new Error('API error');
+          // Auth expired or server error — redirect to login with return URL
+          router.push(`/montree/login?redirect=${encodeURIComponent(`/montree/dashboard/${childId}`)}`);
+          return { progress: [] };
         }
         return r.json();
       })
@@ -171,8 +180,8 @@ export default function WeekPage() {
         setExtraWorks(extras);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Failed to fetch progress:', err);
+      .catch(() => {
+        // Network error or parsing error — show empty state, don't crash
         setFocusWorks([]);
         setExtraWorks([]);
         setLoading(false);
@@ -474,7 +483,6 @@ export default function WeekPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="week_view" autoStart>
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
 
@@ -620,7 +628,56 @@ export default function WeekPage() {
         guideData={quickGuideData}
         loading={quickGuideLoading}
       />
+      {/* Week View Guide — onboarding for first-time users */}
+      {showWeekViewGuide && focusWorks.length > 0 && (
+        <WeekViewGuide
+          isVisible={true}
+          onComplete={() => { localStorage.setItem('montree_guide_weekview_done', '1'); setShowWeekViewGuide(false); }}
+          onSkip={() => { localStorage.setItem('montree_guide_weekview_done', '1'); setShowWeekViewGuide(false); }}
+          isHomeschoolParent={isHomeschoolParent(session)}
+          onExpandFirstWork={() => {
+            if (focusWorks.length > 0) {
+              setExpandedIndex(focusWorks[0].work_name);
+            }
+          }}
+          onCollapseFirstWork={() => {
+            setExpandedIndex(null);
+          }}
+          onOpenQuickGuide={() => {
+            if (focusWorks.length > 0) {
+              openQuickGuide(focusWorks[0].work_name);
+            }
+          }}
+          onCloseQuickGuide={() => {
+            setQuickGuideOpen(false);
+          }}
+          onOpenYouTube={() => {
+            // Open YouTube search for the first focus work
+            const workName = focusWorks[0]?.work_name || '';
+            window.open(`https://youtube.com/results?search_query=${encodeURIComponent(workName + ' Montessori presentation')}`, '_blank');
+          }}
+          onOpenFullDetails={() => {
+            setFullDetailsOpen(true);
+          }}
+          onCloseFullDetails={() => {
+            setFullDetailsOpen(false);
+          }}
+          onOpenCapture={() => {
+            router.push(`/montree/dashboard/capture?childId=${childId}`);
+          }}
+          onOpenWheelPicker={() => {
+            if (focusWorks.length > 0) {
+              openWheelPicker(focusWorks[0].area, focusWorks[0].work_name);
+            }
+          }}
+          onCloseWheelPicker={() => {
+            setWheelPickerOpen(false);
+          }}
+          onNavigateHome={() => {
+            router.push('/montree/dashboard');
+          }}
+        />
+      )}
     </div>
-    </FeatureWrapper>
   );
 }

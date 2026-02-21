@@ -317,6 +317,12 @@ export default function SuperAdminPage() {
           </div>
           <div className="flex gap-2">
             <Link
+              href="/montree/super-admin/community"
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 text-sm"
+            >
+              📚 Community Library
+            </Link>
+            <Link
               href="/montree/super-admin/marketing"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 text-sm"
             >

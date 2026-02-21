@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +25,11 @@ export async function POST(request: NextRequest) {
     // works: Array<{ work_name: string; area: string }>
     if (!child_id || !Array.isArray(works) || works.length === 0) {
       return NextResponse.json({ error: 'child_id and works[] required' }, { status: 400 });
+    }
+
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // Cap at 100 to prevent abuse

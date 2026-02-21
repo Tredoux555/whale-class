@@ -112,9 +112,10 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
             <Link
               key={tab.id}
               href={tab.href}
+              data-guide={`tab-${tab.id}`}
               className={`flex-1 py-3 font-medium text-center text-sm ${
-                activeTab === tab.id 
-                  ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500' 
+                activeTab === tab.id
+                  ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500'
                   : 'text-gray-500 hover:bg-gray-50'
               }`}
             >
