@@ -78,13 +78,17 @@ export async function POST(request: NextRequest) {
           detailParts.push(`${i + 1}. ${instruction}`);
         });
       }
-      if (work.points_of_interest && work.points_of_interest.length > 0) {
+      const poi = Array.isArray(work.points_of_interest) ? work.points_of_interest :
+        (typeof work.points_of_interest === 'string' ? [work.points_of_interest] : []);
+      if (poi.length > 0) {
         detailParts.push('\n\nPoints of Interest:');
-        work.points_of_interest.forEach((p: string) => detailParts.push(`• ${p}`));
+        poi.forEach((p: string) => detailParts.push(`• ${String(p)}`));
       }
-      if (work.common_challenges && work.common_challenges.length > 0) {
+      const challenges = Array.isArray(work.common_challenges) ? work.common_challenges :
+        (typeof work.common_challenges === 'string' ? [work.common_challenges] : []);
+      if (challenges.length > 0) {
         detailParts.push('\n\nCommon Challenges:');
-        work.common_challenges.forEach((c: string) => detailParts.push(`• ${c}`));
+        challenges.forEach((c: string) => detailParts.push(`• ${String(c)}`));
       }
 
       // Build presentation_steps JSONB
@@ -106,8 +110,8 @@ export async function POST(request: NextRequest) {
         control_of_error: work.control_of_error || null,
         prerequisites: work.prerequisites || [],
         presentation_steps: presentationSteps,
-        variations: (work.variations || []).map((v: string) => ({ description: v })),
-        extensions: (work.extensions || []).map((e: string) => ({ description: e })),
+        variations: (Array.isArray(work.variations) ? work.variations : []).map((v: any) => ({ description: String(v) })),
+        extensions: (Array.isArray(work.extensions) ? work.extensions : []).map((e: any) => ({ description: String(e) })),
         standard_work_id: work.work_key,
         is_variation: false,
         contributor_name: 'Montree Standard Curriculum',
