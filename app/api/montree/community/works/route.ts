@@ -72,8 +72,13 @@ export async function GET(request: NextRequest) {
         query = query.order('created_at', { ascending: true });
         break;
       case 'newest':
-      default:
         query = query.order('created_at', { ascending: false });
+        break;
+      case 'curriculum':
+      default:
+        // Curriculum sequence (nulls last for community-contributed works)
+        query = query.order('curriculum_sequence', { ascending: true, nullsFirst: false })
+                     .order('created_at', { ascending: false });
         break;
     }
 
