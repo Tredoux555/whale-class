@@ -1,13 +1,26 @@
 // /montree/admin/layout.tsx
-// Admin layout with navigation and feedback button
+// Admin layout with navigation, feedback button, and principal admin guide
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import FeedbackButton from '@/components/montree/FeedbackButton';
+import PrincipalAdminGuide from '@/components/montree/onboarding/PrincipalAdminGuide';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [principalName, setPrincipalName] = useState('');
+
+  useEffect(() => {
+    const principalData = localStorage.getItem('montree_principal');
+    if (principalData) {
+      try {
+        const p = JSON.parse(principalData);
+        setPrincipalName(p.name || '');
+      } catch { /* ignore */ }
+    }
+  }, []);
 
   const navItems = [
     { href: '/montree/admin', label: 'Overview', icon: '📊' },
@@ -37,6 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
+              {...(item.label === 'Guru' ? { 'data-guide': 'nav-guru' } : {})}
               className={`px-4 py-3 text-sm font-medium transition-colors ${
                 pathname === item.href
                   ? 'text-emerald-400 border-b-2 border-emerald-400'
@@ -56,6 +70,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Feedback Button */}
       <FeedbackButton userType="principal" />
+
+      {/* Principal Admin Guide — multi-page onboarding tour */}
+      <PrincipalAdminGuide principalName={principalName} />
     </div>
   );
 }

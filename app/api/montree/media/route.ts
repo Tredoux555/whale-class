@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // GET - List media with filters
 export async function GET(request: NextRequest) {
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
 
     // If childId is specified, check BOTH direct photos AND group photos via junction table
     if (childId) {
+      const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+      if (!access.allowed) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+      }
       // First, get the child's classroom to fetch curriculum works
       const { data: childData } = await supabase
         .from('montree_children')

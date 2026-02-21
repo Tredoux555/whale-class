@@ -44,7 +44,7 @@ export default function QuickGuideModal({
           <p className="text-amber-100 text-sm">{workName}</p>
         </div>
 
-        <div className="p-4 overflow-y-auto max-h-[50vh]">
+        <div data-guide="quick-guide-content" className="p-4 overflow-y-auto max-h-[50vh]">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-bounce text-3xl mb-2">📖</div>
@@ -85,12 +85,14 @@ export default function QuickGuideModal({
         {/* Actions */}
         <div className="p-4 border-t flex gap-2">
           <button
+            data-guide="watch-video-btn"
             onClick={() => window.open(`https://youtube.com/results?search_query=${encodeURIComponent(guideData?.video_search_term || workName + ' Montessori presentation')}`, '_blank')}
             className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-600"
           >
             🎬 Watch Video
           </button>
           <button
+            data-guide="full-details-btn"
             onClick={() => onOpenFullDetails?.()}
             className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600"
           >

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -28,6 +29,11 @@ export async function GET(
     }
 
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     // Fetch profile
     const { data: profile, error } = await supabase
@@ -78,6 +84,11 @@ export async function PUT(
     }
 
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     // Build profile data from body
     const profileData = {

@@ -166,7 +166,12 @@ export default function WorkWheelPicker({
         onClick={onClose}
       >
         <div className="text-center text-white p-8" onClick={e => e.stopPropagation()}>
-          <span className="text-5xl mb-4 block">{areaConfig.icon}</span>
+          <span
+            className="w-16 h-16 rounded-full inline-flex items-center justify-center font-bold text-white text-2xl shadow-lg mb-4"
+            style={{ backgroundColor: areaConfig.color }}
+          >
+            {areaConfig.icon}
+          </span>
           <h2 className="font-bold text-xl mb-2">{areaConfig.name}</h2>
           <p className="text-white/70 mb-6">No works available in this area yet.</p>
           <button
@@ -202,9 +207,14 @@ export default function WorkWheelPicker({
           <button onClick={onClose} className="p-2 -ml-2">
             <span className="text-2xl">✕</span>
           </button>
-          <div className="text-center">
-            <span className="text-3xl">{areaConfig.icon}</span>
-            <h2 className="font-bold text-lg">{areaConfig.name}</h2>
+          <div className="text-center flex flex-col items-center">
+            <span
+              className="w-12 h-12 rounded-full inline-flex items-center justify-center font-bold text-white text-xl shadow-lg"
+              style={{ backgroundColor: areaConfig.color }}
+            >
+              {areaConfig.icon}
+            </span>
+            <h2 className="font-bold text-lg mt-1">{areaConfig.name}</h2>
           </div>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
@@ -341,9 +351,14 @@ export default function WorkWheelPicker({
                     <button onClick={() => setShowPositionPicker(false)} className="p-2 -ml-2">
                       <span className="text-2xl">✕</span>
                     </button>
-                    <div className="text-center">
-                      <span className="text-3xl">{areaConfig.icon}</span>
-                      <h2 className="font-bold text-lg">Insert after position...</h2>
+                    <div className="text-center flex flex-col items-center">
+                      <span
+                        className="w-12 h-12 rounded-full inline-flex items-center justify-center font-bold text-white text-xl shadow-lg"
+                        style={{ backgroundColor: areaConfig.color }}
+                      >
+                        {areaConfig.icon}
+                      </span>
+                      <h2 className="font-bold text-lg mt-1">Insert after position...</h2>
                     </div>
                     <div className="w-10" />
                   </div>

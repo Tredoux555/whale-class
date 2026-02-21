@@ -14,68 +14,225 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ## 🔥 NEXT SESSION PRIORITIES (Feb 22, 2026)
 
-### ⚠️ CRITICAL BLOCKER: Run Migrations 126, 127, 131 (Priority #0)
+### ⚠️ CRITICAL BLOCKER: Deploy + Run Migrations (Priority #0)
 
-**This has been deferred across 7+ sessions. NOTHING ELSE WORKS UNTIL THESE RUN.**
+**DEPLOY FIRST.** All onboarding guides, security fixes, community library, and copy rewrites are local-only. Push to `main` for Railway.
 
+**Then run migrations (deferred 8+ sessions):**
 ```bash
 psql $DATABASE_URL -f migrations/126_homeschool_tables.sql
 psql $DATABASE_URL -f migrations/127_guru_freemium.sql
 psql $DATABASE_URL -f migrations/131_onboarding_system.sql
+psql $DATABASE_URL -f migrations/132_community_works.sql
 ```
 
-- 126: Adds `role` column to `montree_teachers` + `school_id` to `montree_children` — without this, homeschool parent signup crashes
-- 127: Adds Guru billing columns — without this, Guru freemium/billing fails
-- 131: Creates onboarding tables — without this, onboarding API calls fail
+- 126: Adds `role` column to `montree_teachers` + `school_id` to `montree_children`
+- 127: Adds Guru billing columns
+- 131: Creates onboarding tables
+- 132: Creates community works library tables + backups table + updated_at trigger
 
-### Feb 22 — Dedicated Home System Honing Day (Priority #1)
+**After migration 132:** Go to `/montree/super-admin/community` → Seed 329 Works
 
-**What:** Full day dedicated to polishing and refining the homeschool parent experience end-to-end.
+### Deploy Cross-Pollination Security Fix (Priority #1 — URGENT)
+
+**CRITICAL security fix from Feb 22.** Must be deployed before any new school signs up.
+
+**Still needs `verifyChildBelongsToSchool` added to:** `media/upload`, `reports/generate`, `reports/pdf`, `reports/send`, `weekly-planning/*`, `focus-works`
+
+**Handoff:** `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md`
+**Helper:** `lib/montree/verify-child-access.ts`
+
+### Test All Onboarding Guides on Mobile (Priority #2)
+
+**Status:** ALL guides built and localStorage-persisted. Need end-to-end mobile testing after deploy.
+- WeekViewGuide (19 steps) — teacher child week view
+- StudentFormGuide (13 steps) — teacher student add form
+- PrincipalSetupGuide (8 steps) — principal school creation wizard
+- PrincipalAdminGuide (4 steps) — principal admin dashboard walkthrough (multi-page, cross-navigation)
+- WelcomeModal, DashboardGuide — dashboard popups (localStorage-gated)
+- **Handoff:** `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md`
+
+### Home System Honing (Priority #3)
+
+Full day dedicated to polishing the homeschool parent experience end-to-end.
 - Test full homeschool flow (Try Free → signup → login → dashboard → add child → Guru → curriculum)
 - Test Guru Daily Coach (daily plan generation, work guide, YouTube links)
 - Fix any visual issues found during testing
-- Potentially add voice notes system (`react-media-recorder` + OpenAI Whisper)
 - Requires migrations to be run first
 
-### Remaining Guru Integration (Priority #2)
-
-**What:** Additional contextual Guru components from design doc. Core daily coach is DONE, these are enhancements.
+### Remaining Guru Integration (Priority #4)
 
 **Still to build:**
-1. Voice Notes system — `react-media-recorder` + OpenAI Whisper transcription, mic button on notes/observations/Guru chat
+1. Voice Notes system — `react-media-recorder` + OpenAI Whisper transcription
 2. GuruContextBubble — floating contextual tips on each page
 3. GuruInlinePrompt — inline prompt suggestions
 4. GuruSuggestionCard — proactive suggestions based on child progress
-5. Welcome sequence — guided first-login flow that generates personalised starter works
+5. Welcome sequence — guided first-login flow
 6. End-of-day analysis — reviews what child did, suggests tomorrow's focus
 
 **Handoff:** `docs/HANDOFF_GURU_HOME_INTEGRATION_FEB19.md`
-**Design Doc:** `Montree_Home_Guru_Design.docx` (in `assets/`)
 
-### Stripe Setup (Priority #3 — Deferred)
+### Stripe Setup (Priority #5 — Deferred)
 
-**What:** Configure Stripe products, prices, and env vars. Currently ZERO Stripe vars set locally or on Railway.
+**Needs:** `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`, `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM`
 
-**Needs:**
-- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`
-- `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM` (school tiers)
-- Optionally: `GURU_FREEMIUM_ENABLED=true` (currently false — everyone gets unlimited Guru free)
+### Story Vault Image Viewer (Priority #6 — Deferred)
 
-**Pricing model (updated):**
-- Schools: Free / Basic $29/mo / Pro $79/mo
-- Homeschool: $5/mo/child subscription (code exists), future migration to credits-based (2x API cost markup + $2/mo base)
+**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
-### Story Vault Image Viewer (Priority #4 — Deferred)
+### Curriculum Inconsistency Resolution (Priority #7 — Deferred)
 
-**Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md` — Ready for implementation, 2-4 hours
-
-### Curriculum Inconsistency Resolution (Priority #5 — Deferred)
-
-**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed. Remaining: verify all other creation flows use static JSON.
+**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed.
 
 ---
 
 ## CURRENT STATUS (Feb 21, 2026)
+
+### Session Work (Feb 21, 2026)
+
+**Community Montessori Works Library — COMPLETE (14 new files, 2-pass security audit):**
+
+Public, community-driven Montessori works database. Teachers browse without login, share works (pending moderation), and inject approved works into their classroom via teacher code.
+
+**Files created (14 new, 1 modified):**
+- `migrations/132_community_works.sql` — 2 tables, 7 indexes, `updated_at` trigger
+- `app/api/montree/community/works/route.ts` — GET (browse + filters) + POST (upload via FormData)
+- `app/api/montree/community/works/[id]/route.ts` — GET (detail) + PATCH (admin edit) + DELETE (storage cleanup)
+- `app/api/montree/community/works/[id]/inject/route.ts` — "Send to Classroom" via teacher code
+- `app/api/montree/community/works/[id]/guide/route.ts` — AI guide generation (Claude Haiku)
+- `app/api/montree/community/backup/route.ts` — Daily JSON backup, keeps last 30
+- `app/api/montree/community/seed/route.ts` — Pre-seed 329 standard curriculum works
+- `app/montree/library/page.tsx` — Public browse (area tabs, search, sort, pagination, inject modal)
+- `app/montree/library/[workId]/page.tsx` — Detail page (photo gallery, lightbox, AI guide, inject)
+- `app/montree/library/upload/page.tsx` — Upload form (contributor info, work details, photos/videos/PDFs)
+- `app/montree/library/layout.tsx` — Pass-through layout
+- `app/montree/super-admin/community/page.tsx` — Admin moderation panel (approve/reject/flag, guide gen, backup, seed)
+- `app/montree/super-admin/page.tsx` — Added Community Library link
+
+**Security audit (2 full passes, 14 issues found and fixed):**
+- Pass 1: `.valid` boolean fix (4 routes), RPC replacement, search SQL injection, admin bypass, status exposure, description validation, variations rendering, `updated_at` trigger, seed cleanup, admin fetch headers
+- Pass 2: `age` filter injection (validated against whitelist), file size limits (10MB/50MB/20MB), file extension sanitization, backup pagination (1000-row limit)
+
+**Handoff:** `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md`
+
+---
+
+### Session Work (Feb 23, 2026)
+
+**PrincipalSetupGuide Copy Simplification — COMPLETE:**
+- Reduced from 9 → 8 steps (removed separate `teacher-codes` step — page handles codes display)
+- Tightened all speech bubble messages (removed redundancy with page content)
+- Removed "What's Next?" section from step 3 page (was duplicating speech bubble info)
+- Success banner simplified: "N Classrooms Ready!" + "Share these login codes"
+- Final step: "Let's head to your dashboard — I'll show you around."
+
+**PrincipalAdminGuide (NEW — Multi-Page Dashboard Walkthrough) — COMPLETE:**
+- New component: `components/montree/onboarding/PrincipalAdminGuide.tsx` (~280 lines)
+- Renders in admin layout — persists step in localStorage across page navigations
+- 4 steps spanning admin overview + classroom detail pages:
+  1. Admin overview → highlights first classroom tile → "Tap on a classroom to look inside" → navigates into classroom
+  2. Classroom detail → highlights first student tile → "Tap on a student... generate a report for the parent" → navigates back
+  3. Admin overview → highlights Guru nav tab → "Ask the Guru anything a parent might ask you..."
+  4. Centered farewell → "That's it, Principal ___! I left all the technical stuff to the teachers..."
+- Uses `usePathname()` to detect current page, shows correct step per page
+- `data-href` attribute on first classroom tile provides navigation URL
+- localStorage keys: `montree_guide_admin_step` (current step), `montree_guide_admin_done` (completed)
+
+**Files changed (9 modified, 1 new):**
+- `components/montree/onboarding/PrincipalSetupGuide.tsx` — copy rewrite, 9→8 steps
+- `components/montree/onboarding/PrincipalAdminGuide.tsx` — **NEW** multi-page guide
+- `app/montree/principal/setup/page.tsx` — removed "What's Next?" section
+- `app/montree/admin/page.tsx` — `data-guide="first-classroom"` + `data-href` on first tile
+- `app/montree/admin/classrooms/[classroomId]/page.tsx` — `data-guide="first-student"` on first student
+- `app/montree/admin/layout.tsx` — wired PrincipalAdminGuide, `data-guide="nav-guru"` on Guru link
+- `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md` — updated with all changes
+
+**Handoff:** `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md`
+
+### Session Work (Feb 23, 2026 — Earlier)
+
+**PrincipalSetupGuide (NEW) — 8-step wizard guide:**
+- Built from scratch, same speech-bubble + GPB pattern as WeekViewGuide
+- Spans all 3 wizard phases with `wizardStep` prop auto-advancing guide
+- Removed FeatureWrapper/useOnboardingStore from setup page
+
+**All Onboarding Popups Audit — 4 BUGS FIXED:**
+- WelcomeModal: added `!localStorage.getItem('montree_welcome_done')` check
+- DashboardGuide: replaced TEMP `if (kids.length > 0)` with proper localStorage gate
+- Principal welcome: sessionStorage → localStorage
+- Auto-open bulk form: added localStorage check
+
+**WeekViewGuide Bug Fixes:**
+- Wheel picker no longer stays open behind subsequent steps (removed `onAdvance: onOpenWheelPicker`)
+- Nav-home step now navigates to dashboard on "Done!" (new `onNavigateHome` prop)
+- Removed 🏷️ label icon from header (labels still on students page)
+- 20→19 steps (removed nav-labels)
+
+**Copy Rewrite:** All 3 guides (WeekView 19 steps, StudentForm 13 steps, PrincipalSetup 8 steps)
+**localStorage Persistence:** All guides + popups now show once per device (8 localStorage keys total)
+
+### Session Work (Feb 22, 2026 — Late Session)
+
+**🚨 CRITICAL: Cross-Pollination Security Fix — COMPLETE:**
+- `/api/montree/children` GET was returning ALL children from ALL schools when `classroom_id` not provided
+- Created `lib/montree/verify-child-access.ts` — centralized `verifyChildBelongsToSchool()` helper
+- Added school-scoping to `/api/montree/children` GET (now always filters by authenticated user's school)
+- Added `verifyChildBelongsToSchool()` to 13 API routes: progress, progress/update, progress/summary, progress/batch-master, observations, sessions, media, guru, guru/daily-plan, guru/work-guide, reports, children/[childId], children/[childId]/profile
+- **Remaining routes need the check:** media/upload, reports/generate, reports/pdf, reports/send, weekly-planning/*, focus-works
+
+**Week View Onboarding Guide (WeekViewGuide.tsx) — 20-STEP FULL PLATFORM TOUR:**
+- Expanded from 13 → 17 → 20 steps across multiple iterations
+- Draggable speech bubbles (pointer event handlers with drag offset state, resets per step)
+- Removed all "demonstration" callbacks — guide only highlights and explains (no YouTube open, no capture navigation, no full details modal)
+- Reordered: area-badge, notes, status-badge moved RIGHT AFTER capture-info, BEFORE tab highlights
+- Added student faces finale: centered "Ooohhh!" intro → home link (go to Students → Edit → Photo → Update) → label printing (Done!)
+- 20 steps: focus-block → work-name → quick-guide-btn → quick-guide-content → watch-video → capture → capture-info → **area-badge → notes → status-badge** → tab-progress → tab-gallery → tab-reports → nav-guru → nav-curriculum → nav-inbox → feedback-btn → **student-faces-intro → nav-home → nav-labels**
+- Callbacks: `onAdvance` fires going forward, `onReverse` fires going backward (proper undo)
+- Progress API bomb-proofed: never returns 500, table name fallback, independent try/catch per section
+- **TEMP flag:** `showWeekViewGuide = true` on line 88 of `[childId]/page.tsx` — remove before production
+
+**DashboardHeader Changes:**
+- 🖨️ print icon → 🏷️ label icon, title "Print" → "Print Labels"
+- Added `data-guide="nav-home"` to classroom name/logo link
+- Added `data-guide="nav-labels"` to label printing link
+
+**WorkWheelPicker Area Badge Update:**
+- Replaced plain text area icon in header with round colored circle matching AreaBadge component
+- Applied to main header (w-12 h-12), empty state (w-16 h-16), and position picker header (w-12 h-12)
+- Uses `backgroundColor: areaConfig.color` from AREA_CONFIG
+
+**data-guide attributes added across sessions:**
+- `[childId]/layout.tsx`: tab-week, tab-progress, tab-gallery, tab-reports (on tab Links)
+- `DashboardHeader.tsx`: nav-curriculum, nav-guru, nav-home, nav-labels
+- `InboxButton.tsx`: nav-inbox (line 172)
+- `FeedbackButton.tsx`: feedback-btn (line 306)
+
+**Handoff:** `docs/HANDOFF_WEEKVIEW_GUIDE_V2_FEB22.md`
+
+### Session Work (Feb 22, 2026 — Early Session)
+
+**Student Form Guided Onboarding — COMPLETE:**
+- Replaced broken dashboard FeatureWrapper auto-start (showed floating contextless modals targeting elements that don't exist on dashboard) with purpose-built `StudentFormGuide` component
+- New component: `components/montree/onboarding/StudentFormGuide.tsx` (~570 lines) — 13-step field-by-field guided tour with cartoon speech bubbles and green pulsating borders
+- 13 steps: name → age → gender → tenure → curriculum overview → P → S → M → L → C → **profile-notes** → add-another → save-all
+- Profile-notes step (step 11) dynamically references child's name: "This is the first step to building Joey's profile..."
+- Add-another step tells user they can add all students and save at once
+- Save-all step triggers on user clicking actual Save All button
+- Steps 1-4 auto-advance on input/change events, steps 5-13 are manual (Got it!/Next)
+- Removed FeatureWrapper from `app/montree/dashboard/page.tsx` (kept WelcomeModal + pulsating card)
+- Added `data-guide` attributes to 9 form elements on students page (only first student index)
+- Auto-opens bulk form for first-time users with 0 students
+- Passes `childName` prop from `bulkStudents[0]?.name` for dynamic profile-notes messaging
+- Homeschool parent role-aware: student→child, classroom→home throughout
+
+**Post-Save Dashboard Guide — COMPLETE:**
+- New component: `components/montree/onboarding/DashboardGuide.tsx` — speech bubble on dashboard after first save
+- After saving students → redirect to `/montree/dashboard?onboarded=1` → green pulsating border on first child card
+- Message uses child's actual name: "This is so exciting! This is your classroom! But it gets better... so much better. Let's tap on Joey to kick things off!"
+- `data-guide="first-child"` on first child card, `?onboarded=1` query param triggers guide (cleaned from URL after detection)
+- Dismiss button to close guide
+
+**Handoff:** `docs/HANDOFF_STUDENT_FORM_GUIDE_FEB22.md`
 
 ### Session Work (Feb 21, 2026)
 
@@ -1034,6 +1191,8 @@ Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple
 - `montree_media_children` — links group photos to multiple children
 - `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
 - `montree_child_extras` — explicitly-added extra works per child (UNIQUE child_id+work_name)
+- `montree_community_works` — public community works library (title, area, materials, photos, videos, PDFs, AI guide, moderation status, stats)
+- `montree_community_backups` — daily JSON backup records (date, work_count, storage_path)
 - `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
 - `montree_rate_limit_logs` — DB-backed rate limiting (survives container restarts)
 - `story_users`, `story_admin_users` — Story system auth (bcrypt hashes)
@@ -1195,6 +1354,16 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 - Clean up stale GitHub SSH keys ("Cowork VM" Feb 11)
 - Delete old Mac repos: `whale-clean/`, `whale-old/`, `whale-class-mirror.git/`, `~/Desktop/whale-backup-feb15/`
 
+### Cross-Pollination Security Fix (Feb 22, 2026) — CRITICAL
+
+**Problem:** API routes accepting `child_id` didn't verify the child belonged to the requesting user's school. Any authenticated teacher could access ANY child's data across ALL schools.
+
+**Fix:** Created `lib/montree/verify-child-access.ts` with `verifyChildBelongsToSchool(childId, schoolId)`. Added to 13 routes. Children API now always scopes to authenticated user's school.
+
+**IMPORTANT PATTERN FOR ALL NEW API ROUTES:** Every route that accepts a `child_id` parameter MUST call `verifyChildBelongsToSchool()` after auth. No exceptions.
+
+**Routes still needing the check:** `media/upload`, `reports/generate`, `reports/pdf`, `reports/send`, `weekly-planning/*`, `focus-works`
+
 ### Known Security Debt (Explicitly Deferred in Phase 9)
 - Parent invite codes stored as plaintext — low priority
 - CSP `script-src 'unsafe-inline'` + `style-src 'unsafe-inline'` — required by Next.js, nonce-based approach would be more secure
@@ -1259,7 +1428,10 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_GURU_COACH_ONBOARDING_FEB21.md` | **CURRENT** — Guru Daily Coach + Onboarding Phase 3-5 wiring + folder cleanup |
+| `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | **CURRENT** — Community Works Library (14 files, 2-pass audit, deploy steps) |
+| `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md` | Week view guide + CRITICAL cross-pollination security fix |
+| `docs/HANDOFF_STUDENT_FORM_GUIDE_FEB22.md` | Student form guided onboarding (13-step speech bubble tour) |
+| `docs/HANDOFF_GURU_COACH_ONBOARDING_FEB21.md` | Guru Daily Coach + Onboarding Phase 3-5 wiring + folder cleanup |
 | `docs/HANDOFF_HOME_AESTHETIC_FEB20.md` | Botanical theme for home parents + 3D Montessori folder setup |
 | `docs/HANDOFF_LOGIN_CODE_FIX_FEB17.md` | Complete login code fix (setup routes + case-insensitive auth) |
 | `docs/HANDOFF_DOCKERFILE_BUILD_FIX_FEB15.md` | Docker ARG fix for Next.js build-time env vars |

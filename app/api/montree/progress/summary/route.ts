@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -15,9 +16,14 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
-    
+
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+    }
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     // First get the child's classroom_id

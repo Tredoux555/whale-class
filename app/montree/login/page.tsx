@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 export default function TeacherLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,8 +38,10 @@ export default function TeacherLoginPage() {
           onboarded: data.onboarded || false,
         }));
 
-        // Redirect based on state - skip setup, go straight to work!
-        if (!data.onboarded) {
+        // Redirect: use return URL if provided, otherwise default flow
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else if (!data.onboarded) {
           router.push('/montree/onboarding');
         } else {
           router.push('/montree/dashboard');

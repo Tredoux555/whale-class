@@ -153,14 +153,48 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // SECURITY: Always scope to the authenticated user's school.
+    // First, get all classrooms belonging to the user's school.
+    // If classroom_id is provided, use it directly (but verify it belongs to their school).
+    // If not, get all classrooms for their school and filter by those.
+
+    let allowedClassroomIds: string[] = [];
+
+    if (classroomId) {
+      // Verify this classroom belongs to the user's school
+      const { data: classroom } = await supabase
+        .from('montree_classrooms')
+        .select('id')
+        .eq('id', classroomId)
+        .eq('school_id', auth.schoolId)
+        .single();
+
+      if (!classroom) {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+      }
+      allowedClassroomIds = [classroomId];
+    } else if (auth.classroomId) {
+      // Teacher has a specific classroom — scope to that
+      allowedClassroomIds = [auth.classroomId];
+    } else {
+      // Principal or no classroom set — get ALL classrooms for their school
+      const { data: schoolClassrooms } = await supabase
+        .from('montree_classrooms')
+        .select('id')
+        .eq('school_id', auth.schoolId);
+
+      allowedClassroomIds = (schoolClassrooms || []).map(c => c.id);
+    }
+
+    if (allowedClassroomIds.length === 0) {
+      return NextResponse.json({ children: [] });
+    }
+
     let query = supabase
       .from('montree_children')
       .select('id, name, age, photo_url, notes, classroom_id, enrolled_at')
+      .in('classroom_id', allowedClassroomIds)
       .order('name');
-
-    if (classroomId) {
-      query = query.eq('classroom_id', classroomId);
-    }
 
     const { data, error } = await query;
 

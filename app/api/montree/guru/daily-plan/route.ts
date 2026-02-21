@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import Anthropic from '@anthropic-ai/sdk';
 
 // Use Haiku for daily plans (fast + cheap)
@@ -182,6 +183,11 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
 
     // Check if we have a cached plan for today
     const today = new Date().toISOString().split('T')[0];

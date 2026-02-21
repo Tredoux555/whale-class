@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
+import StudentFormGuide from '@/components/montree/onboarding/StudentFormGuide';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 
@@ -286,6 +287,15 @@ export default function StudentsPage() {
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // Guide state — only show once per device
+  const [guideSkipped, setGuideSkipped] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('montree_guide_studentform_done');
+    }
+    return false;
+  });
+  const isFirstTime = session && !session.teacher.has_completed_tutorial && students.length === 0;
+
   useEffect(() => {
     const sess = getSession();
     if (!sess) {
@@ -296,6 +306,14 @@ export default function StudentsPage() {
     loadStudents(sess.classroom?.id);
     loadCurriculum(sess.classroom?.id);
   }, [router]);
+
+  // Auto-open bulk form for first-time users with 0 students (only once per device)
+  useEffect(() => {
+    if (session && !session.teacher.has_completed_tutorial && students.length === 0 && !loading && !showForm && !localStorage.getItem('montree_guide_studentform_done')) {
+      openAddForm();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, students.length, loading]);
 
   const loadStudents = async (classroomId?: string) => {
     if (!classroomId) return;
@@ -476,7 +494,8 @@ export default function StudentsPage() {
       toast.success(`${validStudents.length} ${addedLbl} added!`);
 
       // Mark tutorial complete after bulk add
-      if (session?.teacher && !session.teacher.has_completed_tutorial) {
+      const wasFirstTime = session?.teacher && !session.teacher.has_completed_tutorial;
+      if (wasFirstTime) {
         try {
           await fetch('/api/montree/tutorial/complete', { method: 'POST' });
           // Update session
@@ -493,6 +512,11 @@ export default function StudentsPage() {
 
       closeForm();
       loadStudents(session.classroom?.id);
+
+      // Redirect first-time users to dashboard after saving
+      if (wasFirstTime) {
+        setTimeout(() => router.push('/montree/dashboard?onboarded=1'), 800);
+      }
     } catch (err) {
       toast.dismiss(toastId);
       toast.error(err instanceof Error ? err.message : (isHomeschoolParent(session) ? 'Failed to save children' : 'Failed to save students'));
@@ -875,6 +899,7 @@ export default function StudentsPage() {
                           onChange={(e) => updateBulkStudent(index, 'name', e.target.value)}
                           placeholder={isHomeschoolParent(session) ? "Child's name" : "Student's name"}
                           className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm"
+                          {...(index === 0 ? { 'data-guide': 'name' } : {})}
                         />
                       </div>
 
@@ -885,6 +910,7 @@ export default function StudentsPage() {
                           value={student.age}
                           onChange={(e) => updateBulkStudent(index, 'age', parseFloat(e.target.value))}
                           className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                          {...(index === 0 ? { 'data-guide': 'age' } : {})}
                         >
                           {AGE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -899,6 +925,7 @@ export default function StudentsPage() {
                           value={student.gender}
                           onChange={(e) => updateBulkStudent(index, 'gender', e.target.value)}
                           className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                          {...(index === 0 ? { 'data-guide': 'gender' } : {})}
                         >
                           {GENDER_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -914,6 +941,7 @@ export default function StudentsPage() {
                         value={student.tenure}
                         onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 focus:border-teal-400 outline-none text-sm"
+                        {...(index === 0 ? { 'data-guide': 'tenure' } : {})}
                       >
                         {TENURE_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -922,7 +950,7 @@ export default function StudentsPage() {
                     </div>
 
                     {/* Row 3: Curriculum */}
-                    <div className="mb-4">
+                    <div className="mb-4" {...(index === 0 ? { 'data-guide': 'curriculum-section' } : {})}>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         Current Work in Each Area
                       </label>
@@ -931,26 +959,27 @@ export default function StudentsPage() {
                       </p>
                       <div className="space-y-2">
                         {CURRICULUM_AREAS.map((area) => (
-                          <CurriculumPicker
-                            key={area.id}
-                            areaId={area.id}
-                            areaName={area.name}
-                            icon={area.icon}
-                            color={area.color}
-                            works={curriculumWorks[area.id] || []}
-                            selectedWorkId={student.progress[area.id]?.workId || null}
-                            onSelect={(workId, workName) =>
-                              updateBulkProgress(index, area.id, workId, workName)
-                            }
-                            classroomId={session.classroom?.id || ''}
-                            onWorkAdded={() => loadCurriculum(session.classroom?.id)}
-                          />
+                          <div key={area.id} {...(index === 0 ? { 'data-guide': `area-${area.id}` } : {})}>
+                            <CurriculumPicker
+                              areaId={area.id}
+                              areaName={area.name}
+                              icon={area.icon}
+                              color={area.color}
+                              works={curriculumWorks[area.id] || []}
+                              selectedWorkId={student.progress[area.id]?.workId || null}
+                              onSelect={(workId, workName) =>
+                                updateBulkProgress(index, area.id, workId, workName)
+                              }
+                              classroomId={session.classroom?.id || ''}
+                              onWorkAdded={() => loadCurriculum(session.classroom?.id)}
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
 
                     {/* Row 4: Notes */}
-                    <div>
+                    <div {...(index === 0 ? { 'data-guide': 'profile-notes' } : {})}>
                       <label className="block text-sm font-medium text-slate-700 mb-1">
                         Profile Notes
                       </label>
@@ -974,6 +1003,7 @@ export default function StudentsPage() {
                 <div className="px-6 py-4 border-t border-slate-100">
                   <button
                     onClick={addAnotherStudent}
+                    data-guide="add-another"
                     className="w-full py-2.5 px-4 bg-teal-50 border-2 border-dashed border-teal-200 text-teal-700 rounded-lg font-medium hover:bg-teal-100 transition-colors text-sm"
                   >
                     + Add Another {isHomeschoolParent(session) ? 'Child' : 'Student'}
@@ -991,6 +1021,7 @@ export default function StudentsPage() {
                 </button>
                 <button
                   onClick={handleBulkSave}
+                  data-guide="save-all"
                   disabled={bulkStudents.filter(s => s.name.trim()).length === 0 || saving}
                   className="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium disabled:opacity-50 hover:shadow-lg transition-all"
                 >
@@ -1000,6 +1031,17 @@ export default function StudentsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Guided onboarding tour for first-time users */}
+      {showForm && bulkMode && isFirstTime && !guideSkipped && (
+        <StudentFormGuide
+          isVisible={true}
+          onComplete={() => { localStorage.setItem('montree_guide_studentform_done', '1'); setGuideSkipped(true); }}
+          onSkip={() => { localStorage.setItem('montree_guide_studentform_done', '1'); setGuideSkipped(true); }}
+          isHomeschoolParent={!!session && isHomeschoolParent(session)}
+          childName={bulkStudents[0]?.name || ''}
+        />
       )}
     </div>
   );

@@ -303,7 +303,7 @@ export default function FeedbackButton({
   }
 
   return (
-    <div ref={buttonRef} className="fixed bottom-6 right-6 z-50" data-feedback-button>
+    <div ref={buttonRef} className="fixed bottom-6 right-6 z-50" data-feedback-button data-guide="feedback-btn">
       {/* Expanded Form */}
       {isOpen && (
         <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">

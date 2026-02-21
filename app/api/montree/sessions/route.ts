@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,24 +13,29 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { 
-      child_id, 
-      work_id, 
-      work_name, 
+    const {
+      child_id,
+      work_id,
+      work_name,
       area,
-      session_type, 
-      notes, 
-      media_urls, 
+      session_type,
+      notes,
+      media_urls,
       duration_minutes,
       teacher_id,
-      status 
+      status
     } = body;
-    
+
     if (!child_id) {
       return NextResponse.json(
         { error: 'child_id required' },
         { status: 400 }
       );
+    }
+
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
     
     if (!work_id && !work_name) {
@@ -95,8 +101,13 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     const supabase = getSupabase();
+
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
     
     let query = supabase
       .from('montree_work_sessions')
