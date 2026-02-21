@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         presentation_steps: presentationSteps,
         variations: (Array.isArray(work.variations) ? work.variations : []).map((v: any) => ({ description: String(v) })),
         extensions: (Array.isArray(work.extensions) ? work.extensions : []).map((e: any) => ({ description: String(e) })),
+        curriculum_sequence: work.sequence || null,
         standard_work_id: work.work_key,
         is_variation: false,
         contributor_name: 'Montree Standard Curriculum',

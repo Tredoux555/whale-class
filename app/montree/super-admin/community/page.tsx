@@ -124,6 +124,26 @@ export default function CommunityAdminPage() {
     setTimeout(() => setMessage(''), 15000);
   };
 
+  const handleMigrateSequence = async () => {
+    if (!confirm('Add curriculum_sequence column and populate sequence numbers for all seeded works?')) return;
+    setSeeding(true);
+    try {
+      const res = await fetch('/api/montree/community/migrate-sequence', {
+        method: 'POST',
+        headers: { 'x-admin-password': password },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage(`Sequence migration done! ${data.sequences_updated} works updated.`);
+      } else {
+        const detail = data.detail ? ` — ${data.detail}` : '';
+        setMessage(`${data.error || 'Migration failed'}${detail}`);
+      }
+    } catch (e: any) { setMessage(`Migration failed: ${e?.message || e}`); }
+    setSeeding(false);
+    setTimeout(() => setMessage(''), 15000);
+  };
+
   const handleDelete = async (workId: string) => {
     if (!confirm('Delete this work permanently? This cannot be undone.')) return;
     try {
@@ -172,6 +192,9 @@ export default function CommunityAdminPage() {
           <div className="flex gap-2">
             <button onClick={handleSeed} disabled={seeding} className="px-3 py-1.5 bg-amber-600 rounded-lg text-sm hover:bg-amber-700 disabled:opacity-50">
               {seeding ? 'Seeding...' : 'Seed 329 Works'}
+            </button>
+            <button onClick={handleMigrateSequence} disabled={seeding} className="px-3 py-1.5 bg-blue-600 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
+              Fix Sequence
             </button>
             <button onClick={handleBackup} disabled={backingUp} className="px-3 py-1.5 bg-emerald-600 rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50">
               {backingUp ? 'Backing up...' : 'Create Backup'}

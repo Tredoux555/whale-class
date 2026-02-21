@@ -35,7 +35,7 @@ export default function LibraryPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [age, setAge] = useState('all');
-  const [sort, setSort] = useState('newest');
+  const [sort, setSort] = useState('curriculum');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -178,6 +178,7 @@ export default function LibraryPage() {
             onChange={(e) => { setSort(e.target.value); setPage(1); }}
             className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white"
           >
+            <option value="curriculum">Curriculum Order</option>
             <option value="newest">Newest First</option>
             <option value="downloads">Most Downloaded</option>
             <option value="injected">Most Added to Classrooms</option>
