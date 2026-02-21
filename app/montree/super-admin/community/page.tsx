@@ -115,11 +115,13 @@ export default function CommunityAdminPage() {
         setMessage(`Seeded ${data.inserted} works (${data.skipped} already existed)`);
         fetchWorks();
       } else {
-        setMessage(data.error || 'Seed failed');
+        const detail = data.detail ? ` — ${data.detail}` : '';
+        const stack = data.stack ? `\n${data.stack.join('\n')}` : '';
+        setMessage(`${data.error || 'Seed failed'}${detail}${stack}`);
       }
-    } catch { setMessage('Seed failed'); }
+    } catch (e: any) { setMessage(`Seed failed: ${e?.message || e}`); }
     setSeeding(false);
-    setTimeout(() => setMessage(''), 5000);
+    setTimeout(() => setMessage(''), 15000);
   };
 
   const handleDelete = async (workId: string) => {
