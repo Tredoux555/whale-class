@@ -18,13 +18,36 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // Load all curriculum works from static JSON
-    const curriculumWorks = loadAllCurriculumWorks();
+    let curriculumWorks;
+    try {
+      curriculumWorks = loadAllCurriculumWorks();
+    } catch (loadErr: any) {
+      return NextResponse.json({
+        error: 'Failed to load curriculum works',
+        detail: loadErr?.message || String(loadErr),
+        stack: loadErr?.stack?.split('\n').slice(0, 5),
+      }, { status: 500 });
+    }
+
+    if (!curriculumWorks || curriculumWorks.length === 0) {
+      return NextResponse.json({
+        error: 'No curriculum works loaded',
+        count: curriculumWorks?.length ?? 'null',
+      }, { status: 500 });
+    }
 
     // Check which standard works already exist
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchErr } = await supabase
       .from('montree_community_works')
       .select('standard_work_id')
       .not('standard_work_id', 'is', null);
+
+    if (fetchErr) {
+      return NextResponse.json({
+        error: 'Failed to check existing works',
+        detail: fetchErr.message,
+      }, { status: 500 });
+    }
 
     const existingIds = new Set((existing || []).map(e => e.standard_work_id));
 
@@ -119,8 +142,12 @@ export async function POST(request: NextRequest) {
       skipped,
       errors: errors.length > 0 ? errors : undefined,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Seed error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Seed failed',
+      detail: error?.message || String(error),
+      stack: error?.stack?.split('\n').slice(0, 5),
+    }, { status: 500 });
   }
 }
