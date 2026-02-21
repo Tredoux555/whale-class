@@ -30,7 +30,7 @@ RUN echo "Build timestamp: $REBUILD_TS"
 COPY package*.json ./
 
 # Install npm dependencies
-RUN npm install --legacy-peer-deps
+RUN rm -f package-lock.json && npm install
 
 # Cache bust - change this to force rebuild
 ARG CACHEBUST=20260216-CURRICULUM-V3
