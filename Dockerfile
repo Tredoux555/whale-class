@@ -30,7 +30,7 @@ RUN echo "Build timestamp: $REBUILD_TS"
 COPY package*.json ./
 
 # Install npm dependencies
-RUN rm -f package-lock.json && npm install
+RUN rm -f package-lock.json && npm install --force
 
 # Cache bust - change this to force rebuild
 ARG CACHEBUST=20260216-CURRICULUM-V3
