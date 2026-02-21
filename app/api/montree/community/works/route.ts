@@ -4,6 +4,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+
+// Build sequence map once at module load (work_key -> sequence number)
+let _sequenceMap: Map<string, number> | null = null;
+function getSequenceMap(): Map<string, number> {
+  if (!_sequenceMap) {
+    _sequenceMap = new Map();
+    try {
+      const works = loadAllCurriculumWorks();
+      works.forEach(w => _sequenceMap!.set(w.work_key, w.sequence));
+    } catch { /* fallback: no sequence data */ }
+  }
+  return _sequenceMap;
+}
 
 // GET - Public browse with filters, search, pagination
 export async function GET(request: NextRequest) {
@@ -76,13 +90,49 @@ export async function GET(request: NextRequest) {
         break;
       case 'curriculum':
       default:
-        // Curriculum sequence (nulls last for community-contributed works)
-        query = query.order('curriculum_sequence', { ascending: true, nullsFirst: false })
-                     .order('created_at', { ascending: false });
+        // For curriculum sort, we fetch all matching works and sort in memory
+        // using the authoritative sequence from the static JSON curriculum data
+        query = query.order('created_at', { ascending: true });
         break;
     }
 
-    // Pagination
+    // For curriculum sort: fetch ALL matching, sort in memory, then paginate
+    // For other sorts: use DB pagination directly
+    if (sort === 'curriculum') {
+      // Remove range — fetch all matches
+      const { data: allData, count, error: fetchAllErr } = await query;
+      if (fetchAllErr) {
+        console.error('Community works fetch error:', fetchAllErr);
+        return NextResponse.json({ error: 'Failed to fetch works' }, { status: 500 });
+      }
+
+      const seqMap = getSequenceMap();
+      const sorted = (allData || []).sort((a: any, b: any) => {
+        const seqA = seqMap.get(a.standard_work_id) ?? 999999;
+        const seqB = seqMap.get(b.standard_work_id) ?? 999999;
+        if (seqA !== seqB) return seqA - seqB;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      const paginated = sorted.slice(offset, offset + limit);
+
+      // View count increment (fire and forget)
+      if (paginated.length > 0) {
+        for (const w of paginated) {
+          supabase.from('montree_community_works').update({ view_count: (w.view_count || 0) + 1 }).eq('id', w.id).then(() => {});
+        }
+      }
+
+      return NextResponse.json({
+        works: paginated,
+        total: count || sorted.length,
+        page,
+        limit,
+        totalPages: Math.ceil((count || sorted.length) / limit),
+      });
+    }
+
+    // Non-curriculum sorts: use DB pagination
     query = query.range(offset, offset + limit - 1);
 
     const { data, count, error } = await query;
