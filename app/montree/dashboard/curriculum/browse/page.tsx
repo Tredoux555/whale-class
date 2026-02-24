@@ -71,6 +71,15 @@ const AGE_LABELS: Record<string, string> = {
   primary_year3: 'Year 3 (5-6)',
 };
 
+// Difficulty badges for recommended view
+function getDifficultyBadge(work: CurriculumWork, masteredIds: Set<string>, allWorksMap: Record<string, string>): { label: string; color: string } {
+  const prereqsMet = work.prerequisites.every(p => masteredIds.has(p));
+  const hasNoPrereqs = work.prerequisites.length === 0;
+  if (hasNoPrereqs) return { label: 'Start Here', color: 'bg-emerald-100 text-emerald-700' };
+  if (prereqsMet) return { label: 'Building On', color: 'bg-amber-100 text-amber-700' };
+  return { label: 'Advanced', color: 'bg-violet-100 text-violet-700' };
+}
+
 export default function CurriculumBrowsePage() {
   const router = useRouter();
   const [isParent, setIsParent] = useState(false);
@@ -79,11 +88,43 @@ export default function CurriculumBrowsePage() {
   const [ageFilter, setAgeFilter] = useState('all');
   const [expandedWork, setExpandedWork] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [showRecommended, setShowRecommended] = useState(false);
+  const [childProgress, setChildProgress] = useState<Array<{ work_name: string; status: string }>>([]);
+  const [childName, setChildName] = useState('');
+  const [childAge, setChildAge] = useState(0);
 
   useEffect(() => {
     const sess = getSession();
     if (!sess) { router.push('/montree/login'); return; }
-    setIsParent(isHomeschoolParent(sess));
+    const parent = isHomeschoolParent(sess);
+    setIsParent(parent);
+
+    // For home parents, default to recommended view and fetch child progress
+    if (parent && sess.classroom?.id) {
+      setShowRecommended(true);
+      // Fetch first child's progress for recommendations
+      fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`)
+        .then(r => r.json())
+        .then(data => {
+          const kids = data.children || [];
+          if (kids.length > 0) {
+            const firstChild = kids[0];
+            setChildName(firstChild.name?.split(' ')[0] || '');
+            setChildAge(firstChild.age || 4);
+            // Fetch progress
+            fetch(`/api/montree/progress?child_id=${firstChild.id}`)
+              .then(r => r.json())
+              .then(pData => {
+                if (pData.progress) {
+                  setChildProgress(pData.progress);
+                }
+              })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
+
     // Auto-expand first category
     const firstArea = AREA_DATA[AREA_ORDER[0]];
     if (firstArea?.categories?.[0]) {
@@ -95,13 +136,22 @@ export default function CurriculumBrowsePage() {
   const areaData = AREA_DATA[selectedArea];
   const areaConfig = AREA_CONFIG[selectedArea];
 
-  // Filter works based on search and age
+  // Build sets for recommended filtering
+  const masteredWorkNames = useMemo(() => new Set(
+    childProgress.filter(p => p.status === 'mastered').map(p => p.work_name)
+  ), [childProgress]);
+
+  const inProgressWorkNames = useMemo(() => new Set(
+    childProgress.filter(p => p.status !== 'mastered').map(p => p.work_name)
+  ), [childProgress]);
+
+  // Filter works based on search, age, and recommended mode
   const filteredCategories = useMemo(() => {
     if (!areaData?.categories) return [];
 
     return areaData.categories
       .map(category => {
-        const filteredWorks = category.works.filter(work => {
+        let filteredWorks = category.works.filter(work => {
           // Age filter
           if (ageFilter !== 'all' && work.ageRange !== ageFilter) return false;
           // Search filter
@@ -115,10 +165,32 @@ export default function CurriculumBrowsePage() {
           }
           return true;
         });
+
+        // Recommended filter: exclude mastered, sort by prerequisites met
+        if (showRecommended && childProgress.length > 0) {
+          filteredWorks = filteredWorks.filter(work => !masteredWorkNames.has(work.name));
+          // Also filter by child's age range
+          if (childAge > 0) {
+            const ageRange = childAge <= 3 ? 'primary_year1' : childAge <= 4 ? 'primary_year2' : 'primary_year3';
+            filteredWorks = filteredWorks.filter(work =>
+              work.ageRange === ageRange || work.ageRange === 'primary_year1'
+            );
+          }
+          // Sort: in-progress first, then prerequisites met, then others
+          filteredWorks.sort((a, b) => {
+            const aInProgress = inProgressWorkNames.has(a.name) ? 0 : 1;
+            const bInProgress = inProgressWorkNames.has(b.name) ? 0 : 1;
+            if (aInProgress !== bInProgress) return aInProgress - bInProgress;
+            const aPrereqsMet = a.prerequisites.every(p => masteredWorkNames.has(p)) ? 0 : 1;
+            const bPrereqsMet = b.prerequisites.every(p => masteredWorkNames.has(p)) ? 0 : 1;
+            return aPrereqsMet - bPrereqsMet;
+          });
+        }
+
         return { ...category, works: filteredWorks };
       })
       .filter(category => category.works.length > 0);
-  }, [areaData, searchQuery, ageFilter]);
+  }, [areaData, searchQuery, ageFilter, showRecommended, childProgress, masteredWorkNames, inProgressWorkNames, childAge]);
 
   // Count total works across all areas
   const totalWorks = useMemo(() => {
@@ -265,12 +337,31 @@ export default function CurriculumBrowsePage() {
             ))}
           </select>
         </div>
+        {/* Recommended toggle — home parents only */}
+        {isParent && (
+          <button
+            onClick={() => setShowRecommended(!showRecommended)}
+            className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              showRecommended
+                ? 'bg-[#0D3330] text-white'
+                : 'bg-[#F5E6D3] text-[#0D3330] hover:bg-[#EDD5C0]'
+            }`}
+          >
+            <span>{showRecommended ? '⭐' : '☆'}</span>
+            {showRecommended
+              ? `Recommended for ${childName || 'Your Child'}`
+              : 'Show All Works'
+            }
+          </button>
+        )}
+
         {/* Results count */}
         <p className="text-xs text-slate-500 mt-1.5 pl-1">
           {filteredWorkCount === areaWorkCount
             ? `${areaWorkCount} works in ${areaConfig?.name}`
             : `${filteredWorkCount} of ${areaWorkCount} works`
           }
+          {showRecommended && isParent && ' (excluding mastered)'}
         </p>
       </div>
 
@@ -324,6 +415,7 @@ export default function CurriculumBrowsePage() {
                       areaColor={areaConfig?.color || '#666'}
                       allWorksMap={allWorksMap}
                       isParent={isParent}
+                      difficultyBadge={showRecommended && isParent ? getDifficultyBadge(work, masteredWorkNames, allWorksMap) : undefined}
                     />
                   ))}
                 </div>
@@ -347,9 +439,10 @@ interface WorkCardProps {
   areaColor: string;
   allWorksMap: Record<string, string>;
   isParent: boolean;
+  difficultyBadge?: { label: string; color: string };
 }
 
-function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, isParent }: WorkCardProps) {
+function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, isParent, difficultyBadge }: WorkCardProps) {
   const ageLabel = AGE_LABELS[work.ageRange] || work.ageRange;
 
   return (
@@ -369,7 +462,12 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
           <h4 className="text-sm font-medium text-slate-800 truncate">{work.name}</h4>
           <p className="text-xs text-slate-500 truncate">{work.description}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
+          {difficultyBadge && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${difficultyBadge.color}`}>
+              {difficultyBadge.label}
+            </span>
+          )}
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
             {ageLabel.includes('(') ? ageLabel.split(' (')[0] : ageLabel}
           </span>

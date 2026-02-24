@@ -10,6 +10,9 @@ import { HOME_THEME } from '@/lib/montree/home-theme';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
 import GuruDailyBriefing from '@/components/montree/guru/GuruDailyBriefing';
+import ConcernCardsGrid from '@/components/montree/guru/ConcernCardsGrid';
+import QuickGuruFAB from '@/components/montree/guru/QuickGuruFAB';
+import WeeklyReview from '@/components/montree/guru/WeeklyReview';
 import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
 
 
@@ -27,6 +30,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showDashboardGuide, setShowDashboardGuide] = useState(false);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   useEffect(() => {
     const sess = getSession();
@@ -53,6 +57,10 @@ export default function DashboardPage() {
       .then(data => {
         const kids = data.children || [];
         setChildren(kids);
+        // Auto-select first child for home parents
+        if (kids.length > 0 && !selectedChildId) {
+          setSelectedChildId(kids[0].id);
+        }
         setLoading(false);
         // Show dashboard guide once — on first onboard or first visit with children
         const justOnboarded = searchParams.get('onboarded') === '1';
@@ -84,24 +92,92 @@ export default function DashboardPage() {
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50'}`}>
       <Toaster position="top-center" />
 
-      {/* Student/child count subtitle */}
-      <div className={`${isParent ? `${HOME_THEME.sectionBgSubtle} border-b ${HOME_THEME.border} text-[#0D3330]/70` : 'bg-emerald-50 border-b border-emerald-100 text-emerald-700'} px-4 py-2 text-center text-sm font-medium`}>
-        {children.length} {isParent ? 'children' : 'students'}
-      </div>
-
-      {/* Guru Daily Briefing — homeschool parents only */}
-      {isParent && children.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-6">
-          {children.map((child) => (
-            <div key={child.id} className="mb-4">
-              <GuruDailyBriefing childId={child.id} childName={child.name.split(' ')[0]} />
-            </div>
-          ))}
+      {/* Student/child count subtitle — teachers only */}
+      {!isParent && (
+        <div className="bg-emerald-50 border-b border-emerald-100 text-emerald-700 px-4 py-2 text-center text-sm font-medium">
+          {children.length} students
         </div>
       )}
 
-      {/* Student Grid */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* HOME PARENT "TODAY" VIEW — concern-first dashboard */}
+      {isParent && children.length > 0 && (() => {
+        const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+        const childName = selectedChild.name.split(' ')[0];
+        return (
+          <div className="max-w-xl mx-auto px-4 pt-4 pb-4">
+            {/* Child selector — only show if multiple children */}
+            {children.length > 1 && (
+              <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                {children.map((child) => (
+                  <button
+                    key={child.id}
+                    onClick={() => setSelectedChildId(child.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all shrink-0 ${
+                      child.id === selectedChild.id
+                        ? `${HOME_THEME.primaryBtn} shadow-md`
+                        : `${HOME_THEME.cardBg} border ${HOME_THEME.border} ${HOME_THEME.headingText} hover:border-[#0D3330]/25`
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full ${child.id === selectedChild.id ? 'bg-white/20' : 'bg-[#0D3330]/10'} flex items-center justify-center text-xs font-bold overflow-hidden`}>
+                      {child.photo_url ? (
+                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        child.name.charAt(0)
+                      )}
+                    </div>
+                    {child.name.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Morning Briefing — auto-fetch daily plan */}
+            <div className="mb-4">
+              <GuruDailyBriefing childId={selectedChild.id} childName={childName} />
+            </div>
+
+            {/* Weekly Review — collapsible banner */}
+            <div className="mb-4">
+              <WeeklyReview childId={selectedChild.id} childName={childName} />
+            </div>
+
+            {/* Concern Cards Grid — "I'm worried about..." */}
+            <div className="mb-6">
+              <ConcernCardsGrid childId={selectedChild.id} childName={childName} />
+            </div>
+
+            {/* Quick link to child's week view */}
+            <div className="mb-4">
+              <a
+                href={`/montree/dashboard/${selectedChild.id}`}
+                className={`block ${HOME_THEME.cardBg} border ${HOME_THEME.border} rounded-2xl p-4 text-center transition-all hover:shadow-md active:scale-[0.98]`}
+              >
+                <span className="text-2xl mb-1 block">📋</span>
+                <span className={`text-sm font-semibold ${HOME_THEME.headingText}`}>
+                  View {childName}&apos;s Full Week
+                </span>
+                <span className={`text-xs ${HOME_THEME.subtleText} block mt-0.5`}>
+                  See works, progress, and gallery
+                </span>
+              </a>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Quick Guru FAB — home parents only */}
+      {isParent && children.length > 0 && (() => {
+        const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+        return (
+          <QuickGuruFAB
+            childId={selectedChild.id}
+            childName={selectedChild.name.split(' ')[0]}
+          />
+        );
+      })()}
+
+      {/* Student Grid — teachers always see this; home parents only see empty state (add first child) */}
+      <main className={`max-w-6xl mx-auto px-4 py-8 ${isParent && children.length > 0 ? 'hidden' : ''}`}>
         {children.length === 0 ? (
           <Link
             href="/montree/dashboard/students"
