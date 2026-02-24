@@ -74,14 +74,14 @@ DEVELOPMENTAL CONTEXT:
 ${concern.developmentalContext}
 
 RELATED MONTESSORI WORKS FOR THIS CONCERN:
-${concern.relatedWorks.map(w => `- ${w.name} (${w.area}) — ${w.whyItHelps}`).join('\n')}
+${concern.relatedWorks.map(w => `- ${w.name} (${w.area}) — ${w.why}`).join('\n')}
 
 CHILD'S PROGRESS ON RELATED WORKS:
 ${mastered.length > 0 ? `Mastered: ${mastered.map(m => m.work_name).join(', ')}` : 'No related works mastered yet.'}
 ${practicing.length > 0 ? `Currently working on: ${practicing.map(p => p.work_name).join(', ')}` : 'No related works in progress yet.'}
 
 SUGGESTED HOME ACTIVITIES (use as inspiration, personalize for ${childName}):
-${concern.homeActivities.map(a => `- ${a.activity}: ${a.materials.join(', ')} — ${a.why}`).join('\n')}
+${concern.homeActivities.map(a => `- ${a.activity}: ${a.materials} — ${a.why}`).join('\n')}
 
 RED FLAGS (when to recommend professional help):
 ${concern.redFlags.join('\n')}
