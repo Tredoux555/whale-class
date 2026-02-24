@@ -12,11 +12,24 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES (Feb 24, 2026)
+## 🔥 NEXT SESSION PRIORITIES (Feb 25, 2026)
 
-### Seed Community Library (Priority #0 — IMMEDIATE)
+### Guru Improvements — 8 Phases (Priority #0 — READY TO BUILD)
 
-Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
+Full plan designed and approved. 8 improvements to the Guru AI system for homeschool parents.
+
+**Build order:**
+1. Conversation Memory — multi-turn messages from past 5 interactions per child
+2. FAQ Cache — 10 static pre-written Q&As, accordion component
+3. Contextual Page Tips — GuruContextBubble with per-page floating tips
+4. End-of-Day Nudge — Haiku summary after progress logged
+5. Proactive Suggestions — detect stale works (2+ weeks), surface GuruSuggestionCard
+6. Photo-Aware Observations — Sonnet vision on child photos
+7. Knowledge Base Expansion — add more books/sources (user has 3 books to provide)
+8. Voice Notes — react-media-recorder + OpenAI Whisper
+
+**Plan:** `.claude/plans/guru-improvements-v1.md`
+**Handoff:** `docs/HANDOFF_GURU_IMPROVEMENTS_FEB25.md`
 
 ### Deploy Cross-Pollination Security Fix (Priority #1 — URGENT)
 
@@ -27,31 +40,19 @@ Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for t
 **Handoff:** `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md`
 **Helper:** `lib/montree/verify-child-access.ts`
 
-### Test All Onboarding Guides on Mobile (Priority #2)
+### Seed Community Library (Priority #2)
+
+Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
+
+### Test All Onboarding Guides on Mobile (Priority #3)
 
 **Status:** ALL guides built and localStorage-persisted. Need end-to-end mobile testing after deploy.
-- WeekViewGuide (19 steps) — teacher child week view
-- StudentFormGuide (13 steps) — teacher student add form
-- PrincipalSetupGuide (8 steps) — principal school creation wizard
-- PrincipalAdminGuide (4 steps) — principal admin dashboard walkthrough (multi-page, cross-navigation)
-- WelcomeModal, DashboardGuide — dashboard popups (localStorage-gated)
+- WeekViewGuide (19 steps), StudentFormGuide (13 steps), PrincipalSetupGuide (8 steps), PrincipalAdminGuide (4 steps), WelcomeModal, DashboardGuide
 - **Handoff:** `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md`
 
-### Home System — Disconnected from Signup (Priority #3 — ON HOLD)
+### Home System — Disconnected from Signup (Priority #4 — ON HOLD)
 
-Homeschool parent option REMOVED from signup (`/montree/try`) and login page text simplified. Backend code preserved — can be re-enabled later. Full homeschool polishing deferred until product-market fit confirmed for schools.
-
-### Remaining Guru Integration (Priority #4)
-
-**Still to build:**
-1. Voice Notes system — `react-media-recorder` + OpenAI Whisper transcription
-2. GuruContextBubble — floating contextual tips on each page
-3. GuruInlinePrompt — inline prompt suggestions
-4. GuruSuggestionCard — proactive suggestions based on child progress
-5. Welcome sequence — guided first-login flow
-6. End-of-day analysis — reviews what child did, suggests tomorrow's focus
-
-**Handoff:** `docs/HANDOFF_GURU_HOME_INTEGRATION_FEB19.md`
+Homeschool parent option REMOVED from signup. Backend code preserved.
 
 ### Stripe Setup (Priority #5 — Deferred)
 
@@ -67,7 +68,38 @@ Homeschool parent option REMOVED from signup (`/montree/try`) and login page tex
 
 ---
 
-## CURRENT STATUS (Feb 24, 2026)
+## CURRENT STATUS (Feb 25, 2026)
+
+### Session Work (Feb 25, 2026)
+
+**Home Guru Revamp — 8 Phases COMPLETE (commit `bd774ec3`, 12 files, 1,811 insertions):**
+
+Built complete concern-first dashboard experience for homeschool parents:
+- `lib/montree/guru/concern-mappings.ts` — 10 parent concerns mapped to Montessori work clusters
+- `lib/montree/guru/prompt-builder.ts` — Rich 8-rule HOMESCHOOL_ADDENDUM replacing minimal 12-line version
+- `app/api/montree/guru/concern/route.ts` — Concern guide API (Haiku, cached per child/concern/day)
+- `app/api/montree/guru/quick/route.ts` — Quick-fire 2-sentence answers (Haiku, 5s timeout)
+- `app/api/montree/guru/weekly-review/route.ts` — Weekly progress review (Haiku, cached per ISO week)
+- `components/montree/guru/ConcernCardsGrid.tsx` — 2-column grid of 10 concern cards
+- `components/montree/guru/ConcernDetailModal.tsx` — Full-screen modal with markdown renderer
+- `components/montree/guru/QuickGuruFAB.tsx` — Floating 🌿 button for quick questions
+- `components/montree/guru/WeeklyReview.tsx` — Collapsible weekly summary banner
+- `app/montree/dashboard/page.tsx` — New "Today" view for home parents
+- `app/montree/dashboard/curriculum/browse/page.tsx` — Recommended filter with difficulty badges
+
+**Audit + Bugfix (commit `71ea39e4`):**
+- Fixed `concern/route.ts` line 77: `w.whyItHelps` → `w.why` (property name mismatch)
+- Fixed `concern/route.ts` line 84: `a.materials.join(', ')` → `a.materials` (string, not array)
+- Full audit passed: all 3 new API routes have security checks, all components use HOME_THEME correctly
+
+**Guru Improvements Plan — DESIGNED & APPROVED:**
+- 8-phase plan for conversation memory, FAQ cache, contextual tips, end-of-day nudge, proactive suggestions, photo-aware observations, knowledge base expansion, voice notes
+- Plan: `.claude/plans/guru-improvements-v1.md`
+- Handoff: `docs/HANDOFF_GURU_IMPROVEMENTS_FEB25.md`
+
+---
+
+## PREVIOUS STATUS (Feb 24, 2026)
 
 ### Session Work (Feb 24, 2026 — Late Session)
 
