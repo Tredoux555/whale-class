@@ -14,24 +14,15 @@ Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
 
 ## 🔥 NEXT SESSION PRIORITIES (Feb 22, 2026)
 
-### ⚠️ CRITICAL BLOCKER: Deploy + Run Migrations (Priority #0)
+### ✅ DONE: Deploy + Migrations (was Priority #0)
+- All 69 files pushed to `main` via GitHub REST API → Railway deployed
+- Migrations 131 + 132 confirmed already in production Supabase
+- Dockerfile fixed: `rm -f package-lock.json && npm install --force` (ARM64 optional dep issue)
+- Community seed route fixed (non-array `points_of_interest` crash) — **try Seed 329 Works again**
 
-**DEPLOY FIRST.** All onboarding guides, security fixes, community library, and copy rewrites are local-only. Push to `main` for Railway.
+### Seed Community Library (Priority #0 — IMMEDIATE)
 
-**Then run migrations (deferred 8+ sessions):**
-```bash
-psql $DATABASE_URL -f migrations/126_homeschool_tables.sql
-psql $DATABASE_URL -f migrations/127_guru_freemium.sql
-psql $DATABASE_URL -f migrations/131_onboarding_system.sql
-psql $DATABASE_URL -f migrations/132_community_works.sql
-```
-
-- 126: Adds `role` column to `montree_teachers` + `school_id` to `montree_children`
-- 127: Adds Guru billing columns
-- 131: Creates onboarding tables
-- 132: Creates community works library tables + backups table + updated_at trigger
-
-**After migration 132:** Go to `/montree/super-admin/community` → Seed 329 Works
+Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
 
 ### Deploy Cross-Pollination Security Fix (Priority #1 — URGENT)
 
@@ -86,7 +77,108 @@ Full day dedicated to polishing the homeschool parent experience end-to-end.
 
 ---
 
-## CURRENT STATUS (Feb 21, 2026)
+## CURRENT STATUS (Feb 24, 2026)
+
+### Session Work (Feb 24, 2026)
+
+**Montree Library Tools Polish — COMPLETE (10 commits pushed):**
+
+Picture Bingo Generator — complete rewrite over multiple iterations:
+- Bingo boards: picture AND word together on each cell, single-sided (one page per board)
+- Calling cards: picture on front, word on back (duplex, mirrored rows for alignment)
+- Removed FREE space — every cell gets a real picture, no exceptions
+- Bingo board borders: uniform grid-background approach (padding = gap = border width)
+- Calling card borders: 3-Part Card Generator indent approach (per-card background + padding + border-radius, grid gap=0, diamond indent cutting guides)
+- Border color picker, width selector (Thin/Medium/Thick), corner radius selector
+- Two modes: CVC Word Sets (preset 69 words) and Custom Bingo (drag & drop images)
+- Comic Sans MS for word text (kid-friendly single-story 'a')
+- Vowel highlighting removed entirely
+
+Video Flashcard Maker — complete rewrite:
+- Replaced broken server-dependent version (4 missing API routes) with fully client-side tool
+- Video upload, frame capture via HTML5 canvas, timeline scrubber, auto-extract, editable labels
+- Border color + font selection, print as landscape A4 flashcards
+
+**Commits:** `4dacc51e`, `ef4adc66`, `142dc01a`, `7c0366d6`, `5b1045a8`, `b73e83bb`, `57984eea`, `61b303ae`, `ec7b6e0b`, `2eee75ae`
+
+**Files modified:** `public/tools/picture-bingo-generator.html`, `app/montree/library/tools/flashcard-maker/page.tsx`, `app/montree/library/tools/page.tsx`
+
+**Handoff:** `docs/HANDOFF_LIBRARY_TOOLS_FEB24.md`
+
+---
+
+## PREVIOUS STATUS (Feb 23, 2026)
+
+### Session Work (Feb 23, 2026 — Late Session)
+
+**Resume HTML→PDF Conversion — IN PROGRESS:**
+- Previous session crashed mid-resume-update work. Recovered by re-uploading source files.
+- Original HTML resume: `Tredoux_Resume.html` in ACTIVE folder (beautiful 2-column teal sidebar design with Poppins + Playfair Display fonts)
+- **Breakthrough:** Playwright + headless Chromium renders HTML→PDF pixel-perfectly. Previous session struggled ~1hr with other approaches.
+- Installed Playwright + Chromium at `/tmp/resume-work/` on Mac
+- Conversion script: `/tmp/resume-work/convert-tight.mjs`
+
+**3 Drafts produced:**
+- Draft 1: Perfect quality, 2 pages (References on page 2) — `Tredoux_Resume_Draft.pdf`
+- Draft 2: Tight CSS (font 12.5px, reduced spacing), forced 1 page (`height: 297mm; overflow: hidden`) — `Tredoux_Resume_Draft2.pdf`
+- Draft 3: Edge-to-edge attempt (`width: 100%`, `margin: 0`) — `Tredoux_Resume_Draft3.pdf` — user says still not fully edge-to-edge
+
+**CSS changes for 1-page fit (97px recovered):**
+- Body: 13px→12.5px, line-height 1.6→1.5
+- Sidebar: padding 32/20/24→22/18/14, gap 18→11, avatar 100→85px
+- Main: padding 30/28/24→20/26/14, gap 16→10
+- Bullets: line-height 1.5→1.4, margins trimmed
+- Page: `height: 297mm; max-height: 297mm; overflow: hidden`
+
+**Still TODO:**
+- Fix edge-to-edge (content doesn't fully bleed to page edges)
+- Resume content updates (original session goal before crash)
+- Generate final PDF
+
+**Files:** All in `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/`
+**Handoff:** `docs/HANDOFF_RESUME_PDF_FEB23.md`
+
+---
+
+## PREVIOUS STATUS (Feb 22, 2026)
+
+### Session Work (Feb 21-22, 2026 — Late Session)
+
+**Production Deploy + Seed Fix — COMPLETE:**
+- Pushed 69 files to `main` via GitHub REST API (TLS issues blocked git clone)
+- Fixed Dockerfile: 5 iterations to solve ARM64 optional dep issue → `rm -f package-lock.json && npm install --force`
+- Confirmed migrations 131 + 132 already in production Supabase
+- Fixed seed route 500: `points_of_interest` was string not array → `Array.isArray()` checks on all array fields
+- Admin UI now shows full error detail + stack trace for seed failures
+
+**Git Push Infrastructure — scripts/push-to-github.py:**
+- Reusable Python script for pushing via GitHub REST API
+- 5 retries with exponential backoff for TLS flakiness
+- Handles multi-file commits, base64 blob creation
+- **Root cause of push failures:** Cowork VM intermittent TLS drops — not fixable, but retries work around it
+
+**Files created/modified:**
+- `scripts/push-to-github.py` — **NEW** reusable GitHub push script
+- `app/api/montree/community/seed/route.ts` — Array safety + detailed error logging
+- `app/montree/super-admin/community/page.tsx` — Shows error detail in admin UI
+- `Dockerfile` — `rm -f package-lock.json && npm install --force`
+- `docs/HANDOFF_DEPLOY_SEED_FEB21.md` — Full handoff
+
+**Community Library Curriculum Ordering — COMPLETE:**
+- Works now display in Montessori curriculum sequence (same as classroom system)
+- In-memory sort using `loadAllCurriculumWorks()` → `work_key → sequence` map (cached at module load)
+- Sequence formula: `area * 10000 + category * 100 + work` (from curriculum-loader.ts)
+- Attempted DB column approach first but Railway can't reach Supabase PostgreSQL via IPv6 (`ENETUNREACH`)
+- Default sort changed from "newest" to "curriculum" on API and frontend
+- "Curriculum Order" option added to sort dropdown
+
+**Commits:** `72c6df75` (69-file deploy), `29a69180` (error logging), `f6186281` (admin UI), `41bf0c18` (array fix), `89f2c69f` (sequence feature), `563247f0` (in-memory sort fix)
+
+**Handoff:** `docs/HANDOFF_DEPLOY_SEED_FEB21.md`
+
+---
+
+## PREVIOUS STATUS (Feb 21, 2026)
 
 ### Session Work (Feb 21, 2026)
 
@@ -787,20 +879,17 @@ Fixed `components/montree/FeedbackButton.tsx` — completely broken on mobile (t
 - User has a `cowork-permanent` PAT — **ASK USER FOR IT** if not provided. GitHub push protection blocks PATs in committed files.
 - ⚠️ `.github-pat` file does NOT exist in Cowork mount — user must provide PAT in chat each session
 
-**⚡ Cowork Push Workflow (NO SSH keys needed):**
+**⚡ Cowork Push Workflow (PREFERRED — uses GitHub REST API with retries):**
 ```bash
-# 1. User provides PAT in chat, set as variable
-PAT="<ask-user-for-pat>"
-# 2. Clone to /tmp (avoids FUSE locks on mounted workspace)
-cd /tmp && rm -rf whale-push
-git clone --depth=10 https://Tredoux555:${PAT}@github.com/Tredoux555/whale-class.git whale-push
-# 3. Copy changed files from workspace to /tmp clone
-cp /path/to/whale/changed-file.ts /tmp/whale-push/changed-file.ts
-# 4. Commit and push (use HTTP/1.1 to avoid TLS issues in Cowork VM)
-cd /tmp/whale-push && git add -A
-git -c user.name="Tredoux" -c user.email="tredoux555@gmail.com" commit -m "message"
-git -c http.version=HTTP/1.1 push origin main
+# User provides PAT in chat, then:
+GITHUB_PAT="<pat>" python3 scripts/push-to-github.py "commit message" \
+  "repo/path/file.ts" "/sessions/practical-wonderful-volta/mnt/whale/repo/path/file.ts" \
+  "repo/path/file2.ts" "/sessions/practical-wonderful-volta/mnt/whale/repo/path/file2.ts"
 ```
+- Script at `scripts/push-to-github.py` — REST API push with 5 retries + exponential backoff
+- Handles TLS flakiness automatically (root cause: Cowork VM intermittent SSL drops)
+- Multi-file single-commit support
+- **DO NOT use git clone approach** — TLS drops kill large transfers, FUSE locks block /tmp clones
 
 **Mac git config (set during debugging, needs cleanup):**
 ```bash
@@ -1428,7 +1517,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | **CURRENT** — Community Works Library (14 files, 2-pass audit, deploy steps) |
+| `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | **CURRENT** — Production deploy, Dockerfile fix, seed 500 fix, push script |
+| `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | Community Works Library (14 files, 2-pass audit, deploy steps) |
 | `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md` | Week view guide + CRITICAL cross-pollination security fix |
 | `docs/HANDOFF_STUDENT_FORM_GUIDE_FEB22.md` | Student form guided onboarding (13-step speech bubble tour) |
 | `docs/HANDOFF_GURU_COACH_ONBOARDING_FEB21.md` | Guru Daily Coach + Onboarding Phase 3-5 wiring + folder cleanup |
