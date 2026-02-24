@@ -143,7 +143,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/images/') ||
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
-    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4)$/i.test(pathname)
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|html|avif)$/i.test(pathname)
   ) {
     return NextResponse.next();
   }
@@ -334,7 +334,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     // All non-API routes (pages, etc.)
-    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif)$).*)',
     // Whale admin API routes — middleware enforces admin JWT auth
     '/api/whale/:path*',
   ],
