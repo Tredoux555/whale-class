@@ -24,22 +24,39 @@
     top: 0;
     z-index: 100;
     box-shadow: 0 8px 32px rgba(15, 118, 110, 0.15);
-    backdrop-filter: blur(8px);
   }
 
-  .toolbar h1 {
-    font-size: 28px;
-    margin-bottom: 6px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
+  .toolbar h1 { font-size: 28px; margin-bottom: 6px; font-weight: 700; letter-spacing: -0.5px; }
+  .toolbar p { font-size: 13px; opacity: 0.85; margin-bottom: 16px; font-weight: 500; }
 
-  .toolbar p {
-    font-size: 13px;
-    opacity: 0.85;
+  /* Tabs */
+  .mode-tabs {
+    display: flex;
+    gap: 4px;
     margin-bottom: 16px;
-    font-weight: 500;
   }
+
+  .mode-tab {
+    padding: 10px 22px;
+    border-radius: 10px 10px 0 0;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .mode-tab.active {
+    background: rgba(255,255,255,0.18);
+    color: white;
+  }
+
+  .mode-tab:hover { background: rgba(255,255,255,0.14); color: white; }
+
+  .mode-content { display: none; }
+  .mode-content.active { display: block; }
 
   .controls {
     display: flex;
@@ -78,18 +95,15 @@
   .control-group select:hover, .control-group input:hover {
     background: white;
     border-color: rgba(255,255,255,0.3);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
 
   .control-group select:focus, .control-group input:focus {
     outline: none;
     border-color: #34d399;
-    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2);
   }
 
   .control-group input[type="number"] { width: 75px; }
 
-  /* Color picker row */
   .color-picker-row {
     display: flex;
     align-items: center;
@@ -163,6 +177,16 @@
     transform: translateY(-2px);
   }
 
+  .btn-danger {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .btn-danger:hover {
+    background: rgba(239,68,68,0.3);
+    color: white;
+  }
+
   .btn-group {
     display: flex;
     gap: 10px;
@@ -178,7 +202,6 @@
     margin-top: 12px;
     line-height: 1.7;
     border: 1px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(4px);
   }
   .info-bar strong { color: #a7f3d0; font-weight: 600; }
 
@@ -194,6 +217,70 @@
   }
   .how-to strong { color: #d97706; font-weight: 600; }
 
+  /* Custom upload zone */
+  .upload-zone {
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.06);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: #34d399;
+    background: rgba(52,211,153,0.1);
+  }
+  .upload-zone p { font-size: 14px; opacity: 0.9; }
+  .upload-zone .hint { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+
+  .custom-items-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .custom-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 4px 8px 4px 4px;
+    font-size: 13px;
+  }
+
+  .custom-item img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .custom-item input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 13px;
+    width: 80px;
+    padding: 2px 0;
+    outline: none;
+  }
+
+  .custom-item .remove-btn {
+    background: none;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+  }
+
   /* Page shared */
   .page {
     width: 210mm;
@@ -208,10 +295,7 @@
   }
   .page:last-child { page-break-after: auto; }
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 6mm;
-  }
+  .page-header { text-align: center; margin-bottom: 6mm; }
 
   .page-title {
     font-size: 36px;
@@ -236,7 +320,6 @@
     color: #999;
     margin-top: 4px;
     font-weight: 500;
-    letter-spacing: 0.5px;
   }
 
   .page-name {
@@ -259,10 +342,16 @@
     font-weight: 600;
   }
 
-  /* Card-style bingo grid */
+  /*
+    UNIFORM BORDER APPROACH:
+    The grid itself has the border color as background.
+    Padding = border width (outer border).
+    Gap = border width (inner borders).
+    Each cell is just white with rounded corners.
+    Result: perfectly uniform borders everywhere.
+  */
   .bingo-grid {
     display: grid;
-    gap: 0;
     margin: 0 auto;
     max-width: 190mm;
     -webkit-print-color-adjust: exact;
@@ -276,56 +365,37 @@
   .bingo-cell {
     aspect-ratio: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    position: relative;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* The colored border is achieved by using the cell background as the border color,
-     then placing a white inner area with padding — same as 3-Part Card Generator */
-  .bingo-cell .cell-inner {
-    width: 100%;
-    height: 100%;
     background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
   .bingo-cell img {
     width: 100%;
-    height: 100%;
+    flex: 1;
     object-fit: cover;
     display: block;
+    min-height: 0;
   }
 
   .bingo-cell .cell-word {
-    font-size: 32px;
+    font-size: 14px;
     font-weight: 700;
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
     color: #1f2937;
+    padding: 2px 0;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.2;
   }
 
-  .cell-free .cell-inner {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  }
-
-  .cell-free .cell-word {
-    font-size: 18px;
-    color: #d97706;
-    font-weight: 800;
-  }
-
-  /* Calling cards grid — same card-style approach */
+  /* Calling cards — same uniform border approach */
   .calling-cards-grid {
     display: grid;
-    gap: 0;
     margin: 0 auto;
     max-width: 190mm;
     grid-template-columns: repeat(4, 1fr);
@@ -340,59 +410,30 @@
     justify-content: center;
     text-align: center;
     aspect-ratio: 1;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .calling-card .card-inner {
-    width: 100%;
-    height: 100%;
     background: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    padding: 3mm;
   }
 
   .calling-card img {
-    width: 75%;
-    height: 55%;
+    width: 85%;
+    height: 85%;
     object-fit: cover;
     display: block;
   }
 
   .calling-card .card-word {
-    margin-top: 3mm;
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 700;
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
     color: #1f2937;
   }
 
-  .calling-header {
-    text-align: center;
-    margin-bottom: 6mm;
-  }
+  .calling-header { text-align: center; margin-bottom: 6mm; }
+  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
+  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; }
 
-  .calling-header h2 {
-    font-size: 26px;
-    color: #1f2937;
-    font-family: 'Nunito', system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-
-  .calling-header p {
-    font-size: 12px;
-    color: #999;
-    margin-top: 3px;
-    font-weight: 500;
-  }
-
-  /* Section dividers in preview */
   .section-label {
     text-align: center;
     padding: 14px 16px;
@@ -400,21 +441,13 @@
     max-width: 210mm;
     font-size: 12px;
     font-weight: 700;
-    color: #0f766e;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    border-bottom: 3px solid #34d399;
+    border-bottom: 3px solid;
   }
 
-  .section-label.boards-label {
-    color: #0369a1;
-    border-color: #0ea5e9;
-  }
-
-  .section-label.calling-label {
-    color: #b45309;
-    border-color: #fbbf24;
-  }
+  .section-label.boards-label { color: #0369a1; border-color: #0ea5e9; }
+  .section-label.calling-label { color: #b45309; border-color: #fbbf24; }
 
   @media print {
     .toolbar, .section-label { display: none !important; }
@@ -428,79 +461,139 @@
 
 <div class="toolbar">
   <h1>Picture Bingo Generator</h1>
-  <p>Real photos on front, words on back — duplex print ready</p>
+  <p>Bingo boards with pictures + words — calling cards print duplex (picture front, word back)</p>
 
-  <div class="controls">
-    <div class="control-group">
-      <label>Word Set</label>
-      <select id="wordSet">
-        <option value="short-a">Short A (15 words)</option>
-        <option value="short-e">Short E (12 words)</option>
-        <option value="short-i">Short I (15 words)</option>
-        <option value="short-o">Short O (12 words)</option>
-        <option value="short-u">Short U (15 words)</option>
-        <option value="all" selected>All CVC (69 words)</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Grid Size</label>
-      <select id="gridSize">
-        <option value="3">3×3 (Young)</option>
-        <option value="4" selected>4×4 (Medium)</option>
-        <option value="5">5×5 (Standard)</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Boards</label>
-      <input type="number" id="boardCount" value="6" min="1" max="30">
-    </div>
-    <div class="control-group">
-      <label>Free Space</label>
-      <select id="freeSpace">
-        <option value="yes" selected>Center free</option>
-        <option value="no">No free space</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Border Color</label>
-      <div class="color-picker-row">
-        <input type="color" id="borderColor" value="#2D5A27">
-        <input type="text" id="borderColorText" value="#2D5A27">
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('preset')">CVC Word Sets</button>
+    <button class="mode-tab" onclick="switchMode('custom')">Custom Bingo</button>
+  </div>
+
+  <!-- PRESET MODE -->
+  <div id="mode-preset" class="mode-content active">
+    <div class="controls">
+      <div class="control-group">
+        <label>Word Set</label>
+        <select id="wordSet">
+          <option value="short-a">Short A (15 words)</option>
+          <option value="short-e">Short E (12 words)</option>
+          <option value="short-i">Short I (15 words)</option>
+          <option value="short-o">Short O (12 words)</option>
+          <option value="short-u">Short U (15 words)</option>
+          <option value="all" selected>All CVC (69 words)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Grid Size</label>
+        <select id="gridSize">
+          <option value="3">3×3 (9 pictures)</option>
+          <option value="4" selected>4×4 (16 pictures)</option>
+          <option value="5">5×5 (25 pictures)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Boards</label>
+        <input type="number" id="boardCount" value="6" min="1" max="30">
+      </div>
+      <div class="control-group">
+        <label>Border Color</label>
+        <div class="color-picker-row">
+          <input type="color" id="borderColor" value="#2D5A27">
+          <input type="text" id="borderColorText" value="#2D5A27">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Border Width</label>
+        <select id="borderWidth">
+          <option value="1.5">Thin</option>
+          <option value="2.5" selected>Medium</option>
+          <option value="4">Thick</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Corners</label>
+        <select id="cornerRadius">
+          <option value="0">Square</option>
+          <option value="4">Slight</option>
+          <option value="8" selected>Rounded</option>
+          <option value="14">Very Round</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
+        <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
+        <button class="btn btn-print" onclick="window.print()">Print All</button>
       </div>
     </div>
-    <div class="control-group">
-      <label>Border Width</label>
-      <select id="borderWidth">
-        <option value="2">Thin</option>
-        <option value="3" selected>Medium</option>
-        <option value="5">Thick</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Corner Radius</label>
-      <select id="cornerRadius">
-        <option value="0">Square</option>
-        <option value="4">Slight</option>
-        <option value="8" selected>Rounded</option>
-        <option value="14">Very Round</option>
-      </select>
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
-      <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
-      <button class="btn btn-print" onclick="window.print()">Print All</button>
+
+    <div class="how-to">
+      <strong>How to play:</strong>
+      1) Print the <strong>Bingo Boards</strong> — each board has pictures with words (single-sided, one page per board).<br>
+      2) Print the <strong>Calling Cards</strong> duplex (flip on short edge) — picture on front, word on back. Cut along borders.<br>
+      3) The caller draws a card, shows the picture. Players find and cover the matching picture on their board.
     </div>
   </div>
 
-  <div class="how-to">
-    <strong>How to play:</strong>
-    1) Print the <strong>Bingo Boards</strong> (duplex — flip on short edge) — one per player.<br>
-    2) Print the <strong>Calling Cards</strong> — cut along the border edges to make individual cards.<br>
-    3) The caller draws a card, shows the picture, says the word. Players cover the matching picture on their board.
+  <!-- CUSTOM MODE -->
+  <div id="mode-custom" class="mode-content">
+    <div class="controls">
+      <div class="control-group">
+        <label>Grid Size</label>
+        <select id="customGridSize">
+          <option value="3">3×3 (9 items)</option>
+          <option value="4" selected>4×4 (16 items)</option>
+          <option value="5">5×5 (25 items)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Boards</label>
+        <input type="number" id="customBoardCount" value="6" min="1" max="30">
+      </div>
+      <div class="control-group">
+        <label>Border Color</label>
+        <div class="color-picker-row">
+          <input type="color" id="customBorderColor" value="#2D5A27">
+          <input type="text" id="customBorderColorText" value="#2D5A27">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Border Width</label>
+        <select id="customBorderWidth">
+          <option value="1.5">Thin</option>
+          <option value="2.5" selected>Medium</option>
+          <option value="4">Thick</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Corners</label>
+        <select id="customCornerRadius">
+          <option value="0">Square</option>
+          <option value="4">Slight</option>
+          <option value="8" selected>Rounded</option>
+          <option value="14">Very Round</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Upload zone -->
+    <div class="upload-zone" id="customUploadZone" onclick="document.getElementById('customFileInput').click()">
+      <p>📷 Drop images here or click to upload</p>
+      <p class="hint">File names become the words (e.g. "butterfly.jpg" → "butterfly"). Need at least enough to fill the grid.</p>
+      <input type="file" id="customFileInput" multiple accept="image/*" style="display:none" onchange="handleCustomUpload(this.files)">
+    </div>
+
+    <div class="custom-items-grid" id="customItemsList"></div>
+
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="generateCustom()">Generate Custom Bingo</button>
+      <button class="btn btn-calling" onclick="generateCustomCallingCards()">Generate Calling Cards</button>
+      <button class="btn btn-print" onclick="window.print()">Print All</button>
+      <button class="btn btn-danger" onclick="clearCustomItems()">Clear All</button>
+    </div>
   </div>
 
   <div class="info-bar" id="info">
-    Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for cut-out tabs.
+    Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for duplex cut-out cards.
   </div>
 </div>
 
@@ -509,126 +602,78 @@
 <script>
 const IMAGE_BASE = '/images/pink-series';
 
-// Sync color picker and text input
-document.getElementById('borderColor').addEventListener('input', function() {
-  document.getElementById('borderColorText').value = this.value;
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach((t, i) => {
+    t.classList.toggle('active', (mode === 'preset' && i === 0) || (mode === 'custom' && i === 1));
+  });
+  document.getElementById('mode-preset').classList.toggle('active', mode === 'preset');
+  document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('info').innerHTML = mode === 'preset'
+    ? 'Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for duplex cut-out cards.'
+    : 'Upload images to build custom bingo boards. File names become the words.';
+}
+
+// ===== COLOR PICKER SYNC =====
+function syncColor(colorId, textId) {
+  document.getElementById(colorId).addEventListener('input', function() {
+    document.getElementById(textId).value = this.value;
+  });
+  document.getElementById(textId).addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+      document.getElementById(colorId).value = this.value;
+    }
+  });
+}
+syncColor('borderColor', 'borderColorText');
+syncColor('customBorderColor', 'customBorderColorText');
+
+// ===== DRAG & DROP FOR CUSTOM UPLOAD =====
+const uploadZone = document.getElementById('customUploadZone');
+uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+uploadZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('dragover');
+  handleCustomUpload(e.dataTransfer.files);
 });
-document.getElementById('borderColorText').addEventListener('input', function() {
-  if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
-    document.getElementById('borderColor').value = this.value;
-  }
-});
 
-function getBorderColor() { return document.getElementById('borderColor').value; }
-function getBorderWidthMM() { return parseInt(document.getElementById('borderWidth').value); }
-function getCornerRadius() { return parseInt(document.getElementById('cornerRadius').value); }
+// ===== CUSTOM ITEMS STATE =====
+let customItems = []; // { word, imgData }
 
-const WORD_SETS = {
-  'short-a': {
-    title: 'Short A',
-    words: [
-      { word: 'bag', img: 'short-a/bag.jpeg' },
-      { word: 'bat', img: 'short-a/bat.jpeg' },
-      { word: 'can', img: 'short-a/can.webp' },
-      { word: 'cap', img: 'short-a/cap.jpeg' },
-      { word: 'cat', img: 'short-a/cat.jpeg' },
-      { word: 'fan', img: 'short-a/fan.jpeg' },
-      { word: 'hat', img: 'short-a/hat.jpg' },
-      { word: 'man', img: 'short-a/man.webp' },
-      { word: 'map', img: 'short-a/map.jpeg' },
-      { word: 'mat', img: 'short-a/mat.jpeg' },
-      { word: 'pan', img: 'short-a/pan.jpeg' },
-      { word: 'rat', img: 'short-a/rat.webp' },
-      { word: 'sat', img: 'short-a/sat.jpg' },
-      { word: 'tag', img: 'short-a/tag.jpg' },
-      { word: 'tap', img: 'short-a/tap.webp' },
-    ]
-  },
-  'short-e': {
-    title: 'Short E',
-    words: [
-      { word: 'bed', img: 'short-e/bed.jpeg' },
-      { word: 'hen', img: 'short-e/hen.jpeg' },
-      { word: 'jet', img: 'short-e/jet.jpeg' },
-      { word: 'leg', img: 'short-e/leg.jpg' },
-      { word: 'net', img: 'short-e/net.jpeg' },
-      { word: 'peg', img: 'short-e/peg.jpeg' },
-      { word: 'pen', img: 'short-e/pen.jpeg' },
-      { word: 'pet', img: 'short-e/pet.jpg' },
-      { word: 'red', img: 'short-e/red.jpeg' },
-      { word: 'ten', img: 'short-e/ten.png' },
-      { word: 'web', img: 'short-e/web.jpg' },
-      { word: 'wet', img: 'short-e/wet.jpeg' },
-    ]
-  },
-  'short-i': {
-    title: 'Short I',
-    words: [
-      { word: 'big', img: 'short-i/big.jpeg' },
-      { word: 'bin', img: 'short-i/bin.jpeg' },
-      { word: 'dig', img: 'short-i/dig.jpeg' },
-      { word: 'fig', img: 'short-i/fig.webp' },
-      { word: 'fin', img: 'short-i/fin.jpg' },
-      { word: 'hit', img: 'short-i/hit.jpeg' },
-      { word: 'kit', img: 'short-i/kit.webp' },
-      { word: 'lip', img: 'short-i/lip.jpeg' },
-      { word: 'pig', img: 'short-i/pig.jpg' },
-      { word: 'pin', img: 'short-i/pin.jpg' },
-      { word: 'sit', img: 'short-i/sit.jpeg' },
-      { word: 'tip', img: 'short-i/tip.webp' },
-      { word: 'wig', img: 'short-i/wig.webp' },
-      { word: 'win', img: 'short-i/win.png' },
-      { word: 'zip', img: 'short-i/zip.jpeg' },
-    ]
-  },
-  'short-o': {
-    title: 'Short O',
-    words: [
-      { word: 'box', img: 'short-o/box.jpeg' },
-      { word: 'cot', img: 'short-o/cot.jpg' },
-      { word: 'dog', img: 'short-o/dog.jpeg' },
-      { word: 'fog', img: 'short-o/fog.webp' },
-      { word: 'fox', img: 'short-o/fox.jpeg' },
-      { word: 'hop', img: 'short-o/hop.png' },
-      { word: 'hot', img: 'short-o/hot.jpeg' },
-      { word: 'job', img: 'short-o/job.jpeg' },
-      { word: 'log', img: 'short-o/log.webp' },
-      { word: 'mop', img: 'short-o/mop.avif' },
-      { word: 'pot', img: 'short-o/pot.avif' },
-      { word: 'top', img: 'short-o/top.jpg' },
-    ]
-  },
-  'short-u': {
-    title: 'Short U',
-    words: [
-      { word: 'bug', img: 'short-u/bug.jpg' },
-      { word: 'bun', img: 'short-u/bun.webp' },
-      { word: 'bus', img: 'short-u/bus.jpeg' },
-      { word: 'cup', img: 'short-u/Cup.jpg' },
-      { word: 'cut', img: 'short-u/cut.jpg' },
-      { word: 'fun', img: 'short-u/fun.jpg' },
-      { word: 'hug', img: 'short-u/hug.jpeg' },
-      { word: 'hut', img: 'short-u/hut.jpeg' },
-      { word: 'jug', img: 'short-u/jug.jpg' },
-      { word: 'mug', img: 'short-u/mug.webp' },
-      { word: 'nut', img: 'short-u/nut.jpeg' },
-      { word: 'pup', img: 'short-u/pup.jpeg' },
-      { word: 'rug', img: 'short-u/rug.jpg' },
-      { word: 'run', img: 'short-u/run.jpeg' },
-      { word: 'sun', img: 'short-u/sun.jpeg' },
-    ]
-  },
-};
+function handleCustomUpload(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const word = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      customItems.push({ word, imgData: e.target.result });
+      renderCustomItems();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('customFileInput').value = '';
+}
 
-// Build "all" set
-const ALL_WORDS = [
-  ...WORD_SETS['short-a'].words,
-  ...WORD_SETS['short-e'].words,
-  ...WORD_SETS['short-i'].words,
-  ...WORD_SETS['short-o'].words,
-  ...WORD_SETS['short-u'].words,
-];
+function renderCustomItems() {
+  const list = document.getElementById('customItemsList');
+  list.innerHTML = customItems.map((item, i) => `
+    <div class="custom-item">
+      <img src="${item.imgData}" alt="${item.word}">
+      <input value="${item.word}" onchange="customItems[${i}].word=this.value" placeholder="word...">
+      <button class="remove-btn" onclick="customItems.splice(${i},1);renderCustomItems()">✕</button>
+    </div>
+  `).join('');
+}
 
+function clearCustomItems() {
+  customItems = [];
+  renderCustomItems();
+  document.getElementById('output').innerHTML = '';
+}
+
+// ===== SHARED HELPERS =====
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -641,6 +686,98 @@ function shuffle(arr) {
 const BINGO_LETTERS = 'BINGO'.split('');
 const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
 
+function buildGridStyle(color, borderW, radius) {
+  return `background:${color}; padding:${borderW}mm; gap:${borderW}mm; border-radius:${radius}px;`;
+}
+
+function buildCellStyle(radius) {
+  return `border-radius:${radius}px;`;
+}
+
+function pageHeader(title, boardNum, sideLabel) {
+  return `
+    <div class="page-header">
+      <div class="page-title">
+        ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
+      </div>
+      <div class="page-subtitle">${title} · Board #${boardNum}</div>
+      <div class="page-name">Name: _________________</div>
+      ${sideLabel ? `<div class="page-side-label">${sideLabel}</div>` : ''}
+    </div>
+  `;
+}
+
+// ===== PRESET WORD SETS =====
+const WORD_SETS = {
+  'short-a': {
+    title: 'Short A',
+    words: [
+      { word: 'bag', img: 'short-a/bag.jpeg' }, { word: 'bat', img: 'short-a/bat.jpeg' },
+      { word: 'can', img: 'short-a/can.webp' }, { word: 'cap', img: 'short-a/cap.jpeg' },
+      { word: 'cat', img: 'short-a/cat.jpeg' }, { word: 'fan', img: 'short-a/fan.jpeg' },
+      { word: 'hat', img: 'short-a/hat.jpg' }, { word: 'man', img: 'short-a/man.webp' },
+      { word: 'map', img: 'short-a/map.jpeg' }, { word: 'mat', img: 'short-a/mat.jpeg' },
+      { word: 'pan', img: 'short-a/pan.jpeg' }, { word: 'rat', img: 'short-a/rat.webp' },
+      { word: 'sat', img: 'short-a/sat.jpg' }, { word: 'tag', img: 'short-a/tag.jpg' },
+      { word: 'tap', img: 'short-a/tap.webp' },
+    ]
+  },
+  'short-e': {
+    title: 'Short E',
+    words: [
+      { word: 'bed', img: 'short-e/bed.jpeg' }, { word: 'hen', img: 'short-e/hen.jpeg' },
+      { word: 'jet', img: 'short-e/jet.jpeg' }, { word: 'leg', img: 'short-e/leg.jpg' },
+      { word: 'net', img: 'short-e/net.jpeg' }, { word: 'peg', img: 'short-e/peg.jpeg' },
+      { word: 'pen', img: 'short-e/pen.jpeg' }, { word: 'pet', img: 'short-e/pet.jpg' },
+      { word: 'red', img: 'short-e/red.jpeg' }, { word: 'ten', img: 'short-e/ten.png' },
+      { word: 'web', img: 'short-e/web.jpg' }, { word: 'wet', img: 'short-e/wet.jpeg' },
+    ]
+  },
+  'short-i': {
+    title: 'Short I',
+    words: [
+      { word: 'big', img: 'short-i/big.jpeg' }, { word: 'bin', img: 'short-i/bin.jpeg' },
+      { word: 'dig', img: 'short-i/dig.jpeg' }, { word: 'fig', img: 'short-i/fig.webp' },
+      { word: 'fin', img: 'short-i/fin.jpg' }, { word: 'hit', img: 'short-i/hit.jpeg' },
+      { word: 'kit', img: 'short-i/kit.webp' }, { word: 'lip', img: 'short-i/lip.jpeg' },
+      { word: 'pig', img: 'short-i/pig.jpg' }, { word: 'pin', img: 'short-i/pin.jpg' },
+      { word: 'sit', img: 'short-i/sit.jpeg' }, { word: 'tip', img: 'short-i/tip.webp' },
+      { word: 'wig', img: 'short-i/wig.webp' }, { word: 'win', img: 'short-i/win.png' },
+      { word: 'zip', img: 'short-i/zip.jpeg' },
+    ]
+  },
+  'short-o': {
+    title: 'Short O',
+    words: [
+      { word: 'box', img: 'short-o/box.jpeg' }, { word: 'cot', img: 'short-o/cot.jpg' },
+      { word: 'dog', img: 'short-o/dog.jpeg' }, { word: 'fog', img: 'short-o/fog.webp' },
+      { word: 'fox', img: 'short-o/fox.jpeg' }, { word: 'hop', img: 'short-o/hop.png' },
+      { word: 'hot', img: 'short-o/hot.jpeg' }, { word: 'job', img: 'short-o/job.jpeg' },
+      { word: 'log', img: 'short-o/log.webp' }, { word: 'mop', img: 'short-o/mop.avif' },
+      { word: 'pot', img: 'short-o/pot.avif' }, { word: 'top', img: 'short-o/top.jpg' },
+    ]
+  },
+  'short-u': {
+    title: 'Short U',
+    words: [
+      { word: 'bug', img: 'short-u/bug.jpg' }, { word: 'bun', img: 'short-u/bun.webp' },
+      { word: 'bus', img: 'short-u/bus.jpeg' }, { word: 'cup', img: 'short-u/Cup.jpg' },
+      { word: 'cut', img: 'short-u/cut.jpg' }, { word: 'fun', img: 'short-u/fun.jpg' },
+      { word: 'hug', img: 'short-u/hug.jpeg' }, { word: 'hut', img: 'short-u/hut.jpeg' },
+      { word: 'jug', img: 'short-u/jug.jpg' }, { word: 'mug', img: 'short-u/mug.webp' },
+      { word: 'nut', img: 'short-u/nut.jpeg' }, { word: 'pup', img: 'short-u/pup.jpeg' },
+      { word: 'rug', img: 'short-u/rug.jpg' }, { word: 'run', img: 'short-u/run.jpeg' },
+      { word: 'sun', img: 'short-u/sun.jpeg' },
+    ]
+  },
+};
+
+const ALL_WORDS = [
+  ...WORD_SETS['short-a'].words, ...WORD_SETS['short-e'].words,
+  ...WORD_SETS['short-i'].words, ...WORD_SETS['short-o'].words,
+  ...WORD_SETS['short-u'].words,
+];
+
 function getWordPool() {
   const setKey = document.getElementById('wordSet').value;
   return setKey === 'all' ? ALL_WORDS : WORD_SETS[setKey].words;
@@ -651,192 +788,205 @@ function getTitle() {
   return setKey === 'all' ? 'All CVC' : WORD_SETS[setKey].title;
 }
 
-function generate() {
-  const gridSize = parseInt(document.getElementById('gridSize').value);
-  const boardCount = parseInt(document.getElementById('boardCount').value);
-  const hasFree = document.getElementById('freeSpace').value === 'yes';
-  const borderColor = getBorderColor();
-  const borderW = getBorderWidthMM();
-  const radius = getCornerRadius();
+// ===== BINGO BOARDS — picture + word on each cell, single-sided =====
+function generateBoards(wordPool, title, gridSize, boardCount, borderColor, borderW, radius, imgFn) {
   const output = document.getElementById('output');
   output.innerHTML = '';
 
-  const wordPool = getWordPool();
-  const title = getTitle();
-  const totalCells = gridSize * gridSize - (hasFree ? 1 : 0);
-  const centerIdx = hasFree ? Math.floor(gridSize * gridSize / 2) : -1;
+  const totalCells = gridSize * gridSize;
 
   if (wordPool.length < totalCells) {
-    alert(`Need ${totalCells} words but only have ${wordPool.length}. Use a smaller grid or "All CVC".`);
+    alert(`Need ${totalCells} pictures to fill a ${gridSize}×${gridSize} grid but only have ${wordPool.length}. Add more pictures or use a smaller grid.`);
     return;
   }
 
   document.getElementById('info').innerHTML =
-    `<strong>Generated ${boardCount} bingo boards</strong> (${boardCount * 2} pages total). ` +
-    `Word pool: ${wordPool.length} · Grid: ${gridSize}×${gridSize} · ` +
-    `<strong>Print duplex, flip on short edge.</strong> ` +
-    `Don't forget to also print the <strong>Calling Cards</strong>!`;
+    `<strong>Generated ${boardCount} bingo boards</strong> (${boardCount} pages — single-sided). ` +
+    `Items: ${wordPool.length} · Grid: ${gridSize}×${gridSize} · ` +
+    `<strong>Print single-sided, one page per board.</strong>`;
 
-  // Section label
   const label = document.createElement('div');
   label.className = 'section-label boards-label';
-  label.textContent = `Player Bingo Boards — ${boardCount} boards (${boardCount * 2} pages for duplex)`;
+  label.textContent = `Player Bingo Boards — ${boardCount} boards (${boardCount} pages, single-sided)`;
   output.appendChild(label);
+
+  const cellStyle = buildCellStyle(radius);
 
   for (let b = 0; b < boardCount; b++) {
     const selected = shuffle(wordPool).slice(0, totalCells);
 
-    const cells = [];
-    let wordIdx = 0;
-    for (let i = 0; i < gridSize * gridSize; i++) {
-      if (hasFree && i === centerIdx) {
-        cells.push({ free: true });
-      } else {
-        cells.push(selected[wordIdx++]);
-      }
-    }
-
-    // === PAGE 1: PICTURES (front) ===
-    const frontPage = document.createElement('div');
-    frontPage.className = 'page';
-    frontPage.innerHTML = `
-      <div class="page-header">
-        <div class="page-title">
-          ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
-        </div>
-        <div class="page-subtitle">${title} · Board #${b + 1}</div>
-        <div class="page-name">Name: _________________</div>
-        <div class="page-side-label">Picture Side</div>
-      </div>
-    `;
-
-    const frontGrid = document.createElement('div');
-    frontGrid.className = `bingo-grid size-${gridSize}`;
-
-    for (const cell of cells) {
-      const el = document.createElement('div');
-      el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
-      el.style.background = borderColor;
-      el.style.padding = borderW + 'mm';
-
-      if (cell.free) {
-        el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">⭐<br>FREE</div></div>`;
-      } else {
-        el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><img src="${IMAGE_BASE}/${cell.img}" alt="${cell.word}" loading="lazy" style="border-radius:${radius}px"></div>`;
-      }
-      frontGrid.appendChild(el);
-    }
-    frontPage.appendChild(frontGrid);
-    output.appendChild(frontPage);
-
-    // === PAGE 2: WORDS (back — mirrored horizontally for duplex) ===
-    const backPage = document.createElement('div');
-    backPage.className = 'page';
-    backPage.innerHTML = `
-      <div class="page-header">
-        <div class="page-title">
-          ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
-        </div>
-        <div class="page-subtitle">${title} · Board #${b + 1}</div>
-        <div class="page-name">Name: _________________</div>
-        <div class="page-side-label">Word Side (mirror-printed for duplex)</div>
-      </div>
-    `;
-
-    const backGrid = document.createElement('div');
-    backGrid.className = `bingo-grid size-${gridSize}`;
-
-    for (let row = 0; row < gridSize; row++) {
-      const rowCells = cells.slice(row * gridSize, (row + 1) * gridSize);
-      const mirrored = [...rowCells].reverse();
-      for (const cell of mirrored) {
-        const el = document.createElement('div');
-        el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
-        el.style.background = borderColor;
-        el.style.padding = borderW + 'mm';
-
-        if (cell.free) {
-          el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">⭐<br>FREE</div></div>`;
-        } else {
-          el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">${cell.word}</div></div>`;
-        }
-        backGrid.appendChild(el);
-      }
-    }
-    backPage.appendChild(backGrid);
-    output.appendChild(backPage);
-  }
-}
-
-function generateCallingCards() {
-  const output = document.getElementById('output');
-  output.innerHTML = '';
-
-  const wordPool = getWordPool();
-  const title = getTitle();
-  const borderColor = getBorderColor();
-  const borderW = getBorderWidthMM();
-  const radius = getCornerRadius();
-
-  document.getElementById('info').innerHTML =
-    `<strong>Generated calling cards</strong> for ${wordPool.length} words. ` +
-    `<strong>Print and cut along the colored borders.</strong> The caller draws a card, shows the picture, and says the word.`;
-
-  const label = document.createElement('div');
-  label.className = 'section-label calling-label';
-  label.textContent = `Calling Cards — cut along colored borders (${wordPool.length} cards)`;
-  output.appendChild(label);
-
-  // 4 columns × 4 rows = 16 cards per page
-  const cardsPerPage = 16;
-  const pages = Math.ceil(wordPool.length / cardsPerPage);
-
-  for (let p = 0; p < pages; p++) {
     const page = document.createElement('div');
     page.className = 'page';
-    page.innerHTML = `
-      <div class="calling-header">
-        <h2>✂️ Calling Cards — ${title}</h2>
-        <p>Cut along the colored borders · Page ${p + 1} of ${pages}</p>
-      </div>
-    `;
+    page.innerHTML = pageHeader(title, b + 1, '');
 
     const grid = document.createElement('div');
-    grid.className = 'calling-cards-grid';
+    grid.className = `bingo-grid size-${gridSize}`;
+    grid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
 
-    const start = p * cardsPerPage;
-    const end = Math.min(start + cardsPerPage, wordPool.length);
-
-    for (let i = start; i < end; i++) {
-      const item = wordPool[i];
-      const card = document.createElement('div');
-      card.className = 'calling-card';
-      card.style.background = borderColor;
-      card.style.padding = borderW + 'mm';
-      card.innerHTML = `
-        <div class="card-inner" style="border-radius:${radius}px">
-          <img src="${IMAGE_BASE}/${item.img}" alt="${item.word}" loading="lazy" style="border-radius:${Math.max(0, radius - 2)}px">
-          <div class="card-word">${item.word}</div>
-        </div>
+    for (const cell of selected) {
+      const el = document.createElement('div');
+      el.className = 'bingo-cell';
+      el.setAttribute('style', cellStyle);
+      el.innerHTML = `
+        <img src="${imgFn(cell)}" alt="${cell.word}" loading="lazy" style="${cellStyle}">
+        <div class="cell-word">${cell.word}</div>
       `;
-      grid.appendChild(card);
+      grid.appendChild(el);
     }
-
-    // Fill remaining cells if partial page
-    const remaining = cardsPerPage - (end - start);
-    for (let i = 0; i < remaining; i++) {
-      const empty = document.createElement('div');
-      empty.className = 'calling-card';
-      empty.style.background = 'transparent';
-      grid.appendChild(empty);
-    }
-
     page.appendChild(grid);
     output.appendChild(page);
   }
 }
 
-// Auto-generate on load
+// ===== CALLING CARDS — picture front, word back (duplex) =====
+function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius, imgFn) {
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+
+  document.getElementById('info').innerHTML =
+    `<strong>Generated calling cards</strong> for ${wordPool.length} items. ` +
+    `<strong>Print duplex (flip on short edge) — picture front, word back. Then cut along borders.</strong>`;
+
+  const label = document.createElement('div');
+  label.className = 'section-label calling-label';
+  label.textContent = `Calling Cards — duplex print, cut along borders (${wordPool.length} cards)`;
+  output.appendChild(label);
+
+  const cardsPerPage = 16; // 4x4 grid
+  const cols = 4;
+  const pages = Math.ceil(wordPool.length / cardsPerPage);
+  const cellStyle = buildCellStyle(radius);
+
+  for (let p = 0; p < pages; p++) {
+    const start = p * cardsPerPage;
+    const end = Math.min(start + cardsPerPage, wordPool.length);
+    const pageItems = wordPool.slice(start, end);
+
+    // Pad to fill grid if needed
+    while (pageItems.length < cardsPerPage) {
+      pageItems.push(null);
+    }
+
+    // FRONT PAGE — pictures only
+    const frontPage = document.createElement('div');
+    frontPage.className = 'page';
+    frontPage.innerHTML = `
+      <div class="calling-header">
+        <h2>✂️ Calling Cards — ${title}</h2>
+        <p>Picture Side · Page ${p + 1} of ${pages} · Print duplex, flip on short edge</p>
+      </div>
+    `;
+
+    const frontGrid = document.createElement('div');
+    frontGrid.className = 'calling-cards-grid';
+    frontGrid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
+
+    for (const item of pageItems) {
+      const card = document.createElement('div');
+      card.className = 'calling-card';
+      card.setAttribute('style', cellStyle);
+      if (item) {
+        card.innerHTML = `<img src="${imgFn(item)}" alt="${item.word}" loading="lazy" style="border-radius:${Math.max(0, radius - 2)}px">`;
+      } else {
+        card.style.background = 'transparent';
+      }
+      frontGrid.appendChild(card);
+    }
+
+    frontPage.appendChild(frontGrid);
+    output.appendChild(frontPage);
+
+    // BACK PAGE — words only (mirrored rows for duplex alignment)
+    const backPage = document.createElement('div');
+    backPage.className = 'page';
+    backPage.innerHTML = `
+      <div class="calling-header">
+        <h2>✂️ Calling Cards — ${title}</h2>
+        <p>Word Side (mirror-printed for duplex) · Page ${p + 1} of ${pages}</p>
+      </div>
+    `;
+
+    const backGrid = document.createElement('div');
+    backGrid.className = 'calling-cards-grid';
+    backGrid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
+
+    // Mirror each row horizontally for proper duplex alignment
+    const rows = Math.ceil(pageItems.length / cols);
+    for (let r = 0; r < rows; r++) {
+      const rowItems = pageItems.slice(r * cols, (r + 1) * cols);
+      // Pad row to cols width
+      while (rowItems.length < cols) rowItems.push(null);
+      const mirrored = [...rowItems].reverse();
+
+      for (const item of mirrored) {
+        const card = document.createElement('div');
+        card.className = 'calling-card';
+        card.setAttribute('style', cellStyle);
+        if (item) {
+          card.innerHTML = `<div class="card-word">${item.word}</div>`;
+        } else {
+          card.style.background = 'transparent';
+        }
+        backGrid.appendChild(card);
+      }
+    }
+
+    backPage.appendChild(backGrid);
+    output.appendChild(backPage);
+  }
+}
+
+// ===== PRESET MODE =====
+function generate() {
+  const gridSize = parseInt(document.getElementById('gridSize').value);
+  const boardCount = parseInt(document.getElementById('boardCount').value);
+  const borderColor = document.getElementById('borderColor').value;
+  const borderW = parseFloat(document.getElementById('borderWidth').value);
+  const radius = parseInt(document.getElementById('cornerRadius').value);
+
+  generateBoards(getWordPool(), getTitle(), gridSize, boardCount, borderColor, borderW, radius,
+    item => `${IMAGE_BASE}/${item.img}`
+  );
+}
+
+function generateCallingCards() {
+  const borderColor = document.getElementById('borderColor').value;
+  const borderW = parseFloat(document.getElementById('borderWidth').value);
+  const radius = parseInt(document.getElementById('cornerRadius').value);
+
+  generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius,
+    item => `${IMAGE_BASE}/${item.img}`
+  );
+}
+
+// ===== CUSTOM MODE =====
+function generateCustom() {
+  if (customItems.length === 0) { alert('Upload some images first!'); return; }
+
+  const gridSize = parseInt(document.getElementById('customGridSize').value);
+  const boardCount = parseInt(document.getElementById('customBoardCount').value);
+  const borderColor = document.getElementById('customBorderColor').value;
+  const borderW = parseFloat(document.getElementById('customBorderWidth').value);
+  const radius = parseInt(document.getElementById('customCornerRadius').value);
+
+  generateBoards(customItems, 'Custom', gridSize, boardCount, borderColor, borderW, radius,
+    item => item.imgData
+  );
+}
+
+function generateCustomCallingCards() {
+  if (customItems.length === 0) { alert('Upload some images first!'); return; }
+
+  const borderColor = document.getElementById('customBorderColor').value;
+  const borderW = parseFloat(document.getElementById('customBorderWidth').value);
+  const radius = parseInt(document.getElementById('customCornerRadius').value);
+
+  generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius,
+    item => item.imgData
+  );
+}
+
+// Auto-generate preset on load
 window.addEventListener('DOMContentLoaded', generate);
 </script>
 </body>
