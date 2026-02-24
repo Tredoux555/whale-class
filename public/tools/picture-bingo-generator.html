@@ -31,14 +31,25 @@
   }
   .btn-primary { background: #34d399; color: #0D3330; }
   .btn-primary:hover { background: #6ee7b7; }
+  .btn-calling { background: #fbbf24; color: #0D3330; }
+  .btn-calling:hover { background: #fcd34d; }
   .btn-print { background: white; color: #0D3330; }
   .btn-print:hover { background: #ecfdf5; }
+
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
 
   .info-bar {
     background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px;
     font-size: 12px; margin-top: 10px; line-height: 1.6;
   }
   .info-bar strong { color: #6ee7b7; }
+
+  .how-to {
+    background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-top: 8px; line-height: 1.6;
+    color: #fef3c7;
+  }
+  .how-to strong { color: #fbbf24; }
 
   /* Page shared */
   .page {
@@ -88,8 +99,55 @@
   .cell-free { background: #FFF8E1; }
   .cell-free .cell-word { font-size: 16px; color: #F57F17; }
 
+  /* Calling cards grid */
+  .calling-cards-grid {
+    display: grid; gap: 0; border: 3px solid #555;
+    margin: 0 auto; max-width: 190mm;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .calling-card {
+    border: 1.5px dashed #888;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3mm; text-align: center;
+    aspect-ratio: 1;
+  }
+
+  .calling-card img {
+    width: 80%; height: 60%; object-fit: cover; border-radius: 2mm;
+  }
+
+  .calling-card .card-word {
+    margin-top: 2mm;
+    font-size: 18px; font-weight: bold;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    color: #333;
+  }
+  .calling-card .card-word .vowel-hl { color: #C62828; }
+
+  .calling-header {
+    text-align: center; margin-bottom: 4mm;
+  }
+  .calling-header h2 {
+    font-size: 22px; color: #333;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  }
+  .calling-header p {
+    font-size: 11px; color: #999; margin-top: 2px;
+  }
+
+  /* Section dividers in preview */
+  .section-label {
+    text-align: center; padding: 12px; margin: 0 auto; max-width: 210mm;
+    font-size: 13px; font-weight: 600; color: #666;
+    text-transform: uppercase; letter-spacing: 2px;
+    border-bottom: 2px solid #ddd;
+  }
+  .section-label.boards-label { color: #2196F3; border-color: #2196F3; }
+  .section-label.calling-label { color: #F57F17; border-color: #F57F17; }
+
   @media print {
-    .toolbar { display: none !important; }
+    .toolbar, .section-label { display: none !important; }
     body { background: white; }
     .page { box-shadow: none; margin: 0; }
   }
@@ -132,13 +190,22 @@
         <option value="no">No free space</option>
       </select>
     </div>
-    <button class="btn btn-primary" onclick="generate()">Generate Boards</button>
-    <button class="btn btn-print" onclick="window.print()">Print All</button>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
+      <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
+      <button class="btn btn-print" onclick="window.print()">Print All</button>
+    </div>
+  </div>
+
+  <div class="how-to">
+    <strong>How to play:</strong>
+    1) Print the <strong>Bingo Boards</strong> (duplex — flip on short edge) — one per player.<br>
+    2) Print the <strong>Calling Cards</strong> — cut along the dashed lines to make individual cards.<br>
+    3) The caller draws a card, shows the picture, says the word. Players cover the matching picture on their board.
   </div>
 
   <div class="info-bar" id="info">
-    <strong>Duplex printing:</strong> Each board generates 2 pages — pictures on front, words on back.
-    Set your printer to <strong>flip on short edge</strong> for correct alignment.
+    Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for cut-out tabs.
   </div>
 </div>
 
@@ -275,15 +342,25 @@ function highlightVowel(word) {
 const BINGO_LETTERS = 'BINGO'.split('');
 const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
 
-function generate() {
+function getWordPool() {
   const setKey = document.getElementById('wordSet').value;
+  return setKey === 'all' ? ALL_WORDS : WORD_SETS[setKey].words;
+}
+
+function getTitle() {
+  const setKey = document.getElementById('wordSet').value;
+  return setKey === 'all' ? 'All CVC' : WORD_SETS[setKey].title;
+}
+
+function generate() {
   const gridSize = parseInt(document.getElementById('gridSize').value);
   const boardCount = parseInt(document.getElementById('boardCount').value);
   const hasFree = document.getElementById('freeSpace').value === 'yes';
   const output = document.getElementById('output');
   output.innerHTML = '';
 
-  const wordPool = setKey === 'all' ? ALL_WORDS : WORD_SETS[setKey].words;
+  const wordPool = getWordPool();
+  const title = getTitle();
   const totalCells = gridSize * gridSize - (hasFree ? 1 : 0);
   const centerIdx = hasFree ? Math.floor(gridSize * gridSize / 2) : -1;
 
@@ -292,17 +369,22 @@ function generate() {
     return;
   }
 
-  const title = setKey === 'all' ? 'All CVC' : WORD_SETS[setKey].title;
   document.getElementById('info').innerHTML =
-    `<strong>Generated ${boardCount} boards</strong> (${boardCount * 2} pages total). ` +
+    `<strong>Generated ${boardCount} bingo boards</strong> (${boardCount * 2} pages total). ` +
     `Word pool: ${wordPool.length} · Grid: ${gridSize}×${gridSize} · ` +
-    `<strong>Print duplex, flip on short edge.</strong>`;
+    `<strong>Print duplex, flip on short edge.</strong> ` +
+    `Don't forget to also print the <strong>Calling Cards</strong>!`;
+
+  // Section label
+  const label = document.createElement('div');
+  label.className = 'section-label boards-label';
+  label.textContent = `Player Bingo Boards — ${boardCount} boards (${boardCount * 2} pages for duplex)`;
+  output.appendChild(label);
 
   for (let b = 0; b < boardCount; b++) {
     const selected = shuffle(wordPool).slice(0, totalCells);
 
-    // Build cell arrays for this board
-    const cells = []; // { word, img } or { free: true }
+    const cells = [];
     let wordIdx = 0;
     for (let i = 0; i < gridSize * gridSize; i++) {
       if (hasFree && i === centerIdx) {
@@ -359,7 +441,6 @@ function generate() {
     const backGrid = document.createElement('div');
     backGrid.className = `bingo-grid size-${gridSize}`;
 
-    // Mirror each row horizontally so words align when page is flipped
     for (let row = 0; row < gridSize; row++) {
       const rowCells = cells.slice(row * gridSize, (row + 1) * gridSize);
       const mirrored = [...rowCells].reverse();
@@ -377,6 +458,78 @@ function generate() {
     backPage.appendChild(backGrid);
     output.appendChild(backPage);
   }
+}
+
+function generateCallingCards() {
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+
+  const wordPool = getWordPool();
+  const title = getTitle();
+
+  document.getElementById('info').innerHTML =
+    `<strong>Generated calling cards</strong> for ${wordPool.length} words. ` +
+    `<strong>Print and cut along the dashed lines.</strong> The caller draws a card, shows the picture, and says the word.`;
+
+  const label = document.createElement('div');
+  label.className = 'section-label calling-label';
+  label.textContent = `Calling Cards — cut along dashed lines (${wordPool.length} cards)`;
+  output.appendChild(label);
+
+  // 4 columns × 4 rows = 16 cards per page
+  const cardsPerPage = 16;
+  const pages = Math.ceil(wordPool.length / cardsPerPage);
+
+  for (let p = 0; p < pages; p++) {
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.innerHTML = `
+      <div class="calling-header">
+        <h2>✂️ Calling Cards — ${title}</h2>
+        <p>Cut along dashed lines · Page ${p + 1} of ${pages}</p>
+      </div>
+    `;
+
+    const grid = document.createElement('div');
+    grid.className = 'calling-cards-grid';
+
+    const start = p * cardsPerPage;
+    const end = Math.min(start + cardsPerPage, wordPool.length);
+
+    for (let i = start; i < end; i++) {
+      const item = wordPool[i];
+      const card = document.createElement('div');
+      card.className = 'calling-card';
+      card.innerHTML = `
+        <img src="${IMAGE_BASE}/${item.img}" alt="${item.word}" loading="lazy">
+        <div class="card-word">${highlightVowel(item.word)}</div>
+      `;
+      grid.appendChild(card);
+    }
+
+    // Fill remaining cells if partial page
+    const remaining = cardsPerPage - (end - start);
+    for (let i = 0; i < remaining; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'calling-card';
+      empty.style.borderColor = 'transparent';
+      grid.appendChild(empty);
+    }
+
+    page.appendChild(grid);
+    output.appendChild(page);
+  }
+}
+
+function generateBoth() {
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+  // Generate boards
+  generate();
+  // Then append calling cards after
+  const savedHTML = output.innerHTML;
+  generateCallingCards();
+  output.innerHTML = savedHTML + output.innerHTML;
 }
 
 // Auto-generate on load
