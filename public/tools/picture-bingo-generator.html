@@ -63,7 +63,7 @@
     font-weight: 600;
   }
 
-  .control-group select, .control-group input {
+  .control-group select, .control-group input[type="number"] {
     padding: 10px 14px;
     border-radius: 12px;
     border: 2px solid rgba(255,255,255,0.15);
@@ -88,6 +88,34 @@
   }
 
   .control-group input[type="number"] { width: 75px; }
+
+  /* Color picker row */
+  .color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-picker-row input[type="color"] {
+    width: 40px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+  }
+
+  .color-picker-row input[type="text"] {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.15);
+    font-size: 13px;
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+    font-family: monospace;
+    width: 85px;
+  }
 
   .btn {
     padding: 11px 24px;
@@ -231,16 +259,14 @@
     font-weight: 600;
   }
 
-  /* Bingo grid */
+  /* Card-style bingo grid */
   .bingo-grid {
     display: grid;
     gap: 0;
-    border: 3px solid #1f2937;
     margin: 0 auto;
     max-width: 190mm;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .bingo-grid.size-3 { grid-template-columns: repeat(3, 1fr); }
@@ -248,23 +274,34 @@
   .bingo-grid.size-5 { grid-template-columns: repeat(5, 1fr); }
 
   .bingo-cell {
-    border: 2.5px solid #1f2937;
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3mm;
-    text-align: center;
     overflow: hidden;
-    background: white;
     position: relative;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* The colored border is achieved by using the cell background as the border color,
+     then placing a white inner area with padding — same as 3-Part Card Generator */
+  .bingo-cell .cell-inner {
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .bingo-cell img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 8px;
     display: block;
   }
 
@@ -273,10 +310,9 @@
     font-weight: 700;
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
     color: #1f2937;
-    letter-spacing: -1px;
   }
 
-  .cell-free {
+  .cell-free .cell-inner {
     background: linear-gradient(135deg, #fffbeb, #fef3c7);
   }
 
@@ -286,43 +322,46 @@
     font-weight: 800;
   }
 
-  /* Calling cards grid */
+  /* Calling cards grid — same card-style approach */
   .calling-cards-grid {
     display: grid;
     gap: 0;
-    border: 3px solid #4b5563;
     margin: 0 auto;
     max-width: 190mm;
     grid-template-columns: repeat(4, 1fr);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .calling-card {
-    border: 2px dashed #b4b8c3;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4mm;
     text-align: center;
     aspect-ratio: 1;
-    background: white;
-    transition: background 0.2s ease;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  .calling-card:hover {
-    background: #f9fafb;
+  .calling-card .card-inner {
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .calling-card img {
     width: 75%;
     height: 55%;
     object-fit: cover;
-    border-radius: 8px;
     display: block;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   }
 
   .calling-card .card-word {
@@ -331,7 +370,6 @@
     font-weight: 700;
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
     color: #1f2937;
-    letter-spacing: -0.5px;
   }
 
   .calling-header {
@@ -382,6 +420,7 @@
     .toolbar, .section-label { display: none !important; }
     body { background: white; }
     .page { box-shadow: none; margin: 0; border-radius: 0; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   }
 </style>
 </head>
@@ -422,6 +461,30 @@
         <option value="no">No free space</option>
       </select>
     </div>
+    <div class="control-group">
+      <label>Border Color</label>
+      <div class="color-picker-row">
+        <input type="color" id="borderColor" value="#2D5A27">
+        <input type="text" id="borderColorText" value="#2D5A27">
+      </div>
+    </div>
+    <div class="control-group">
+      <label>Border Width</label>
+      <select id="borderWidth">
+        <option value="2">Thin</option>
+        <option value="3" selected>Medium</option>
+        <option value="5">Thick</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Corner Radius</label>
+      <select id="cornerRadius">
+        <option value="0">Square</option>
+        <option value="4">Slight</option>
+        <option value="8" selected>Rounded</option>
+        <option value="14">Very Round</option>
+      </select>
+    </div>
     <div class="btn-group">
       <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
       <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
@@ -432,7 +495,7 @@
   <div class="how-to">
     <strong>How to play:</strong>
     1) Print the <strong>Bingo Boards</strong> (duplex — flip on short edge) — one per player.<br>
-    2) Print the <strong>Calling Cards</strong> — cut along the dashed lines to make individual cards.<br>
+    2) Print the <strong>Calling Cards</strong> — cut along the border edges to make individual cards.<br>
     3) The caller draws a card, shows the picture, says the word. Players cover the matching picture on their board.
   </div>
 
@@ -445,6 +508,20 @@
 
 <script>
 const IMAGE_BASE = '/images/pink-series';
+
+// Sync color picker and text input
+document.getElementById('borderColor').addEventListener('input', function() {
+  document.getElementById('borderColorText').value = this.value;
+});
+document.getElementById('borderColorText').addEventListener('input', function() {
+  if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+    document.getElementById('borderColor').value = this.value;
+  }
+});
+
+function getBorderColor() { return document.getElementById('borderColor').value; }
+function getBorderWidthMM() { return parseInt(document.getElementById('borderWidth').value); }
+function getCornerRadius() { return parseInt(document.getElementById('cornerRadius').value); }
 
 const WORD_SETS = {
   'short-a': {
@@ -561,15 +638,6 @@ function shuffle(arr) {
   return a;
 }
 
-function getVowel(word) {
-  for (const ch of word) { if ('aeiou'.includes(ch)) return ch; }
-  return '';
-}
-
-function highlightVowel(word) {
-  return word;
-}
-
 const BINGO_LETTERS = 'BINGO'.split('');
 const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
 
@@ -587,6 +655,9 @@ function generate() {
   const gridSize = parseInt(document.getElementById('gridSize').value);
   const boardCount = parseInt(document.getElementById('boardCount').value);
   const hasFree = document.getElementById('freeSpace').value === 'yes';
+  const borderColor = getBorderColor();
+  const borderW = getBorderWidthMM();
+  const radius = getCornerRadius();
   const output = document.getElementById('output');
   output.innerHTML = '';
 
@@ -645,10 +716,13 @@ function generate() {
     for (const cell of cells) {
       const el = document.createElement('div');
       el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
+      el.style.background = borderColor;
+      el.style.padding = borderW + 'mm';
+
       if (cell.free) {
-        el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+        el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">⭐<br>FREE</div></div>`;
       } else {
-        el.innerHTML = `<img src="${IMAGE_BASE}/${cell.img}" alt="${cell.word}" loading="lazy">`;
+        el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><img src="${IMAGE_BASE}/${cell.img}" alt="${cell.word}" loading="lazy" style="border-radius:${radius}px"></div>`;
       }
       frontGrid.appendChild(el);
     }
@@ -678,10 +752,13 @@ function generate() {
       for (const cell of mirrored) {
         const el = document.createElement('div');
         el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
+        el.style.background = borderColor;
+        el.style.padding = borderW + 'mm';
+
         if (cell.free) {
-          el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+          el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">⭐<br>FREE</div></div>`;
         } else {
-          el.innerHTML = `<div class="cell-word">${highlightVowel(cell.word)}</div>`;
+          el.innerHTML = `<div class="cell-inner" style="border-radius:${radius}px"><div class="cell-word">${cell.word}</div></div>`;
         }
         backGrid.appendChild(el);
       }
@@ -697,14 +774,17 @@ function generateCallingCards() {
 
   const wordPool = getWordPool();
   const title = getTitle();
+  const borderColor = getBorderColor();
+  const borderW = getBorderWidthMM();
+  const radius = getCornerRadius();
 
   document.getElementById('info').innerHTML =
     `<strong>Generated calling cards</strong> for ${wordPool.length} words. ` +
-    `<strong>Print and cut along the dashed lines.</strong> The caller draws a card, shows the picture, and says the word.`;
+    `<strong>Print and cut along the colored borders.</strong> The caller draws a card, shows the picture, and says the word.`;
 
   const label = document.createElement('div');
   label.className = 'section-label calling-label';
-  label.textContent = `Calling Cards — cut along dashed lines (${wordPool.length} cards)`;
+  label.textContent = `Calling Cards — cut along colored borders (${wordPool.length} cards)`;
   output.appendChild(label);
 
   // 4 columns × 4 rows = 16 cards per page
@@ -717,7 +797,7 @@ function generateCallingCards() {
     page.innerHTML = `
       <div class="calling-header">
         <h2>✂️ Calling Cards — ${title}</h2>
-        <p>Cut along dashed lines · Page ${p + 1} of ${pages}</p>
+        <p>Cut along the colored borders · Page ${p + 1} of ${pages}</p>
       </div>
     `;
 
@@ -731,9 +811,13 @@ function generateCallingCards() {
       const item = wordPool[i];
       const card = document.createElement('div');
       card.className = 'calling-card';
+      card.style.background = borderColor;
+      card.style.padding = borderW + 'mm';
       card.innerHTML = `
-        <img src="${IMAGE_BASE}/${item.img}" alt="${item.word}" loading="lazy">
-        <div class="card-word">${highlightVowel(item.word)}</div>
+        <div class="card-inner" style="border-radius:${radius}px">
+          <img src="${IMAGE_BASE}/${item.img}" alt="${item.word}" loading="lazy" style="border-radius:${Math.max(0, radius - 2)}px">
+          <div class="card-word">${item.word}</div>
+        </div>
       `;
       grid.appendChild(card);
     }
@@ -743,24 +827,13 @@ function generateCallingCards() {
     for (let i = 0; i < remaining; i++) {
       const empty = document.createElement('div');
       empty.className = 'calling-card';
-      empty.style.borderColor = 'transparent';
+      empty.style.background = 'transparent';
       grid.appendChild(empty);
     }
 
     page.appendChild(grid);
     output.appendChild(page);
   }
-}
-
-function generateBoth() {
-  const output = document.getElementById('output');
-  output.innerHTML = '';
-  // Generate boards
-  generate();
-  // Then append calling cards after
-  const savedHTML = output.innerHTML;
-  generateCallingCards();
-  output.innerHTML = savedHTML + output.innerHTML;
 }
 
 // Auto-generate on load
