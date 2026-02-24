@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Card, CropData } from './types';
 import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
-import { generateCards, generateLargeCards } from './print-utils';
+import { generateCards, generateLargeCards, generateLabelsOnly } from './print-utils';
 
 interface HeaderConfig {
   showBackButton?: boolean;
@@ -468,6 +468,38 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
     setGenerating(false);
   };
 
+  // Generate labels-only print layout
+  const generateLabelsOnlySheet = async () => {
+    if (cards.length === 0) {
+      alert('Please upload some images first!');
+      return;
+    }
+
+    setGenerating(true);
+
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow pop-ups to use the print feature');
+        setGenerating(false);
+        return;
+      }
+
+      const html = generateLabelsOnly({
+        cards,
+        borderColor,
+        fontFamily
+      });
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+    } catch (error) {
+      console.error('Error generating labels print:', error);
+      alert('Error generating labels print. Please try again.');
+    }
+
+    setGenerating(false);
+  };
 
   // Download all cards individually
   const downloadAllCards = async () => {
@@ -838,6 +870,22 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
                 }}
               >
                 {generating ? '⏳ Preparing...' : '🖼️ Print Images Only'}
+              </button>
+              <button
+                onClick={generateLabelsOnlySheet}
+                disabled={generating}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: '#FF9800',
+                  color: '#fff',
+                  cursor: generating ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  opacity: generating ? 0.7 : 1
+                }}
+              >
+                {generating ? '⏳ Preparing...' : '🏷️ Print Labels Only'}
               </button>
               <button
                 onClick={() => setCards([])}
