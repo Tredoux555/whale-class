@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import JSZip from 'jszip';
-import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 
 interface FlashCard {
   id: number;
@@ -15,7 +14,8 @@ interface FlashCard {
 
 const VocabularyFlashcardGenerator = () => {
   const router = useRouter();
-  const [selectedWeek, setSelectedWeek] = useState<number>(17);
+  const [wordInput, setWordInput] = useState('');
+  const [vocabulary, setVocabulary] = useState<string[]>([]);
   const [cards, setCards] = useState<FlashCard[]>([]);
   const [borderColor, setBorderColor] = useState('#00BCD4');
   const [fontFamily, setFontFamily] = useState('Comic Sans MS');
@@ -25,15 +25,37 @@ const VocabularyFlashcardGenerator = () => {
   const [processingZip, setProcessingZip] = useState(false);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
-  const plan = CIRCLE_TIME_CURRICULUM.find(p => p.week === selectedWeek);
-  const vocabulary = plan?.vocabulary || [];
+  // Add words from the input field
+  const handleAddWords = () => {
+    const newWords = wordInput
+      .split(/[,\n]+/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0 && !vocabulary.includes(w));
+
+    if (newWords.length > 0) {
+      setVocabulary(prev => [...prev, ...newWords]);
+      setWordInput('');
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAddWords();
+    }
+  };
+
+  const removeWord = (word: string) => {
+    setVocabulary(prev => prev.filter(w => w !== word));
+    setCards(prev => prev.filter(c => c.word !== word));
+  };
 
   // Match filename to vocabulary word
   const matchFilenameToWord = (filename: string): string | null => {
     const wordFromFile = filename
-      .replace(/\.[^/.]+$/, '') // Remove extension
-      .replace(/[-_]/g, ' ')    // Replace dashes/underscores with spaces
-      .replace(/\d+/g, '')      // Remove numbers
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\d+/g, '')
       .trim()
       .toLowerCase();
 
@@ -66,7 +88,6 @@ const VocabularyFlashcardGenerator = () => {
         }
       }
 
-      // Merge with existing cards (new ones override)
       setCards(prev => {
         const existingWords = new Set(newCards.map(c => c.word));
         const kept = prev.filter(c => !existingWords.has(c.word));
@@ -88,14 +109,13 @@ const VocabularyFlashcardGenerator = () => {
     }
   };
 
-  // Process ZIP file - match images to vocabulary words
+  // Process ZIP file
   const processZipFile = async (file: File) => {
     setProcessingZip(true);
     try {
       const zip = await JSZip.loadAsync(file);
       const newCards: FlashCard[] = [];
 
-      // Get all image files from zip
       const imageFiles: { name: string; file: JSZip.JSZipObject }[] = [];
       zip.forEach((relativePath, zipEntry) => {
         if (!zipEntry.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(relativePath)) {
@@ -103,7 +123,6 @@ const VocabularyFlashcardGenerator = () => {
         }
       });
 
-      // Process each image
       for (const { name, file: zipEntry } of imageFiles) {
         const blob = await zipEntry.async('blob');
         const imageData = await blobToBase64(blob);
@@ -119,7 +138,6 @@ const VocabularyFlashcardGenerator = () => {
         }
       }
 
-      // Merge with existing cards (new ones override)
       setCards(prev => {
         const existingWords = new Set(newCards.map(c => c.word));
         const kept = prev.filter(c => !existingWords.has(c.word));
@@ -227,13 +245,11 @@ const VocabularyFlashcardGenerator = () => {
     const items = e.dataTransfer.items;
     const files = e.dataTransfer.files;
 
-    // Check if it's a folder drop (using webkitGetAsEntry)
     if (items && items.length > 0) {
       const firstItem = items[0];
       const entry = firstItem.webkitGetAsEntry?.();
 
       if (entry?.isDirectory) {
-        // It's a folder!
         setProcessingZip(true);
         try {
           const folderFiles = await readFolderEntries(entry as FileSystemDirectoryEntry);
@@ -247,13 +263,11 @@ const VocabularyFlashcardGenerator = () => {
       }
     }
 
-    // Check for ZIP or multiple files
     if (files.length > 0) {
       const file = files[0];
       if (file.name.endsWith('.zip')) {
         processZipFile(file);
       } else if (files.length > 1 || file.type.startsWith('image/')) {
-        // Multiple files or single image
         const fileArray = Array.from(files);
         await processImageFiles(fileArray);
       }
@@ -277,7 +291,6 @@ const VocabularyFlashcardGenerator = () => {
     try {
       const clipboardItems = await navigator.clipboard.read();
       for (const item of clipboardItems) {
-        // Check for image types
         const imageType = item.types.find(type => type.startsWith('image/'));
         if (imageType) {
           const blob = await item.getType(imageType);
@@ -293,7 +306,6 @@ const VocabularyFlashcardGenerator = () => {
           return;
         }
       }
-      // No image found in clipboard
       alert('No image found in clipboard. Copy an image first!');
     } catch (err) {
       console.error('Paste error:', err);
@@ -340,7 +352,7 @@ const VocabularyFlashcardGenerator = () => {
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Vocabulary Flashcards - Week ${selectedWeek}</title>
+  <title>Vocabulary Flashcards</title>
   <style>
     @page { size: A4 landscape; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -433,7 +445,7 @@ const VocabularyFlashcardGenerator = () => {
             <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">
               ← Back
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">🃏 Vocabulary Flashcard Maker</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Vocabulary Flashcard Maker</h1>
           </div>
           {readyCount > 0 && (
             <button
@@ -441,221 +453,227 @@ const VocabularyFlashcardGenerator = () => {
               disabled={generating}
               className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium"
             >
-              {generating ? '⏳ Generating...' : `🖨️ Print ${readyCount} Cards`}
+              {generating ? 'Generating...' : `Print ${readyCount} Cards`}
             </button>
           )}
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto p-6">
-        {/* Week Selector */}
+        {/* Word Input */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📅 Select Week</h2>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {CIRCLE_TIME_CURRICULUM.slice(0, 20).map((week) => (
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Add Your Vocabulary Words</h2>
+          <div className="flex gap-2">
+            <textarea
+              value={wordInput}
+              onChange={(e) => setWordInput(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              placeholder="Type words separated by commas or new lines, e.g.  apple, banana, cherry"
+              rows={2}
+              className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none text-sm"
+            />
+            <button
+              onClick={handleAddWords}
+              disabled={!wordInput.trim()}
+              className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-300 text-white rounded-lg font-medium self-end"
+            >
+              Add
+            </button>
+          </div>
+
+          {/* Added words */}
+          {vocabulary.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {vocabulary.map((word) => (
+                <span
+                  key={word}
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-full text-sm text-cyan-800"
+                >
+                  {word}
+                  <button
+                    onClick={() => removeWord(word)}
+                    className="text-cyan-400 hover:text-red-500 ml-0.5"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
               <button
-                key={week.week}
-                onClick={() => { setSelectedWeek(week.week); setCards([]); }}
-                className={`px-3 py-2 rounded-lg whitespace-nowrap transition-all text-sm flex items-center gap-1 ${
-                  selectedWeek === week.week ? 'text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-cyan-100'
-                }`}
-                style={selectedWeek === week.week ? { backgroundColor: week.color } : {}}
+                onClick={() => { setVocabulary([]); setCards([]); }}
+                className="px-3 py-1 text-xs text-gray-400 hover:text-red-500"
               >
-                {week.icon} W{week.week}
+                Clear all
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Theme Display */}
-        {plan && (
-          <div className="rounded-xl p-4 mb-6 text-white" style={{ backgroundColor: plan.color }}>
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{plan.icon}</span>
-              <div>
-                <h2 className="text-xl font-bold">Week {plan.week}: {plan.theme}</h2>
-                <p className="opacity-90 text-sm">{vocabulary.length} vocabulary words</p>
-              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Copyable Word List */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📝 Word List (click to copy)</h2>
-          <div className="flex flex-wrap gap-2">
-            {vocabulary.map((word) => (
-              <button
-                key={word}
-                onClick={() => {
-                  navigator.clipboard.writeText(word);
-                  const el = document.getElementById(`word-${word}`);
-                  if (el) {
-                    el.textContent = '✓ copied';
-                    setTimeout(() => { el.textContent = word; }, 1000);
-                  }
-                }}
-                className="px-3 py-1 bg-gray-100 hover:bg-cyan-100 rounded-lg text-sm font-medium text-gray-700 transition-all"
-              >
-                <span id={`word-${word}`}>{word}</span>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-2">Click a word → paste into Google Images → copy image → click card below → ⌘V</p>
-        </div>
-
-        {/* Folder/ZIP Drop Zone */}
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragOverZone(true); }}
-          onDragLeave={() => setDragOverZone(false)}
-          onDrop={handleZoneDrop}
-          className={`mb-6 border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-            dragOverZone
-              ? 'border-cyan-500 bg-cyan-50'
-              : 'border-gray-300 bg-white hover:border-cyan-300'
-          }`}
-        >
-          {processingZip ? (
-            <div className="flex items-center justify-center gap-3">
-              <div className="animate-spin text-2xl">⏳</div>
-              <span className="text-gray-600">Processing images...</span>
-            </div>
-          ) : (
-            <>
-              <div className="text-4xl mb-2">📁</div>
-              <p className="font-semibold text-gray-700">Drop a folder with images here</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Name images like vocabulary words (e.g., winter.jpg → "winter")
-              </p>
-              <label className="inline-block mt-3 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg cursor-pointer font-medium">
-                📂 Choose Folder
-                <input
-                  type="file"
-                  // @ts-expect-error - webkitdirectory is valid but not in React types
-                  webkitdirectory="true"
-                  directory="true"
-                  multiple
-                  className="hidden"
-                  onChange={handleFolderSelect}
-                />
-              </label>
-              <p className="text-xs text-gray-400 mt-2">
-                Also accepts ZIP files or multiple images
-              </p>
-            </>
+          {vocabulary.length > 0 && (
+            <p className="text-xs text-gray-400 mt-3">
+              {vocabulary.length} word{vocabulary.length !== 1 ? 's' : ''} added. Click a word below → copy image from web → Cmd+V to paste.
+            </p>
           )}
         </div>
 
-        {/* Settings */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">⚙️ Card Style</h2>
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Border Color</label>
-              <div className="flex gap-2">
-                {['#00BCD4', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0', '#2196F3'].map(color => (
-                  <button
-                    key={color}
-                    onClick={() => setBorderColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 ${borderColor === color ? 'border-gray-800 scale-110' : 'border-transparent'}`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
+        {vocabulary.length > 0 && (
+          <>
+            {/* Folder/ZIP Drop Zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOverZone(true); }}
+              onDragLeave={() => setDragOverZone(false)}
+              onDrop={handleZoneDrop}
+              className={`mb-6 border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+                dragOverZone
+                  ? 'border-cyan-500 bg-cyan-50'
+                  : 'border-gray-300 bg-white hover:border-cyan-300'
+              }`}
+            >
+              {processingZip ? (
+                <div className="flex items-center justify-center gap-3">
+                  <div className="animate-spin text-2xl">⏳</div>
+                  <span className="text-gray-600">Processing images...</span>
+                </div>
+              ) : (
+                <>
+                  <p className="font-semibold text-gray-700">Drop a folder with images here</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Name images like your vocabulary words (e.g., apple.jpg → &quot;apple&quot;)
+                  </p>
+                  <label className="inline-block mt-3 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg cursor-pointer font-medium text-sm">
+                    Choose Folder
+                    <input
+                      type="file"
+                      // @ts-expect-error - webkitdirectory is valid but not in React types
+                      webkitdirectory="true"
+                      directory="true"
+                      multiple
+                      className="hidden"
+                      onChange={handleFolderSelect}
+                    />
+                  </label>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Also accepts ZIP files or multiple images
+                  </p>
+                </>
+              )}
             </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Font</label>
-              <select
-                value={fontFamily}
-                onChange={(e) => setFontFamily(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1"
-              >
-                <option value="Comic Sans MS">Comic Sans</option>
-                <option value="Arial">Arial</option>
-                <option value="Georgia">Georgia</option>
-              </select>
-            </div>
-          </div>
-        </div>
 
-        {/* Vocabulary Grid */}
-        <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">📇 Vocabulary Words</h2>
-            <span className="text-sm text-gray-500">{readyCount} of {vocabulary.length} ready</span>
-          </div>
-
-          <p className="text-gray-600 text-sm mb-4">
-            Drop a ZIP above to auto-fill, or <strong>click a card → copy image from web → ⌘V to paste</strong>
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {vocabulary.map((word) => {
-              const card = getCardForWord(word);
-              const isDragOver = dragOverWord === word;
-
-              return (
-                <div
-                  key={word}
-                  tabIndex={0}
-                  className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ${
-                    card ? 'ring-2 ring-green-500' : selectedWord === word ? 'ring-2 ring-blue-500 bg-blue-50' : isDragOver ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'ring-1 ring-gray-200 hover:ring-cyan-300'
-                  }`}
-                  style={{ aspectRatio: '1' }}
-                  onClick={() => setSelectedWord(word)}
-                  onFocus={() => setSelectedWord(word)}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverWord(word); }}
-                  onDragLeave={() => setDragOverWord(null)}
-                  onDrop={(e) => handleDrop(word, e)}
-                >
-                  {card ? (
-                    <>
-                      <img src={card.image} alt={word} className="w-full h-full object-cover" />
+            {/* Settings */}
+            <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">Card Style</h2>
+              <div className="flex flex-wrap gap-4">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Border Color</label>
+                  <div className="flex gap-2">
+                    {['#00BCD4', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0', '#2196F3'].map(color => (
                       <button
-                        onClick={(e) => { e.stopPropagation(); removeCard(word); }}
-                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
-                      >
-                        ✕
-                      </button>
-                    </>
-                  ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-blue-50' : 'bg-gray-50 hover:bg-cyan-50'}`}>
-                      <span className="text-3xl mb-1">{selectedWord === word ? '📋' : '📷'}</span>
-                      <span className="text-xs text-gray-500 text-center px-2">
-                        {selectedWord === word ? 'Press ⌘V to paste' : 'Click then paste'}
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        id={`file-${word}`}
-                        onChange={(e) => handleFileUpload(word, e)}
+                        key={color}
+                        onClick={() => setBorderColor(color)}
+                        className={`w-8 h-8 rounded-full border-2 ${borderColor === color ? 'border-gray-800 scale-110' : 'border-transparent'}`}
+                        style={{ backgroundColor: color }}
                       />
-                    </div>
-                  )}
-
-                  <div
-                    className="absolute bottom-0 left-0 right-0 py-2 text-center font-bold text-white text-sm lowercase"
-                    style={{ backgroundColor: borderColor }}
-                  >
-                    {word}
+                    ))}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Font</label>
+                  <select
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-1"
+                  >
+                    <option value="Comic Sans MS">Comic Sans</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-        {/* Generate Button */}
-        {readyCount > 0 && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={generatePrintableSheet}
-              disabled={generating}
-              className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
-            >
-              {generating ? <>⏳ Generating...</> : <>🎴 Generate {readyCount} Flashcards</>}
-            </button>
+            {/* Vocabulary Grid */}
+            <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Vocabulary Words</h2>
+                <span className="text-sm text-gray-500">{readyCount} of {vocabulary.length} ready</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {vocabulary.map((word) => {
+                  const card = getCardForWord(word);
+                  const isDragOver = dragOverWord === word;
+
+                  return (
+                    <div
+                      key={word}
+                      tabIndex={0}
+                      className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ${
+                        card ? 'ring-2 ring-green-500' : selectedWord === word ? 'ring-2 ring-blue-500 bg-blue-50' : isDragOver ? 'ring-2 ring-cyan-500 bg-cyan-50' : 'ring-1 ring-gray-200 hover:ring-cyan-300'
+                      }`}
+                      style={{ aspectRatio: '1' }}
+                      onClick={() => setSelectedWord(word)}
+                      onFocus={() => setSelectedWord(word)}
+                      onDragOver={(e) => { e.preventDefault(); setDragOverWord(word); }}
+                      onDragLeave={() => setDragOverWord(null)}
+                      onDrop={(e) => handleDrop(word, e)}
+                    >
+                      {card ? (
+                        <>
+                          <img src={card.image} alt={word} className="w-full h-full object-cover" />
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeCard(word); }}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-sm hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        </>
+                      ) : (
+                        <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-blue-50' : 'bg-gray-50 hover:bg-cyan-50'}`}>
+                          <span className="text-3xl mb-1">{selectedWord === word ? '📋' : '📷'}</span>
+                          <span className="text-xs text-gray-500 text-center px-2">
+                            {selectedWord === word ? 'Press ⌘V to paste' : 'Click then paste'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id={`file-${word}`}
+                            onChange={(e) => handleFileUpload(word, e)}
+                          />
+                        </div>
+                      )}
+
+                      <div
+                        className="absolute bottom-0 left-0 right-0 py-2 text-center font-bold text-white text-sm lowercase"
+                        style={{ backgroundColor: borderColor }}
+                      >
+                        {word}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Generate Button */}
+            {readyCount > 0 && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={generatePrintableSheet}
+                  disabled={generating}
+                  className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
+                >
+                  {generating ? <>Generating...</> : <>Generate {readyCount} Flashcards</>}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Empty state */}
+        {vocabulary.length === 0 && (
+          <div className="text-center py-16 text-gray-400">
+            <p className="text-5xl mb-4">📸</p>
+            <p className="text-lg font-medium text-gray-500">Add some vocabulary words to get started</p>
+            <p className="text-sm mt-1">Type words above, then add images to create flashcards</p>
           </div>
         )}
       </div>
