@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picture Bingo Generator - Montree Library</title>
+<style>
+  @page { size: A4 portrait; margin: 6mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; }
+
+  .toolbar {
+    background: linear-gradient(135deg, #0D3330, #164440);
+    color: white; padding: 20px; position: sticky; top: 0; z-index: 100;
+  }
+  .toolbar h1 { font-size: 22px; margin-bottom: 4px; }
+  .toolbar p { font-size: 12px; opacity: 0.8; margin-bottom: 14px; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+  .control-group select, .control-group input {
+    padding: 8px 12px; border-radius: 8px; border: none; font-size: 14px;
+    background: rgba(255,255,255,0.95); color: #333;
+  }
+  .control-group input[type="number"] { width: 70px; }
+
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-primary { background: #34d399; color: #0D3330; }
+  .btn-primary:hover { background: #6ee7b7; }
+  .btn-print { background: white; color: #0D3330; }
+  .btn-print:hover { background: #ecfdf5; }
+
+  .info-bar {
+    background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; margin-top: 10px; line-height: 1.6;
+  }
+  .info-bar strong { color: #6ee7b7; }
+
+  /* Page shared */
+  .page {
+    width: 210mm; min-height: 280mm; margin: 16px auto;
+    background: white; padding: 6mm;
+    page-break-after: always;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .page-header { text-align: center; margin-bottom: 4mm; }
+  .page-title {
+    font-size: 32px; font-weight: 900; letter-spacing: 10px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  }
+  .page-title span { display: inline-block; padding: 3px 7px; border-radius: 6px; margin: 0 1px; color: white; }
+  .page-subtitle { font-size: 11px; color: #999; margin-top: 3px; }
+  .page-name { margin-top: 3mm; font-size: 12px; color: #888; border-bottom: 1px solid #ccc; display: inline-block; width: 55mm; }
+  .page-side-label { font-size: 10px; color: #bbb; text-transform: uppercase; letter-spacing: 2px; margin-top: 2mm; }
+
+  /* Bingo grid */
+  .bingo-grid {
+    display: grid; gap: 0; border: 3px solid #333;
+    margin: 0 auto; max-width: 190mm;
+  }
+  .bingo-grid.size-3 { grid-template-columns: repeat(3, 1fr); }
+  .bingo-grid.size-4 { grid-template-columns: repeat(4, 1fr); }
+  .bingo-grid.size-5 { grid-template-columns: repeat(5, 1fr); }
+
+  .bingo-cell {
+    border: 1.5px solid #333; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2mm; text-align: center; overflow: hidden;
+  }
+
+  .bingo-cell img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 2mm;
+  }
+
+  .bingo-cell .cell-word {
+    font-size: 28px; font-weight: bold;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    color: #333;
+  }
+  .bingo-cell .cell-word .vowel-hl { color: #C62828; }
+
+  .cell-free { background: #FFF8E1; }
+  .cell-free .cell-word { font-size: 16px; color: #F57F17; }
+
+  @media print {
+    .toolbar { display: none !important; }
+    body { background: white; }
+    .page { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>Picture Bingo Generator</h1>
+  <p>Real photos on front, words on back — duplex print ready</p>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Word Set</label>
+      <select id="wordSet">
+        <option value="short-a">Short A (15 words)</option>
+        <option value="short-e">Short E (12 words)</option>
+        <option value="short-i">Short I (15 words)</option>
+        <option value="short-o">Short O (12 words)</option>
+        <option value="short-u">Short U (15 words)</option>
+        <option value="all" selected>All CVC (69 words)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Grid Size</label>
+      <select id="gridSize">
+        <option value="3">3×3 (Young)</option>
+        <option value="4" selected>4×4 (Medium)</option>
+        <option value="5">5×5 (Standard)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Boards</label>
+      <input type="number" id="boardCount" value="6" min="1" max="30">
+    </div>
+    <div class="control-group">
+      <label>Free Space</label>
+      <select id="freeSpace">
+        <option value="yes" selected>Center free</option>
+        <option value="no">No free space</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="generate()">Generate Boards</button>
+    <button class="btn btn-print" onclick="window.print()">Print All</button>
+  </div>
+
+  <div class="info-bar" id="info">
+    <strong>Duplex printing:</strong> Each board generates 2 pages — pictures on front, words on back.
+    Set your printer to <strong>flip on short edge</strong> for correct alignment.
+  </div>
+</div>
+
+<div id="output"></div>
+
+<script>
+const IMAGE_BASE = '/images/pink-series';
+
+const WORD_SETS = {
+  'short-a': {
+    title: 'Short A',
+    words: [
+      { word: 'bag', img: 'short-a/bag.jpeg' },
+      { word: 'bat', img: 'short-a/bat.jpeg' },
+      { word: 'can', img: 'short-a/can.webp' },
+      { word: 'cap', img: 'short-a/cap.jpeg' },
+      { word: 'cat', img: 'short-a/cat.jpeg' },
+      { word: 'fan', img: 'short-a/fan.jpeg' },
+      { word: 'hat', img: 'short-a/hat.jpg' },
+      { word: 'man', img: 'short-a/man.webp' },
+      { word: 'map', img: 'short-a/map.jpeg' },
+      { word: 'mat', img: 'short-a/mat.jpeg' },
+      { word: 'pan', img: 'short-a/pan.jpeg' },
+      { word: 'rat', img: 'short-a/rat.webp' },
+      { word: 'sat', img: 'short-a/sat.jpg' },
+      { word: 'tag', img: 'short-a/tag.jpg' },
+      { word: 'tap', img: 'short-a/tap.webp' },
+    ]
+  },
+  'short-e': {
+    title: 'Short E',
+    words: [
+      { word: 'bed', img: 'short-e/bed.jpeg' },
+      { word: 'hen', img: 'short-e/hen.jpeg' },
+      { word: 'jet', img: 'short-e/jet.jpeg' },
+      { word: 'leg', img: 'short-e/leg.jpg' },
+      { word: 'net', img: 'short-e/net.jpeg' },
+      { word: 'peg', img: 'short-e/peg.jpeg' },
+      { word: 'pen', img: 'short-e/pen.jpeg' },
+      { word: 'pet', img: 'short-e/pet.jpg' },
+      { word: 'red', img: 'short-e/red.jpeg' },
+      { word: 'ten', img: 'short-e/ten.png' },
+      { word: 'web', img: 'short-e/web.jpg' },
+      { word: 'wet', img: 'short-e/wet.jpeg' },
+    ]
+  },
+  'short-i': {
+    title: 'Short I',
+    words: [
+      { word: 'big', img: 'short-i/big.jpeg' },
+      { word: 'bin', img: 'short-i/bin.jpeg' },
+      { word: 'dig', img: 'short-i/dig.jpeg' },
+      { word: 'fig', img: 'short-i/fig.webp' },
+      { word: 'fin', img: 'short-i/fin.jpg' },
+      { word: 'hit', img: 'short-i/hit.jpeg' },
+      { word: 'kit', img: 'short-i/kit.webp' },
+      { word: 'lip', img: 'short-i/lip.jpeg' },
+      { word: 'pig', img: 'short-i/pig.jpg' },
+      { word: 'pin', img: 'short-i/pin.jpg' },
+      { word: 'sit', img: 'short-i/sit.jpeg' },
+      { word: 'tip', img: 'short-i/tip.webp' },
+      { word: 'wig', img: 'short-i/wig.webp' },
+      { word: 'win', img: 'short-i/win.png' },
+      { word: 'zip', img: 'short-i/zip.jpeg' },
+    ]
+  },
+  'short-o': {
+    title: 'Short O',
+    words: [
+      { word: 'box', img: 'short-o/box.jpeg' },
+      { word: 'cot', img: 'short-o/cot.jpg' },
+      { word: 'dog', img: 'short-o/dog.jpeg' },
+      { word: 'fog', img: 'short-o/fog.webp' },
+      { word: 'fox', img: 'short-o/fox.jpeg' },
+      { word: 'hop', img: 'short-o/hop.png' },
+      { word: 'hot', img: 'short-o/hot.jpeg' },
+      { word: 'job', img: 'short-o/job.jpeg' },
+      { word: 'log', img: 'short-o/log.webp' },
+      { word: 'mop', img: 'short-o/mop.avif' },
+      { word: 'pot', img: 'short-o/pot.avif' },
+      { word: 'top', img: 'short-o/top.jpg' },
+    ]
+  },
+  'short-u': {
+    title: 'Short U',
+    words: [
+      { word: 'bug', img: 'short-u/bug.jpg' },
+      { word: 'bun', img: 'short-u/bun.webp' },
+      { word: 'bus', img: 'short-u/bus.jpeg' },
+      { word: 'cup', img: 'short-u/Cup.jpg' },
+      { word: 'cut', img: 'short-u/cut.jpg' },
+      { word: 'fun', img: 'short-u/fun.jpg' },
+      { word: 'hug', img: 'short-u/hug.jpeg' },
+      { word: 'hut', img: 'short-u/hut.jpeg' },
+      { word: 'jug', img: 'short-u/jug.jpg' },
+      { word: 'mug', img: 'short-u/mug.webp' },
+      { word: 'nut', img: 'short-u/nut.jpeg' },
+      { word: 'pup', img: 'short-u/pup.jpeg' },
+      { word: 'rug', img: 'short-u/rug.jpg' },
+      { word: 'run', img: 'short-u/run.jpeg' },
+      { word: 'sun', img: 'short-u/sun.jpeg' },
+    ]
+  },
+};
+
+// Build "all" set
+const ALL_WORDS = [
+  ...WORD_SETS['short-a'].words,
+  ...WORD_SETS['short-e'].words,
+  ...WORD_SETS['short-i'].words,
+  ...WORD_SETS['short-o'].words,
+  ...WORD_SETS['short-u'].words,
+];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getVowel(word) {
+  for (const ch of word) { if ('aeiou'.includes(ch)) return ch; }
+  return '';
+}
+
+function highlightVowel(word) {
+  const v = getVowel(word);
+  return word.split('').map(ch => ch === v ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
+}
+
+const BINGO_LETTERS = 'BINGO'.split('');
+const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
+
+function generate() {
+  const setKey = document.getElementById('wordSet').value;
+  const gridSize = parseInt(document.getElementById('gridSize').value);
+  const boardCount = parseInt(document.getElementById('boardCount').value);
+  const hasFree = document.getElementById('freeSpace').value === 'yes';
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+
+  const wordPool = setKey === 'all' ? ALL_WORDS : WORD_SETS[setKey].words;
+  const totalCells = gridSize * gridSize - (hasFree ? 1 : 0);
+  const centerIdx = hasFree ? Math.floor(gridSize * gridSize / 2) : -1;
+
+  if (wordPool.length < totalCells) {
+    alert(`Need ${totalCells} words but only have ${wordPool.length}. Use a smaller grid or "All CVC".`);
+    return;
+  }
+
+  const title = setKey === 'all' ? 'All CVC' : WORD_SETS[setKey].title;
+  document.getElementById('info').innerHTML =
+    `<strong>Generated ${boardCount} boards</strong> (${boardCount * 2} pages total). ` +
+    `Word pool: ${wordPool.length} · Grid: ${gridSize}×${gridSize} · ` +
+    `<strong>Print duplex, flip on short edge.</strong>`;
+
+  for (let b = 0; b < boardCount; b++) {
+    const selected = shuffle(wordPool).slice(0, totalCells);
+
+    // Build cell arrays for this board
+    const cells = []; // { word, img } or { free: true }
+    let wordIdx = 0;
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      if (hasFree && i === centerIdx) {
+        cells.push({ free: true });
+      } else {
+        cells.push(selected[wordIdx++]);
+      }
+    }
+
+    // === PAGE 1: PICTURES (front) ===
+    const frontPage = document.createElement('div');
+    frontPage.className = 'page';
+    frontPage.innerHTML = `
+      <div class="page-header">
+        <div class="page-title">
+          ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
+        </div>
+        <div class="page-subtitle">${title} · Board #${b + 1}</div>
+        <div class="page-name">Name: _________________</div>
+        <div class="page-side-label">Picture Side</div>
+      </div>
+    `;
+
+    const frontGrid = document.createElement('div');
+    frontGrid.className = `bingo-grid size-${gridSize}`;
+
+    for (const cell of cells) {
+      const el = document.createElement('div');
+      el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
+      if (cell.free) {
+        el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+      } else {
+        el.innerHTML = `<img src="${IMAGE_BASE}/${cell.img}" alt="${cell.word}" loading="lazy">`;
+      }
+      frontGrid.appendChild(el);
+    }
+    frontPage.appendChild(frontGrid);
+    output.appendChild(frontPage);
+
+    // === PAGE 2: WORDS (back — mirrored horizontally for duplex) ===
+    const backPage = document.createElement('div');
+    backPage.className = 'page';
+    backPage.innerHTML = `
+      <div class="page-header">
+        <div class="page-title">
+          ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
+        </div>
+        <div class="page-subtitle">${title} · Board #${b + 1}</div>
+        <div class="page-name">Name: _________________</div>
+        <div class="page-side-label">Word Side (mirror-printed for duplex)</div>
+      </div>
+    `;
+
+    const backGrid = document.createElement('div');
+    backGrid.className = `bingo-grid size-${gridSize}`;
+
+    // Mirror each row horizontally so words align when page is flipped
+    for (let row = 0; row < gridSize; row++) {
+      const rowCells = cells.slice(row * gridSize, (row + 1) * gridSize);
+      const mirrored = [...rowCells].reverse();
+      for (const cell of mirrored) {
+        const el = document.createElement('div');
+        el.className = 'bingo-cell' + (cell.free ? ' cell-free' : '');
+        if (cell.free) {
+          el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+        } else {
+          el.innerHTML = `<div class="cell-word">${highlightVowel(cell.word)}</div>`;
+        }
+        backGrid.appendChild(el);
+      }
+    }
+    backPage.appendChild(backGrid);
+    output.appendChild(backPage);
+  }
+}
+
+// Auto-generate on load
+window.addEventListener('DOMContentLoaded', generate);
+</script>
+</body>
+</html>
