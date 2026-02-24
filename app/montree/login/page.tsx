@@ -117,7 +117,7 @@ export default function TeacherLoginPage() {
         {/* Help links */}
         <div className="text-center mt-6 space-y-2">
           <p className="text-white/40 text-xs">
-            Teachers, principals & home parents all log in here with their 6-character code
+            Log in with your 6-character code
           </p>
           <a
             href="/montree/principal/login"
