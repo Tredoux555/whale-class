@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montessori English Corner — AMI Master Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --teal: #0D3330;
+    --emerald: #2E7D32;
+    --emerald-light: #4ADE80;
+    --pink: #E91E63;
+    --blue: #1565C0;
+    --green: #2E7D32;
+    --gold: #F59E0B;
+    --orange: #EA580C;
+    --purple: #7C3AED;
+    --warm-bg: #FAFAF5;
+    --card-bg: #FFFFFF;
+    --border: #E5E5E0;
+    --text: #1A1A1A;
+    --text-light: #666;
+    --text-muted: #999;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--warm-bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+  /* Cover */
+  .cover {
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--teal), #1a4a45);
+    color: white;
+    border-radius: 16px;
+    margin-bottom: 40px;
+  }
+  .cover h1 { font-size: 2.8em; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 1.4em; font-weight: 300; color: var(--emerald-light); margin-bottom: 24px; }
+  .cover .meta { font-size: 0.9em; color: rgba(255,255,255,0.6); }
+  .cover .badge {
+    display: inline-block; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3);
+    padding: 6px 16px; border-radius: 20px; font-size: 0.85em; color: var(--emerald-light); margin-top: 16px;
+  }
+
+  /* Sections */
+  .section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 36px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+  .section h2 {
+    font-size: 1.6em; font-weight: 700; color: var(--teal);
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 3px solid var(--emerald-light);
+  }
+  .section h3 {
+    font-size: 1.15em; font-weight: 600; color: var(--emerald);
+    margin: 24px 0 12px 0;
+  }
+  .section h4 {
+    font-size: 1em; font-weight: 600; color: var(--text);
+    margin: 16px 0 8px 0;
+  }
+  .section p { margin-bottom: 12px; }
+
+  /* Callouts */
+  .callout {
+    padding: 16px 20px; border-radius: 8px; margin: 16px 0;
+    border-left: 4px solid;
+  }
+  .callout.principle { background: #F0FDF4; border-color: var(--emerald); }
+  .callout.warning { background: #FEF3C7; border-color: var(--gold); }
+  .callout.critical { background: #FEE2E2; border-color: #DC2626; }
+  .callout.info { background: #EFF6FF; border-color: var(--blue); }
+  .callout.montessori { background: #FAF5FF; border-color: var(--purple); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9em; }
+  th { background: var(--teal); color: white; text-align: left; padding: 10px 14px; font-weight: 500; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: #f9f9f5; }
+
+  /* Status badges */
+  .badge-have { background: #DCFCE7; color: #166534; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; }
+  .badge-print { background: #FEF9C3; color: #854D0E; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; }
+  .badge-buy { background: #FEE2E2; color: #991B1B; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; }
+  .badge-make { background: #F3E8FF; color: #6B21A8; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; }
+
+  /* Flow diagram */
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 20px 0; }
+  .flow-item {
+    padding: 10px 18px; border-radius: 8px; font-size: 0.85em; font-weight: 500;
+    border: 2px solid; text-align: center; min-width: 140px;
+  }
+  .flow-arrow { font-size: 1.4em; color: var(--text-muted); }
+
+  /* Shelf layout */
+  .shelf-card {
+    border: 2px solid var(--border); border-radius: 12px; padding: 24px;
+    margin: 20px 0; position: relative; overflow: hidden;
+  }
+  .shelf-card::before {
+    content: attr(data-shelf);
+    position: absolute; top: 0; right: 0;
+    background: var(--teal); color: white;
+    padding: 4px 16px; border-radius: 0 10px 0 10px;
+    font-size: 0.8em; font-weight: 600;
+  }
+  .shelf-card h3 { margin-top: 0; }
+  .shelf-level {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px dashed var(--border); align-items: flex-start;
+  }
+  .shelf-level:last-child { border-bottom: none; }
+  .shelf-label {
+    min-width: 70px; font-weight: 600; font-size: 0.85em;
+    color: var(--text-muted); padding-top: 2px;
+  }
+
+  /* I Spy levels */
+  .ispy-level {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin: 12px 0; background: #FAFFF5;
+  }
+  .ispy-level .level-num {
+    display: inline-block; background: var(--emerald); color: white;
+    width: 28px; height: 28px; border-radius: 50%; text-align: center;
+    line-height: 28px; font-size: 0.85em; font-weight: 700; margin-right: 8px;
+  }
+  .teacher-says {
+    font-style: italic; color: var(--emerald); background: #F0FDF4;
+    padding: 8px 14px; border-radius: 6px; margin: 8px 0;
+    border-left: 3px solid var(--emerald);
+  }
+
+  /* Letter groups */
+  .letter-group {
+    display: inline-flex; gap: 6px; margin: 4px 0;
+  }
+  .letter {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 6px; font-weight: 700; font-size: 1.1em;
+  }
+  .consonant { background: #FCE4EC; color: var(--pink); border: 1px solid #F48FB1; }
+  .vowel { background: #E3F2FD; color: var(--blue); border: 1px solid #90CAF9; }
+
+  /* Room layout */
+  .room-layout {
+    font-family: monospace; font-size: 13px; line-height: 1.5;
+    background: #1a1a2e; color: #e0e0e0; padding: 24px;
+    border-radius: 8px; overflow-x: auto; white-space: pre;
+  }
+  .room-layout .wall { color: #64748B; }
+  .room-layout .shelf { color: var(--emerald-light); }
+  .room-layout .area { color: #F59E0B; }
+  .room-layout .label { color: #93C5FD; }
+
+  /* Print list */
+  .priority-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .p1 { background: #DC2626; color: white; }
+  .p2 { background: #F59E0B; color: white; }
+  .p3 { background: #3B82F6; color: white; }
+
+  ul { padding-left: 24px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+
+  .quote {
+    font-style: italic; color: var(--text-light); text-align: center;
+    padding: 24px; font-size: 1.05em; border-top: 2px solid var(--border);
+    margin-top: 40px;
+  }
+  .quote .author { font-style: normal; font-weight: 600; color: var(--teal); margin-top: 8px; }
+
+  @media print {
+    body { font-size: 11pt; }
+    .cover { page-break-after: always; }
+    .section { break-inside: avoid; }
+    .shelf-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══════════ COVER ═══════════ -->
+<div class="cover">
+  <h1>MONTESSORI</h1>
+  <div class="subtitle">English Language Corner</div>
+  <p style="font-size:1.1em; font-weight:300; margin-bottom:8px;">AMI Master Setup & Implementation Plan</p>
+  <p class="meta">Primary / Casa Level · Ages 2.5–6 · 7 Shelf Units · 5m × 3.5m</p>
+  <div class="badge">Pure AMI (Association Montessori Internationale) Methodology</div>
+  <p class="meta" style="margin-top:24px;">Prepared by Tredoux · February 2026</p>
+</div>
+
+<!-- ═══════════ THE REAL SEQUENCE ═══════════ -->
+<div class="section">
+  <h2>The True AMI Language Sequence</h2>
+  <p>This is the sequence Maria Montessori prescribed. It does <strong>not</strong> begin with sandpaper letters. It begins with the child's ear, voice, and environment. Written language comes only after a deep oral foundation.</p>
+
+  <div class="callout montessori">
+    <strong>Montessori's Core Insight</strong>
+    Writing comes before reading. But <em>spoken language</em> comes before everything. The child must hear sounds, name the world, and develop phonemic awareness long before they touch a sandpaper letter.
+  </div>
+
+  <div class="flow">
+    <div class="flow-item" style="border-color:#7C3AED; background:#FAF5FF;">🗣️ Spoken Language<br><small>Naming, Vocabulary, Stories</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#EA580C; background:#FFF7ED;">👂 Sound Games<br><small>I Spy (4 levels)</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#2E7D32; background:#F0FDF4;">✋ Writing Prep<br><small>Metal Insets (parallel)</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#E91E63; background:#FDF2F8;">🔤 Sandpaper Letters<br><small>Sound → Symbol</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#1565C0; background:#EFF6FF;">✍️ Moveable Alphabet<br><small>Composing Words</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#DC2626; background:#FEF2F2;">📖 Reading<br><small>Pink → Blue → Green</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#F59E0B; background:#FFFBEB;">📐 Grammar<br><small>Function of Words</small></div>
+  </div>
+
+  <h3>The Parallel Streams</h3>
+  <p>In AMI, these don't happen one-after-another — they run in <strong>parallel streams</strong> that converge:</p>
+
+  <table>
+    <tr><th>Age</th><th>What's Happening Simultaneously</th></tr>
+    <tr><td><strong>2.5–3.0</strong></td><td>Vocabulary enrichment · Grace & Courtesy (language lessons) · Sound Games Level 1 · Practical Life (motor prep) · Songs, stories, poems · Sensorial exploration (no language yet)</td></tr>
+    <tr><td><strong>3.0–3.5</strong></td><td>Sound Games Level 2 · Classified Cards (pictures) · Sensorial + quality vocabulary · Metal Insets begin · Practical Life · Grace & Courtesy · Stories</td></tr>
+    <tr><td><strong>3.5–4.0</strong></td><td>Sound Games Levels 2–3 · Classified Cards (picture + label) · Metal Insets regular · Environment labels · Sensorial vocabulary deepening</td></tr>
+    <tr><td><strong>4.0–4.5</strong></td><td>Sound Games Levels 3–4 · <strong>Sandpaper Letters introduce</strong> · Metal Insets daily · <strong>Moveable Alphabet begins</strong> · Classified Cards (all 3 parts)</td></tr>
+    <tr><td><strong>4.5–5.5</strong></td><td>Moveable Alphabet composing · <strong>Pink Series reading begins</strong> · Command Cards · Object Boxes · Blue Series · Puzzle Words · Handwriting on paper</td></tr>
+    <tr><td><strong>5.5–6.0</strong></td><td>Green Series · Phonograms · Grammar Farm · Grammar Symbols · Grammar Boxes · Creative writing · Silent reading</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ PHASE 1: ORAL LANGUAGE ═══════════ -->
+<div class="section">
+  <h2>Phase 1: Oral Language Foundation</h2>
+  <p>This is where it all begins. No materials on a shelf — this is the teacher's work with the child, every day, through conversation, naming, and structured language games.</p>
+
+  <h3>1A. Enrichment of Vocabulary (Day 1, never stops)</h3>
+  <p>The teacher names EVERYTHING. Precisely. Consistently. Using the three-period lesson:</p>
+
+  <div class="callout info">
+    <strong>The Three-Period Lesson</strong>
+    <strong>Period 1 (Naming):</strong> "This is a pitcher." — Brief, clear, factual.<br>
+    <strong>Period 2 (Recognition):</strong> "Show me the pitcher." "Touch the pitcher." "Bring me the pitcher." — The LONGEST period. Movement-based. Repeat 4–5 times.<br>
+    <strong>Period 3 (Recall):</strong> "What is this?" — Only ask when you're SURE the child will succeed. If they can't recall, go back to Period 2. Never treat it as a test.
+  </div>
+
+  <h4>What gets named (progression):</h4>
+  <ul>
+    <li><strong>Immediate environment:</strong> chair, table, shelf, spoon, cup, plate, water, door</li>
+    <li><strong>Child's body:</strong> hand, finger, elbow, knee, shoulder, wrist</li>
+    <li><strong>Actions:</strong> pouring, sweeping, walking, cutting, folding</li>
+    <li><strong>Qualities (from Sensorial):</strong> rough, smooth, long, short, heavy, light, loud, quiet</li>
+    <li><strong>Feelings:</strong> happy, sad, frustrated, proud, tired, excited</li>
+  </ul>
+
+  <h3>1B. Grace & Courtesy (These ARE language lessons)</h3>
+  <p>Every Grace & Courtesy lesson teaches <em>exact words</em> for social situations. The child learns what to say, how to say it, and when:</p>
+  <table>
+    <tr><th>Situation</th><th>Exact Language Taught</th></tr>
+    <tr><td>Greeting</td><td>"Good morning. How are you?"</td></tr>
+    <tr><td>Asking for help</td><td>"Excuse me, would you help me please?"</td></tr>
+    <tr><td>Passing by</td><td>"Excuse me, may I pass?"</td></tr>
+    <tr><td>Receiving help</td><td>"Thank you."</td></tr>
+    <tr><td>Conflict</td><td>"I don't like it when you... Could you please..."</td></tr>
+    <tr><td>Joining work</td><td>"May I watch you?" or "May I work with you?"</td></tr>
+  </table>
+
+  <h3>1C. Songs, Poems, Fingerplays & Storytelling (Daily)</h3>
+  <p>Not entertainment — structured language absorption. Songs build vocabulary through repetition and rhythm. Stories build narrative comprehension and vocabulary in context. Poems train the ear for sounds and patterns.</p>
+  <ul>
+    <li>Circle time: 2–3 songs daily, matched to seasons/themes</li>
+    <li>Storytelling: told from memory (not read), 2–3× per week</li>
+    <li>Poetry: recited aloud by teacher; children absorb and memorize naturally</li>
+    <li>Fingerplays: combine language with motor coordination</li>
+  </ul>
+
+  <h3>1D. Classified Cards / Nomenclature Cards</h3>
+  <p>Three-part cards: Picture only → Picture + Label → Label only. These span the entire 3–6 age range:</p>
+  <table>
+    <tr><th>Stage</th><th>Cards Used</th><th>Purpose</th><th>Age</th></tr>
+    <tr><td><strong>Presentation 1</strong></td><td>Picture cards only</td><td>Vocabulary enrichment through naming (three-period lesson)</td><td>3–4</td></tr>
+    <tr><td><strong>Presentation 2</strong></td><td>Picture + Label matching</td><td>Connecting written word to picture; beginning word recognition</td><td>3.5–4.5</td></tr>
+    <tr><td><strong>Presentation 3</strong></td><td>Label only (reading)</td><td>Child reads labels independently; decoding practice</td><td>4.5–5.5</td></tr>
+  </table>
+
+  <h4>First categories:</h4>
+  <ul>
+    <li><strong>Tier 1 (age 3–3.5):</strong> Common fruits, vegetables, clothing, household objects</li>
+    <li><strong>Tier 2 (age 3.5–4):</strong> Animals, furniture, foods, body parts</li>
+    <li><strong>Tier 3 (age 4+):</strong> Farm animals, vehicles, tools, botany parts, zoology</li>
+  </ul>
+
+  <div class="callout principle">
+    <strong>AMI Principle: Follow the child's interest.</strong>
+    If a child is fascinated by dinosaurs, introduce dinosaur cards immediately — regardless of "sequence." The teacher follows the child's questions.
+  </div>
+</div>
+
+<!-- ═══════════ PHASE 2: SOUND GAMES ═══════════ -->
+<div class="section">
+  <h2>Phase 2: Sound Games (I Spy) — The 4 Levels</h2>
+  <p>This is the <strong>most critical pre-reading work</strong> in the entire Montessori language curriculum. The child's ear must be trained to hear individual sounds in words BEFORE they ever see a letter. This work can span 6–18 months.</p>
+
+  <div class="callout critical">
+    <strong>Non-negotiable:</strong> Always use SOUNDS, never letter names. "mmm" not "em." "sss" not "ess." "buh" not "bee." The child is learning to hear phonemes, not recite an alphabet.
+  </div>
+
+  <div class="ispy-level">
+    <h4><span class="level-num">1</span> Initial Sounds Only (age 2.5–3.5)</h4>
+    <p>Child learns to hear the FIRST sound in a word.</p>
+    <div class="teacher-says">"I spy with my little eye something that begins with... /mmm/"</div>
+    <ul>
+      <li>Use real objects the child can see (not abstract)</li>
+      <li>Start with 3–5 objects on a tray where the answer is obvious</li>
+      <li>The child names the object, NOT the sound</li>
+      <li>Play daily, 5–10 minutes</li>
+      <li>Duration at this level: <strong>2–4 weeks minimum</strong></li>
+    </ul>
+  </div>
+
+  <div class="ispy-level">
+    <h4><span class="level-num">2</span> Initial + Final Sounds (age 3.0–3.5)</h4>
+    <p>Child hears FIRST and LAST sounds in a word.</p>
+    <div class="teacher-says">"I spy something that starts with /b/ and ends with /l/" → ball</div>
+    <ul>
+      <li>Place 5–7 objects on a mat</li>
+      <li>Give both beginning AND ending sounds in the clue</li>
+      <li>Objects should have distinct, unambiguous sounds</li>
+      <li>Duration: <strong>2–4 weeks</strong></li>
+    </ul>
+  </div>
+
+  <div class="ispy-level">
+    <h4><span class="level-num">3</span> Initial, Middle & Final Sounds (age 3.5–4.0)</h4>
+    <p>Child hears ALL THREE sound positions in a CVC word.</p>
+    <div class="teacher-says">"I spy something that starts with /k/, has /a/ in the middle, and ends with /t/" → cat</div>
+    <ul>
+      <li>Use CVC (3-letter) words: cat, dog, mop, pin, bus, hat</li>
+      <li>Always say sounds in order: first → middle → last</li>
+      <li>This is where the child starts to understand that words ARE sequences of sounds</li>
+      <li>Duration: <strong>2–4 weeks</strong></li>
+    </ul>
+  </div>
+
+  <div class="ispy-level">
+    <h4><span class="level-num">4</span> Full Segmentation (age 3.5–4.5+)</h4>
+    <p>Child can break ANY word into its individual sounds.</p>
+    <div class="teacher-says">"Let's say 'cat' sound by sound: /k/ /a/ /t/. How many sounds?" → Three!</div>
+    <ul>
+      <li>Start with 2–3 sound words, progress to 4–5</li>
+      <li>Child claps or taps for each sound</li>
+      <li>This level <strong>continues alongside sandpaper letter work</strong></li>
+      <li>The ear training and letter learning reinforce each other</li>
+    </ul>
+  </div>
+
+  <div class="callout warning">
+    <strong>When is the child ready for sandpaper letters?</strong>
+    When they can consistently do Level 3 (hear initial, middle, and final sounds). They don't need to be at Level 4. Levels 3–4 continue IN PARALLEL with sandpaper letters.
+  </div>
+</div>
+
+<!-- ═══════════ PHASE 3: WRITING PREPARATION ═══════════ -->
+<div class="section">
+  <h2>Phase 3: Writing Preparation (Parallel Stream)</h2>
+  <p>Metal Insets and Sandpaper Letters run as parallel streams — one prepares the HAND, the other connects SOUND to SYMBOL. They converge in the Moveable Alphabet.</p>
+
+  <h3>3A. Metal Insets (starts age 3–3.5, parallel with Sound Games)</h3>
+  <p>Purpose: pencil control, lightness of touch, hand-eye coordination. This is NOT letter work — it's hand preparation.</p>
+  <table>
+    <tr><th>Presentation</th><th>What the Child Does</th></tr>
+    <tr><td>1</td><td>Trace the FRAME (counter-clockwise from highest point)</td></tr>
+    <tr><td>2</td><td>Trace the INSET piece inside the frame outline</td></tr>
+    <tr><td>3</td><td>Fill with HORIZONTAL lines (left to right)</td></tr>
+    <tr><td>4</td><td>Fill with VERTICAL lines</td></tr>
+    <tr><td>5</td><td>Fill with DIAGONAL lines</td></tr>
+    <tr><td>6</td><td>Fill with CURVED lines</td></tr>
+    <tr><td>7</td><td>Two overlapping shapes, two colors</td></tr>
+    <tr><td>8</td><td>Free design work (child's creativity)</td></tr>
+  </table>
+  <p style="margin-top:8px;"><span class="badge-have">HAVE</span> Full set of 10 shapes — dedicated 4-shelf unit. ✅</p>
+
+  <h3>3B. Sandpaper Letters (starts age 4+, after Sound Games Level 3)</h3>
+  <p>The moment of convergence: the child who can HEAR /m/ now SEES and TOUCHES the letter that represents it.</p>
+
+  <div class="callout principle">
+    <strong>Three channels simultaneously:</strong> The child SEES the letter, TOUCHES it (tracing with index + middle finger), and SAYS the sound. Visual + tactile + auditory = powerful memory.
+  </div>
+
+  <h4>AMI Letter Groups:</h4>
+  <p>Introduce 2–3 letters at a time. Each group has 1 vowel + 3 consonants. New group only when previous group is mastered (Period 3).</p>
+
+  <table>
+    <tr><th>Group</th><th>Letters</th><th>Why</th></tr>
+    <tr>
+      <td><strong>1</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">c</span>
+          <span class="letter consonant">m</span>
+          <span class="letter vowel">a</span>
+          <span class="letter consonant">t</span>
+        </div>
+      </td>
+      <td>First words immediately: <strong>cat, mat, at, am, cam, tam</strong></td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">s</span>
+          <span class="letter consonant">r</span>
+          <span class="letter vowel">i</span>
+          <span class="letter consonant">p</span>
+        </div>
+      </td>
+      <td>Builds: <strong>sit, rip, sip, tip, pit, is, it, rim, sap, map, rap</strong></td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">b</span>
+          <span class="letter consonant">f</span>
+          <span class="letter vowel">o</span>
+          <span class="letter consonant">g</span>
+        </div>
+      </td>
+      <td>Adds: <strong>fog, big, fig, got, cot, cop, sob, mob, fob, gob</strong></td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">h</span>
+          <span class="letter consonant">j</span>
+          <span class="letter vowel">u</span>
+          <span class="letter consonant">l</span>
+        </div>
+      </td>
+      <td>Adds: <strong>jug, hut, bus, cup, hug, lump, jump, pull, hull</strong></td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">d</span>
+          <span class="letter consonant">w</span>
+          <span class="letter vowel">e</span>
+          <span class="letter consonant">n</span>
+        </div>
+      </td>
+      <td>Adds: <strong>den, wet, web, pen, net, bed, ten, new, dew, end</strong></td>
+    </tr>
+    <tr>
+      <td><strong>6</strong></td>
+      <td>
+        <div class="letter-group">
+          <span class="letter consonant">k</span>
+          <span class="letter consonant">q</span>
+          <span class="letter consonant">v</span>
+          <span class="letter consonant">x</span>
+          <span class="letter consonant">y</span>
+          <span class="letter consonant">z</span>
+        </div>
+      </td>
+      <td>Less common letters. All 5 vowels already introduced.</td>
+    </tr>
+  </table>
+  <p style="margin-top:8px;"><span class="badge-have">HAVE</span> Full set (pink consonants, blue vowels) + Sand Tray + Chalkboards + 3D printed group puzzles ✅</p>
+
+  <h3>3C. Moveable Alphabet (starts when ~10 letters known)</h3>
+  <p>"Writing before reading" — the child composes words with loose letters before their hand can write them with a pencil.</p>
+  <ol>
+    <li>Match moveable letters to known sandpaper letters</li>
+    <li>Build CVC words with objects (place object → sound out → find letters → build word)</li>
+    <li>Build CVC words with pictures</li>
+    <li>Build longer phonetic words</li>
+    <li>Build phrases → sentences → short stories</li>
+  </ol>
+  <div class="callout warning">
+    <strong>Do NOT correct spelling.</strong> At this stage the child is encoding sounds they hear. Phonetic spelling is expected and correct. Conventional spelling comes later through reading.
+  </div>
+  <p><span class="badge-have">HAVE</span> Moveable Alphabet ✅</p>
+</div>
+
+<!-- ═══════════ PHASE 4: READING ═══════════ -->
+<div class="section">
+  <h2>Phase 4: Reading (Pink → Blue → Green)</h2>
+  <p>The child has been <em>composing</em> words. Now they <em>decode</em> what others have written. Pink/Blue/Green were created for English by AMI trainers (Homfray & Child) — not original Montessori, but essential for English and part of AMI English training.</p>
+
+  <h3>4A. Pink Series — CVC Words (First Reading)</h3>
+  <p>All materials use SHORT VOWEL, 3-LETTER words only: cat, pin, mop, bus, bed.</p>
+  <table>
+    <tr><th>Material</th><th>What It Is</th><th>NAMC File</th><th>Status</th></tr>
+    <tr><td>Object Boxes</td><td>Miniature objects + word labels to match</td><td>4.1.B</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Picture Boxes</td><td>Picture cards + word cards to match</td><td>4.1.D</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Word Lists</td><td>Lists of CVC words for fluency</td><td>4.1.G</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Phrase Strips</td><td>"a red hat" "the big cat"</td><td>4.1.I</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Sentence Strips</td><td>"The cat sat on the mat."</td><td>4.1.J</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Short Stories</td><td>Small booklets with CVC text</td><td>4.1.K</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Exercise Sheets</td><td>Matching, fill-in, comprehension, rhyming</td><td>4.1.L–O</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Command Cards</td><td>"run" "hop" "sit" — read and DO</td><td>4.2.A</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Classroom Labels</td><td>Labels for environment reading</td><td>4.1.C</td><td><span class="badge-print">PRINT</span></td></tr>
+  </table>
+
+  <h3>4B. Puzzle Words / Sight Words</h3>
+  <p>English has irregular words: <em>the, said, was, you, they, are, where</em>. Not original Montessori (Italian is phonetic), but essential for English. Taught through three-period lessons, one small set at a time.</p>
+  <table>
+    <tr><th>Material</th><th>NAMC File</th><th>Status</th></tr>
+    <tr><td>Sight Word Cards</td><td>4.3.A</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Sight Word Lists</td><td>4.3.B</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Sight Word Bingo</td><td>4.3.C–D</td><td><span class="badge-print">PRINT</span></td></tr>
+  </table>
+
+  <h3>4C. Blue Series — Consonant Blends (CCVC/CVCC)</h3>
+  <p>Words with blends: <em>stop, frog, lamp, nest, drum, clap</em>.</p>
+  <table>
+    <tr><th>Material</th><th>NAMC File</th><th>Status</th></tr>
+    <tr><td>Blue Consonant Blend Boxes</td><td>4.4.A</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Object Boxes</td><td>4.4.C</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Picture Boxes</td><td>4.4.D</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Word Lists</td><td>4.4.F</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Sentence Strips</td><td>4.4.G</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Short Stories</td><td>4.4.H</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Blue Exercise Sheets</td><td>4.4.J–N</td><td><span class="badge-print">PRINT</span></td></tr>
+  </table>
+
+  <h3>4D. Green Series — Phonograms</h3>
+  <p>Words with digraphs and phonograms: <em>sheep, chain, boat, rain, moon</em>.</p>
+  <table>
+    <tr><th>Material</th><th>NAMC File</th><th>Status</th></tr>
+    <tr><td>Double Sandpaper Letter Phonograms</td><td>—</td><td><span class="badge-buy">BUY</span></td></tr>
+    <tr><td>Phonogram Words + Picture Boxes</td><td>4.5.A–B</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Phonogram Word Lists + Sentences</td><td>4.5.C–D</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Phonogram Short Stories</td><td>4.5.E</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Green Picture Boxes</td><td>4.6.A</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Sorting Phonogram Sounds</td><td>4.6.B</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Green Word Lists + Sentences + Stories</td><td>4.6.C–E</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Green Exercise Sheets</td><td>4.6.G–I</td><td><span class="badge-print">PRINT</span></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ PHASE 5: GRAMMAR ═══════════ -->
+<div class="section">
+  <h2>Phase 5: Function of Words (Grammar)</h2>
+  <p>Grammar in Montessori is concrete and story-driven. The Grammar Farm is the centerpiece. Each part of speech has a symbol Montessori created.</p>
+
+  <h3>The Montessori Grammar Symbols</h3>
+  <table>
+    <tr><th>Part of Speech</th><th>Shape</th><th>Color</th><th>Story</th></tr>
+    <tr><td><strong>Noun</strong></td><td>Large triangle ▲</td><td style="color:#000;">Black</td><td>The ancient pyramid — oldest symbol for naming things</td></tr>
+    <tr><td><strong>Article</strong></td><td>Small triangle ▵</td><td style="color:#64B5F6;">Light blue</td><td>Smallest servant of the noun — pale and humble</td></tr>
+    <tr><td><strong>Adjective</strong></td><td>Medium triangle ▲</td><td style="color:#1565C0;">Dark blue</td><td>Describes the noun — "Which one? What kind?"</td></tr>
+    <tr><td><strong>Verb</strong></td><td>Large circle ●</td><td style="color:#DC2626;">Red</td><td>The sun — energy, action, life. No sentence without it.</td></tr>
+    <tr><td><strong>Adverb</strong></td><td>Small circle ●</td><td style="color:#EA580C;">Orange</td><td>Small sun orbiting the verb — how, when, where</td></tr>
+    <tr><td><strong>Pronoun</strong></td><td>Tall triangle ▲</td><td style="color:#7C3AED;">Purple</td><td>Stands in for the noun — a different kind of triangle</td></tr>
+    <tr><td><strong>Preposition</strong></td><td>Crescent ☽</td><td style="color:#16A34A;">Green</td><td>A bridge connecting noun to the rest of the sentence</td></tr>
+    <tr><td><strong>Conjunction</strong></td><td>Rectangle ▬</td><td style="color:#EC4899;">Pink</td><td>A bar linking two things together</td></tr>
+    <tr><td><strong>Interjection</strong></td><td>Keyhole 🔑</td><td style="color:#D97706;">Gold</td><td>Unlocks emotion — stands alone</td></tr>
+  </table>
+
+  <h3>The Grammar Farm</h3>
+  <p><span class="badge-have">HAVE</span> Red barn with animals and fences ✅</p>
+  <p>Introduction through storytelling:</p>
+  <ul>
+    <li><strong>Noun:</strong> "Everything has a name. The cow. The barn. The fence. These NAMING words are called nouns." → Place black triangle ▲</li>
+    <li><strong>Article:</strong> "Bring me cow. Bring me THE cow. That little word 'the' told you WHICH one." → Place light blue ▵</li>
+    <li><strong>Adjective:</strong> "Bring me a cow. Bring me the BROWN cow. The describing word helped you find the right one." → Place dark blue ▲</li>
+    <li><strong>Verb:</strong> "The cow EATS. The cow RUNS. The cow SLEEPS. These ACTION words bring the sentence alive." → Place red ●</li>
+  </ul>
+
+  <h3>Grammar Materials (NAMC)</h3>
+  <table>
+    <tr><th>Material</th><th>NAMC File</th><th>Status</th></tr>
+    <tr><td>Grammar Symbols Working Set</td><td>5.C</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Farm Label Cards</td><td>5.A</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Grammar & Transposing Labels</td><td>5.D</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Detective Adjective Game (labels + triangles + commands)</td><td>5.F, 5.G, 5.H</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Logical Adjective Game</td><td>5.B</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Logical Agreement Game</td><td>5.I</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Logical Adverb Game</td><td>5.J</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Grammar Phrase Strips</td><td>5.E</td><td><span class="badge-print">PRINT</span></td></tr>
+    <tr><td>Grammar Exercise Sheets</td><td>5.L, 5.M, 5.N</td><td><span class="badge-print">PRINT</span></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ SHELF LAYOUT ═══════════ -->
+<div class="section">
+  <h2>The 7 Shelves — Exact Layout</h2>
+  <p>Flow follows AMI sequence. Writing preparation along one wall, Reading along the opposite, Grammar on the side. Central floor space for rug work.</p>
+
+  <div class="room-layout"><span class="wall">                        WALL (5m)</span>
+<span class="wall">  ┌─────────────────────────────────────────────────────┐</span>
+<span class="wall">  │</span>  <span class="shelf">[S1:Metal Insets]</span>  <span class="shelf">[S2:Sandpaper+Sound]</span>  <span class="shelf">[S3:MA+Oral]</span>  <span class="wall">│</span>
+<span class="wall">  │</span>                                                       <span class="wall">│</span>
+<span class="wall">  │</span>  <span class="label">[Alphabet</span>                                          <span class="wall">│</span> <span class="wall">3.5m</span>
+<span class="wall">  │</span>  <span class="label"> Cabinets]</span>       <span class="area">┌───────────────┐</span>            <span class="wall">│</span>
+<span class="wall">  │</span>                  <span class="area">│  FLOOR WORK   │</span>   <span class="shelf">[S7:Grammar]</span> <span class="wall">│</span>
+<span class="wall">  │</span>                  <span class="area">│  (rugs/mats)  │</span>   <span class="shelf">[Farm]</span>      <span class="wall">│</span>
+<span class="wall">  │</span>                  <span class="area">└───────────────┘</span>            <span class="wall">│</span>
+<span class="wall">  │</span>                                                       <span class="wall">│</span>
+<span class="wall">  │</span>  <span class="shelf">[S4:Pink Series]</span>  <span class="shelf">[S5:Blue+Puzzle]</span>  <span class="shelf">[S6:Green]</span>   <span class="wall">│</span>
+<span class="wall">  └─────────────────────────────────────────────────────┘</span>
+<span class="wall">                         ENTRANCE</span></div>
+
+  <!-- SHELF 1 -->
+  <div class="shelf-card" data-shelf="SHELF 1">
+    <h3 style="color:var(--emerald);">Metal Insets (4-Shelf Unit) — <span class="badge-have">COMPLETE</span></h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Inset paper, colored pencils in holders, design examples</div></div>
+    <div class="shelf-level"><span class="shelf-label">Shelf 2:</span><div>5 curved shapes (circle, oval, ellipse, curvilinear triangle, quatrefoil)</div></div>
+    <div class="shelf-level"><span class="shelf-label">Shelf 3:</span><div>5 straight shapes (square, rectangle, triangle, pentagon, trapezoid)</div></div>
+    <div class="shelf-level"><span class="shelf-label">Shelf 4:</span><div>Extra colored pencils, paper, trays</div></div>
+  </div>
+
+  <!-- SHELF 2 -->
+  <div class="shelf-card" data-shelf="SHELF 2">
+    <h3 style="color:var(--emerald);">Sandpaper Letters & Sound Work (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Sandpaper Letters in box (a–z). <strong>3D printed letter group puzzles</strong> beside. <span class="badge-have">HAVE</span></div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Sound objects on trays — 3 trays with sandpaper letter + miniature objects + picture cards (rotate by group). <span class="badge-have">HAVE</span></div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Sand Tray + stylus. Small chalkboard + chalk. Sandpaper Letter Control Chart. <span class="badge-have">HAVE</span> (chart: <span class="badge-print">PRINT</span> NAMC 3.C)</div></div>
+  </div>
+
+  <!-- SHELF 3 -->
+  <div class="shelf-card" data-shelf="SHELF 3">
+    <h3 style="color:var(--emerald);">Moveable Alphabet & Oral Language (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Moveable Alphabet (large box, blue consonants, red vowels) + rolled work mat. <span class="badge-have">HAVE</span></div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Classified/Nomenclature Cards: animals, fruits, objects, vehicles, body parts. <span class="badge-print">PRINT</span> NAMC 2.C, 2.E, 2.F, 2.G, 2.K</div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Sequencing Cards (2.O). Rhyming Cards (2.I). What Doesn't Belong (2.L). Spatial Relationships (2.N). <span class="badge-print">PRINT</span></div></div>
+  </div>
+
+  <!-- SHELF 4 -->
+  <div class="shelf-card" data-shelf="SHELF 4">
+    <h3 style="color:var(--pink);">Pink Series — First Reading (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Pink Object Boxes + Pink Picture Boxes. <span class="badge-print">PRINT</span> NAMC 4.1.B, 4.1.D</div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Pink Word Lists + Phrase Strips + Sentence Strips. Command Cards. <span class="badge-print">PRINT</span> NAMC 4.1.G, 4.1.I, 4.1.J, 4.2.A</div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Pink Short Stories/Booklets + Exercise Sheets. Classroom Labels. <span class="badge-print">PRINT</span> NAMC 4.1.K, 4.1.L–O, 4.1.C</div></div>
+  </div>
+
+  <!-- SHELF 5 -->
+  <div class="shelf-card" data-shelf="SHELF 5">
+    <h3 style="color:var(--blue);">Blue Series & Puzzle Words (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Blue Blend Boxes + Object Boxes + Picture Boxes. <span class="badge-print">PRINT</span> NAMC 4.4.A, 4.4.C, 4.4.D</div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Blue Word Lists + Sentence Strips + Short Stories. <span class="badge-print">PRINT</span> NAMC 4.4.F, 4.4.G, 4.4.H</div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Puzzle Word Cards + Lists + Bingo. Blue Exercise Sheets. <span class="badge-print">PRINT</span> NAMC 4.3.A–D, 4.4.J–N</div></div>
+  </div>
+
+  <!-- SHELF 6 -->
+  <div class="shelf-card" data-shelf="SHELF 6">
+    <h3 style="color:var(--green);">Green Series & Phonograms (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Double Sandpaper Phonograms <span class="badge-buy">BUY</span>. Phonogram Picture Boxes. <span class="badge-print">PRINT</span> NAMC 4.5.A–B</div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Green Picture Boxes + Word Lists + Sentence Strips. <span class="badge-print">PRINT</span> NAMC 4.6.A, 4.6.C, 4.6.D</div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Green Short Stories + Phonogram Stories + Exercise Sheets. Writing paper + pencils. <span class="badge-print">PRINT</span> NAMC 4.6.E, 4.5.E, 4.6.G–I, 3.L</div></div>
+  </div>
+
+  <!-- SHELF 7 -->
+  <div class="shelf-card" data-shelf="SHELF 7">
+    <h3 style="color:var(--gold);">Grammar — Function of Words (3-Shelf Unit)</h3>
+    <div class="shelf-level"><span class="shelf-label">Top:</span><div>Grammar Symbols Working Set + Farm Label Cards + Transposing Labels. <span class="badge-print">PRINT</span> NAMC 5.A, 5.C, 5.D</div></div>
+    <div class="shelf-level"><span class="shelf-label">Middle:</span><div>Detective Adjective Game (all parts) + Logical Adjective Game + Agreement Game. <span class="badge-print">PRINT</span> NAMC 5.B, 5.F–I</div></div>
+    <div class="shelf-level"><span class="shelf-label">Bottom:</span><div>Logical Adverb Game + Grammar Phrase Strips + Exercise Sheets. <span class="badge-print">PRINT</span> NAMC 5.E, 5.J, 5.L–N</div></div>
+    <p style="margin-top:12px;">🏠 <strong>Grammar Farm</strong> sits on low table or floor BESIDE this shelf. <span class="badge-have">HAVE</span></p>
+  </div>
+
+  <p><strong>Alphabet Cabinets</strong> (a–z with miniature objects + wicker baskets) sit on counter/table near Shelf 2. Used for Sound Games, Object Boxes, and vocabulary work. <span class="badge-have">HAVE</span></p>
+</div>
+
+<!-- ═══════════ PRINT PRIORITY ═══════════ -->
+<div class="section">
+  <h2>Print Priority List</h2>
+  <p>Print in this order. All printed on card stock, laminated, cut cleanly. Color printing essential.</p>
+
+  <h3><span class="priority-tag p1">PRIORITY 1</span> Print FIRST — Needed Day 1</h3>
+  <table>
+    <tr><th>#</th><th>Material</th><th>NAMC File</th><th>For</th></tr>
+    <tr><td>1</td><td>Command Cards</td><td>4.2.A</td><td>Shelf 4</td></tr>
+    <tr><td>2</td><td>Pink Object Boxes (word labels)</td><td>4.1.B</td><td>Shelf 4</td></tr>
+    <tr><td>3</td><td>Pink Picture Boxes</td><td>4.1.D (18MB)</td><td>Shelf 4</td></tr>
+    <tr><td>4</td><td>Pink Word Lists</td><td>4.1.G</td><td>Shelf 4</td></tr>
+    <tr><td>5</td><td>Sight Word Cards (first set)</td><td>4.3.A</td><td>Shelf 5</td></tr>
+    <tr><td>6</td><td>Sandpaper Letter Control Chart</td><td>3.C</td><td>Shelf 2</td></tr>
+    <tr><td>7</td><td>Animal Picture Cards (classified)</td><td>2.C</td><td>Shelf 3</td></tr>
+    <tr><td>8</td><td>Fruit Nomenclature Cards</td><td>2.G</td><td>Shelf 3</td></tr>
+    <tr><td>9</td><td>Sequencing Picture Cards</td><td>2.O</td><td>Shelf 3</td></tr>
+    <tr><td>10</td><td>Farm Label Cards</td><td>5.A</td><td>Shelf 7</td></tr>
+    <tr><td>11</td><td>Grammar Symbols Working Set</td><td>5.C</td><td>Shelf 7</td></tr>
+    <tr><td>12</td><td>Classroom Label Cards</td><td>4.1.C</td><td>Around room</td></tr>
+  </table>
+
+  <h3><span class="priority-tag p2">PRIORITY 2</span> Print Within First Month</h3>
+  <table>
+    <tr><th>#</th><th>Material</th><th>NAMC File</th></tr>
+    <tr><td>13</td><td>Pink Phrase Strips + Sentence Strips</td><td>4.1.I, 4.1.J</td></tr>
+    <tr><td>14</td><td>Pink Short Stories</td><td>4.1.K</td></tr>
+    <tr><td>15</td><td>Blue Consonant Blend Boxes</td><td>4.4.A</td></tr>
+    <tr><td>16</td><td>Blue Object + Picture Boxes</td><td>4.4.C, 4.4.D</td></tr>
+    <tr><td>17</td><td>Sight Word Lists + Bingo</td><td>4.3.B–D</td></tr>
+    <tr><td>18</td><td>Rhyming Picture Cards</td><td>2.I</td></tr>
+    <tr><td>19</td><td>What Doesn't Belong</td><td>2.L</td></tr>
+    <tr><td>20</td><td>Detective Adjective Game (all 3 files)</td><td>5.F, 5.G, 5.H</td></tr>
+    <tr><td>21</td><td>Objects in Environment Cards</td><td>2.F</td></tr>
+    <tr><td>22</td><td>Theme Classification Cards</td><td>2.K</td></tr>
+  </table>
+
+  <h3><span class="priority-tag p3">PRIORITY 3</span> Print As Children Advance</h3>
+  <table>
+    <tr><th>#</th><th>Material</th><th>NAMC File</th></tr>
+    <tr><td>23</td><td>Blue Word Lists + Sentences + Stories</td><td>4.4.F, G, H</td></tr>
+    <tr><td>24</td><td>All Blue Exercise Sheets</td><td>4.4.J–N</td></tr>
+    <tr><td>25</td><td>Green Picture Boxes</td><td>4.6.A (25MB)</td></tr>
+    <tr><td>26</td><td>Green Word Lists + Sentences + Stories</td><td>4.6.C, D, E</td></tr>
+    <tr><td>27</td><td>Phonogram materials (all)</td><td>4.5.A–E</td></tr>
+    <tr><td>28</td><td>All Green Exercise Sheets</td><td>4.6.G–I</td></tr>
+    <tr><td>29</td><td>All Pink Exercise Sheets</td><td>4.1.L–O</td></tr>
+    <tr><td>30</td><td>Grammar games + exercise sheets</td><td>5.B, 5.I, 5.J, 5.L–N</td></tr>
+    <tr><td>31</td><td>Handwriting sheets + Writing Paper</td><td>3.I, 3.J, 3.L</td></tr>
+    <tr><td>32</td><td>Matching Capital Letters</td><td>3.M</td></tr>
+    <tr><td>33</td><td>Seasons + Spatial Relationship Cards</td><td>2.M, 2.N</td></tr>
+    <tr><td>34</td><td>Personal Dictionary</td><td>4.1.H</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ BUY LIST ═══════════ -->
+<div class="section">
+  <h2>Items to Buy</h2>
+  <table>
+    <tr><th>Item</th><th>Source</th><th>Priority</th><th>Search Term (Chinese)</th></tr>
+    <tr><td>Laminating pouches (A4 + A5)</td><td>Taobao</td><td><span class="priority-tag p1">HIGH</span></td><td>过塑膜 A4</td></tr>
+    <tr><td>Card stock paper (200–250gsm, A4)</td><td>Taobao</td><td><span class="priority-tag p1">HIGH</span></td><td>卡纸 A4 白色 250g</td></tr>
+    <tr><td>Color printer ink/toner</td><td>Local</td><td><span class="priority-tag p1">HIGH</span></td><td>—</td></tr>
+    <tr><td>Small work rugs/mats (2–3)</td><td>Taobao/1688</td><td><span class="priority-tag p1">HIGH</span></td><td>蒙台梭利 工作毯</td></tr>
+    <tr><td>Double Sandpaper Letter Phonograms</td><td>Taobao/1688</td><td><span class="priority-tag p2">MED</span></td><td>蒙台梭利 砂纸字母 音素</td></tr>
+    <tr><td>Small baskets/trays (5–10)</td><td>Taobao</td><td><span class="priority-tag p2">MED</span></td><td>蒙台梭利 托盘 收纳篮</td></tr>
+    <tr><td>Corner punch (for card edges)</td><td>Taobao</td><td><span class="priority-tag p3">LOW</span></td><td>圆角器</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ STATUS SUMMARY ═══════════ -->
+<div class="section">
+  <h2>Status at a Glance</h2>
+  <table>
+    <tr><th>Category</th><th><span class="badge-have">HAVE</span></th><th><span class="badge-print">PRINT</span></th><th><span class="badge-buy">BUY</span></th></tr>
+    <tr><td><strong>Oral Language</strong></td><td>Alphabet cabinets with objects, picture cards in stands, wicker baskets</td><td>Classified cards, Nomenclature cards, Rhyming, Sequencing, Spatial, Seasons, Classification</td><td>—</td></tr>
+    <tr><td><strong>Writing Prep</strong></td><td>Metal Insets (full), Sandpaper Letters (full), Sand Tray, Chalkboards, Moveable Alphabet, 3D puzzles</td><td>Control charts, Inset paper, Handwriting sheets</td><td>—</td></tr>
+    <tr><td><strong>Pink Series</strong></td><td>—</td><td>FULL SET from NAMC</td><td>—</td></tr>
+    <tr><td><strong>Blue Series</strong></td><td>—</td><td>FULL SET from NAMC</td><td>—</td></tr>
+    <tr><td><strong>Green Series</strong></td><td>—</td><td>FULL SET from NAMC</td><td>Sandpaper Phonograms</td></tr>
+    <tr><td><strong>Puzzle Words</strong></td><td>—</td><td>Cards, Lists, Bingo from NAMC</td><td>—</td></tr>
+    <tr><td><strong>Grammar</strong></td><td>Grammar Farm (barn + animals)</td><td>Symbols, Labels, Detective game, All grammar games, Exercise sheets</td><td>—</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════ IMPLEMENTATION ═══════════ -->
+<div class="section">
+  <h2>Implementation Notes</h2>
+
+  <h3>Printing Rules</h3>
+  <ul>
+    <li>ALL cards: card stock + laminated + cleanly cut. Non-laminated = destroyed in 1 week.</li>
+    <li>Color printing is mandatory — the color coding IS the system.</li>
+    <li>Each card set goes in its own tray or basket, labeled.</li>
+    <li>Print at actual size. Do not scale.</li>
+    <li>Corner punch for rounded edges (optional but professional).</li>
+  </ul>
+
+  <h3>Shelf Management</h3>
+  <ul>
+    <li>Left-to-right, top-to-bottom = easier to harder on each shelf.</li>
+    <li>Only put out works that have been PRESENTED to at least one child.</li>
+    <li><strong>Day 1 on shelves:</strong> Metal Insets, Sandpaper Letters (Groups 1–2), Sound objects, Moveable Alphabet, a few Classified Card sets, Command Cards, Pink Object Boxes.</li>
+    <li>Add new works weekly as children are ready. Follow the child.</li>
+    <li>Each work is self-contained on a tray. Child takes entire tray to workspace.</li>
+  </ul>
+
+  <h3>What the Lead Teacher Will See</h3>
+  <ul>
+    <li>7 shelves organized by the AMI developmental sequence</li>
+    <li>Clear progression: Oral → Sound → Writing Prep → Composition → Reading → Grammar</li>
+    <li>Complete Pink/Blue/Green reading program with all sub-materials</li>
+    <li>Grammar Farm with proper symbols and label cards</li>
+    <li>AMI sandpaper letter groupings (not random alphabet order)</li>
+    <li>Every work labeled, in a tray, self-contained</li>
+    <li>This master plan document as evidence of methodological understanding</li>
+  </ul>
+</div>
+
+<!-- ═══════════ QUOTE ═══════════ -->
+<div class="quote">
+  "The child who has never learned to work by himself, to set goals for his own efforts, or to be the master of his own force of will is recognizable in the adult who lets others guide his will and feels a constant need for the approval of others."
+  <div class="author">— Maria Montessori, Education and Peace</div>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>

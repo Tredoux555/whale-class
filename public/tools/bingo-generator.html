@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montessori Bingo Generator - CVC Words & Phonics</title>
+<style>
+  @page { size: A4 portrait; margin: 8mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; }
+
+  .toolbar {
+    background: linear-gradient(135deg, #1565C0, #0D47A1); color: white;
+    padding: 20px; position: sticky; top: 0; z-index: 100;
+  }
+  .toolbar h1 { font-size: 22px; margin-bottom: 4px; }
+  .toolbar p { font-size: 12px; opacity: 0.85; margin-bottom: 12px; }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+  .control-group select, .control-group input {
+    padding: 8px 12px; border-radius: 8px; border: none; font-size: 14px;
+    background: rgba(255,255,255,0.95); color: #333;
+  }
+  .control-group input[type="number"] { width: 70px; }
+
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-size: 14px; font-weight: bold; cursor: pointer;
+  }
+  .btn-primary { background: #FFC107; color: #333; }
+  .btn-primary:hover { background: #FFD54F; }
+  .btn-print { background: white; color: #1565C0; }
+  .btn-print:hover { background: #E3F2FD; }
+
+  .stats {
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px;
+    font-size: 12px; margin-top: 8px;
+  }
+
+  /* Bingo board */
+  .page {
+    width: 210mm; min-height: 297mm; margin: 16px auto;
+    background: white; padding: 8mm;
+    page-break-after: always;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .bingo-header {
+    text-align: center; margin-bottom: 6mm;
+  }
+  .bingo-title {
+    font-size: 36px; font-weight: 900; letter-spacing: 12px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  }
+  .bingo-title span { display: inline-block; padding: 4px 8px; border-radius: 8px; margin: 0 2px; }
+  .bingo-subtitle { font-size: 12px; color: #888; margin-top: 4px; }
+  .bingo-name-line {
+    margin-top: 4mm; font-size: 13px; color: #666;
+    border-bottom: 1px solid #ccc; display: inline-block; width: 60mm;
+  }
+
+  .bingo-grid {
+    display: grid; gap: 0; border: 3px solid #333;
+    margin: 0 auto; max-width: 180mm;
+  }
+  .bingo-grid.size-3 { grid-template-columns: repeat(3, 1fr); }
+  .bingo-grid.size-4 { grid-template-columns: repeat(4, 1fr); }
+  .bingo-grid.size-5 { grid-template-columns: repeat(5, 1fr); }
+
+  .bingo-cell {
+    border: 1.5px solid #333; aspect-ratio: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3mm; text-align: center; position: relative;
+  }
+
+  .bingo-cell.header {
+    background: #1565C0; color: white; font-size: 28px; font-weight: 900;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    aspect-ratio: auto; padding: 4mm;
+  }
+
+  .cell-word {
+    font-size: 24px; font-weight: bold;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    color: #333;
+  }
+  .cell-word .vowel-hl { color: #C62828; }
+
+  .cell-picture {
+    font-size: 36px; margin-bottom: 2mm;
+  }
+
+  .cell-free {
+    background: #FFF8E1;
+  }
+  .cell-free .cell-word { font-size: 18px; color: #F57F17; }
+
+  /* Caller cards page */
+  .caller-page {
+    width: 210mm; min-height: 297mm; margin: 16px auto;
+    background: white; padding: 8mm;
+    page-break-after: always;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .caller-title {
+    text-align: center; font-size: 20px; font-weight: bold;
+    margin-bottom: 6mm; color: #1565C0;
+  }
+  .caller-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm;
+  }
+  .caller-card {
+    border: 2px solid #1565C0; border-radius: 8px;
+    padding: 4mm; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 50mm;
+  }
+  .caller-card .cell-picture { font-size: 28px; }
+  .caller-card .cell-word { font-size: 20px; }
+
+  @media print {
+    .toolbar { display: none; }
+    body { background: white; }
+    .page, .caller-page { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🎯 Montessori Bingo Generator</h1>
+  <p>Generate unique bingo boards for your class • Print & laminate • Use with caller cards</p>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Word Set</label>
+      <select id="wordSet">
+        <option value="cvc-a">Pink: Short A words</option>
+        <option value="cvc-e">Pink: Short E words</option>
+        <option value="cvc-i">Pink: Short I words</option>
+        <option value="cvc-o">Pink: Short O words</option>
+        <option value="cvc-u">Pink: Short U words</option>
+        <option value="cvc-all" selected>Pink: All CVC words</option>
+        <option value="digraphs">Blue: Digraphs (sh, ch, th)</option>
+        <option value="blends">Blue: Blends</option>
+        <option value="sight">Sight Words</option>
+        <option value="letters">Letter Sounds (Shelf 1)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Grid Size</label>
+      <select id="gridSize">
+        <option value="3">3×3 (Young learners)</option>
+        <option value="4">4×4 (Medium)</option>
+        <option value="5" selected>5×5 (Standard)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Display</label>
+      <select id="displayMode">
+        <option value="words" selected>Words only</option>
+        <option value="pictures">Pictures only</option>
+        <option value="both">Words + Pictures</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Boards</label>
+      <input type="number" id="boardCount" value="6" min="1" max="30">
+    </div>
+    <div class="control-group">
+      <label>Free Space</label>
+      <select id="freeSpace">
+        <option value="yes" selected>Center free space</option>
+        <option value="no">No free space</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="generate()">🎲 Generate Boards</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ Print All</button>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<div id="output"></div>
+
+<script>
+const WORD_SETS = {
+  'cvc-a': {
+    title: 'Short A',
+    words: ['cat','bat','hat','mat','rat','sat','can','fan','man','pan','ran','van','cap','tap','map','nap','lap','zap','bad','dad','had','mad','sad','lad','dam','ham','jam','ram','yam','bag','tag','rag','wag']
+  },
+  'cvc-e': {
+    title: 'Short E',
+    words: ['bet','get','jet','let','met','net','pet','set','vet','wet','bed','fed','led','red','wed','hen','pen','ten','men','den','leg','peg','beg','keg']
+  },
+  'cvc-i': {
+    title: 'Short I',
+    words: ['bit','fit','hit','kit','lit','pit','sit','wit','bin','din','fin','pin','sin','tin','win','big','dig','fig','gig','jig','pig','rig','wig','dip','hip','lip','rip','sip','tip','zip']
+  },
+  'cvc-o': {
+    title: 'Short O',
+    words: ['cot','dot','got','hot','lot','not','pot','rot','tot','bop','cop','hop','mop','pop','top','bog','cog','dog','fog','hog','jog','log','bob','cob','gob','job','mob','rob','sob','box','fox']
+  },
+  'cvc-u': {
+    title: 'Short U',
+    words: ['but','cut','gut','hut','jut','nut','rut','bun','fun','gun','nun','pun','run','sun','bug','dug','hug','jug','lug','mug','pug','rug','tug','cup','pup','cub','hub','pub','rub','sub','tub']
+  },
+  'cvc-all': {
+    title: 'All CVC',
+    words: [] // filled below
+  },
+  'digraphs': {
+    title: 'Digraphs',
+    words: ['ship','shop','shed','shin','shell','shut','chip','chop','chin','chat','check','chest','this','that','them','then','thin','thick','bath','math','fish','dish','rich','much','such','with','when','what','which','whip']
+  },
+  'blends': {
+    title: 'Blends',
+    words: ['blue','clap','flag','glad','plum','slid','brat','crab','drop','frog','grab','trip','drum','snap','spot','stop','swim','skip','spin','step','hand','bend','pink','jump','fast','desk','lamp','belt','milk','help']
+  },
+  'sight': {
+    title: 'Sight Words',
+    words: ['the','and','was','his','her','she','you','are','not','but','had','has','him','how','its','may','new','now','old','our','own','say','too','two','way','who','did','get','big','all','one','out','can','run','see']
+  },
+  'letters': {
+    title: 'Letter Sounds',
+    words: 'abcdefghijklmnopqrstuvwxyz'.split('')
+  }
+};
+
+// Fill cvc-all
+WORD_SETS['cvc-all'].words = [
+  ...WORD_SETS['cvc-a'].words,
+  ...WORD_SETS['cvc-e'].words,
+  ...WORD_SETS['cvc-i'].words,
+  ...WORD_SETS['cvc-o'].words,
+  ...WORD_SETS['cvc-u'].words,
+];
+
+const EMOJI_MAP = {
+  cat:'🐱',bat:'🦇',hat:'🎩',mat:'🟫',rat:'🐀',can:'🥫',fan:'💨',man:'👨',pan:'🍳',van:'🚐',
+  cap:'🧢',tap:'🚰',map:'🗺️',bag:'👜',tag:'🏷️',dad:'👨',sad:'😢',mad:'😠',dam:'🏗️',ham:'🍖',
+  jam:'🫙',ram:'🐏',net:'🥅',pet:'🐾',vet:'👨‍⚕️',wet:'💧',jet:'✈️',hen:'🐔',pen:'🖊️',ten:'🔟',
+  bed:'🛏️',red:'🔴',leg:'🦵',sit:'🪑',hit:'👊',bin:'🗑️',pin:'📌',big:'🐘',dig:'⛏️',pig:'🐷',
+  wig:'💇',lip:'👄',zip:'🤐',hot:'🌡️',pot:'🍲',dot:'⚫',mop:'🧹',hop:'🐰',top:'🔝',
+  dog:'🐶',log:'🪵',fog:'🌫️',job:'💼',box:'📦',fox:'🦊',cut:'✂️',hut:'🛖',nut:'🥜',
+  sun:'☀️',bun:'🍞',run:'🏃',fun:'🎉',bug:'🐛',hug:'🤗',mug:'☕',rug:'🟫',jug:'🏺',
+  cup:'🥤',pup:'🐶',cub:'🐻',tub:'🛁',sub:'🥪',bus:'🚌',egg:'🥚',
+  ship:'🚢',shop:'🏪',fish:'🐟',chip:'🍟',chin:'😊',chat:'💬',bath:'🛁',math:'➗',
+  dish:'🍽️',with:'🤝',when:'⏰',what:'❓',frog:'🐸',crab:'🦀',drum:'🥁',star:'⭐',
+  flag:'🏳️',tree:'🌳',blue:'🔵',stop:'🛑',jump:'🦘',milk:'🥛',desk:'📋',lamp:'💡',
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getVowel(word) {
+  const vowels = 'aeiou';
+  for (const ch of word) { if (vowels.includes(ch)) return ch; }
+  return '';
+}
+
+function generate() {
+  const setKey = document.getElementById('wordSet').value;
+  const gridSize = parseInt(document.getElementById('gridSize').value);
+  const displayMode = document.getElementById('displayMode').value;
+  const boardCount = parseInt(document.getElementById('boardCount').value);
+  const hasFreeSpace = document.getElementById('freeSpace').value === 'yes';
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+
+  const wordSet = WORD_SETS[setKey];
+  const totalCells = gridSize * gridSize - (hasFreeSpace ? 1 : 0);
+  const centerIdx = hasFreeSpace ? Math.floor(gridSize * gridSize / 2) : -1;
+
+  if (wordSet.words.length < totalCells) {
+    alert(`Need at least ${totalCells} words but only have ${wordSet.words.length}. Try a smaller grid or a bigger word set.`);
+    return;
+  }
+
+  document.getElementById('stats').textContent =
+    `Word pool: ${wordSet.words.length} | Cells per board: ${totalCells} | Boards: ${boardCount} | Each board is unique!`;
+
+  const BINGO = 'BINGO'.split('');
+  const colors = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
+
+  // Generate boards
+  for (let b = 0; b < boardCount; b++) {
+    const selected = shuffle(wordSet.words).slice(0, totalCells);
+    let wordIdx = 0;
+
+    const page = document.createElement('div');
+    page.className = 'page';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'bingo-header';
+    header.innerHTML = `
+      <div class="bingo-title">
+        ${BINGO.map((ch, i) => `<span style="background:${colors[i]};color:white;">${ch}</span>`).join('')}
+      </div>
+      <div class="bingo-subtitle">${wordSet.title} • Board #${b + 1}</div>
+      <div class="bingo-name-line">Name: _________________</div>
+    `;
+    page.appendChild(header);
+
+    // Grid
+    const grid = document.createElement('div');
+    grid.className = `bingo-grid size-${gridSize}`;
+
+    // Column headers (only for 5x5)
+    if (gridSize === 5) {
+      BINGO.forEach((ch, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'bingo-cell header';
+        cell.style.background = colors[i];
+        cell.textContent = ch;
+        grid.appendChild(cell);
+      });
+    }
+
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      const cell = document.createElement('div');
+
+      if (hasFreeSpace && i === centerIdx) {
+        cell.className = 'bingo-cell cell-free';
+        cell.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+      } else {
+        cell.className = 'bingo-cell';
+        const word = selected[wordIdx++];
+        const emoji = EMOJI_MAP[word] || '';
+        const vowel = getVowel(word);
+        const highlighted = word.split('').map(ch => ch === vowel ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
+
+        if (displayMode === 'words') {
+          cell.innerHTML = `<div class="cell-word">${highlighted}</div>`;
+        } else if (displayMode === 'pictures') {
+          cell.innerHTML = `<div class="cell-picture">${emoji || '?'}</div>`;
+        } else {
+          cell.innerHTML = `<div class="cell-picture">${emoji || ''}</div><div class="cell-word" style="font-size:18px;">${highlighted}</div>`;
+        }
+      }
+      grid.appendChild(cell);
+    }
+
+    page.appendChild(grid);
+    output.appendChild(page);
+  }
+
+  // Caller cards page
+  const callerPage = document.createElement('div');
+  callerPage.className = 'caller-page';
+  callerPage.innerHTML = `<div class="caller-title">✂️ Caller Cards - Cut Along Lines - ${wordSet.title}</div>`;
+
+  const callerGrid = document.createElement('div');
+  callerGrid.className = 'caller-grid';
+
+  wordSet.words.forEach(word => {
+    const card = document.createElement('div');
+    card.className = 'caller-card';
+    const emoji = EMOJI_MAP[word] || '';
+    const vowel = getVowel(word);
+    const highlighted = word.split('').map(ch => ch === vowel ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
+    card.innerHTML = `
+      ${emoji ? `<div class="cell-picture">${emoji}</div>` : ''}
+      <div class="cell-word">${highlighted}</div>
+    `;
+    callerGrid.appendChild(card);
+  });
+
+  callerPage.appendChild(callerGrid);
+  output.appendChild(callerPage);
+}
+
+// Auto-generate on load
+generate();
+</script>
+</body>
+</html>

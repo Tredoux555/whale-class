@@ -1,0 +1,93 @@
+// /montree/library/tools/page.tsx
+// Content Creation Tools - Montree Library
+'use client';
+
+import Link from 'next/link';
+
+const TOOLS = [
+  {
+    href: '/montree/library/tools/card-generator',
+    icon: '🃏',
+    title: '3-Part Card Generator',
+    description: 'Create beautiful Montessori nomenclature cards with images and labels',
+    gradient: 'from-emerald-500 to-teal-600',
+  },
+  {
+    href: '/montree/library/tools/flashcard-maker',
+    icon: '🎵',
+    title: 'Song Flashcard Maker',
+    description: 'Generate flashcards from YouTube song videos for your class',
+    gradient: 'from-blue-500 to-cyan-600',
+  },
+  {
+    href: '/montree/library/tools/label-maker',
+    icon: '🏷️',
+    title: 'Movable Alphabet Labels',
+    description: 'Create labels for small objects to use with the movable alphabet',
+    gradient: 'from-purple-500 to-violet-600',
+  },
+  {
+    href: '/montree/library/tools/vocabulary-flashcards',
+    icon: '📸',
+    title: 'Vocabulary Flashcards',
+    description: 'Generate vocabulary flashcards with images and words',
+    gradient: 'from-amber-500 to-orange-600',
+  },
+  {
+    href: '/montree/library/tools/material-generator',
+    icon: '🎨',
+    title: 'Material Generator',
+    description: 'Generate printable Montessori materials for your classroom',
+    gradient: 'from-pink-500 to-rose-600',
+  },
+  {
+    href: '/montree/library/tools/bingo',
+    icon: '🎯',
+    title: 'Bingo Game Generator',
+    description: 'Create unique bingo boards for phonics, CVC words, and more',
+    gradient: 'from-red-500 to-pink-600',
+  },
+];
+
+export default function LibraryToolsPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white">
+      {/* Header */}
+      <header className="bg-[#0D3330] text-white">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <Link href="/montree/library" className="text-emerald-300 text-sm hover:underline">
+            ← Back to Library
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold mt-2">
+            Content Creation Tools
+          </h1>
+          <p className="text-emerald-200 mt-1">
+            Save yourself a ton of time and effort. Create professional materials in minutes.
+          </p>
+        </div>
+      </header>
+
+      {/* Tools Grid */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {TOOLS.map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className={`flex items-center gap-4 p-5 bg-gradient-to-br ${tool.gradient} rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]`}
+            >
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <span className="text-3xl">{tool.icon}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-bold text-lg">{tool.title}</div>
+                <div className="text-white/80 text-sm">{tool.description}</div>
+              </div>
+              <span className="text-white/60 text-xl shrink-0">→</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
