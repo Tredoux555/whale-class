@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const age = searchParams.get('age');
     const sort = searchParams.get('sort') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '24'), 50);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '24'), 500);
     const requestedStatus = searchParams.get('status') || 'approved';
     const standard_work_id = searchParams.get('standard_work_id');
     const offset = (page - 1) * limit;

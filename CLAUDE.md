@@ -8,17 +8,11 @@ Next.js 16.1.1 app with two systems:
 Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domain returns 405 on API calls)
 Deploy: Railway auto-deploys on push to `main`
 Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 15" added Feb 15, 2026; old "Cowork VM" Feb 11 key is stale)
-Local path: `/Users/tredouxwillemse/Desktop/ACTIVE/whale`
+Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note space in "Master Brain")
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES (Feb 22, 2026)
-
-### ✅ DONE: Deploy + Migrations (was Priority #0)
-- All 69 files pushed to `main` via GitHub REST API → Railway deployed
-- Migrations 131 + 132 confirmed already in production Supabase
-- Dockerfile fixed: `rm -f package-lock.json && npm install --force` (ARM64 optional dep issue)
-- Community seed route fixed (non-array `points_of_interest` crash) — **try Seed 329 Works again**
+## 🔥 NEXT SESSION PRIORITIES (Feb 24, 2026)
 
 ### Seed Community Library (Priority #0 — IMMEDIATE)
 
@@ -43,13 +37,9 @@ Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for t
 - WelcomeModal, DashboardGuide — dashboard popups (localStorage-gated)
 - **Handoff:** `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md`
 
-### Home System Honing (Priority #3)
+### Home System — Disconnected from Signup (Priority #3 — ON HOLD)
 
-Full day dedicated to polishing the homeschool parent experience end-to-end.
-- Test full homeschool flow (Try Free → signup → login → dashboard → add child → Guru → curriculum)
-- Test Guru Daily Coach (daily plan generation, work guide, YouTube links)
-- Fix any visual issues found during testing
-- Requires migrations to be run first
+Homeschool parent option REMOVED from signup (`/montree/try`) and login page text simplified. Backend code preserved — can be re-enabled later. Full homeschool polishing deferred until product-market fit confirmed for schools.
 
 ### Remaining Guru Integration (Priority #4)
 
@@ -79,7 +69,42 @@ Full day dedicated to polishing the homeschool parent experience end-to-end.
 
 ## CURRENT STATUS (Feb 24, 2026)
 
-### Session Work (Feb 24, 2026)
+### Session Work (Feb 24, 2026 — Late Session)
+
+**Library Polish, Signup Cleanup, CurriculumWorkList Fix — COMPLETE (11 commits pushed):**
+
+Homeschool removal from signup/login:
+- Removed "I'm a Parent" third option from `/montree/try` signup page — backend code preserved
+- Simplified login page text to "Log in with your 6-character code"
+
+Material Generator 401 fix:
+- Was calling `/api/whale/materials/generate` (requires admin JWT that teachers don't have)
+- Rewrote to generate ALL PDFs client-side using existing generator libs in `lib/materials/generators/`
+- Removed API dependency entirely — all 10 material types now work without auth
+
+CurriculumWorkList field name fixes:
+- Updated `Work` interface in `types.ts` to match actual DB column names
+- Fixed expanded work details to use correct field names (`quick_guide`, `parent_description`, etc.)
+
+Word Bingo Generator — complete rewrite of `public/tools/bingo-generator.html`:
+- Matches Picture Bingo Generator design (same toolbar, tabs, border controls)
+- Two modes: Word Sets (CVC by vowel, digraphs, blends, sight words, letter sounds) and Custom Words
+- Uniform border approach, calling cards with indent cutting guides
+- Non-sticky toolbar (fixed the viewport consumption issue)
+
+Picture Bingo preview fix:
+- Removed `position: sticky; top: 0;` from toolbar CSS — was consuming viewport leaving only thin slit for output
+
+Label rename:
+- "Movable Alphabet Labels" → "Label Generator" in tools page
+
+**Commits:** `4dacc51e` through `2eee75ae` (10 earlier) + `6339ca6` (this session's 8-file commit)
+
+**Files modified (this session):** `app/montree/try/page.tsx`, `app/montree/login/page.tsx`, `components/materials/MaterialGenerator.tsx`, `public/tools/picture-bingo-generator.html`, `public/tools/bingo-generator.html`, `app/montree/library/tools/page.tsx`, `components/montree/curriculum/CurriculumWorkList.tsx`, `components/montree/curriculum/types.ts`
+
+**Handoff:** `docs/HANDOFF_LIBRARY_TOOLS_FEB24.md`, `docs/HANDOFF_LIBRARY_TOOLS_POLISH_FEB24B.md`
+
+### Session Work (Feb 24, 2026 — Early Session)
 
 **Montree Library Tools Polish — COMPLETE (10 commits pushed):**
 

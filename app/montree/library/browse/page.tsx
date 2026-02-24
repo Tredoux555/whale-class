@@ -1,27 +1,20 @@
 // @ts-nocheck
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
 const AREA_CONFIG = {
-  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899', bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
-  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
-  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  language: { name: 'Language', icon: 'L', color: '#22c55e', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  cultural: { name: 'Cultural', icon: 'C', color: '#f97316', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899' },
+  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6' },
+  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6' },
+  language: { name: 'Language', icon: 'L', color: '#22c55e' },
+  cultural: { name: 'Cultural', icon: 'C', color: '#f97316' },
 };
 
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-
-const AGE_LABELS = {
-  all: 'All Ages',
-  primary_year1: 'Year 1 (2.5-4)',
-  primary_year2: 'Year 2 (4-5)',
-  primary_year3: 'Year 3 (5-6)',
-};
 
 function getPhotoUrl(photo: any) {
   if (!photo?.storage_path) return null;
@@ -31,377 +24,295 @@ function getPhotoUrl(photo: any) {
 export default function LibraryBrowsePage() {
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [area, setArea] = useState('all');
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [age, setAge] = useState('all');
-  const [sort, setSort] = useState('curriculum');
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [expandedWork, setExpandedWork] = useState(null);
+  const [collapsedAreas, setCollapsedAreas] = useState({});
 
-  // Inject modal state
-  const [injectWork, setInjectWork] = useState(null);
-  const [teacherCode, setTeacherCode] = useState('');
-  const [injecting, setInjecting] = useState(false);
-  const [injectResult, setInjectResult] = useState(null);
+  // Search with autofill
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchFocusIdx, setSearchFocusIdx] = useState(-1);
+  const searchRef = useRef(null);
+  const inputRef = useRef(null);
 
   const fetchWorks = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(page), sort });
-      if (area !== 'all') params.set('area', area);
-      if (search) params.set('search', search);
-      if (age !== 'all') params.set('age', age);
-
-      const res = await fetch(`/api/montree/community/works?${params}`);
+      const res = await fetch(`/api/montree/community/works?limit=500&sort=curriculum`);
       const data = await res.json();
       setWorks(data.works || []);
-      setTotal(data.total || 0);
-      setTotalPages(data.totalPages || 0);
     } catch (err) {
       console.error('Failed to fetch works:', err);
     }
     setLoading(false);
-  }, [area, search, age, sort, page]);
+  }, []);
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setPage(1);
+  // Group works by area
+  const byArea = useMemo(() => {
+    const grouped = {};
+    AREA_ORDER.forEach(a => { grouped[a] = []; });
+    works.forEach(w => {
+      if (grouped[w.area]) grouped[w.area].push(w);
+    });
+    return grouped;
+  }, [works]);
+
+  // Search results
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return works
+      .filter(w => w.title?.toLowerCase().includes(q) || w.description?.toLowerCase().includes(q) || w.category?.toLowerCase().includes(q))
+      .slice(0, 8)
+      .map(w => ({ ...w, cfg: AREA_CONFIG[w.area] || AREA_CONFIG.practical_life }));
+  }, [searchQuery, works]);
+
+  // Close search on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectSearchResult = (work) => {
+    // Uncollapse the area if needed
+    setCollapsedAreas(prev => ({ ...prev, [work.area]: false }));
+    setExpandedWork(work.id);
+    setSearchQuery('');
+    setSearchOpen(false);
+    setTimeout(() => {
+      const el = document.querySelector(`[data-work-id="${work.id}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
   };
 
-  const handleInject = async () => {
-    if (!injectWork || !teacherCode.trim()) return;
-    setInjecting(true);
-    setInjectResult(null);
-    try {
-      const res = await fetch(`/api/montree/community/works/${injectWork.id}/inject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teacher_code: teacherCode.trim().toUpperCase() }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setInjectResult({ success: true, message: data.message });
-      } else {
-        setInjectResult({ success: false, message: data.error });
-      }
-    } catch {
-      setInjectResult({ success: false, message: 'Something went wrong. Try again.' });
-    }
-    setInjecting(false);
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Escape') { setSearchOpen(false); inputRef.current?.blur(); return; }
+    if (!searchOpen || searchResults.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSearchFocusIdx(i => (i + 1) % searchResults.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSearchFocusIdx(i => (i <= 0 ? searchResults.length - 1 : i - 1)); }
+    else if (e.key === 'Enter' && searchFocusIdx >= 0) { e.preventDefault(); selectSearchResult(searchResults[searchFocusIdx]); }
+  };
+
+  const toggleArea = (areaKey) => {
+    setCollapsedAreas(prev => ({ ...prev, [areaKey]: !prev[areaKey] }));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-emerald-50/30 to-white">
       {/* Header */}
-      <header className="bg-[#0D3330] text-white">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+      <header className="bg-[#0D3330] text-white px-4 py-4">
+        <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <Link href="/montree/library" className="text-emerald-300 text-sm hover:underline">
-                ← Back to Library
-              </Link>
-              <h1 className="text-2xl md:text-3xl font-bold mt-1">
-                Browse Works
-              </h1>
-              <p className="text-emerald-200 mt-1">
-                By teachers, for teachers. Browse, share, and add to your classroom.
-              </p>
+              <Link href="/montree/library" className="text-emerald-300 text-sm hover:underline">← Library</Link>
+              <h1 className="text-xl font-bold mt-0.5">Browse Works</h1>
             </div>
             <Link
               href="/montree/library/upload"
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
             >
-              + Share a Work
+              + Share
             </Link>
           </div>
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="mt-4 flex gap-2">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search works by name, description, or materials..."
-              className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-            <button type="submit" className="px-6 py-2 bg-emerald-500 rounded-lg font-medium hover:bg-emerald-600 transition-colors">
-              Search
-            </button>
-          </form>
+          {/* Search with autofill */}
+          <div ref={searchRef} className="relative mt-3">
+            <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2 gap-2 focus-within:ring-2 focus-within:ring-emerald-400 transition-all">
+              <span className="text-white/50 text-sm">🔍</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); setSearchFocusIdx(-1); }}
+                onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search works..."
+                className="bg-transparent outline-none text-sm text-white placeholder-white/40 flex-1"
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(''); setSearchOpen(false); }} className="text-white/40 hover:text-white text-xs">✕</button>
+              )}
+            </div>
+
+            {/* Autofill dropdown */}
+            {searchOpen && searchQuery.trim() && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
+                {searchResults.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-gray-400 text-center">No works found</div>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto">
+                    {searchResults.map((r, i) => (
+                      <button
+                        key={r.id}
+                        onClick={() => selectSearchResult(r)}
+                        className={`w-full px-3 py-2.5 flex items-center gap-3 text-left transition-colors ${i === searchFocusIdx ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
+                      >
+                        <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: r.cfg.color }}>
+                          {r.cfg.icon}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-800 truncate">{r.title}</div>
+                          {r.category && <div className="text-xs text-gray-400 truncate">{r.category}</div>}
+                        </div>
+                        <span className="text-[10px] text-gray-400 flex-shrink-0">{r.cfg.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Filters */}
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        {/* Area tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          <button
-            onClick={() => { setArea('all'); setPage(1); }}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              area === 'all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            All Areas ({total})
-          </button>
-          {AREA_ORDER.map((key) => {
-            const cfg = AREA_CONFIG[key];
-            return (
-              <button
-                key={key}
-                onClick={() => { setArea(key); setPage(1); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  area === key ? 'text-white' : `${cfg.bg} ${cfg.text} border ${cfg.border} hover:opacity-80`
-                }`}
-                style={area === key ? { backgroundColor: cfg.color } : {}}
-              >
-                <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: cfg.color }}
-                >
-                  {cfg.icon}
-                </span>
-                {cfg.name}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Sort + Age filter row */}
-        <div className="flex gap-3 mt-3 flex-wrap">
-          <select
-            value={sort}
-            onChange={(e) => { setSort(e.target.value); setPage(1); }}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white"
-          >
-            <option value="curriculum">Curriculum Order</option>
-            <option value="newest">Newest First</option>
-            <option value="downloads">Most Downloaded</option>
-            <option value="injected">Most Added to Classrooms</option>
-            <option value="oldest">Oldest First</option>
-          </select>
-
-          <select
-            value={age}
-            onChange={(e) => { setAge(e.target.value); setPage(1); }}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm bg-white"
-          >
-            {Object.entries(AGE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </select>
-
-          {search && (
-            <button
-              onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }}
-              className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm text-gray-600 hover:bg-gray-200"
-            >
-              Clear search: &quot;{search}&quot; ×
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Works Grid */}
-      <div className="max-w-6xl mx-auto px-4 pb-12">
+      <main className="max-w-3xl mx-auto px-4 py-4 space-y-3">
         {loading ? (
           <div className="text-center py-20 text-gray-400">Loading works...</div>
         ) : works.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-gray-400 text-lg">No works found</p>
-            <p className="text-gray-400 mt-2">
-              {search ? 'Try a different search term' : 'Be the first to share a work!'}
-            </p>
-            <Link
-              href="/montree/library/upload"
-              className="inline-block mt-4 px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
-            >
-              + Share a Work
-            </Link>
+          <div className="text-center py-12">
+            <p className="text-gray-400">No works in the library yet.</p>
+            <Link href="/montree/library/upload" className="inline-block mt-3 px-5 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">+ Share a Work</Link>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {works.map((work) => {
-                const cfg = AREA_CONFIG[work.area] || AREA_CONFIG.practical_life;
-                const coverPhoto = work.photos?.[work.cover_photo_index || 0];
-                const photoUrl = getPhotoUrl(coverPhoto);
+          /* Flat list — all areas, each with a header then works */
+          AREA_ORDER.map((areaKey) => {
+            const cfg = AREA_CONFIG[areaKey];
+            const areaWorks = byArea[areaKey] || [];
+            if (areaWorks.length === 0) return null;
+            const isCollapsed = !!collapsedAreas[areaKey];
 
-                return (
-                  <div
-                    key={work.id}
-                    className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+            return (
+              <div key={areaKey} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                {/* Area header — tap to collapse/expand */}
+                <button
+                  onClick={() => toggleArea(areaKey)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                >
+                  <span
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                    style={{ backgroundColor: cfg.color }}
                   >
-                    {/* Photo or placeholder */}
-                    <div className="h-48 bg-gray-100 relative overflow-hidden">
-                      {photoUrl ? (
-                        <img src={photoUrl} alt={work.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div
-                          className="w-full h-full flex items-center justify-center"
-                          style={{ backgroundColor: cfg.color + '15' }}
-                        >
-                          <span
-                            className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold"
-                            style={{ backgroundColor: cfg.color }}
+                    {cfg.icon}
+                  </span>
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-gray-800">{cfg.name}</p>
+                    <p className="text-xs text-gray-400">{areaWorks.length} works</p>
+                  </div>
+                  <span className={`text-gray-400 text-sm transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>▼</span>
+                </button>
+
+                {/* Works list */}
+                {!isCollapsed && (
+                  <div className="divide-y divide-gray-100 border-t border-gray-100">
+                    {areaWorks.map((work) => {
+                      const isExpanded = expandedWork === work.id;
+                      const coverPhoto = work.photos?.[work.cover_photo_index || 0];
+                      const photoUrl = getPhotoUrl(coverPhoto);
+
+                      return (
+                        <div key={work.id} data-work-id={work.id}>
+                          {/* Work row */}
+                          <button
+                            onClick={() => setExpandedWork(isExpanded ? null : work.id)}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
                           >
-                            {cfg.icon}
-                          </span>
-                        </div>
-                      )}
-                      {/* Area badge */}
-                      <span
-                        className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
-                        style={{ backgroundColor: cfg.color }}
-                      >
-                        {cfg.name}
-                      </span>
-                      {/* Photo count */}
-                      {work.photos?.length > 1 && (
-                        <span className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
-                          {work.photos.length} photos
-                        </span>
-                      )}
-                    </div>
+                            {/* Color bar */}
+                            <div className="w-1 h-7 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color, opacity: 0.4 }} />
 
-                    {/* Content */}
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 text-lg leading-tight">{work.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1 line-clamp-2">{work.description}</p>
+                            {/* Thumbnail or placeholder */}
+                            {photoUrl ? (
+                              <img src={photoUrl} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-gray-200" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: cfg.color + '12' }}>
+                                <span className="text-xs font-bold" style={{ color: cfg.color }}>{cfg.icon}</span>
+                              </div>
+                            )}
 
-                      {/* Meta row */}
-                      <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
-                        <span>{AGE_LABELS[work.age_range] || 'All Ages'}</span>
-                        {work.contributor_country && <span>{work.contributor_country}</span>}
-                        <span className="ml-auto">{work.download_count || 0} downloads</span>
-                      </div>
+                            {/* Title + category */}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-800 text-sm truncate">{work.title}</p>
+                              {work.category && <p className="text-xs text-gray-400 truncate">{work.category}</p>}
+                            </div>
 
-                      {/* Materials preview */}
-                      {work.materials?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {work.materials.slice(0, 3).map((m, i) => (
-                            <span key={i} className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600">
-                              {m}
-                            </span>
-                          ))}
-                          {work.materials.length > 3 && (
-                            <span className="px-2 py-0.5 text-xs text-gray-400">+{work.materials.length - 3} more</span>
+                            {/* Photo count */}
+                            {work.photos?.length > 0 && (
+                              <span className="text-xs text-gray-300 flex-shrink-0">📷 {work.photos.length}</span>
+                            )}
+
+                            <span className={`text-gray-300 text-xs transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                          </button>
+
+                          {/* Expanded */}
+                          {isExpanded && (
+                            <div className="px-4 pb-4 pt-1 bg-gray-50/50 space-y-3 ml-5 border-l-2" style={{ borderColor: cfg.color + '30' }}>
+                              {work.description && (
+                                <p className="text-sm text-gray-600 leading-relaxed">{work.description}</p>
+                              )}
+
+                              {/* Photos */}
+                              {work.photos?.length > 0 && (
+                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                  {work.photos.map((photo, i) => {
+                                    const url = getPhotoUrl(photo);
+                                    if (!url) return null;
+                                    return (
+                                      <img key={i} src={url} alt={photo.caption || ''} className="h-24 w-auto rounded-lg object-cover flex-shrink-0 border border-gray-200" />
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              {/* Materials */}
+                              {work.materials?.length > 0 && (
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 mb-1">Materials</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {work.materials.map((m, i) => (
+                                      <span key={i} className="px-2 py-0.5 bg-white border border-gray-200 rounded text-xs text-gray-600">{m}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Aims */}
+                              {work.direct_aims?.length > 0 && (
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 mb-1">What children learn</p>
+                                  <ul className="text-xs text-gray-600 space-y-0.5">
+                                    {work.direct_aims.map((a, i) => <li key={i}>• {a}</li>)}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Contributor */}
+                              {work.contributor_name && (
+                                <p className="text-xs text-gray-400">
+                                  Shared by {work.contributor_name}{work.contributor_country ? ` · ${work.contributor_country}` : ''}
+                                </p>
+                              )}
+
+                              <Link
+                                href={`/montree/library/${work.id}`}
+                                className="inline-block py-2 px-4 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                              >
+                                Full Details →
+                              </Link>
+                            </div>
                           )}
                         </div>
-                      )}
-
-                      {/* Action buttons */}
-                      <div className="flex gap-2 mt-4">
-                        <Link
-                          href={`/montree/library/${work.id}`}
-                          className="flex-1 text-center py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                        >
-                          View Details
-                        </Link>
-                        <button
-                          onClick={() => { setInjectWork(work); setTeacherCode(''); setInjectResult(null); }}
-                          className="flex-1 py-2 text-white rounded-lg text-sm font-medium transition-colors"
-                          style={{ backgroundColor: '#0D3330' }}
-                        >
-                          Send to Classroom
-                        </button>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-8">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-50 hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-                <span className="px-4 py-2 text-sm text-gray-500">
-                  Page {page} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-50 hover:bg-gray-50"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Inject Modal */}
-      {injectWork && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setInjectWork(null)}>
-          <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-            {injectResult?.success ? (
-              <div className="text-center">
-                <div className="text-5xl mb-4">✅</div>
-                <h3 className="text-xl font-bold text-gray-900">{injectResult.message}</h3>
-                <p className="text-gray-500 mt-2">The work is now in your classroom curriculum.</p>
-                <button
-                  onClick={() => setInjectWork(null)}
-                  className="mt-6 w-full py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
-                >
-                  Done
-                </button>
-              </div>
-            ) : (
-              <>
-                <h3 className="text-xl font-bold text-gray-900">Send to My Classroom</h3>
-                <p className="text-gray-500 mt-1">
-                  Enter your Montree teacher code to add <strong>&quot;{injectWork.title}&quot;</strong> directly to your curriculum.
-                </p>
-
-                <input
-                  type="text"
-                  value={teacherCode}
-                  onChange={(e) => setTeacherCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. ABC123"
-                  maxLength={10}
-                  className="w-full mt-4 px-4 py-3 text-center text-2xl tracking-widest font-mono border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
-                  autoFocus
-                />
-
-                {injectResult && !injectResult.success && (
-                  <p className="text-red-500 text-sm mt-2 text-center">{injectResult.message}</p>
                 )}
-
-                <button
-                  onClick={handleInject}
-                  disabled={injecting || teacherCode.length < 4}
-                  className="w-full mt-4 py-3 bg-[#0D3330] text-white rounded-xl font-medium disabled:opacity-50 hover:bg-[#164440] transition-colors"
-                >
-                  {injecting ? 'Adding...' : 'Add to My Curriculum'}
-                </button>
-
-                <p className="text-center text-xs text-gray-400 mt-3">
-                  Don&apos;t have Montree? <Link href="/montree/try" className="text-emerald-600 underline">Try free</Link>
-                </p>
-
-                <button
-                  onClick={() => setInjectWork(null)}
-                  className="w-full mt-2 py-2 text-gray-500 text-sm hover:text-gray-700"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              </div>
+            );
+          })
+        )}
+      </main>
     </div>
   );
 }

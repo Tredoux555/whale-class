@@ -9,18 +9,26 @@ export interface Work {
   is_active: boolean;
   direct_aims?: string[];
   indirect_aims?: string[];
+  materials?: string[];
+  prerequisites?: string[];
+  control_of_error?: string;
+  parent_description?: string;
+  why_it_matters?: string;
+  teacher_notes?: string;
+  quick_guide?: string;
+  presentation_steps?: any[];
+  sequence?: number;
+  photo_url?: string;
+  is_custom?: boolean;
+  // Legacy/static-only fields (not in DB)
   readiness_indicators?: string[];
   materials_needed?: string[];
   parent_explanation?: string;
-  why_it_matters?: string;
   difficulty_level?: string;
   is_gateway?: boolean;
   sub_area?: string;
   primary_skills?: string[];
-  teacher_notes?: string;
-  quick_guide?: string;
   video_search_term?: string;
-  sequence?: number;
 }
 
 export interface MergedWork extends Work {

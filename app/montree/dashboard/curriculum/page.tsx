@@ -282,6 +282,7 @@ export default function CurriculumPage() {
                 scrollContainerRef={scrollContainerRef}
                 startAutoScroll={startAutoScroll}
                 stopAutoScroll={stopAutoScroll}
+                onWorkUpdated={fetchCurriculum}
               />
               </div>
             )}

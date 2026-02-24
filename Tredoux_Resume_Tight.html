@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tredoux Willemse — Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+
+  :root {
+    --teal: #0D3330;
+    --teal-hover: #164340;
+    --emerald: #4ADE80;
+    --emerald-deep: #2E7D32;
+    --warm-cream: #FFF8E7;
+    --soft-cream: #F5E6D3;
+    --near-white: #FFFDF8;
+    --teal-10: rgba(13, 51, 48, 0.10);
+    --teal-15: rgba(13, 51, 48, 0.15);
+    --teal-20: rgba(13, 51, 48, 0.20);
+    --teal-40: rgba(13, 51, 48, 0.40);
+    --teal-60: rgba(13, 51, 48, 0.60);
+    --text: #1A1A1A;
+    --text-light: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4; margin: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #E8E0D8;
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 12.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    background: var(--near-white);
+    box-shadow: 0 4px 40px rgba(0,0,0,0.15);
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    overflow: hidden;
+  }
+
+  @media print {
+    body { background: white; }
+    .page { margin: 0; box-shadow: none; }
+  }
+
+  /* ═══════ LEFT SIDEBAR ═══════ */
+  .sidebar {
+    background: var(--teal);
+    color: white;
+    padding: 24px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .avatar-area { text-align: center; margin-bottom: 2px; }
+
+  .avatar-circle {
+    width: 85px; height: 85px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--emerald), #34D399);
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 700; color: var(--teal);
+    letter-spacing: -2px;
+    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+  }
+
+  .sidebar-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45em; font-weight: 700;
+    letter-spacing: -0.5px; line-height: 1.2;
+  }
+
+  .sidebar-title {
+    font-size: 0.75em; font-weight: 300;
+    color: var(--emerald); margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-section { margin-top: 0; }
+
+  .sidebar-section-title {
+    font-size: 0.65em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--emerald); margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .sidebar-item {
+    font-size: 0.78em; font-weight: 300;
+    margin-bottom: 3px;
+    display: flex; align-items: flex-start; gap: 7px;
+    line-height: 1.35;
+  }
+
+  .sidebar-item .icon {
+    flex-shrink: 0; width: 14px; text-align: center;
+    font-size: 0.8em; margin-top: 2px; opacity: 0.7;
+  }
+
+  .skill-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .skill-tag {
+    font-size: 0.66em; font-weight: 400;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 10px; padding: 3px 9px;
+    white-space: nowrap;
+  }
+
+  .language-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78em; font-weight: 300; margin-bottom: 4px;
+  }
+
+  .lang-level { font-size: 0.7em; color: var(--emerald); font-weight: 400; }
+
+  /* Montree callout in sidebar */
+  .montree-badge {
+    background: rgba(74, 222, 128, 0.12);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .montree-badge .badge-title {
+    font-size: 0.85em; font-weight: 600;
+    color: var(--emerald); letter-spacing: 0.5px;
+  }
+
+  .montree-badge .badge-url {
+    font-size: 0.7em; font-weight: 300;
+    color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+
+  .montree-badge .badge-desc {
+    font-size: 0.68em; font-weight: 300;
+    color: rgba(255,255,255,0.55); margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ═══════ MAIN CONTENT ═══════ */
+  .main {
+    padding: 21px 26px 17px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.12em; font-weight: 600;
+    color: var(--teal); letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+
+  .section-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, var(--teal-20), transparent);
+  }
+
+  .profile-text {
+    font-size: 0.85em; font-weight: 300;
+    color: var(--text-light); line-height: 1.55;
+    border-left: 3px solid var(--emerald);
+    padding-left: 14px;
+  }
+
+  .profile-text strong { font-weight: 600; color: var(--teal); }
+
+  /* Experience */
+  .exp-entry {
+    margin-bottom: 8px; padding-bottom: 7px;
+    border-bottom: 1px solid var(--teal-10);
+  }
+
+  .exp-entry:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+  .exp-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 2px;
+  }
+
+  .exp-role { font-weight: 600; font-size: 0.9em; color: var(--teal); }
+
+  .exp-date {
+    font-size: 0.68em; font-weight: 500; color: white;
+    background: var(--teal); padding: 2px 9px;
+    border-radius: 10px; white-space: nowrap;
+    flex-shrink: 0; margin-left: 8px;
+  }
+
+  .exp-company {
+    font-size: 0.78em; font-weight: 400;
+    color: var(--teal-60); margin-bottom: 4px;
+  }
+
+  .exp-bullets { list-style: none; padding: 0; }
+
+  .exp-bullets li {
+    font-size: 0.78em; font-weight: 300;
+    color: var(--text-light); padding-left: 12px;
+    position: relative; margin-bottom: 1px; line-height: 1.4;
+  }
+
+  .exp-bullets li::before {
+    content: ''; position: absolute; left: 0; top: 7px;
+    width: 4px; height: 4px;
+    background: var(--emerald); border-radius: 50%;
+  }
+
+  /* Montree feature box */
+  .montree-box {
+    background: linear-gradient(135deg, var(--warm-cream), var(--soft-cream));
+    border: 1px solid var(--teal-15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 3px;
+  }
+
+  .montree-box-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .montree-box-header .montree-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--teal); color: var(--emerald);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+
+  .montree-box-header .montree-label {
+    font-weight: 600; font-size: 0.85em; color: var(--teal);
+  }
+
+  .montree-box-header .montree-url {
+    font-size: 0.72em; font-weight: 300; color: var(--teal-60);
+    margin-left: auto;
+  }
+
+  .montree-box p {
+    font-size: 0.76em; font-weight: 300;
+    color: var(--text-light); line-height: 1.55;
+    margin-bottom: 4px;
+  }
+
+  .montree-stats {
+    display: flex; gap: 16px; margin-top: 4px;
+  }
+
+  .montree-stat {
+    text-align: center;
+  }
+
+  .montree-stat .num {
+    font-size: 1.1em; font-weight: 700; color: var(--teal);
+    line-height: 1;
+  }
+
+  .montree-stat .label {
+    font-size: 0.6em; font-weight: 400; color: var(--teal-60);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Education */
+  .edu-entry { margin-bottom: 5px; }
+  .edu-degree { font-weight: 600; font-size: 0.85em; color: var(--teal); }
+  .edu-school { font-size: 0.78em; font-weight: 300; color: var(--text-light); }
+  .edu-date { font-size: 0.72em; color: var(--teal-40); font-weight: 400; }
+
+  /* References */
+  .ref-note {
+    font-size: 0.78em; font-weight: 300;
+    font-style: italic; color: var(--text-light);
+  }
+
+  /* Earlier roles compact list */
+  .earlier-roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 16px;
+  }
+
+  .earlier-role {
+    font-size: 0.74em; font-weight: 300;
+    color: var(--text-light); line-height: 1.45;
+  }
+
+  .earlier-role strong {
+    font-weight: 500; color: var(--text);
+  }
+
+  .earlier-role .er-date {
+    font-size: 0.88em; color: var(--teal-40);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <div class="sidebar">
+    <div class="avatar-area">
+      <div class="avatar-circle">TW</div>
+      <div class="sidebar-name">Tredoux<br>Willemse</div>
+      <div class="sidebar-title">Montessori Educator</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Contact</div>
+      <div class="sidebar-item"><span class="icon">&#9993;</span> tredoux555@gmail.com</div>
+      <div class="sidebar-item"><span class="icon">&#9742;</span> +86 18548922404</div>
+      <div class="sidebar-item"><span class="icon">&#9672;</span> Beijing, China</div>
+      <div class="sidebar-item"><span class="icon">&#9672;</span> British / South African</div>
+      <div class="sidebar-item"><span class="icon">&#9672;</span> DOB: 2 June 1987</div>
+    </div>
+
+    <!-- Montree Badge -->
+    <div class="montree-badge">
+      <div class="badge-title">Creator of Montree</div>
+      <div class="badge-url">montree.xyz</div>
+      <div class="badge-desc">Montessori classroom platform built from real teaching experience</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Core Skills</div>
+      <div class="skill-grid">
+        <span class="skill-tag">AMI/AMS Montessori</span>
+        <span class="skill-tag">ESL / EFL</span>
+        <span class="skill-tag">Curriculum Design</span>
+        <span class="skill-tag">Child Development</span>
+        <span class="skill-tag">Phonics & Literacy</span>
+        <span class="skill-tag">Classroom Mgmt</span>
+        <span class="skill-tag">Mixed-Age Groups</span>
+        <span class="skill-tag">EdTech</span>
+        <span class="skill-tag">Parent Comms</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Languages</div>
+      <div class="language-row">English <span class="lang-level">Native</span></div>
+      <div class="language-row">Afrikaans <span class="lang-level">Native</span></div>
+      <div class="language-row">Mandarin <span class="lang-level">Conversational</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Certifications</div>
+      <div class="sidebar-item">AMS Montessori Certified</div>
+      <div class="sidebar-item">TESOL — 190hrs (Wits)</div>
+      <div class="sidebar-item">Teaching Business English</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Tech Skills</div>
+      <div class="skill-grid">
+        <span class="skill-tag">Next.js / React</span>
+        <span class="skill-tag">TypeScript</span>
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">AI Integration</span>
+        <span class="skill-tag">Full-Stack Dev</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <div class="main">
+
+    <!-- PROFILE -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Profile</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="profile-text">
+        AMS-certified Montessori educator with <strong>12+ years of international teaching experience</strong> across China, South Korea, Indonesia, and Germany. Deep expertise in the Montessori language curriculum for ages 3–6, including the complete AMI sequence from oral language through reading and grammar. Creator of <strong>Montree</strong> (montree.xyz) — a production classroom management platform built from firsthand teaching experience, serving Montessori schools with a 329-work curriculum system, progress tracking, and an AI-powered teacher advisor.
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Teaching Experience</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="exp-entry">
+        <div class="exp-header">
+          <span class="exp-role">Homeroom Pre-K Teacher</span>
+          <span class="exp-date">2023 — Present</span>
+        </div>
+        <div class="exp-company">Tsinghua Daoxing Lake International School, Beijing</div>
+        <ul class="exp-bullets">
+          <li>Lead Montessori classroom for mixed-age group (3–6), delivering the full AMI English language curriculum across all 5 areas: Oral Language, Writing Preparation, Reading, Grammar, and Word Study</li>
+          <li>Implemented complete Pink/Blue/Green reading program, Sandpaper Letters with AMI groupings, Grammar Farm, I Spy sound games, and Moveable Alphabet composition work</li>
+          <li>Designed and set up the English language corner with 7 shelves following the developmental sequence prescribed by Maria Montessori</li>
+          <li>Track individual child progress across 329 curriculum works using Montree, the platform I built specifically for this purpose</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="exp-header">
+          <span class="exp-role">Homeroom Teacher</span>
+          <span class="exp-date">2022 — 2023</span>
+        </div>
+        <div class="exp-company">Concordia International School, Ningbo &amp; Hanlin International Kindergarten, Shijiazhuang</div>
+        <ul class="exp-bullets">
+          <li>Homeroom teacher for kindergarten-age children in bilingual Mandarin-English environments</li>
+          <li>Developed phonics and vocabulary curricula tailored for Chinese L1 learners</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="exp-header">
+          <span class="exp-role">Online ESL Teacher</span>
+          <span class="exp-date">2020 — 2022</span>
+        </div>
+        <div class="exp-company">PalFish Online Platform — 1-on-1 with Pearson Curriculum</div>
+        <ul class="exp-bullets">
+          <li>Delivered structured 1-on-1 English lessons using Pearson materials to young learners</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="exp-header">
+          <span class="exp-role">ESL Teacher</span>
+          <span class="exp-date">2019 — 2020</span>
+        </div>
+        <div class="exp-company">English First, Jakarta — Indonesia</div>
+        <ul class="exp-bullets">
+          <li>Taught all ages from kindergarten to corporate professionals in a structured EF curriculum</li>
+        </ul>
+      </div>
+
+      <!-- Earlier roles compact -->
+      <div style="margin-top: 6px;">
+        <div style="font-size: 0.78em; font-weight: 500; color: var(--teal); margin-bottom: 6px;">Earlier Teaching Positions</div>
+        <div class="earlier-roles">
+          <div class="earlier-role"><strong>I2 International</strong>, Haikou <span class="er-date">2017–18</span></div>
+          <div class="earlier-role"><strong>SangSang Academy</strong>, S. Korea <span class="er-date">2016–17</span></div>
+          <div class="earlier-role"><strong>Shimen Middle School</strong>, Foshan <span class="er-date">2016</span></div>
+          <div class="earlier-role"><strong>Shenyang Inst. of Eng.</strong> + Liaoning Univ. <span class="er-date">2014–15</span></div>
+          <div class="earlier-role"><strong>Berlitz Education</strong>, Germany <span class="er-date">2013–14</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONTREE -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Montree — Montessori EdTech</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="montree-box">
+        <div class="montree-box-header">
+          <div class="montree-icon">M</div>
+          <span class="montree-label">Founder & Developer</span>
+          <span class="montree-url">montree.xyz</span>
+        </div>
+        <p>
+          Built a full-stack Montessori classroom management platform from the ground up — born directly from my daily teaching practice. Montree tracks child progress across a 329-work AMI curriculum, generates parent reports with photos and observations, and includes an AI-powered Montessori advisor trained on AMI methodology. Also features a community library where teachers worldwide share and discover Montessori works.
+        </p>
+        <div class="montree-stats">
+          <div class="montree-stat"><div class="num">329</div><div class="label">AMI Works</div></div>
+          <div class="montree-stat"><div class="num">5</div><div class="label">Areas</div></div>
+          <div class="montree-stat"><div class="num">Live</div><div class="label">Production</div></div>
+          <div class="montree-stat"><div class="num">AI</div><div class="label">Guru Advisor</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Education</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="edu-entry">
+        <div class="edu-degree">TESOL Certificate — 190 Hours + Teaching Business English</div>
+        <div class="edu-school">University of the Witwatersrand (Wits), Johannesburg</div>
+        <div class="edu-date">2010</div>
+      </div>
+
+      <div class="edu-entry">
+        <div class="edu-degree">B.A. — Human Resources Management (Major) & Psychology</div>
+        <div class="edu-school">University of Johannesburg, South Africa</div>
+        <div class="edu-date">2006 — 2010</div>
+      </div>
+    </div>
+
+    <!-- REFERENCES -->
+    <div class="section">
+      <div class="section-header">
+        <h2>References</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="ref-note">Available upon request</div>
+    </div>
+
+  </div><!-- /main -->
+
+</div><!-- /page -->
+
+</body>
+</html>
