@@ -393,12 +393,18 @@
     line-height: 1.2;
   }
 
-  /* Calling cards — same uniform border approach */
+  /*
+    CALLING CARDS — 3-Part Card Generator approach:
+    Each card has background = border color, padding = border width.
+    Inner white areas have border-radius creating indent cutting guides.
+    Grid gap = 0 so adjacent rounded corners form diamond indents.
+  */
   .calling-cards-grid {
     display: grid;
     margin: 0 auto;
     max-width: 190mm;
     grid-template-columns: repeat(4, 1fr);
+    gap: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -406,24 +412,35 @@
   .calling-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     text-align: center;
     aspect-ratio: 1;
-    background: white;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    padding: 3mm;
+    /* background + padding + border-radius set inline per card */
   }
 
-  .calling-card img {
-    width: 85%;
-    height: 85%;
+  .calling-card .card-inner {
+    background: white;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    /* border-radius set inline */
+  }
+
+  .calling-card .card-inner img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  .calling-card .card-word {
+  .calling-card .card-inner .card-word {
     font-size: 28px;
     font-weight: 700;
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
@@ -838,24 +855,31 @@ function generateBoards(wordPool, title, gridSize, boardCount, borderColor, bord
   }
 }
 
-// ===== CALLING CARDS — picture front, word back (duplex) =====
+// ===== CALLING CARDS — 3-Part Card style with indent cutting guides =====
+// Each card: background = borderColor, padding = borderW, border-radius = radius
+// Inner white area: background white, border-radius = radius
+// Grid: gap 0 — adjacent rounded corners create diamond indent cutting guides
 function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius, imgFn) {
   const output = document.getElementById('output');
   output.innerHTML = '';
 
   document.getElementById('info').innerHTML =
     `<strong>Generated calling cards</strong> for ${wordPool.length} items. ` +
-    `<strong>Print duplex (flip on short edge) — picture front, word back. Then cut along borders.</strong>`;
+    `<strong>Print duplex (flip on short edge) — picture front, word back. Cut along the indent guides.</strong>`;
 
   const label = document.createElement('div');
   label.className = 'section-label calling-label';
-  label.textContent = `Calling Cards — duplex print, cut along borders (${wordPool.length} cards)`;
+  label.textContent = `Calling Cards — duplex print, cut along indent guides (${wordPool.length} cards)`;
   output.appendChild(label);
 
   const cardsPerPage = 16; // 4x4 grid
   const cols = 4;
   const pages = Math.ceil(wordPool.length / cardsPerPage);
-  const cellStyle = buildCellStyle(radius);
+
+  // Per-card styles (like 3-Part Card Generator)
+  const cardStyle = `background:${borderColor}; padding:${borderW}mm; border-radius:${radius}px;`;
+  const innerStyle = `border-radius:${Math.max(0, radius - 1)}px;`;
+  const emptyStyle = `background:transparent;`;
 
   for (let p = 0; p < pages; p++) {
     const start = p * cardsPerPage;
@@ -879,16 +903,15 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
 
     const frontGrid = document.createElement('div');
     frontGrid.className = 'calling-cards-grid';
-    frontGrid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
 
     for (const item of pageItems) {
       const card = document.createElement('div');
       card.className = 'calling-card';
-      card.setAttribute('style', cellStyle);
       if (item) {
-        card.innerHTML = `<img src="${imgFn(item)}" alt="${item.word}" loading="lazy" style="border-radius:${Math.max(0, radius - 2)}px">`;
+        card.setAttribute('style', cardStyle);
+        card.innerHTML = `<div class="card-inner" style="${innerStyle}"><img src="${imgFn(item)}" alt="${item.word}" loading="lazy"></div>`;
       } else {
-        card.style.background = 'transparent';
+        card.setAttribute('style', emptyStyle);
       }
       frontGrid.appendChild(card);
     }
@@ -908,24 +931,22 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
 
     const backGrid = document.createElement('div');
     backGrid.className = 'calling-cards-grid';
-    backGrid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
 
     // Mirror each row horizontally for proper duplex alignment
     const rows = Math.ceil(pageItems.length / cols);
     for (let r = 0; r < rows; r++) {
       const rowItems = pageItems.slice(r * cols, (r + 1) * cols);
-      // Pad row to cols width
       while (rowItems.length < cols) rowItems.push(null);
       const mirrored = [...rowItems].reverse();
 
       for (const item of mirrored) {
         const card = document.createElement('div');
         card.className = 'calling-card';
-        card.setAttribute('style', cellStyle);
         if (item) {
-          card.innerHTML = `<div class="card-word">${item.word}</div>`;
+          card.setAttribute('style', cardStyle);
+          card.innerHTML = `<div class="card-inner" style="${innerStyle}"><div class="card-word">${item.word}</div></div>`;
         } else {
-          card.style.background = 'transparent';
+          card.setAttribute('style', emptyStyle);
         }
         backGrid.appendChild(card);
       }
