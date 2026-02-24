@@ -276,15 +276,6 @@
     letter-spacing: -1px;
   }
 
-  .bingo-cell .cell-word .vowel-hl {
-    background: linear-gradient(120deg, #fee2e2, #fca5a5);
-    color: #991b1b;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-weight: 800;
-    margin: 0 2px;
-  }
-
   .cell-free {
     background: linear-gradient(135deg, #fffbeb, #fef3c7);
   }
@@ -341,15 +332,6 @@
     font-family: 'Nunito', system-ui, sans-serif;
     color: #1f2937;
     letter-spacing: -0.5px;
-  }
-
-  .calling-card .card-word .vowel-hl {
-    background: linear-gradient(120deg, #dbeafe, #bfdbfe);
-    color: #1e40af;
-    padding: 3px 7px;
-    border-radius: 6px;
-    font-weight: 800;
-    margin: 0 2px;
   }
 
   .calling-header {
@@ -585,8 +567,7 @@ function getVowel(word) {
 }
 
 function highlightVowel(word) {
-  const v = getVowel(word);
-  return word.split('').map(ch => ch === v ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
+  return word;
 }
 
 const BINGO_LETTERS = 'BINGO'.split('');
