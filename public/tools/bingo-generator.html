@@ -3,190 +3,696 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Montessori Bingo Generator - CVC Words & Phonics</title>
+<title>Word Bingo Generator - Montree Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4 portrait; margin: 8mm; }
+  @page { size: A4 portrait; margin: 6mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e8f1f5 100%);
+    min-height: 100vh;
+  }
 
   .toolbar {
-    background: linear-gradient(135deg, #1565C0, #0D47A1); color: white;
-    padding: 20px; position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #172554 100%);
+    color: white;
+    padding: 24px 28px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(30, 64, 175, 0.15);
   }
-  .toolbar h1 { font-size: 22px; margin-bottom: 4px; }
-  .toolbar p { font-size: 12px; opacity: 0.85; margin-bottom: 12px; }
+
+  .toolbar h1 { font-size: 28px; margin-bottom: 6px; font-weight: 700; letter-spacing: -0.5px; }
+  .toolbar p { font-size: 13px; opacity: 0.85; margin-bottom: 16px; font-weight: 500; }
+
+  /* Tabs */
+  .mode-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .mode-tab {
+    padding: 10px 22px;
+    border-radius: 10px 10px 0 0;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .mode-tab.active {
+    background: rgba(255,255,255,0.18);
+    color: white;
+  }
+
+  .mode-tab:hover { background: rgba(255,255,255,0.14); color: white; }
+
+  .mode-content { display: none; }
+  .mode-content.active { display: block; }
 
   .controls {
-    display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 16px;
   }
-  .control-group { display: flex; flex-direction: column; gap: 4px; }
-  .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
-  .control-group select, .control-group input {
-    padding: 8px 12px; border-radius: 8px; border: none; font-size: 14px;
-    background: rgba(255,255,255,0.95); color: #333;
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
-  .control-group input[type="number"] { width: 70px; }
+
+  .control-group label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    opacity: 0.75;
+    font-weight: 600;
+  }
+
+  .control-group select, .control-group input[type="number"] {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.15);
+    font-size: 14px;
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .control-group select:hover, .control-group input:hover {
+    background: white;
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .control-group select:focus, .control-group input:focus {
+    outline: none;
+    border-color: #60a5fa;
+  }
+
+  .control-group input[type="number"] { width: 75px; }
+
+  .color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-picker-row input[type="color"] {
+    width: 40px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+  }
+
+  .color-picker-row input[type="text"] {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.15);
+    font-size: 13px;
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+    font-family: monospace;
+    width: 85px;
+  }
 
   .btn {
-    padding: 10px 20px; border-radius: 8px; border: none;
-    font-size: 14px; font-weight: bold; cursor: pointer;
-  }
-  .btn-primary { background: #FFC107; color: #333; }
-  .btn-primary:hover { background: #FFD54F; }
-  .btn-print { background: white; color: #1565C0; }
-  .btn-print:hover { background: #E3F2FD; }
-
-  .stats {
-    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px;
-    font-size: 12px; margin-top: 8px;
+    padding: 11px 24px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    letter-spacing: 0.3px;
   }
 
-  /* Bingo board */
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-calling {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+  }
+  .btn-calling:hover {
+    background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+    box-shadow: 0 6px 16px rgba(251, 191, 36, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-print {
+    background: white;
+    color: #1e40af;
+    border: 2px solid rgba(30, 64, 175, 0.2);
+  }
+  .btn-print:hover {
+    background: #eff6ff;
+    border-color: #60a5fa;
+    box-shadow: 0 6px 16px rgba(30, 64, 175, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .btn-danger {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .btn-danger:hover {
+    background: rgba(239,68,68,0.3);
+    color: white;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: end;
+  }
+
+  .info-bar {
+    background: rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.7;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .info-bar strong { color: #93c5fd; font-weight: 600; }
+
+  .how-to {
+    background: rgba(251,191,36,0.08);
+    border: 2px solid rgba(251,191,36,0.2);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 13px;
+    margin-top: 10px;
+    line-height: 1.7;
+    color: #1f2937;
+  }
+  .how-to strong { color: #d97706; font-weight: 600; }
+
+  /* Custom word input zone */
+  .word-input-zone {
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.06);
+  }
+  .word-input-zone label { display: block; font-size: 13px; opacity: 0.9; margin-bottom: 8px; }
+  .word-input-zone textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+    font-size: 14px;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+    resize: vertical;
+  }
+  .word-input-zone textarea:focus { outline: none; border-color: #60a5fa; }
+  .word-input-zone .hint { font-size: 11px; opacity: 0.6; margin-top: 6px; }
+
+  .custom-words-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .word-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  }
+
+  .word-chip .remove-btn {
+    background: none;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+  }
+
+  /* Page shared */
   .page {
-    width: 210mm; min-height: 297mm; margin: 16px auto;
-    background: white; padding: 8mm;
+    width: 210mm;
+    min-height: 280mm;
+    margin: 18px auto;
+    background: white;
+    padding: 8mm;
     page-break-after: always;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .page-header { text-align: center; margin-bottom: 6mm; }
+
+  .page-title {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 8px;
+    font-family: 'Nunito', system-ui, sans-serif;
+    margin-bottom: 4px;
   }
 
-  .bingo-header {
-    text-align: center; margin-bottom: 6mm;
-  }
-  .bingo-title {
-    font-size: 36px; font-weight: 900; letter-spacing: 12px;
-    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-  }
-  .bingo-title span { display: inline-block; padding: 4px 8px; border-radius: 8px; margin: 0 2px; }
-  .bingo-subtitle { font-size: 12px; color: #888; margin-top: 4px; }
-  .bingo-name-line {
-    margin-top: 4mm; font-size: 13px; color: #666;
-    border-bottom: 1px solid #ccc; display: inline-block; width: 60mm;
+  .page-title span {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    margin: 0 2px;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
 
+  .page-subtitle {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .page-name {
+    margin-top: 4mm;
+    font-size: 13px;
+    color: #666;
+    border-bottom: 2px solid #d1d5db;
+    display: inline-block;
+    width: 56mm;
+    padding-bottom: 4px;
+    font-weight: 500;
+  }
+
+  /*
+    UNIFORM BORDER APPROACH:
+    The grid itself has the border color as background.
+    Padding = border width (outer border).
+    Gap = border width (inner borders).
+    Each cell is just white with rounded corners.
+    Result: perfectly uniform borders everywhere.
+  */
   .bingo-grid {
-    display: grid; gap: 0; border: 3px solid #333;
-    margin: 0 auto; max-width: 180mm;
+    display: grid;
+    margin: 0 auto;
+    max-width: 190mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+
   .bingo-grid.size-3 { grid-template-columns: repeat(3, 1fr); }
   .bingo-grid.size-4 { grid-template-columns: repeat(4, 1fr); }
   .bingo-grid.size-5 { grid-template-columns: repeat(5, 1fr); }
 
   .bingo-cell {
-    border: 1.5px solid #333; aspect-ratio: 1;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 3mm; text-align: center; position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  .bingo-cell.header {
-    background: #1565C0; color: white; font-size: 28px; font-weight: 900;
-    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-    aspect-ratio: auto; padding: 4mm;
+  .bingo-cell .cell-word {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+    color: #1f2937;
+    text-align: center;
+    line-height: 1.2;
   }
 
-  .cell-word {
-    font-size: 24px; font-weight: bold;
-    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-    color: #333;
-  }
-  .cell-word .vowel-hl { color: #C62828; }
-
-  .cell-picture {
-    font-size: 36px; margin-bottom: 2mm;
-  }
-
-  .cell-free {
+  .bingo-cell.cell-free {
     background: #FFF8E1;
   }
-  .cell-free .cell-word { font-size: 18px; color: #F57F17; }
+  .bingo-cell.cell-free .cell-word {
+    font-size: 18px;
+    color: #F57F17;
+  }
 
-  /* Caller cards page */
-  .caller-page {
-    width: 210mm; min-height: 297mm; margin: 16px auto;
-    background: white; padding: 8mm;
-    page-break-after: always;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  /*
+    CALLING CARDS — 3-Part Card Generator approach:
+    Each card has background = border color, padding = border width.
+    Inner white areas have border-radius creating indent cutting guides.
+    Grid gap = 0 so adjacent rounded corners form diamond indents.
+  */
+  .calling-cards-grid {
+    display: grid;
+    margin: 0 auto;
+    max-width: 190mm;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .caller-title {
-    text-align: center; font-size: 20px; font-weight: bold;
-    margin-bottom: 6mm; color: #1565C0;
+
+  .calling-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    text-align: center;
+    aspect-ratio: 1;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .caller-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm;
+
+  .calling-card .card-inner {
+    background: white;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .caller-card {
-    border: 2px solid #1565C0; border-radius: 8px;
-    padding: 4mm; text-align: center;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 50mm;
+
+  .calling-card .card-inner .card-word {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+    color: #1f2937;
   }
-  .caller-card .cell-picture { font-size: 28px; }
-  .caller-card .cell-word { font-size: 20px; }
+
+  .calling-header { text-align: center; margin-bottom: 6mm; }
+  .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
+  .calling-header p { font-size: 12px; color: #999; margin-top: 3px; }
+
+  .section-label {
+    text-align: center;
+    padding: 14px 16px;
+    margin: 24px auto;
+    max-width: 210mm;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 3px solid;
+  }
+
+  .section-label.boards-label { color: #0369a1; border-color: #0ea5e9; }
+  .section-label.calling-label { color: #b45309; border-color: #fbbf24; }
 
   @media print {
-    .toolbar { display: none; }
+    .toolbar, .section-label { display: none !important; }
     body { background: white; }
-    .page, .caller-page { box-shadow: none; margin: 0; }
+    .page { box-shadow: none; margin: 0; border-radius: 0; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   }
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <h1>🎯 Montessori Bingo Generator</h1>
-  <p>Generate unique bingo boards for your class • Print & laminate • Use with caller cards</p>
+  <h1>Word Bingo Generator</h1>
+  <p>Bingo boards with words — calling cards with indent cutting guides for easy cutting</p>
 
-  <div class="controls">
-    <div class="control-group">
-      <label>Word Set</label>
-      <select id="wordSet">
-        <option value="cvc-a">Pink: Short A words</option>
-        <option value="cvc-e">Pink: Short E words</option>
-        <option value="cvc-i">Pink: Short I words</option>
-        <option value="cvc-o">Pink: Short O words</option>
-        <option value="cvc-u">Pink: Short U words</option>
-        <option value="cvc-all" selected>Pink: All CVC words</option>
-        <option value="digraphs">Blue: Digraphs (sh, ch, th)</option>
-        <option value="blends">Blue: Blends</option>
-        <option value="sight">Sight Words</option>
-        <option value="letters">Letter Sounds (Shelf 1)</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Grid Size</label>
-      <select id="gridSize">
-        <option value="3">3×3 (Young learners)</option>
-        <option value="4">4×4 (Medium)</option>
-        <option value="5" selected>5×5 (Standard)</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Display</label>
-      <select id="displayMode">
-        <option value="words" selected>Words only</option>
-        <option value="pictures">Pictures only</option>
-        <option value="both">Words + Pictures</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>Boards</label>
-      <input type="number" id="boardCount" value="6" min="1" max="30">
-    </div>
-    <div class="control-group">
-      <label>Free Space</label>
-      <select id="freeSpace">
-        <option value="yes" selected>Center free space</option>
-        <option value="no">No free space</option>
-      </select>
-    </div>
-    <button class="btn btn-primary" onclick="generate()">🎲 Generate Boards</button>
-    <button class="btn btn-print" onclick="window.print()">🖨️ Print All</button>
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('preset')">Word Sets</button>
+    <button class="mode-tab" onclick="switchMode('custom')">Custom Words</button>
   </div>
-  <div class="stats" id="stats"></div>
+
+  <!-- PRESET MODE -->
+  <div id="mode-preset" class="mode-content active">
+    <div class="controls">
+      <div class="control-group">
+        <label>Word Set</label>
+        <select id="wordSet">
+          <option value="cvc-a">Pink: Short A (33 words)</option>
+          <option value="cvc-e">Pink: Short E (24 words)</option>
+          <option value="cvc-i">Pink: Short I (30 words)</option>
+          <option value="cvc-o">Pink: Short O (31 words)</option>
+          <option value="cvc-u">Pink: Short U (31 words)</option>
+          <option value="cvc-all" selected>Pink: All CVC (149 words)</option>
+          <option value="digraphs">Blue: Digraphs (30 words)</option>
+          <option value="blends">Blue: Blends (30 words)</option>
+          <option value="sight">Sight Words (35 words)</option>
+          <option value="letters">Letter Sounds (26)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Grid Size</label>
+        <select id="gridSize">
+          <option value="3">3×3 (9 words)</option>
+          <option value="4">4×4 (16 words)</option>
+          <option value="5" selected>5×5 (25 words)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Boards</label>
+        <input type="number" id="boardCount" value="6" min="1" max="30">
+      </div>
+      <div class="control-group">
+        <label>Border Color</label>
+        <div class="color-picker-row">
+          <input type="color" id="borderColor" value="#1e40af">
+          <input type="text" id="borderColorText" value="#1e40af">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Border Width</label>
+        <select id="borderWidth">
+          <option value="1.5">Thin</option>
+          <option value="2.5" selected>Medium</option>
+          <option value="4">Thick</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Corners</label>
+        <select id="cornerRadius">
+          <option value="0">Square</option>
+          <option value="4">Slight</option>
+          <option value="8" selected>Rounded</option>
+          <option value="14">Very Round</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Free Space</label>
+        <select id="freeSpace">
+          <option value="no" selected>No free space</option>
+          <option value="yes">Center free space</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
+        <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
+        <button class="btn btn-print" onclick="window.print()">Print All</button>
+      </div>
+    </div>
+
+    <div class="how-to">
+      <strong>How to play:</strong>
+      1) Print the <strong>Bingo Boards</strong> — each board has words in a grid (single-sided, one page per board).<br>
+      2) Print the <strong>Calling Cards</strong> — cut along the rounded indent guides.<br>
+      3) The caller draws a card and reads the word. Players find and cover the matching word on their board.
+    </div>
+  </div>
+
+  <!-- CUSTOM MODE -->
+  <div id="mode-custom" class="mode-content">
+    <div class="controls">
+      <div class="control-group">
+        <label>Grid Size</label>
+        <select id="customGridSize">
+          <option value="3">3×3 (9 words)</option>
+          <option value="4" selected>4×4 (16 words)</option>
+          <option value="5">5×5 (25 words)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Boards</label>
+        <input type="number" id="customBoardCount" value="6" min="1" max="30">
+      </div>
+      <div class="control-group">
+        <label>Border Color</label>
+        <div class="color-picker-row">
+          <input type="color" id="customBorderColor" value="#1e40af">
+          <input type="text" id="customBorderColorText" value="#1e40af">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Border Width</label>
+        <select id="customBorderWidth">
+          <option value="1.5">Thin</option>
+          <option value="2.5" selected>Medium</option>
+          <option value="4">Thick</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Corners</label>
+        <select id="customCornerRadius">
+          <option value="0">Square</option>
+          <option value="4">Slight</option>
+          <option value="8" selected>Rounded</option>
+          <option value="14">Very Round</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Free Space</label>
+        <select id="customFreeSpace">
+          <option value="no" selected>No free space</option>
+          <option value="yes">Center free space</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Word input -->
+    <div class="word-input-zone">
+      <label>Type or paste your words (one per line, or comma-separated)</label>
+      <textarea id="customWordsInput" placeholder="cat, dog, sun, moon, tree&#10;or one word per line:&#10;happy&#10;sad&#10;excited"></textarea>
+      <p class="hint">Need at least enough words to fill the grid. Duplicates are removed automatically.</p>
+    </div>
+
+    <div class="custom-words-preview" id="customWordsList"></div>
+
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="generateCustom()">Generate Custom Bingo</button>
+      <button class="btn btn-calling" onclick="generateCustomCallingCards()">Generate Calling Cards</button>
+      <button class="btn btn-print" onclick="window.print()">Print All</button>
+      <button class="btn btn-danger" onclick="clearCustomWords()">Clear All</button>
+    </div>
+  </div>
+
+  <div class="info-bar" id="info">
+    Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for cut-out cards.
+  </div>
 </div>
 
 <div id="output"></div>
 
 <script>
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach((t, i) => {
+    t.classList.toggle('active', (mode === 'preset' && i === 0) || (mode === 'custom' && i === 1));
+  });
+  document.getElementById('mode-preset').classList.toggle('active', mode === 'preset');
+  document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('info').innerHTML = mode === 'preset'
+    ? 'Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for cut-out cards.'
+    : 'Type your own words to build custom bingo boards.';
+}
+
+// ===== COLOR PICKER SYNC =====
+function syncColor(colorId, textId) {
+  document.getElementById(colorId).addEventListener('input', function() {
+    document.getElementById(textId).value = this.value;
+  });
+  document.getElementById(textId).addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+      document.getElementById(colorId).value = this.value;
+    }
+  });
+}
+syncColor('borderColor', 'borderColorText');
+syncColor('customBorderColor', 'customBorderColorText');
+
+// ===== CUSTOM WORDS =====
+const customWordsInput = document.getElementById('customWordsInput');
+customWordsInput.addEventListener('input', renderCustomWords);
+
+function parseCustomWords() {
+  const raw = customWordsInput.value.trim();
+  if (!raw) return [];
+  // Split by newline or comma, trim, lowercase, remove empty/dupes
+  const words = raw.split(/[\n,]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
+  return [...new Set(words)];
+}
+
+function renderCustomWords() {
+  const words = parseCustomWords();
+  const list = document.getElementById('customWordsList');
+  if (words.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+  list.innerHTML = words.map(w =>
+    `<span class="word-chip">${w}</span>`
+  ).join('');
+}
+
+function clearCustomWords() {
+  customWordsInput.value = '';
+  document.getElementById('customWordsList').innerHTML = '';
+  document.getElementById('output').innerHTML = '';
+}
+
+// ===== SHARED HELPERS =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const BINGO_LETTERS = 'BINGO'.split('');
+const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
+
+function buildGridStyle(color, borderW, radius) {
+  return `background:${color}; padding:${borderW}mm; gap:${borderW}mm; border-radius:${radius}px;`;
+}
+
+function buildCellStyle(radius) {
+  return `border-radius:${radius}px;`;
+}
+
+function pageHeader(title, boardNum) {
+  return `
+    <div class="page-header">
+      <div class="page-title">
+        ${BINGO_LETTERS.map((ch, i) => `<span style="background:${BINGO_COLORS[i]}">${ch}</span>`).join('')}
+      </div>
+      <div class="page-subtitle">${title} · Board #${boardNum}</div>
+      <div class="page-name">Name: _________________</div>
+    </div>
+  `;
+}
+
+// ===== PRESET WORD SETS =====
 const WORD_SETS = {
   'cvc-a': {
     title: 'Short A',
@@ -210,7 +716,7 @@ const WORD_SETS = {
   },
   'cvc-all': {
     title: 'All CVC',
-    words: [] // filled below
+    words: []
   },
   'digraphs': {
     title: 'Digraphs',
@@ -239,149 +745,175 @@ WORD_SETS['cvc-all'].words = [
   ...WORD_SETS['cvc-u'].words,
 ];
 
-const EMOJI_MAP = {
-  cat:'🐱',bat:'🦇',hat:'🎩',mat:'🟫',rat:'🐀',can:'🥫',fan:'💨',man:'👨',pan:'🍳',van:'🚐',
-  cap:'🧢',tap:'🚰',map:'🗺️',bag:'👜',tag:'🏷️',dad:'👨',sad:'😢',mad:'😠',dam:'🏗️',ham:'🍖',
-  jam:'🫙',ram:'🐏',net:'🥅',pet:'🐾',vet:'👨‍⚕️',wet:'💧',jet:'✈️',hen:'🐔',pen:'🖊️',ten:'🔟',
-  bed:'🛏️',red:'🔴',leg:'🦵',sit:'🪑',hit:'👊',bin:'🗑️',pin:'📌',big:'🐘',dig:'⛏️',pig:'🐷',
-  wig:'💇',lip:'👄',zip:'🤐',hot:'🌡️',pot:'🍲',dot:'⚫',mop:'🧹',hop:'🐰',top:'🔝',
-  dog:'🐶',log:'🪵',fog:'🌫️',job:'💼',box:'📦',fox:'🦊',cut:'✂️',hut:'🛖',nut:'🥜',
-  sun:'☀️',bun:'🍞',run:'🏃',fun:'🎉',bug:'🐛',hug:'🤗',mug:'☕',rug:'🟫',jug:'🏺',
-  cup:'🥤',pup:'🐶',cub:'🐻',tub:'🛁',sub:'🥪',bus:'🚌',egg:'🥚',
-  ship:'🚢',shop:'🏪',fish:'🐟',chip:'🍟',chin:'😊',chat:'💬',bath:'🛁',math:'➗',
-  dish:'🍽️',with:'🤝',when:'⏰',what:'❓',frog:'🐸',crab:'🦀',drum:'🥁',star:'⭐',
-  flag:'🏳️',tree:'🌳',blue:'🔵',stop:'🛑',jump:'🦘',milk:'🥛',desk:'📋',lamp:'💡',
-};
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function getVowel(word) {
-  const vowels = 'aeiou';
-  for (const ch of word) { if (vowels.includes(ch)) return ch; }
-  return '';
-}
-
-function generate() {
-  const setKey = document.getElementById('wordSet').value;
-  const gridSize = parseInt(document.getElementById('gridSize').value);
-  const displayMode = document.getElementById('displayMode').value;
-  const boardCount = parseInt(document.getElementById('boardCount').value);
-  const hasFreeSpace = document.getElementById('freeSpace').value === 'yes';
+// ===== BINGO BOARDS — words only, single-sided =====
+function generateBoards(words, title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace) {
   const output = document.getElementById('output');
   output.innerHTML = '';
 
-  const wordSet = WORD_SETS[setKey];
   const totalCells = gridSize * gridSize - (hasFreeSpace ? 1 : 0);
   const centerIdx = hasFreeSpace ? Math.floor(gridSize * gridSize / 2) : -1;
 
-  if (wordSet.words.length < totalCells) {
-    alert(`Need at least ${totalCells} words but only have ${wordSet.words.length}. Try a smaller grid or a bigger word set.`);
+  if (words.length < totalCells) {
+    alert(`Need at least ${totalCells} words to fill a ${gridSize}×${gridSize} grid but only have ${words.length}. Add more words or use a smaller grid.`);
     return;
   }
 
-  document.getElementById('stats').textContent =
-    `Word pool: ${wordSet.words.length} | Cells per board: ${totalCells} | Boards: ${boardCount} | Each board is unique!`;
+  document.getElementById('info').innerHTML =
+    `<strong>Generated ${boardCount} bingo boards</strong> (${boardCount} pages — single-sided). ` +
+    `Words: ${words.length} · Grid: ${gridSize}×${gridSize} · ` +
+    `<strong>Print single-sided, one page per board.</strong>`;
 
-  const BINGO = 'BINGO'.split('');
-  const colors = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
+  const label = document.createElement('div');
+  label.className = 'section-label boards-label';
+  label.textContent = `Player Bingo Boards — ${boardCount} boards (${boardCount} pages, single-sided)`;
+  output.appendChild(label);
 
-  // Generate boards
+  const cellStyle = buildCellStyle(radius);
+
   for (let b = 0; b < boardCount; b++) {
-    const selected = shuffle(wordSet.words).slice(0, totalCells);
+    const selected = shuffle(words).slice(0, totalCells);
     let wordIdx = 0;
 
     const page = document.createElement('div');
     page.className = 'page';
+    page.innerHTML = pageHeader(title, b + 1);
 
-    // Header
-    const header = document.createElement('div');
-    header.className = 'bingo-header';
-    header.innerHTML = `
-      <div class="bingo-title">
-        ${BINGO.map((ch, i) => `<span style="background:${colors[i]};color:white;">${ch}</span>`).join('')}
-      </div>
-      <div class="bingo-subtitle">${wordSet.title} • Board #${b + 1}</div>
-      <div class="bingo-name-line">Name: _________________</div>
-    `;
-    page.appendChild(header);
-
-    // Grid
     const grid = document.createElement('div');
     grid.className = `bingo-grid size-${gridSize}`;
-
-    // Column headers (only for 5x5)
-    if (gridSize === 5) {
-      BINGO.forEach((ch, i) => {
-        const cell = document.createElement('div');
-        cell.className = 'bingo-cell header';
-        cell.style.background = colors[i];
-        cell.textContent = ch;
-        grid.appendChild(cell);
-      });
-    }
+    grid.setAttribute('style', buildGridStyle(borderColor, borderW, radius));
 
     for (let i = 0; i < gridSize * gridSize; i++) {
-      const cell = document.createElement('div');
+      const el = document.createElement('div');
 
       if (hasFreeSpace && i === centerIdx) {
-        cell.className = 'bingo-cell cell-free';
-        cell.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+        el.className = 'bingo-cell cell-free';
+        el.setAttribute('style', cellStyle);
+        el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
       } else {
-        cell.className = 'bingo-cell';
+        el.className = 'bingo-cell';
+        el.setAttribute('style', cellStyle);
         const word = selected[wordIdx++];
-        const emoji = EMOJI_MAP[word] || '';
-        const vowel = getVowel(word);
-        const highlighted = word.split('').map(ch => ch === vowel ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
-
-        if (displayMode === 'words') {
-          cell.innerHTML = `<div class="cell-word">${highlighted}</div>`;
-        } else if (displayMode === 'pictures') {
-          cell.innerHTML = `<div class="cell-picture">${emoji || '?'}</div>`;
-        } else {
-          cell.innerHTML = `<div class="cell-picture">${emoji || ''}</div><div class="cell-word" style="font-size:18px;">${highlighted}</div>`;
-        }
+        el.innerHTML = `<div class="cell-word">${word}</div>`;
       }
-      grid.appendChild(cell);
+      grid.appendChild(el);
     }
-
     page.appendChild(grid);
     output.appendChild(page);
   }
-
-  // Caller cards page
-  const callerPage = document.createElement('div');
-  callerPage.className = 'caller-page';
-  callerPage.innerHTML = `<div class="caller-title">✂️ Caller Cards - Cut Along Lines - ${wordSet.title}</div>`;
-
-  const callerGrid = document.createElement('div');
-  callerGrid.className = 'caller-grid';
-
-  wordSet.words.forEach(word => {
-    const card = document.createElement('div');
-    card.className = 'caller-card';
-    const emoji = EMOJI_MAP[word] || '';
-    const vowel = getVowel(word);
-    const highlighted = word.split('').map(ch => ch === vowel ? `<span class="vowel-hl">${ch}</span>` : ch).join('');
-    card.innerHTML = `
-      ${emoji ? `<div class="cell-picture">${emoji}</div>` : ''}
-      <div class="cell-word">${highlighted}</div>
-    `;
-    callerGrid.appendChild(card);
-  });
-
-  callerPage.appendChild(callerGrid);
-  output.appendChild(callerPage);
 }
 
-// Auto-generate on load
-generate();
+// ===== CALLING CARDS — 3-Part Card style with indent cutting guides =====
+function generateCallingCardsCore(words, title, borderColor, borderW, radius) {
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+
+  document.getElementById('info').innerHTML =
+    `<strong>Generated calling cards</strong> for ${words.length} words. ` +
+    `<strong>Print and cut along the rounded indent guides.</strong>`;
+
+  const label = document.createElement('div');
+  label.className = 'section-label calling-label';
+  label.textContent = `Calling Cards — cut along indent guides (${words.length} cards)`;
+  output.appendChild(label);
+
+  const cardsPerPage = 16; // 4x4 grid
+  const cols = 4;
+  const pages = Math.ceil(words.length / cardsPerPage);
+
+  const cardStyle = `background:${borderColor}; padding:${borderW}mm; border-radius:${radius}px;`;
+  const innerStyle = `border-radius:${Math.max(0, radius - 1)}px;`;
+  const emptyStyle = `background:transparent;`;
+
+  for (let p = 0; p < pages; p++) {
+    const start = p * cardsPerPage;
+    const end = Math.min(start + cardsPerPage, words.length);
+    const pageItems = words.slice(start, end);
+
+    while (pageItems.length < cardsPerPage) {
+      pageItems.push(null);
+    }
+
+    const cardPage = document.createElement('div');
+    cardPage.className = 'page';
+    cardPage.innerHTML = `
+      <div class="calling-header">
+        <h2>✂️ Calling Cards — ${title}</h2>
+        <p>Page ${p + 1} of ${pages} · Cut along the rounded indent guides</p>
+      </div>
+    `;
+
+    const cardGrid = document.createElement('div');
+    cardGrid.className = 'calling-cards-grid';
+
+    for (const word of pageItems) {
+      const card = document.createElement('div');
+      card.className = 'calling-card';
+      if (word) {
+        card.setAttribute('style', cardStyle);
+        card.innerHTML = `<div class="card-inner" style="${innerStyle}"><div class="card-word">${word}</div></div>`;
+      } else {
+        card.setAttribute('style', emptyStyle);
+      }
+      cardGrid.appendChild(card);
+    }
+
+    cardPage.appendChild(cardGrid);
+    output.appendChild(cardPage);
+  }
+}
+
+// ===== PRESET MODE =====
+function generate() {
+  const setKey = document.getElementById('wordSet').value;
+  const gridSize = parseInt(document.getElementById('gridSize').value);
+  const boardCount = parseInt(document.getElementById('boardCount').value);
+  const borderColor = document.getElementById('borderColor').value;
+  const borderW = parseFloat(document.getElementById('borderWidth').value);
+  const radius = parseInt(document.getElementById('cornerRadius').value);
+  const hasFreeSpace = document.getElementById('freeSpace').value === 'yes';
+
+  const wordSet = WORD_SETS[setKey];
+  generateBoards(wordSet.words, wordSet.title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace);
+}
+
+function generateCallingCards() {
+  const setKey = document.getElementById('wordSet').value;
+  const borderColor = document.getElementById('borderColor').value;
+  const borderW = parseFloat(document.getElementById('borderWidth').value);
+  const radius = parseInt(document.getElementById('cornerRadius').value);
+
+  const wordSet = WORD_SETS[setKey];
+  generateCallingCardsCore(wordSet.words, wordSet.title, borderColor, borderW, radius);
+}
+
+// ===== CUSTOM MODE =====
+function generateCustom() {
+  const words = parseCustomWords();
+  if (words.length === 0) { alert('Type some words first!'); return; }
+
+  const gridSize = parseInt(document.getElementById('customGridSize').value);
+  const boardCount = parseInt(document.getElementById('customBoardCount').value);
+  const borderColor = document.getElementById('customBorderColor').value;
+  const borderW = parseFloat(document.getElementById('customBorderWidth').value);
+  const radius = parseInt(document.getElementById('customCornerRadius').value);
+  const hasFreeSpace = document.getElementById('customFreeSpace').value === 'yes';
+
+  generateBoards(words, 'Custom', gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace);
+}
+
+function generateCustomCallingCards() {
+  const words = parseCustomWords();
+  if (words.length === 0) { alert('Type some words first!'); return; }
+
+  const borderColor = document.getElementById('customBorderColor').value;
+  const borderW = parseFloat(document.getElementById('customBorderWidth').value);
+  const radius = parseInt(document.getElementById('customCornerRadius').value);
+
+  generateCallingCardsCore(words, 'Custom', borderColor, borderW, radius);
+}
+
+// Auto-generate preset on load
+window.addEventListener('DOMContentLoaded', generate);
 </script>
 </body>
 </html>

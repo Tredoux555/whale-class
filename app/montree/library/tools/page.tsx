@@ -22,8 +22,8 @@ const TOOLS = [
   {
     href: '/montree/library/tools/label-maker',
     icon: '🏷️',
-    title: 'Movable Alphabet Labels',
-    description: 'Create labels for small objects to use with the movable alphabet',
+    title: 'Label Generator',
+    description: 'Create printable word labels for objects, works, and classroom materials',
     gradient: 'from-purple-500 to-violet-600',
   },
   {
