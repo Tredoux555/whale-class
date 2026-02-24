@@ -4,6 +4,16 @@
 export default function MontreeLanding() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
+      {/* Top-right Library link */}
+      <a
+        href="/montree/library"
+        className="absolute top-5 right-6 z-20 flex items-center gap-2 px-4 py-2 text-sm text-emerald-300/80 hover:text-white border border-emerald-500/20 hover:border-emerald-400/40 rounded-xl backdrop-blur bg-white/5 hover:bg-white/10 transition-all"
+      >
+        <span className="font-medium">Montree</span>
+        <span className="text-emerald-500/40">—</span>
+        <span className="font-semibold">Library</span>
+      </a>
+
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
