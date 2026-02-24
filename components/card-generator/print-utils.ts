@@ -483,3 +483,155 @@ export const generateLargeCards = ({
 
   return html;
 };
+
+/**
+ * Generate labels-only print layout (16 labels per A4 page in 2x8 grid)
+ * Returns HTML document string ready for printing
+ */
+export const generateLabelsOnly = ({
+  cards,
+  borderColor,
+  fontFamily
+}: GenerateCardsParams): string => {
+  const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
+  const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 8)) / 2;
+
+  let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Label Cards - Print</title>
+  <style>
+    @page {
+      size: A4;
+      margin: ${MARGIN_CM}cm;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: white;
+      position: relative;
+    }
+
+    .page {
+      page-break-after: always;
+      width: ${A4_WIDTH_CM}cm;
+      height: ${A4_HEIGHT_CM}cm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    .page-title {
+      font-size: 10pt;
+      color: #999;
+      margin-bottom: 0.5cm;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
+      gap: 0;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+
+    .card {
+      background: ${borderColor};
+      padding: ${WHITE_BORDER_CM}cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+      margin: 0;
+      border: none;
+      height: ${LABEL_CARD_HEIGHT_CM}cm;
+      width: ${PICTURE_CARD_SIZE_CM}cm;
+    }
+
+    .label-area {
+      background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "${fontFamily}", cursive;
+      font-size: 24pt;
+      font-weight: bold;
+      text-align: center;
+      padding: 0.2cm 0.3cm;
+      line-height: 1.2;
+      overflow: hidden;
+      word-wrap: break-word;
+      max-width: 100%;
+      border-radius: ${CARD_BORDER_RADIUS}cm;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      body { margin: 0; padding: 0; }
+      .page-title { display: none; }
+      .card { background: ${borderColor} !important; }
+    }
+
+    @media screen {
+      body { padding: 20px; background: #f0f0f0; }
+      .page { background: white; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    }
+  </style>
+</head>
+<body>
+`;
+
+  const labelCards = cards.map(card => `
+    <div class="card">
+      <div class="label-area">${escapeHtml(card.label)}</div>
+    </div>
+  `);
+
+  for (let i = 0; i < labelCards.length; i += 16) {
+    const pageCards = labelCards.slice(i, i + 16);
+    const pageNum = Math.floor(i / 16) + 1;
+    html += `
+      <div class="page">
+        <div class="page-title">Label Cards - Page ${pageNum}</div>
+        <div class="grid" style="grid-template-rows: repeat(8, ${LABEL_CARD_HEIGHT_CM}cm); margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
+          ${pageCards.join('')}
+          ${pageCards.length < 16 ? '<div></div>'.repeat(16 - pageCards.length) : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  html += `
+  <script>
+    window.onload = function() { setTimeout(() => { window.print(); }, 500); };
+  </script>
+</body>
+</html>
+`;
+
+  return html;
+};
