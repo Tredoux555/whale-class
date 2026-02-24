@@ -14,9 +14,9 @@ const TOOLS = [
   },
   {
     href: '/montree/library/tools/flashcard-maker',
-    icon: '🎵',
-    title: 'Song Flashcard Maker',
-    description: 'Generate flashcards from YouTube song videos for your class',
+    icon: '🎬',
+    title: 'Video Flashcard Maker',
+    description: 'Upload a video, pick the best frames, and print flashcards',
     gradient: 'from-blue-500 to-cyan-600',
   },
   {
