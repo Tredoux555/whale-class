@@ -349,6 +349,7 @@ export async function PATCH(request: NextRequest) {
       'name', 'name_chinese', 'description', 'parent_description',
       'why_it_matters', 'age_range', 'direct_aims', 'indirect_aims',
       'materials', 'prerequisites', 'teacher_notes', 'is_active', 'sequence',
+      'photo_url',
     ];
 
     for (const field of allowedFields) {
