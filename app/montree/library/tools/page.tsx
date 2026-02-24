@@ -15,7 +15,7 @@ const TOOLS = [
   {
     href: '/montree/library/tools/flashcard-maker',
     icon: '🎬',
-    title: 'Video Flashcard Maker',
+    title: 'Video Flashcard Generator',
     description: 'Upload a video, pick the best frames, and print flashcards',
     gradient: 'from-blue-500 to-cyan-600',
   },
@@ -29,17 +29,11 @@ const TOOLS = [
   {
     href: '/montree/library/tools/vocabulary-flashcards',
     icon: '📸',
-    title: 'Vocabulary Flashcards',
+    title: 'Vocabulary Flashcard Generator',
     description: 'Generate vocabulary flashcards with images and words',
     gradient: 'from-amber-500 to-orange-600',
   },
-  {
-    href: '/montree/library/tools/material-generator',
-    icon: '🎨',
-    title: 'Material Generator',
-    description: 'Generate printable Montessori materials for your classroom',
-    gradient: 'from-pink-500 to-rose-600',
-  },
+  // Material Generator hidden — subpar quality, code preserved in /montree/library/tools/material-generator
   {
     href: '/montree/library/tools/bingo',
     icon: '🎯',
