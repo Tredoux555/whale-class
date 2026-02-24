@@ -136,6 +136,32 @@ export default function LibraryPage() {
         </div>
       </header>
 
+      {/* Welcome Banner */}
+      <div className="max-w-6xl mx-auto px-4 pt-6 pb-2">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-gray-900">Welcome to the Library!</h2>
+          <p className="text-gray-600 mt-2">
+            The Montree Library is a place to create and share work. Check out the awesome content creation tools first! Save yourself a ton of time and effort and increase the quality of your output 100 times! That's what Montree is all about!
+          </p>
+          <div className="flex flex-wrap gap-3 mt-4">
+            <Link
+              href="/montree/library/tools"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0D3330] text-white rounded-xl font-medium hover:bg-[#164440] transition-colors"
+            >
+              🛠️ Content Creation Tools
+              <span className="text-emerald-300">→</span>
+            </Link>
+            <Link
+              href="/montree/library/english-corner"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#0D3330] border-2 border-[#0D3330] rounded-xl font-medium hover:bg-gray-50 transition-colors"
+            >
+              📚 English Corner Master Plan
+              <span className="text-emerald-600">→</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="max-w-6xl mx-auto px-4 py-4">
         {/* Area tabs */}
