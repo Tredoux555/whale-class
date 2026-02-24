@@ -43,9 +43,16 @@ const TOOLS = [
   {
     href: '/montree/library/tools/bingo',
     icon: '🎯',
-    title: 'Bingo Game Generator',
+    title: 'Word Bingo Generator',
     description: 'Create unique bingo boards for phonics, CVC words, and more',
     gradient: 'from-red-500 to-pink-600',
+  },
+  {
+    href: '/montree/library/tools/picture-bingo',
+    icon: '🖼️',
+    title: 'Picture Bingo Generator',
+    description: 'Real photo bingo — duplex print with pictures on front, words on back',
+    gradient: 'from-teal-500 to-emerald-600',
   },
 ];
 
