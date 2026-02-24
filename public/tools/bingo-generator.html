@@ -747,9 +747,6 @@ WORD_SETS['cvc-all'].words = [
 
 // ===== BINGO BOARDS — words only, single-sided =====
 function generateBoards(words, title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace) {
-  // Board borders 2x thicker than calling cards — boards will be cut and laminated
-  borderW = borderW * 2;
-
   const output = document.getElementById('output');
   output.innerHTML = '';
 
