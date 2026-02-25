@@ -45,13 +45,58 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
-### Curriculum Inconsistency Resolution (Priority #7 — Deferred)
+### i18n Phase 2 — Migrate Remaining Pages (Priority #7)
+
+**Status:** Foundation deployed (commit `8259683`). Login, signup, dashboard, principal login, header all bilingual. Remaining pages still hardcoded English.
+**Next:** Migrate child week view, curriculum, guru, reports, students, settings, onboarding guides to `t()` calls. Each page is independent — incremental work.
+**Handoff:** `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md`
+
+### Curriculum Inconsistency Resolution (Priority #8 — Deferred)
 
 **Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed.
 
 ---
 
 ## CURRENT STATUS (Feb 25, 2026)
+
+### Session Work (Feb 25, 2026 — Night Session)
+
+**Bilingual i18n System — COMPLETE + DEPLOYED (commit `8259683`):**
+
+Custom React Context i18n with 140 EN↔ZH translation keys, zero npm dependencies.
+
+Foundation:
+- `lib/montree/i18n/en.ts` — 140 keys, TypeScript `as const` for auto type safety
+- `lib/montree/i18n/zh.ts` — 140 matching Chinese translations
+- `lib/montree/i18n/context.tsx` — `I18nProvider` + `useI18n()` + `useT()` hooks, localStorage key `montree_lang`
+- `lib/montree/i18n/index.ts` — barrel export
+- `components/montree/I18nClientWrapper.tsx` — client wrapper (layout is server component)
+- `components/montree/LanguageToggle.tsx` — compact EN/中文 toggle
+
+Pages migrated to `t()` calls (5 files):
+- `app/montree/login/page.tsx` — all strings + LanguageToggle top-right
+- `app/montree/try/page.tsx` — all 4 steps + LanguageToggle
+- `app/montree/dashboard/page.tsx` — student count, empty states, errors
+- `app/montree/principal/login/page.tsx` — all strings + LanguageToggle
+- `components/montree/DashboardHeader.tsx` — LanguageToggle in header nav bar + titles + logout
+
+Architecture: Custom Context (not next-intl) because all pages are `'use client'`, only 2 languages, no server components to translate. TypeScript objects over JSON for type safety. `useState('en')` default + `useEffect` localStorage read prevents hydration mismatch.
+
+**Phase 2 remaining:** Migrate child week view, curriculum, guru, reports, students, settings, onboarding guides to `t()`.
+
+**Sales Playbook — COMPLETE + DEPLOYED (commit `8259683`):**
+
+- `app/montree/super-admin/marketing/sales-playbook/page.tsx` — ~600 lines, 4 tabs
+- Tab 1 (Schedule): 28-day outreach plan with localStorage checkboxes + progress bar
+- Tab 2 (Schools): 6 deep-dived schools — HD Qingdao, QAIS, Hongwen QD, Etonkids, MSB Beijing, Nebula Shanghai — each with intel, personalized email, WeChat message, follow-up
+- Tab 3 (Psychology): 6 principles, decision-maker table, 5-touch sequence, objection handling
+- Tab 4 (Templates): A (Pure Montessori), B (Chain HQ), C (Bilingual K-12)
+- Linked from marketing hub + old playbook page
+- `public/montree-sales-playbook.html` — original HTML preserved
+
+**Handoff:** `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md`
+
+---
 
 ### Session Work (Feb 25, 2026 — Late Session)
 
@@ -1592,7 +1637,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | **CURRENT** — Production deploy, Dockerfile fix, seed 500 fix, push script |
+| `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | **CURRENT** — Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
+| `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | Production deploy, Dockerfile fix, seed 500 fix, push script |
 | `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | Community Works Library (14 files, 2-pass audit, deploy steps) |
 | `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md` | Week view guide + CRITICAL cross-pollination security fix |
 | `docs/HANDOFF_STUDENT_FORM_GUIDE_FEB22.md` | Student form guided onboarding (13-step speech bubble tour) |
