@@ -76,7 +76,36 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Path 2: Browse — cool teal accent */}
+            {/* Path 2: English Corner — rose/pink accent */}
+            <Link
+              href="/montree/library/english-corner"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(244, 114, 182, 0.08), rgba(236, 72, 153, 0.04))',
+                borderColor: 'rgba(244, 114, 182, 0.15)',
+              }}
+            >
+              {/* Hover glow */}
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(244, 114, 182, 0.12), rgba(236, 72, 153, 0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300" style={{ background: 'rgba(244, 114, 182, 0.15)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-pink-400">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">English Corner Master Plan</div>
+                <div className="text-pink-200/40 text-sm mt-0.5">
+                  AMI language curriculum &amp; materials guide
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+
+            {/* Path 3: Browse — cool teal accent */}
             <Link
               href="/montree/library/browse"
               className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
