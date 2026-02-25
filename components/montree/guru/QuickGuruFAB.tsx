@@ -4,8 +4,9 @@
 // Inject into any page for home parents only
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import VoiceNoteButton from './VoiceNoteButton';
 
 interface QuickGuruFABProps {
   childId: string;
@@ -18,6 +19,12 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
   const [answer, setAnswer] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTranscription = useCallback((text: string) => {
+    setQuestion(text);
+    // Auto-focus input so user can review/edit before submitting
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, []);
 
   const handleSubmit = async () => {
     if (!question.trim() || loading) return;
@@ -90,7 +97,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
 
             {/* Input */}
             <div className="p-4">
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <input
                   ref={inputRef}
                   type="text"
@@ -102,6 +109,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
                   className={`flex-1 px-4 py-2.5 rounded-full border ${HOME_THEME.inputBorder} ${HOME_THEME.inputBg} ${HOME_THEME.inputFocus} text-sm ${HOME_THEME.headingText} placeholder:text-[#0D3330]/30 outline-none`}
                   disabled={loading}
                 />
+                <VoiceNoteButton onTranscription={handleTranscription} disabled={loading} />
                 <button
                   onClick={handleSubmit}
                   disabled={!question.trim() || loading}

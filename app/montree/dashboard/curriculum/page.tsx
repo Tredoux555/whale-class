@@ -13,6 +13,7 @@ import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
+import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
 import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
@@ -173,7 +174,12 @@ export default function CurriculumPage() {
     <FeatureWrapper featureModule="curriculum" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" richColors />
-      
+
+      {/* Contextual Tip Bubble */}
+      {session && isHomeschoolParent(session) && (
+        <GuruContextBubble pageKey="curriculum" role="parent" />
+      )}
+
       {/* Page sub-header — main nav is in DashboardHeader */}
       <div className="bg-white border-b px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

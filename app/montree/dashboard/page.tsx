@@ -14,6 +14,10 @@ import ConcernCardsGrid from '@/components/montree/guru/ConcernCardsGrid';
 import QuickGuruFAB from '@/components/montree/guru/QuickGuruFAB';
 import WeeklyReview from '@/components/montree/guru/WeeklyReview';
 import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
+import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
+import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
+import EndOfDayNudge from '@/components/montree/guru/EndOfDayNudge';
+import GuruSuggestionCard from '@/components/montree/guru/GuruSuggestionCard';
 
 
 interface Child {
@@ -136,6 +140,16 @@ export default function DashboardPage() {
               <GuruDailyBriefing childId={selectedChild.id} childName={childName} />
             </div>
 
+            {/* End-of-Day Nudge — only if progress logged today */}
+            <div className="mb-4">
+              <EndOfDayNudge childId={selectedChild.id} childName={childName} />
+            </div>
+
+            {/* Proactive Suggestion — stale works or inactivity */}
+            <div className="mb-4">
+              <GuruSuggestionCard childId={selectedChild.id} childName={childName} />
+            </div>
+
             {/* Weekly Review — collapsible banner */}
             <div className="mb-4">
               <WeeklyReview childId={selectedChild.id} childName={childName} />
@@ -144,6 +158,11 @@ export default function DashboardPage() {
             {/* Concern Cards Grid — "I'm worried about..." */}
             <div className="mb-6">
               <ConcernCardsGrid childId={selectedChild.id} childName={childName} />
+            </div>
+
+            {/* FAQ Section — instant answers, no API calls */}
+            <div className="mb-6">
+              <GuruFAQSection childAge={undefined} />
             </div>
 
             {/* Quick link to child's week view */}
@@ -164,6 +183,11 @@ export default function DashboardPage() {
           </div>
         );
       })()}
+
+      {/* Contextual Tip Bubble — home parents only */}
+      {isParent && children.length > 0 && (
+        <GuruContextBubble pageKey="dashboard" role="parent" />
+      )}
 
       {/* Quick Guru FAB — home parents only */}
       {isParent && children.length > 0 && (() => {

@@ -5,10 +5,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { getSession } from '@/lib/montree/auth';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
+import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 
 interface AreaSummary {
   area: string;
@@ -224,6 +226,11 @@ export default function ProgressPage() {
   return (
     <div className="space-y-4 pb-8">
 
+      {/* Contextual Tip Bubble */}
+      {session && isHomeschoolParent(session) && (
+        <GuruContextBubble pageKey="progress" role="parent" />
+      )}
+
       {/* ── Hero Stats ── */}
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -316,23 +323,26 @@ export default function ProgressPage() {
           <h2 className="text-base font-bold text-gray-800 mb-3">Recent Photos</h2>
           <div ref={photosRef} className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
             {media.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setPhotoViewerUrl(getPhotoUrl(m.storage_path))}
-                className="flex-shrink-0 snap-start"
-              >
-                <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100">
-                  <img
-                    src={getPhotoUrl(m.thumbnail_path || m.storage_path)}
-                    alt={m.caption || 'Photo'}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                {m.work_name && (
-                  <p className="text-[10px] text-gray-500 mt-1 w-24 truncate text-center">{m.work_name}</p>
+              <div key={m.id} className="flex-shrink-0 snap-start">
+                <button
+                  onClick={() => setPhotoViewerUrl(getPhotoUrl(m.storage_path))}
+                >
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100">
+                    <img
+                      src={getPhotoUrl(m.thumbnail_path || m.storage_path)}
+                      alt={m.caption || 'Photo'}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  {m.work_name && (
+                    <p className="text-[10px] text-gray-500 mt-1 w-24 truncate text-center">{m.work_name}</p>
+                  )}
+                </button>
+                {session && isHomeschoolParent(session) && (
+                  <PhotoInsightButton childId={childId} mediaId={m.id} />
                 )}
-              </button>
+              </div>
             ))}
           </div>
         </div>

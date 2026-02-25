@@ -12,26 +12,9 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES (Feb 25, 2026)
+## 🔥 NEXT SESSION PRIORITIES (Feb 26, 2026)
 
-### Guru Improvements — 8 Phases (Priority #0 — READY TO BUILD)
-
-Full plan designed and approved. 8 improvements to the Guru AI system for homeschool parents.
-
-**Build order:**
-1. Conversation Memory — multi-turn messages from past 5 interactions per child
-2. FAQ Cache — 10 static pre-written Q&As, accordion component
-3. Contextual Page Tips — GuruContextBubble with per-page floating tips
-4. End-of-Day Nudge — Haiku summary after progress logged
-5. Proactive Suggestions — detect stale works (2+ weeks), surface GuruSuggestionCard
-6. Photo-Aware Observations — Sonnet vision on child photos
-7. Knowledge Base Expansion — add more books/sources (user has 3 books to provide)
-8. Voice Notes — react-media-recorder + OpenAI Whisper
-
-**Plan:** `.claude/plans/guru-improvements-v1.md`
-**Handoff:** `docs/HANDOFF_GURU_IMPROVEMENTS_FEB25.md`
-
-### Deploy Cross-Pollination Security Fix (Priority #1 — URGENT)
+### Deploy Cross-Pollination Security Fix (Priority #0 — URGENT)
 
 **CRITICAL security fix from Feb 22.** Must be deployed before any new school signs up.
 
@@ -70,32 +53,67 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 ## CURRENT STATUS (Feb 25, 2026)
 
-### Session Work (Feb 25, 2026)
+### Session Work (Feb 25, 2026 — Late Session)
 
-**Home Guru Revamp — 8 Phases COMPLETE (commit `bd774ec3`, 12 files, 1,811 insertions):**
+**Guru Improvements — ALL 8 PHASES BUILT + AUDITED:**
 
-Built complete concern-first dashboard experience for homeschool parents:
-- `lib/montree/guru/concern-mappings.ts` — 10 parent concerns mapped to Montessori work clusters
-- `lib/montree/guru/prompt-builder.ts` — Rich 8-rule HOMESCHOOL_ADDENDUM replacing minimal 12-line version
-- `app/api/montree/guru/concern/route.ts` — Concern guide API (Haiku, cached per child/concern/day)
-- `app/api/montree/guru/quick/route.ts` — Quick-fire 2-sentence answers (Haiku, 5s timeout)
-- `app/api/montree/guru/weekly-review/route.ts` — Weekly progress review (Haiku, cached per ISO week)
-- `components/montree/guru/ConcernCardsGrid.tsx` — 2-column grid of 10 concern cards
-- `components/montree/guru/ConcernDetailModal.tsx` — Full-screen modal with markdown renderer
-- `components/montree/guru/QuickGuruFAB.tsx` — Floating 🌿 button for quick questions
-- `components/montree/guru/WeeklyReview.tsx` — Collapsible weekly summary banner
-- `app/montree/dashboard/page.tsx` — New "Today" view for home parents
-- `app/montree/dashboard/curriculum/browse/page.tsx` — Recommended filter with difficulty badges
+Built complete Guru AI enhancement suite for homeschool parents (13 new files, 10 modified):
 
-**Audit + Bugfix (commit `71ea39e4`):**
-- Fixed `concern/route.ts` line 77: `w.whyItHelps` → `w.why` (property name mismatch)
-- Fixed `concern/route.ts` line 84: `a.materials.join(', ')` → `a.materials` (string, not array)
-- Full audit passed: all 3 new API routes have security checks, all components use HOME_THEME correctly
+Phase 1 — Conversation Memory:
+- `app/api/montree/guru/route.ts` — fetches last 5 interactions per child, injects as CONVERSATION MEMORY
+- `lib/montree/guru/prompt-builder.ts` — HOMESCHOOL_ADDENDUM rewrite + conversation memory section
 
-**Guru Improvements Plan — DESIGNED & APPROVED:**
-- 8-phase plan for conversation memory, FAQ cache, contextual tips, end-of-day nudge, proactive suggestions, photo-aware observations, knowledge base expansion, voice notes
-- Plan: `.claude/plans/guru-improvements-v1.md`
-- Handoff: `docs/HANDOFF_GURU_IMPROVEMENTS_FEB25.md`
+Phase 2 — FAQ Cache:
+- `lib/montree/guru/faq-cache.ts` — 10 static Q&As, zero API calls
+- `components/montree/guru/GuruFAQSection.tsx` — accordion component
+
+Phase 3 — Contextual Page Tips:
+- `lib/montree/guru/page-tips.ts` — per-page tip definitions (dashboard, week view, progress, curriculum)
+- `components/montree/guru/GuruContextBubble.tsx` — floating bubble, dismiss via localStorage
+
+Phase 4 — End-of-Day Nudge:
+- `app/api/montree/guru/end-of-day/route.ts` — Haiku summary, cached per child/day
+- `components/montree/guru/EndOfDayNudge.tsx` — dismissible banner
+
+Phase 5 — Proactive Suggestions:
+- `lib/montree/guru/progress-analyzer.ts` — detects stale works (2+ weeks) + inactivity
+- `app/api/montree/guru/suggestions/route.ts` — suggestion API
+- `components/montree/guru/GuruSuggestionCard.tsx` — dismissible card
+
+Phase 6 — Photo-Aware Observations:
+- `app/api/montree/guru/photo-insight/route.ts` — Sonnet vision API
+- `components/montree/guru/PhotoInsightButton.tsx` — button on progress photo strip
+
+Phase 7 — Knowledge Base Expansion:
+- `lib/montree/guru/knowledge-retriever.ts` — ~20 new keyword mappings across all areas
+
+Phase 8 — Voice Notes:
+- `app/api/montree/guru/transcribe/route.ts` — OpenAI Whisper, audio NOT stored
+- `components/montree/guru/VoiceNoteButton.tsx` — native MediaRecorder (no npm dep)
+- `components/montree/guru/QuickGuruFAB.tsx` — VoiceNoteButton integrated
+
+Full audit: **zero bugs found** across all 8 phases.
+
+**Library Browse Page Redesign — COMPLETE:**
+- `app/montree/library/browse/page.tsx` — complete rewrite
+- Tab-based navigation replacing accordion: 6 sticky tabs (P/S/M/L/C + Miscellaneous)
+- Miscellaneous tab catches uncategorized works
+- Works grouped by category within each tab
+- Area-colored accents, improved card design, search switches tabs
+- Hidden scrollbar CSS for mobile tab overflow
+
+**English Corner Navigation Fix:**
+- `app/montree/library/page.tsx` — added English Corner card (pink/rose accent)
+- Previously existed at `/montree/library/english-corner` but was undiscoverable
+
+**Home Guru Revamp — Earlier in Session (commit `bd774ec3`):**
+- Concern-first dashboard: ConcernCardsGrid, ConcernDetailModal, QuickGuruFAB, WeeklyReview
+- 10 concern mappings, rich HOMESCHOOL_ADDENDUM prompt
+- Concern/Quick/Weekly-Review API routes (all Haiku, all cached)
+- Bugfix commit `71ea39e4`: property name + type mismatches in concern route
+
+**Handoff:** `docs/HANDOFF_GURU_LIBRARY_FEB25.md`
+**Plan:** `.claude/plans/guru-improvements-v1.md`
 
 ---
 

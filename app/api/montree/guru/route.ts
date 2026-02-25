@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       isPrincipal,
     });
 
-    // 4. Call Claude API
+    // 4. Call Claude API with conversation memory
     // Ensure anthropic is not null (already checked above, but TypeScript needs this)
     if (!anthropic) {
       return NextResponse.json(
@@ -163,14 +163,30 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
-    
+
+    // Phase 1: Build multi-turn messages from past interactions for conversation memory
+    // The Guru remembers the last 5 conversations about this child
+    const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+
+    if (childContext.past_interactions && childContext.past_interactions.length > 0) {
+      // Oldest first so conversation flows naturally
+      const chronological = [...childContext.past_interactions].reverse();
+      for (const interaction of chronological) {
+        if (interaction.question && interaction.response_insight) {
+          conversationMessages.push({ role: 'user', content: interaction.question });
+          conversationMessages.push({ role: 'assistant', content: interaction.response_insight });
+        }
+      }
+    }
+
+    // Current question always goes last
+    conversationMessages.push({ role: 'user', content: userPrompt });
+
     const message = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: MAX_TOKENS,
       system: systemPrompt,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ],
+      messages: conversationMessages,
     });
 
     // Extract response text

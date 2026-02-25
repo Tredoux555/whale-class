@@ -82,6 +82,45 @@ const KEYWORD_MAPPINGS: Record<string, string[]> = {
   'mixed age|older|younger|age group': ['social_development.mixed_ages'],
   'prepared environment|classroom setup|shelves|child.sized': ['environment.prepared'],
   'nature|garden|plant|outdoor|cosmic': ['environment.nature'],
+
+  // Phase 7: Expanded keyword mappings for homeschool parents
+  // Developmental milestones & age-specific guidance
+  'milestone|developmental|behind|ahead|on track|normal for age': ['development_stages.milestones', 'development_stages.planes', 'development_stages.absorbent_mind'],
+  'two year|2 year|toddler|18 month': ['development_stages.toddler', 'sensitive_periods.order', 'sensitive_periods.movement'],
+  'three year|3 year|preschool': ['development_stages.three_year', 'sensitive_periods.language', 'materials.practical_life'],
+  'four year|4 year': ['development_stages.four_year', 'sensitive_periods.language', 'materials.sensorial'],
+  'five year|5 year|kindergarten|school ready': ['development_stages.five_year', 'materials.math', 'materials.language_materials'],
+  'six year|6 year|first grade': ['development_stages.planes', 'materials.math', 'materials.language_materials'],
+
+  // Common parent mistakes & misconceptions
+  'mistake|wrong|doing it wrong|bad parent|failing': ['teacher_role.intervention', 'child_psychology.independence', 'normalization.process'],
+  'too much|overwhelm|overschedul|pressure|push': ['concentration.obstacles', 'teacher_role.observation', 'child_psychology.will'],
+  'correct|fix|teach them|show them|help them': ['teacher_role.intervention', 'child_psychology.independence', 'materials.control_of_error'],
+  'screen|ipad|tablet|phone|tv|youtube': ['concentration.obstacles', 'environment.prepared', 'child_psychology.independence'],
+  'reward|sticker|praise|good job|punishment': ['discipline.natural_discipline', 'child_psychology.will', 'normalization.process'],
+  'compare|other kids|classmate|neighbour|sibling differ': ['development_stages.planes', 'child_psychology.character', 'normalization.characteristics'],
+
+  // Home environment setup
+  'home setup|set up|organize|shelf|low shelf|child height': ['environment.prepared', 'environment.home', 'materials.practical_life'],
+  'rotation|rotate|swap|change out|new materials': ['environment.prepared', 'concentration.fostering'],
+  'tray|basket|container|beautiful|inviting|aesthetic': ['environment.prepared', 'materials.practical_life'],
+  'kitchen|cook|bake|food prep|snack': ['materials.practical_life', 'child_psychology.independence'],
+  'bedroom|sleep|bed|morning routine|getting dressed': ['materials.practical_life', 'sensitive_periods.order', 'child_psychology.independence'],
+  'bathroom|toilet|potty|hand washing|teeth': ['materials.practical_life', 'child_psychology.independence'],
+  'budget|cheap|affordable|diy|homemade|household': ['environment.home', 'materials.practical_life'],
+
+  // Observation techniques for untrained parents
+  'observe|watch|notice|journal|record|document': ['teacher_role.observation', 'normalization.characteristics'],
+  'how do i know|how can i tell|signs of|indicator': ['teacher_role.observation', 'normalization.characteristics', 'sensitive_periods.order'],
+  'interest|follow the child|inner guide|what they want': ['teacher_role.observation', 'child_psychology.will', 'concentration.fostering'],
+
+  // When to worry — professional referral benchmarks
+  'worry|concerned|delayed|delay|late|slow|regression': ['development_stages.milestones', 'normalization.deviations'],
+  'speech delay|not talking|few words|nonverbal': ['sensitive_periods.language', 'development_stages.milestones'],
+  'motor delay|clumsy|coordination|balance|gross motor|fine motor': ['sensitive_periods.movement', 'development_stages.milestones'],
+  'sensory issue|sensory processing|overwhelmed by noise|texture': ['sensitive_periods.sensory', 'child_psychology.emotions'],
+  'spectrum|autism|adhd|add|learning disability|special needs': ['normalization.deviations', 'teacher_role.intervention', 'child_psychology.character'],
+  'therapist|specialist|evaluation|assessment|paediatrician': ['development_stages.milestones', 'normalization.deviations'],
 };
 
 let topicIndex: TopicIndex | null = null;

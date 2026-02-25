@@ -20,6 +20,7 @@ import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
+import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 
 
 interface Assignment {
@@ -485,6 +486,11 @@ export default function WeekPage() {
   return (
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
+
+      {/* Contextual Tip Bubble */}
+      {isHomeschoolParent(session) && (
+        <GuruContextBubble pageKey="weekView" role="parent" />
+      )}
 
       {/* Invite Parent Modal — hidden for homeschool parents (they ARE the parent) */}
       {!isHomeschoolParent(session) && (
