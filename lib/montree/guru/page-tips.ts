@@ -12,7 +12,7 @@ export const PAGE_TIPS: Record<string, TipConfig[]> = {
     { text: "Tap on a child to see their week view and log today's work.", role: 'both' },
     { text: 'Try to do 2–4 focused activities per day. Quality over quantity!', role: 'parent' },
     { text: "The concern cards below are your shortcut to personalised Montessori advice.", role: 'parent' },
-    { text: 'Check in on students who haven't had progress logged this week.', role: 'teacher' },
+    { text: "Check in on students who haven't had progress logged this week.", role: 'teacher' },
   ],
   weekView: [
     { text: 'Try presenting no more than 2 new works per day — let mastery come naturally.', role: 'parent' },
