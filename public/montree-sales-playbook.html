@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree Sales Playbook — China Montessori Schools</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Fraunces:ital,wght@0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface2: #1e222e;
+    --border: #2a2f3e;
+    --text: #e2e4ea;
+    --text-dim: #8b90a0;
+    --accent: #4ade80;
+    --accent2: #22c55e;
+    --fire: #f97316;
+    --star: #facc15;
+    --diamond: #60a5fa;
+    --red: #ef4444;
+    --purple: #a78bfa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0a2e1a 0%, #0f1117 50%, #1a1028 100%);
+    padding: 60px 40px 50px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .hero .sub {
+    color: var(--text-dim);
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  .hero .stats {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .hero .stat {
+    text-align: center;
+  }
+  .hero .stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .hero .stat .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Navigation tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border: 1px solid var(--border);
+  }
+  .nav-tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+  .nav-tab.active { background: var(--accent); color: #0f1117; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 28px 0 12px;
+    color: var(--accent);
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card.fire { border-left: 4px solid var(--fire); }
+  .card.star { border-left: 4px solid var(--star); }
+  .card.diamond { border-left: 4px solid var(--diamond); }
+  .card.green { border-left: 4px solid var(--accent); }
+  .card.red { border-left: 4px solid var(--red); }
+  .card.purple { border-left: 4px solid var(--purple); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 17px;
+    color: #fff;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .badge.fire { background: rgba(249,115,22,0.15); color: var(--fire); }
+  .badge.star { background: rgba(250,204,21,0.15); color: var(--star); }
+  .badge.diamond { background: rgba(96,165,250,0.15); color: var(--diamond); }
+  .badge.green { background: rgba(74,222,128,0.15); color: var(--accent); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 4px 12px;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+  .contact-grid .label { color: var(--text-dim); font-weight: 500; }
+  .contact-grid .value { color: var(--text); }
+  .contact-grid a { color: var(--accent); text-decoration: none; }
+  .contact-grid a:hover { text-decoration: underline; }
+
+  .msg-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    position: relative;
+  }
+  .msg-box .msg-label {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: var(--surface2);
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--border);
+    color: var(--text-dim);
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-btn:hover { background: var(--accent); color: var(--bg); }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .timeline {
+    border-left: 2px solid var(--border);
+    margin-left: 14px;
+    padding-left: 24px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -31px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  @media (max-width: 640px) {
+    .principle-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 28px; }
+    .hero .stats { gap: 16px; }
+  }
+
+  .highlight { color: var(--accent); font-weight: 600; }
+  .warn { color: var(--fire); font-weight: 600; }
+  .dim { color: var(--text-dim); }
+  strong { color: #fff; }
+
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 6px; }
+  p { margin-bottom: 12px; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th {
+    background: var(--surface2);
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:hover td { background: rgba(74,222,128,0.03); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🌳 Montree Sales Playbook</h1>
+  <p class="sub">China Montessori School Outreach Strategy — February 2026</p>
+  <div class="stats">
+    <div class="stat"><div class="num">~10,000</div><div class="label">Montessori Schools in China</div></div>
+    <div class="stat"><div class="num">316</div><div class="label">Montessori Works Mapped</div></div>
+    <div class="stat"><div class="num">24</div><div class="label">Priority Targets</div></div>
+    <div class="stat"><div class="num">$1,000</div><div class="label">Target Monthly / School</div></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('psychology')">Psychology</button>
+    <button class="nav-tab" onclick="showSection('hd-qingdao')">HD Qingdao</button>
+    <button class="nav-tab" onclick="showSection('templates')">Email Templates</button>
+    <button class="nav-tab" onclick="showSection('pipeline')">Full Pipeline</button>
+    <button class="nav-tab" onclick="showSection('playbook')">Playbook</button>
+    <button class="nav-tab" onclick="showSection('contacts')">All Contacts</button>
+  </div>
+
+  <!-- ============ SECTION: PSYCHOLOGY ============ -->
+  <div id="psychology" class="section active">
+    <h2>The Psychology of Selling to Schools</h2>
+    <p>Selling edtech to schools is <strong>nothing like selling a product</strong>. Schools are trust-first environments. The decision-makers are educators, not businesspeople. They've been burned by flashy tech that doesn't deliver. Here's how to get past their defenses.</p>
+
+    <h3>The 6 Psychological Principles at Work</h3>
+
+    <div class="principle-grid">
+      <div class="card green">
+        <div class="card-title">1. Authority + Insider Status</div>
+        <p class="dim" style="margin-top:8px">You're not a salesman — you're an AMS-trained Montessori teacher who built this because you needed it. That's your single most powerful asset. Every email must lead with this.</p>
+      </div>
+      <div class="card green">
+        <div class="card-title">2. Pain-First, Not Feature-First</div>
+        <p class="dim" style="margin-top:8px">Never lead with what Montree does. Lead with the pain they already feel: hours lost to paper tracking, inconsistent curriculum delivery, parents wanting more visibility, new teachers not knowing the sequence.</p>
+      </div>
+      <div class="card green">
+        <div class="card-title">3. Social Proof (Even Pre-Revenue)</div>
+        <p class="dim" style="margin-top:8px">You don't have paying clients yet, but you have: 316 works mapped, 11 sensitive periods coded, a working demo. Frame it as "built in a real classroom with real children." That IS your proof.</p>
+      </div>
+      <div class="card green">
+        <div class="card-title">4. The Free Pilot — Reduce Risk to Zero</div>
+        <p class="dim" style="margin-top:8px">Schools hate risk. Offer a 30-day free pilot. They try it with one classroom. Zero commitment. The psychology: once teachers use it for 30 days, switching back to paper feels like regression. The tool sells itself.</p>
+      </div>
+      <div class="card green">
+        <div class="card-title">5. Reciprocity Through Value-First</div>
+        <p class="dim" style="margin-top:8px">Before asking for anything, give something useful: a curriculum guide, a printable set, an insight about their program. This creates an obligation to reciprocate (with their time, a meeting, a trial).</p>
+      </div>
+      <div class="card green">
+        <div class="card-title">6. Urgency Without Pressure</div>
+        <p class="dim" style="margin-top:8px">Don't fake scarcity. Use natural urgency: "We're onboarding our first 5 partner schools this semester" or "I'm selecting schools for the pilot before the spring term." Real, believable, motivating.</p>
+      </div>
+    </div>
+
+    <h3>Who Makes the Decision?</h3>
+    <p>In Chinese bilingual schools, the buying chain typically involves 3 people:</p>
+
+    <div class="card">
+      <table>
+        <tr><th>Role</th><th>What They Care About</th><th>Your Angle</th></tr>
+        <tr><td><strong>KG Director / Head of Early Years</strong></td><td>Curriculum quality, teacher workload, parent satisfaction, Montessori authenticity</td><td>Lead with curriculum depth (316 works, sensitive periods, albums). This is the person who GETS Montessori. Speak their language.</td></tr>
+        <tr><td><strong>Principal / Head of School</strong></td><td>School reputation, parent retention, operational efficiency, measurable outcomes</td><td>Lead with data: progress reports, parent portal, standardization across classrooms. ROI story.</td></tr>
+        <tr><td><strong>Owner / Board / Admin Director</strong></td><td>Cost, scalability, competitive advantage vs other schools</td><td>Lead with market positioning: "The only school in Qingdao with AI-powered Montessori tracking."</td></tr>
+      </table>
+    </div>
+
+    <h3>The Golden Rule</h3>
+    <div class="card fire">
+      <p><strong>Always contact the KG Director first.</strong> They're the internal champion. If they love it, they'll sell it upward for you. If you go straight to the principal or owner, they'll defer to the KG Director anyway — but now you've lost the advantage of the KG Director feeling like they discovered it.</p>
+    </div>
+
+    <h3>The 5-Touch Sequence</h3>
+    <p>Research shows it takes 5-8 touches to convert a B2B lead in education. Here's the sequence:</p>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Touch 1: The Warm Intro Email</h4>
+        <p class="dim">Personalized. Reference something specific about their school. Offer a free resource. Ask for nothing except "would you be open to a quick look?"</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Touch 2: The Value Drop (3 days later)</h4>
+        <p class="dim">Send something genuinely useful: a Montessori curriculum checklist, a printable, an observation template. No ask attached. Pure value.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Touch 3: The WeChat/LinkedIn Connect (5 days later)</h4>
+        <p class="dim">Connect on WeChat or LinkedIn with a brief personal message referencing your email. In China, WeChat is where real business happens.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Touch 4: The Demo Offer (7 days later)</h4>
+        <p class="dim">"I recorded a 3-minute walkthrough of how [School Name]'s curriculum would look in Montree. Want me to send it?" Personalized demo > generic pitch.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Touch 5: The Direct Ask (10 days later)</h4>
+        <p class="dim">"I'm selecting 5 schools for a free pilot this term. Based on your Montessori program, HD Qingdao would be an ideal fit. Can we schedule 15 minutes this week?"</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION: HD QINGDAO ============ -->
+  <div id="hd-qingdao" class="section">
+    <h2>🔥 HD Qingdao Wanda School — Primary Target</h2>
+    <p>You interviewed here. They know your face. This is not a cold lead — it's a warm re-engagement with a product pitch layered on top.</p>
+
+    <h3>Contact Intelligence</h3>
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">HD Qingdao Wanda School</div>
+        <span class="badge fire">TIER 1 — WARM LEAD</span>
+      </div>
+      <div class="contact-grid">
+        <span class="label">Address</span><span class="value">No.369 Jinqiu Road, Starlight Island, Oriental Movie Metropolis, Huangdao District, Qingdao</span>
+        <span class="label">Admissions</span><span class="value">qd.admissions@hdschools.org</span>
+        <span class="label">HR</span><span class="value">QD.HR@hdschools.org</span>
+        <span class="label">Phone (Admissions)</span><span class="value">0532-66029316 / 66029303</span>
+        <span class="label">Phone (HR)</span><span class="value">0532-66029317</span>
+        <span class="label">Website</span><a class="value" href="https://www.hdschools.org/en/qingdao">hdschools.org/en/qingdao</a>
+        <span class="label">LinkedIn</span><a class="value" href="https://www.linkedin.com/company/hd-qingdao-school">HD Qingdao School</a>
+      </div>
+    </div>
+
+    <h3>Key People</h3>
+    <div class="card">
+      <table>
+        <tr><th>Name</th><th>Role</th><th>Why They Matter</th></tr>
+        <tr><td><strong>Renee</strong> (Chinese name unknown)</td><td>KG Director / Montessori Lead</td><td>AMI 3-6 certified. 10+ years KG experience. Former teaching director at bilingual KG in Beijing. <span class="highlight">YOUR #1 TARGET.</span> She understands Montessori deeply and would immediately see Montree's value.</td></tr>
+        <tr><td><strong>Warren Johnston</strong></td><td>Chief Academic Officer, ELITE K12 Education Group</td><td>Founded Shanghai YK Pao School. Oversees all HD campuses (QD, Shanghai, Beijing, Ningbo). If he buys in, ALL HD schools could adopt.</td></tr>
+        <tr><td><strong>Dr. Robert Holroyd</strong></td><td>Chief Academic Officer, ELITE K12</td><td>Oxford grad. 25+ years school management. Former Headmaster of Repton School UK.</td></tr>
+        <tr><td><strong>Li Suxiang</strong></td><td>Principal / Executive Principal</td><td>National famous principal. Led schools to #1 rankings. The decision-maker on the Chinese side.</td></tr>
+        <tr><td><strong>Mr. Taljaard</strong></td><td>PE Teacher</td><td>South African! Fellow countryman connection. Could be informal bridge to staff introductions.</td></tr>
+      </table>
+    </div>
+
+    <h3>The Strategy: 3-Pronged Approach</h3>
+
+    <div class="step"><span class="step-num">1</span>
+      <div>
+        <h4>Email Renee (KG Director) via HR</h4>
+        <p>You can't email Renee directly (no public email). Send to <strong>QD.HR@hdschools.org</strong> and ask them to forward to the KG Director, OR send to <strong>qd.admissions@hdschools.org</strong> asking to be connected to the kindergarten leadership regarding a Montessori technology partnership. In China, WeChat is king — try to get Renee's WeChat through the HR channel or through Mr. Taljaard.</p>
+      </div>
+    </div>
+
+    <div class="step"><span class="step-num">2</span>
+      <div>
+        <h4>The SA Connection — Mr. Taljaard</h4>
+        <p>Find Mr. Taljaard on LinkedIn or WeChat. Fellow South African at HD Qingdao. Message him casually: "Hey, fellow SA expat here in the education space! I interviewed at HD recently and I'm working on a Montessori curriculum platform. Would love to connect." He can introduce you to Renee informally. <strong>Warm introductions convert 5x better than cold emails.</strong></p>
+      </div>
+    </div>
+
+    <div class="step"><span class="step-num">3</span>
+      <div>
+        <h4>The Dual Pitch Email</h4>
+        <p>Since they ghosted your job application, reframe the relationship. You're no longer just a job applicant — you're a Montessori technology partner who also happens to be available for teaching. Lead with Montree, mention availability second.</p>
+      </div>
+    </div>
+
+    <h3>Draft Email to HD Qingdao</h3>
+    <div class="msg-box">
+      <span class="msg-label">Email — To: QD.HR@hdschools.org + qd.admissions@hdschools.org</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: Montessori Curriculum Technology — Partnership Opportunity for HD Qingdao Kindergarten
+
+Dear HD Qingdao Kindergarten Leadership,
+
+I'm reaching out as a fellow Montessori educator based here in the Qingdao region. I recently had the pleasure of interviewing with HD Qingdao and was genuinely impressed by the depth of your Montessori program — particularly the integration of the five Montessori areas with your bilingual curriculum.
+
+I'm writing today about something I've been building that I believe would be valuable for your kindergarten: Montree — a digital Montessori curriculum and progress tracking platform designed specifically for bilingual schools in China.
+
+As an AMS-credentialed Montessori teacher running a bilingual classroom, I built Montree to solve the problems I face every day:
+— Tracking each child's progress across 316 Montessori works is overwhelming on paper
+— New teachers struggle to learn the correct presentation sequence
+— Parents want visibility into their child's Montessori journey but reports take hours to create
+— Maintaining curriculum consistency across multiple classrooms is nearly impossible without a shared system
+
+Montree maps the complete Montessori curriculum (Practical Life through Cultural), tracks sensitive periods, generates parent-ready progress reports, and provides teachers with guided recommendations for each child's next work — all in both English and Chinese.
+
+I would welcome the opportunity to give your KG Director (Renee, I believe?) a brief walkthrough. I'm happy to set up a complimentary 30-day pilot for one classroom so your team can experience it firsthand with zero commitment.
+
+I'm also still very interested in contributing to HD Qingdao as a Montessori teacher, and would love to discuss how my skills and this technology could work together to strengthen your kindergarten program.
+
+Could I be connected with the appropriate person to discuss this? I'm available for a meeting at the school at your convenience.
+
+Warm regards,
+Tredoux
+AMS-Credentialed Montessori Educator
+Montree — montree.xyz
+[Your phone / WeChat]</div>
+
+    <h3>Draft WeChat Message to Mr. Taljaard</h3>
+    <div class="msg-box">
+      <span class="msg-label">WeChat — Casual SA Connection</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Hi! Fellow South African here — I saw you're at HD Qingdao doing PE. Small world! I'm a Montessori teacher in the area and actually interviewed at HD recently. I've been building a digital Montessori curriculum platform (montree.xyz) and I'd love to connect with someone at the school to demo it to the kindergarten team. Any chance you could point me to the right person? Would also be great to just connect with another SA in Qingdao. Cheers! 🇿🇦</div>
+
+    <h3>Follow-up Strategy (If No Reply in 5 Days)</h3>
+    <div class="msg-box">
+      <span class="msg-label">Follow-up Email</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: Quick follow-up — Free Montessori curriculum resource for HD Qingdao
+
+Hi there,
+
+I wanted to follow up on my previous email about Montree. To show you what I mean rather than just describe it, I've put together a complimentary Montessori Curriculum Mapping Guide specifically aligned to HD Qingdao's bilingual kindergarten approach — covering how the five Montessori areas can be systematically tracked across your age groups.
+
+[Attach: A PDF resource you create — curriculum alignment guide or printable observation checklist]
+
+This is the kind of resource that Montree automates for every child, every day. I'd love 15 minutes to show you how.
+
+If the kindergarten leadership would be open to a brief demo — either in person at the school or via video call — I'm flexible with timing.
+
+Best,
+Tredoux</div>
+  </div>
+
+  <!-- ============ SECTION: TEMPLATES ============ -->
+  <div id="templates" class="section">
+    <h2>Email Templates — Scalable Outreach</h2>
+    <p>These templates are designed for different school types. Personalize the <span class="highlight">[brackets]</span> for each school. The psychology is baked in: authority first, pain second, free offer third.</p>
+
+    <h3>Template A: AMI/AMS Certified Schools (Pure Montessori)</h3>
+    <p class="dim">Use for: Hongwen, Alpha, Amber, Kidtopia, Children's House, JJB, Learn Room, etc.</p>
+    <div class="msg-box">
+      <span class="msg-label">Template A — Pure Montessori</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: A digital tool built by a Montessori teacher, for Montessori classrooms
+
+Dear [KG Director / Head of Early Years],
+
+I'm an AMS-credentialed Montessori teacher currently working with 2-6 year olds in a bilingual classroom in China. I'm reaching out because I've built something I think your team at [School Name] would find genuinely useful.
+
+Montree is a curriculum and progress tracking platform built specifically for Montessori classrooms. It maps all 316 works across the five areas (Practical Life through Cultural), tracks each child's sensitive periods, and generates parent-ready progress reports — in both English and Chinese.
+
+I built it because I was spending hours every week on paper tracking and handwritten reports, and I knew there had to be a better way. What I ended up creating goes further than tracking — it provides guided curriculum recommendations for each child based on their developmental stage and progress history.
+
+I'm currently selecting 5 schools for a complimentary 30-day pilot this term. Given [School Name]'s commitment to authentic Montessori practice, I think you'd be an ideal fit.
+
+Would you be open to a 15-minute walkthrough? I can visit in person or do a video call — whatever works best for your schedule.
+
+Warm regards,
+Tredoux
+Montree — montree.xyz</div>
+
+    <h3>Template B: Chain Headquarters (Etonkids, Hongwen Group, Montessori Academy)</h3>
+    <p class="dim">Use for: Corporate/group-level pitches where one deal unlocks many campuses.</p>
+    <div class="msg-box">
+      <span class="msg-label">Template B — Chain HQ</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: Montessori curriculum consistency across [X] campuses — a digital solution
+
+Dear [Curriculum Director / Head of Education],
+
+Managing Montessori curriculum quality across [number] campuses presents a unique challenge: how do you ensure every classroom delivers authentic, consistent Montessori experiences while allowing teachers the flexibility the method requires?
+
+I'm a practicing AMS-credentialed Montessori teacher in China, and I've built Montree — a digital platform that solves exactly this problem. Montree provides:
+
+— A standardized curriculum framework (316 works, 11 sensitive periods) that all campuses share
+— Individual child progress tracking that teachers update in real-time
+— Automated parent progress reports in English and Chinese
+— A principal/admin dashboard showing curriculum delivery across all classrooms
+— Guided work recommendations so even newly trained teachers follow proper sequencing
+
+For a group like [Group Name], Montree offers something paper systems never can: visibility across your entire network. You can see which campuses are strong in Practical Life but behind in Sensorial. You can identify training needs before they become parent complaints.
+
+I'd welcome the opportunity to demonstrate this for your education leadership team. I'm happy to start with a single-campus pilot — we can prove the value before discussing a network-wide rollout.
+
+Would [date range] work for a 20-minute video walkthrough?
+
+Best regards,
+Tredoux
+Montree — montree.xyz</div>
+
+    <h3>Template C: Bilingual Schools with Montessori KG (HD Schools, International Schools)</h3>
+    <p class="dim">Use for: Schools where Montessori is the KG approach but school is broader (K-12).</p>
+    <div class="msg-box">
+      <span class="msg-label">Template C — Bilingual K-12 with Montessori KG</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: Strengthening [School Name]'s Montessori kindergarten with digital curriculum tools
+
+Dear [KG Director / Early Years Coordinator],
+
+Your Montessori kindergarten program is one of the things that sets [School Name] apart from other bilingual schools in [City]. Parents choose you partly because of that Montessori foundation — which means the quality and visibility of that program directly impacts enrollment and retention.
+
+I'm a Montessori educator who has built Montree, a digital platform that makes your Montessori kindergarten program more visible, more trackable, and more impressive to parents — while saving your teachers significant time on documentation.
+
+Here's what changes for your team:
+— Teachers track progress with taps, not paperwork (tablet-ready interface)
+— Parents receive detailed, professional progress reports showing their child's Montessori journey
+— Your KG Director gets a real-time overview of every child's development across all classrooms
+— New teachers get guided curriculum recommendations instead of guessing the sequence
+
+I'm offering a complimentary 30-day pilot — one classroom, zero commitment. Your teachers try it, and if it doesn't save them time and impress parents, you owe nothing.
+
+Could I schedule a brief walkthrough with your kindergarten leadership?
+
+Best,
+Tredoux
+Montree — montree.xyz</div>
+
+    <h3>Template D: Chinese Language Cold Email (For Chinese-Led Schools)</h3>
+    <p class="dim">Use for: Schools where the decision-maker is primarily Chinese-speaking. Have this translated to Chinese and sent via WeChat if possible.</p>
+    <div class="msg-box">
+      <span class="msg-label">Template D — For Translation to Chinese</span>
+      <button class="copy-btn" onclick="copyMsg(this)">Copy</button>Subject: Montessori Digital Curriculum Platform — Free Trial for [School Name]
+
+Dear [School Director],
+
+I am a certified Montessori teacher working in China. I have developed Montree, a digital Montessori curriculum management platform designed for Chinese bilingual kindergartens.
+
+Montree includes:
+— Complete Montessori curriculum (316 works across all 5 areas) with Chinese names
+— Individual child progress tracking
+— Automatic parent report generation (Chinese and English)
+— Sensitive period tracking and guided teacher recommendations
+— Principal dashboard for classroom oversight
+
+I am offering 5 schools a free 30-day trial this semester. I believe [School Name] would be an excellent partner.
+
+May I arrange a 15-minute demonstration?
+
+Respectfully,
+Tredoux
+Montree — montree.xyz</div>
+  </div>
+
+  <!-- ============ SECTION: PIPELINE ============ -->
+  <div id="pipeline" class="section">
+    <h2>Full Sales Pipeline — Phased Rollout</h2>
+
+    <h3>Phase 1: Qingdao (Weeks 1-4) — Your Backyard</h3>
+    <p>Start where you are. You can visit these schools in person. Face-to-face demos convert 3x better than video calls in China.</p>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">HD Qingdao Wanda School</div>
+        <span class="badge fire">Warm Lead</span>
+      </div>
+      <p>Interviewed here. Montessori KG with AMI director (Renee). SA connection (Taljaard). Use Template C + personal angle. <strong>Email this week.</strong></p>
+    </div>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">Qingdao Amerasia International School (QAIS)</div>
+        <span class="badge fire">Flagship Target</span>
+      </div>
+      <p>Only AMS-accredited school in Asia. If they adopt Montree, every other school in China pays attention. Use Template A. Find their Early Childhood director on LinkedIn.</p>
+      <div class="contact-grid">
+        <span class="label">Website</span><a class="value" href="https://www.qingdaoamerasia.org">qingdaoamerasia.org</a>
+        <span class="label">Approach</span><span class="value">Check LinkedIn for EC Director. Apply via website contact form referencing Montessori program specifically.</span>
+      </div>
+    </div>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">Qingdao Hongwen Montessori (Laoshan + Shibei)</div>
+        <span class="badge fire">2 Campuses</span>
+      </div>
+      <p>Pure Montessori, AMI/AMS certified, 2 local campuses. Use Template A. Search "宏文蒙特梭利 青岛" on WeChat/Baidu for contacts.</p>
+    </div>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">Qingdao Baishan School</div>
+        <span class="badge fire">Oldest in QD</span>
+      </div>
+      <p>AMI/AMS since 1993. Long-established. Use Template A. Research their website for KG contact.</p>
+    </div>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">Weiming KG (Qingdao West Coast)</div>
+        <span class="badge fire">Local</span>
+      </div>
+      <p>AMI/AMS certified, founded 2019. Use Template A.</p>
+    </div>
+
+    <div class="card fire">
+      <div class="card-header">
+        <div class="card-title">Montessori Academy Qingdao Campus</div>
+        <span class="badge fire">Chain Entry Point</span>
+      </div>
+      <p>Part of 10-campus chain (Far East Horizon). Win the QD campus → pitch Shanghai HQ for all 10. Use Template A locally, then Template B to HQ.</p>
+    </div>
+
+    <hr>
+
+    <h3>Phase 2: Chain Headquarters (Weeks 4-8) — Scale Play</h3>
+    <p>One corporate deal can unlock dozens of schools overnight.</p>
+
+    <div class="card star">
+      <div class="card-header">
+        <div class="card-title">Etonkids International Education Group</div>
+        <span class="badge star">~60 Campuses, 18 Cities</span>
+      </div>
+      <p>The biggest Montessori chain in China. AMS-affiliated teacher training program. HQ in Beijing. Use Template B. This is a whale — pursue aggressively but expect a longer cycle. Find their Curriculum Director on LinkedIn.</p>
+      <div class="contact-grid">
+        <span class="label">HQ</span><span class="value">Beijing</span>
+        <span class="label">Website</span><a class="value" href="https://www.etonkids.com">etonkids.com</a>
+        <span class="label">LinkedIn</span><span class="value">Search "Etonkids" — find curriculum/education leadership</span>
+      </div>
+    </div>
+
+    <div class="card star">
+      <div class="card-header">
+        <div class="card-title">Hongwen Montessori Academy (Group)</div>
+        <span class="badge star">12+ Campuses</span>
+      </div>
+      <p>AMI/AMS certified. Campuses in Shanghai (5), Qingdao (2), Chengdu (2), Chongqing, Wuhan, Tianjin. Pure Montessori brand. Use Template B. Search "宏文蒙特梭利" for corporate contacts.</p>
+    </div>
+
+    <div class="card star">
+      <div class="card-header">
+        <div class="card-title">Montessori Academy China (Far East Horizon)</div>
+        <span class="badge star">10 Campuses</span>
+      </div>
+      <p>Australian origin. Shanghai HQ. Campuses in Shanghai, Xiamen, Chongqing, Wuhan, Hangzhou, Qingdao. Use Template B.</p>
+      <div class="contact-grid">
+        <span class="label">Website</span><a class="value" href="https://www.mais-china.com">mais-china.com</a>
+        <span class="label">LinkedIn</span><a class="value" href="https://www.linkedin.com/company/montessoriacademy">Montessori Academy China</a>
+      </div>
+    </div>
+
+    <div class="card star">
+      <div class="card-header">
+        <div class="card-title">HD Schools Group (ELITE K12)</div>
+        <span class="badge star">4 Campuses</span>
+      </div>
+      <p>If HD Qingdao adopts, pitch Warren Johnston / Dr. Holroyd for Beijing, Shanghai, Ningbo campuses. Use Template B referencing QD pilot success.</p>
+      <div class="contact-grid">
+        <span class="label">Beijing</span><span class="value">bj.admissions@hdschools.org — 010-85095712</span>
+        <span class="label">Shanghai</span><span class="value">sh.admissions@hdschools.org — 021-2309 1039</span>
+        <span class="label">Ningbo</span><a class="value" href="https://www.hdschools.org/en/ningbo">hdschools.org/en/ningbo</a>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>Phase 3: City-by-City Expansion (Weeks 8-16)</h3>
+
+    <div class="card diamond">
+      <div class="card-header"><div class="card-title">Beijing (6 targets)</div><span class="badge diamond">Tier 3</span></div>
+      <p>MSB (oldest, 1990, AMS), Children's House (3 campuses, 1992), Kidtopia, AnRic, Learn Room, Weiming Beijing. Use Template A.</p>
+    </div>
+
+    <div class="card diamond">
+      <div class="card-header"><div class="card-title">Shanghai (6 targets)</div><span class="badge diamond">Tier 3</span></div>
+      <p>Nebula Schools (4 campuses, formerly Montessori School of Shanghai), Alpha, Amber, Hongwen Shanghai (5 campuses). Use Template A.</p>
+    </div>
+
+    <div class="card diamond">
+      <div class="card-header"><div class="card-title">Chengdu + Chongqing (4 targets)</div><span class="badge diamond">Tier 3</span></div>
+      <p>HTD Montessori (4 campuses), Hongwen Chengdu + Chongqing. Use Template A.</p>
+    </div>
+
+    <div class="card diamond">
+      <div class="card-header"><div class="card-title">Other Cities</div><span class="badge diamond">Tier 3</span></div>
+      <p>Guangzhou (JJB International AMI Center), Suzhou (World Vantage), Wuxi (Cadalin), Tianjin (Montessori International KG, Weiming, Hongwen). Use Template A.</p>
+    </div>
+  </div>
+
+  <!-- ============ SECTION: PLAYBOOK ============ -->
+  <div id="playbook" class="section">
+    <h2>Tactical Playbook</h2>
+
+    <h3>Before You Send a Single Email</h3>
+    <div class="card purple">
+      <h4>Create These Assets First</h4>
+      <ul>
+        <li><strong>Montree Demo Video (3 min)</strong> — Screen recording showing: adding a child → tracking progress → generating a parent report. Keep it real, not polished. Teachers trust authenticity.</li>
+        <li><strong>One-Page PDF</strong> — "What is Montree?" with 3 pain points, 3 solutions, a screenshot, and your contact. English on one side, Chinese on the other.</li>
+        <li><strong>Free Curriculum Resource</strong> — A beautifully formatted Montessori Work Checklist (all 316 works, organized by area). Give this away. It demonstrates your expertise AND shows what Montree automates.</li>
+        <li><strong>montree.xyz looking sharp</strong> — The principal registration flow needs to be flawless. First impressions are everything.</li>
+      </ul>
+    </div>
+
+    <h3>Channel Strategy for China</h3>
+    <div class="card">
+      <table>
+        <tr><th>Channel</th><th>Use For</th><th>Priority</th></tr>
+        <tr><td><strong>WeChat</strong></td><td>Primary communication after initial contact. Add school official accounts. Join Montessori educator groups. Post updates about Montree.</td><td class="highlight">HIGHEST</td></tr>
+        <tr><td><strong>Email</strong></td><td>First touch for international/bilingual schools. Use English templates for foreign directors, Chinese for local leadership.</td><td>High</td></tr>
+        <tr><td><strong>LinkedIn</strong></td><td>Finding foreign KG directors, principals, curriculum leads. Most effective for international school staff.</td><td>High</td></tr>
+        <tr><td><strong>In Person</strong></td><td>Qingdao schools — walk in with your one-pager. Ask to speak with KG Director. China respects face-to-face.</td><td class="highlight">HIGHEST for local</td></tr>
+        <tr><td><strong>Xiaohongshu (小红书)</strong></td><td>Post Montessori content. Search 蒙台梭利幼儿园 to find schools and teachers. Comment on their posts.</td><td>Medium</td></tr>
+        <tr><td><strong>Phone</strong></td><td>Follow up after email. Call admissions number and ask to be transferred to KG leadership.</td><td>Medium</td></tr>
+      </table>
+    </div>
+
+    <h3>Search Terms for Finding More Schools</h3>
+    <div class="card">
+      <table>
+        <tr><th>Platform</th><th>Search Terms</th></tr>
+        <tr><td>Baidu Maps</td><td>蒙特梭利幼儿园 / 蒙台梭利幼儿园 / 蒙氏幼儿园 + [city name]</td></tr>
+        <tr><td>WeChat</td><td>蒙特梭利 / 蒙台梭利 / Montessori China / 蒙氏教育</td></tr>
+        <tr><td>Xiaohongshu</td><td>蒙氏幼儿园推荐 / 蒙台梭利学校 / Montessori kindergarten China</td></tr>
+        <tr><td>LinkedIn</td><td>"Montessori" "China" "kindergarten director" / "head of early years"</td></tr>
+        <tr><td>AMI Directory</td><td><a href="https://montessori-ami.org/countries/china" style="color:var(--accent)">montessori-ami.org/countries/china</a></td></tr>
+        <tr><td>TopTutorJob</td><td><a href="https://www.toptutorjob.com/montessori-school-china" style="color:var(--accent)">toptutorjob.com/montessori-school-china</a></td></tr>
+        <tr><td>IAPM List</td><td><a href="http://www.montessori-iapm.org/affiliation-of-montessori-schools/" style="color:var(--accent)">montessori-iapm.org/affiliation-of-montessori-schools</a></td></tr>
+      </table>
+    </div>
+
+    <h3>Objection Handling</h3>
+    <div class="card">
+      <table>
+        <tr><th>Objection</th><th>Response</th></tr>
+        <tr><td>"We already use paper tracking"</td><td>"That's exactly why I built Montree — I was drowning in paper too. The platform doesn't replace your method, it digitizes it. Your teachers still observe and record, but Montree turns those observations into parent reports automatically. Would a side-by-side comparison be useful?"</td></tr>
+        <tr><td>"We can't afford new technology"</td><td>"I understand budget is always a concern. That's why I offer a 30-day free pilot with zero commitment. If it doesn't save your teachers at least 5 hours per week, you walk away. The question isn't whether you can afford it — it's whether you can afford to keep losing those hours."</td></tr>
+        <tr><td>"Our teachers aren't tech-savvy"</td><td>"Montree was designed for teachers, not tech people. The progress tracking is tap-based — if they can use WeChat, they can use Montree. I also provide onboarding training and the interface works in both Chinese and English."</td></tr>
+        <tr><td>"We need to discuss internally"</td><td>"Absolutely. Would it help if I put together a brief overview document your team can review? I can also record a 3-minute walkthrough video showing how [School Name]'s specific curriculum would look in the system."</td></tr>
+        <tr><td>"What makes this different from [competitor]?"</td><td>"Most edtech platforms are built by software companies. Montree was built by a Montessori teacher, in a Montessori classroom, for Montessori classrooms. The curriculum mapping — 316 works, 11 sensitive periods, guided sequencing — that depth doesn't exist anywhere else. I'd love to show you."</td></tr>
+      </table>
+    </div>
+
+    <h3>Pricing — Hold Your Ground</h3>
+    <div class="card red">
+      <p><span class="warn">TARGET: $1,000/month per school.</span> Floor: $100/month. NEVER go below the floor.</p>
+      <p style="margin-top:8px"><strong>For chains:</strong> Negotiate per-campus rates. Example: 10+ campuses = $800/month each = $8,000/month. This is still a premium product. Full curriculum, albums, progress tracking, parent reports, admin dashboard, and ongoing support.</p>
+      <p style="margin-top:8px"><strong>The pilot is free. The price is not negotiable.</strong> If they push on price, offer more features or longer pilot — never drop below floor.</p>
+    </div>
+  </div>
+
+  <!-- ============ SECTION: CONTACTS ============ -->
+  <div id="contacts" class="section">
+    <h2>All School Contacts Database</h2>
+    <p class="dim">Status: ⬜ Not contacted  📧 Email sent  💬 In conversation  🤝 Pilot  ✅ Client</p>
+
+    <h3>🔥 Tier 1 — Qingdao (Contact First)</h3>
+    <table>
+      <tr><th>School</th><th>Key Contact</th><th>Email / Phone</th><th>Status</th></tr>
+      <tr><td>HD Qingdao Wanda</td><td>Renee (KG Dir, AMI), HR</td><td>QD.HR@hdschools.org / qd.admissions@hdschools.org / 0532-66029316</td><td>⬜</td></tr>
+      <tr><td>QAIS (Amerasia)</td><td>EC Director (find on LinkedIn)</td><td>Website: qingdaoamerasia.org/contact</td><td>⬜</td></tr>
+      <tr><td>Hongwen Montessori QD (Laoshan)</td><td>School Director</td><td>Search: 宏文蒙特梭利 青岛 崂山</td><td>⬜</td></tr>
+      <tr><td>Hongwen Montessori QD (Shibei)</td><td>School Director</td><td>Search: 宏文蒙特梭利 青岛 市北</td><td>⬜</td></tr>
+      <tr><td>Qingdao Baishan School</td><td>KG Director</td><td>Search: 青岛白珊学校</td><td>⬜</td></tr>
+      <tr><td>Weiming KG (West Coast)</td><td>KG Director</td><td>Search: 伟明幼儿园 青岛西海岸</td><td>⬜</td></tr>
+      <tr><td>Montessori Academy QD</td><td>Campus Director</td><td>mais-china.com</td><td>⬜</td></tr>
+    </table>
+
+    <h3>⭐ Tier 2 — Chain Headquarters</h3>
+    <table>
+      <tr><th>Chain</th><th>HQ City</th><th>Campuses</th><th>Contact Entry</th><th>Status</th></tr>
+      <tr><td>Etonkids</td><td>Beijing</td><td>~60</td><td>etonkids.com / LinkedIn</td><td>⬜</td></tr>
+      <tr><td>Hongwen Group</td><td>Shanghai</td><td>12+</td><td>Search: 宏文教育集团</td><td>⬜</td></tr>
+      <tr><td>Montessori Academy China</td><td>Shanghai</td><td>10</td><td>mais-china.com / LinkedIn</td><td>⬜</td></tr>
+      <tr><td>HD Schools (ELITE K12)</td><td>Multi-city</td><td>4</td><td>Warren Johnston / Dr. Holroyd via HD corporate</td><td>⬜</td></tr>
+      <tr><td>Nebula Schools</td><td>Shanghai</td><td>4</td><td>Search: formerly Montessori School of Shanghai</td><td>⬜</td></tr>
+      <tr><td>HTD Montessori</td><td>Chengdu/CQ</td><td>4</td><td>Search: HTD蒙特梭利</td><td>⬜</td></tr>
+      <tr><td>Weiming KG Group</td><td>Beijing</td><td>4</td><td>Search: 伟明幼儿园</td><td>⬜</td></tr>
+    </table>
+
+    <h3>💎 Tier 3 — Individual Schools</h3>
+    <table>
+      <tr><th>School</th><th>City</th><th>Cert</th><th>Founded</th><th>Status</th></tr>
+      <tr><td>International Montessori School of Beijing (MSB)</td><td>Beijing</td><td>AMS</td><td>1990</td><td>⬜</td></tr>
+      <tr><td>The Children's House (3 campuses)</td><td>Beijing</td><td>AMI/AMS</td><td>1992</td><td>⬜</td></tr>
+      <tr><td>Beijing Kidtopia Montessori</td><td>Beijing</td><td>AMI/AMS</td><td>2018</td><td>⬜</td></tr>
+      <tr><td>AnRic Little Montessori Room</td><td>Beijing</td><td>AMI/AMS</td><td>2012</td><td>⬜</td></tr>
+      <tr><td>Learn Room Children's House</td><td>Beijing</td><td>AMI/AMS</td><td>2015</td><td>⬜</td></tr>
+      <tr><td>Alpha Montessori School</td><td>Shanghai</td><td>AMI/AMS</td><td>2012</td><td>⬜</td></tr>
+      <tr><td>Amber Montessori School</td><td>Shanghai</td><td>AMI/AMS</td><td>2017</td><td>⬜</td></tr>
+      <tr><td>JJB International Montessori AMI Center</td><td>Guangzhou</td><td>AMI</td><td>2014</td><td>⬜</td></tr>
+      <tr><td>World Vantage Montessori</td><td>Suzhou</td><td>AMI/AMS</td><td>2017</td><td>⬜</td></tr>
+      <tr><td>Wuxi Cadalin Preschool</td><td>Wuxi</td><td>AMI/AMS</td><td>2019</td><td>⬜</td></tr>
+      <tr><td>HD Ningbo School</td><td>Ningbo</td><td>Montessori KG</td><td>—</td><td>⬜</td></tr>
+      <tr><td>Tianjin Montessori International KG</td><td>Tianjin</td><td>IAPM</td><td>—</td><td>⬜</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({ top: document.querySelector('.nav-tabs').offsetTop - 10, behavior: 'smooth' });
+}
+
+function copyMsg(btn) {
+  const box = btn.parentElement;
+  const text = box.innerText.replace('Copy', '').replace(box.querySelector('.msg-label')?.innerText || '', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>

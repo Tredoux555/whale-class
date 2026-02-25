@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
+
 export default function TeacherLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const redirectTo = searchParams.get('redirect');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,9 +53,9 @@ export default function TeacherLoginPage() {
         return;
       }
 
-      setError('Invalid code');
+      setError(t('auth.invalidCode'));
     } catch (err) {
-      setError('Connection error. Please try again.');
+      setError(t('common.connectionError'));
     } finally {
       setLoading(false);
     }
@@ -59,14 +63,19 @@ export default function TeacherLoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center p-4">
+      {/* Language toggle — top right */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+      </div>
+
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg shadow-emerald-500/30 mb-4">
             <span className="text-4xl">🌳</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Montree</h1>
-          <p className="text-emerald-300/70">Login</p>
+          <h1 className="text-2xl font-bold text-white">{t('app.name')}</h1>
+          <p className="text-emerald-300/70">{t('auth.login')}</p>
         </div>
 
         {/* Login Card */}
@@ -80,7 +89,7 @@ export default function TeacherLoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-emerald-300 mb-2 text-center">
-                Enter your 6-character code
+                {t('auth.enterCode')}
               </label>
               <input
                 type="text"
@@ -93,7 +102,7 @@ export default function TeacherLoginPage() {
                 maxLength={6}
               />
               <p className="text-white/40 text-xs text-center mt-2">
-                Enter your 6-character login code
+                {t('auth.enterCodeHint')}
               </p>
             </div>
 
@@ -105,10 +114,10 @@ export default function TeacherLoginPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="animate-spin">⏳</span>
-                  Logging in...
+                  {t('auth.loggingIn')}
                 </span>
               ) : (
-                'Login →'
+                t('auth.loginButton')
               )}
             </button>
           </form>
@@ -117,19 +126,19 @@ export default function TeacherLoginPage() {
         {/* Help links */}
         <div className="text-center mt-6 space-y-2">
           <p className="text-white/40 text-xs">
-            Log in with your 6-character code
+            {t('auth.enterCodeHint')}
           </p>
           <a
             href="/montree/principal/login"
             className="text-white/50 hover:text-white/70 text-sm block"
           >
-            Principal? Login here →
+            {t('auth.principalLoginLink')}
           </a>
           <a
             href="/montree/try"
             className="text-emerald-400/50 hover:text-emerald-400/70 text-sm block"
           >
-            Don&apos;t have a code? Get started →
+            {t('auth.noCode')}
           </a>
         </div>
       </div>

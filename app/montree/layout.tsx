@@ -1,7 +1,8 @@
 // /montree/layout.tsx — Session 158
 // Montree PWA layout with manifest for "Add to Home Screen"
-// Enhanced metadata for SEO
+// Enhanced metadata for SEO + bilingual i18n provider
 import type { Metadata, Viewport } from "next";
+import I18nClientWrapper from "@/components/montree/I18nClientWrapper";
 
 export const metadata: Metadata = {
   title: {
@@ -60,8 +61,8 @@ export default function MontreeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <I18nClientWrapper>
       {children}
-    </>
+    </I18nClientWrapper>
   );
 }

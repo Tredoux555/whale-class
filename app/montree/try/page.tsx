@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface TrialResponse {
   success: boolean;
@@ -41,6 +43,7 @@ interface TrialResponse {
 
 export default function TryMontreePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'homeschool_parent' | null>(null);
   const [userName, setUserName] = useState('');
@@ -59,11 +62,11 @@ export default function TryMontreePage() {
 
   const handleDetailsSubmit = async () => {
     if (!userName.trim()) {
-      setError('Please enter your name');
+      setError(t('signup.pleaseEnterName'));
       return;
     }
     if (!schoolName.trim()) {
-      setError(selectedRole === 'principal' ? 'Please enter your school name' : 'Please enter your school or classroom name');
+      setError(selectedRole === 'principal' ? t('signup.pleaseEnterSchool') : t('signup.pleaseEnterSchoolClassroom'));
       return;
     }
 
@@ -85,7 +88,6 @@ export default function TryMontreePage() {
       const data: TrialResponse = await res.json();
 
       if (!res.ok || !data.success) {
-        // Show full debug info from API response
         const debugInfo = (data as any).debug;
         const debugStr = debugInfo ? `\n\nDebug: ${JSON.stringify(debugInfo)}` : '';
         const stepsStr = (data as any).steps ? `\nSteps: ${(data as any).steps.join(' → ')}` : '';
@@ -99,7 +101,7 @@ export default function TryMontreePage() {
       setResponseData(data);
       setStep('code');
     } catch (err) {
-      setError('Failed to connect. Please try again.');
+      setError(t('signup.failed'));
       setStep('details');
     }
   };
@@ -114,7 +116,6 @@ export default function TryMontreePage() {
     if (!responseData) return;
 
     if (responseData.role === 'teacher' && responseData.teacher) {
-      // Auth cookie (montree-auth) was set by the server response
       localStorage.setItem(
         'montree_session',
         JSON.stringify({
@@ -133,13 +134,10 @@ export default function TryMontreePage() {
       );
       router.push('/montree/dashboard');
     } else if (responseData.role === 'principal' && responseData.principal) {
-      // Auth cookie (montree-auth) was set by the server response
       localStorage.setItem('montree_principal', JSON.stringify(responseData.principal));
       localStorage.setItem('montree_school', JSON.stringify(responseData.school));
       router.push('/montree/principal/setup');
     } else if (responseData.role === 'homeschool_parent' && responseData.teacher) {
-      // Homeschool parent uses same session format as teacher
-      // Auth cookie (montree-auth) was set by the server response
       localStorage.setItem(
         'montree_session',
         JSON.stringify({
@@ -162,7 +160,6 @@ export default function TryMontreePage() {
 
   const handleBackClick = (e: React.MouseEvent) => {
     if (step === 'creating' || step === 'code') {
-      // Can't go back from creating/code since account is already created
       e.preventDefault();
       return;
     }
@@ -173,13 +170,17 @@ export default function TryMontreePage() {
       setError('');
       return;
     }
-    // Step 1 (role) goes back to /montree
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Language toggle — top right */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+      </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Back link */}
@@ -190,14 +191,14 @@ export default function TryMontreePage() {
             step === 'creating' || step === 'code' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           }`}
         >
-          <span>←</span> Back
+          <span>←</span> {t('common.back')}
         </a>
 
         {/* Step 1: Role Selection */}
         {step === 'role' && (
           <div className="text-center">
             <h1 className="text-3xl font-light text-white mb-10">
-              I&apos;m a...
+              {t('signup.iAmA')}
             </h1>
 
             <div className="flex flex-col gap-4">
@@ -205,39 +206,39 @@ export default function TryMontreePage() {
                 onClick={() => handleRoleSelect('teacher')}
                 className="w-full px-6 py-5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
               >
-                <span className="text-lg block">👩‍🏫 Teacher</span>
-                <span className="text-sm text-blue-100/70 font-normal mt-1 block">I want to try Montree in my classroom</span>
+                <span className="text-lg block">👩‍🏫 {t('signup.teacher')}</span>
+                <span className="text-sm text-blue-100/70 font-normal mt-1 block">{t('signup.teacherDesc')}</span>
               </button>
 
               <button
                 onClick={() => handleRoleSelect('principal')}
                 className="w-full px-6 py-5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
               >
-                <span className="text-lg block">👔 Principal / School Owner</span>
-                <span className="text-sm text-purple-100/70 font-normal mt-1 block">I want to set up Montree for my school</span>
+                <span className="text-lg block">👔 {t('signup.principal')}</span>
+                <span className="text-sm text-purple-100/70 font-normal mt-1 block">{t('signup.principalDesc')}</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Details (Name + School / Child) */}
+        {/* Step 2: Details */}
         {step === 'details' && selectedRole && (
           <div className="text-center">
             <h1 className="text-3xl font-light text-white mb-2">
-              Quick details
+              {t('signup.quickDetails')}
             </h1>
             <p className="text-slate-400 text-sm mb-8">
-              So we know who you are
+              {t('signup.soWeKnow')}
             </p>
 
             <div className="flex flex-col gap-4 text-left">
               <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">Your Name</label>
+                <label className="block text-sm mb-2 text-emerald-300/70">{t('signup.yourName')}</label>
                 <input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? 'e.g. Sarah Johnson' : 'e.g. Miss Chen'}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
@@ -245,20 +246,20 @@ export default function TryMontreePage() {
 
               <div>
                 <label className="block text-sm mb-2 text-emerald-300/70">
-                  {selectedRole === 'principal' ? 'School Name' : 'School / Classroom Name'}
+                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
                 </label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? 'e.g. Bright Stars Academy' : 'e.g. Sunshine Montessori'}
+                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">Email (optional)</label>
+                <label className="block text-sm mb-2 text-emerald-300/70">{t('signup.emailOptional')}</label>
                 <input
                   type="email"
                   value={userEmail}
@@ -266,7 +267,7 @@ export default function TryMontreePage() {
                   placeholder="e.g. sarah@email.com"
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                 />
-                <p className="text-xs text-slate-500 mt-1">Only used to recover your code if you ever lose it</p>
+                <p className="text-xs text-slate-500 mt-1">{t('signup.emailHint')}</p>
               </div>
 
               {error && (
@@ -279,7 +280,7 @@ export default function TryMontreePage() {
                 onClick={handleDetailsSubmit}
                 className="w-full mt-2 py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30"
               >
-                Get my code →
+                {t('signup.getMyCode')}
               </button>
 
               <button
@@ -290,7 +291,7 @@ export default function TryMontreePage() {
                 }}
                 className="text-slate-500 hover:text-slate-300 text-sm transition-colors"
               >
-                ← Back to role selection
+                {t('signup.backToRoles')}
               </button>
             </div>
           </div>
@@ -306,11 +307,11 @@ export default function TryMontreePage() {
             </div>
 
             <h2 className="text-2xl font-semibold text-white mb-3">
-              Setting up your classroom...
+              {t('signup.settingUp')}
             </h2>
 
             <p className="text-slate-400">
-              Just a moment
+              {t('signup.justAMoment')}
             </p>
 
             {error && (
@@ -324,14 +325,14 @@ export default function TryMontreePage() {
                   }}
                   className="mt-3 text-red-300 hover:text-red-200 text-sm underline"
                 >
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Step 3: Code Reveal */}
+        {/* Step 4: Code Reveal */}
         {step === 'code' && responseData && (
           <div className="text-center">
             <div className="mb-8">
@@ -340,11 +341,11 @@ export default function TryMontreePage() {
               </div>
 
               <h2 className="text-2xl font-semibold text-white mb-2">
-                This is your login code
+                {t('signup.thisIsYourCode')}
               </h2>
 
               <p className="text-slate-400 text-sm">
-                Save it somewhere safe — you&apos;ll use it to get back in
+                {t('signup.saveItSafe')}
               </p>
             </div>
 
@@ -360,7 +361,7 @@ export default function TryMontreePage() {
               onClick={handleCopyCode}
               className="w-full mb-4 px-4 py-3 bg-slate-800/60 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-700/60 hover:border-slate-600 transition-all text-sm font-medium"
             >
-              {copied ? '✓ Copied!' : 'Copy code'}
+              {copied ? t('signup.copied') : t('signup.copyCode')}
             </button>
 
             {/* Take me in button */}
@@ -368,7 +369,7 @@ export default function TryMontreePage() {
               onClick={handleTakeMeIn}
               className="w-full py-4 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30"
             >
-              Take me in →
+              {t('signup.takeMeIn')}
             </button>
           </div>
         )}

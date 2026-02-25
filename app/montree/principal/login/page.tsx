@@ -5,9 +5,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function PrincipalLoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +32,7 @@ export default function PrincipalLoginPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Invalid code');
+        throw new Error(data.error || t('auth.invalidCode'));
       }
 
       // Store session
@@ -44,7 +47,7 @@ export default function PrincipalLoginPage() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : t('auth.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -55,6 +58,11 @@ export default function PrincipalLoginPage() {
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
+      {/* Language toggle — top right */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
+      </div>
+
       {/* Content */}
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo */}
@@ -62,8 +70,8 @@ export default function PrincipalLoginPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl shadow-2xl shadow-emerald-500/30 mb-6">
             <span className="text-4xl">🏫</span>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Montree</h1>
-          <p className="text-emerald-300/70">Principal Login</p>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('app.name')}</h1>
+          <p className="text-emerald-300/70">{t('auth.principalLoginTitle')}</p>
         </div>
 
         {/* Login Card */}
@@ -77,7 +85,7 @@ export default function PrincipalLoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-emerald-300 mb-2 text-center">
-                Enter your 6-character code
+                {t('auth.enterCode')}
               </label>
               <input
                 type="text"
@@ -90,7 +98,7 @@ export default function PrincipalLoginPage() {
                 maxLength={6}
               />
               <p className="text-white/40 text-xs text-center mt-2">
-                Your principal login code
+                {t('auth.principalCode')}
               </p>
             </div>
 
@@ -102,10 +110,10 @@ export default function PrincipalLoginPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="animate-spin">⏳</span>
-                  Signing in...
+                  {t('auth.signingIn')}
                 </span>
               ) : (
-                'Sign In →'
+                t('auth.signIn')
               )}
             </button>
           </form>
@@ -114,10 +122,10 @@ export default function PrincipalLoginPage() {
         {/* Links */}
         <div className="mt-8 text-center space-y-3">
           <Link href="/montree/login" className="text-white/50 hover:text-white/70 text-sm block">
-            ← Teacher Login
+            {t('auth.teacherLoginLink')}
           </Link>
           <Link href="/montree/try" className="text-emerald-400/50 hover:text-emerald-400/70 text-sm block">
-            Don&apos;t have a code? Get started →
+            {t('auth.noCode')}
           </Link>
         </div>
       </div>
@@ -125,7 +133,7 @@ export default function PrincipalLoginPage() {
       {/* Footer */}
       <div className="absolute bottom-6 text-center">
         <p className="text-slate-500 text-xs">
-          🌳 Montree • montree.xyz
+          🌳 {t('app.name')} • montree.xyz
         </p>
       </div>
     </div>
