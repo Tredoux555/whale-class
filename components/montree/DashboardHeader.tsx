@@ -1,6 +1,6 @@
 // components/montree/DashboardHeader.tsx
 // Persistent top header shown on ALL dashboard screens
-// Contains: Montree logo, Inbox, Curriculum, Guru, Print, Logout
+// Contains: Montree logo, Language toggle, Inbox, Curriculum, Guru, Logout
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,10 +8,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 import InboxButton from './InboxButton';
+import LanguageToggle from './LanguageToggle';
 
 export default function DashboardHeader() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
 
   useEffect(() => {
@@ -29,11 +32,12 @@ export default function DashboardHeader() {
         {/* Left: Logo + classroom */}
         <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <span className="text-2xl">🌳</span>
-          <span className="font-bold text-lg">{session.classroom?.name || 'Montree'}</span>
+          <span className="font-bold text-lg">{session.classroom?.name || t('app.name')}</span>
         </Link>
 
         {/* Right: Action icons */}
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <InboxButton
             conversationId={session.teacher.id}
             userName={session.teacher.name || 'Teacher'}
@@ -44,7 +48,7 @@ export default function DashboardHeader() {
             data-tutorial="curriculum-link"
             data-guide="nav-curriculum"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title="Curriculum"
+            title={t('nav.curriculum')}
           >
             📚
           </Link>
@@ -53,7 +57,7 @@ export default function DashboardHeader() {
             data-tutorial="guru-link"
             data-guide="nav-guru"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title="Montessori Guru"
+            title={t('nav.guru')}
           >
             🧠
           </Link>
@@ -61,7 +65,7 @@ export default function DashboardHeader() {
             onClick={() => { clearSession(); router.push('/montree/login'); }}
             className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
           >
-            Logout
+            {t('auth.logout')}
           </button>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
 import GuruDailyBriefing from '@/components/montree/guru/GuruDailyBriefing';
@@ -29,6 +30,7 @@ interface Child {
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function DashboardPage() {
         }
       })
       .catch(() => {
-        toast.error('Failed to load');
+        toast.error(t('dashboard.failedToLoad'));
         setLoading(false);
       });
   }, [session?.classroom?.id, searchParams]);
@@ -99,7 +101,7 @@ export default function DashboardPage() {
       {/* Student/child count subtitle — teachers only */}
       {!isParent && (
         <div className="bg-emerald-50 border-b border-emerald-100 text-emerald-700 px-4 py-2 text-center text-sm font-medium">
-          {children.length} students
+          {children.length} {t('common.students')}
         </div>
       )}
 
@@ -210,7 +212,7 @@ export default function DashboardPage() {
           >
             <span className="text-6xl mb-4 block">{isParent ? '🌱' : '👶'}</span>
             <p className={`${isParent ? HOME_THEME.headingText : 'text-gray-600'} font-medium text-lg`}>
-              {isParent ? 'Tap to add your first child' : 'Tap to add your first student'}
+              {isParent ? t('dashboard.tapAddFirstChild') : t('dashboard.tapAddFirstStudent')}
             </p>
           </Link>
         ) : (
@@ -245,7 +247,7 @@ export default function DashboardPage() {
               className={`${isParent ? 'bg-[#FFFDF8]/60 border-2 border-dashed border-[#0D3330]/20 hover:border-[#0D3330]/40 hover:bg-[#F5E6D3]/50' : 'bg-white/60 border-2 border-dashed border-gray-300 hover:border-emerald-400 hover:bg-emerald-50'} rounded-2xl transition-all p-4 flex flex-col items-center justify-center min-h-[120px]`}
             >
               <span className={`text-3xl ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'} mb-1`}>+</span>
-              <span className={`text-xs ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'}`}>Add</span>
+              <span className={`text-xs ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'}`}>{t('common.add')}</span>
             </Link>
           </div>
         )}

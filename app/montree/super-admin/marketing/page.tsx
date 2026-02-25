@@ -21,7 +21,8 @@ const SECTIONS = [
   {
     title: '📨 OUTREACH TOOLS',
     tools: [
-      { name: 'Prospect HQ', desc: 'School hit list, WhatsApp templates', href: '/montree/super-admin/marketing/prospects', icon: '🎯' },
+      { name: 'Sales Playbook', desc: 'School intel, scheduled outreach plan, personalized emails for 16 targets', href: '/montree/super-admin/marketing/sales-playbook', icon: '🎯' },
+      { name: 'Prospect HQ', desc: 'School hit list, WhatsApp templates', href: '/montree/super-admin/marketing/prospects', icon: '📋' },
       { name: 'Outreach', desc: 'Cold email templates', href: '/montree/super-admin/marketing/outreach', icon: '✉️' },
       { name: 'Growth Engine', desc: 'Influencers, SEO, onboarding emails, testimonials', href: '/montree/super-admin/marketing/growth', icon: '📈' },
     ],
