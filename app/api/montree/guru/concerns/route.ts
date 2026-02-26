@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getConcernById } from '@/lib/montree/guru/concern-mappings';
 
 // GET: Fetch child's saved concerns
 export async function GET(request: NextRequest) {
@@ -67,6 +68,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid concern IDs' }, { status: 400 });
     }
 
+    // Validate each concern ID exists
+    const validConcerns = concerns.filter((id: string) => getConcernById(id) !== undefined);
+    if (validConcerns.length === 0) {
+      return NextResponse.json({ success: false, error: 'No valid concerns provided' }, { status: 400 });
+    }
+
     const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
     if (!access.allowed) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
@@ -88,7 +95,7 @@ export async function POST(request: NextRequest) {
       .update({
         settings: {
           ...existingSettings,
-          guru_concerns: concerns,
+          guru_concerns: validConcerns,
           guru_onboarded: true,
         },
       })

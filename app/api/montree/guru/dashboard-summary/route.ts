@@ -7,10 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { analyzeChildProgress } from '@/lib/montree/guru/progress-analyzer';
-
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
 interface DashboardSummary {
   endOfDay: { nudge: string | null };
@@ -155,9 +153,10 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
           response_insight: nudgeText,
           model_used: HAIKU_MODEL,
           context_snapshot: { child_name: childName, progress_count: todayProgress.length },
-        }).then(() => {});
-      } catch {
+        }).catch(err => console.error('[Guru Dashboard] Cache insert failed:', err));
+      } catch (error) {
         // Non-critical — continue without nudge
+        console.error('[Guru Dashboard] AI generation failed:', error);
       }
     }
 
@@ -202,9 +201,10 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
           response_insight: suggestionText,
           model_used: HAIKU_MODEL,
           context_snapshot: { child_name: childName, suggestion_type: suggestionType, iso_week: isoWeek },
-        }).then(() => {});
-      } catch {
+        }).catch(err => console.error('[Guru Dashboard] Cache insert failed:', err));
+      } catch (error) {
         // Non-critical
+        console.error('[Guru Dashboard] AI generation failed:', error);
       }
     }
 

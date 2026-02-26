@@ -7,10 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import Anthropic from '@anthropic-ai/sdk';
-
-// Use Haiku for daily plans (fast + cheap)
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
 // Load all 5 curriculum areas for work recommendations
 import languageData from '@/lib/curriculum/data/language.json';
@@ -244,13 +241,11 @@ export async function GET(request: NextRequest) {
     );
 
     // Call Haiku
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!AI_ENABLED || !anthropic) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
-    const client = new Anthropic({ apiKey });
-    const message = await client.messages.create({
+    const message = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 2000,
       system,

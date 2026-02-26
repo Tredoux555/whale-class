@@ -13,6 +13,9 @@ export const AI_ENABLED = !!anthropic;
 // Model to use (Claude Sonnet for balance of speed/quality)
 export const AI_MODEL = 'claude-sonnet-4-20250514';
 
+// Haiku model for fast, cheap operations
+export const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+
 // Token limits
 export const MAX_TOKENS = 2048;
 

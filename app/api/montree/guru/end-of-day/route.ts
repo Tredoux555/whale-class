@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     ).join('\n');
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: HAIKU_MODEL,
       max_tokens: 300,
       system: `You are a warm, encouraging Montessori guide for homeschool parents. Write a brief end-of-day summary in EXACTLY 3 sentences:
 1. What went well today (reference specific works)
@@ -110,7 +110,7 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
         question: `End-of-day nudge for ${todayProgress.length} activities`,
         question_type: 'end_of_day',
         response_insight: nudgeText,
-        model_used: 'claude-haiku-4-5-20251001',
+        model_used: HAIKU_MODEL,
         context_snapshot: {
           child_name: childName,
           progress_count: todayProgress.length,

@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { generateReportPDF } from '@/lib/montree/reports/pdf-generator';
 import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +20,12 @@ export async function GET(request: NextRequest) {
 
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     // Get child info

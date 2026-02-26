@@ -7,9 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import Anthropic from '@anthropic-ai/sdk';
-
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,14 +70,16 @@ RULES:
 - Reference the child by name (${childName}, age ${childAge})
 - Never diagnose or give medical advice`;
 
-    const client = new Anthropic({ apiKey });
+    if (!AI_ENABLED || !anthropic) {
+      return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
+    }
 
     // 5-second timeout using AbortController
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const message = await client.messages.create(
+      const message = await anthropic.messages.create(
         {
           model: HAIKU_MODEL,
           max_tokens: 150,
