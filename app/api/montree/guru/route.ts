@@ -10,6 +10,7 @@ import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS } from '@/lib/ai/anthropic'
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
+import { buildConversationalPrompt } from '@/lib/montree/guru/conversational-prompt';
 
 export interface GuruRequest {
   child_id: string;
@@ -17,6 +18,7 @@ export interface GuruRequest {
   classroom_id?: string;
   teacher_id?: string;
   role?: string; // 'principal' skips freemium checks and uses principal prompt
+  conversational?: boolean; // true = WhatsApp-style chat for homeschool parents
 }
 
 export interface GuruResponse {
@@ -32,6 +34,7 @@ export interface GuruResponse {
   parent_talking_point?: string;
   sources_used?: string[];
   interaction_id?: string;
+  conversational?: boolean;
   error?: string;
 }
 
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    const { child_id, question, classroom_id, teacher_id, role } = body;
+    const { child_id, question, classroom_id, teacher_id, role, conversational } = body;
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -149,11 +152,35 @@ export async function POST(request: NextRequest) {
     // 2. Retrieve relevant knowledge
     const knowledge = await retrieveKnowledge(question, 4);
 
-    // 3. Build prompt (isParentRole set during freemium gate check above)
-    const { systemPrompt, userPrompt } = buildGuruPrompt(question, childContext, knowledge, {
-      isHomeschoolParent: isParentRole,
-      isPrincipal,
-    });
+    // 3. Build prompt — conversational mode for parent chat, structured for teachers
+    let systemPrompt: string;
+    let userPrompt: string;
+    const isConversational = conversational && isParentRole;
+
+    if (isConversational) {
+      // Fetch saved concerns for conversational context
+      const { data: childSettings } = await supabase
+        .from('montree_children')
+        .select('settings')
+        .eq('id', child_id)
+        .single();
+      const settings = (childSettings?.settings as Record<string, unknown>) || {};
+      const savedConcerns = (settings.guru_concerns as string[]) || [];
+
+      // Check if this is the first message (no conversation history)
+      const isFirstMessage = !childContext.past_interactions || childContext.past_interactions.length === 0;
+
+      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage);
+      systemPrompt = convPrompt.systemPrompt;
+      userPrompt = convPrompt.userPrompt;
+    } else {
+      const structured = buildGuruPrompt(question, childContext, knowledge, {
+        isHomeschoolParent: isParentRole,
+        isPrincipal,
+      });
+      systemPrompt = structured.systemPrompt;
+      userPrompt = structured.userPrompt;
+    }
 
     // 4. Call Claude API with conversation memory
     // Ensure anthropic is not null (already checked above, but TypeScript needs this)
@@ -195,12 +222,60 @@ export async function POST(request: NextRequest) {
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('\n');
 
-    // 5. Parse response
+    // 5. Parse response (conversational mode skips structured parsing)
+    const processingTime = Date.now() - startTime;
+
+    if (isConversational) {
+      // Conversational mode — save as chat message, return raw text
+      const { data: saved, error: saveError } = await supabase
+        .from('montree_guru_interactions')
+        .insert({
+          child_id,
+          teacher_id: teacher_id || null,
+          classroom_id: classroom_id || childContext.classroom_id,
+          question,
+          question_type: 'chat',
+          context_snapshot: {
+            child_name: childContext.name,
+            age: `${childContext.age_years}y ${childContext.age_months}m`,
+            conversational: true,
+          },
+          response_insight: responseText,
+          sources_used: knowledge.sources_used,
+          processing_time_ms: processingTime,
+          model_used: AI_MODEL,
+        })
+        .select('id')
+        .single();
+
+      if (saveError) {
+        console.error('[Guru] Failed to save chat interaction:', saveError);
+      }
+
+      // Increment free trial if needed
+      if (shouldIncrementPrompt && teacherId) {
+        const { data: fresh } = await supabase
+          .from('montree_teachers')
+          .select('guru_prompts_used')
+          .eq('id', teacherId)
+          .single();
+        const currentCount = (fresh as Record<string, unknown> | null)?.guru_prompts_used as number || 0;
+        await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+          .update({ guru_prompts_used: currentCount + 1 })
+          .eq('id', teacherId);
+      }
+
+      return NextResponse.json({
+        success: true,
+        insight: responseText,
+        interaction_id: saved?.id,
+        conversational: true,
+      });
+    }
+
     const parsed = parseGuruResponse(responseText);
 
     // 6. Save to database
-    const processingTime = Date.now() - startTime;
-
     const { data: saved, error: saveError } = await supabase
       .from('montree_guru_interactions')
       .insert({
@@ -231,7 +306,6 @@ export async function POST(request: NextRequest) {
 
     if (saveError) {
       console.error('[Guru] Failed to save interaction:', saveError);
-      // Don't fail the request, just log it
     }
 
     // 7. Increment free-trial counter AFTER successful AI response
@@ -315,7 +389,7 @@ export async function GET(request: NextRequest) {
 
     const { data: history, error } = await supabase
       .from('montree_guru_interactions')
-      .select('id, asked_at, question, response_insight, response_action_plan, outcome')
+      .select('id, asked_at, question, question_type, response_insight, response_action_plan, outcome')
       .eq('child_id', childId)
       .order('asked_at', { ascending: false })
       .limit(limit);
