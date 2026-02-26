@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { analyzeChildProgress } from '@/lib/montree/guru/progress-analyzer';
 
 function getISOWeek(): string {
@@ -113,7 +113,7 @@ Do NOT use headers or bullet points. Keep it conversational and warm.`;
     }
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: HAIKU_MODEL,
       max_tokens: 300,
       system: 'You are a warm Montessori guide for homeschool parents. Be encouraging, specific, and never guilt-tripping. Keep responses under 100 words.',
       messages: [{ role: 'user', content: prompt }],
@@ -133,7 +133,7 @@ Do NOT use headers or bullet points. Keep it conversational and warm.`;
         question: `Proactive suggestion (${suggestionType})`,
         question_type: 'proactive_suggestion',
         response_insight: suggestionText,
-        model_used: 'claude-haiku-4-5-20251001',
+        model_used: HAIKU_MODEL,
         context_snapshot: {
           child_name: childName,
           suggestion_type: suggestionType,

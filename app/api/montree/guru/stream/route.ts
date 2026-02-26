@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge } from '@/lib/montree/guru/knowledge-retriever';
@@ -12,8 +13,9 @@ import { buildGuruPrompt } from '@/lib/montree/guru/prompt-builder';
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
+  let auth: any;
   try {
-    const auth = await verifySchoolRequest(request);
+    auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
   } catch (error) {
     console.error('[Guru Stream] Auth error:', error);
@@ -42,6 +44,15 @@ export async function POST(request: NextRequest) {
       return new Response(
         JSON.stringify({ error: 'child_id and question are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return new Response(
+        JSON.stringify({ error: 'Access denied' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
     }
 

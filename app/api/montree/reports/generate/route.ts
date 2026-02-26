@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // ============================================
 // TYPES
@@ -307,6 +308,12 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'child_id, week_start, and week_end are required' },
         { status: 400 }
       );
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     const requestedTypes = report_types || ['teacher', 'parent', 'ai_analysis'];

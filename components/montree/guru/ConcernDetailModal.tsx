@@ -43,6 +43,17 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
       });
   }, [childId, concernId]);
 
+  // Helper to render inline bold text safely
+  const renderInlineBold = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   // Simple markdown-to-HTML renderer for the Guru response
   function renderGuide(text: string) {
     const lines = text.split('\n');
@@ -75,9 +86,9 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
         elements.push(
           <div key={i} className="flex gap-2 ml-2 mb-1.5">
             <span className="text-[#4ADE80] mt-0.5 shrink-0">●</span>
-            <span className={`text-sm ${HOME_THEME.headingText} leading-relaxed`}
-              dangerouslySetInnerHTML={{ __html: content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
-            />
+            <span className={`text-sm ${HOME_THEME.headingText} leading-relaxed`}>
+              {renderInlineBold(content)}
+            </span>
           </div>
         );
       } else if (line.startsWith('**') && line.endsWith('**')) {
@@ -88,9 +99,9 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
         );
       } else if (line.trim()) {
         elements.push(
-          <p key={i} className={`text-sm ${HOME_THEME.headingText}/80 leading-relaxed mb-2`}
-            dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
-          />
+          <p key={i} className={`text-sm ${HOME_THEME.headingText}/80 leading-relaxed mb-2`}>
+            {renderInlineBold(line)}
+          </p>
         );
       }
     }

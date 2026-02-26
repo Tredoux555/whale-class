@@ -8,9 +8,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getConcernById, type ConcernMapping } from '@/lib/montree/guru/concern-mappings';
-import Anthropic from '@anthropic-ai/sdk';
-
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 
 function buildConcernPrompt(
   childName: string,
@@ -181,15 +179,13 @@ export async function GET(request: NextRequest) {
       childProgress,
     );
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!AI_ENABLED || !anthropic) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
-    const client = new Anthropic({ apiKey });
     const startTime = Date.now();
 
-    const message = await client.messages.create({
+    const message = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 2000,
       system,

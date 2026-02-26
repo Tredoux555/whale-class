@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // ============================================
 // GET: Get focus works for a child
@@ -25,6 +26,12 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'child_id is required' },
         { status: 400 }
       );
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     const supabase = getSupabase();
@@ -85,6 +92,20 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'child_id, area, and work_name are required' },
         { status: 400 }
       );
+    }
+
+    // Validate work_name length
+    if (typeof work_name !== 'string' || work_name.length > 200) {
+      return NextResponse.json(
+        { success: false, error: 'work_name must be a string with maximum 200 characters' },
+        { status: 400 }
+      );
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     // Validate area
@@ -155,6 +176,12 @@ export async function DELETE(request: NextRequest) {
         { success: false, error: 'child_id and area are required' },
         { status: 400 }
       );
+    }
+
+    // Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
     const supabase = getSupabase();

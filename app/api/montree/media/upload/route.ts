@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,24 @@ export async function POST(request: NextRequest) {
 
     if (!school_id) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
+    }
+
+    // Verify child belongs to the authenticated user's school
+    if (child_id) {
+      const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+      if (!access.allowed) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
+    }
+
+    // Verify all children in group photo belong to the authenticated user's school
+    if (child_ids && Array.isArray(child_ids) && child_ids.length > 0) {
+      for (const cid of child_ids) {
+        const access = await verifyChildBelongsToSchool(cid, auth.schoolId);
+        if (!access.allowed) {
+          return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        }
+      }
     }
 
     // Phase 6: Input length limits

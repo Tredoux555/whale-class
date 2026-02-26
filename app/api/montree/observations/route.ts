@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const days = parseInt(searchParams.get('days') || '30');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+    const days = Math.min(parseInt(searchParams.get('days') || '30'), 365);
 
     if (!childId) {
       return NextResponse.json(

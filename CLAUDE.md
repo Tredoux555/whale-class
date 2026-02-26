@@ -12,7 +12,7 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES (Feb 26, 2026)
+## 🔥 NEXT SESSION PRIORITIES
 
 ### Deploy Cross-Pollination Security Fix (Priority #0 — URGENT)
 
@@ -22,6 +22,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 **Handoff:** `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md`
 **Helper:** `lib/montree/verify-child-access.ts`
+
+### ~~Push English Corner Redirect Fix~~ — ✅ DONE (commit `6de6ad86`)
+
+English Corner iframe → direct redirect. Pushed with bug fixes commit.
 
 ### Seed Community Library (Priority #2)
 
@@ -57,7 +61,70 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 ---
 
-## CURRENT STATUS (Feb 25, 2026)
+## CURRENT STATUS (Feb 26, 2026)
+
+### Session Work (Feb 26, 2026)
+
+**Guru Chat Overhaul — WhatsApp-Style Conversational UI — COMPLETE + DEPLOYED (commit `d3a78e2c`):**
+
+Transformed the Guru for homeschool parents from a structured Q&A form into a personal coaching chat. Teachers keep existing structured UI — zero changes.
+
+New files (6):
+- `app/api/montree/guru/concerns/route.ts` — GET/POST concerns saved in `montree_children.settings` JSONB (no migration needed)
+- `lib/montree/guru/conversational-prompt.ts` — natural chat persona prompt builder with greeting/follow-up variants
+- `components/montree/guru/ChatBubble.tsx` — message bubble with markdown, botanical theme
+- `components/montree/guru/ConcernPills.tsx` — small pills showing selected concerns
+- `components/montree/guru/GuruOnboardingPicker.tsx` — multi-select grid (10 concerns, max 3), saves to API
+- `components/montree/guru/GuruChatThread.tsx` — core chat UI (history, typing indicator, voice, auto-scroll)
+
+Modified files (2):
+- `app/api/montree/guru/route.ts` — `conversational: true` flag branches to conversational prompt path
+- `app/montree/dashboard/guru/page.tsx` — early return for parents renders full-screen chat
+
+Flow: Parent opens Guru → concern picker onboarding (first visit) → WhatsApp-style chat with history, follow-up greetings, voice input
+
+**Bug Fixes — DEPLOYED (commit `6de6ad86`):**
+- `lib/montree/guru/progress-analyzer.ts` — wrong table name `montree_child_work_progress` → `montree_child_progress` (2 occurrences)
+- `app/api/montree/guru/photo-insight/route.ts` — missing `classroom_id` in insert (NOT NULL column)
+- `app/montree/library/english-corner/page.tsx` — iframe → redirect (X-Frame-Options blocked self-embed)
+- `app/montree/library/page.tsx` — English Corner rename ("English Language Corner" / "AMI Master Setup & Implementation Plan")
+
+**Dashboard Guru Consolidation — DEPLOYED (commit `944348c7`):**
+- Dashboard was firing 4 separate API calls on load (end-of-day, suggestions, weekly-review, daily-plan). Consolidated to single endpoint + single component.
+- NEW: `app/api/montree/guru/dashboard-summary/route.ts` — single endpoint, 5 parallel DB queries, Haiku only on cache miss
+- NEW: `components/montree/guru/GuruDashboardCards.tsx` — replaces 4 separate components (GuruDailyBriefing, EndOfDayNudge, GuruSuggestionCard, WeeklyReview)
+- Modified: `app/montree/dashboard/page.tsx` — swapped 4 component imports for 1
+- Fixed: `end-of-day/route.ts` + `suggestions/route.ts` — added missing `classroom_id` to inserts
+
+**Test account:** Code ZYNXER, child "Marina"
+**Handoff:** `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md`
+
+---
+
+## PREVIOUS STATUS (Feb 25, 2026)
+
+### Session Work (Feb 25, 2026 — Late Night Session)
+
+**1688.com English Corner Miniatures Shopping — COMPLETE:**
+
+Browsed 1688.com (Chinese wholesale marketplace) and opened 20+ product tabs across ALL categories needed for the English Corner Master Plan. User handles cart operations — assistant only finds and opens product pages.
+
+Categories covered:
+- **Animals (Cartoon):** 3D Printing Colorful Small Animals (¥0.75, 267K+ sold) — cute for matching activities
+- **Animals (Realistic):** 8 tabs — zodiac set (¥3.33), marine/penguins (¥1.28), poultry/goose/chicken (¥1.28), giraffe/wild (¥6.90), birds individually (¥0.71), animal bucket (¥17.20), monkeys/apes (¥1.56), box set (¥26.80)
+- **Fruits & Vegetables:** Foam mini models (¥1.80, 69K+ sold)
+- **Kitchen/Household:** Resin coffee cups, chocolate/bread, cakes, snacks (80+ varieties at ¥0.30, 53K+ sold — BEST for I Spy baskets), vegetable rack model
+- **Furniture:** 1:12 dollhouse bedroom, kitchen, living room sets
+- **Vehicles:** 48 mini pull-back cars gift box (¥21.50) + cartoon engineering cars (¥0.75)
+- **Resin Miniatures:** Multiple resin food/object tabs for I Spy sound baskets
+
+Key search terms: "仿真食玩 树脂迷你摆件 娃娃屋配件 微缩模型 小物件" (best for resin miniatures), "仿真动物模型套装 实心 儿童认知" (realistic animals)
+
+User confirmed: already has baskets (no wooden trays needed), wants both cartoon AND realistic animals.
+
+Data files: `lib/data/master-words.ts` (30 CVC words + I Spy objects), `lib/games/vocabulary-data.ts` (88 vocab words)
+
+**Handoff:** `docs/HANDOFF_1688_SHOPPING_FEB25.md`
 
 ### Session Work (Feb 25, 2026 — Night Session)
 
@@ -1585,11 +1652,20 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 
 AI advisor for child development questions. Uses Anthropic API.
 
-**Core chat (Sonnet):**
+**Core chat — Teachers (Sonnet, structured):**
 - `lib/montree/guru/context-builder.ts` — builds child context
 - `lib/montree/guru/knowledge-retrieval.ts` — Montessori knowledge
-- `lib/montree/guru/prompt-builder.ts` — system prompt + homeschool addendum
-- `app/api/montree/guru/route.ts` — main chat endpoint
+- `lib/montree/guru/prompt-builder.ts` — system prompt + homeschool addendum (structured mode)
+- `app/api/montree/guru/route.ts` — main chat endpoint (branches on `conversational` flag)
+
+**Core chat — Homeschool Parents (Sonnet, conversational WhatsApp-style):**
+- `lib/montree/guru/conversational-prompt.ts` — natural chat persona, greeting/follow-up builders
+- `app/api/montree/guru/concerns/route.ts` — GET/POST concerns saved in `montree_children.settings` JSONB
+- `components/montree/guru/GuruOnboardingPicker.tsx` — concern picker (10 concerns, max 3)
+- `components/montree/guru/GuruChatThread.tsx` — full chat UI (history, typing indicator, voice, auto-scroll)
+- `components/montree/guru/ChatBubble.tsx` — message bubble with markdown rendering
+- `components/montree/guru/ConcernPills.tsx` — concern pills display
+- Parent guru page (`guru/page.tsx`) has early return that renders `GuruChatThread` instead of structured form
 
 **Daily Coach (Haiku — homeschool parents only):**
 - `app/api/montree/guru/daily-plan/route.ts` — personalized daily plan, cached per child per day
@@ -1637,7 +1713,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | **CURRENT** — Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
+| `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md` | **CURRENT** — Guru WhatsApp-style chat for parents (concern picker, conversational prompts, chat thread) |
+| `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
 | `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | Production deploy, Dockerfile fix, seed 500 fix, push script |
 | `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | Community Works Library (14 files, 2-pass audit, deploy steps) |
 | `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md` | Week view guide + CRITICAL cross-pollination security fix |

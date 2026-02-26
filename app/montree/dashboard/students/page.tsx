@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 import StudentFormGuide from '@/components/montree/onboarding/StudentFormGuide';
@@ -169,8 +170,9 @@ function CurriculumPicker({
     }
   };
 
+  const { t } = useI18n();
   const selectedWork = works.find(w => w.id === selectedWorkId);
-  const displayLabel = selectedWork?.name || 'Not started';
+  const displayLabel = selectedWork?.name || t('students.notStarted');
   const filteredWorks = searchQuery.trim()
     ? works.filter(w => w.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : works;
@@ -194,7 +196,7 @@ function CurriculumPicker({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search...`}
+              placeholder={t('common.search')}
               className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm placeholder-slate-400 focus:border-blue-400 outline-none"
               autoFocus
             />
@@ -206,7 +208,7 @@ function CurriculumPicker({
                 className={`w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-sm ${selectedWorkId === null ? 'bg-blue-50' : ''}`}
               >
                 <span className="text-slate-400">—</span>
-                <span className="text-slate-500">Not started</span>
+                <span className="text-slate-500">{t('students.notStarted')}</span>
               </button>
             )}
             {filteredWorks.map((work, idx) => (
@@ -232,7 +234,7 @@ function CurriculumPicker({
                 className="w-full px-3 py-2 text-left text-sm text-teal-600 hover:bg-teal-50 rounded flex items-center gap-2"
               >
                 <span>+</span>
-                <span>Add custom work</span>
+                <span>{t('students.addCustomWork')}</span>
               </button>
             ) : (
               <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -240,7 +242,7 @@ function CurriculumPicker({
                   type="text"
                   value={customWorkName}
                   onChange={(e) => setCustomWorkName(e.target.value)}
-                  placeholder="Work name..."
+                  placeholder={t('students.customWorkPlaceholder')}
                   className="flex-1 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm placeholder-slate-400 focus:border-teal-400 outline-none"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomWork(); if (e.key === 'Escape') { setIsAddingCustom(false); setCustomWorkName(''); } }}
@@ -250,7 +252,7 @@ function CurriculumPicker({
                   disabled={!customWorkName.trim() || isSubmitting}
                   className="px-3 py-1.5 bg-teal-500 text-white rounded text-sm font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? '...' : 'Add'}
+                  {isSubmitting ? t('common.loading') : t('common.add')}
                 </button>
               </div>
             )}
@@ -263,6 +265,7 @@ function CurriculumPicker({
 
 export default function StudentsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -322,7 +325,7 @@ export default function StudentsPage() {
       const data = await res.json();
       setStudents(data.children || []);
     } catch (err) {
-      toast.error(isHomeschoolParent(session) ? 'Failed to load children' : 'Failed to load students');
+      toast.error(isHomeschoolParent(session) ? t('students.failedToLoadChildren') : t('students.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -425,7 +428,7 @@ export default function StudentsPage() {
           }),
         });
         if (!res.ok) throw new Error('Failed to add');
-        toast.success(`${formData.name} added to class`);
+        toast.success(`${formData.name} ${isHomeschoolParent(session) ? 'added' : 'added to class'}`);
 
         // Mark tutorial complete after first student added
         if (session.teacher && !session.teacher.has_completed_tutorial) {
@@ -448,8 +451,11 @@ export default function StudentsPage() {
       closeForm();
       loadStudents(session.classroom?.id);
     } catch (err) {
-      const label = isHomeschoolParent(session) ? 'child' : 'student';
-      toast.error(editingStudent ? `Failed to update ${label}` : `Failed to add ${label}`);
+      if (editingStudent) {
+        toast.error(t('students.failedToUpdate'));
+      } else {
+        toast.error(isHomeschoolParent(session) ? t('students.failedToAddChild') : t('students.failedToAdd'));
+      }
     } finally {
       setSaving(false);
     }
@@ -460,8 +466,7 @@ export default function StudentsPage() {
     if (validStudents.length === 0 || !session?.classroom?.id) return;
 
     setSaving(true);
-    const lbl = isHomeschoolParent(session) ? (validStudents.length !== 1 ? 'children' : 'child') : (validStudents.length !== 1 ? 'students' : 'student');
-    const toastId = toast.loading(`Saving ${validStudents.length} ${lbl}...`);
+    const toastId = toast.loading(isHomeschoolParent(session) ? t('students.savingChildren') : t('students.savingStudents'));
 
     try {
       const payload = validStudents.map(student => ({
@@ -490,8 +495,7 @@ export default function StudentsPage() {
       }
 
       toast.dismiss(toastId);
-      const addedLbl = isHomeschoolParent(session) ? (validStudents.length !== 1 ? 'children' : 'child') : (validStudents.length !== 1 ? 'students' : 'student');
-      toast.success(`${validStudents.length} ${addedLbl} added!`);
+      toast.success(`${validStudents.length} ${isHomeschoolParent(session) ? t('students.savedChild') : t('students.saved')}`);
 
       // Mark tutorial complete after bulk add
       const wasFirstTime = session?.teacher && !session.teacher.has_completed_tutorial;
@@ -519,7 +523,7 @@ export default function StudentsPage() {
       }
     } catch (err) {
       toast.dismiss(toastId);
-      toast.error(err instanceof Error ? err.message : (isHomeschoolParent(session) ? 'Failed to save children' : 'Failed to save students'));
+      toast.error(err instanceof Error ? err.message : (isHomeschoolParent(session) ? t('students.failedToLoadChildren') : t('students.failedToLoad')));
     } finally {
       setSaving(false);
     }
@@ -533,11 +537,11 @@ export default function StudentsPage() {
         headers: { 'x-school-id': session.school?.id || '' },
       });
       if (!res.ok) throw new Error('Failed to delete');
-      toast.success(isHomeschoolParent(session) ? 'Child removed' : 'Student removed');
+      toast.success('Removed');
       setDeleteConfirm(null);
       loadStudents(session.classroom?.id);
     } catch (err) {
-      toast.error(isHomeschoolParent(session) ? 'Failed to remove child' : 'Failed to remove student');
+      toast.error(isHomeschoolParent(session) ? t('students.failedToRemoveChild') : t('students.failedToRemove'));
     }
   };
 
@@ -584,7 +588,7 @@ export default function StudentsPage() {
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">👶</span>
-          <h1 className="font-bold text-slate-800">{isHomeschoolParent(session) ? 'Children' : 'Students'}</h1>
+          <h1 className="font-bold text-slate-800">{isHomeschoolParent(session) ? t('students.children') : t('students.title')}</h1>
         </div>
         <div className="flex items-center gap-2">
           {!isHomeschoolParent(session) && (
@@ -592,7 +596,7 @@ export default function StudentsPage() {
               onClick={() => router.push('/montree/dashboard/labels')}
               className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200"
             >
-              🏷️ Labels
+              🏷️ {t('nav.labels')}
             </button>
           )}
           <button
@@ -600,7 +604,7 @@ export default function StudentsPage() {
             onClick={openAddForm}
             className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
           >
-            + Add {isHomeschoolParent(session) ? 'Child' : 'Student'}
+            + {t('common.add')} {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
           </button>
         </div>
       </div>
@@ -611,13 +615,13 @@ export default function StudentsPage() {
           <div className="text-center py-12">
             <span className="text-6xl mb-4 block">👶</span>
             <p className="text-slate-500 mb-4">
-              {isHomeschoolParent(session) ? 'No children added yet' : 'No students in this classroom yet'}
+              {isHomeschoolParent(session) ? t('students.noChildren') : t('students.noStudents')}
             </p>
             <button
               onClick={openAddForm}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium"
             >
-              Add Your First {isHomeschoolParent(session) ? 'Child' : 'Student'}
+              {isHomeschoolParent(session) ? t('students.addFirstChild') : t('students.addFirst')}
             </button>
           </div>
         ) : (
@@ -639,7 +643,7 @@ export default function StudentsPage() {
                     <div>
                       <p className="font-semibold text-slate-800">{student.name}</p>
                       <p className="text-xs text-slate-400">
-                        {student.age ? `${student.age} years` : 'Age not set'}
+                        {student.age ? `${student.age} ${t('students.yearsOld')}` : t('students.ageNotSet')}
                       </p>
                     </div>
                   </div>
@@ -648,13 +652,13 @@ export default function StudentsPage() {
                       onClick={() => openEditForm(student)}
                       className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm hover:bg-slate-200"
                     >
-                      Edit
+                      {t('students.edit')}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(student.id)}
                       className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-sm hover:bg-red-100"
                     >
-                      Remove
+                      {t('students.remove')}
                     </button>
                   </div>
                 </div>
@@ -663,20 +667,20 @@ export default function StudentsPage() {
                 {deleteConfirm === student.id && (
                   <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
                     <p className="text-red-700 text-sm mb-2">
-                      Are you sure you want to remove {student.name}? This will also delete their progress records.
+                      {t('students.deleteConfirm')} {student.name}? {t('students.deleteConfirmMessage')}
                     </p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(student.id)}
                         className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium"
                       >
-                        Yes, Remove
+                        {t('students.yes')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(null)}
                         className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-sm"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -687,7 +691,7 @@ export default function StudentsPage() {
         )}
 
         <p className="text-center text-slate-400 text-xs mt-6">
-          {students.length} {isHomeschoolParent(session) ? (students.length !== 1 ? 'children' : 'child') : (students.length !== 1 ? 'students' : 'student')} in {session.classroom?.name}
+          {students.length} {isHomeschoolParent(session) ? t('students.children') : t('students.title')} {t('students.in')} {session.classroom?.name}
         </p>
       </main>
 
@@ -698,8 +702,8 @@ export default function StudentsPage() {
             <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="font-bold text-lg text-slate-800">
                 {editingStudent
-                  ? `Edit ${isHomeschoolParent(session) ? 'Child' : 'Student'}`
-                  : `Add New ${isHomeschoolParent(session) ? 'Child' : 'Student'}`}
+                  ? `${t('common.edit')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`
+                  : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </h2>
               <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-xl">
                 ✕
@@ -709,12 +713,12 @@ export default function StudentsPage() {
             <div className="p-4 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.name')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={isHomeschoolParent(session) ? "Child's name" : "Student's name"}
+                  placeholder={isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 outline-none"
                   autoFocus
                 />
@@ -723,7 +727,7 @@ export default function StudentsPage() {
               {/* Profile Photo (edit mode only) */}
               {editingStudent && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Photo</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{t('students.photo')}</label>
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden flex-shrink-0">
                       {editingStudent.photo_url ? (
@@ -737,7 +741,7 @@ export default function StudentsPage() {
                       onClick={() => setShowPhotoCapture(true)}
                       className="flex-1 px-4 py-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-medium hover:bg-blue-100 transition-colors text-sm"
                     >
-                      📸 {editingStudent.photo_url ? 'Change Photo' : 'Take Photo'}
+                      📸 {editingStudent.photo_url ? t('students.changePhoto') : t('students.takePhoto')}
                     </button>
                   </div>
                 </div>
@@ -745,14 +749,14 @@ export default function StudentsPage() {
 
               {/* Age */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.age')}</label>
                 <select
                   value={formData.age}
                   onChange={(e) => setFormData({ ...formData, age: parseFloat(e.target.value) })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:border-blue-400 outline-none"
                 >
                   {AGE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label} years old</option>
+                    <option key={opt.value} value={opt.value}>{opt.label} {t('students.yearsOld')}</option>
                   ))}
                 </select>
               </div>
@@ -760,7 +764,7 @@ export default function StudentsPage() {
               {/* Tenure - How long in program */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Time in program
+                  {t('students.tenure')}
                   <span className="text-slate-400 font-normal ml-1">(helps Guru give better advice)</span>
                 </label>
                 <select
@@ -778,7 +782,7 @@ export default function StudentsPage() {
               {!editingStudent && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Current Progress (optional)
+                    {t('students.currentWork')} (optional)
                   </label>
                   <div className="space-y-2">
                     {CURRICULUM_AREAS.map((area) => (
@@ -811,16 +815,16 @@ export default function StudentsPage() {
                 onClick={closeForm}
                 className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={!formData.name.trim() || saving}
                 className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium disabled:opacity-50"
               >
-                {saving ? 'Saving...' : editingStudent
-                  ? `Update ${isHomeschoolParent(session) ? 'Child' : 'Student'}`
-                  : `Add ${isHomeschoolParent(session) ? 'Child' : 'Student'}`}
+                {saving ? t('common.loading') : editingStudent
+                  ? `${t('common.update')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`
+                  : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </button>
             </div>
           </div>
@@ -852,7 +856,7 @@ export default function StudentsPage() {
             <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl">
               {/* Header */}
               <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-                <h2 className="font-bold text-xl text-slate-800">{isHomeschoolParent(session) ? 'Add Children' : 'Add Students'}</h2>
+                <h2 className="font-bold text-xl text-slate-800">{isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}</h2>
                 <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-2xl">
                   ✕
                 </button>
@@ -862,9 +866,9 @@ export default function StudentsPage() {
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 p-6 flex gap-4">
                 <div className="text-3xl flex-shrink-0">🌱</div>
                 <div>
-                  <h3 className="font-bold text-slate-900 mb-1">{isHomeschoolParent(session) ? 'Building Child Profiles' : 'Building Student Profiles'}</h3>
+                  <h3 className="font-bold text-slate-900 mb-1">{isHomeschoolParent(session) ? t('students.buildingProfilesChild') : t('students.buildingProfiles')}</h3>
                   <p className="text-sm text-slate-700 leading-relaxed">
-                    Welcome! You're creating developmental profiles that will grow with each child over time. The more context you provide — their strengths, challenges, learning style, and personality — the better our Montessori Guru can support you with personalized guidance, activity recommendations, and insights. Think of this as the beginning of a living portrait of each child.
+                    {t('students.buildingProfilesDescription')}
                   </p>
                 </div>
               </div>
@@ -876,7 +880,7 @@ export default function StudentsPage() {
                     {/* Student Number Header */}
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-bold text-lg text-slate-800">
-                        {isHomeschoolParent(session) ? 'Child' : 'Student'} {index + 1}
+                        {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')} {index + 1}
                       </h4>
                       {index > 0 && (
                         <button
@@ -892,12 +896,12 @@ export default function StudentsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                       {/* Name */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.name')} *</label>
                         <input
                           type="text"
                           value={student.name}
                           onChange={(e) => updateBulkStudent(index, 'name', e.target.value)}
-                          placeholder={isHomeschoolParent(session) ? "Child's name" : "Student's name"}
+                          placeholder={isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
                           className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm"
                           {...(index === 0 ? { 'data-guide': 'name' } : {})}
                         />
@@ -905,7 +909,7 @@ export default function StudentsPage() {
 
                       {/* Age */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.age')}</label>
                         <select
                           value={student.age}
                           onChange={(e) => updateBulkStudent(index, 'age', parseFloat(e.target.value))}
@@ -920,7 +924,7 @@ export default function StudentsPage() {
 
                       {/* Gender */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('students.gender')}</label>
                         <select
                           value={student.gender}
                           onChange={(e) => updateBulkStudent(index, 'gender', e.target.value)}
@@ -936,7 +940,7 @@ export default function StudentsPage() {
 
                     {/* Row 2: Tenure */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">{isHomeschoolParent(session) ? 'Time in Program' : 'Time at School'}</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{isHomeschoolParent(session) ? t('students.tenure') : t('students.tenureSchool')}</label>
                       <select
                         value={student.tenure}
                         onChange={(e) => updateBulkStudent(index, 'tenure', e.target.value)}
@@ -952,10 +956,10 @@ export default function StudentsPage() {
                     {/* Row 3: Curriculum */}
                     <div className="mb-4" {...(index === 0 ? { 'data-guide': 'curriculum-section' } : {})}>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Current Work in Each Area
+                        {t('students.currentWork')}
                       </label>
                       <p className="text-xs text-slate-500 mb-3">
-                        Select the most recent work each child has been presented in each area. Earlier works will be marked as mastered.
+                        {t('students.currentWorkHint')}
                       </p>
                       <div className="space-y-2">
                         {CURRICULUM_AREAS.map((area) => (
@@ -981,12 +985,12 @@ export default function StudentsPage() {
                     {/* Row 4: Notes */}
                     <div {...(index === 0 ? { 'data-guide': 'profile-notes' } : {})}>
                       <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Profile Notes
+                        {t('students.profileNotes')}
                       </label>
                       <textarea
                         value={student.notes}
                         onChange={(e) => updateBulkStudent(index, 'notes', e.target.value)}
-                        placeholder="Share anything that helps us understand this child — strengths, challenges, interests, temperament, sensitivities, family context, learning style... The more detail, the better the Guru can help."
+                        placeholder={t('students.buildingProfilesDescription')}
                         rows={4}
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-teal-400 outline-none text-sm resize-none"
                       />
@@ -1006,7 +1010,7 @@ export default function StudentsPage() {
                     data-guide="add-another"
                     className="w-full py-2.5 px-4 bg-teal-50 border-2 border-dashed border-teal-200 text-teal-700 rounded-lg font-medium hover:bg-teal-100 transition-colors text-sm"
                   >
-                    + Add Another {isHomeschoolParent(session) ? 'Child' : 'Student'}
+                    + {isHomeschoolParent(session) ? t('students.addAnotherChild') : t('students.addAnother')}
                   </button>
                 </div>
               )}
@@ -1017,7 +1021,7 @@ export default function StudentsPage() {
                   onClick={closeForm}
                   className="flex-1 py-3 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleBulkSave}
@@ -1025,7 +1029,7 @@ export default function StudentsPage() {
                   disabled={bulkStudents.filter(s => s.name.trim()).length === 0 || saving}
                   className="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium disabled:opacity-50 hover:shadow-lg transition-all"
                 >
-                  {saving ? 'Saving...' : `Save All (${bulkStudents.filter(s => s.name.trim()).length})`}
+                  {saving ? t('common.loading') : `${t('students.saveAll')} (${bulkStudents.filter(s => s.name.trim()).length})`}
                 </button>
               </div>
             </div>
