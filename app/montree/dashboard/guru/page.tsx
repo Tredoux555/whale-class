@@ -10,6 +10,7 @@ import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+import GuruChatThread from '@/components/montree/guru/GuruChatThread';
 
 
 interface Child {
@@ -307,6 +308,94 @@ function GuruContent() {
       </div>
     );
   }
+
+  // ─── PARENT CHAT UI ───────────────────────────────────────
+  // Homeschool parents get the WhatsApp-style chat thread instead of structured Q&A
+  if (isParent) {
+    // Auto-select first child for parents (they typically have 1-3 kids)
+    const activeChild = selectedChild || children[0];
+
+    return (
+      <div className="h-screen flex flex-col">
+        <Toaster position="top-center" />
+
+        {/* Paywall Modal */}
+        {showPaywall && guruStatus?.is_locked && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+              <div className="text-5xl mb-4">🌿</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Unlock Montessori Guru</h2>
+              <p className="text-gray-600 mb-4">
+                You&apos;ve used your 3 free sessions. Upgrade to get unlimited Guru advice for all your children.
+              </p>
+              <div className="rounded-xl p-4 mb-5 bg-[#F5E6D3]/60">
+                <div className="text-3xl font-bold text-[#0D3330]">$5<span className="text-base font-normal text-[#0D3330]/60">/month per child</span></div>
+                <div className="text-sm mt-1 text-[#0D3330]/70">Unlimited questions &bull; Cancel anytime</div>
+              </div>
+              <button
+                onClick={handleUpgrade}
+                disabled={checkoutLoading}
+                className={`w-full py-3 text-white font-semibold rounded-xl active:scale-95 transition-all disabled:opacity-50 ${HOME_THEME.primaryBtn}`}
+              >
+                {checkoutLoading ? 'Opening checkout...' : 'Upgrade Now'}
+              </button>
+              <button onClick={() => setShowPaywall(false)} className="mt-3 text-sm text-gray-400 hover:text-gray-600">
+                Maybe later
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Free trial banner */}
+        {guruStatus && guruStatus.guru_access === 'free_trial' && !guruStatus.is_locked && (
+          <div className="bg-[#F5E6D3] border-b border-[#0D3330]/10 px-4 py-2 text-center text-sm text-[#0D3330]">
+            <span className="font-medium">{guruStatus.prompts_remaining} free {guruStatus.prompts_remaining === 1 ? 'session' : 'sessions'} remaining</span>
+            <span className="mx-2">&bull;</span>
+            <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-[#164340]">Upgrade for unlimited</button>
+          </div>
+        )}
+
+        {/* Child selector (only if multiple children) */}
+        {children.length > 1 && (
+          <div className="bg-white border-b border-[#0D3330]/10 px-4 py-2">
+            <select
+              value={activeChild?.id || ''}
+              onChange={(e) => {
+                const child = children.find(c => c.id === e.target.value);
+                setSelectedChild(child || null);
+                setResponse(null);
+              }}
+              className="w-full p-2 rounded-lg border border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] text-sm focus:ring-1 focus:ring-[#0D3330]/20"
+            >
+              {children.map(child => (
+                <option key={child.id} value={child.id}>{child.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Chat thread */}
+        {activeChild ? (
+          <GuruChatThread
+            childId={activeChild.id}
+            childName={activeChild.name}
+            classroomId={session?.classroom?.id}
+            onGuruLimitReached={() => {
+              setShowPaywall(true);
+              if (guruStatus) {
+                setGuruStatus({ ...guruStatus, is_locked: true, prompts_remaining: 0 });
+              }
+            }}
+          />
+        ) : (
+          <div className={`flex-1 flex items-center justify-center ${HOME_THEME.pageBg}`}>
+            <p className={HOME_THEME.subtleText}>No children found</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+  // ─── END PARENT CHAT UI ────────────────────────────────────
 
   return (
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50'}`}>
