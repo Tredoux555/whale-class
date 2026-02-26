@@ -95,9 +95,9 @@ export default function LibraryWelcomePage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">English Corner Master Plan</div>
+                <div className="text-white font-semibold text-lg">English Language Corner</div>
                 <div className="text-pink-200/40 text-sm mt-0.5">
-                  AMI language curriculum &amp; materials guide
+                  AMI Master Setup &amp; Implementation Plan
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
