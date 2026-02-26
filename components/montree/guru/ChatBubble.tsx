@@ -2,10 +2,17 @@
 // Single chat message bubble for the Guru conversational thread
 'use client';
 
+interface ChatAction {
+  tool: string;
+  success: boolean;
+  message: string;
+}
+
 interface ChatBubbleProps {
   content: string;
   isUser: boolean;
   timestamp?: string;
+  actions?: ChatAction[];
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -67,7 +74,7 @@ function renderInlineBold(text: string) {
   });
 }
 
-export default function ChatBubble({ content, isUser, timestamp }: ChatBubbleProps) {
+export default function ChatBubble({ content, isUser, timestamp, actions }: ChatBubbleProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {/* Guru avatar */}
@@ -89,6 +96,22 @@ export default function ChatBubble({ content, isUser, timestamp }: ChatBubblePro
             <p className="text-sm leading-relaxed">{content}</p>
           ) : (
             <div className="space-y-0.5">{renderMarkdown(content)}</div>
+          )}
+          {actions && actions.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {actions.map((action, i) => (
+                <span
+                  key={i}
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                    action.success
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}
+                >
+                  {action.message}
+                </span>
+              ))}
+            </div>
           )}
         </div>
 

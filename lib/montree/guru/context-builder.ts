@@ -29,6 +29,12 @@ export interface ChildContext {
 
   // Work session notes
   teacher_notes: TeacherNote[];
+
+  // Focus works (current shelf)
+  focus_works: Array<{ area: string; work_name: string; set_at: string; set_by: string }>;
+
+  // Child profile from guru intake (if exists)
+  guru_child_profile?: Record<string, unknown>;
 }
 
 export interface MentalProfile {
@@ -274,6 +280,20 @@ export async function buildChildContext(
       observed_at: s.observed_at,
     }));
 
+  // 7. Fetch focus works (current shelf)
+  const { data: focusWorks } = await supabase
+    .from('montree_child_focus_works')
+    .select('area, work_name, set_at, set_by')
+    .eq('child_id', childId);
+
+  // 8. Fetch child settings for guru profile
+  const { data: childSettings } = await supabase
+    .from('montree_children')
+    .select('settings')
+    .eq('id', childId)
+    .single();
+  const settings = (childSettings?.settings as Record<string, unknown>) || {};
+
   return {
     id: child.id,
     name: child.name.split(' ')[0], // First name only for privacy
@@ -289,6 +309,13 @@ export async function buildChildContext(
     recent_observations: recentObservations,
     past_interactions: pastInteractions,
     teacher_notes: teacherNotes,
+    focus_works: (focusWorks || []).map(fw => ({
+      area: fw.area,
+      work_name: fw.work_name,
+      set_at: fw.set_at,
+      set_by: fw.set_by,
+    })),
+    guru_child_profile: settings.guru_child_profile as Record<string, unknown> | undefined,
   };
 }
 
@@ -379,6 +406,18 @@ export function formatContextForPrompt(context: ChildContext): string {
       mp.challenging_triggers.forEach(t => lines.push(`- ${t}`));
     }
 
+    lines.push('');
+  }
+
+  // Focus works (current shelf)
+  if (context.focus_works && context.focus_works.length > 0) {
+    lines.push('CURRENT SHELF (Focus Works):');
+    context.focus_works.forEach(fw => {
+      lines.push(`- ${fw.area}: ${fw.work_name} (since ${new Date(fw.set_at).toLocaleDateString()})`);
+    });
+    lines.push('');
+  } else {
+    lines.push('CURRENT SHELF: Empty — no focus works set yet.');
     lines.push('');
   }
 

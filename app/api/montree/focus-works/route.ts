@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { child_id, classroom_id, area, work_id, work_name, set_by } = body;
+    const { child_id, area, work_name, set_by } = body;
 
     if (!child_id || !area || !work_name) {
       return NextResponse.json(
@@ -124,9 +124,7 @@ export async function POST(request: NextRequest) {
       .from('montree_child_focus_works')
       .upsert({
         child_id,
-        classroom_id,
         area,
-        work_id,
         work_name,
         set_at: new Date().toISOString(),
         set_by: set_by || 'teacher',
