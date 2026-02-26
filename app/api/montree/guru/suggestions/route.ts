@@ -67,10 +67,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, suggestion: null, reason: 'ai_disabled' });
     }
 
-    // Get child name
+    // Get child info
     const { data: child } = await supabase
       .from('montree_children')
-      .select('name, age')
+      .select('name, age, classroom_id')
       .eq('id', childId)
       .single();
 
@@ -129,6 +129,7 @@ Do NOT use headers or bullet points. Keep it conversational and warm.`;
       .from('montree_guru_interactions')
       .insert({
         child_id: childId,
+        classroom_id: child?.classroom_id,
         question: `Proactive suggestion (${suggestionType})`,
         question_type: 'proactive_suggestion',
         response_insight: suggestionText,
