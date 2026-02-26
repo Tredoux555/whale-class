@@ -1,9 +1,9 @@
 # Guru-Driven Montessori Home System
 
-**Document Version:** 2.0 (audited against codebase)
+**Document Version:** 2.1 (double-audited against codebase + DB schema)
 **Date:** February 26, 2026
 **Scope:** Comprehensive paradigm shift for homeschool parent experience in Montree
-**Status:** Concept & Implementation Plan — audited and corrected
+**Status:** Concept & Implementation Plan — audited, corrected, re-audited
 
 ---
 
@@ -560,13 +560,15 @@ export async function executeTool(
   switch (toolName) {
     case 'set_focus_work':
       // Upsert into montree_child_focus_works
-      // Uses same DB logic as POST /api/montree/focus-works
+      // ⚠️ Table only has: id, child_id, area, work_name, set_at, set_by, updated_at
+      // ⚠️ Does NOT have classroom_id or work_id columns
       await supabase.from('montree_child_focus_works').upsert({
         child_id: childId,
-        classroom_id: classroomId,
         area: input.area,
         work_name: input.work_name,
-        set_by: 'guru'
+        set_at: new Date().toISOString(),
+        set_by: 'guru',
+        updated_at: new Date().toISOString()
       }, { onConflict: 'child_id,area' });
       return { success: true, message: `✅ ${areaLabel(input.area)}: ${input.work_name}` };
 
@@ -579,25 +581,41 @@ export async function executeTool(
 
     case 'update_progress':
       // Same logic as POST /api/montree/progress/update
-      // Upsert into montree_child_work_progress
-      await supabase.from('montree_child_work_progress').upsert({
+      // ⚠️ Table name is montree_child_progress (NOT montree_child_work_progress)
+      const progressRecord: Record<string, unknown> = {
         child_id: childId,
-        classroom_id: classroomId,
         work_name: input.work_name,
         status: input.status,
         notes: input.notes || null,
-        ...(input.status === 'mastered' ? { mastered_at: new Date().toISOString() } : {})
-      }, { onConflict: 'child_id,work_name' });
+        updated_at: new Date().toISOString()
+      };
+      // Only set mastered_at on FIRST mastery (preserve original date)
+      if (input.status === 'mastered') {
+        const { data: existing } = await supabase
+          .from('montree_child_progress')
+          .select('mastered_at')
+          .eq('child_id', childId)
+          .eq('work_name', input.work_name)
+          .maybeSingle();
+        if (!existing?.mastered_at) {
+          progressRecord.mastered_at = new Date().toISOString();
+        }
+      }
+      await supabase.from('montree_child_progress').upsert(
+        progressRecord,
+        { onConflict: 'child_id,work_name' }
+      );
       return { success: true, message: `${input.work_name} → ${input.status}` };
 
     case 'save_observation':
+      // ⚠️ observed_by column is UUID type in schema — pass null for guru
+      // ⚠️ FK references children(id) not montree_children(id) — may need
+      //     migration fix before this works. Test in dev first!
       await supabase.from('montree_behavioral_observations').insert({
         child_id: childId,
-        classroom_id: classroomId,
         behavior_description: input.behavior_description,
         behavior_function: input.behavior_function || 'unknown',
-        activity_during: input.activity_during || null,
-        observed_by: 'guru'
+        activity_during: input.activity_during || null
       });
       return { success: true, message: `Observation saved` };
 
@@ -704,10 +722,13 @@ const responseText = response.content
   .join('\n');
 
 // 5. Return to frontend
+// ⚠️ Field must be `insight` (not response_text) — GuruChatThread reads data.insight
 return NextResponse.json({
   success: true,
-  response_text: responseText,
-  actions: actionsTaken  // displayed as confirmation chips in chat
+  insight: responseText,
+  actions: actionsTaken,  // displayed as confirmation chips in chat
+  interaction_id: saved?.id,
+  conversational: true
 });
 ```
 
@@ -956,6 +977,34 @@ The Guru MUST use Anthropic's tool_use feature. It's not enough to parse keyword
 
 ### Risk: Guru Recommends Wrong Works
 **Mitigation:** Framed as suggestions ("let's try this and see"). Weekly check-ins allow fast correction. Parent can always say "that didn't work" and Guru adjusts.
+
+---
+
+## KNOWN ISSUES TO FIX BEFORE IMPLEMENTATION
+
+### ⚠️ Pre-existing Production Bugs (fix during Phase 0)
+
+**1. focus-works/route.ts inserts non-existent columns**
+POST handler sends `classroom_id` and `work_id` to `montree_child_focus_works`, but the table only has: `id, child_id, area, work_name, set_at, set_by, updated_at`. Supabase likely ignores these silently. Fix: remove both fields from the upsert in the route.
+
+**2. montree_behavioral_observations FK references wrong table**
+Migration 110 has `child_id UUID REFERENCES children(id)` — the old pre-Montree table. Should reference `montree_children(id)`. Test: try inserting an observation for a Montree child. If FK violation, need a migration to drop + re-add the constraint.
+
+**3. observed_by column is UUID type**
+Schema has `observed_by UUID`, but observations/route.ts accepts it as a string. The tool-executor should NOT pass `observed_by: 'guru'` (string into UUID column). Pass null or omit entirely.
+
+### Implementation Notes
+
+**4. Response field is `insight` not `response_text`**
+`GuruChatThread.tsx` reads `data.insight`. The tool-use loop must return `{ insight: responseText }` not `{ response_text: ... }`.
+
+**5. Conversation history persistence for tool-use**
+Current `montree_guru_interactions` stores `question` (text) and `response_insight` (text). Tool-use turns include structured content blocks. Decision needed: store only the final text portion (simpler), or add a `tool_actions` JSONB column (richer but requires migration).
+
+**Recommendation:** Store final text in `response_insight` as today. Store actions in `question_type: 'chat_with_tools'` and optionally in a new `actions_taken` TEXT column (JSON string, no migration needed since we can just add it via ALTER TABLE).
+
+**6. Multi-turn loop cost guardrail**
+Add `MAX_TOOL_ROUNDS = 3` constant. If Claude keeps returning tool_use after 3 rounds, break the loop and return whatever text we have. Prevents runaway API costs.
 
 ---
 
