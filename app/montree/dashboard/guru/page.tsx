@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 import GuruChatThread from '@/components/montree/guru/GuruChatThread';
 
@@ -55,6 +56,7 @@ interface GuruStatus {
 
 function GuruContent() {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const preselectedChildId = searchParams.get('child');
   const upgradeResult = searchParams.get('upgrade');
@@ -86,9 +88,9 @@ function GuruContent() {
 
     // Show upgrade result toast
     if (upgradeResult === 'success') {
-      toast.success('Welcome to Guru! You now have unlimited access.');
+      toast.success(t('guru.welcomeUpgrade'));
     } else if (upgradeResult === 'cancel') {
-      toast('Upgrade cancelled. You still have free prompts available.');
+      toast(t('guru.upgradeCancelled'));
     }
 
     // Fetch children
@@ -108,7 +110,7 @@ function GuruContent() {
         setPageLoading(false);
       })
       .catch(() => {
-        toast.error('Failed to load');
+        toast.error(t('dashboard.failedToLoad'));
         setPageLoading(false);
       });
 
@@ -253,7 +255,7 @@ function GuruContent() {
             setGuruStatus({ ...guruStatus, is_locked: true, prompts_remaining: 0 });
           }
         } else {
-          toast.error(data.error || 'Failed to get response');
+          toast.error(data.error || t('guru.failedConnect'));
         }
       }
 
@@ -265,7 +267,7 @@ function GuruContent() {
       }
 
     } catch (error) {
-      toast.error('Failed to connect. Please try again.');
+      toast.error(t('guru.failedConnect'));
     } finally {
       setLoading(false);
     }
@@ -274,7 +276,7 @@ function GuruContent() {
   const copyParentTalkingPoint = () => {
     if (response?.parent_talking_point) {
       navigator.clipboard.writeText(response.parent_talking_point);
-      toast.success('Copied to clipboard!');
+      toast.success(t('guru.copiedClipboard'));
     }
   };
 
@@ -289,10 +291,10 @@ function GuruContent() {
       if (data.success && data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        toast.error('Could not start checkout. Please try again.');
+        toast.error(t('guru.couldNotCheckout'));
       }
     } catch {
-      toast.error('Connection error. Please try again.');
+      toast.error(t('common.connectionError'));
     } finally {
       setCheckoutLoading(false);
     }
@@ -324,23 +326,23 @@ function GuruContent() {
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
               <div className="text-5xl mb-4">🌿</div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Unlock Montessori Guru</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">{t('guru.unlockGuru')}</h2>
               <p className="text-gray-600 mb-4">
-                You&apos;ve used your 3 free sessions. Upgrade to get unlimited Guru advice for all your children.
+                {t('guru.usedFreeSessions')}
               </p>
               <div className="rounded-xl p-4 mb-5 bg-[#F5E6D3]/60">
-                <div className="text-3xl font-bold text-[#0D3330]">$5<span className="text-base font-normal text-[#0D3330]/60">/month per child</span></div>
-                <div className="text-sm mt-1 text-[#0D3330]/70">Unlimited questions &bull; Cancel anytime</div>
+                <div className="text-3xl font-bold text-[#0D3330]">$5<span className="text-base font-normal text-[#0D3330]/60">{t('guru.pricePerChild')}</span></div>
+                <div className="text-sm mt-1 text-[#0D3330]/70">{t('guru.unlimitedCancel')}</div>
               </div>
               <button
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
                 className={`w-full py-3 text-white font-semibold rounded-xl active:scale-95 transition-all disabled:opacity-50 ${HOME_THEME.primaryBtn}`}
               >
-                {checkoutLoading ? 'Opening checkout...' : 'Upgrade Now'}
+                {checkoutLoading ? t('guru.openingCheckout') : t('guru.upgradeNow')}
               </button>
               <button onClick={() => setShowPaywall(false)} className="mt-3 text-sm text-gray-400 hover:text-gray-600">
-                Maybe later
+                {t('guru.maybeLater')}
               </button>
             </div>
           </div>
@@ -349,9 +351,9 @@ function GuruContent() {
         {/* Free trial banner */}
         {guruStatus && guruStatus.guru_access === 'free_trial' && !guruStatus.is_locked && (
           <div className="bg-[#F5E6D3] border-b border-[#0D3330]/10 px-4 py-2 text-center text-sm text-[#0D3330]">
-            <span className="font-medium">{guruStatus.prompts_remaining} free {guruStatus.prompts_remaining === 1 ? 'session' : 'sessions'} remaining</span>
+            <span className="font-medium">{guruStatus.prompts_remaining} {guruStatus.prompts_remaining === 1 ? t('guru.freeSessionRemaining') : t('guru.freeSessionsRemaining')}</span>
             <span className="mx-2">&bull;</span>
-            <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-[#164340]">Upgrade for unlimited</button>
+            <button onClick={() => setShowPaywall(true)} className="underline font-medium hover:text-[#164340]">{t('guru.upgradeUnlimited')}</button>
           </div>
         )}
 
@@ -389,7 +391,7 @@ function GuruContent() {
           />
         ) : (
           <div className={`flex-1 flex items-center justify-center ${HOME_THEME.pageBg}`}>
-            <p className={HOME_THEME.subtleText}>No children found</p>
+            <p className={HOME_THEME.subtleText}>{t('guru.noChildren')}</p>
           </div>
         )}
       </div>
@@ -406,19 +408,19 @@ function GuruContent() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
             <div className="text-5xl mb-4">{guruEmoji}</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Unlock Montessori Guru</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('guru.unlockGuru')}</h2>
             <p className="text-gray-600 mb-4">
-              You&apos;ve used your 3 free sessions. Upgrade to get unlimited Guru advice for all your children.
+              {t('guru.usedFreeSessions')}
             </p>
             <div className={`rounded-xl p-4 mb-5 ${isParent ? 'bg-[#F5E6D3]/60' : 'bg-violet-50'}`}>
-              <div className={`text-3xl font-bold ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>$5<span className={`text-base font-normal ${isParent ? 'text-[#0D3330]/60' : 'text-violet-500'}`}>/month per child</span></div>
-              <div className={`text-sm mt-1 ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>Unlimited questions &bull; Cancel anytime</div>
+              <div className={`text-3xl font-bold ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>$5<span className={`text-base font-normal ${isParent ? 'text-[#0D3330]/60' : 'text-violet-500'}`}>{t('guru.pricePerChild')}</span></div>
+              <div className={`text-sm mt-1 ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>{t('guru.unlimitedCancel')}</div>
             </div>
             <div className="text-left text-sm text-gray-600 mb-5 space-y-2">
-              <div className="flex items-center gap-2"><span>✅</span> Unlimited Guru conversations</div>
-              <div className="flex items-center gap-2"><span>✅</span> Personalized advice for each child</div>
-              <div className="flex items-center gap-2"><span>✅</span> Based on 7 Montessori reference books</div>
-              <div className="flex items-center gap-2"><span>✅</span> Action plans with timelines</div>
+              <div className="flex items-center gap-2"><span>✅</span> {t('guru.unlimitedConversations')}</div>
+              <div className="flex items-center gap-2"><span>✅</span> {t('guru.personalizedAdvice')}</div>
+              <div className="flex items-center gap-2"><span>✅</span> {t('guru.basedOnBooks')}</div>
+              <div className="flex items-center gap-2"><span>✅</span> {t('guru.actionPlans')}</div>
             </div>
             <button
               onClick={handleUpgrade}
@@ -427,13 +429,13 @@ function GuruContent() {
                 isParent ? 'bg-[#0D3330] hover:bg-[#164340]' : 'bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700'
               }`}
             >
-              {checkoutLoading ? 'Opening checkout...' : 'Upgrade Now'}
+              {checkoutLoading ? t('guru.openingCheckout') : t('guru.upgradeNow')}
             </button>
             <button
               onClick={() => setShowPaywall(false)}
               className="mt-3 text-sm text-gray-400 hover:text-gray-600"
             >
-              Maybe later
+              {t('guru.maybeLater')}
             </button>
           </div>
         </div>
@@ -442,9 +444,9 @@ function GuruContent() {
       {/* Free trial prompts banner for homeschool parents */}
       {guruStatus && guruStatus.guru_access === 'free_trial' && !guruStatus.is_locked && (
         <div className={`border-b px-4 py-2 text-center text-sm ${isParent ? 'bg-[#F5E6D3] border-[#0D3330]/10 text-[#0D3330]' : 'bg-violet-100 border-violet-200 text-violet-700'}`}>
-          <span className="font-medium">{guruStatus.prompts_remaining} free {guruStatus.prompts_remaining === 1 ? 'session' : 'sessions'} remaining</span>
+          <span className="font-medium">{guruStatus.prompts_remaining} {guruStatus.prompts_remaining === 1 ? t('guru.freeSessionRemaining') : t('guru.freeSessionsRemaining')}</span>
           <span className="mx-2">&bull;</span>
-          <button onClick={() => setShowPaywall(true)} className={`underline font-medium ${isParent ? 'hover:text-[#164340]' : 'hover:text-violet-900'}`}>Upgrade for unlimited</button>
+          <button onClick={() => setShowPaywall(true)} className={`underline font-medium ${isParent ? 'hover:text-[#164340]' : 'hover:text-violet-900'}`}>{t('guru.upgradeUnlimited')}</button>
         </div>
       )}
 
@@ -453,17 +455,17 @@ function GuruContent() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-              <span>{guruEmoji}</span> Montessori Guru
+              <span>{guruEmoji}</span> {t('guru.montessoriGuru')}
             </h1>
             <p className="text-xs text-gray-500">
-              {isParent ? 'AI-powered insights for your homeschool' : 'AI-powered insights for your classroom'}
+              {isParent ? t('guru.insightsHome') : t('guru.insightsClassroom')}
             </p>
           </div>
           {selectedChild && history.length > 0 && (
             <button
               onClick={() => setShowHistory(!showHistory)}
               className={`p-2 rounded-lg active:scale-95 transition-all ${isParent ? 'bg-[#F5E6D3] hover:bg-[#EDD5C0] text-[#0D3330]' : 'bg-violet-100 hover:bg-violet-200 text-violet-700'}`}
-              title="Past conversations"
+              title={t('guru.pastConversations')}
             >
               <span className="text-lg">📜</span>
             </button>
@@ -475,7 +477,7 @@ function GuruContent() {
         {/* Child Selector */}
         <div data-tutorial="guru-child-selector" className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Which child do you need help with?
+            {t('guru.whichChild')}
           </label>
           <select
             value={selectedChild?.id || ''}
@@ -489,7 +491,7 @@ function GuruContent() {
               isParent ? 'focus:ring-2 focus:ring-[#0D3330]/30 focus:border-[#0D3330]/40' : 'focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
             }`}
           >
-            <option value="">Select a child...</option>
+            <option value="">{t('guru.selectChild')}</option>
             {children.map(child => (
               <option key={child.id} value={child.id}>
                 {child.name}
@@ -502,7 +504,7 @@ function GuruContent() {
         {showHistory && history.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
             <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-              <span>📜</span> Past Questions for {selectedChild?.name?.split(' ')[0]}
+              <span>📜</span> {t('guru.pastQuestions')} {selectedChild?.name?.split(' ')[0]}
             </h3>
             <div className="space-y-3">
               {history.map((item) => (
@@ -535,15 +537,15 @@ function GuruContent() {
         {selectedChild && (
           <div data-tutorial="guru-question-input" className="bg-white rounded-xl shadow-sm p-4 mb-4">
             <label className="text-sm font-medium text-gray-700 mb-2 block">
-              What would you like help with for {selectedChild.name.split(' ')[0]}?
+              {t('guru.helpWith')} {selectedChild.name.split(' ')[0]}?
             </label>
             <textarea
               ref={textareaRef}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder={isParent
-                ? "e.g., My child can't seem to focus lately. She wanders around and won't settle into work at home. What should I do?"
-                : "e.g., Rachel can't seem to focus lately. She wanders around the classroom and won't settle into work. What should I do?"
+                ? t('guru.placeholderParent')
+                : t('guru.placeholderTeacher')
               }
               className={`w-full p-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 resize-none min-h-[100px] ${
                 isParent ? 'focus:ring-2 focus:ring-[#0D3330]/30 focus:border-[#0D3330]/40' : 'focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
@@ -567,12 +569,12 @@ function GuruContent() {
                 {loading ? (
                   <>
                     <span className="animate-spin">{guruEmoji}</span>
-                    Thinking...
+                    {t('guru.thinking')}
                   </>
                 ) : (
                   <>
                     <span>{isParent ? '🌿' : '✨'}</span>
-                    Ask Guru
+                    {t('guru.askGuru')}
                   </>
                 )}
               </button>
@@ -587,7 +589,7 @@ function GuruContent() {
               <>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg animate-pulse">{guruEmoji}</span>
-                  <span className={`text-sm ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>Writing...</span>
+                  <span className={`text-sm ${isParent ? 'text-[#0D3330]/70' : 'text-violet-600'}`}>{t('guru.writing')}</span>
                 </div>
                 <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {streamingText}
@@ -597,9 +599,9 @@ function GuruContent() {
             ) : (
               <div className="text-center py-4">
                 <div className="text-4xl mb-4 animate-pulse">{guruEmoji}</div>
-                <p className="text-gray-600 font-medium">{isParent ? 'Gathering wisdom...' : 'Gathering insights...'}</p>
+                <p className="text-gray-600 font-medium">{isParent ? t('guru.gatheringWisdom') : t('guru.gatheringInsights')}</p>
                 <p className="text-sm text-gray-400 mt-2">
-                  Analyzing {selectedChild?.name.split(' ')[0]}&apos;s profile and Montessori wisdom
+                  {t('guru.analyzingProfile').replace('{name}', selectedChild?.name.split(' ')[0] || '')}
                 </p>
               </div>
             )}
@@ -612,7 +614,7 @@ function GuruContent() {
             {/* Insight */}
             <div className="bg-white rounded-xl shadow-sm p-4">
               <h3 className={`font-bold mb-2 flex items-center gap-2 ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>
-                <span>💡</span> Insight
+                <span>💡</span> {t('guru.insight')}
               </h3>
               <p className="text-gray-700 leading-relaxed">{response.insight}</p>
             </div>
@@ -620,7 +622,7 @@ function GuruContent() {
             {/* Root Cause */}
             {response.root_cause && (
               <div className={`rounded-xl p-4 border ${isParent ? 'bg-[#F5E6D3]/40 border-[#0D3330]/10' : 'bg-violet-50 border-violet-100'}`}>
-                <h3 className={`font-medium mb-1 text-sm ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>Root Cause</h3>
+                <h3 className={`font-medium mb-1 text-sm ${isParent ? 'text-[#0D3330]' : 'text-violet-700'}`}>{t('guru.rootCause')}</h3>
                 <p className="text-gray-700">{response.root_cause}</p>
               </div>
             )}
@@ -629,7 +631,7 @@ function GuruContent() {
             {response.action_plan && response.action_plan.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-4">
                 <h3 className={`font-bold mb-3 flex items-center gap-2 ${isParent ? 'text-[#0D3330]' : 'text-indigo-700'}`}>
-                  <span>📋</span> This Week&apos;s Plan
+                  <span>📋</span> {t('guru.weekPlan')}
                 </h3>
                 <div className="space-y-3">
                   {response.action_plan.map((item, index) => (
@@ -652,7 +654,7 @@ function GuruContent() {
               <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex items-center gap-3">
                 <span className="text-2xl">⏰</span>
                 <div>
-                  <h3 className="font-medium text-amber-700 text-sm">Expected Timeline</h3>
+                  <h3 className="font-medium text-amber-700 text-sm">{t('guru.expectedTimeline')}</h3>
                   <p className="text-gray-700">{response.timeline}</p>
                 </div>
               </div>
@@ -665,14 +667,14 @@ function GuruContent() {
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">💬</span>
                     <div>
-                      <h3 className="font-medium text-green-700 text-sm">Parent Talking Point</h3>
+                      <h3 className="font-medium text-green-700 text-sm">{t('guru.parentTalkingPoint')}</h3>
                       <p className="text-gray-700 mt-1">&ldquo;{response.parent_talking_point}&rdquo;</p>
                     </div>
                   </div>
                   <button
                     onClick={copyParentTalkingPoint}
                     className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
-                    title="Copy to clipboard"
+                    title={t('guru.copiedClipboard')}
                   >
                     📋
                   </button>
@@ -683,7 +685,7 @@ function GuruContent() {
             {/* Sources */}
             {response.sources_used && response.sources_used.length > 0 && (
               <div className="text-center text-sm text-gray-400 py-2">
-                Based on: {response.sources_used.map(s =>
+                {t('guru.basedOn')} {response.sources_used.map(s =>
                   s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                 ).join(', ')}
               </div>
@@ -699,7 +701,7 @@ function GuruContent() {
                 }}
                 className={`px-6 py-2 font-medium rounded-lg transition-colors ${isParent ? 'text-[#0D3330] hover:bg-[#F5E6D3]/50' : 'text-violet-600 hover:bg-violet-50'}`}
               >
-                Ask Another Question
+                {t('guru.askAnother')}
               </button>
             </div>
           </div>
@@ -708,7 +710,7 @@ function GuruContent() {
         {/* Quick Questions (when no child selected or no response yet) */}
         {selectedChild && !response && !loading && (
           <div data-tutorial="guru-quick-questions" className="bg-white rounded-xl shadow-sm p-4">
-            <h3 className="text-sm font-medium text-gray-500 mb-3">Common questions</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-3">{t('guru.commonQuestions')}</h3>
             <div className="space-y-2">
               {(isParent ? [
                 `${selectedChild.name.split(' ')[0]} can't focus and wanders away from work. What should I do?`,
@@ -739,7 +741,7 @@ function GuruContent() {
         {!selectedChild && (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <div className="text-4xl mb-4">👆</div>
-            <p className="text-gray-600">Select a child above to get started</p>
+            <p className="text-gray-600">{t('guru.selectChildFirst')}</p>
           </div>
         )}
       </main>

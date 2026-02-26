@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
@@ -65,6 +66,7 @@ export default function ProgressPage() {
   const params = useParams();
   const childId = params.childId as string;
   const session = getSession();
+  const { t } = useI18n();
   const photosRef = useRef<HTMLDivElement>(null);
 
   // State
@@ -164,7 +166,7 @@ export default function ProgressPage() {
           events.push({
             id: `o-${o.id}`, type: 'observation',
             date: o.observed_at,
-            title: 'Observation',
+            title: t('progress.observation'),
             subtitle: o.behavior_description,
             icon: '👁',
           });
@@ -218,7 +220,7 @@ export default function ProgressPage() {
     return (
       <div className="bg-white rounded-2xl p-8 text-center">
         <div className="animate-bounce text-3xl mb-2">📊</div>
-        <p className="text-gray-500">Loading progress...</p>
+        <p className="text-gray-500">{t('progress.loadingProgress')}</p>
       </div>
     );
   }
@@ -236,15 +238,15 @@ export default function ProgressPage() {
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="bg-yellow-50 rounded-xl p-3">
             <div className="text-3xl font-bold text-yellow-600">{stats.mastered}</div>
-            <div className="text-xs font-medium text-yellow-700 mt-1">Mastered</div>
+            <div className="text-xs font-medium text-yellow-700 mt-1">{t('progress.mastered_count')}</div>
           </div>
           <div className="bg-blue-50 rounded-xl p-3">
             <div className="text-3xl font-bold text-blue-600">{stats.practicing}</div>
-            <div className="text-xs font-medium text-blue-700 mt-1">Practicing</div>
+            <div className="text-xs font-medium text-blue-700 mt-1">{t('progress.practicing_count')}</div>
           </div>
           <div className="bg-purple-50 rounded-xl p-3">
             <div className="text-3xl font-bold text-purple-600">{stats.presented}</div>
-            <div className="text-xs font-medium text-purple-700 mt-1">Presented</div>
+            <div className="text-xs font-medium text-purple-700 mt-1">{t('progress.presented_count')}</div>
           </div>
         </div>
       </div>
@@ -252,7 +254,7 @@ export default function ProgressPage() {
       {/* ── Area Progress Bars ── */}
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gray-800">Progress by Area</h2>
+          <h2 className="text-base font-bold text-gray-800">{t('progress.progressByArea')}</h2>
           <div className="text-lg font-bold text-emerald-600">{overallPercent}%</div>
         </div>
 
@@ -312,7 +314,7 @@ export default function ProgressPage() {
             onClick={() => setSelectedArea(null)}
             className="w-full text-center text-xs text-gray-400 mt-3 py-1"
           >
-            Tap area again to show all · Showing {AREA_CONFIG[selectedArea]?.name}
+            {t('progress.tapAreaHint')} · {t('progress.showing')} {AREA_CONFIG[selectedArea]?.name}
           </button>
         )}
       </div>
@@ -320,7 +322,7 @@ export default function ProgressPage() {
       {/* ── Recent Photos ── */}
       {media.length > 0 && (
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <h2 className="text-base font-bold text-gray-800 mb-3">Recent Photos</h2>
+          <h2 className="text-base font-bold text-gray-800 mb-3">{t('progress.recentPhotos')}</h2>
           <div ref={photosRef} className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
             {media.map((m) => (
               <div key={m.id} className="flex-shrink-0 snap-start">
@@ -351,7 +353,7 @@ export default function ProgressPage() {
       {/* ── Timeline ── */}
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-800 mb-4">
-          Timeline
+          {t('progress.timeline')}
           {selectedArea && (
             <span className="text-sm font-normal text-gray-400 ml-2">
               ({AREA_CONFIG[selectedArea]?.name})
@@ -360,7 +362,7 @@ export default function ProgressPage() {
         </h2>
 
         {grouped.length === 0 && (
-          <p className="text-gray-400 text-sm text-center py-6">No activity recorded yet</p>
+          <p className="text-gray-400 text-sm text-center py-6">{t('progress.noActivity')}</p>
         )}
 
         {grouped.map(({ label, events }) => (
@@ -380,9 +382,9 @@ export default function ProgressPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-gray-800 text-sm truncate">
-                          {event.type === 'mastery' && '⭐ Mastered '}
-                          {event.type === 'practicing' && 'Practicing '}
-                          {event.type === 'presented' && 'Presented '}
+                          {event.type === 'mastery' && `⭐ ${t('progress.mastered')} `}
+                          {event.type === 'practicing' && `${t('progress.practicing')} `}
+                          {event.type === 'presented' && `${t('progress.presented')} `}
                           {event.type === 'note' && '📝 '}
                           {event.type === 'observation' && ''}
                           {event.title}
