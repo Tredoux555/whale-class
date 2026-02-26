@@ -33,7 +33,7 @@ export async function analyzeChildProgress(
 
   // Get stale works — practicing or presented for 14+ days
   const { data: staleData } = await supabase
-    .from('montree_child_work_progress')
+    .from('montree_child_progress')
     .select('work_name, area, status, updated_at')
     .eq('child_id', childId)
     .in('status', ['practicing', 'presented'])
@@ -52,7 +52,7 @@ export async function analyzeChildProgress(
 
   // Check last activity date
   const { data: recentActivity } = await supabase
-    .from('montree_child_work_progress')
+    .from('montree_child_progress')
     .select('updated_at')
     .eq('child_id', childId)
     .order('updated_at', { ascending: false })

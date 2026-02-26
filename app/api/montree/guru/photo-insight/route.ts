@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Get current works for context
     const { data: currentWorks } = await supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('work_name, area, status')
       .eq('child_id', child_id)
       .in('status', ['practicing', 'presented'])
@@ -123,11 +123,19 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('');
 
+    // Get classroom_id for the insert
+    const { data: childRecord } = await supabase
+      .from('montree_children')
+      .select('classroom_id')
+      .eq('id', child_id)
+      .single();
+
     // Cache per media_id
     await supabase
       .from('montree_guru_interactions')
       .insert({
         child_id,
+        classroom_id: childRecord?.classroom_id,
         question: `photo:${media_id}`,
         question_type: 'photo_insight',
         response_insight: insightText,
