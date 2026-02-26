@@ -14,14 +14,9 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🔥 NEXT SESSION PRIORITIES
 
-### Deploy Cross-Pollination Security Fix (Priority #0 — URGENT)
+### ~~Deploy Cross-Pollination Security Fix~~ — ✅ DONE (Priority #0 — commit `f310a63b`)
 
-**CRITICAL security fix from Feb 22.** Must be deployed before any new school signs up.
-
-**Still needs `verifyChildBelongsToSchool` added to:** `media/upload`, `reports/generate`, `reports/pdf`, `reports/send`, `weekly-planning/*`, `focus-works`
-
-**Handoff:** `docs/HANDOFF_WEEKVIEW_GUIDE_SECURITY_FEB22.md`
-**Helper:** `lib/montree/verify-child-access.ts`
+All 6 remaining routes patched with `verifyChildBelongsToSchool`: media/upload, reports/generate, reports/pdf, reports/send, focus-works, guru/stream.
 
 ### ~~Push English Corner Redirect Fix~~ — ✅ DONE (commit `6de6ad86`)
 
@@ -51,9 +46,9 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 ### i18n Phase 2 — Migrate Remaining Pages (Priority #7)
 
-**Status:** Foundation deployed (commit `8259683`). Login, signup, dashboard, principal login, header all bilingual. Remaining pages still hardcoded English.
-**Next:** Migrate child week view, curriculum, guru, reports, students, settings, onboarding guides to `t()` calls. Each page is independent — incremental work.
-**Handoff:** `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md`
+**Status:** Foundation deployed (commit `8259683`). 80+ new keys added (commit `f310a63b`). Login, signup, dashboard, principal login, header, **students page** all bilingual.
+**Next:** Migrate child week view, curriculum, guru, reports, settings, onboarding guides to `t()` calls. Each page is independent — incremental work.
+**Handoff:** `docs/handoffs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md`
 
 ### Curriculum Inconsistency Resolution (Priority #8 — Deferred)
 
@@ -97,7 +92,46 @@ Flow: Parent opens Guru → concern picker onboarding (first visit) → WhatsApp
 - Fixed: `end-of-day/route.ts` + `suggestions/route.ts` — added missing `classroom_id` to inserts
 
 **Test account:** Code ZYNXER, child "Marina"
-**Handoff:** `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md`
+**Handoff:** `docs/handoffs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md`
+
+**Full Health Audit + Performance Sweep — COMPLETE + DEPLOYED (commit `f310a63b`):**
+
+73 issues found across 4 parallel deep audits (Guru APIs, non-Guru APIs, frontend components, TypeScript/build). All CRITICAL and HIGH items fixed.
+
+Phase 1 — CRITICAL Security (6 routes):
+- Added `verifyChildBelongsToSchool()` to: `media/upload` (single + array), `reports/generate`, `reports/pdf`, `reports/send`, `focus-works` (GET/POST/DELETE), `guru/stream`
+- **Priority #0 fully resolved** — every route accepting child_id now verifies school ownership
+
+Phase 2 — Guru Cleanup (9 routes):
+- Added `HAIKU_MODEL` export to `lib/ai/anthropic.ts`
+- Replaced `new Anthropic()` with shared singleton in 5 routes (concern, daily-plan, work-guide, quick, weekly-review)
+- Replaced hardcoded model strings in suggestions, end-of-day, dashboard-summary
+- Added error logging to dashboard-summary catch blocks + .catch() on cache inserts
+- Added concern ID validation to concerns POST
+
+Phase 3 — Code Quality (3 files):
+- `ConcernDetailModal.tsx` — replaced `dangerouslySetInnerHTML` with safe `renderInlineBold()`
+- `focus-works/route.ts` — work_name validation (type + max 200 chars)
+- `observations/route.ts` — capped limit to 100, days to 365
+
+Phase 4 — i18n Extension (3 files):
+- Added 80+ translation keys to `en.ts` and `zh.ts` (students, week view, common actions, errors, empty states)
+- Wired `students/page.tsx` with `useI18n()` hook — 40+ hardcoded strings → `t()` calls
+
+Phase 5 — Folder Reorganization:
+- `docs/` reorganized: `handoffs/` (~133 files), `audits/` (3), `plans/` (2), `archive/` (~50)
+- Personal files → `assets/personal/`, curriculum → `assets/curriculum/`, deploy.sh → `scripts/`
+- Merged `.env.stripe.example` into `.env.example`
+
+Dead code identified (delete next session): 4 old Guru dashboard components (GuruDailyBriefing, EndOfDayNudge, GuruSuggestionCard, WeeklyReview), 3 montree-home stub routes, .env.stripe.example
+
+**Guru-Driven Home System Concept Doc — WRITTEN:**
+- `docs/CONCEPT_GURU_DRIVEN_HOME_SYSTEM.md` — Vision for Guru as sole interface for homeschool parents
+- Guru uses Anthropic tool-use to control classroom backend (add works, update progress, schedule check-ins)
+- 5 implementation phases, ~15-20 hours total, no new DB tables needed
+
+**Handoff:** `docs/handoffs/HANDOFF_HEALTH_AUDIT_FEB26.md`
+**Audit report:** `docs/audits/AUDIT_FULL_HEALTHCHECK_FEB26.md`
 
 ---
 
