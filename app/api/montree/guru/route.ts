@@ -11,6 +11,22 @@ import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-buil
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
 import { buildConversationalPrompt } from '@/lib/montree/guru/conversational-prompt';
+import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
+import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
+import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
+
+const MAX_TOOL_ROUNDS = 3;
+const API_TIMEOUT_MS = 25_000; // 25s timeout per API call (under Vercel/Railway 30s limit)
+
+// Helper: race API call against timeout
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
 
 export interface GuruRequest {
   child_id: string;
@@ -158,19 +174,19 @@ export async function POST(request: NextRequest) {
     const isConversational = conversational && isParentRole;
 
     if (isConversational) {
-      // Fetch saved concerns for conversational context
-      const { data: childSettings } = await supabase
+      // Fetch saved concerns + settings for conversational context
+      const { data: childSettingsRecord } = await supabase
         .from('montree_children')
         .select('settings')
         .eq('id', child_id)
         .single();
-      const settings = (childSettings?.settings as Record<string, unknown>) || {};
-      const savedConcerns = (settings.guru_concerns as string[]) || [];
+      const childSettings = (childSettingsRecord?.settings as Record<string, unknown>) || {};
+      const savedConcerns = (childSettings.guru_concerns as string[]) || [];
 
       // Check if this is the first message (no conversation history)
       const isFirstMessage = !childContext.past_interactions || childContext.past_interactions.length === 0;
 
-      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage);
+      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings);
       systemPrompt = convPrompt.systemPrompt;
       userPrompt = convPrompt.userPrompt;
     } else {
@@ -206,27 +222,121 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Current question always goes last
-    conversationMessages.push({ role: 'user', content: userPrompt });
-
-    const message = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: MAX_TOKENS,
-      system: systemPrompt,
-      messages: conversationMessages,
-    });
-
-    // Extract response text
-    const responseText = message.content
-      .filter(block => block.type === 'text')
-      .map(block => (block as { type: 'text'; text: string }).text)
-      .join('\n');
-
-    // 5. Parse response (conversational mode skips structured parsing)
-    const processingTime = Date.now() - startTime;
+    // Current question always goes last (only for non-conversational; conversational builds its own)
+    if (!isConversational) {
+      conversationMessages.push({ role: 'user', content: userPrompt });
+    }
 
     if (isConversational) {
-      // Conversational mode — save as chat message, return raw text
+      // =============================================
+      // CONVERSATIONAL MODE — with tool-use support
+      // =============================================
+      let currentMessages: MessageParam[] = [
+        ...conversationMessages.map(m => ({ ...m })),
+        { role: 'user' as const, content: userPrompt },
+      ];
+
+      // First Claude call — may return tool_use blocks
+      let response = await withTimeout(
+        anthropic.messages.create({
+          model: AI_MODEL,
+          max_tokens: 2048,
+          system: systemPrompt,
+          tools: GURU_TOOLS,
+          tool_choice: { type: "auto" },
+          messages: currentMessages,
+        }),
+        API_TIMEOUT_MS,
+        'Guru initial call'
+      );
+
+      const actionsTaken: Array<{ tool: string } & ToolResult> = [];
+      let rounds = 0;
+
+      // Multi-turn tool loop
+      while (response.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS) {
+        rounds++;
+        const toolUseBlocks = response.content.filter(
+          (b): b is Extract<typeof b, { type: 'tool_use' }> => b.type === 'tool_use'
+        );
+
+        const toolResults: ToolResultBlockParam[] = [];
+        // Execute tools sequentially to avoid settings JSONB race conditions
+        for (const toolCall of toolUseBlocks) {
+          try {
+            const result = await executeTool(
+              toolCall.name,
+              toolCall.input as Record<string, unknown>,
+              child_id
+            );
+            actionsTaken.push({ tool: toolCall.name, ...result });
+            toolResults.push({
+              type: 'tool_result' as const,
+              tool_use_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (err) {
+            console.error(`[Guru Tool] ${toolCall.name} failed:`, err);
+            toolResults.push({
+              type: 'tool_result' as const,
+              tool_use_id: toolCall.id,
+              is_error: true,
+              content: JSON.stringify({
+                success: false,
+                message: `Tool failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+              }),
+            });
+          }
+        }
+
+        // Accumulate messages for next round (includes all previous turns)
+        currentMessages = [
+          ...currentMessages,
+          { role: 'assistant' as const, content: response.content as unknown as ContentBlockParam[] },
+          { role: 'user' as const, content: toolResults },
+        ];
+
+        response = await withTimeout(
+          anthropic.messages.create({
+            model: AI_MODEL,
+            max_tokens: 2048,
+            system: systemPrompt,
+            tools: GURU_TOOLS,
+            tool_choice: { type: "auto" },
+            messages: currentMessages,
+          }),
+          API_TIMEOUT_MS,
+          `Guru tool round ${rounds}`
+        );
+      }
+
+      // Guard: if loop exited due to MAX_TOOL_ROUNDS, log it
+      if (rounds >= MAX_TOOL_ROUNDS && response.stop_reason === 'tool_use') {
+        console.warn(`[Guru] Max tool rounds (${MAX_TOOL_ROUNDS}) reached. Some actions may be incomplete.`);
+      }
+
+      // Extract final text (with fallback for empty responses after tool loop)
+      let responseText = response.content
+        .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
+        .map(b => b.text)
+        .join('\n');
+
+      if (!responseText.trim() && actionsTaken.length > 0) {
+        // Claude used tools but didn't produce a text response — generate a summary
+        const successes = actionsTaken.filter(a => a.success);
+        responseText = successes.length > 0
+          ? `I've made ${successes.length} update${successes.length > 1 ? 's' : ''}: ${successes.map(a => a.message).join(', ')}.`
+          : "I tried to make some changes but ran into issues. Could you try again?";
+      }
+
+      // Log cost estimate
+      const { input_tokens, output_tokens } = response.usage;
+      const estCost = (input_tokens * 3 + output_tokens * 15) / 1_000_000;
+      console.log(`[Guru] Tool rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+
+      const processingTime = Date.now() - startTime;
+
+      // Save interaction
       const { data: saved, error: saveError } = await supabase
         .from('montree_guru_interactions')
         .insert({
@@ -239,6 +349,8 @@ export async function POST(request: NextRequest) {
             child_name: childContext.name,
             age: `${childContext.age_years}y ${childContext.age_months}m`,
             conversational: true,
+            tool_rounds: rounds,
+            actions_taken: actionsTaken.length,
           },
           response_insight: responseText,
           sources_used: knowledge.sources_used,
@@ -268,10 +380,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         insight: responseText,
+        actions: actionsTaken.length > 0 ? actionsTaken : undefined,
         interaction_id: saved?.id,
         conversational: true,
       });
     }
+
+    // =============================================
+    // STRUCTURED MODE (teachers) — no tool-use
+    // =============================================
+    // userPrompt already pushed to conversationMessages above (line 227)
+
+    const message = await anthropic.messages.create({
+      model: AI_MODEL,
+      max_tokens: MAX_TOKENS,
+      system: systemPrompt,
+      messages: conversationMessages,
+    });
+
+    // Extract response text
+    const responseText = message.content
+      .filter(block => block.type === 'text')
+      .map(block => (block as { type: 'text'; text: string }).text)
+      .join('\n');
+
+    // 5. Parse response
+    const processingTime = Date.now() - startTime;
 
     const parsed = parseGuruResponse(responseText);
 

@@ -41,6 +41,44 @@ If you have previous messages, build on them naturally:
 - Notice patterns across conversations
 - If previous advice didn't work, try a different approach`;
 
+const AREA_LABELS: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+
+const INTAKE_MODE = `MODE: INTAKE
+This is a new family. Your goal:
+1. Ask about the child — personality, interests, challenges, any Montessori experience
+2. Ask 2-3 follow-up questions to understand the child deeply
+3. When you have enough info, call save_child_profile with structured data
+4. Then set up the shelf: call set_focus_work once for each of the 5 areas
+5. Call save_checkin to schedule the first weekly check-in (7 days)
+6. Explain what you've set up and walk them through the first work`;
+
+const CHECKIN_MODE = `MODE: WEEKLY CHECK-IN
+It's time for this child's weekly check-in. Your goal:
+1. Greet warmly, ask how the week went
+2. Go through each area on the shelf — ask about each work
+3. Based on reports: update_progress for works that changed status
+4. Rotate the shelf: set_focus_work for any areas where the child is ready for a new work
+5. Save notable observations via save_observation
+6. Call save_checkin with a summary and schedule the next check-in
+7. Give encouragement and preview what's coming next week`;
+
+const NORMAL_MODE = `MODE: NORMAL CONVERSATION
+Answer the parent's question naturally. You may use tools if the conversation warrants it
+(e.g., parent says "she mastered it!" → call update_progress), but don't force tool use.`;
+
+const TOOL_USE_INSTRUCTIONS = `You have access to tools that modify the child's learning plan.
+Use them naturally during conversation — don't announce "I'm calling a tool."
+After using tools, reference what you did conversationally:
+  "I've updated the shelf — here's what's new this week..."
+  "Great news! I've marked Pink Tower as mastered."
+Do NOT call tools unnecessarily. Only call them when the conversation warrants a real change.`;
+
 export interface ConversationalPromptParts {
   systemPrompt: string;
   userPrompt: string;
@@ -56,10 +94,38 @@ export function buildConversationalPrompt(
   knowledge: KnowledgeResult,
   savedConcerns: string[],
   isFirstMessage: boolean,
+  childSettings?: Record<string, unknown>,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
   const childName = childContext.name?.split(' ')[0] || 'the child';
+
+  // Determine mode — defaults to NORMAL if childSettings not passed
+  const intakeComplete = (childSettings?.guru_intake_complete as boolean) ?? false;
+  const nextCheckin = (childSettings?.guru_next_checkin as string) ?? null;
+  const isCheckinDue = nextCheckin ? new Date(nextCheckin) <= new Date() : false;
+
+  let modeInstructions: string;
+  if (!intakeComplete) {
+    modeInstructions = INTAKE_MODE;
+  } else if (isCheckinDue) {
+    modeInstructions = CHECKIN_MODE;
+  } else {
+    modeInstructions = NORMAL_MODE;
+  }
+
+  // Build shelf context
+  const shelfContext = childContext.focus_works?.length > 0
+    ? "CURRENT SHELF:\n" +
+      childContext.focus_works.map(fw =>
+        `- ${AREA_LABELS[fw.area] || fw.area}: ${fw.work_name} (since ${new Date(fw.set_at).toLocaleDateString()})`
+      ).join("\n")
+    : "CURRENT SHELF: Empty — no focus works set. You should set up the shelf.";
+
+  // Build child profile context
+  const profileContext = childContext.guru_child_profile
+    ? `CHILD PROFILE (from intake):\n${JSON.stringify(childContext.guru_child_profile)}`
+    : '';
 
   // Build concern context
   let concernContext = '';
@@ -72,8 +138,14 @@ export function buildConversationalPrompt(
     concernContext = `\nTHIS PARENT'S MAIN CONCERNS:\n${concernDetails}\nKeep these concerns in mind when giving advice. Weave them in naturally when relevant.\n`;
   }
 
-  // Build the system prompt with concern context
+  // Build the system prompt with all sections
   let systemPrompt = CONVERSATIONAL_SYSTEM_PROMPT;
+  systemPrompt += '\n\n' + modeInstructions;
+  systemPrompt += '\n\n' + TOOL_USE_INSTRUCTIONS;
+  systemPrompt += '\n\n' + shelfContext;
+  if (profileContext) {
+    systemPrompt += '\n\n' + profileContext;
+  }
   if (concernContext) {
     systemPrompt += '\n' + concernContext;
   }

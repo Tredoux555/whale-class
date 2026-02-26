@@ -1,0 +1,235 @@
+// lib/montree/guru/tool-executor.ts
+// Executes Guru tools against Supabase
+// Handles: curriculum validation, enum checks, first-mastery/first-presentation protection
+
+import { getSupabase } from '@/lib/supabase-client';
+import { updateChildSettings } from './settings-helper';
+import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+
+// Build a set of valid work names at module load for fast lookup
+const VALID_WORK_NAMES: Set<string> = new Set();
+try {
+  const allWorks = loadAllCurriculumWorks();
+  for (const work of allWorks) {
+    VALID_WORK_NAMES.add(work.name.toLowerCase());
+  }
+} catch {
+  console.warn('[Tool Executor] Could not load curriculum for validation');
+}
+
+const AREA_LABELS: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+
+export interface ToolResult {
+  success: boolean;
+  message: string;
+}
+
+export async function executeTool(
+  toolName: string,
+  input: Record<string, unknown>,
+  childId: string
+): Promise<ToolResult> {
+  const supabase = getSupabase();
+
+  switch (toolName) {
+    case 'set_focus_work': {
+      const area = input.area as string;
+      const work_name = input.work_name as string;
+      if (!area || !work_name) return { success: false, message: 'Missing area or work_name' };
+      if (work_name.length > 200) return { success: false, message: 'Work name too long' };
+
+      // Validate work_name exists in curriculum (prevents Claude hallucinating work names)
+      if (VALID_WORK_NAMES.size > 0 && !VALID_WORK_NAMES.has(work_name.toLowerCase())) {
+        // Also check DB for custom works before rejecting
+        const { data: customWork } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id')
+          .ilike('name', work_name)
+          .limit(1)
+          .maybeSingle();
+        if (!customWork) {
+          return { success: false, message: `Unknown work: "${work_name}". Use an exact name from the curriculum.` };
+        }
+      }
+
+      const { error } = await supabase
+        .from('montree_child_focus_works')
+        .upsert({
+          child_id: childId,
+          area,
+          work_name,
+          set_at: new Date().toISOString(),
+          set_by: 'guru',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'child_id,area' });
+
+      if (error) return { success: false, message: 'Failed to set focus work' };
+      return { success: true, message: `✅ ${AREA_LABELS[area] || area}: ${work_name}` };
+    }
+
+    case 'clear_focus_work': {
+      const area = input.area as string;
+      if (!area) return { success: false, message: 'Missing area' };
+      const { error } = await supabase
+        .from('montree_child_focus_works')
+        .delete()
+        .eq('child_id', childId)
+        .eq('area', area);
+
+      if (error) return { success: false, message: 'Failed to clear focus work' };
+      return { success: true, message: `Cleared ${AREA_LABELS[area] || area} from shelf` };
+    }
+
+    case 'update_progress': {
+      const work_name = input.work_name as string;
+      const area = input.area as string;
+      const status = input.status as string;
+      const notes = (input.notes as string) || null;
+
+      if (!work_name || !area || !status) return { success: false, message: 'Missing work_name, area, or status' };
+
+      // Validate area enum
+      const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      if (!validAreas.includes(area)) {
+        return { success: false, message: `Invalid area: ${area}` };
+      }
+
+      // Validate status enum
+      const validStatuses = ['not_started', 'presented', 'practicing', 'mastered'];
+      if (!validStatuses.includes(status)) {
+        return { success: false, message: `Invalid status: ${status}` };
+      }
+
+      const record: Record<string, unknown> = {
+        child_id: childId,
+        work_name,
+        area,
+        status,
+        notes,
+        updated_at: new Date().toISOString(),
+      };
+
+      // First mastery protection: only set mastered_at if not already set
+      if (status === 'mastered') {
+        const { data: existing } = await supabase
+          .from('montree_child_progress')
+          .select('mastered_at')
+          .eq('child_id', childId)
+          .eq('work_name', work_name)
+          .maybeSingle();
+
+        if (!existing?.mastered_at) {
+          record.mastered_at = new Date().toISOString();
+        }
+      }
+
+      // First presentation protection: only set presented_at if not already set
+      if (status === 'presented') {
+        const { data: existing } = await supabase
+          .from('montree_child_progress')
+          .select('presented_at')
+          .eq('child_id', childId)
+          .eq('work_name', work_name)
+          .maybeSingle();
+
+        if (!existing?.presented_at) {
+          record.presented_at = new Date().toISOString();
+        }
+      }
+
+      const { error } = await supabase
+        .from('montree_child_progress')
+        .upsert(record, { onConflict: 'child_id,work_name' });
+
+      if (error) return { success: false, message: 'Failed to update progress' };
+      return { success: true, message: `${work_name} → ${status}` };
+    }
+
+    case 'save_observation': {
+      if (!input.behavior_description || typeof input.behavior_description !== 'string') {
+        return { success: false, message: 'Missing behavior_description' };
+      }
+      if ((input.behavior_description as string).length > 2000) {
+        return { success: false, message: 'behavior_description too long (max 2000 chars)' };
+      }
+      // Validate behavior_function enum
+      const validFunctions = ['attention', 'escape', 'sensory', 'tangible', 'unknown'];
+      const behaviorFunc = (input.behavior_function as string) || 'unknown';
+      if (!validFunctions.includes(behaviorFunc)) {
+        return { success: false, message: `Invalid behavior_function: ${behaviorFunc}` };
+      }
+
+      const { error } = await supabase
+        .from('montree_behavioral_observations')
+        .insert({
+          child_id: childId,
+          classroom_id: null,    // Explicit null — home observations have no classroom
+          observed_by: null,     // UUID column — null for guru-created observations
+          behavior_description: input.behavior_description as string,
+          behavior_function: behaviorFunc,
+          activity_during: (input.activity_during as string) || null,
+        });
+
+      if (error) {
+        console.error('[Tool] save_observation failed:', error.message);
+        return { success: false, message: 'Failed to save observation' };
+      }
+      return { success: true, message: 'Observation saved' };
+    }
+
+    case 'save_checkin': {
+      const summary = input.summary as string;
+      const days = input.next_checkin_days as number;
+      if (!summary) return { success: false, message: 'Missing summary' };
+      if (typeof days !== 'number' || days < 1 || days > 90) return { success: false, message: 'next_checkin_days must be 1-90' };
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + (days || 7));
+
+      // Read existing settings to get checkin_count
+      const { data: child } = await supabase
+        .from('montree_children')
+        .select('settings')
+        .eq('id', childId)
+        .single();
+      const existing = (child?.settings as Record<string, unknown>) || {};
+      const count = (existing.guru_checkin_count as number) || 0;
+
+      await updateChildSettings(childId, {
+        guru_last_checkin: new Date().toISOString(),
+        guru_last_checkin_summary: summary,
+        guru_next_checkin: nextDate.toISOString(),
+        guru_checkin_count: count + 1,
+      });
+
+      return { success: true, message: `📅 Next check-in: ${nextDate.toLocaleDateString()}` };
+    }
+
+    case 'save_child_profile': {
+      if (!input.personality || !input.interests) {
+        return { success: false, message: 'Missing personality or interests' };
+      }
+      // Prevent overly large profile data from being stored
+      const profileJson = JSON.stringify(input);
+      if (profileJson.length > 5000) {
+        return { success: false, message: 'Profile data too large' };
+      }
+      await updateChildSettings(childId, {
+        guru_intake_complete: true,
+        guru_intake_date: new Date().toISOString(),
+        guru_child_profile: input,
+      });
+
+      return { success: true, message: 'Child profile saved' };
+    }
+
+    default:
+      console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
+      return { success: false, message: `Unknown tool: ${toolName}` };
+  }
+}

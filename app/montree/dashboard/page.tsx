@@ -16,6 +16,7 @@ import QuickGuruFAB from '@/components/montree/guru/QuickGuruFAB';
 import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
 import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
+import GuruChatThread from '@/components/montree/guru/GuruChatThread';
 
 
 interface Child {
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showDashboardGuide, setShowDashboardGuide] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [guruFirstView, setGuruFirstView] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
@@ -87,6 +89,47 @@ export default function DashboardPage() {
     return (
       <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-emerald-50 to-teal-50'} flex items-center justify-center`}>
         <div className="animate-bounce text-5xl">{isParent ? '🌿' : '🌳'}</div>
+      </div>
+    );
+  }
+
+  // Guru-first full-screen view for home parents
+  if (isParent && children.length >= 1 && guruFirstView) {
+    const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
+    return (
+      <div className="flex flex-col h-screen">
+        {/* Mini header with child tabs + back button */}
+        <div className="bg-gradient-to-r from-[#0D3330] to-[#164340] px-4 py-2 flex items-center gap-3">
+          <button
+            onClick={() => setGuruFirstView(false)}
+            className="text-white/70 hover:text-white text-sm"
+          >
+            ← Back
+          </button>
+          {children.length > 1 && (
+            <div className="flex gap-2 flex-1 overflow-x-auto">
+              {children.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedChildId(c.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    c.id === selectedChild.id
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white/15 text-white/70 hover:bg-white/25'
+                  }`}
+                >
+                  {c.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <GuruChatThread
+          key={selectedChild.id}
+          childId={selectedChild.id}
+          childName={selectedChild.name}
+          classroomId={session?.classroom?.id}
+        />
       </div>
     );
   }
@@ -147,6 +190,22 @@ export default function DashboardPage() {
             {/* FAQ Section — instant answers, no API calls */}
             <div className="mb-6">
               <GuruFAQSection childAge={undefined} />
+            </div>
+
+            {/* Guru full-screen chat button */}
+            <div className="mb-4">
+              <button
+                onClick={() => setGuruFirstView(true)}
+                className={`w-full ${HOME_THEME.primaryBtn} rounded-2xl p-4 text-center transition-all hover:shadow-md active:scale-[0.98]`}
+              >
+                <span className="text-2xl mb-1 block">🌿</span>
+                <span className="text-sm font-semibold text-white">
+                  Chat with {childName}&apos;s Guide
+                </span>
+                <span className="text-xs text-white/70 block mt-0.5">
+                  Full-screen Montessori coaching
+                </span>
+              </button>
             </div>
 
             {/* Quick link to child's week view */}
