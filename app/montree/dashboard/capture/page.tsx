@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
@@ -43,6 +44,7 @@ function CaptureLoading() {
 
 function CaptureContent() {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   
   // Get pre-selected child from URL if any
@@ -283,7 +285,7 @@ function CaptureContent() {
         <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🌳</span>
           <h1 className="text-lg font-bold text-gray-800">
-            {step === 'success' ? (mediaType === 'video' ? 'Video Saved!' : 'Photo Saved!') : step === 'error' ? 'Upload Failed' : 'Uploading...'}
+            {step === 'success' ? (mediaType === 'video' ? t('capture.videoSaved') : t('capture.photoSaved')) : step === 'error' ? t('capture.failed') : t('capture.uploading')}
           </h1>
         </header>
 
@@ -307,7 +309,7 @@ function CaptureContent() {
                 className="w-full rounded-2xl shadow-lg bg-black"
               />
               <p className="text-center text-sm text-gray-500 mt-2">
-                Duration: {Math.round(capturedVideo.duration)}s
+                {t('capture.duration')}: {Math.round(capturedVideo.duration)}s
               </p>
             </div>
           )}
@@ -351,7 +353,7 @@ function CaptureContent() {
             <div className="text-center">
               <div className="text-6xl mb-4">✅</div>
               <p className="text-lg text-gray-600 mb-8">
-                {mediaType === 'video' ? 'Video uploaded successfully!' : 'Photo uploaded successfully!'}
+                {mediaType === 'video' ? t('capture.videoSuccess') : t('capture.photoSuccess')}
               </p>
 
               <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -359,13 +361,13 @@ function CaptureContent() {
                   onClick={handleTakeAnother}
                   className="w-full py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
-                  {mediaType === 'video' ? '🎥 Record Another Video' : '📷 Take Another Photo'}
+                  {mediaType === 'video' ? `🎥 ${t('capture.recordAnother')}` : `📷 ${t('capture.takeAnother')}`}
                 </button>
                 <button
                   onClick={handleDone}
                   className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
-                  ✓ Done
+                  ✓ {t('capture.done')}
                 </button>
               </div>
             </div>
@@ -375,7 +377,7 @@ function CaptureContent() {
           {step === 'error' && (
             <div className="text-center">
               <div className="text-6xl mb-4">❌</div>
-              <p className="text-lg text-gray-600 mb-2">Upload failed</p>
+              <p className="text-lg text-gray-600 mb-2">{t('capture.failed')}</p>
               <p className="text-sm text-red-500 mb-8">{error}</p>
               
               <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -383,13 +385,13 @@ function CaptureContent() {
                   onClick={handleRetry}
                   className="w-full py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors"
                 >
-                  🔄 Try Again
+                  🔄 {t('capture.tryAgain')}
                 </button>
                 <button
                   onClick={handleTakeAnother}
                   className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                 >
-                  📷 Retake Photo
+                  📷 {t('capture.retakePhoto')}
                 </button>
               </div>
             </div>
@@ -407,9 +409,9 @@ function CaptureContent() {
         <div className="flex items-center gap-2">
           <span className="text-xl">📷</span>
           <div>
-            <h1 className="font-bold text-gray-800">Take Photo</h1>
+            <h1 className="font-bold text-gray-800">{t('capture.takePhoto')}</h1>
             <p className="text-xs text-gray-500">
-              {isGroupMode ? 'Select children for group photo' : 'Select a child'}
+              {isGroupMode ? t('capture.selectChildGroup') : t('capture.selectChild')}
             </p>
           </div>
         </div>
@@ -424,7 +426,7 @@ function CaptureContent() {
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          👥 Group
+          👥 {t('capture.group')}
         </Link>
       </div>
 
@@ -456,11 +458,11 @@ function CaptureContent() {
         >
           <span>📷</span>
           <span>
-            {selectedChildIds.length === 0 
-              ? 'Select a child first'
+            {selectedChildIds.length === 0
+              ? t('capture.selectChildFirst')
               : selectedChildIds.length === 1
-                ? 'Take Photo'
-                : `Take Photo (${selectedChildIds.length} children)`
+                ? t('capture.takePhoto')
+                : t('capture.takePhotoCount').replace('{count}', String(selectedChildIds.length))
             }
           </span>
         </button>
