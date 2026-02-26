@@ -10,15 +10,12 @@ import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import WelcomeModal from '@/components/montree/WelcomeModal';
-import GuruDailyBriefing from '@/components/montree/guru/GuruDailyBriefing';
+import GuruDashboardCards from '@/components/montree/guru/GuruDashboardCards';
 import ConcernCardsGrid from '@/components/montree/guru/ConcernCardsGrid';
 import QuickGuruFAB from '@/components/montree/guru/QuickGuruFAB';
-import WeeklyReview from '@/components/montree/guru/WeeklyReview';
 import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
 import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import EndOfDayNudge from '@/components/montree/guru/EndOfDayNudge';
-import GuruSuggestionCard from '@/components/montree/guru/GuruSuggestionCard';
 
 
 interface Child {
@@ -137,24 +134,9 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Morning Briefing — auto-fetch daily plan */}
+            {/* Guru Dashboard — single API call for all cards */}
             <div className="mb-4">
-              <GuruDailyBriefing childId={selectedChild.id} childName={childName} />
-            </div>
-
-            {/* End-of-Day Nudge — only if progress logged today */}
-            <div className="mb-4">
-              <EndOfDayNudge childId={selectedChild.id} childName={childName} />
-            </div>
-
-            {/* Proactive Suggestion — stale works or inactivity */}
-            <div className="mb-4">
-              <GuruSuggestionCard childId={selectedChild.id} childName={childName} />
-            </div>
-
-            {/* Weekly Review — collapsible banner */}
-            <div className="mb-4">
-              <WeeklyReview childId={selectedChild.id} childName={childName} />
+              <GuruDashboardCards childId={selectedChild.id} childName={childName} />
             </div>
 
             {/* Concern Cards Grid — "I'm worried about..." */}

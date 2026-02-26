@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const todayISO = today.toISOString();
 
     const { data: todayProgress, error: progressError } = await supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('work_name, area, status, updated_at')
       .eq('child_id', childId)
       .gte('updated_at', todayISO)
@@ -67,10 +67,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, nudge: null, reason: 'ai_disabled' });
     }
 
-    // Get child name
+    // Get child info
     const { data: child } = await supabase
       .from('montree_children')
-      .select('name')
+      .select('name, classroom_id')
       .eq('id', childId)
       .single();
 
@@ -106,6 +106,7 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
       .from('montree_guru_interactions')
       .insert({
         child_id: childId,
+        classroom_id: child?.classroom_id,
         question: `End-of-day nudge for ${todayProgress.length} activities`,
         question_type: 'end_of_day',
         response_insight: nudgeText,
