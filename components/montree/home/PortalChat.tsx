@@ -9,6 +9,97 @@ import { toast } from 'sonner';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import VoiceNoteButton from '@/components/montree/guru/VoiceNoteButton';
 
+// TTS playback hook — manages audio state per message
+function useTTS() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const stop = useCallback(() => {
+    // Cancel any pending fetch
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    // Stop any playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+    setPlayingId(null);
+    setLoadingId(null);
+  }, []);
+
+  const play = useCallback(async (messageId: string, text: string) => {
+    // If already playing this message, stop it
+    if (playingId === messageId) {
+      stop();
+      return;
+    }
+
+    // Stop any current playback or pending fetch
+    stop();
+    setLoadingId(messageId);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const res = await fetch('/api/montree/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+        signal: controller.signal,
+      });
+
+      if (controller.signal.aborted) return;
+
+      if (!res.ok) {
+        toast.error('Could not generate speech');
+        setLoadingId(null);
+        return;
+      }
+
+      const blob = await res.blob();
+      if (controller.signal.aborted) return;
+
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        setPlayingId(null);
+        audioRef.current = null;
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        setPlayingId(null);
+        setLoadingId(null);
+        audioRef.current = null;
+      };
+
+      audioRef.current = audio;
+      abortRef.current = null;
+      setLoadingId(null);
+      setPlayingId(messageId);
+      await audio.play();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setLoadingId(null);
+      toast.error('Could not generate speech');
+    }
+  }, [playingId, stop]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { stop(); };
+  }, [stop]);
+
+  return { play, stop, playingId, loadingId };
+}
+
 interface ChatMessage {
   id: string;
   content: string;
@@ -64,6 +155,7 @@ export default function PortalChat({
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const tts = useTTS();
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -334,6 +426,27 @@ export default function PortalChat({
                     </span>
                   ))}
                 </div>
+              )}
+
+              {/* TTS speaker button — Guru messages only */}
+              {!msg.isUser && msg.content.length > 10 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); tts.play(msg.id, msg.content); }}
+                  className="mt-2 flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                  title={tts.playingId === msg.id ? 'Stop' : 'Listen'}
+                >
+                  {tts.loadingId === msg.id ? (
+                    <span className="animate-pulse">⏳</span>
+                  ) : tts.playingId === msg.id ? (
+                    <span className="text-[#4ADE80] animate-pulse">🔊</span>
+                  ) : (
+                    <span>🔈</span>
+                  )}
+                  <span>
+                    {tts.loadingId === msg.id ? 'Generating...' :
+                     tts.playingId === msg.id ? 'Playing' : 'Listen'}
+                  </span>
+                </button>
               )}
             </div>
           </div>
