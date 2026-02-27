@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Photo {
   id: string;
@@ -16,6 +17,7 @@ interface Photo {
 function ParentPhotosContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const childIdParam = searchParams.get('child');
 
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ function ParentPhotosContent() {
         setChildName(child.name);
         loadPhotos(child.id);
       } else {
-        toast.error('No child selected');
+        toast.error(t('common.noChildSelected'));
         router.push('/montree/parent/dashboard');
       }
     }
@@ -70,7 +72,7 @@ function ParentPhotosContent() {
       }
     } catch (err) {
       console.error('Failed to load photos:', err);
-      toast.error('Failed to load photos');
+      toast.error(t('parentPhotos.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -92,7 +94,7 @@ function ParentPhotosContent() {
       }
     } catch (err) {
       console.error('Failed to load full image:', err);
-      toast.error('Failed to load image');
+      toast.error(t('parentPhotos.errorLoadImage'));
     }
   };
 
@@ -129,7 +131,7 @@ function ParentPhotosContent() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">📸</div>
-          <p className="text-gray-600">Loading photos...</p>
+          <p className="text-gray-600">{t('parentPhotos.loadingPhotos')}</p>
         </div>
       </div>
     );
@@ -149,8 +151,8 @@ function ParentPhotosContent() {
             ←
           </button>
           <div>
-            <h1 className="font-bold text-gray-800">Photo Gallery</h1>
-            <p className="text-sm text-gray-500">{childName ? `${childName}'s photos` : 'Shared by teachers'}</p>
+            <h1 className="font-bold text-gray-800">{t('parentPhotos.title')}</h1>
+            <p className="text-sm text-gray-500">{childName ? `${childName}'s ${t('parentPhotos.photos')}` : t('parentPhotos.sharedByTeachers')}</p>
           </div>
         </div>
       </header>
@@ -159,9 +161,9 @@ function ParentPhotosContent() {
         {photos.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <div className="text-5xl mb-4">📷</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">No Photos Yet</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentPhotos.noPhotosTitle')}</h2>
             <p className="text-gray-500">
-              Photos shared by teachers will appear here
+              {t('parentPhotos.noPhotosDescription')}
             </p>
           </div>
         ) : (
@@ -199,7 +201,7 @@ function ParentPhotosContent() {
                   }}
                   className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-medium hover:bg-emerald-50 transition"
                 >
-                  Load More Photos
+                  {t('common.loadMore')}
                 </button>
               </div>
             )}
@@ -250,14 +252,14 @@ function ParentPhotosContent() {
                   )}
                   className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
                 >
-                  ⬇ Save Photo
+                  ⬇ {t('common.save')}
                 </button>
               )}
               <button
                 onClick={() => setSelectedPhoto(null)}
                 className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>
@@ -274,7 +276,7 @@ export default function ParentPhotosPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">📸</div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     }>
