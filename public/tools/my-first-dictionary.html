@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My First Dictionary — AMI Montessori</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    background: #FFF8E7;
+    color: #1a1a1a;
+  }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar {
+    background: #0D3330;
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  .toolbar h1 {
+    font-size: 22px;
+    margin-right: auto;
+  }
+  .toolbar label {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toolbar input[type="text"] {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-family: inherit;
+    width: 160px;
+  }
+  .toolbar select {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .toolbar button {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-print {
+    background: #4ADE80;
+    color: #0D3330;
+  }
+  .btn-print:hover { background: #22c55e; }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    background: #0a2624;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    font-family: inherit;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab:hover { color: #fff; }
+  .tab.active {
+    color: #4ADE80;
+    border-bottom-color: #4ADE80;
+  }
+
+  /* ===== PREVIEW CONTAINER ===== */
+  .preview {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  /* ===== DICTIONARY PAGE ===== */
+  .dict-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 15mm 18mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    page-break-after: always;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 8mm;
+    padding-bottom: 4mm;
+    border-bottom: 2px dashed #ccc;
+  }
+  .page-header h2 {
+    font-size: 24px;
+    color: #0D3330;
+  }
+  .page-header .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+  }
+  .page-header .child-name {
+    font-size: 16px;
+    color: #0D3330;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  /* ===== WORD ROW ===== */
+  .word-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2mm;
+    padding: 3mm 4mm;
+    border-radius: 8px;
+    background: #fafafa;
+  }
+  .word-row:nth-child(even) {
+    background: #f0f8f0;
+  }
+
+  .word-picture {
+    font-size: 40px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .word-solid {
+    font-size: 28px;
+    font-weight: bold;
+    color: #0D3330;
+    width: 90px;
+    text-align: center;
+    flex-shrink: 0;
+    letter-spacing: 2px;
+  }
+
+  /* ===== TRACING AREA ===== */
+  .trace-area {
+    flex: 1;
+    position: relative;
+    height: 52px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Handwriting guidelines */
+  .guidelines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+  .guideline-top {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #e0e0e0;
+  }
+  .guideline-mid {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed #ccc;
+    transform: translateY(-50%);
+  }
+  .guideline-bottom {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #bbb;
+  }
+
+  /* Trace text — dotted outline */
+  .trace-word {
+    position: relative;
+    z-index: 1;
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 8px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px #aaa;
+    padding-left: 8px;
+  }
+  .trace-word.dashed {
+    -webkit-text-stroke: 0;
+    color: transparent;
+    background: none;
+    /* Fallback for browsers without text-stroke */
+  }
+
+  /* Second trace line (blank with just guidelines) */
+  .write-area {
+    flex: 1;
+    position: relative;
+    height: 52px;
+  }
+
+  /* ===== GROUP HEADER ===== */
+  .group-header {
+    text-align: center;
+    padding: 6mm 0 3mm;
+    margin-bottom: 2mm;
+  }
+  .group-header h3 {
+    font-size: 20px;
+    color: #0D3330;
+  }
+  .group-header .letters {
+    font-size: 32px;
+    letter-spacing: 12px;
+    color: #4ADE80;
+    margin-top: 4px;
+    font-weight: bold;
+  }
+
+  /* ===== COVER PAGE ===== */
+  .cover-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 20mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    page-break-after: always;
+  }
+  .cover-page .big-emoji { font-size: 80px; margin-bottom: 20px; }
+  .cover-page h1 {
+    font-size: 48px;
+    color: #0D3330;
+    margin-bottom: 12px;
+  }
+  .cover-page .cover-subtitle {
+    font-size: 22px;
+    color: #666;
+    margin-bottom: 40px;
+  }
+  .cover-page .name-line {
+    font-size: 20px;
+    color: #999;
+    border-bottom: 2px solid #0D3330;
+    padding: 8px 60px;
+    min-width: 200px;
+    margin-bottom: 8px;
+  }
+  .cover-page .name-label {
+    font-size: 14px;
+    color: #999;
+  }
+  .cover-page .cover-deco {
+    font-size: 28px;
+    margin-top: 40px;
+    letter-spacing: 8px;
+  }
+
+  /* ===== LAYOUT OPTIONS ===== */
+  .layout-compact .word-row { margin-bottom: 1mm; padding: 2mm 4mm; }
+  .layout-compact .word-picture { font-size: 32px; width: 42px; height: 42px; }
+  .layout-compact .word-solid { font-size: 22px; width: 80px; }
+  .layout-compact .trace-area { height: 42px; }
+  .layout-compact .trace-word { font-size: 28px; letter-spacing: 6px; }
+  .layout-compact .write-area { height: 42px; }
+
+  .layout-spacious .word-row { margin-bottom: 4mm; padding: 4mm 4mm; }
+  .layout-spacious .word-picture { font-size: 48px; width: 60px; height: 60px; }
+  .layout-spacious .word-solid { font-size: 34px; width: 100px; }
+  .layout-spacious .trace-area { height: 60px; }
+  .layout-spacious .trace-word { font-size: 42px; letter-spacing: 10px; }
+  .layout-spacious .write-area { height: 60px; }
+
+  /* ===== TWO-COLUMN MODE ===== */
+  .two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2mm 6mm;
+  }
+  .two-col-grid .word-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 3mm;
+  }
+  .two-col-grid .word-solid { width: auto; }
+  .two-col-grid .trace-area { width: 100%; }
+  .two-col-grid .write-area { width: 100%; }
+
+  /* ===== A5 PAGE SIZE ===== */
+  .page-a5 .dict-page,
+  .page-a5 .cover-page {
+    width: 148mm;
+    min-height: 210mm;
+    padding: 10mm 12mm;
+  }
+  .page-a5 .dict-page { padding: 8mm 10mm; }
+  .page-a5 .cover-page h1 { font-size: 36px; }
+  .page-a5 .cover-page .big-emoji { font-size: 60px; }
+  .page-a5 .cover-page .cover-subtitle { font-size: 18px; }
+  .page-a5 .word-row { margin-bottom: 1.5mm; padding: 2mm 3mm; }
+  .page-a5 .word-picture { font-size: 30px; width: 38px; height: 38px; }
+  .page-a5 .word-solid { font-size: 20px; width: 70px; }
+  .page-a5 .trace-area { height: 38px; }
+  .page-a5 .trace-word { font-size: 26px; letter-spacing: 5px; }
+  .page-a5 .write-area { height: 38px; }
+  .page-a5 .page-header h2 { font-size: 18px; }
+  .page-a5 .page-header { margin-bottom: 4mm; padding-bottom: 2mm; }
+
+  /* ===== PRINT INSTRUCTIONS MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1a1a1a;
+  }
+  .modal h2 { font-size: 22px; color: #0D3330; margin-bottom: 16px; }
+  .modal h3 { font-size: 16px; color: #0D3330; margin: 16px 0 8px; }
+  .modal ol { padding-left: 20px; line-height: 1.8; font-size: 14px; }
+  .modal li { margin-bottom: 4px; }
+  .modal .tip { background: #f0fdf4; border-left: 3px solid #4ADE80; padding: 8px 12px; margin: 12px 0; font-size: 13px; border-radius: 4px; }
+  .modal .close-btn {
+    margin-top: 16px;
+    padding: 10px 24px;
+    background: #0D3330;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  /* ===== PRINT STYLES ===== */
+  @media print {
+    body { background: white; }
+    .toolbar, .tabs, .no-print, .modal-overlay { display: none !important; }
+    .preview { padding: 0; gap: 0; }
+    .dict-page, .cover-page {
+      border: none;
+      box-shadow: none;
+      margin: 0;
+      padding: 12mm 15mm;
+    }
+    .page-a5 .dict-page, .page-a5 .cover-page {
+      padding: 8mm 10mm;
+    }
+  }
+  @media print and (--page-size-a5) {
+    @page { size: A5 portrait; margin: 0; }
+  }
+
+  /* ===== INFO BAR ===== */
+  .info-bar {
+    padding: 12px 24px;
+    background: #f0fdf4;
+    border-bottom: 1px solid #bbf7d0;
+    font-size: 14px;
+    color: #166534;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>📖 My First Dictionary</h1>
+  <label>Child's Name:
+    <input type="text" id="childName" placeholder="Enter name..." oninput="render()">
+  </label>
+  <label>Page Size:
+    <select id="pageSize" onchange="render()">
+      <option value="a4">A4 (full page)</option>
+      <option value="a5">A5 Booklet</option>
+    </select>
+  </label>
+  <label>Layout:
+    <select id="layoutMode" onchange="render()">
+      <option value="normal">Normal</option>
+      <option value="compact">Compact (more words/page)</option>
+      <option value="spacious">Spacious (younger children)</option>
+    </select>
+  </label>
+  <label>Format:
+    <select id="formatMode" onchange="render()">
+      <option value="rows">Row (picture → read → trace → write)</option>
+      <option value="twocol">Two Columns (flashcard style)</option>
+    </select>
+  </label>
+  <label>
+    <input type="checkbox" id="showWriteLine" checked onchange="render()"> Write line
+  </label>
+  <label>
+    <input type="checkbox" id="showCover" checked onchange="render()"> Cover page
+  </label>
+  <label>
+    <input type="checkbox" id="pictureOnly" onchange="render()"> Picture words only
+  </label>
+  <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+  <button style="padding:8px 16px; border-radius:8px; border:none; font-size:14px; cursor:pointer; background:#fff3; color:white; font-family:inherit;" onclick="document.getElementById('instructionsModal').classList.add('open')">📋 Booklet Instructions</button>
+</div>
+
+<div class="tabs" id="tabsContainer"></div>
+
+<div class="info-bar" id="infoBar"></div>
+
+<div class="preview" id="preview"></div>
+
+<!-- Print Instructions Modal -->
+<div class="modal-overlay" id="instructionsModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h2>📖 How to Print as an A5 Booklet</h2>
+
+    <h3>Step 1: Save as PDF</h3>
+    <ol>
+      <li>Select <strong>A5 Booklet</strong> from the Page Size dropdown above</li>
+      <li>Click <strong>"🖨️ Print / Save PDF"</strong></li>
+      <li>In the print dialog, set Destination to <strong>"Save as PDF"</strong></li>
+      <li>Set Paper size to <strong>A5</strong> (148 × 210 mm)</li>
+      <li>Set Margins to <strong>None</strong></li>
+      <li>Check <strong>"Background graphics"</strong></li>
+      <li>Click Save — you now have an A5 PDF</li>
+    </ol>
+
+    <h3>Step 2: Print as Booklet in Adobe Acrobat</h3>
+    <ol>
+      <li>Open the saved PDF in <strong>Adobe Acrobat</strong> (Reader or Pro)</li>
+      <li>Go to <strong>File → Print</strong></li>
+      <li>Set paper size to <strong>A4</strong></li>
+      <li>Under "Page Sizing & Handling", click <strong>"Booklet"</strong></li>
+      <li>Booklet subset: <strong>"Both sides"</strong></li>
+      <li>Binding: <strong>"Left"</strong></li>
+      <li>Orientation: <strong>Landscape</strong> (Acrobat usually sets this automatically)</li>
+      <li>If your printer supports duplex: check <strong>"Print on both sides"</strong> and flip on <strong>short edge</strong></li>
+      <li>If single-sided printer: print <strong>"Front side only"</strong> first, flip the stack, then print <strong>"Back side only"</strong></li>
+      <li>Click <strong>Print</strong></li>
+    </ol>
+
+    <h3>Step 3: Fold & Staple</h3>
+    <ol>
+      <li>Take the printed A4 sheets and stack them in order</li>
+      <li>Fold the entire stack in half (A4 → A5)</li>
+      <li>Staple twice along the spine (use a long-arm stapler if available)</li>
+      <li>Trim edges if needed for a clean finish</li>
+    </ol>
+
+    <div class="tip">
+      <strong>💡 Simpler alternative:</strong> If you don't need a folded booklet, just select A5, save as PDF, and print normally on A5 paper — one page per sheet. Punch holes on the left and use a ring binder or ribbon to hold it together. Children love flipping through their own little dictionary!
+    </div>
+
+    <div class="tip">
+      <strong>💡 No Adobe Acrobat?</strong> Use Chrome's built-in print: select A4 paper, set "Pages per sheet" to 2, and print double-sided. The pages won't be in booklet order, but you can cut and staple them. Or use the free tool <strong>BookletCreator</strong> (bookletcreator.com) to reorder pages for booklet printing from any PDF.
+    </div>
+
+    <button class="close-btn" onclick="document.getElementById('instructionsModal').classList.remove('open')">Got it!</button>
+  </div>
+</div>
+
+<script>
+// ===== AMI LETTER GROUPS — ALL BUILDABLE WORDS =====
+// Words with emoji = picture-friendly (for bingo/cards too)
+// Words without emoji = text-only (great for dictionary tracing)
+const AMI_GROUPS = [
+  {
+    group: 1,
+    newLetters: ['c', 'm', 'a', 't'],
+    allLetters: 'c m a t',
+    vowel: 'a',
+    color: '#ef4444',
+    words: [
+      { word: 'cat', emoji: '🐱' },
+      { word: 'mat', emoji: '🧹' },
+      { word: 'tam', emoji: '' },
+      { word: 'cam', emoji: '' },
+      { word: 'mac', emoji: '' },
+    ]
+  },
+  {
+    group: 2,
+    newLetters: ['s', 'r', 'i', 'p'],
+    allLetters: 'c m a t s r i p',
+    vowel: 'i',
+    color: '#f97316',
+    words: [
+      // Short CVC
+      { word: 'sat', emoji: '' },
+      { word: 'sit', emoji: '' },
+      { word: 'rat', emoji: '🐀' },
+      { word: 'ram', emoji: '🐏' },
+      { word: 'rap', emoji: '' },
+      { word: 'rip', emoji: '' },
+      { word: 'rim', emoji: '' },
+      { word: 'sip', emoji: '' },
+      { word: 'sir', emoji: '' },
+      { word: 'sap', emoji: '' },
+      { word: 'map', emoji: '🗺️' },
+      { word: 'tip', emoji: '' },
+      { word: 'tap', emoji: '🚰' },
+      { word: 'pit', emoji: '🕳️' },
+      { word: 'pat', emoji: '' },
+      { word: 'pip', emoji: '' },
+      // Longer
+      { word: 'mist', emoji: '' },
+      { word: 'trip', emoji: '' },
+      { word: 'trim', emoji: '' },
+      { word: 'trap', emoji: '🪤' },
+      { word: 'strip', emoji: '' },
+      { word: 'stamp', emoji: '📬' },
+      { word: 'crimp', emoji: '' },
+      { word: 'cramp', emoji: '' },
+      { word: 'pram', emoji: '👶' },
+      { word: 'spam', emoji: '' },
+      { word: 'spit', emoji: '' },
+      { word: 'scat', emoji: '' },
+      { word: 'past', emoji: '' },
+      { word: 'mast', emoji: '' },
+      { word: 'cast', emoji: '' },
+      { word: 'rasp', emoji: '' },
+      { word: 'smart', emoji: '' },
+      { word: 'star', emoji: '⭐' },
+      { word: 'stir', emoji: '' },
+      { word: 'mars', emoji: '' },
+      { word: 'prism', emoji: '' },
+    ]
+  },
+  {
+    group: 3,
+    newLetters: ['b', 'f', 'o', 'g'],
+    allLetters: 'c m a t s r i p b f o g',
+    vowel: 'o',
+    color: '#3b82f6',
+    words: [
+      // Short CVC
+      { word: 'bog', emoji: '' },
+      { word: 'fog', emoji: '' },
+      { word: 'cob', emoji: '🌽' },
+      { word: 'gob', emoji: '' },
+      { word: 'mob', emoji: '' },
+      { word: 'rob', emoji: '' },
+      { word: 'sob', emoji: '' },
+      { word: 'cot', emoji: '🛏️' },
+      { word: 'got', emoji: '' },
+      { word: 'rot', emoji: '' },
+      { word: 'big', emoji: '' },
+      { word: 'fig', emoji: '🫒' },
+      { word: 'gig', emoji: '' },
+      { word: 'pig', emoji: '🐷' },
+      { word: 'rig', emoji: '' },
+      { word: 'bit', emoji: '' },
+      { word: 'fit', emoji: '' },
+      { word: 'fib', emoji: '' },
+      { word: 'rib', emoji: '🍖' },
+      { word: 'bib', emoji: '👶' },
+      // Longer
+      { word: 'grab', emoji: '' },
+      { word: 'crab', emoji: '🦀' },
+      { word: 'stab', emoji: '' },
+      { word: 'fist', emoji: '✊' },
+      { word: 'gift', emoji: '🎁' },
+      { word: 'grit', emoji: '' },
+      { word: 'grim', emoji: '' },
+      { word: 'brim', emoji: '' },
+      { word: 'stop', emoji: '' },
+      { word: 'drop', emoji: '' },
+      { word: 'frog', emoji: '🐸' },
+      { word: 'from', emoji: '' },
+      { word: 'soft', emoji: '' },
+      { word: 'crop', emoji: '' },
+      { word: 'prop', emoji: '' },
+      { word: 'trot', emoji: '' },
+      { word: 'frost', emoji: '' },
+      { word: 'stomp', emoji: '' },
+      { word: 'romp', emoji: '' },
+      { word: 'brisk', emoji: '' },
+      { word: 'graft', emoji: '' },
+    ]
+  },
+  {
+    group: 4,
+    newLetters: ['h', 'j', 'u', 'l'],
+    allLetters: 'c m a t s r i p b f o g h j u l',
+    vowel: 'u',
+    color: '#8b5cf6',
+    words: [
+      // Short CVC
+      { word: 'hut', emoji: '🛖' },
+      { word: 'jug', emoji: '🫗' },
+      { word: 'hug', emoji: '' },
+      { word: 'bug', emoji: '🐛' },
+      { word: 'lug', emoji: '' },
+      { word: 'mug', emoji: '☕' },
+      { word: 'rug', emoji: '🧶' },
+      { word: 'tug', emoji: '' },
+      { word: 'hub', emoji: '' },
+      { word: 'rub', emoji: '' },
+      { word: 'pub', emoji: '' },
+      { word: 'sub', emoji: '' },
+      { word: 'tub', emoji: '🛁' },
+      { word: 'cub', emoji: '🐻' },
+      { word: 'but', emoji: '' },
+      { word: 'cut', emoji: '' },
+      { word: 'gut', emoji: '' },
+      { word: 'jut', emoji: '' },
+      { word: 'rut', emoji: '' },
+      { word: 'hum', emoji: '' },
+      { word: 'job', emoji: '' },
+      { word: 'jab', emoji: '' },
+      { word: 'jolt', emoji: '' },
+      // Longer
+      { word: 'hill', emoji: '⛰️' },
+      { word: 'fill', emoji: '' },
+      { word: 'mill', emoji: '🏭' },
+      { word: 'hall', emoji: '' },
+      { word: 'tall', emoji: '' },
+      { word: 'call', emoji: '' },
+      { word: 'fall', emoji: '' },
+      { word: 'ball', emoji: '⚽' },
+      { word: 'bull', emoji: '🐂' },
+      { word: 'full', emoji: '' },
+      { word: 'pull', emoji: '' },
+      { word: 'gull', emoji: '🐦' },
+      { word: 'hull', emoji: '' },
+      { word: 'shut', emoji: '' },
+      { word: 'just', emoji: '' },
+      { word: 'lust', emoji: '' },
+      { word: 'must', emoji: '' },
+      { word: 'rust', emoji: '' },
+      { word: 'blush', emoji: '' },
+      { word: 'crush', emoji: '' },
+      { word: 'brush', emoji: '' },
+      { word: 'flush', emoji: '' },
+      { word: 'plus', emoji: '' },
+      { word: 'plug', emoji: '🔌' },
+      { word: 'slug', emoji: '🐌' },
+      { word: 'jump', emoji: '' },
+      { word: 'bump', emoji: '' },
+      { word: 'lump', emoji: '' },
+      { word: 'clump', emoji: '' },
+      { word: 'plum', emoji: '🫐' },
+      { word: 'glum', emoji: '' },
+      { word: 'drum', emoji: '🥁' },
+      { word: 'stump', emoji: '' },
+      { word: 'thump', emoji: '' },
+      { word: 'skull', emoji: '💀' },
+      { word: 'grill', emoji: '' },
+      { word: 'still', emoji: '' },
+      { word: 'half', emoji: '' },
+      { word: 'calf', emoji: '' },
+    ]
+  },
+  {
+    group: 5,
+    newLetters: ['d', 'w', 'e', 'n'],
+    allLetters: 'c m a t s r i p b f o g h j u l d w e n',
+    vowel: 'e',
+    color: '#22c55e',
+    words: [
+      // Short CVC
+      { word: 'den', emoji: '🏚️' },
+      { word: 'hen', emoji: '🐔' },
+      { word: 'men', emoji: '' },
+      { word: 'pen', emoji: '🖊️' },
+      { word: 'ten', emoji: '' },
+      { word: 'bed', emoji: '🛏️' },
+      { word: 'fed', emoji: '' },
+      { word: 'led', emoji: '' },
+      { word: 'red', emoji: '' },
+      { word: 'wed', emoji: '' },
+      { word: 'net', emoji: '🥅' },
+      { word: 'wet', emoji: '' },
+      { word: 'set', emoji: '' },
+      { word: 'pet', emoji: '' },
+      { word: 'new', emoji: '' },
+      { word: 'dew', emoji: '' },
+      { word: 'few', emoji: '' },
+      { word: 'sew', emoji: '' },
+      { word: 'web', emoji: '🕸️' },
+      { word: 'end', emoji: '' },
+      { word: 'and', emoji: '' },
+      // Longer
+      { word: 'wand', emoji: '🪄' },
+      { word: 'went', emoji: '' },
+      { word: 'send', emoji: '' },
+      { word: 'bend', emoji: '' },
+      { word: 'lend', emoji: '' },
+      { word: 'mend', emoji: '' },
+      { word: 'tend', emoji: '' },
+      { word: 'spend', emoji: '' },
+      { word: 'blend', emoji: '' },
+      { word: 'trend', emoji: '' },
+      { word: 'west', emoji: '' },
+      { word: 'nest', emoji: '🪺' },
+      { word: 'best', emoji: '' },
+      { word: 'rest', emoji: '' },
+      { word: 'test', emoji: '' },
+      { word: 'pest', emoji: '' },
+      { word: 'next', emoji: '' },
+      { word: 'stem', emoji: '🌱' },
+      { word: 'step', emoji: '' },
+      { word: 'band', emoji: '' },
+      { word: 'hand', emoji: '✋' },
+      { word: 'land', emoji: '' },
+      { word: 'sand', emoji: '🏖️' },
+      { word: 'dawn', emoji: '' },
+      { word: 'fawn', emoji: '🦌' },
+      { word: 'lawn', emoji: '🌿' },
+      { word: 'pawn', emoji: '' },
+      { word: 'wind', emoji: '' },
+      { word: 'twin', emoji: '' },
+      { word: 'swim', emoji: '' },
+      { word: 'when', emoji: '' },
+      { word: 'then', emoji: '' },
+      { word: 'sled', emoji: '🛷' },
+    ]
+  },
+  {
+    group: 6,
+    newLetters: ['k', 'q', 'v', 'x', 'y', 'z'],
+    allLetters: 'a b c d e f g h i j k l m n o p q r s t u v w x y z',
+    vowel: null,
+    color: '#ec4899',
+    words: [
+      { word: 'kit', emoji: '🧰' },
+      { word: 'kid', emoji: '🧒' },
+      { word: 'king', emoji: '' },
+      { word: 'key', emoji: '' },
+      { word: 'van', emoji: '🚐' },
+      { word: 'vet', emoji: '👨‍⚕️' },
+      { word: 'vine', emoji: '' },
+      { word: 'vat', emoji: '' },
+      { word: 'box', emoji: '📦' },
+      { word: 'fox', emoji: '🦊' },
+      { word: 'six', emoji: '' },
+      { word: 'mix', emoji: '' },
+      { word: 'fix', emoji: '' },
+      { word: 'wax', emoji: '' },
+      { word: 'yes', emoji: '' },
+      { word: 'yet', emoji: '' },
+      { word: 'yam', emoji: '🍠' },
+      { word: 'zip', emoji: '' },
+      { word: 'zap', emoji: '' },
+      { word: 'quiz', emoji: '' },
+      { word: 'quick', emoji: '' },
+      { word: 'quilt', emoji: '🛏️' },
+      { word: 'envy', emoji: '' },
+      { word: 'exam', emoji: '' },
+      { word: 'exit', emoji: '' },
+      { word: 'kept', emoji: '' },
+    ]
+  }
+];
+
+let activeGroup = 'all';
+
+function buildTabs() {
+  const container = document.getElementById('tabsContainer');
+  let html = `<button class="tab active" onclick="setGroup('all')">All Groups</button>`;
+  AMI_GROUPS.forEach(g => {
+    html += `<button class="tab" onclick="setGroup(${g.group})">Group ${g.group}: ${g.newLetters.join(', ')}</button>`;
+  });
+  container.innerHTML = html;
+}
+
+function setGroup(g) {
+  activeGroup = g;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    if (g === 'all' && i === 0) t.classList.add('active');
+    else if (g === i) t.classList.add('active');
+    else if (g !== 'all' && g === AMI_GROUPS[i-1]?.group) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+  render();
+}
+
+function makeGuidelines() {
+  return `<div class="guidelines">
+    <div class="guideline-top"></div>
+    <div class="guideline-mid"></div>
+    <div class="guideline-bottom"></div>
+  </div>`;
+}
+
+function makeWordRow(w, showWrite) {
+  const writeHTML = showWrite ? `
+    <div class="write-area">
+      ${makeGuidelines()}
+    </div>` : '';
+
+  const pictureHTML = w.emoji
+    ? `<div class="word-picture">${w.emoji}</div>`
+    : `<div class="word-picture" style="font-size:20px; color:#ccc; border:2px dashed #ddd; border-radius:10px;">✎</div>`;
+
+  return `
+    <div class="word-row">
+      ${pictureHTML}
+      <div class="word-solid">${w.word}</div>
+      <div class="trace-area">
+        ${makeGuidelines()}
+        <span class="trace-word">${w.word}</span>
+      </div>
+      ${writeHTML}
+    </div>`;
+}
+
+function makeTwoColCard(w, showWrite) {
+  const writeHTML = showWrite ? `
+    <div class="write-area" style="height:36px;">
+      ${makeGuidelines()}
+    </div>` : '';
+
+  const pictureHTML = w.emoji
+    ? `<div class="word-picture">${w.emoji}</div>`
+    : `<div class="word-picture" style="font-size:20px; color:#ccc; border:2px dashed #ddd; border-radius:10px;">✎</div>`;
+
+  return `
+    <div class="word-row">
+      ${pictureHTML}
+      <div class="word-solid">${w.word}</div>
+      <div class="trace-area">
+        ${makeGuidelines()}
+        <span class="trace-word">${w.word}</span>
+      </div>
+      ${writeHTML}
+    </div>`;
+}
+
+function makeCoverPage(name) {
+  return `
+    <div class="cover-page">
+      <div class="big-emoji">📖</div>
+      <h1>My First Dictionary</h1>
+      <div class="cover-subtitle">AMI Montessori Letter Groups</div>
+      <div style="margin: 30px 0;">
+        <div class="name-line">${name || '&nbsp;'}</div>
+        <div class="name-label">This dictionary belongs to</div>
+      </div>
+      <div style="font-size: 16px; color: #888; margin-top: 20px; line-height: 2;">
+        <div>Group 1: c, m, a, t</div>
+        <div>Group 2: s, r, i, p</div>
+        <div>Group 3: b, f, o, g</div>
+        <div>Group 4: h, j, u, l</div>
+        <div>Group 5: d, w, e, n</div>
+        <div>Group 6: k, q, v, x, y, z</div>
+      </div>
+      <div class="cover-deco">🌿 🐱 ⭐ 🐸 🥁 🦊 🌿</div>
+    </div>`;
+}
+
+function render() {
+  const name = document.getElementById('childName').value;
+  const pageSize = document.getElementById('pageSize').value;
+  const layout = document.getElementById('layoutMode').value;
+  const format = document.getElementById('formatMode').value;
+  const showWrite = document.getElementById('showWriteLine').checked;
+  const showCover = document.getElementById('showCover').checked;
+  const pictureOnly = document.getElementById('pictureOnly').checked;
+  const preview = document.getElementById('preview');
+
+  const groups = (activeGroup === 'all'
+    ? AMI_GROUPS
+    : AMI_GROUPS.filter(g => g.group === activeGroup)
+  ).map(g => ({
+    ...g,
+    words: pictureOnly ? g.words.filter(w => w.emoji) : g.words
+  })).filter(g => g.words.length > 0);
+
+  // How many words per page?
+  const isA5 = pageSize === 'a5';
+  let wordsPerPage;
+  if (isA5) {
+    wordsPerPage = layout === 'compact' ? 8 : layout === 'spacious' ? 4 : (showWrite ? 5 : 6);
+  } else {
+    wordsPerPage = layout === 'compact' ? 10 : layout === 'spacious' ? 5 : (showWrite ? 6 : 8);
+  }
+
+  let html = '';
+
+  // Cover page
+  if (showCover) {
+    html += makeCoverPage(name);
+  }
+
+  // Each group
+  groups.forEach(g => {
+    const words = g.words;
+    const chunks = [];
+    for (let i = 0; i < words.length; i += wordsPerPage) {
+      chunks.push(words.slice(i, i + wordsPerPage));
+    }
+
+    chunks.forEach((chunk, ci) => {
+      const layoutClass = layout === 'compact' ? 'layout-compact' : layout === 'spacious' ? 'layout-spacious' : '';
+
+      html += `<div class="dict-page ${layoutClass}">`;
+
+      // Group header
+      html += `
+        <div class="page-header">
+          <h2 style="color: ${g.color};">Group ${g.group}${chunks.length > 1 ? ` (${ci + 1}/${chunks.length})` : ''}</h2>
+          <div class="subtitle">New letters: <strong>${g.newLetters.join('  ')}</strong>${g.vowel ? ` — New vowel: <strong style="color:${g.color}">${g.vowel}</strong>` : ''}</div>
+          ${name ? `<div class="child-name">${name}'s Dictionary</div>` : ''}
+        </div>`;
+
+      // Words
+      if (format === 'twocol') {
+        html += '<div class="two-col-grid">';
+        chunk.forEach(w => { html += makeTwoColCard(w, showWrite); });
+        html += '</div>';
+      } else {
+        chunk.forEach(w => { html += makeWordRow(w, showWrite); });
+      }
+
+      html += '</div>';
+    });
+  });
+
+  // Apply A5 class to preview wrapper
+  preview.classList.toggle('page-a5', isA5);
+  preview.innerHTML = html;
+
+  // Info bar
+  const totalWords = groups.reduce((sum, g) => sum + g.words.length, 0);
+  const totalPages = document.querySelectorAll('.dict-page').length + (showCover ? 1 : 0);
+  const label = pictureOnly ? 'picture words' : 'words';
+  document.getElementById('infoBar').textContent =
+    `${totalWords} ${label} across ${groups.length} group${groups.length > 1 ? 's' : ''} — ${totalPages} page${totalPages > 1 ? 's' : ''} to print`;
+}
+
+// Init
+buildTabs();
+render();
+</script>
+</body>
+</html>
