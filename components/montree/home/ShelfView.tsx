@@ -1,11 +1,13 @@
 // components/montree/home/ShelfView.tsx
-// Visual Montessori wooden shelf — works displayed as 3D material icons on planks
-// Bioluminescent Depth aesthetic with realistic wood texture
+// Visual Montessori wooden shelf — 3 planks with works as tappable 3D objects
+// Tap a work → QuickGuideModal (same as teacher experience)
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
-import WorkDetailSheet from './WorkDetailSheet';
+import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
+import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
+import { QuickGuideData } from '@/components/montree/curriculum/types';
 
 interface ShelfWork {
   area: string;
@@ -22,74 +24,118 @@ interface ShelfViewProps {
   refreshTrigger?: number;
 }
 
-const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-
-// Area accent colors for shelf labels and glows
-const AREA_COLORS: Record<string, { bg: string; glow: string; text: string; label: string }> = {
-  practical_life: { bg: '#E11D48', glow: 'rgba(225,29,72,0.3)', text: '#FFF1F2', label: 'rgba(225,29,72,0.15)' },
-  sensorial:      { bg: '#F59E0B', glow: 'rgba(245,158,11,0.3)', text: '#FFFBEB', label: 'rgba(245,158,11,0.15)' },
-  mathematics:    { bg: '#3B82F6', glow: 'rgba(59,130,246,0.3)', text: '#EFF6FF', label: 'rgba(59,130,246,0.15)' },
-  language:       { bg: '#10B981', glow: 'rgba(16,185,129,0.3)', text: '#ECFDF5', label: 'rgba(16,185,129,0.15)' },
-  cultural:       { bg: '#8B5CF6', glow: 'rgba(139,92,246,0.3)', text: '#F5F3FF', label: 'rgba(139,92,246,0.15)' },
+// Area accent colors
+const AREA_COLORS: Record<string, { bg: string; glow: string; border: string }> = {
+  practical_life: { bg: '#E11D48', glow: 'rgba(225,29,72,0.25)', border: 'rgba(225,29,72,0.6)' },
+  sensorial:      { bg: '#F59E0B', glow: 'rgba(245,158,11,0.25)', border: 'rgba(245,158,11,0.6)' },
+  mathematics:    { bg: '#3B82F6', glow: 'rgba(59,130,246,0.25)', border: 'rgba(59,130,246,0.6)' },
+  language:       { bg: '#10B981', glow: 'rgba(16,185,129,0.25)', border: 'rgba(16,185,129,0.6)' },
+  cultural:       { bg: '#8B5CF6', glow: 'rgba(139,92,246,0.25)', border: 'rgba(139,92,246,0.6)' },
 };
 
-// Status glow colors
+// Status glow effects
 const STATUS_GLOW: Record<string, string> = {
   not_started: 'none',
-  presented: '0 0 8px rgba(245,158,11,0.4)',
-  practicing: '0 0 10px rgba(16,185,129,0.5)',
+  presented: '0 0 8px rgba(245,158,11,0.5)',
+  practicing: '0 0 12px rgba(16,185,129,0.5)',
   mastered: '0 0 14px rgba(74,222,128,0.6), 0 0 28px rgba(74,222,128,0.2)',
 };
 
 function getWorkIcon(workName: string, area: string): string {
-  // Check exact match first
   if (BIO.workIcon[workName]) return BIO.workIcon[workName];
-  // Check partial match (work name contains key)
   const lower = workName.toLowerCase();
   for (const [key, icon] of Object.entries(BIO.workIcon)) {
     if (lower.includes(key.toLowerCase())) return icon;
   }
-  // Fallback to area icon
   return BIO.areaIcon[area] || '📦';
+}
+
+// Split works array into 3 rows of 3 (filling from top)
+function distributeToShelves(works: ShelfWork[]): (ShelfWork | null)[][] {
+  const slots: (ShelfWork | null)[] = [];
+  // Place works in order, fill 9 slots total
+  for (let i = 0; i < 9; i++) {
+    slots.push(i < works.length ? works[i] : null);
+  }
+  return [
+    slots.slice(0, 3), // Top shelf
+    slots.slice(3, 6), // Middle shelf
+    slots.slice(6, 9), // Bottom shelf
+  ];
 }
 
 export default function ShelfView({ childId, classroomId, onAskGuide, refreshTrigger }: ShelfViewProps) {
   const [shelf, setShelf] = useState<ShelfWork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWork, setSelectedWork] = useState<{ workName: string; area: string } | null>(null);
+
+  // Guide modal state
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
+  const [guideWorkName, setGuideWorkName] = useState('');
+  const [guideData, setGuideData] = useState<QuickGuideData | null>(null);
+  const [guideLoading, setGuideLoading] = useState(false);
+  const shelfAbortRef = useRef<AbortController | null>(null);
+  const guideAbortRef = useRef<AbortController | null>(null);
 
   const fetchShelf = useCallback(async () => {
+    shelfAbortRef.current?.abort();
+    const controller = new AbortController();
+    shelfAbortRef.current = controller;
     try {
-      const res = await fetch(`/api/montree/shelf?child_id=${childId}`);
+      const res = await fetch(`/api/montree/shelf?child_id=${childId}`, { signal: controller.signal });
       const data = await res.json();
-      if (data.success) {
+      if (!controller.signal.aborted && data.success) {
         setShelf(data.shelf || []);
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       // Shelf fetch failed — show empty
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [childId]);
 
   useEffect(() => { fetchShelf(); }, [fetchShelf]);
 
   useEffect(() => {
-    if (refreshTrigger && refreshTrigger > 0) {
-      fetchShelf();
-    }
+    if (refreshTrigger && refreshTrigger > 0) fetchShelf();
   }, [refreshTrigger, fetchShelf]);
 
-  // Build ordered shelves — always show all 5 areas
-  const shelves = AREA_ORDER.map(area => {
-    const work = shelf.find(s => s.area === area);
-    return {
-      area,
-      label: BIO.areaLabel[area] || area,
-      work: work || null,
-      colors: AREA_COLORS[area] || AREA_COLORS.practical_life,
+  // Cleanup abort controllers on unmount
+  useEffect(() => {
+    return () => {
+      shelfAbortRef.current?.abort();
+      guideAbortRef.current?.abort();
     };
-  });
+  }, []);
+
+  // Open guide for a work (same pattern as teacher week view)
+  const openWorkGuide = useCallback(async (workName: string) => {
+    guideAbortRef.current?.abort();
+    const controller = new AbortController();
+    guideAbortRef.current = controller;
+
+    setGuideWorkName(workName);
+    setGuideOpen(true);
+    setGuideLoading(true);
+    setGuideData(null);
+
+    try {
+      const url = classroomId
+        ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
+        : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      const res = await fetch(url, { signal: controller.signal });
+      const data = await res.json();
+      if (!controller.signal.aborted) setGuideData(data);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setGuideData(null);
+    }
+    if (!controller.signal.aborted) setGuideLoading(false);
+  }, [classroomId]);
+
+  // Distribute works across 3 shelves
+  const shelves = distributeToShelves(shelf);
 
   if (loading) {
     return (
@@ -105,211 +151,234 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   return (
     <div className={`flex-1 overflow-y-auto ${BIO.bg.gradient}`}>
       {/* Title */}
-      <h2 className={`text-center text-lg font-semibold ${BIO.text.primary} pt-5 pb-2`}>
+      <h2 className={`text-center text-lg font-semibold ${BIO.text.primary} pt-5 pb-1`}>
         Your Shelf
       </h2>
-      <p className={`text-center text-xs ${BIO.text.muted} mb-5 px-6`}>
-        Tap a work to learn more, or tap an empty spot to ask your guide
+      <p className={`text-center text-xs ${BIO.text.muted} mb-4 px-6`}>
+        Tap a work to see how to present it
       </p>
 
-      {/* Wooden shelf unit */}
-      <div className="px-3 pb-8">
-        {/* Shelf frame — top rail */}
+      {/* Shelf unit — 3 planks */}
+      <div className="px-4 pb-8">
+        {/* Shelf frame */}
         <div
-          className="h-2 rounded-t-lg mx-1"
+          className="relative rounded-xl overflow-hidden"
           style={{
-            background: BIO.shelf.plankEdge,
-            boxShadow: '0 -2px 8px rgba(0,0,0,0.3)',
+            background: 'linear-gradient(180deg, rgba(80,60,20,0.15) 0%, rgba(60,45,15,0.25) 100%)',
+            border: '1px solid rgba(139,105,20,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
-        />
+        >
+          {/* Side rails */}
+          <div className="absolute left-0 top-0 bottom-0 w-2" style={{ background: BIO.shelf.plankEdge, opacity: 0.6 }} />
+          <div className="absolute right-0 top-0 bottom-0 w-2" style={{ background: BIO.shelf.plankEdge, opacity: 0.6 }} />
 
-        {shelves.map((s, idx) => (
-          <WoodenPlank
-            key={s.area}
-            area={s.area}
-            label={s.label}
-            work={s.work}
-            colors={s.colors}
-            isLast={idx === shelves.length - 1}
-            onWorkTap={() => {
-              if (s.work) {
-                setSelectedWork({ workName: s.work.work_name, area: s.area });
-              } else {
-                onAskGuide(`Can you suggest a ${s.label} work for my child?`);
-              }
+          {/* Top cap */}
+          <div className="h-3 mx-2" style={{ background: BIO.shelf.plankEdge, borderRadius: '8px 8px 0 0' }} />
+
+          {/* 3 shelf rows */}
+          {shelves.map((row, rowIdx) => (
+            <ShelfPlank
+              key={rowIdx}
+              items={row}
+              isLast={rowIdx === 2}
+              onWorkTap={openWorkGuide}
+              onEmptyTap={() => onAskGuide('Can you suggest a work for my child?')}
+            />
+          ))}
+
+          {/* Bottom cap */}
+          <div
+            className="h-2 mx-2"
+            style={{
+              background: BIO.shelf.plankEdge,
+              borderRadius: '0 0 8px 8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
             }}
           />
-        ))}
+        </div>
       </div>
 
-      {/* Empty state guidance */}
+      {/* Empty state */}
       {shelf.length === 0 && (
         <div className="text-center px-6 pb-8 -mt-4">
           <p className={`text-xs ${BIO.text.secondary}`}>
-            Your shelves are waiting to be filled! Chat with your guide in the Portal to get personalized work suggestions.
+            Your shelves are waiting! Chat with your guide in the Portal to get personalized work suggestions.
           </p>
         </div>
       )}
 
-      {/* Work Detail Bottom Sheet */}
-      {selectedWork && (
-        <WorkDetailSheet
-          workName={selectedWork.workName}
-          area={selectedWork.area}
-          classroomId={classroomId}
-          onClose={() => setSelectedWork(null)}
-          onAskGuide={(msg) => {
-            setSelectedWork(null);
-            onAskGuide(msg);
-          }}
-        />
-      )}
+      {/* Quick Guide Modal — same component teachers use */}
+      <QuickGuideModal
+        isOpen={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        workName={guideWorkName}
+        guideData={guideData}
+        loading={guideLoading}
+        onOpenFullDetails={() => {
+          setGuideOpen(false);
+          setFullDetailsOpen(true);
+        }}
+      />
+
+      {/* Full Details Modal — same component teachers use */}
+      <FullDetailsModal
+        isOpen={fullDetailsOpen}
+        onClose={() => setFullDetailsOpen(false)}
+        workName={guideWorkName}
+        guideData={guideData}
+        loading={guideLoading}
+      />
     </div>
   );
 }
 
-// Individual wooden plank with work sitting on it
-function WoodenPlank({
-  area,
-  label,
-  work,
-  colors,
+// ─── Individual shelf plank with 3 slots ────────────────────────
+
+function ShelfPlank({
+  items,
   isLast,
   onWorkTap,
+  onEmptyTap,
 }: {
-  area: string;
-  label: string;
-  work: ShelfWork | null;
-  colors: { bg: string; glow: string; text: string; label: string };
+  items: (ShelfWork | null)[];
   isLast: boolean;
-  onWorkTap: () => void;
+  onWorkTap: (workName: string) => void;
+  onEmptyTap: () => void;
 }) {
-  const status = work?.status || 'not_started';
-  const icon = work ? getWorkIcon(work.work_name, area) : null;
-  const isMastered = status === 'mastered';
-
   return (
     <div className="relative">
-      {/* Work display area — sits above the plank */}
-      <div className="min-h-[88px] flex items-end px-3 pb-1">
-        <button
-          onClick={onWorkTap}
-          className="flex items-end gap-3 w-full group transition-transform active:scale-[0.97]"
-        >
-          {/* Area color tab */}
-          <div
-            className="w-1.5 rounded-full self-stretch mb-1 shrink-0"
-            style={{ backgroundColor: colors.bg, opacity: 0.6 }}
+      {/* Items sitting on the shelf */}
+      <div className="flex justify-around items-end px-6 pt-4 pb-2 min-h-[110px]">
+        {items.map((item, idx) => (
+          <ShelfObject
+            key={item ? item.work_name : `empty-${idx}`}
+            work={item}
+            onTap={() => item ? onWorkTap(item.work_name) : onEmptyTap()}
           />
-
-          {/* Work icon on the shelf */}
-          <div className="flex flex-col items-center mb-0.5">
-            {work ? (
-              <div className="relative">
-                {/* Shadow under the object */}
-                <div
-                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 h-2 rounded-full blur-sm"
-                  style={{ backgroundColor: colors.glow, opacity: 0.5 }}
-                />
-                {/* The 3D-ish material icon */}
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center relative transition-all"
-                  style={{
-                    background: `linear-gradient(135deg, ${colors.label} 0%, rgba(255,255,255,0.03) 100%)`,
-                    border: `1px solid ${colors.bg}33`,
-                    transform: 'perspective(200px) rotateY(-3deg) rotateX(2deg)',
-                    boxShadow: STATUS_GLOW[status] || 'none',
-                  }}
-                >
-                  <span className="text-2xl" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.3))' }}>
-                    {icon}
-                  </span>
-                  {/* Mastered sparkle */}
-                  {isMastered && (
-                    <span className="absolute -top-1.5 -right-1.5 text-sm animate-pulse">⭐</span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Empty slot — ghost + icon */
-              <div
-                className="w-14 h-14 rounded-xl border border-dashed border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
-              >
-                <span className="text-white/15 text-2xl group-hover:text-white/25 transition-colors">+</span>
-              </div>
-            )}
-          </div>
-
-          {/* Work info */}
-          <div className="flex-1 min-w-0 pb-1">
-            <p className={`text-sm font-medium leading-tight truncate ${
-              work ? 'text-white/85' : 'text-white/25'
-            }`}>
-              {work ? work.work_name : 'Empty'}
-            </p>
-            <p className="text-[10px] mt-0.5" style={{ color: colors.bg, opacity: 0.7 }}>
-              {label}
-            </p>
-            {work && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <div
-                  className="h-1 rounded-full flex-1 max-w-[60px]"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: status === 'mastered' ? '100%' :
-                             status === 'practicing' ? '66%' :
-                             status === 'presented' ? '33%' : '0%',
-                      backgroundColor: colors.bg,
-                      opacity: 0.8,
-                    }}
-                  />
-                </div>
-                <span className="text-[9px] text-white/40 capitalize">{status.replace('_', ' ')}</span>
-              </div>
-            )}
-            {!work && (
-              <span className="text-[9px] text-white/20">Ask your guide</span>
-            )}
-          </div>
-
-          {/* Chevron */}
-          <svg className="w-4 h-4 text-white/15 shrink-0 mb-1 group-hover:text-white/30 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        ))}
       </div>
 
-      {/* The wooden plank itself */}
-      <div className="relative mx-1">
-        {/* Main plank surface */}
+      {/* The wooden plank */}
+      <div className="mx-2">
+        {/* Plank surface */}
         <div
-          className="h-3 relative"
+          className="h-3.5 relative"
           style={{
             background: BIO.shelf.plank,
             boxShadow: BIO.shelf.shadow,
-            borderRadius: '0 0 2px 2px',
           }}
         >
-          {/* Wood grain overlay */}
-          <div
-            className="absolute inset-0"
-            style={{ background: BIO.shelf.grain, opacity: 0.4 }}
-          />
+          {/* Wood grain */}
+          <div className="absolute inset-0" style={{ background: BIO.shelf.grain, opacity: 0.5 }} />
         </div>
-        {/* Plank edge (front face) */}
+        {/* Plank front edge */}
         <div
-          className="h-1.5"
+          className="h-2"
           style={{
             background: BIO.shelf.plankEdge,
             boxShadow: BIO.shelf.edgeShadow,
-            borderRadius: isLast ? '0 0 4px 4px' : undefined,
           }}
         />
+        {/* Spacer between planks (except last) */}
+        {!isLast && <div className="h-1" />}
       </div>
     </div>
+  );
+}
+
+// ─── Individual work object on the shelf ────────────────────────
+
+function ShelfObject({
+  work,
+  onTap,
+}: {
+  work: ShelfWork | null;
+  onTap: () => void;
+}) {
+  if (!work) {
+    // Empty slot
+    return (
+      <button
+        onClick={onTap}
+        aria-label="Ask guide for a work suggestion"
+        className="flex flex-col items-center gap-1 transition-transform active:scale-95"
+        style={{ width: '88px' }}
+      >
+        <div
+          className="w-16 h-16 rounded-xl border border-dashed border-white/12 flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.02)' }}
+        >
+          <span className="text-white/15 text-2xl">+</span>
+        </div>
+        <span className="text-[9px] text-white/20 text-center">Ask guide</span>
+      </button>
+    );
+  }
+
+  const icon = getWorkIcon(work.work_name, work.area);
+  const colors = AREA_COLORS[work.area] || AREA_COLORS.practical_life;
+  const status = work.status || 'not_started';
+  const isMastered = status === 'mastered';
+
+  return (
+    <button
+      onClick={onTap}
+      aria-label={`View guide for ${work.work_name}`}
+      className="flex flex-col items-center gap-1 transition-transform active:scale-95"
+      style={{ width: '88px' }}
+    >
+      {/* The 3D material object */}
+      <div className="relative">
+        {/* Shadow underneath */}
+        <div
+          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full blur-sm"
+          style={{ backgroundColor: colors.glow, opacity: 0.6 }}
+        />
+
+        {/* Icon container */}
+        <div
+          className="w-16 h-16 rounded-xl flex items-center justify-center relative"
+          style={{
+            background: `linear-gradient(145deg, ${colors.glow} 0%, rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.1) 100%)`,
+            border: `1.5px solid ${colors.border}`,
+            transform: 'perspective(300px) rotateY(-2deg) rotateX(3deg)',
+            boxShadow: `${STATUS_GLOW[status] || 'none'}, 0 4px 12px rgba(0,0,0,0.3)`,
+          }}
+        >
+          <span className="text-3xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
+            {icon}
+          </span>
+
+          {/* Mastered sparkle */}
+          {isMastered && (
+            <span className="absolute -top-1.5 -right-1.5 text-xs animate-pulse">⭐</span>
+          )}
+
+          {/* Status dot */}
+          {status !== 'not_started' && !isMastered && (
+            <div
+              className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: status === 'presented' ? '#F59E0B' : '#10B981',
+                boxShadow: `0 0 6px ${status === 'presented' ? 'rgba(245,158,11,0.6)' : 'rgba(16,185,129,0.6)'}`,
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Work name */}
+      <span
+        className="text-[10px] font-medium text-white/75 text-center leading-tight max-w-full truncate px-0.5"
+      >
+        {work.work_name}
+      </span>
+
+      {/* Area label */}
+      <span className="text-[8px] text-center" style={{ color: colors.bg, opacity: 0.6 }}>
+        {BIO.areaLabel[work.area] || work.area}
+      </span>
+    </button>
   );
 }

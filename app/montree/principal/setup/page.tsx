@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 import PrincipalSetupGuide from '@/components/montree/onboarding/PrincipalSetupGuide';
 
 
@@ -15,17 +16,18 @@ type Classroom = { id: string; name: string; icon: string; color: string; teache
 type CreatedTeacher = { id: string; name: string; login_code: string; classroom_name: string; classroom_icon: string };
 
 // Curated setup steps — shown one at a time with smooth transitions
-const SETUP_STEPS = [
-  { emoji: '🏫', text: 'Creating your classrooms' },
-  { emoji: '📚', text: 'Loading Montessori curriculum' },
-  { emoji: '🌱', text: 'Seeding 329 learning activities' },
-  { emoji: '👩‍🏫', text: 'Setting up teacher accounts' },
-  { emoji: '🔑', text: 'Generating secure login codes' },
-  { emoji: '✨', text: 'Finishing up' },
+const getSetupSteps = (t: any) => [
+  { emoji: '🏫', text: t('principal.setup.step.classrooms') },
+  { emoji: '📚', text: t('principal.setup.step.curriculum') },
+  { emoji: '🌱', text: t('principal.setup.step.activities') },
+  { emoji: '👩‍🏫', text: t('principal.setup.step.teachers') },
+  { emoji: '🔑', text: t('principal.setup.step.codes') },
+  { emoji: '✨', text: t('principal.setup.step.finishing') },
 ];
 
 export default function PrincipalSetupPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState(1); // 1: classrooms, 2: teachers, 3: success
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -133,6 +135,7 @@ export default function PrincipalSetupPage() {
     setSetupStepIndex(0);
 
     // Smooth step advancement — advance every 2.5s, capped at second-to-last step
+    const SETUP_STEPS = getSetupSteps(t);
     const stepTimer = setInterval(() => {
       setSetupStepIndex(prev => Math.min(prev + 1, SETUP_STEPS.length - 2));
     }, 2500);
@@ -201,7 +204,7 @@ export default function PrincipalSetupPage() {
       setStep(3);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Setup failed');
+      setError(err instanceof Error ? err.message : t('principal.setup.error.setupFailed'));
     } finally {
       clearInterval(stepTimer);
       setLoading(false);
@@ -220,7 +223,7 @@ export default function PrincipalSetupPage() {
   const shareCode = (teacher: CreatedTeacher) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://montree.xyz';
     const shareUrl = `${baseUrl}/montree/join?code=${teacher.login_code}`;
-    const message = `🌳 Welcome to Montree!\n\nHi ${teacher.name}, here's your teacher login code for ${teacher.classroom_name}:\n\nCode: ${teacher.login_code}\n\nLogin here: ${shareUrl}`;
+    const message = `🌳 ${t('principal.setup.welcome')}\n\n${t('principal.setup.hi')} ${teacher.name}, ${t('principal.setup.hereIs')} ${teacher.classroom_name}:\n\n${t('principal.setup.code')}: ${teacher.login_code}\n\n${t('principal.setup.loginHere')}: ${shareUrl}`;
 
     navigator.clipboard.writeText(message);
     setCopiedCode(`share-${teacher.login_code}`);
@@ -230,19 +233,19 @@ export default function PrincipalSetupPage() {
   const copyAllCodes = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://montree.xyz';
 
-    let content = `🌳 Welcome to Montree!\n\n`;
-    content += `Hi teachers! Here are your login codes for our new classroom management system.\n\n`;
-    content += `Find your name below, then go to:\n${baseUrl}/montree/login\n\n`;
-    content += `Enter your code to access your dashboard.\n`;
+    let content = `🌳 ${t('principal.setup.welcome')}\n\n`;
+    content += `${t('principal.setup.hiTeachers')}\n\n`;
+    content += `${t('principal.setup.findName')}\n${baseUrl}/montree/login\n\n`;
+    content += `${t('principal.setup.enterCode')}\n`;
     content += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
     createdTeachers.forEach(teacher => {
       content += `${teacher.classroom_icon} ${teacher.name} (${teacher.classroom_name})\n`;
-      content += `   Code: ${teacher.login_code}\n\n`;
+      content += `   ${t('principal.setup.code')}: ${teacher.login_code}\n\n`;
     });
 
     content += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    content += `Questions? Ask your principal! 😊`;
+    content += `${t('principal.setup.questions')}`;
 
     navigator.clipboard.writeText(content);
     setCopiedCode('all');
@@ -258,8 +261,9 @@ export default function PrincipalSetupPage() {
 
   return (
     <>
+    {/* HIDDEN: onboarding guides disabled */}
     <PrincipalSetupGuide
-      isVisible={showSetupGuide && !showWelcome && !loading}
+      isVisible={false && showSetupGuide && !showWelcome && !loading}
       onComplete={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
       onSkip={() => { localStorage.setItem('montree_guide_principal_done', '1'); setShowSetupGuide(false); }}
       wizardStep={step}
@@ -268,8 +272,8 @@ export default function PrincipalSetupPage() {
     />
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 p-6 relative overflow-hidden">
 
-      {/* ============ WELCOME OVERLAY ============ */}
-      {showWelcome && school && (
+      {/* ============ WELCOME OVERLAY — HIDDEN: onboarding guides disabled ============ */}
+      {false && showWelcome && school && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md">
           {/* Ambient glow behind the card */}
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[120px] pointer-events-none" />
@@ -288,16 +292,16 @@ export default function PrincipalSetupPage() {
 
             {/* Welcome text */}
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
-              Welcome, {principalName ? `Principal ${principalName.split(' ')[0]}` : 'Principal'}!
+              {t('principal.setup.welcome')} {principalName ? `${t('principal.setup.principal')} ${principalName.split(' ')[0]}` : `${t('principal.setup.principal')}!`}
             </h1>
 
             <p className="text-lg sm:text-xl text-emerald-200/80 mb-2 font-light">
-              Are you ready to set up{' '}
+              {t('principal.setup.readyToSetup')}{' '}
               <span className="text-emerald-300 font-medium">{school.name}</span>?
             </p>
 
             <p className="text-emerald-400/60 text-sm mb-10">
-              Let&apos;s add your classrooms first.
+              {t('principal.setup.addClassroomsFirst')}
             </p>
 
             {/* Let's Go button */}
@@ -305,7 +309,7 @@ export default function PrincipalSetupPage() {
               onClick={dismissWelcome}
               className="group relative inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-lg font-semibold rounded-2xl shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
             >
-              <span>Let&apos;s Go!</span>
+              <span>{t('principal.setup.letsGo')}</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -341,12 +345,12 @@ export default function PrincipalSetupPage() {
             <span className="text-3xl">{step === 3 ? '🎉' : '🏫'}</span>
           </div>
           <h1 className="text-2xl font-light text-white mb-1">
-            {step === 3 ? 'Setup Complete!' : `Setting up ${school.name}`}
+            {step === 3 ? t('principal.setup.setupComplete') : `${t('principal.setup.settingUp')} ${school.name}`}
           </h1>
           <p className="text-emerald-300/70 text-sm">
-            {step === 1 && 'Add your classrooms'}
-            {step === 2 && 'Assign teachers to classrooms'}
-            {step === 3 && (createdTeachers.length > 0 ? 'Share these codes with your teachers' : 'Head to your dashboard to get started')}
+            {step === 1 && t('principal.setup.addClassrooms')}
+            {step === 2 && t('principal.setup.assignTeachers')}
+            {step === 3 && (createdTeachers.length > 0 ? t('principal.setup.shareCodesWithTeachers') : t('principal.setup.goToDashboard'))}
           </p>
           
           {step < 3 && (
@@ -365,15 +369,15 @@ export default function PrincipalSetupPage() {
                 {SETUP_STEPS[setupStepIndex]?.emoji || '⏳'}
               </div>
               <h2 className="text-xl font-semibold text-white mb-3">
-                Setting Up Your School
+                {t('principal.setup.settingUpSchool')}
               </h2>
               <p className="text-emerald-300 text-lg mb-4 transition-opacity duration-500" key={`text-${setupStepIndex}`}>
-                {SETUP_STEPS[setupStepIndex]?.text || 'Getting everything ready...'}
+                {getSetupSteps(t)[setupStepIndex]?.text || t('principal.setup.gettingReady')}
               </p>
 
               {/* Step indicators */}
               <div className="flex justify-center gap-2 mb-5">
-                {SETUP_STEPS.map((_, i) => (
+                {getSetupSteps(t).map((_, i) => (
                   <div
                     key={i}
                     className={`h-1.5 rounded-full transition-all duration-500 ${
@@ -397,8 +401,8 @@ export default function PrincipalSetupPage() {
 
               <p className="text-white/40 text-xs">
                 {progressPercent > 0
-                  ? `${progressPercent}% complete`
-                  : 'Building your Montessori environment...'}
+                  ? t('principal.setup.percentComplete').replace('{percent}', String(progressPercent))
+                  : t('principal.setup.buildingEnvironment')}
               </p>
             </div>
           </div>
@@ -434,7 +438,7 @@ export default function PrincipalSetupPage() {
                       type="text"
                       value={classroom.name}
                       onChange={(e) => updateClassroom(classroom.id, { name: e.target.value })}
-                      placeholder={`Classroom ${index + 1} name`}
+                      placeholder={t('principal.setup.classroomName').replace('{num}', String(index + 1))}
                       className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
                     />
                     <div className="flex gap-1">
@@ -464,7 +468,7 @@ export default function PrincipalSetupPage() {
               data-guide="add-classroom-btn"
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-white/60 hover:text-white hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all"
             >
-              + Add Classroom
+              + {t('principal.setup.addClassroom')}
             </button>
 
             <button
@@ -473,7 +477,7 @@ export default function PrincipalSetupPage() {
               data-guide="continue-teachers-btn"
               className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continue to Teachers →
+              {t('principal.setup.continueTeachers')} →
             </button>
           </div>
         )}
@@ -500,7 +504,7 @@ export default function PrincipalSetupPage() {
                           type="text"
                           value={teacher.name}
                           onChange={(e) => updateTeacher(classroom.id, teacher.id, { name: e.target.value })}
-                          placeholder="Teacher name"
+                          placeholder={t('principal.setup.teacherName')}
                           {...(tIndex === 0 ? { 'data-guide': 'teacher-name-first' } : {})}
                           className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
                         />
@@ -508,7 +512,7 @@ export default function PrincipalSetupPage() {
                           type="email"
                           value={teacher.email}
                           onChange={(e) => updateTeacher(classroom.id, teacher.id, { email: e.target.value })}
-                          placeholder="Email (optional)"
+                          placeholder={t('principal.setup.emailOptional')}
                           className="flex-1 p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-emerald-400 outline-none"
                         />
                         {classroom.teachers.length > 1 && (
@@ -528,7 +532,7 @@ export default function PrincipalSetupPage() {
                     data-tutorial="add-teacher-button"
                     className="mt-3 text-sm text-emerald-400 hover:text-emerald-300"
                   >
-                    + Add another teacher
+                    + {t('principal.setup.addAnotherTeacher')}
                   </button>
                 </div>
               ))}
@@ -539,7 +543,7 @@ export default function PrincipalSetupPage() {
                 onClick={() => setStep(1)}
                 className="px-6 py-4 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all"
               >
-                ← Back
+                ← {t('principal.setup.back')}
               </button>
               <button
                 data-tutorial="setup-submit-button"
@@ -551,9 +555,9 @@ export default function PrincipalSetupPage() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span>
-                    <span>Setting up...</span>
+                    <span>{t('principal.setup.settingUp')}</span>
                   </span>
-                ) : 'Complete Setup ✓'}
+                ) : `${t('principal.setup.completeSetup')} ✓`}
               </button>
             </div>
           </div>
@@ -567,14 +571,14 @@ export default function PrincipalSetupPage() {
               <div className="bg-red-500/20 border border-red-500/30 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">⚠️</span>
-                  <h3 className="text-red-300 font-semibold">Some items may not have been created</h3>
+                  <h3 className="text-red-300 font-semibold">{t('principal.setup.warning.itemsNotCreated')}</h3>
                 </div>
                 <ul className="text-red-200/80 text-sm space-y-1">
                   {warnings.map((w, i) => (
                     <li key={i}>• {w}</li>
                   ))}
                 </ul>
-                <p className="text-red-200/60 text-xs mt-2">Please try setting up again or contact support if the issue persists.</p>
+                <p className="text-red-200/60 text-xs mt-2">{t('principal.setup.warning.tryAgain')}</p>
               </div>
             )}
 
@@ -582,10 +586,10 @@ export default function PrincipalSetupPage() {
             <div data-tutorial="overview-section" data-guide="setup-overview" className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-2xl p-6 text-center">
               <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                {classrooms.length} Classroom{classrooms.length !== 1 ? 's' : ''} Ready!
+                {t('principal.setup.success.classroomsReady').replace('{count}', String(classrooms.length))}
               </h2>
               <p className="text-emerald-200">
-                Share these login codes with your teachers — they&apos;ll take it from here.
+                {t('principal.setup.success.shareWithTeachers')}
               </p>
             </div>
 
@@ -594,14 +598,14 @@ export default function PrincipalSetupPage() {
               <div data-tutorial="manage-teachers-button" data-guide="teacher-codes" className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <span>🔑</span> Teacher Login Codes
+                    <span>🔑</span> {t('principal.setup.teacherLoginCodes')}
                   </h3>
                 </div>
 
                 {/* Share to Group Chat CTA */}
                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
                   <p className="text-emerald-200 text-sm mb-3">
-                    📱 Share these codes to your teachers group chat - they can take it from there!
+                    📱 {t('principal.setup.shareToGroupChat')}
                   </p>
                   <button
                     onClick={copyAllCodes}
@@ -611,7 +615,7 @@ export default function PrincipalSetupPage() {
                         : 'bg-emerald-500 text-white hover:bg-emerald-600'
                     }`}
                   >
-                    {copiedCode === 'all' ? '✓ Copied! Now paste in your group chat' : '📋 Copy Message for Group Chat'}
+                    {copiedCode === 'all' ? `✓ ${t('principal.setup.copiedPaste')}` : `📋 ${t('principal.setup.copyMessage')}`}
                   </button>
                 </div>
 
@@ -640,7 +644,7 @@ export default function PrincipalSetupPage() {
                               : 'bg-white/10 text-white hover:bg-white/20'
                           }`}
                         >
-                          {copiedCode === teacher.login_code ? '✓' : 'Copy'}
+                          {copiedCode === teacher.login_code ? '✓' : t('principal.setup.copy')}
                         </button>
                         <button
                           onClick={() => shareCode(teacher)}
@@ -660,7 +664,7 @@ export default function PrincipalSetupPage() {
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-3">
                   <span className="text-xl">⚠️</span>
                   <p className="text-amber-300 text-sm">
-                    Save these codes now! They won&apos;t be shown again.
+                    {t('principal.setup.warning.saveCodes')}
                   </p>
                 </div>
               </div>
@@ -672,7 +676,7 @@ export default function PrincipalSetupPage() {
               data-guide="go-dashboard-btn"
               className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
             >
-              Go to Dashboard →
+              {t('principal.setup.goDashboard')} →
             </button>
           </div>
         )}

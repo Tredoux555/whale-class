@@ -310,9 +310,9 @@ export default function StudentsPage() {
     loadCurriculum(sess.classroom?.id);
   }, [router]);
 
-  // Auto-open bulk form for first-time users with 0 students (only once per device)
+  // Auto-open bulk form for first-time users — HIDDEN: onboarding guides disabled
   useEffect(() => {
-    if (session && !session.teacher.has_completed_tutorial && students.length === 0 && !loading && !showForm && !localStorage.getItem('montree_guide_studentform_done')) {
+    if (false && session && !session.teacher.has_completed_tutorial && students.length === 0 && !loading && !showForm && !localStorage.getItem('montree_guide_studentform_done')) {
       openAddForm();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1037,8 +1037,8 @@ export default function StudentsPage() {
         </div>
       )}
 
-      {/* Guided onboarding tour for first-time users */}
-      {showForm && bulkMode && isFirstTime && !guideSkipped && (
+      {/* Guided onboarding tour — HIDDEN: onboarding guides disabled */}
+      {false && showForm && bulkMode && isFirstTime && !guideSkipped && (
         <StudentFormGuide
           isVisible={true}
           onComplete={() => { localStorage.setItem('montree_guide_studentform_done', '1'); setGuideSkipped(true); }}

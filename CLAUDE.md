@@ -26,15 +26,17 @@ English Corner iframe → direct redirect. Pushed with bug fixes commit.
 
 Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
 
-### Test All Onboarding Guides on Mobile (Priority #3)
+### ~~Test All Onboarding Guides on Mobile~~ — HIDDEN (Priority #3)
 
-**Status:** ALL guides built and localStorage-persisted. Need end-to-end mobile testing after deploy.
-- WeekViewGuide (19 steps), StudentFormGuide (13 steps), PrincipalSetupGuide (8 steps), PrincipalAdminGuide (4 steps), WelcomeModal, DashboardGuide
-- **Handoff:** `docs/HANDOFF_ONBOARDING_GUIDES_FEB23.md`
+**Status:** ALL guides HIDDEN (not deleted) as of Feb 27. User decided onboarding guides are unnecessary — the UI is intuitive enough. All guide renders wrapped with `false &&` so they never show. Code and components preserved for potential reinstatement.
+- To re-enable: search for `HIDDEN: onboarding guides disabled` across 6 files and remove the `false &&`
+- Files modified: `dashboard/page.tsx`, `[childId]/page.tsx`, `students/page.tsx`, `principal/setup/page.tsx`, `admin/layout.tsx`
+- Components preserved: WeekViewGuide, StudentFormGuide, PrincipalSetupGuide, PrincipalAdminGuide, WelcomeModal, DashboardGuide
 
-### Home System — Disconnected from Signup (Priority #4 — ON HOLD)
+### ~~Push Home Parent Redesign~~ — ✅ DONE + ENHANCED (Priority #4 — PUSHED)
 
-Homeschool parent option REMOVED from signup. Backend code preserved.
+Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modified. Built + 4 audit cycles. Enhanced with wooden shelf UI + OpenAI TTS voice.
+**Handoff:** `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md`
 
 ### Stripe Setup (Priority #5 — Deferred)
 
@@ -44,11 +46,12 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
-### i18n Phase 2 — Migrate Remaining Pages (Priority #7)
+### ~~i18n Full Migration~~ — ✅ DONE + AUDITED (Priority #7)
 
-**Status:** Foundation deployed (commit `8259683`). 80+ new keys added (commit `f310a63b`). Login, signup, dashboard, principal login, header, **students page** all bilingual.
-**Next:** Migrate child week view, curriculum, guru, reports, settings, onboarding guides to `t()` calls. Each page is independent — incremental work.
-**Handoff:** `docs/handoffs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md`
+**Status:** ALL user-facing pages migrated. 194 → **1,378 translation keys** across ~65 files. en.ts and zh.ts at perfect parity. Deep audit completed Feb 27 — 3 bugs found, 2 fixed (double-arrow, hardcoded toasts), 1 deferred (pluralization).
+**Remaining:** Wire `chineseName` from curriculum JSON when language is zh (~1hr). Translate 15 remaining pages (~3hrs). Translate curriculum descriptions (329 works × 5 fields).
+**Audit:** `docs/audits/AUDIT_I18N_DEEP_FEB27.md`
+**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_MIGRATION_FEB26.md`
 
 ### Curriculum Inconsistency Resolution (Priority #8 — Deferred)
 
@@ -56,7 +59,106 @@ Homeschool parent option REMOVED from signup. Backend code preserved.
 
 ---
 
-## CURRENT STATUS (Feb 26, 2026)
+## CURRENT STATUS (Feb 27, 2026)
+
+### Session Work (Feb 27, 2026)
+
+**i18n Deep Audit — COMPLETE + DEPLOYED (commit `a429695b`):**
+
+Comprehensive audit of the entire Montree translation system. Full report: `docs/audits/AUDIT_I18N_DEEP_FEB27.md`
+
+Key findings:
+- **1,378 keys** each in en.ts and zh.ts (perfect parity, 5 new keys added)
+- **3 bugs found**: double-arrow in ABC model (FIXED), fragile pluralization hack (deferred), hardcoded toasts in 4 files (FIXED)
+- **15 pages missing i18n entirely**: 8 admin pages, parent dashboard, tools/print, application forms
+- **chineseName NOT wired**: All 329 works have Chinese names in JSON but no display component shows them when locale is zh
+- **Architecture grade: A-** — hydration-safe, type-safe, clean fallback chain. Missing interpolation helper.
+
+Files modified (7): en.ts, zh.ts, students/page.tsx, reports/page.tsx, parent/photos/page.tsx, parent/milestones/page.tsx, audit doc
+
+**Home Parent Redesign (Portal + Shelf) — PUSHED with Wooden Shelf + TTS Voice:**
+
+Complete redesign from previous session, enhanced this session with two new features:
+
+**Wooden Shelf UI** — ShelfView.tsx full rewrite:
+- 5 horizontal wooden planks (CSS gradient wood texture + grain overlay) stacked vertically, one per Montessori area
+- Works displayed as 3D-ish material icons with `perspective()` CSS transforms and drop shadows
+- 60+ work-to-emoji icon mappings in `BIO.workIcon` (theme file) for visual variety
+- Area-colored accent tabs, progress bars, mastered ⭐ sparkle effects
+- Empty slots show ghost `+` icons → tap to ask Guru for suggestions
+- Same props/API as before — drop-in replacement
+
+**OpenAI TTS Voice** — new `/api/montree/tts` route + PortalChat integration:
+- API route: POST text → strips markdown → calls OpenAI `tts-1` model with `nova` voice → streams MP3 back
+- Cost: ~$0.015 per 1K characters
+- Rate limited: 10 requests/minute per IP (uses existing `checkRateLimit()` from `lib/rate-limiter.ts`)
+- `useTTS()` hook in PortalChat manages audio lifecycle with AbortController for safe unmount
+- 🔈 "Listen" button on every Guru message bubble → toggles to 🔊 while playing → tap again to stop
+
+**Audit (4 issues found, all fixed):**
+- CSS `group-hover:scale-105` overriding inline `transform: perspective()` → removed conflicting class
+- TTS fetch missing AbortController → added `abortRef` with cancellation on stop/unmount
+- Dead `emptyAreas` state never read → removed
+- No rate limiting on TTS route → added `checkRateLimit()` (10/min/IP)
+
+Previous session work (3 build-audit-fix cycles):
+- Cycle 2: 28 issues found & fixed (AbortController, drop-shadow, useCallback deps, a11y, type safety)
+- Cycle 3: 7 issues found & fixed (final polish)
+
+10 new files + 4 modified. Bioluminescent botanical theme. Two-tab Portal (AI chat) + Shelf (visual works) interface.
+Push command in handoff: `docs/handoffs/HANDOFF_I18N_AUDIT_HOME_REDESIGN_FEB27.md`
+
+**Onboarding Guides — ALL HIDDEN (not deleted):**
+
+User decided onboarding guides are unnecessary. All guide renders wrapped with `false &&` — code preserved for reinstatement.
+- Files modified (6): `dashboard/page.tsx`, `[childId]/page.tsx`, `students/page.tsx`, `principal/setup/page.tsx`, `admin/layout.tsx`
+- Hidden: WelcomeModal, DashboardGuide, WeekViewGuide, StudentFormGuide, PrincipalSetupGuide, PrincipalAdminGuide, principal welcome overlay, auto-open bulk form
+- To re-enable: search `HIDDEN: onboarding guides disabled` and remove `false &&`
+
+**Visual Shelf Redesign — ShelfView.tsx rewritten:**
+
+Shelf redesigned from vertical list of 5 planks to actual 3-plank visual Montessori shelf. Works are tappable 3D objects sitting on wooden planks.
+- 3 horizontal wooden planks with up to 3 works each (9 slots total), works distributed top-down
+- Each work: area-colored border, large 3D emoji icon, work name, status glow/sparkle
+- Empty slots show dashed `+` icon → tap to ask Guru for suggestions
+- **Tap a work → opens teacher-style QuickGuideModal** (same component teachers use!)
+- "Full Details" button → FullDetailsModal with step-by-step presentation guide
+- "Watch Video" → YouTube search
+- Reuses existing components: `QuickGuideModal.tsx`, `FullDetailsModal.tsx` (zero changes to those)
+- Replaced `WorkDetailSheet` (accordion bottom sheet) with teacher modals
+- Shelf frame with CSS wood gradients, side rails, top/bottom caps
+
+---
+
+## PREVIOUS STATUS (Feb 26, 2026)
+
+### Session Work (Feb 26, 2026 — Late Session)
+
+**Full i18n Migration — ALL Pages Bilingual — COMPLETE (not yet pushed):**
+
+Migrated the ENTIRE Montree application from hardcoded English to bilingual EN↔ZH. 11 phases + audit round.
+
+Stats: 194 → **1,373 translation keys**, ~65 files modified, en.ts/zh.ts at perfect parity.
+
+11 Phases:
+1. Core Teacher Flow (FocusWorks, WorkPicker, FullDetails, QuickGuide, WorkDetail, AddWork, EditWork, CurriculumWorkList, TeachingTools) — ~150 keys
+2. Onboarding & Welcome (WelcomeModal, WeekViewGuide, StudentFormGuide, DashboardGuide) — ~45 keys
+3. Principal Flow (setup/page, PrincipalSetupGuide, PrincipalAdminGuide, admin/page) — ~95 keys
+4. Child Sub-Pages (gallery, observations, summary, weekly-review, profile) — ~130 keys
+5. Reports & Messaging (reports, report detail, messages, InviteParent, PhotoSelection) — ~90 keys
+6. Settings & Media (settings, CameraCapture, ChildSelector, DeleteConfirmDialog, InstallBanner) — ~45 keys
+7. Guru Components (GuruChatThread, GuruOnboardingPicker, ChatBubble, GuruDashboardCards, ConcernDetailModal) — ~37 keys
+8. Parent Portal (login, photos, milestones, messages, weekly-review, report) — ~109 keys
+9. Library & Tools (library hub, browse, upload, tools page) — ~60 keys
+10. Feedback & Utility (FeedbackButton, InboxButton, FocusModeCard) — ~50 keys
+11. Admin Sub-Pages (classroom detail, student detail, settings) — ~60 keys
+Audit: Additional ~160 keys — WorkWheelPicker, full media system, messaging components, guru ecosystem, media gallery page, labels page, progress detail, work detail, tools page
+
+Intentionally NOT translated: 27+ game pages (English learning games), 17 marketing/social pages (internal), super-admin panel (internal), demo pages.
+
+Curriculum data: All 329 works already have `chineseName` in JSON. Descriptions/materials/aims are English-only. Need to wire `chineseName` display when language is zh.
+
+**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_MIGRATION_FEB26.md`
 
 ### Session Work (Feb 26, 2026)
 
@@ -1707,6 +1809,9 @@ AI advisor for child development questions. Uses Anthropic API.
 - `components/montree/guru/GuruDailyBriefing.tsx` — dashboard card ("Generate Today's Plan")
 - `components/montree/guru/GuruWorkGuide.tsx` — inline "How to Present This" on expanded work cards
 
+**Text-to-Speech:**
+- `app/api/montree/tts/route.ts` — OpenAI TTS (`tts-1` model, `nova` voice), returns MP3 stream, rate limited 10/min/IP
+
 **Billing:**
 - `app/api/montree/guru/status/route.ts` — access level check (unlimited/paid/free_trial)
 - `app/api/montree/guru/checkout/route.ts` — Stripe checkout session
@@ -1747,7 +1852,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md` | **CURRENT** — Guru WhatsApp-style chat for parents (concern picker, conversational prompts, chat thread) |
+| `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md` | **CURRENT** — Wooden shelf UI + OpenAI TTS voice for home parents |
+| `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md` | Guru WhatsApp-style chat for parents (concern picker, conversational prompts, chat thread) |
 | `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
 | `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | Production deploy, Dockerfile fix, seed 500 fix, push script |
 | `docs/HANDOFF_COMMUNITY_LIBRARY_FEB21.md` | Community Works Library (14 files, 2-pass audit, deploy steps) |
