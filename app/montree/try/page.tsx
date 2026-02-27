@@ -154,7 +154,8 @@ export default function TryMontreePage() {
           onboarded: responseData.onboarded || false,
         })
       );
-      router.push('/montree/dashboard');
+      // Home parents go to conversational setup (Portal + Shelf experience)
+      router.push('/montree/home/setup');
     }
   };
 

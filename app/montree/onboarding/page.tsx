@@ -9,10 +9,15 @@ import CurriculumPicker from './components/CurriculumPicker';
 import AgePicker from './components/AgePicker';
 import { Work, Student, CURRICULUM_AREAS, AGE_OPTIONS } from './types';
 
+const generateId = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<{ teacher?: { role?: string; has_completed_tutorial?: boolean }; classroom?: { id?: string }; onboarded?: boolean } | null>(null);
   const isParent = session?.teacher?.role === 'homeschool_parent';
   const [loading, setLoading] = useState(false);
   const [seedingCurriculum, setSeedingCurriculum] = useState(false);
@@ -23,7 +28,7 @@ export default function OnboardingPage() {
 
   const [students, setStudents] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student>({
-    id: crypto.randomUUID(),
+    id: generateId(),
     name: '',
     age: 3.5,
     progress: {},
@@ -39,6 +44,27 @@ export default function OnboardingPage() {
     try {
       const parsed = JSON.parse(stored);
       setSession(parsed);
+
+      // Home parents skip form-based onboarding — use conversational setup
+      if (parsed.teacher?.role === 'homeschool_parent') {
+        if (parsed.classroom?.id) {
+          fetch(`/api/montree/children?classroom_id=${parsed.classroom.id}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.children && data.children.length > 0) {
+                router.replace(`/montree/home/${data.children[0].id}`);
+              } else {
+                router.replace('/montree/home/setup');
+              }
+            })
+            .catch(() => {
+              router.replace('/montree/home/setup');
+            });
+        } else {
+          router.replace('/montree/home/setup');
+        }
+        return;
+      }
 
       // Check if teacher already has students - if so, go to dashboard
       if (parsed.classroom?.id) {
@@ -247,7 +273,7 @@ export default function OnboardingPage() {
     }
 
     setCurrentStudent({
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: '',
       age: 3.5,
       progress: {},
@@ -263,7 +289,7 @@ export default function OnboardingPage() {
     setStudents(students.filter((_, i) => i !== index));
     if (editingStudentIndex === index) {
       setEditingStudentIndex(null);
-      setCurrentStudent({ id: crypto.randomUUID(), name: '', age: 3.5, progress: {} });
+      setCurrentStudent({ id: generateId(), name: '', age: 3.5, progress: {} });
     }
   };
 
@@ -480,7 +506,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => {
                   setEditingStudentIndex(null);
-                  setCurrentStudent({ id: crypto.randomUUID(), name: '', age: 3.5, progress: {} });
+                  setCurrentStudent({ id: generateId(), name: '', age: 3.5, progress: {} });
                 }}
                 className="w-full mt-2 py-2 text-slate-500 hover:text-slate-700"
               >

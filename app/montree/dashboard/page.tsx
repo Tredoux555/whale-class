@@ -61,8 +61,20 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(data => {
         const kids = data.children || [];
+
+        // Redirect home parents to the new Portal + Shelf experience
+        if (isHomeschoolParent(session)) {
+          if (kids.length > 0) {
+            router.replace(`/montree/home/${kids[0].id}`);
+            return;
+          } else {
+            router.replace('/montree/home/setup');
+            return;
+          }
+        }
+
         setChildren(kids);
-        // Auto-select first child for home parents
+        // Auto-select first child for teachers
         if (kids.length > 0 && !selectedChildId) {
           setSelectedChildId(kids[0].id);
         }
@@ -104,7 +116,7 @@ export default function DashboardPage() {
             onClick={() => setGuruFirstView(false)}
             className="text-white/70 hover:text-white text-sm"
           >
-            ← Back
+            {t('common.back')}
           </button>
           {children.length > 1 && (
             <div className="flex gap-2 flex-1 overflow-x-auto">
@@ -200,10 +212,10 @@ export default function DashboardPage() {
               >
                 <span className="text-2xl mb-1 block">🌿</span>
                 <span className="text-sm font-semibold text-white">
-                  Chat with {childName}&apos;s Guide
+                  {t('dashboard.chatWithGuide').replace('{childName}', childName)}
                 </span>
                 <span className="text-xs text-white/70 block mt-0.5">
-                  Full-screen Montessori coaching
+                  {t('dashboard.fullscreenCoaching')}
                 </span>
               </button>
             </div>
@@ -216,10 +228,10 @@ export default function DashboardPage() {
               >
                 <span className="text-2xl mb-1 block">📋</span>
                 <span className={`text-sm font-semibold ${HOME_THEME.headingText}`}>
-                  View {childName}&apos;s Full Week
+                  {t('dashboard.viewFullWeek').replace('{childName}', childName)}
                 </span>
                 <span className={`text-xs ${HOME_THEME.subtleText} block mt-0.5`}>
-                  See works, progress, and gallery
+                  {t('dashboard.seeWorksProgressGallery')}
                 </span>
               </a>
             </div>
