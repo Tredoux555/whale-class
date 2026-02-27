@@ -9,6 +9,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { useI18n } from '@/lib/montree/i18n';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import InviteParentModal from '@/components/montree/InviteParentModal';
@@ -47,6 +48,7 @@ interface Child {
 export default function WeekPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useI18n();
   const childId = params.childId as string;
   const session = getSession();
 
@@ -311,7 +313,7 @@ export default function WeekPage() {
       setCurriculum(prev => ({ ...prev, [areaKey]: curriculumWorks }));
     } catch (err) {
       console.error('Failed to load works:', err);
-      toast.error('Failed to load works');
+      toast.error(t('weekview.failedToLoad'));
     }
   };
 
@@ -353,7 +355,7 @@ export default function WeekPage() {
 
       setWheelPickerWorks(worksWithStatus);
       setCurriculum(prev => ({ ...prev, [areaKey]: worksWithStatus }));
-      toast.success('Work added!');
+      toast.success(t('weekview.workAdded'));
     } catch (err) {
       console.error('Failed to refresh works:', err);
     }
@@ -478,7 +480,7 @@ export default function WeekPage() {
     return (
       <div className="bg-white rounded-2xl p-8 text-center">
         <div className="animate-pulse text-3xl mb-2">📋</div>
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">{t('common.loading')}</p>
       </div>
     );
   }
@@ -534,7 +536,7 @@ export default function WeekPage() {
               } catch {}
             }
           }}
-          placeholder="Find a work..."
+          placeholder={t('weekview.findWork')}
         />
         </div>
         {!isHomeschoolParent(session) && (
@@ -543,7 +545,7 @@ export default function WeekPage() {
             onClick={() => setInviteModalOpen(true)}
             className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
           >
-            👨‍👩‍👧 Invite Parent
+            👨‍👩‍👧 {t('weekview.inviteParent')}
           </button>
         )}
       </div>
@@ -579,7 +581,7 @@ export default function WeekPage() {
         <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
           <span className="text-2xl text-emerald-600">+</span>
         </div>
-        <span className="font-medium text-gray-600">Add Work</span>
+        <span className="font-medium text-gray-600">{t('weekview.addWork')}</span>
       </button>
 
       {/* Browse All Works */}
@@ -588,8 +590,8 @@ export default function WeekPage() {
         className="w-full py-4 bg-white rounded-2xl shadow-sm hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
       >
         <span className="text-emerald-600">🔍</span>
-        <span className="font-medium text-emerald-600">Find Work</span>
-        <span className="text-emerald-600">Browse all works</span>
+        <span className="font-medium text-emerald-600">{t('weekview.addWork')}</span>
+        <span className="text-emerald-600">{t('weekview.browseAll')}</span>
       </button>
 
       {/* Wheel Picker for browsing works in an area */}
@@ -634,8 +636,8 @@ export default function WeekPage() {
         guideData={quickGuideData}
         loading={quickGuideLoading}
       />
-      {/* Week View Guide — onboarding for first-time users */}
-      {showWeekViewGuide && focusWorks.length > 0 && (
+      {/* Week View Guide — HIDDEN: onboarding guides disabled */}
+      {false && showWeekViewGuide && focusWorks.length > 0 && (
         <WeekViewGuide
           isVisible={true}
           onComplete={() => { localStorage.setItem('montree_guide_weekview_done', '1'); setShowWeekViewGuide(false); }}

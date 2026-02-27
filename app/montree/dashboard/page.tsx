@@ -306,8 +306,8 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* Welcome Modal for first-time users */}
-      {showWelcome && session && (
+      {/* Welcome Modal for first-time users — HIDDEN: onboarding guides disabled */}
+      {false && showWelcome && session && (
         <WelcomeModal
           teacherName={session.teacher.name}
           isOpen={showWelcome}
@@ -315,8 +315,8 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Post-onboarding guide — highlights first child card */}
-      {showDashboardGuide && children.length > 0 && (
+      {/* Post-onboarding guide — HIDDEN: onboarding guides disabled */}
+      {false && showDashboardGuide && children.length > 0 && (
         <DashboardGuide
           childName={children[0].name}
           isHomeschoolParent={isParent}

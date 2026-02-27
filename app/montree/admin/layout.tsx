@@ -71,8 +71,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Feedback Button */}
       <FeedbackButton userType="principal" />
 
-      {/* Principal Admin Guide — multi-page onboarding tour */}
-      <PrincipalAdminGuide principalName={principalName} />
+      {/* Principal Admin Guide — HIDDEN: onboarding guides disabled */}
+      {false && <PrincipalAdminGuide principalName={principalName} />}
     </div>
   );
 }
