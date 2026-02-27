@@ -1468,6 +1468,8 @@ export const zh = {
   'tools.word_bingo_desc': '创建独特的宾果卡，用于语音、CVC单词等',
   'tools.picture_bingo': '图片宾果生成器',
   'tools.picture_bingo_desc': '真实照片宾果 — 正面图片，背面文字双面打印',
+  'tools.my_dictionary': '我的第一本词典',
+  'tools.my_dictionary_desc': '按AMI字母组排列的可描写词典 — 59个图片单词',
   'tools.back_to_library': '返回资料库',
   'tools.content_creation': '教材制作工具',
   'tools.save_time': '节省大量时间和精力。几分钟内创建专业教材。',

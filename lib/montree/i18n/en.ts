@@ -1468,6 +1468,8 @@ export const en = {
   'tools.word_bingo_desc': 'Create unique bingo boards for phonics, CVC words, and more',
   'tools.picture_bingo': 'Picture Bingo Generator',
   'tools.picture_bingo_desc': 'Real photo bingo — duplex print with pictures on front, words on back',
+  'tools.my_dictionary': 'My First Dictionary',
+  'tools.my_dictionary_desc': 'Traceable word dictionary organized by AMI letter groups — 59 picture words',
   'tools.back_to_library': 'Back to Library',
   'tools.content_creation': 'Content Creation Tools',
   'tools.save_time': 'Save yourself a ton of time and effort. Create professional materials in minutes.',
