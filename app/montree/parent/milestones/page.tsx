@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Milestone {
   id: string;
@@ -30,6 +31,7 @@ const getAreaClasses = (area: string) => {
 function ParentMilestonesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const childIdParam = searchParams.get('child');
 
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ function ParentMilestonesContent() {
         setChildName(child.name);
         loadMilestones(child.id);
       } else {
-        toast.error('No child selected');
+        toast.error(t('common.noChildSelected'));
         router.push('/montree/parent/dashboard');
       }
     }
@@ -71,7 +73,7 @@ function ParentMilestonesContent() {
       }
     } catch (err) {
       console.error('Failed to load milestones:', err);
-      toast.error('Failed to load milestones');
+      toast.error(t('parentMilestones.errorLoad'));
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ function ParentMilestonesContent() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">⭐</div>
-          <p className="text-gray-600">Loading milestones...</p>
+          <p className="text-gray-600">{t('parentMilestones.loading')}</p>
         </div>
       </div>
     );
@@ -109,8 +111,8 @@ function ParentMilestonesContent() {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="font-bold text-gray-800">Milestones</h1>
-            <p className="text-sm text-gray-500">{childName ? `${childName}'s achievements` : 'Learning journey'}</p>
+            <h1 className="font-bold text-gray-800">{t('parentMilestones.title')}</h1>
+            <p className="text-sm text-gray-500">{childName ? `${childName}'s ${t('parentMilestones.achievements')}` : t('parentMilestones.journeySubtitle')}</p>
           </div>
           <div className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
             ⭐ {totalMilestones}
@@ -122,9 +124,9 @@ function ParentMilestonesContent() {
         {timeline.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <div className="text-5xl mb-4">🌱</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Growing Every Day</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('parentMilestones.growingTitle')}</h2>
             <p className="text-gray-500">
-              Milestones will appear here as {childName || 'your child'} masters new skills
+              {t('parentMilestones.noMilestonesYet').replace('{childName}', childName || t('common.yourChild'))}
             </p>
           </div>
         ) : (
@@ -183,7 +185,7 @@ export default function ParentMilestonesPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">⭐</div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     }>

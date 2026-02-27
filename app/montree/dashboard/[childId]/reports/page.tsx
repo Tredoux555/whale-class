@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 
 interface ReportItem {
@@ -95,6 +96,7 @@ interface SentReport {
 }
 
 export default function ReportsPage() {
+  const { t } = useI18n();
   const params = useParams();
   const childId = params.childId as string;
 
@@ -149,7 +151,7 @@ export default function ReportsPage() {
       }
     } catch (err) {
       console.error('Failed to fetch:', err);
-      toast.error('Failed to load');
+      toast.error(t('reports.loadError'));
     }
     setLoading(false);
   };
@@ -171,11 +173,11 @@ export default function ReportsPage() {
         setLastReport(data.reports[0]);
         setShowLastReport(true);
       } else {
-        toast.error('No sent reports found');
+        toast.error(t('reports.noReportsFound'));
       }
     } catch (err) {
       console.error('Failed to fetch last report:', err);
-      toast.error('Failed to load last report');
+      toast.error(t('reports.loadLastReportError'));
     }
     setLoadingLastReport(false);
   };
@@ -217,16 +219,16 @@ export default function ReportsPage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success('Report published! Parents can now view it.');
+        toast.success(t('reports.published'));
         setItems([]);
         setStats(null);
         setLastReportDate(new Date().toISOString());
         setShowPreview(false);
       } else {
-        toast.error(data.error || 'Failed to send');
+        toast.error(data.error || t('common.failedToSend'));
       }
     } catch {
-      toast.error('Failed to send');
+      toast.error(t('common.failedToSend'));
     }
     setSending(false);
   };
@@ -249,14 +251,14 @@ export default function ReportsPage() {
       <div className="bg-white rounded-2xl p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-800">{childName}'s Report</h2>
+            <h2 className="text-lg font-bold text-gray-800">{childName}'s {t('reports.report')}</h2>
             {lastReportDate && (
               <p className="text-xs text-gray-400">
-                Last sent: {new Date(lastReportDate).toLocaleDateString()}
+                {t('reports.lastSent')}: {new Date(lastReportDate).toLocaleDateString()}
               </p>
             )}
             {!lastReportDate && (
-              <p className="text-xs text-gray-400">No reports sent yet</p>
+              <p className="text-xs text-gray-400">{t('reports.noReportsSentYet')}</p>
             )}
           </div>
           <div className="flex gap-2">
@@ -266,7 +268,7 @@ export default function ReportsPage() {
                 disabled={loadingLastReport}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50"
               >
-                {loadingLastReport ? '⏳' : '📄'} Last Report
+                {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
               </button>
             )}
             {hasItems && (
@@ -274,7 +276,7 @@ export default function ReportsPage() {
                 onClick={() => setShowPreview(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
               >
-                👁️ Preview Report
+                👁️ {t('reports.previewReport')}
               </button>
             )}
           </div>
@@ -284,16 +286,16 @@ export default function ReportsPage() {
       {/* Stats */}
       {stats && hasItems && (
         <div className="grid grid-cols-3 gap-2">
-          <StatCard icon="📚" value={stats.total} label="Works" color="gray" />
-          <StatCard icon="📸" value={stats.with_photos + (stats.unassigned_photos || 0)} label="Photos" color="blue" />
-          <StatCard icon="📝" value={stats.with_descriptions} label="Descriptions" color="emerald" />
+          <StatCard icon="📚" value={stats.total} label={t('reports.works')} color="gray" />
+          <StatCard icon="📸" value={stats.with_photos + (stats.unassigned_photos || 0)} label={t('reports.photos')} color="blue" />
+          <StatCard icon="📝" value={stats.with_descriptions} label={t('reports.descriptions')} color="emerald" />
         </div>
       )}
 
       {/* Work list (summary) */}
       {hasItems ? (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-3">Progress to Report ({items.length})</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">{t('reports.progressToReport')} ({items.length})</h3>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {items.map((item, i) => (
               <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
@@ -308,8 +310,8 @@ export default function ReportsPage() {
       ) : (
         <div className="bg-gray-50 rounded-2xl p-8 text-center border-2 border-dashed border-gray-200">
           <span className="text-4xl mb-3 block">✅</span>
-          <p className="text-gray-600 font-medium">All caught up!</p>
-          <p className="text-gray-400 text-sm mt-1">No new progress since last report</p>
+          <p className="text-gray-600 font-medium">{t('reports.allCaughtUp')}</p>
+          <p className="text-gray-400 text-sm mt-1">{t('reports.noProgressSinceLastReport')}</p>
           <button
             onClick={async () => {
               setLoading(true);
@@ -320,19 +322,19 @@ export default function ReportsPage() {
                   setItems(data.items || []);
                   setStats(data.stats || null);
                   if (data.items?.length > 0) {
-                    toast.success(`Found ${data.items.length} works from this week`);
+                    toast.success(t('reports.foundWorks').replace('{count}', data.items.length.toString()));
                   } else {
-                    toast.info('No progress recorded this week');
+                    toast.info(t('reports.noProgressThisWeek'));
                   }
                 }
               } catch (err) {
-                toast.error('Failed to load');
+                toast.error(t('reports.loadError'));
               }
               setLoading(false);
             }}
             className="mt-4 px-4 py-2 rounded-xl font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 active:scale-95 transition-all"
           >
-            📊 Show This Week's Progress
+            📊 {t('reports.showThisWeekProgress')}
           </button>
         </div>
       )}
@@ -345,8 +347,8 @@ export default function ReportsPage() {
             <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="font-bold text-lg">📋 Report Preview</h3>
-                  <p className="text-emerald-100 text-sm">This is what parents will see</p>
+                  <h3 className="font-bold text-lg">📋 {t('reports.reportPreview')}</h3>
+                  <p className="text-emerald-100 text-sm">{t('reports.thisIsWhatParentsSee')}</p>
                 </div>
                 <button
                   onClick={() => setShowPreview(false)}
@@ -360,7 +362,7 @@ export default function ReportsPage() {
                 onClick={() => setShowPhotoModal(true)}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all text-sm"
               >
-                ✏️ Edit Photos
+                ✏️ {t('reports.editPhotos')}
               </button>
             </div>
 
@@ -371,8 +373,8 @@ export default function ReportsPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-100 mx-auto mb-2 flex items-center justify-center text-2xl">
                   {childName.charAt(0)}
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">{childName}'s Progress</h2>
-                <p className="text-gray-500 text-sm">{items.length} activities to share</p>
+                <h2 className="text-xl font-bold text-gray-800">{childName}'s {t('reports.progress')}</h2>
+                <p className="text-gray-500 text-sm">{items.length} {t('reports.activitiesToShare')}</p>
               </div>
 
               {/* Works */}
@@ -408,14 +410,14 @@ export default function ReportsPage() {
                       </p>
                       {item.why_it_matters && (
                         <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                          <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                          <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('reports.whyItMatters')}</p>
                           <p className="text-sm text-emerald-800">{item.why_it_matters}</p>
                         </div>
                       )}
                     </div>
                   ) : (
                     <p className="text-gray-400 text-sm italic">
-                      No description available for this work
+                      {t('reports.noDescriptionAvailable')}
                     </p>
                   )}
                 </div>
@@ -425,7 +427,7 @@ export default function ReportsPage() {
               {unassignedPhotos.length > 0 && (
                 <div className="bg-blue-50 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                    📸 Recent Photos
+                    📸 {t('reports.recentPhotos')}
                     <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
@@ -434,7 +436,7 @@ export default function ReportsPage() {
                         <div className="aspect-square w-full">
                           <img
                             src={photo.url}
-                            alt={photo.caption || 'Learning moment'}
+                            alt={photo.caption || t('reports.learningMoment')}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -454,14 +456,14 @@ export default function ReportsPage() {
                 onClick={() => setShowPreview(false)}
                 className="flex-1 py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
               >
-                Close
+                {t('common.close')}
               </button>
               <button
                 onClick={sendReport}
                 disabled={sending}
                 className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
               >
-                {sending ? '⏳ Publishing...' : '✅ Publish Report'}
+                {sending ? `⏳ ${t('reports.publishing')}` : `✅ ${t('reports.publishReport')}`}
               </button>
             </div>
           </div>
@@ -486,9 +488,9 @@ export default function ReportsPage() {
             <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-lg">📄 Last Sent Report</h3>
+                  <h3 className="font-bold text-lg">📄 {t('reports.lastSentReport')}</h3>
                   <p className="text-blue-100 text-sm">
-                    Sent on {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
+                    {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <button
@@ -510,10 +512,10 @@ export default function ReportsPage() {
                       {lastReport.content.child?.name?.charAt(0) || childName.charAt(0)}
                     </div>
                     <h2 className="text-xl font-bold text-gray-800">
-                      {lastReport.content.child?.name || childName}'s Progress
+                      {lastReport.content.child?.name || childName}'s {t('reports.progress')}
                     </h2>
                     <p className="text-gray-500 text-sm">
-                      Week of {new Date(lastReport.week_start).toLocaleDateString()}
+                      {t('reports.weekOf')} {new Date(lastReport.week_start).toLocaleDateString()}
                     </p>
                   </div>
 
@@ -523,17 +525,17 @@ export default function ReportsPage() {
                       <div className="bg-gray-50 rounded-xl p-3 text-center">
                         <span className="text-lg">📚</span>
                         <p className="text-xl font-bold text-gray-700">{lastReport.content.summary.works_this_week || 0}</p>
-                        <p className="text-xs text-gray-500">Works</p>
+                        <p className="text-xs text-gray-500">{t('reports.works')}</p>
                       </div>
                       <div className="bg-blue-50 rounded-xl p-3 text-center">
                         <span className="text-lg">📸</span>
                         <p className="text-xl font-bold text-blue-600">{lastReport.content.summary.photos_this_week || 0}</p>
-                        <p className="text-xs text-gray-500">Photos</p>
+                        <p className="text-xs text-gray-500">{t('reports.photos')}</p>
                       </div>
                       <div className="bg-emerald-50 rounded-xl p-3 text-center">
                         <span className="text-lg">⭐</span>
                         <p className="text-xl font-bold text-emerald-600">{lastReport.content.summary.overall_progress?.mastered || 0}</p>
-                        <p className="text-xs text-gray-500">Mastered</p>
+                        <p className="text-xs text-gray-500">{t('reports.mastered')}</p>
                       </div>
                     </div>
                   )}
@@ -597,14 +599,14 @@ export default function ReportsPage() {
                                   </p>
                                   {work.why_it_matters && (
                                     <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                                      <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                                      <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('reports.whyItMatters')}</p>
                                       <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
                                     </div>
                                   )}
                                 </div>
                               ) : (
                                 <p className="text-gray-400 text-sm italic">
-                                  No description available for this work
+                                  {t('reports.noDescriptionAvailable')}
                                 </p>
                               )}
                             </div>
@@ -642,7 +644,7 @@ export default function ReportsPage() {
                     return (
                       <div className="bg-blue-50 rounded-xl p-4 space-y-3">
                         <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                          📸 Additional Photos
+                          📸 {t('reports.additionalPhotos')}
                           <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
                         </h4>
                         <div className="grid grid-cols-2 gap-2">
@@ -667,7 +669,7 @@ export default function ReportsPage() {
                 </>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>Report content not available</p>
+                  <p>{t('reports.contentNotAvailable')}</p>
                 </div>
               )}
             </div>
@@ -678,7 +680,7 @@ export default function ReportsPage() {
                 onClick={() => setShowLastReport(false)}
                 className="w-full py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>
@@ -687,7 +689,7 @@ export default function ReportsPage() {
 
       {/* Info */}
       <p className="text-xs text-gray-400 text-center">
-        Photos saved for end-of-term compilation
+        {t('reports.photosSavedInfo')}
       </p>
     </div>
   );

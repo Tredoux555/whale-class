@@ -537,7 +537,7 @@ export default function StudentsPage() {
         headers: { 'x-school-id': session.school?.id || '' },
       });
       if (!res.ok) throw new Error('Failed to delete');
-      toast.success('Removed');
+      toast.success(t('common.removed'));
       setDeleteConfirm(null);
       loadStudents(session.classroom?.id);
     } catch (err) {
@@ -843,7 +843,7 @@ export default function StudentsPage() {
             ));
             setEditingStudent(prev => prev ? { ...prev, photo_url: url } : prev);
             setShowPhotoCapture(false);
-            toast.success('Photo saved!');
+            toast.success(t('common.photoSaved'));
           }}
           onCancel={() => setShowPhotoCapture(false)}
         />
