@@ -87,4 +87,50 @@ export const BIO = {
     language: 'Language',
     cultural: 'Cultural',
   } as Record<string, string>,
+  // Wooden shelf colors
+  shelf: {
+    plank: 'linear-gradient(180deg, #8B6914 0%, #A0782C 15%, #8B6914 50%, #7A5C12 85%, #6B4E0E 100%)',
+    plankEdge: 'linear-gradient(180deg, #6B4E0E 0%, #5A4210 50%, #4A3608 100%)',
+    shadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+    edgeShadow: '0 2px 6px rgba(0,0,0,0.5)',
+    grain: 'repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px)',
+  },
+
+  // Work icon map — representative emoji for common Montessori works
+  workIcon: {
+    // Practical Life
+    'Carrying a Mat': '🧶', 'Carrying a Tray': '🍽️', 'Pouring': '🫗',
+    'Spooning': '🥄', 'Folding': '👕', 'Buttoning': '🔘',
+    'Polishing': '✨', 'Sweeping': '🧹', 'Washing': '🧽',
+    'Cutting': '✂️', 'Sewing': '🧵', 'Lacing': '👟',
+    'Twisting': '🔩', 'Squeezing': '🍋', 'Tonging': '🥢',
+    'Table Scrubbing': '🫧', 'Plant Care': '🌱', 'Food Prep': '🥕',
+    // Sensorial
+    'Pink Tower': '🏗️', 'Brown Stair': '📐', 'Red Rods': '📏',
+    'Cylinder Blocks': '🔲', 'Color Tablets': '🎨', 'Knobless Cylinders': '⚪',
+    'Geometric Solids': '🔷', 'Constructive Triangles': '🔺',
+    'Binomial Cube': '🧊', 'Trinomial Cube': '🎲',
+    'Sound Cylinders': '🔔', 'Baric Tablets': '⚖️',
+    'Thermic Tablets': '🌡️', 'Fabric Box': '🧣',
+    'Mystery Bag': '👜', 'Geometric Cabinet': '📦',
+    // Mathematics
+    'Number Rods': '📊', 'Sandpaper Numbers': '🔢',
+    'Spindle Box': '🎯', 'Cards and Counters': '🃏',
+    'Short Bead Stair': '📿', 'Teen Board': '🔟',
+    'Ten Board': '🔢', 'Hundred Board': '💯',
+    'Golden Beads': '✨', 'Stamp Game': '📮',
+    'Addition Strip Board': '➕', 'Subtraction Strip Board': '➖',
+    'Multiplication Bead Board': '✖️', 'Division Board': '➗',
+    // Language
+    'Sandpaper Letters': '✋', 'Moveable Alphabet': '🔤',
+    'Metal Insets': '✏️', 'Object Box': '📦',
+    'Phonogram Cards': '🗂️', 'Grammar Symbols': '📝',
+    'Sentence Analysis': '📖', 'Word Study': '📚',
+    'Reading Cards': '🏷️', 'Phonetic Reading': '👄',
+    // Cultural
+    'Globe': '🌍', 'Puzzle Map': '🗺️', 'Land & Water Forms': '🏝️',
+    'Botany': '🌿', 'Zoology': '🦋', 'History': '⏳',
+    'Science': '🔬', 'Art': '🖼️', 'Music': '🎵',
+    'Calendar': '📅', 'Weather': '🌤️', 'Flags': '🏳️',
+  } as Record<string, string>,
 } as const;
