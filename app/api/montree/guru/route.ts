@@ -536,8 +536,12 @@ export async function POST(request: NextRequest) {
 
       // Self-learning: feed this conversation into both pattern database AND brain
       // Fire-and-forget — never blocks the response
+      // Re-compute values for self-learning (original declarations are in prompt-building scope above)
+      const childAgeMonthsForLearning = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
+      const activeAreasForLearning = childContext.focus_works?.map(fw => fw.area) || [];
+
       if (actionsTaken.length > 0) {
-        learnFromConversation(child_id, childAgeMonths).catch(err =>
+        learnFromConversation(child_id, childAgeMonthsForLearning).catch(err =>
           console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
         );
       }
@@ -547,15 +551,14 @@ export async function POST(request: NextRequest) {
       if (!saveError) {
         recordLearning({
           conversation_id: saved?.id as string | undefined,
-          child_age_months: childAgeMonths,
-          areas: activeAreas,
+          child_age_months: childAgeMonthsForLearning,
+          areas: activeAreasForLearning,
           learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
           description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
-          context: `Child ${childContext.name || 'unknown'}, ${childAgeMonths}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
+          context: `Child ${childContext.name || 'unknown'}, ${childAgeMonthsForLearning}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
           tags: [
-            ...activeAreas.map(a => a.replace('practical_life', 'practical')),
-            `age_${Math.round(childAgeMonths / 12)}`,
-            ...safeConcerns.map(c => typeof c === 'string' ? c.replace(/[^a-z]/gi, '_').toLowerCase() : ''),
+            ...activeAreasForLearning.map(a => a.replace('practical_life', 'practical')),
+            `age_${Math.round(childAgeMonthsForLearning / 12)}`,
           ].filter(Boolean),
         }).catch(err =>
           console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
